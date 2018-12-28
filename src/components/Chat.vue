@@ -17,11 +17,14 @@
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-form v-model="valid"  class="mx-2" style="width: 100%">
+          <v-form style="width: 100%">
             <v-text-field
-              v-model="name"
-              label="New message"
-              required
+              v-model="message"
+              box
+              clear-icon="mdi-close-circle"
+              clearable
+              label="Write a message..."
+              type="text"
             ></v-text-field>
           </v-form>
         </v-card-actions>
@@ -29,26 +32,56 @@
   </div>
 </template>
 
+
 <script>
 export default {
   props: ['owner'],
   data: () => ({
-    valid: false,
-    name: '',
-    nameRules: [
-      v => !!v || 'Name is required',
-      v => v.length <= 10 || 'Name must be less than 10 characters'
-    ],
-    email: '',
-    emailRules: [
-      v => !!v || 'E-mail is required',
-      v => /.+@.+/.test(v) || 'E-mail must be valid'
+    password: 'Password',
+    show: false,
+    message: 'Hey!',
+    marker: true,
+    iconIndex: 0,
+    icons: [
+      'mdi-emoticon',
+      'mdi-emoticon-cool',
+      'mdi-emoticon-dead',
+      'mdi-emoticon-excited',
+      'mdi-emoticon-happy',
+      'mdi-emoticon-neutral',
+      'mdi-emoticon-sad',
+      'mdi-emoticon-tongue'
     ]
   }),
-  mounted() {
-    console.log('owner =', this.owner)
+
+  computed: {
+    icon () {
+      return this.icons[this.iconIndex]
+    }
+  },
+
+  methods: {
+    toggleMarker () {
+      this.marker = !this.marker
+    },
+    sendMessage () {
+      this.resetIcon()
+      this.clearMessage()
+    },
+    clearMessage () {
+      this.message = ''
+    },
+    resetIcon () {
+      this.iconIndex = 0
+    },
+    changeIcon () {
+      this.iconIndex === this.icons.length - 1
+        ? this.iconIndex = 0
+        : this.iconIndex++
+    }
   }
 }
+</script>
 </script>
 
 <style>
