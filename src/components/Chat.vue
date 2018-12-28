@@ -2,27 +2,28 @@
   <div class="chat">
     <v-card>
         <v-card-title>
-          <div>
-            <v-layout>
-              <h3>{{ owner }}</h3>
-              <v-icon right small color="green" class="mx-2">fiber_manual_record</v-icon>
-            </v-layout>
-            <div>Hello, I'm having trouble using the MGF to calculate the variance</div>
-          </div>
-        <v-form v-model="valid">
-          <v-text-field
-            v-model="name"
-            :rules="nameRules"
-            :counter="10"
-            label="New message"
-            required
-          ></v-text-field>
-        </v-form>
+          <v-layout>
+            <h3>{{ owner }}</h3>
+            <v-icon right small color="green" class="mx-2">fiber_manual_record</v-icon>
+          </v-layout>
         </v-card-title>
 
+        <v-card-text>
+          <v-layout>
+            <span class="teal--text">Richard:</span>
+            <span class="grey--text text--darken--3 mx-1">Hello, I'm having trouble using the MGF to calculate the variance</span>
+          </v-layout>
+          <span class="grey--text time">6:00 pm, Jan 1st</span>
+        </v-card-text>
+        <v-divider></v-divider>
         <v-card-actions>
-          <v-btn flat color="orange">Share</v-btn>
-          <v-btn flat color="orange">Explore</v-btn>
+          <v-form v-model="valid"  class="mx-2" style="width: 100%">
+            <v-text-field
+              v-model="name"
+              label="New message"
+              required
+            ></v-text-field>
+          </v-form>
         </v-card-actions>
     </v-card>
   </div>
@@ -51,7 +52,9 @@ export default {
 </script>
 
 <style>
-.user-online {
-  color: green;
+.time {
+	display: block;
+	font-size: 0.8em;
 }
+
 </style>
