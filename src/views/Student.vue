@@ -1,16 +1,33 @@
 <template>
-  <h2>This is the student page</h2>
+  <div class="student">
+    <v-container fluid>
+      <v-layout row wrap>
+        <v-flex md4>
+          <chat/>
+        </v-flex>
+        <v-flex md7 style="margin: auto">
+          <whiteboard/>
+        </v-flex>
+      </v-layout>
+    </v-container>
+  </div>
 </template>
 
 <script>
 import firebase from 'firebase'
 import db from '@/database'
+import Chat from '@/components/Chat'
+import Whiteboard from '@/components/Whiteboard'
 
 export default {
   async created() {
     const ref = db.collection('students').doc('123')
     const firstStudent = await ref.get() 
     console.log('first student =', firstStudent.data())
+  },
+  components: {
+    Chat,
+    Whiteboard
   }
 }
 </script>

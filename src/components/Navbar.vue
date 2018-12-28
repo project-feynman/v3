@@ -1,25 +1,25 @@
 <template>
   <nav>
     <v-toolbar app>
+
       <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
       <v-toolbar-title class="headline text-uppercase">
         <span>Vishesh Jain, 18.600</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn
-        flat
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        class="grey darken-1"
-      >
+
+      <v-btn flat class="grey darken-1">
         <span class="mr-2 white--text">Reset chat</span>
       </v-btn>
+
       <v-btn flat class="grey darken-1">
         <span class="mr-2 white--text">Reset whiteboard</span>
       </v-btn>
+
       <v-btn flat class="pink darken-1">
         <span class="mr-2 white--text">Save explanation</span>
       </v-btn>
+
     </v-toolbar>
     <v-navigation-drawer v-model="drawerOpen" app class="white">
       <v-list>
