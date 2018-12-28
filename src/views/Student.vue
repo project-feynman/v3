@@ -1,11 +1,11 @@
 <template>
   <div class="student">
     <v-container fluid>
-      <v-layout row wrap>
+      <v-layout wrap>
         <v-flex md4>
           <chat/>
         </v-flex>
-        <v-flex md7 style="margin: auto">
+        <v-flex md8>
           <whiteboard/>
         </v-flex>
       </v-layout>
