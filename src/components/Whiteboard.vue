@@ -1,6 +1,6 @@
 <template>
   <div class="whiteboard">
-    <canvas id="myCanvas" style="border:1px solid #000000;"></canvas>
+    <canvas id="myCanvas"></canvas>
   </div>
 </template>
 
@@ -26,6 +26,7 @@
 <style>
 #myCanvas {
   width: 100%;
+  background-color: rgb(170, 221, 252)
 }
 </style>
 

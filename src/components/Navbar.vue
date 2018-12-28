@@ -8,15 +8,15 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <v-btn flat class="grey darken-1">
+      <v-btn class="grey darken-1">
         <span class="mr-2 white--text">Reset chat</span>
       </v-btn>
 
-      <v-btn flat class="grey darken-1">
+      <v-btn class="grey darken-1">
         <span class="mr-2 white--text">Reset whiteboard</span>
       </v-btn>
 
-      <v-btn flat class="pink darken-1">
+      <v-btn class="pink darken-1">
         <span class="mr-2 white--text">Save explanation</span>
       </v-btn>
 
