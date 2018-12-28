@@ -28,7 +28,7 @@
           Students
         </v-subheader>
         <v-divider></v-divider>
-        <v-list-tile v-for="student in students" :key="student.text" router :to="`/${student.text}`">
+        <v-list-tile v-for="student in students" :key="student.text" router :to="`/student/${student.text}`">
           <v-list-tile-content>
             {{ student.text }}
           </v-list-tile-content>
@@ -36,7 +36,7 @@
 
         <v-subheader class="subheading black--text text-uppercase font-weight-black">Explanations</v-subheader>
         <v-divider></v-divider>
-        <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/${explanation.text}`">
+        <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/explanation/${explanation.text}`">
           <v-list-tile-content>
             {{ explanation.text }}
           </v-list-tile-content>
