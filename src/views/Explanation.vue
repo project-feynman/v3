@@ -3,7 +3,7 @@
      <v-container fluid>
       <v-layout wrap>
         <v-flex md4>
-          <chat/>
+          <chat-log/>
         </v-flex>
         <v-flex md8>
           <whiteboard/>
@@ -14,12 +14,12 @@
 </template>
 
 <script>
-import Chat from '@/components/Chat'
+import ChatLog from '@/components/ChatLog.vue'
 import Whiteboard from '@/components/Whiteboard'
 
 export default {
   components: {
-    Chat,
+    ChatLog,
     Whiteboard
   }
 }

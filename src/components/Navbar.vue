@@ -46,9 +46,9 @@
 
         <v-subheader class="subheading black--text text-uppercase font-weight-black">Explanations</v-subheader>
         <v-divider></v-divider>
-        <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/explanation/${explanation.text}`">
+        <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/explanation/${explanation['.key']}`">
           <v-list-tile-content>
-            {{ explanation.text }}
+            {{ explanation.title }}
           </v-list-tile-content>
         </v-list-tile>
 
@@ -79,7 +79,8 @@ export default {
     }
   },
   async created() {
-    await this.$binding('students', db.collection('students'))
+    this.$binding('students', db.collection('students'))
+    this.$binding('explanations', db.collection('explanations'))
   },
   watch: {
     $route(to, from) {
