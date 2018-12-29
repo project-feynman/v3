@@ -18,7 +18,7 @@
         <v-btn class="grey darken-1">
           <span class="mr-2 white--text">Clear chat</span>
         </v-btn>
-        <v-btn class="grey darken-1">
+        <v-btn @click="$root.$emit('clear-whiteboard')" class="grey darken-1">
           <span class="mr-2 white--text">Clear whiteboard</span>
         </v-btn>
         <v-btn class="pink darken-1">
@@ -76,7 +76,6 @@ export default {
     $route(to, from) {
       const path = this.$route.path 
       if (path.substring(1, 12) == 'explanation') {
-        console.log('this is an explanation page')
         this.isExplanation = true 
       } else {
         this.isExplanation = false 

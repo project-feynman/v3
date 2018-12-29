@@ -31,6 +31,8 @@ export default {
     }
   },
   mounted() {
+    // listen to Navbar's "clear whiteboard" button
+    this.$root.$on('clear-whiteboard', this.clearCanvas)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
