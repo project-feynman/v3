@@ -16,7 +16,8 @@
 </template>
 
 <script>
-import firebase from 'firebase'
+import firebase from 'firebase/app'
+import 'firebase/firestore'
 import db from '@/database'
 import Chat from '@/components/Chat'
 import Whiteboard from '@/components/Whiteboard'

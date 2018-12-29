@@ -8,22 +8,26 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <template v-if="isExplanation">
-        <v-btn class="pink darken-1">
-          <span class="mr-2 white--text">Replay explanation</span>
-        </v-btn>
-      </template>
+      <template v-if="user">
 
-      <template v-else>
-        <v-btn class="grey darken-1">
-          <span class="mr-2 white--text">Clear chat</span>
-        </v-btn>
-        <v-btn @click="$root.$emit('clear-whiteboard')" class="grey darken-1">
-          <span class="mr-2 white--text">Clear whiteboard</span>
-        </v-btn>
-        <v-btn class="pink darken-1">
-          <span class="mr-2 white--text">Save explanation</span>
-        </v-btn>
+        <template v-if="isExplanation">
+          <v-btn class="pink darken-1">
+            <span class="mr-2 white--text">Replay explanation</span>
+          </v-btn>
+        </template>
+
+        <template v-else>
+          <v-btn class="grey darken-1">
+            <span class="mr-2 white--text">Clear chat</span>
+          </v-btn>
+          <v-btn @click="$root.$emit('clear-whiteboard')" class="grey darken-1">
+            <span class="mr-2 white--text">Clear whiteboard</span>
+          </v-btn>
+          <v-btn class="pink darken-1">
+            <span class="mr-2 white--text">Save explanation</span>
+          </v-btn>
+        </template>
+
       </template>
 
     </v-toolbar>
@@ -54,7 +58,12 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
+  computed: {
+    ...mapState(['user'])
+  },
   data() {
     return {
       isExplanation: false,
