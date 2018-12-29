@@ -3,17 +3,18 @@
     <v-card>
         <v-card-title>
           <v-layout>
-            <h3>{{ owner }}</h3>
+            <h3 v-if="owner">{{ owner.name }}</h3>
             <v-icon right small color="green" class="mx-2">fiber_manual_record</v-icon>
           </v-layout>
         </v-card-title>
 
-        <v-card-text>
+        <v-card-text v-if="owner" v-for="message in messages" :key="message['.key']">
           <v-layout>
-            <span class="teal--text">Richard:</span>
-            <span class="grey--text text--darken--3 mx-1">Hello, I'm having trouble using the MGF to calculate the variance</span>
+            <span v-if="owner.name" class="teal--text">{{ firstName(owner.name) }}:</span>
+            <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
           </v-layout>
-          <span class="grey--text time">6:00 pm, Jan 1st</span>
+          <span class="grey--text time">6:00 pm, January 1st</span>
+        
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
@@ -34,54 +35,42 @@
 
 
 <script>
+import db from '@/database.js'
+
 export default {
-  props: ['owner'],
+  props: ['ownerUid'],
   data: () => ({
-    password: 'Password',
-    show: false,
     message: 'Hey!',
     marker: true,
     iconIndex: 0,
-    icons: [
-      'mdi-emoticon',
-      'mdi-emoticon-cool',
-      'mdi-emoticon-dead',
-      'mdi-emoticon-excited',
-      'mdi-emoticon-happy',
-      'mdi-emoticon-neutral',
-      'mdi-emoticon-sad',
-      'mdi-emoticon-tongue'
-    ]
   }),
-
   computed: {
     icon () {
       return this.icons[this.iconIndex]
     }
   },
-
+  watch: {
+    ownerUid: {
+      handler: 'bindVariables',
+      immediate: true
+    }
+  },
   methods: {
-    toggleMarker () {
-      this.marker = !this.marker
+    bindVariables() {
+      const ownerRef = db.collection('students').doc(this.ownerUid)
+      this.$binding('owner', ownerRef)
+      this.$binding('messages', ownerRef.collection('messages'))
+    },
+    firstName(fullName) {
+      const names = fullName.split(' ')
+      return names[0]
     },
     sendMessage () {
       this.resetIcon()
       this.clearMessage()
-    },
-    clearMessage () {
-      this.message = ''
-    },
-    resetIcon () {
-      this.iconIndex = 0
-    },
-    changeIcon () {
-      this.iconIndex === this.icons.length - 1
-        ? this.iconIndex = 0
-        : this.iconIndex++
     }
   }
 }
-</script>
 </script>
 
 <style>

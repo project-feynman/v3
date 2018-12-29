@@ -3,9 +3,7 @@
     <v-container fluid>
       <v-layout wrap>
         <v-flex md4>
-          <template v-if="firstStudent">
-            <chat :owner="firstStudent.name"/>
-          </template>
+          <chat v-if="ownerUid" :ownerUid="ownerUid"/>
         </v-flex>
         <v-flex md8>
           <whiteboard/>
@@ -29,14 +27,16 @@ export default {
   },
   data() {
     return {
-      firstStudent: null
+      ownerUid: null 
     }
   },
-  async created() {
-    const ref = db.collection('students').doc('123')
-    this.firstStudent = await ref.get() 
-    this.firstStudent = this.firstStudent.data() 
-    console.log('first student =', this.firstStudent)
+  created() {
+    this.ownerUid = this.$route.params.id
   },
+  watch: {
+    $route(to, from) {
+      this.ownerUid = this.$route.params.id
+    }
+  }
 }
 </script>

@@ -38,9 +38,9 @@
           Students
         </v-subheader>
         <v-divider></v-divider>
-        <v-list-tile v-for="student in students" :key="student.text" router :to="`/student/${student.text}`">
+      <v-list-tile v-for="student in students" :key="student.text" router :to="`/student/${student['.key']}`">
           <v-list-tile-content>
-            {{ student.text }}
+            {{ student.name }}
           </v-list-tile-content>
         </v-list-tile>
 
@@ -59,6 +59,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import db from '@/database.js'
 
 export default {
   computed: {
@@ -66,13 +67,9 @@ export default {
   },
   data() {
     return {
+      students: null,
       isExplanation: false,
       drawerOpen: false,
-      students: [
-        { text: 'Alice Liddel' },
-        { text: 'Bob Marley' },
-        { text: 'Charles Dickens'}
-      ],
       explanations: [
         { text: 'Moment Generating Functions' },
         { text: 'Entropy' },
@@ -80,6 +77,9 @@ export default {
         { text: 'Stationary Distributions' }
       ]
     }
+  },
+  async created() {
+    await this.$binding('students', db.collection('students'))
   },
   watch: {
     $route(to, from) {

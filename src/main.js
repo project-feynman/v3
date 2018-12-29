@@ -6,6 +6,9 @@ import store from './store'
 import './registerServiceWorker'
 import firebase from 'firebase/app'
 import 'firebase/auth'
+import VueFirestore from 'vue-firestore'
+
+Vue.use(VueFirestore)
 
 Vue.config.productionTip = false
 
