@@ -8,17 +8,23 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <v-btn class="grey darken-1">
-        <span class="mr-2 white--text">Reset chat</span>
-      </v-btn>
+      <template v-if="isExplanation">
+        <v-btn class="pink darken-1">
+          <span class="mr-2 white--text">Replay explanation</span>
+        </v-btn>
+      </template>
 
-      <v-btn class="grey darken-1">
-        <span class="mr-2 white--text">Reset whiteboard</span>
-      </v-btn>
-
-      <v-btn class="pink darken-1">
-        <span class="mr-2 white--text">Save explanation</span>
-      </v-btn>
+      <template v-else>
+        <v-btn class="grey darken-1">
+          <span class="mr-2 white--text">Clear chat</span>
+        </v-btn>
+        <v-btn class="grey darken-1">
+          <span class="mr-2 white--text">Clear whiteboard</span>
+        </v-btn>
+        <v-btn class="pink darken-1">
+          <span class="mr-2 white--text">Save explanation</span>
+        </v-btn>
+      </template>
 
     </v-toolbar>
     <v-navigation-drawer v-model="drawerOpen" app class="white">
@@ -51,18 +57,30 @@
 export default {
   data() {
     return {
+      isExplanation: false,
       drawerOpen: false,
       students: [
-        { text: 'Alice Liddel', route: '/' },
-        { text: 'Bob Marley', route: '/' },
-        { text: 'Charles Dickens', route: '/projects' }
+        { text: 'Alice Liddel' },
+        { text: 'Bob Marley' },
+        { text: 'Charles Dickens'}
       ],
       explanations: [
-        { text: 'Moment Generating Functions', route: '/' },
-        { text: 'Entropy', route: '/' },
-        { text: 'Central Limit Theorem', route: '/' },
-        { text: 'Stationary Distributions', route: '/' }
+        { text: 'Moment Generating Functions' },
+        { text: 'Entropy' },
+        { text: 'Central Limit Theorem' },
+        { text: 'Stationary Distributions' }
       ]
+    }
+  },
+  watch: {
+    $route(to, from) {
+      const path = this.$route.path 
+      if (path.substring(1, 12) == 'explanation') {
+        console.log('this is an explanation page')
+        this.isExplanation = true 
+      } else {
+        this.isExplanation = false 
+      }
     }
   }
 }
