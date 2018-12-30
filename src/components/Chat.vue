@@ -52,6 +52,9 @@ export default {
       return this.icons[this.iconIndex]
     }
   },
+  created() {
+    this.$root.$on('clear-chat', this.clearMessages)
+  },
   watch: {
     ownerUid: {
       handler: 'bindVariables',
@@ -84,6 +87,12 @@ export default {
         content, 
         author,
       })
+    },
+    async clearMessages() {
+      const messagesRef = db.collection('students').doc(this.ownerUid).collection('messages')
+      for (let i=1; i < this.messages.length +1; i++) {
+        messagesRef.doc(`${i}`).delete()
+      }
     }
   }
 }

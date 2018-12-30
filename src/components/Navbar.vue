@@ -17,7 +17,7 @@
         </template>
 
         <template v-else>
-          <v-btn class="grey darken-1">
+          <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
             <span class="mr-2 white--text">Clear chat</span>
           </v-btn>
           <v-btn @click="$root.$emit('clear-whiteboard')" class="grey darken-1">
