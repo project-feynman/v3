@@ -3,7 +3,7 @@
      <v-container fluid>
       <v-layout wrap>
         <v-flex md4>
-          <chat-log/>
+          <chat-log :explanationUid="explanationUid"/>
         </v-flex>
         <v-flex md8>
           <whiteboard/>
@@ -21,6 +21,19 @@ export default {
   components: {
     ChatLog,
     Whiteboard
+  },
+  data() {
+    return {
+      explanationUid: null 
+    }
+  },
+  created() {
+    this.explanationUid = this.$route.params.id
+  },
+  watch: {
+    $route(to, from) {
+      this.explanationUid = this.$route.params.id
+    }
   }
 }
 </script>

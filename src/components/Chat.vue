@@ -14,8 +14,8 @@
             <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
           </v-layout>
           <span class="grey--text time">6:00 pm, January 1st</span>
-        
         </v-card-text>
+        
         <v-divider></v-divider>
         <v-card-actions>
           <v-form style="width: 100%">
