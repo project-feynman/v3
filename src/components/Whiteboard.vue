@@ -11,6 +11,12 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 
 export default {
+  props: ['ownerUid'],
+  watch: {
+    ownerUid: {
+      handler: 'initData',
+    }
+  },
   computed: {
     ...mapState(['user']),
     author() {
@@ -31,7 +37,8 @@ export default {
       touchY: null,
       lastX: -1,
       lastY: -1,
-      numOfStrokes: 0 
+      numOfStrokes: 0,
+      unsubscribe: null
     }
   },
   mounted() {
@@ -44,7 +51,7 @@ export default {
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
-    strokesRef.onSnapshot(snapshot => {
+    this.unsubscribe = strokesRef.onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
             if (change.type === "added") {
               const stroke = change.doc.data()
@@ -72,6 +79,39 @@ export default {
     })
   },
   methods: {
+    initData() {
+      // visually wipe previous drawings
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.unsubscribe() 
+      // add new listener
+      const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
+      this.unsubscribe = strokesRef.onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+          if (change.type === "added") {
+            const stroke = change.doc.data()
+            if (this.numOfStrokes == stroke.strokeNumber) {
+              return // whiteboard and database have the same # of strokes
+            } else {
+              this.numOfStrokes += 1
+              const points = stroke.points
+              for (let i=0; i<points.length; i++) {
+                const x = points[i]['unitX'] * this.canvas.width
+                const y = points[i]['unitY'] * this.canvas.height
+                this.drawLine(x, y, 3)
+                if (i == points.length - 1) {
+                  this.lastX = -1 
+                }
+              }
+            }
+          }
+          if (change.type === 'removed') {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+            this.lastX = -1
+            this.numOfStrokes = 0
+          }
+        })
+      })
+    },
     rescaleCanvas() {
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
@@ -80,7 +120,6 @@ export default {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
-      this.canvas.addEventListener('mousedown', () => console.log('mousedown detected'), false)
     },
     clearCanvas() {
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')

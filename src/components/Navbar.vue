@@ -2,7 +2,7 @@
   <nav>
     <v-toolbar app>
 
-      <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
+      <!-- <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon> -->
       <v-toolbar-title class="headline text-uppercase">
         <span>Vishesh Jain, 18.600</span>
       </v-toolbar-title>
@@ -69,7 +69,7 @@ export default {
     return {
       students: null,
       isExplanation: false,
-      drawerOpen: false,
+      drawerOpen: true,
       explanations: [
         { text: 'Moment Generating Functions' },
         { text: 'Entropy' },
