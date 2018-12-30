@@ -7,7 +7,9 @@ import './registerServiceWorker'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import VueFirestore from 'vue-firestore'
+import VueChatScroll from 'vue-chat-scroll'
 
+Vue.use(VueChatScroll)
 Vue.use(VueFirestore)
 
 Vue.config.productionTip = false
