@@ -2,7 +2,7 @@
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
-    <canvas id="myCanvas" width="1500" height="1500"></canvas>
+    <canvas id="myCanvas" height="800"></canvas>
   </div>
 </template>
 
@@ -12,7 +12,13 @@ import db from '@/database.js'
 
 export default {
   computed: {
-    ...mapState(['user'])
+    ...mapState(['user']),
+    author() {
+      return {
+        name: this.user.displayName,
+        uid: this.user.uid
+      }
+    }
   },
   props: ['ownerUid'],
   data() {
@@ -33,6 +39,8 @@ export default {
     this.$root.$on('clear-whiteboard', this.clearCanvas) // listen to Navbar's "clear whiteboard" button
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
+    this.ctx.strokeStyle = 'black'
+    this.ctx.lineCap = "round" // lines at different angles can join into each other
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
@@ -51,7 +59,6 @@ export default {
                   this.drawLine(x, y, 3)
                   if (i == points.length - 1) {
                     this.lastX = -1 
-                    this.lastY = -1
                   }
                 }
               }
@@ -59,7 +66,6 @@ export default {
             if (change.type === 'removed') {
               this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
               this.lastX = -1
-              this.lastY = -1
               this.numOfStrokes = 0
             }
         })
@@ -74,6 +80,7 @@ export default {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
+      this.canvas.addEventListener('mousedown', () => console.log('mousedown detected'), false)
     },
     clearCanvas() {
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
@@ -81,15 +88,12 @@ export default {
         strokesRef.doc(`${i}`).delete()
       }
     },
-    drawLine(x, y, size) {
-        console.log('drawLine()')
+    drawLine(x, y, size=3) {
         if (this.lastX == -1) {
           this.lastX = x
 	        this.lastY = y
           return // means it's the start of the stroke
         }
-        this.ctx.strokeStyle = 'black'
-        this.ctx.lineCap = "round" // lines at different angles can join into each other
         // "trace" the line
         this.ctx.beginPath()
         this.ctx.moveTo(this.lastX, this.lastY)
@@ -121,20 +125,14 @@ export default {
     touchEnd(e) {
       const strokeNumber = this.numOfStrokes + 1 
       this.numOfStrokes += 1
-      const points = this.currentStroke       
-      this.currentStroke = []
-      const author = {
-        name: this.user.displayName,
-        uid: this.user.uid,
-      }
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
       strokesRef.doc(`${strokeNumber}`).set({
-        points,
-        author,
+        points: this.currentStroke,
+        author: this.author,
         strokeNumber
       })
+      this.currentStroke = []
       this.lastX = -1
-      this.lastY = -1 
     },
     getTouchPos(e) {
       if (e.touches) {
