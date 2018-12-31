@@ -38,7 +38,8 @@ export default {
       lastX: -1,
       lastY: -1,
       numOfStrokes: 0,
-      unsubscribe: null
+      unsubscribe: null,
+      redrawTimeout: null 
     }
   },
   mounted() {
@@ -55,6 +56,8 @@ export default {
         snapshot.docChanges().forEach(change => {
             if (change.type === "added") {
               const stroke = change.doc.data()
+              // new line 
+              this.allStrokes.push(stroke)
               if (this.numOfStrokes == stroke.strokeNumber) {
                 return // whiteboard and database have the same # of strokes
               } else {
@@ -83,18 +86,24 @@ export default {
       // visually wipe previous drawings
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       this.unsubscribe() 
+      this.allStrokes = [] 
       // add new listener
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
       this.unsubscribe = strokesRef.onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === "added") {
             const stroke = change.doc.data()
+            this.allStrokes.push(stroke)
             if (this.numOfStrokes == stroke.strokeNumber) {
               return // whiteboard and database have the same # of strokes
             } else {
               this.numOfStrokes += 1
               const points = stroke.points
-              for (let i=0; i<points.length; i++) {
+              // this.drawStroke(points)
+
+
+              // draw stroke
+              for (let i = 0; i < points.length; i++) {
                 const x = points[i]['unitX'] * this.canvas.width
                 const y = points[i]['unitY'] * this.canvas.height
                 this.drawLine(x, y, 3)
@@ -115,13 +124,54 @@ export default {
     rescaleCanvas() {
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
+      // only redraw when the user has finished resizing the window
+      clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 1000 milliseconds, so cancel 
+      this.redrawTimeout = setTimeout(this.drawAll, 1000) // resizing the canvas causes all drawings to be lost 
+    },
+    drawStroke(points) {
+      for (let i = 0; i < points.length; i++) {
+        const x = points[i]['unitX'] * this.canvas.width
+        const y = points[i]['unitY'] * this.canvas.height
+        this.drawLine(x, y, 3)
+        if (i == points.length - 1) {
+          this.lastX = -1 
+        }
+      }
+    },
+    drawAllStrokes(strokes) {
+      for (let i = 0; i < strokes.length; i++) {
+        const points = strokes[i].points 
+        for (let j = 0; j < points.length; j++) {
+          const x = points[j]['unitX'] * this.canvas.width
+          const y = points[j]['unitY'] * this.canvas.height
+          this.drawLine(x, y, 3)
+          if (j == points.length -1) {
+            this.lastX = -1 
+          }
+        }
+      }
+    },
+    drawAll() { // draws everything that has already been loaded in allStrokes 
+      console.log('drawAll()')
+      for (let i = 0; i < this.allStrokes.length; i++) {
+        const points = this.allStrokes[i].points 
+        for (let j = 0; j < points.length; j++) {
+          const x = points[j]['unitX'] * this.canvas.width
+          const y = points[j]['unitY'] * this.canvas.height
+          this.drawLine(x, y, 3)
+          if (j == points.length - 1) {
+            this.lastX = -1 
+          }
+        }
+      }
+      console.log('finished drawing')
     },
     initTouchEvents() {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
-    clearCanvas() {
+    clearCanvas() { // rename this function to deleteStrokesOnFirestore
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
       for (let i = 1; i < this.numOfStrokes + 1; i++) {
         strokesRef.doc(`${i}`).delete()

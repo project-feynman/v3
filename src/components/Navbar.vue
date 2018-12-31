@@ -2,7 +2,7 @@
   <nav>
     <v-toolbar app>
 
-      <!-- <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon> -->
+      <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
       <v-toolbar-title class="headline text-uppercase">
         <span>Vishesh Jain, 18.600</span>
       </v-toolbar-title>
@@ -69,7 +69,7 @@ export default {
     return {
       students: null,
       isExplanation: false,
-      drawerOpen: true,
+      drawerOpen: false,
       explanations: [
         { text: 'Moment Generating Functions' },
         { text: 'Entropy' },
@@ -81,6 +81,8 @@ export default {
   async created() {
     this.$binding('students', db.collection('students'))
     this.$binding('explanations', db.collection('explanations'))
+    // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
+    await setTimeout(() => this.drawerOpen = true, 1500)
   },
   watch: {
     $route(to, from) {
