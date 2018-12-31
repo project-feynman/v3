@@ -43,7 +43,6 @@ export default {
     }
   },
   mounted() {
-    const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
     this.$root.$on('clear-whiteboard', this.clearCanvas) // listen to Navbar's "clear whiteboard" button
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
@@ -52,34 +51,7 @@ export default {
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
-    this.unsubscribe = strokesRef.onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-            if (change.type === "added") {
-              const stroke = change.doc.data()
-              // new line 
-              this.allStrokes.push(stroke)
-              if (this.numOfStrokes == stroke.strokeNumber) {
-                return // whiteboard and database have the same # of strokes
-              } else {
-                this.numOfStrokes += 1
-                const points = stroke.points
-                for (let i=0; i<points.length; i++) {
-                  const x = points[i]['unitX'] * this.canvas.width
-                  const y = points[i]['unitY'] * this.canvas.height
-                  this.drawLine(x, y, 3)
-                  if (i == points.length - 1) {
-                    this.lastX = -1 
-                  }
-                }
-              }
-            }
-            if (change.type === 'removed') {
-              this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-              this.lastX = -1
-              this.numOfStrokes = 0
-            }
-        })
-    })
+    this.addStrokesListener()
   },
   methods: {
     initData() {
@@ -87,7 +59,9 @@ export default {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       this.unsubscribe() 
       this.allStrokes = [] 
-      // add new listener
+      this.addStrokesListener() 
+    },
+    addStrokesListener() {
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
       this.unsubscribe = strokesRef.onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
@@ -98,19 +72,7 @@ export default {
               return // whiteboard and database have the same # of strokes
             } else {
               this.numOfStrokes += 1
-              const points = stroke.points
-              // this.drawStroke(points)
-
-
-              // draw stroke
-              for (let i = 0; i < points.length; i++) {
-                const x = points[i]['unitX'] * this.canvas.width
-                const y = points[i]['unitY'] * this.canvas.height
-                this.drawLine(x, y, 3)
-                if (i == points.length - 1) {
-                  this.lastX = -1 
-                }
-              }
+              this.drawStroke(stroke.points)
             }
           }
           if (change.type === 'removed') {
@@ -125,8 +87,13 @@ export default {
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
       // only redraw when the user has finished resizing the window
-      clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 1000 milliseconds, so cancel 
-      this.redrawTimeout = setTimeout(this.drawAll, 1000) // resizing the canvas causes all drawings to be lost 
+      clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
+      this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
+    },
+    drawAllStrokes(strokes) {
+      for (let i = 0; i < strokes.length; i++) {
+        this.drawStroke(strokes[i].points )
+      }
     },
     drawStroke(points) {
       for (let i = 0; i < points.length; i++) {
@@ -137,34 +104,6 @@ export default {
           this.lastX = -1 
         }
       }
-    },
-    drawAllStrokes(strokes) {
-      for (let i = 0; i < strokes.length; i++) {
-        const points = strokes[i].points 
-        for (let j = 0; j < points.length; j++) {
-          const x = points[j]['unitX'] * this.canvas.width
-          const y = points[j]['unitY'] * this.canvas.height
-          this.drawLine(x, y, 3)
-          if (j == points.length -1) {
-            this.lastX = -1 
-          }
-        }
-      }
-    },
-    drawAll() { // draws everything that has already been loaded in allStrokes 
-      console.log('drawAll()')
-      for (let i = 0; i < this.allStrokes.length; i++) {
-        const points = this.allStrokes[i].points 
-        for (let j = 0; j < points.length; j++) {
-          const x = points[j]['unitX'] * this.canvas.width
-          const y = points[j]['unitY'] * this.canvas.height
-          this.drawLine(x, y, 3)
-          if (j == points.length - 1) {
-            this.lastX = -1 
-          }
-        }
-      }
-      console.log('finished drawing')
     },
     initTouchEvents() {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
@@ -178,21 +117,22 @@ export default {
       }
     },
     drawLine(x, y, size=3) {
-        if (this.lastX == -1) {
-          this.lastX = x
-	        this.lastY = y
-          return // means it's the start of the stroke
-        }
-        // "trace" the line
-        this.ctx.beginPath()
-        this.ctx.moveTo(this.lastX, this.lastY)
-        this.ctx.lineTo(x,y)
-        this.ctx.lineWidth = size
-        // draw the line
-        this.ctx.stroke()
-        // Update the last position to reference the current position
+      if (this.lastX == -1) {
+        // means it's the start of the strokee
         this.lastX = x
         this.lastY = y
+        return
+      }
+      // "trace" the line
+      this.ctx.beginPath()
+      this.ctx.moveTo(this.lastX, this.lastY)
+      this.ctx.lineTo(x,y)
+      this.ctx.lineWidth = size
+      // draw the line
+      this.ctx.stroke()
+      // Update the last position to reference the current position
+      this.lastX = x
+      this.lastY = y
     },
     convertAndSavePoint(x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
