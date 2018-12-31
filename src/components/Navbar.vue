@@ -11,7 +11,12 @@
       <template v-if="user">
 
         <template v-if="isExplanation">
-          <v-btn class="pink darken-1">
+
+          <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
+            <span class="mr-2 white--text">Delete explanation</span>
+          </v-btn>
+
+          <v-btn class="pink">
             <span class="mr-2 white--text">Replay explanation</span>
           </v-btn>
         </template>
