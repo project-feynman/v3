@@ -10,7 +10,7 @@
         <ul v-if="owner" v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
           <v-card-text>
             <v-layout>
-              <span v-if="owner.name" class="teal--text">{{ firstName(owner.name) }}:</span>
+              <span v-if="owner.name" class="teal--text">{{ firstName(author.name) }}:</span>
               <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
             </v-layout>
             <span class="grey--text time">6:00 pm, January 1st</span>
@@ -45,15 +45,23 @@ export default {
     newMessage: null,
     marker: true,
     iconIndex: 0,
+    messages: null
   }),
   computed: {
     ...mapState(['user']),
-    icon () {
+    author() {
+      return {
+        name: this.user.displayName,
+        uid: this.user.uid 
+      }
+    },
+    icon() {
       return this.icons[this.iconIndex]
     }
   },
   created() {
     this.$root.$on('clear-chat', this.clearMessages)
+    this.$root.$on('save-explanation', docId => this.saveMessages(docId))
   },
   watch: {
     ownerUid: {
@@ -62,6 +70,16 @@ export default {
     }
   },
   methods: {
+    saveMessages(explanationId) {
+      const explanationRef = db.collection('explanations').doc(explanationId).collection('messages')
+      this.messages.forEach(message => {
+        console.log('message =', message)
+        explanationRef.doc(`${message['.key']}`).set({
+          author: message.author,
+          content: message.content
+        })
+      })
+    },
     bindVariables() {
       const ownerRef = db.collection('students').doc(this.ownerUid)
       this.$binding('owner', ownerRef)
@@ -77,15 +95,10 @@ export default {
       }
       const content = this.newMessage
       this.newMessage = null
-      const author = {
-        displayName: this.user.displayName,
-        uid: this.user.uid
-      }
       const messagesRef = db.collection('students').doc(this.ownerUid).collection('messages')
-      // now, you need IDs to be added, remember that. That's a very important clarification to make. 
       await messagesRef.doc(`${this.messages.length + 1}`).set({
-        content, 
-        author,
+        content,
+        author: this.author
       })
     },
     async clearMessages() {

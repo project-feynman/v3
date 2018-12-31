@@ -44,6 +44,7 @@ export default {
   },
   mounted() {
     this.$root.$on('clear-whiteboard', this.clearCanvas) // listen to Navbar's "clear whiteboard" button
+    this.$root.$on('save-explanation', docId => this.saveStrokes(docId))
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.ctx.strokeStyle = 'black'
@@ -54,6 +55,15 @@ export default {
     this.addStrokesListener()
   },
   methods: {
+    saveStrokes(explanationId) {
+      const explanationRef = db.collection('explanations').doc(explanationId).collection('strokes')
+      this.allStrokes.forEach(stroke => {
+        explanationRef.doc(`${stroke.strokeNumber}`).set({
+          author: stroke.author,
+          points: stroke.points
+        })
+      })
+    },
     initData() {
       // visually wipe previous drawings
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)

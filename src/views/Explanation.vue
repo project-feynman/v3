@@ -6,7 +6,7 @@
           <chat-log :explanationUid="explanationUid"/>
         </v-flex>
         <v-flex md8>
-          <whiteboard/>
+          <animation/>
         </v-flex>
       </v-layout>
     </v-container>
@@ -15,12 +15,12 @@
 
 <script>
 import ChatLog from '@/components/ChatLog.vue'
-import Whiteboard from '@/components/Whiteboard'
+import Animation from '@/components/Animation.vue'
 
 export default {
   components: {
     ChatLog,
-    Whiteboard
+    Animation
   },
   data() {
     return {

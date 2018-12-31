@@ -23,7 +23,7 @@
           <v-btn @click="$root.$emit('clear-whiteboard')" class="grey darken-1">
             <span class="mr-2 white--text">Clear whiteboard</span>
           </v-btn>
-          <v-btn class="pink darken-1">
+          <v-btn @click="handleSaving()" class="pink darken-1">
             <span class="mr-2 white--text">Save explanation</span>
           </v-btn>
         </template>
@@ -92,6 +92,16 @@ export default {
       } else {
         this.isExplanation = false 
       }
+    }
+  },
+  methods: {
+    async handleSaving() {
+      const docRef = await db.collection('explanations').add({
+        title: "Quantum Electrodynamics",
+        author: "Richard Feynman"
+      })
+      console.log("Document written with ID: ", docRef.id)
+      this.$root.$emit('save-explanation', docRef.id)
     }
   }
 }
