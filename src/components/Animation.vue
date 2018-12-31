@@ -1,6 +1,7 @@
 <template>
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
+  <!-- handle empty whiteboard -->
   <div class="whiteboard">
     <canvas id="myCanvas" height="800"></canvas>
   </div>
@@ -11,9 +12,9 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 
 export default {
-  props: ['ownerUid'],
+  props: ['explanationId'],
   watch: {
-    ownerUid: {
+    explanationId: {
       handler: 'initData',
     }
   },
@@ -26,7 +27,7 @@ export default {
       }
     }
   },
-  props: ['ownerUid'],
+  props: ['explanationId'],
   data() {
     return {
       allStrokes: [],
@@ -42,6 +43,9 @@ export default {
       redrawTimeout: null 
     }
   },
+  async created() {
+    this.initData()
+  },
   mounted() {
     this.$root.$on('replay-animation', this.replayAnimation)
     this.canvas = document.getElementById('myCanvas')
@@ -50,10 +54,16 @@ export default {
     window.addEventListener('resize', this.rescaleCanvas, false)
   },
   methods: {
-    initData() {
+    async initData() {
       // visually wipe previous drawings
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      if (this.ctx) {
+        // already loaded an explanation before
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      }
       this.allStrokes = [] 
+      const strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes')
+      await this.$binding('allStrokes', strokesRef)
+      this.drawAllStrokes(this.allStrokes)
     },
     rescaleCanvas() {
       this.canvas.width = this.canvas.scrollWidth
@@ -63,11 +73,15 @@ export default {
       this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
     },
     drawAllStrokes(strokes) {
+      if (!strokes) {
+        return 
+      }
       for (let i = 0; i < strokes.length; i++) {
         this.drawStroke(strokes[i].points )
       }
     },
     drawStroke(points) {
+
       for (let i = 0; i < points.length; i++) {
         const x = points[i]['unitX'] * this.canvas.width
         const y = points[i]['unitY'] * this.canvas.height

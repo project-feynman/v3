@@ -3,10 +3,10 @@
      <v-container fluid>
       <v-layout wrap>
         <v-flex md4>
-          <chat-log :explanationUid="explanationUid"/>
+          <chat-log :explanationUid="explanationId"/>
         </v-flex>
         <v-flex md8>
-          <animation/>
+          <animation :explanationId="explanationId"/>
         </v-flex>
       </v-layout>
     </v-container>
@@ -25,21 +25,21 @@ export default {
   },
   data() {
     return {
-      explanationUid: null 
+      explanationId: null 
     }
   },
   created() {
-    this.explanationUid = this.$route.params.id
+    this.explanationId = this.$route.params.id
     this.$root.$on('delete-explanation', this.deleteExplanation)
   },
   watch: {
     $route(to, from) {
-      this.explanationUid = this.$route.params.id
+      this.explanationId = this.$route.params.id
     }
   },
   methods: {
     deleteExplanation() {
-      db.collection('explanations').doc(this.explanationUid).delete()
+      db.collection('explanations').doc(this.explanationId).delete()
     }
   }
 }
