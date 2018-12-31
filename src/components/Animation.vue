@@ -47,7 +47,7 @@ export default {
     this.initData()
   },
   mounted() {
-    this.$root.$on('replay-animation', this.replayAnimation)
+    this.$root.$on('play-explanation', this.playAnimation)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
@@ -81,7 +81,6 @@ export default {
       }
     },
     drawStroke(points) {
-
       for (let i = 0; i < points.length; i++) {
         const x = points[i]['unitX'] * this.canvas.width
         const y = points[i]['unitY'] * this.canvas.height
@@ -109,6 +108,96 @@ export default {
       this.lastX = x
       this.lastY = y
     },
+    async playAnimation() {
+			console.log('playAnimation')
+			if (!this.ctx || !this.canvas) {
+				return
+			}
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+			if (!this.allStrokes) {
+				return
+			}
+			if (this.allStrokes.length == 0) {
+				return
+			}
+			function timeout(ms) {
+				return new Promise(resolve => setTimeout(resolve, ms))
+			}
+			const strokes = this.allStrokes
+			const n = strokes.length
+			// determine drawing speed
+			let strokePeriod = 0
+			if (n < 10) {
+				strokePeriod = 500
+			} else if (n < 20) {
+				strokePeriod = 250
+			} else if (n < 40) {
+				strokePeriod = 100
+			} else {
+				strokePeriod = 30
+			}
+			for (let i = 0; i < n; i++) {
+				await this.drawPath(strokes[i], false) // draw incrementally, not instantly
+				await timeout(strokePeriod / 100)
+			}
+		},
+    async drawPath(data, instant = true) {
+			if (data.isEraser) {
+				this.ctx.strokeStyle = 'white'
+				this.ctx.lineWidth = 20
+				this.ctx.lineCap = 'round'
+			} else {
+				this.ctx.strokeStyle = 'purple'
+				this.ctx.lineWidth = 2
+				this.ctx.lineCap = 'round'
+			}
+			const points = data.points
+      console.log('points =', points)
+      // essentially, this is how it works
+      // I have points, now I have to draw the stroke incrementally 
+      // this really is just a modified draw stroke method 
+
+
+      // here is the draw stroke code, it's right here, and you'll see why it's like that 
+      for (let i = 0; i < points.length; i++) {
+        const x = points[i]['unitX'] * this.canvas.width
+        const y = points[i]['unitY'] * this.canvas.height
+        this.drawLine(x, y, 3)
+        if (!instant) {
+          await timeout(this.pointPeriod)
+        }
+        if (i == points.length - 1) {
+          this.lastX = -1 
+        }
+      }
+
+
+			// this.ctx.beginPath()
+			// // move to the first point
+			// this.ctx.moveTo(
+			// 	points[0].x * this.canvas.width,
+			// 	points[0].y * this.canvas.height
+			// )
+			// const n = points.length
+			// for (let i = 1; i < n; i++) {
+			// 	this.ctx.lineTo(
+			// 		points[i].x * this.canvas.width,
+			// 		points[i].y * this.canvas.height
+			// 	)
+			// 	this.ctx.stroke()
+			// 	if (!instant) {
+			// 		await timeout(this.pointPeriod)
+			// 	}
+			// }
+
+
+			function timeout(ms) {
+				return new Promise(resolve => setTimeout(resolve, ms))
+			}
+			let promise = new Promise(resolve => setTimeout(resolve, 0))
+			promise.catch(error => console.log('error =', error))
+			return promise
+		}
   }
 }
 </script>

@@ -16,7 +16,7 @@
             <span class="mr-2 white--text">Delete explanation</span>
           </v-btn>
 
-          <v-btn class="pink">
+          <v-btn @click="$root.$emit('play-explanation')" class="pink">
             <span class="mr-2 white--text">Replay explanation</span>
           </v-btn>
         </template>
