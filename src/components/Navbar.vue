@@ -3,6 +3,7 @@
     <v-toolbar app>
 
       <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
+
       <v-toolbar-title class="headline text-uppercase">
         <span>Vishesh Jain, 18.600</span>
       </v-toolbar-title>
@@ -28,9 +29,10 @@
           <v-btn @click="$root.$emit('clear-whiteboard')" class="grey darken-1">
             <span class="mr-2 white--text">Clear whiteboard</span>
           </v-btn>
-          <v-btn @click="handleSaving()" class="pink darken-1">
-            <span class="mr-2 white--text">Save explanation</span>
-          </v-btn>
+          <popup fullscreen :explanationTitle="newTitle" 
+                 @input="newValue=> newTitle = newValue" 
+                 @pre-save-explanation="handleSaving"
+            />
         </template>
 
       </template>
@@ -59,19 +61,25 @@
 
       </v-list>
     </v-navigation-drawer>
+
   </nav>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import db from '@/database.js'
+import Popup from '@/components/Popup.vue'
 
 export default {
+  components: {
+    Popup
+  },
   computed: {
     ...mapState(['user'])
   },
   data() {
     return {
+      newTitle: '',
       students: null,
       isExplanation: false,
       drawerOpen: false,
@@ -101,8 +109,9 @@ export default {
   },
   methods: {
     async handleSaving() {
+      console.log('handleSaving()')
       const docRef = await db.collection('explanations').add({
-        title: "Quantum Electrodynamics",
+        title: this.newTitle,
         author: "Richard Feynman"
       })
       console.log("Document written with ID: ", docRef.id)

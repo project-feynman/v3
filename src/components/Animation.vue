@@ -1,7 +1,6 @@
 <template>
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
-  <!-- handle empty whiteboard -->
   <div class="whiteboard">
     <canvas id="myCanvas" height="800"></canvas>
   </div>
@@ -109,7 +108,6 @@ export default {
       this.lastY = y
     },
     async playAnimation() {
-			console.log('playAnimation')
 			if (!this.ctx || !this.canvas) {
 				return
 			}
@@ -142,6 +140,7 @@ export default {
 			}
 		},
     async drawPath(data, instant = true) {
+      // initialize styles
 			if (data.isEraser) {
 				this.ctx.strokeStyle = 'white'
 				this.ctx.lineWidth = 20
@@ -151,14 +150,8 @@ export default {
 				this.ctx.lineWidth = 2
 				this.ctx.lineCap = 'round'
 			}
+      // draw 
 			const points = data.points
-      console.log('points =', points)
-      // essentially, this is how it works
-      // I have points, now I have to draw the stroke incrementally 
-      // this really is just a modified draw stroke method 
-
-
-      // here is the draw stroke code, it's right here, and you'll see why it's like that 
       for (let i = 0; i < points.length; i++) {
         const x = points[i]['unitX'] * this.canvas.width
         const y = points[i]['unitY'] * this.canvas.height
@@ -170,27 +163,6 @@ export default {
           this.lastX = -1 
         }
       }
-
-
-			// this.ctx.beginPath()
-			// // move to the first point
-			// this.ctx.moveTo(
-			// 	points[0].x * this.canvas.width,
-			// 	points[0].y * this.canvas.height
-			// )
-			// const n = points.length
-			// for (let i = 1; i < n; i++) {
-			// 	this.ctx.lineTo(
-			// 		points[i].x * this.canvas.width,
-			// 		points[i].y * this.canvas.height
-			// 	)
-			// 	this.ctx.stroke()
-			// 	if (!instant) {
-			// 		await timeout(this.pointPeriod)
-			// 	}
-			// }
-
-
 			function timeout(ms) {
 				return new Promise(resolve => setTimeout(resolve, ms))
 			}
