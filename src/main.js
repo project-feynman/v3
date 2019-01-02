@@ -16,7 +16,9 @@ Vue.config.productionTip = false
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
-    store.commit('SET_USER', user)
+    store.dispatch('handleUserLogic', user)
+  } else {
+    store.commit('SET_USER', null)
   }
 })
 

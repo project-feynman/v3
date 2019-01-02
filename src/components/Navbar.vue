@@ -42,12 +42,12 @@
       <v-list>
         
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
-          Students
+          Student Tables
         </v-subheader>
         <v-divider></v-divider>
-      <v-list-tile v-for="student in students" :key="student.text" router :to="`/student/${student['.key']}`">
+      <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`">
           <v-list-tile-content>
-            {{ student.name }}
+            {{ student.owner.name }}
           </v-list-tile-content>
         </v-list-tile>
 
@@ -79,8 +79,10 @@ export default {
   },
   data() {
     return {
+      users: null,
       newTitle: '',
       students: null,
+      tables: null,
       isExplanation: false,
       drawerOpen: false,
       explanations: [
@@ -93,6 +95,9 @@ export default {
   },
   async created() {
     this.$binding('students', db.collection('students'))
+    await this.$binding('users', db.collection('users'))
+    await this.$binding('tables', db.collection('tables'))
+    // console.log('tables =', this.tables)
     this.$binding('explanations', db.collection('explanations'))
     // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
     await setTimeout(() => this.drawerOpen = true, 1500)
@@ -109,12 +114,10 @@ export default {
   },
   methods: {
     async handleSaving() {
-      console.log('handleSaving()')
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
         author: "Richard Feynman"
       })
-      console.log("Document written with ID: ", docRef.id)
       this.$root.$emit('save-explanation', docRef.id)
     }
   }

@@ -7,17 +7,21 @@
 
 <script>
 import { mapState } from 'vuex'
+import firebase from 'firebase/app'
+import 'firebase/auth'
 
 export default {
   computed: {
     ...mapState(['user'])
   },
   methods: {
-    signIn() {
-      this.$store.dispatch('signIn')
+    async signIn() {
+      const provider = new firebase.auth.GoogleAuthProvider()
+      const result = await firebase.auth().signInWithPopup(provider)
+      // then main.js's onAuthStateChanged listener will dispatch the action
     },
-    signOut() {
-      this.$store.dispatch('signOut')
+    async signOut() {
+      await firebase.auth().signOut()
     }
   }
 }

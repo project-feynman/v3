@@ -1,16 +1,20 @@
 <template>
   <div class="chat">
     <v-card>
+
         <v-card-title>
           <v-layout>
-            <h3 v-if="owner">{{ owner.name }}</h3>
+            <template v-if="table">
+              <h3 v-if="table.owner">{{ table.owner.name }}</h3>
+            </template>
             <v-icon right small color="green" class="mx-2">fiber_manual_record</v-icon>
           </v-layout>
         </v-card-title>
-        <ul v-if="owner" v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
+
+        <ul v-if="table" v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
           <v-card-text>
             <v-layout>
-              <span v-if="owner.name" class="teal--text">{{ firstName(author.name) }}:</span>
+              <span v-if="table" class="teal--text">{{ firstName(message.author.name) }}</span>
               <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
             </v-layout>
             <span class="grey--text time">6:00 pm, January 1st</span>
@@ -18,6 +22,7 @@
         </ul>
 
         <v-divider></v-divider>
+
         <v-card-actions>
           <v-form @submit.prevent="addMessage" style="width: 100%">
             <v-text-field
@@ -30,6 +35,7 @@
             ></v-text-field>
           </v-form>
         </v-card-actions>
+
     </v-card>
   </div>
 </template>
@@ -41,12 +47,14 @@ import { mapState } from 'vuex'
 
 export default {
   props: ['ownerUid'],
-  data: () => ({
-    newMessage: null,
-    marker: true,
-    iconIndex: 0,
-    messages: null
-  }),
+  data() {
+    return {
+      newMessage: null,
+      marker: true,
+      messages: null,
+      table: null
+    }
+  },
   computed: {
     ...mapState(['user']),
     author() {
@@ -54,9 +62,6 @@ export default {
         name: this.user.displayName,
         uid: this.user.uid 
       }
-    },
-    icon() {
-      return this.icons[this.iconIndex]
     }
   },
   created() {
@@ -73,7 +78,6 @@ export default {
     saveMessages(explanationId) {
       const explanationRef = db.collection('explanations').doc(explanationId).collection('messages')
       this.messages.forEach(message => {
-        console.log('message =', message)
         explanationRef.doc(`${message['.key']}`).set({
           author: message.author,
           content: message.content
@@ -81,8 +85,8 @@ export default {
       })
     },
     bindVariables() {
-      const ownerRef = db.collection('students').doc(this.ownerUid)
-      this.$binding('owner', ownerRef)
+      const ownerRef = db.collection('tables').doc(this.ownerUid)
+      this.$binding('table', ownerRef)
       this.$binding('messages', ownerRef.collection('messages'))
     },
     firstName(fullName) {
@@ -95,14 +99,14 @@ export default {
       }
       const content = this.newMessage
       this.newMessage = null
-      const messagesRef = db.collection('students').doc(this.ownerUid).collection('messages')
+      const messagesRef = db.collection('tables').doc(this.ownerUid).collection('messages')
       await messagesRef.doc(`${this.messages.length + 1}`).set({
         content,
         author: this.author
       })
     },
     async clearMessages() {
-      const messagesRef = db.collection('students').doc(this.ownerUid).collection('messages')
+      const messagesRef = db.collection('tables').doc(this.ownerUid).collection('messages')
       for (let i=1; i < this.messages.length +1; i++) {
         messagesRef.doc(`${i}`).delete()
       }

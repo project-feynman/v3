@@ -190,6 +190,6 @@ export default {
 #myCanvas {
   width: 100%;
   background-color: rgb(192, 230, 253);
-  cursor: crosshair;
+  /* cursor: crosshair; */
 }
 </style>
