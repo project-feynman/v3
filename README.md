@@ -1,34 +1,9 @@
 # feynman-mvp
 
-## Project setup
-```
-npm install
-```
+## Intro
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+Some of the most precious explanations occur when a TA is helping a student. However, year after year, those explanations are "lost", meaning other student's don't benefit from it, and other teachers have to re-invent the wheel. 
 
-### Compiles and minifies for production
-```
-npm run build
-```
+Feynman is platform where elegant explanations from Teaching Assistants are captured to benefit all students. 
 
-### Run your tests
-```
-npm run test
-```
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Run your unit tests
-```
-npm run test:unit
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
