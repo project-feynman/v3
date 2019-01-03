@@ -5,13 +5,13 @@
       <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
 
       <v-toolbar-title class="headline text-uppercase">
-        <span>Vishesh Jain, 18.600</span>
+        <span>18.600</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
       <template v-if="user">
 
-        <template v-if="isExplanation">
+        <template v-if="isExplanationPage">
 
           <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
             <span class="mr-2 white--text">Delete explanation</span>
@@ -22,7 +22,7 @@
           </v-btn>
         </template>
 
-        <template v-else>
+        <template v-else-if="isStudentPage">
           <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
             <span class="mr-2 white--text">Clear chat</span>
           </v-btn>
@@ -40,22 +40,43 @@
     </v-toolbar>
     <v-navigation-drawer v-model="drawerOpen" app class="white">
       <v-list>
-        
-        <v-subheader class="black--text subheading text-uppercase font-weight-black">
-          Student Tables
+        <v-subheader class="subheading black--text text-uppercase font-weight-black">
+          Teaching Assistants
         </v-subheader>
         <v-divider></v-divider>
-      <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`">
+        <!-- <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`"> -->
+        <v-list-tile>
+          <v-list-tile-content>
+            (There are currently no TAs here)
+          </v-list-tile-content>
+        </v-list-tile>
+
+        <v-subheader class="black--text subheading text-uppercase font-weight-black">
+          Students
+        </v-subheader>
+        <v-divider></v-divider>
+        <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`">
           <v-list-tile-content>
             {{ student.owner.name }}
           </v-list-tile-content>
         </v-list-tile>
 
-        <v-subheader class="subheading black--text text-uppercase font-weight-black">Explanations</v-subheader>
+        <v-subheader class="subheading black--text text-uppercase font-weight-black">
+          Concepts
+        </v-subheader>
         <v-divider></v-divider>
         <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/explanation/${explanation['.key']}`">
           <v-list-tile-content>
             {{ explanation.title }}
+          </v-list-tile-content>
+        </v-list-tile>
+
+        <v-subheader class="subheading black--text text-uppercase font-weight-black">
+          Examples
+        </v-subheader>
+        <v-list-tile>
+          <v-list-tile-content>
+            (There are currently no examples here)
           </v-list-tile-content>
         </v-list-tile>
 
@@ -83,7 +104,8 @@ export default {
       newTitle: '',
       students: null,
       tables: null,
-      isExplanation: false,
+      isStudentPage: false, 
+      isExplanationPage: false,
       drawerOpen: false,
       explanations: [
         { text: 'Moment Generating Functions' },
@@ -97,18 +119,26 @@ export default {
     this.$binding('students', db.collection('students'))
     await this.$binding('users', db.collection('users'))
     await this.$binding('tables', db.collection('tables'))
-    // console.log('tables =', this.tables)
     this.$binding('explanations', db.collection('explanations'))
     // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
-    await setTimeout(() => this.drawerOpen = true, 1500)
+    await setTimeout(() => this.drawerOpen = true, 1000)
   },
   watch: {
     $route(to, from) {
       const path = this.$route.path 
+      console.log('path =', path)
       if (path.substring(1, 12) == 'explanation') {
-        this.isExplanation = true 
+        console.log('explanation')
+        this.isExplanationPage = true 
+        this.isStudentPage = false 
+      } else if (path.substring(1, 8) == 'student') {
+        console.log('student')
+        this.isExplanationPage = false 
+        this.isStudentPage = true
       } else {
-        this.isExplanation = false 
+        console.log('others')
+        this.isExplanationPage = false 
+        this.isStudentPage = false
       }
     }
   },
