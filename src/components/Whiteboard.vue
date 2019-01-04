@@ -49,8 +49,6 @@ export default {
     this.$root.$on('save-explanation', docId => this.saveStrokes(docId))
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
-    this.ctx.strokeStyle = 'purple'
-    this.ctx.lineCap = "round" // lines at different angles can join into each other
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
@@ -144,6 +142,8 @@ export default {
         this.lastY = y
         return
       }
+      this.ctx.strokeStyle = 'purple'
+      this.ctx.lineCap = 'round' // lines at different angles can join into each other
       // "trace" the line
       this.ctx.beginPath()
       this.ctx.moveTo(this.lastX, this.lastY)
