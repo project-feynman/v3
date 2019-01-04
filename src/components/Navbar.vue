@@ -23,6 +23,49 @@
         </template>
 
         <template v-else-if="isStudentPage">
+          <div class="text-xs-center">
+    <v-btn
+      :loading="loading"
+      :disabled="loading"
+      color="secondary"
+      @click="loader = 'loading'"
+    >
+      Accept Terms
+    </v-btn>
+
+    <v-btn
+      :loading="loading3"
+      :disabled="loading3"
+      color="blue-grey"
+      class="white--text"
+      @click="loader = 'loading3'"
+    >
+      Upload
+      <v-icon right dark>cloud_upload</v-icon>
+    </v-btn>
+
+    <v-btn
+      :loading="loading2"
+      :disabled="loading2"
+      color="success"
+      @click="loader = 'loading2'"
+    >
+      Custom Loader
+      <span slot="loader">Loading...</span>
+    </v-btn>
+
+    <v-btn
+      :loading="loading4"
+      :disabled="loading4"
+      color="info"
+      @click="loader = 'loading4'"
+    >
+      Icon Loader
+      <span slot="loader" class="custom-loader">
+        <v-icon light>cached</v-icon>
+      </span>
+    </v-btn>
+  </div>
           <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
             <span class="mr-2 white--text">Clear chat</span>
           </v-btn>
@@ -112,7 +155,12 @@ export default {
         { text: 'Entropy' },
         { text: 'Central Limit Theorem' },
         { text: 'Stationary Distributions' }
-      ]
+      ],
+       loader: null,
+        loading: false,
+        loading2: false,
+        loading3: false,
+        loading4: false
     }
   },
   async created() {
@@ -121,28 +169,34 @@ export default {
     await this.$binding('tables', db.collection('tables'))
     this.$binding('explanations', db.collection('explanations'))
     // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
-    await setTimeout(() => this.drawerOpen = true, 1000)
+    await setTimeout(() => this.drawerOpen = true, 500)
   },
   watch: {
-    $route(to, from) {
-      const path = this.$route.path 
-      console.log('path =', path)
-      if (path.substring(1, 12) == 'explanation') {
-        console.log('explanation')
-        this.isExplanationPage = true 
-        this.isStudentPage = false 
-      } else if (path.substring(1, 8) == 'student') {
-        console.log('student')
-        this.isExplanationPage = false 
-        this.isStudentPage = true
-      } else {
-        console.log('others')
-        this.isExplanationPage = false 
-        this.isStudentPage = false
-      }
+    $route: {
+      handler: 'updateNavbarButtons',
+      immediate: true 
+    },
+    loader () {
+      const l = this.loader
+      this[l] = !this[l]
+      setTimeout(() => (this[l] = false), 3000)
+      this.loader = null
     }
   },
   methods: {
+    updateNavbarButtons() {
+      const path = this.$route.path
+      if (path.substring(1, 12) == 'explanation') {
+        this.isExplanationPage = true 
+        this.isStudentPage = false 
+      } else if (path.substring(1, 8) == 'student') {
+        this.isExplanationPage = false 
+        this.isStudentPage = true
+      } else {
+        this.isExplanationPage = false 
+        this.isStudentPage = false
+      }
+    },
     async handleSaving() {
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
@@ -153,3 +207,42 @@ export default {
   }
 }
 </script>
+
+<style>
+  .custom-loader {
+    animation: loader 1s infinite;
+    display: flex;
+  }
+  @-moz-keyframes loader {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @-webkit-keyframes loader {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @-o-keyframes loader {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes loader {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
