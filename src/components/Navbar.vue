@@ -132,7 +132,7 @@ export default {
     await this.$binding('tables', db.collection('tables'))
     this.$binding('explanations', db.collection('explanations'))
     // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
-    await setTimeout(() => this.drawerOpen = true, 500)
+    await setTimeout(() => this.drawerOpen = true, 0)
   },
   watch: {
     $route: {
