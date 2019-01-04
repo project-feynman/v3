@@ -14,11 +14,11 @@
         <template v-if="isExplanationPage">
 
           <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
-            <span class="mr-2 white--text">Delete explanation</span>
+            <span class="mr-2 white--text">Delete</span>
           </v-btn>
 
           <v-btn @click="$root.$emit('play-explanation')" class="pink">
-            <span class="mr-2 white--text">Replay explanation</span>
+            <span class="mr-2 white--text">Replay</span>
           </v-btn>
         </template>
 
@@ -47,13 +47,15 @@
     <v-navigation-drawer v-model="drawerOpen" app class="white">
       <v-list>
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
-          Teaching Assistants
+          Vishesh
         </v-subheader>
         <v-divider></v-divider>
         <!-- <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`"> -->
         <v-list-tile>
           <v-list-tile-content>
-            (There are currently no TAs here)
+            <span class="grey--text text--darken--3 mx-1">
+              Visesh is offline
+            </span>
           </v-list-tile-content>
         </v-list-tile>
 
@@ -82,7 +84,9 @@
         </v-subheader>
         <v-list-tile>
           <v-list-tile-content>
-            (There are currently no examples here)
+            <span class="grey--text text--darken--3 mx-1">
+              (There are no examples yet)
+            </span>
           </v-list-tile-content>
         </v-list-tile>
 
