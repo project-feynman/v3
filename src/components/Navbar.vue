@@ -14,25 +14,29 @@
         <template v-if="isExplanationPage">
 
           <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
-            <span class="mr-2 white--text">Delete</span>
+            <span class="white--text">Delete</span>
           </v-btn>
 
           <v-btn @click="$root.$emit('play-explanation')" class="pink">
-            <span class="mr-2 white--text">Replay</span>
+            <span class="white--text">Replay</span>
           </v-btn>
         </template>
 
         <template v-else-if="isStudentPage">
-          <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
-            <span class="mr-2 white--text">Clear chat</span>
+          <v-btn @click="updateTableStatus(!currentTable.isAskingQuestion)" class="grey darken-1">
+            <span v-if="!currentTable.isAskingQuestion" class="white--text">Request help</span>
+            <span v-else class="white--text">Cancel</span>
           </v-btn>
 
-          <v-btn
-            :loading="loading2"
-            :disabled="loading2"
-            color="grey darken-1"
-            @click="initClearBoardLogic()">
-            <span class="mr-2 white--text">Clear whiteboard</span>
+          <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
+            <span class="white--text">Clear chat</span>
+          </v-btn>
+
+          <v-btn :loading="loading2"
+                 :disabled="loading2"
+                 color="grey darken-1"
+                 @click="initClearBoardLogic()">
+            <span class="white--text">Clear whiteboard</span>
             <span slot="loader">Clearing...</span>
           </v-btn>
           <popup-button fullscreen :explanationTitle="newTitle" 
@@ -65,7 +69,13 @@
         <v-divider></v-divider>
         <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`">
           <v-list-tile-content>
-            {{ student.owner.name }}
+            <v-badge v-if="student.isAskingQuestion" color="red">
+              <v-icon slot="badge" dark small>priority_high</v-icon>
+              <span>{{ student.owner.name }}</span>
+            </v-badge>
+            <template v-else>
+              {{ student.owner.name }}
+            </template>
           </v-list-tile-content>
         </v-list-tile>
 
@@ -110,6 +120,7 @@ export default {
   },
   data() {
     return {
+      currentTable: null,
       users: null,
       newTitle: '',
       students: null,
@@ -151,6 +162,15 @@ export default {
     }
   },
   methods: {
+    async updateTableStatus(isAskingQuestion) {
+      const tableId = this.$route.params.id
+      console.log('tableId =', tableId)
+      const tableRef = db.collection('tables').doc(tableId)
+      await tableRef.update({
+        isAskingQuestion
+      })
+      console.log('successfully updated table status')
+    },
     initClearBoardLogic() {
       this.clickedButtonStateName = 'loading2'
       this.$root.$emit('clear-whiteboard')
@@ -163,6 +183,7 @@ export default {
       } else if (path.substring(1, 8) == 'student') {
         this.isExplanationPage = false 
         this.isStudentPage = true
+        this.$binding('currentTable', db.collection('tables').doc(this.$route.params.id))
       } else {
         this.isExplanationPage = false 
         this.isStudentPage = false

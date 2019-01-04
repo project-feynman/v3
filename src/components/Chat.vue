@@ -24,16 +24,29 @@
         <v-divider></v-divider>
 
         <v-card-actions>
-          <v-form @submit.prevent="addMessage" style="width: 100%">
+          <!-- <v-form @submit.prevent="addMessage" style="width: 100%">
             <v-text-field
               v-model="newMessage"
               box
               clear-icon="mdi-close-circle"
               clearable
-              label="Write a message..."
+              label="Write a question here, then press the REQUEST HELP button above"
               type="text"
             ></v-text-field>
-          </v-form>
+          </v-form> -->
+
+          <v-layout>
+            <v-flex>
+              <v-textarea
+                name="input-7-1"
+                label="New question:"
+                v-model="newMessage"
+                placeholder="Hello, I have a question about..."
+                hint="After submitting your question, press the REQUEST HELP button to inform the TA"
+              ></v-textarea>
+            </v-flex>
+          </v-layout>
+          <v-btn @click="addMessage()">Submit</v-btn>
         </v-card-actions>
 
     </v-card>
