@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog">
+  <v-dialog width="500" v-model="dialog">
     <v-btn slot="activator" class="pink darken-1">
       <span class="mr-2 white--text">Save explanation</span>
     </v-btn>
@@ -8,9 +8,9 @@
 
       <v-card-text>
         <v-input>
-        <input placeholder="Type here..." :value="explanationTitle" @input="$emit('input', $event.target.value)">
-      </v-input>
-        To save the interaction, enter a title above...
+          <input placeholder="e.g. Markov Bounds" :value="explanationTitle" @input="$emit('input', $event.target.value)">
+        </v-input>
+        To save the interaction, enter a title above
       </v-card-text>
 
       <v-card-actions>
