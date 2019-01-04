@@ -21,7 +21,6 @@ export default {
   props: ['explanationUid'],
   data() {
     return {
-      explanation: null,
       messages: null
     }
   },
@@ -32,10 +31,10 @@ export default {
     }
   },
   methods: {
-    bindVariables() {
+    async bindVariables() {
       const explanationRef = db.collection('explanations').doc(this.explanationUid)
-      this.$binding('explanation', explanationRef)
-      this.$binding('messages', explanationRef.collection('messages'))
+      await this.$binding('messages', explanationRef.collection('messages'))
+      this.$root.$emit('finish-loading-chat-log')
     },
     firstName(fullName) {
       const names = fullName.split(' ')

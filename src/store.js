@@ -36,6 +36,7 @@ export default new Vuex.Store({
           owner: simplifiedUser
         })
       }
+      console.log('Vuex action completed')
     }
   }
 })

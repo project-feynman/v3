@@ -1,7 +1,9 @@
 <template>
-  <div>
-  <blockquote class="blockquote text-md-center">"If you can't explain it simply, you don't understand it." - Richard Feynman</blockquote>
-  <h3 class="text-md-center">HOW TO USE</h3>
+    <!-- <v-layout align-center justify-center row fill-height>
+      <blockquote class="blockquote text-md-center">"If you can't explain it simply, you don't understand it." - Richard Feynman</blockquote>
+    </v-layout> -->
+  
+  <!-- <h3 class="text-md-center">HOW TO USE</h3>
   <p class="text-md-center">
     The layout is analogous to Office Hours. The TA visits each student with questions, and the interactions are live. <br>
     Precious explanations can be saved as animations to benefit future students and teachers. 
@@ -15,12 +17,13 @@
   <p class="text-md-center">
     When you submit a question in your "workspace", a red badge will appear next to your name to alert the TA. <br>
     While the TA is helping, you may ask follow-up questions.
-  </p>
-  <v-layout align-center justify-center row fill-height>
+  </p> -->
+  <v-layout align-center justify-center row fill-height wrap>
+    <blockquote class="my-quote blockquote text-md-center">"If you can't explain it simply, you don't understand it." - Richard Feynman</blockquote>
     <v-btn v-if="!user" @click="signIn()" color="pink darken--1 white--text">Sign in with Google</v-btn>
     <v-btn v-else @click="signOut()">Log out</v-btn>
   </v-layout>
-  </div>
+
 </template>
 
 <script>
@@ -44,3 +47,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.my-quote {
+  font-size: 2.4em
+}
+</style>
