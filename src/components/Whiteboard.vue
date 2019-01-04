@@ -82,10 +82,6 @@ export default {
               this.drawStroke(stroke.points)
             }
           }
-          if (change.type === 'removed') {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-            this.resetVariables()
-          }
         })
       })
     },
@@ -124,8 +120,10 @@ export default {
     async deleteStrokesSubcollection() { // rename this function to deleteStrokesOnFirestore
       const path = `students/${this.ownerUid}/strokes`
       var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
-      const result = await deleteFn({ path: path })
+     
       try {
+        const result = await deleteFn({ path: path })
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.resetVariables()
         this.$root.$emit('delete-whiteboard-strokes-success')
       } catch(err) {
