@@ -23,13 +23,13 @@
         </template>
 
         <template v-else-if="isStudentPage">
-          <v-btn @click="updateTableStatus(!currentTable.isAskingQuestion)" class="grey darken-1">
+          <!-- <v-btn @click="updateTableStatus(!currentTable.isAskingQuestion)" class="grey darken-1">
             <span v-if="!currentTable.isAskingQuestion" class="white--text">Request help</span>
-            <span v-else class="white--text">Cancel</span>
-          </v-btn>
+            <span v-else class="white--text">Resolve request</span>
+          </v-btn> -->
 
-          <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
-            <span class="white--text">Clear chat</span>
+          <v-btn @click="clearQuestion()" class="grey darken-1">
+            <span class="white--text">Clear questions</span>
           </v-btn>
 
           <v-btn :loading="loading2"
@@ -162,6 +162,10 @@ export default {
     }
   },
   methods: {
+    clearQuestion() {
+      this.updateTableStatus(false)
+      this.$root.$emit('clear-chat')
+    },
     async updateTableStatus(isAskingQuestion) {
       const tableId = this.$route.params.id
       console.log('tableId =', tableId)

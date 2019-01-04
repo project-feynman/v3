@@ -38,8 +38,10 @@ export default {
     }
   },
   methods: {
-    deleteExplanation() {
-      db.collection('explanations').doc(this.explanationId).delete()
+    async deleteExplanation() {
+      // this.$router.push('/')
+      await db.collection('explanations').doc(this.explanationId).delete()
+      console.log('deletion finished')
     }
   }
 }
