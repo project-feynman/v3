@@ -62,6 +62,7 @@ export default {
       this.allStrokes = [] 
       const strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('strokeNumber', 'asc')
       await this.$binding('allStrokes', strokesRef)
+      this.$root.$emit('finish-loading-animation')
       this.drawAllStrokes(this.allStrokes)
     },
     rescaleCanvas() {

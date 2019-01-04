@@ -1,12 +1,32 @@
 <template>
   <nav>
-    <v-toolbar app>
+    <!-- <v-toolbar dark extended extension-height="7">
+      <v-toolbar-side-icon></v-toolbar-side-icon>
+      <v-toolbar-title class="white--text">Title</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn icon>
+        <v-icon>search</v-icon>
+      </v-btn>
+      <v-btn icon>
+        <v-icon>apps</v-icon>
+      </v-btn>
+      <v-btn icon>
+        <v-icon>refresh</v-icon>
+      </v-btn>
+      <v-btn icon>
+        <v-icon>more_vert</v-icon>
+      </v-btn>
+      <v-progress-linear slot="extension" :indeterminate="true" class="ma-0">Progress?</v-progress-linear>      
+    </v-toolbar> -->
+    
+    <v-toolbar app extended extension-height="2">
 
-      <v-toolbar-side-icon @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
-
-      <v-toolbar-title class="headline text-uppercase">
-        <span>18.600</span>
-      </v-toolbar-title>
+      <v-toolbar-side-icon v-if="user" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
+      <!-- <router-link to="/"> -->
+        <v-toolbar-title @click="$router.push('/')" class="headline text-uppercase">
+          18.600
+        </v-toolbar-title>
+      <!-- </router-link> -->
       <v-spacer></v-spacer>
 
       <template v-if="user">
@@ -23,11 +43,6 @@
         </template>
 
         <template v-else-if="isStudentPage">
-          <!-- <v-btn @click="updateTableStatus(!currentTable.isAskingQuestion)" class="grey darken-1">
-            <span v-if="!currentTable.isAskingQuestion" class="white--text">Request help</span>
-            <span v-else class="white--text">Resolve request</span>
-          </v-btn> -->
-
           <v-btn @click="clearQuestion()" class="grey darken-1">
             <span class="white--text">Clear questions</span>
           </v-btn>
@@ -46,9 +61,11 @@
         </template>
 
       </template>
-
+      <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
     </v-toolbar>
-    <v-navigation-drawer v-model="drawerOpen" app class="white">
+
+
+    <v-navigation-drawer v-if="user" v-model="drawerOpen" app class="white">
       <v-list>
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Vishesh
@@ -122,7 +139,10 @@ export default {
     PopupButton
   },
   computed: {
-    ...mapState(['user'])
+    ...mapState(['user']),
+    isLoading() {
+      return this.loadingChatLog || this.loadingAnimation
+    }
   },
   data() {
     return {
@@ -144,7 +164,9 @@ export default {
       loading: false,
       loading2: false,
       loading3: false,
-      loading4: false
+      loading4: false,
+      loadingChatLog: true, 
+      loadingAnimation: true
     }
   },
   async created() {
@@ -153,7 +175,8 @@ export default {
     await this.$binding('tables', db.collection('tables'))
     this.$binding('explanations', db.collection('explanations'))
     // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
-    await setTimeout(() => this.drawerOpen = true, 0)
+    setTimeout(() => this.drawerOpen = true, 0)
+    setTimeout(() => this.isLoading = false, 3000)
   },
   watch: {
     $route: {
@@ -190,14 +213,27 @@ export default {
       if (path.substring(1, 12) == 'explanation') {
         this.isExplanationPage = true 
         this.isStudentPage = false 
+        this.loadingChatLog = true
+        this.loadingAnimation = true 
+        this.$root.$on('finish-loading-chat-log', () => this.loadingChatLog = false )
+        this.$root.$on('finish-loading-animation', () => this.loadingAnimation = false) 
       } else if (path.substring(1, 8) == 'student') {
         this.isExplanationPage = false 
         this.isStudentPage = true
+        // quick-fix
+        this.loadingChatLog = false 
+        this.loadingAnimation = false 
         this.$binding('currentTable', db.collection('tables').doc(this.$route.params.id))
       } else {
         this.isExplanationPage = false 
         this.isStudentPage = false
+        // quick-fix 
+        this.loadingChatLog = false 
+        this.loadingAnimation = false 
       }
+
+
+
     },
     async handleSaving() {
       const docRef = await db.collection('explanations').add({

@@ -39,7 +39,6 @@ export default {
   },
   methods: {
     async deleteExplanation() {
-      // this.$router.push('/')
       await db.collection('explanations').doc(this.explanationId).delete()
       console.log('deletion finished')
     }

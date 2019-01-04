@@ -14,12 +14,11 @@ Vue.use(VueFirestore)
 
 Vue.config.productionTip = false
 
-firebase.auth().onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(async user => {
   if (user) {
-    store.dispatch('handleUserLogic', user)
-  } else {
-    store.commit('SET_USER', null)
-  }
+    await store.dispatch('handleUserLogic', user)
+    router.push('/explanation/HLN17RpYYzqfVHqYsSK1')
+  } 
 })
 
 new Vue({
