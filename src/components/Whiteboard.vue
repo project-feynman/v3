@@ -58,10 +58,7 @@ export default {
     saveStrokes(explanationId) {
       const explanationRef = db.collection('explanations').doc(explanationId).collection('strokes')
       this.allStrokes.forEach(stroke => {
-        explanationRef.doc(`${stroke.strokeNumber}`).set({
-          author: stroke.author,
-          points: stroke.points
-        })
+        explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
       })
     },
     initData() {
