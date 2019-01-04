@@ -53,7 +53,7 @@
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Vishesh
         </v-subheader>
-        <v-divider></v-divider>
+ 
         <!-- <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`"> -->
         <v-list-tile>
           <v-list-tile-content>
@@ -63,10 +63,12 @@
           </v-list-tile-content>
         </v-list-tile>
 
+        <v-divider></v-divider>
+
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
           Students
         </v-subheader>
-        <v-divider></v-divider>
+     
         <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`">
           <v-list-tile-content>
             <v-badge v-if="student.isAskingQuestion" color="red">
@@ -79,15 +81,19 @@
           </v-list-tile-content>
         </v-list-tile>
 
+        <v-divider></v-divider>
+
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Concepts
         </v-subheader>
-        <v-divider></v-divider>
+    
         <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/explanation/${explanation['.key']}`">
           <v-list-tile-content>
             {{ explanation.title }}
           </v-list-tile-content>
         </v-list-tile>
+
+        <v-divider></v-divider>
 
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Examples
