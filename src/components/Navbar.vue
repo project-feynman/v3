@@ -23,23 +23,19 @@
         </template>
 
         <template v-else-if="isStudentPage">
+          <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
+            <span class="mr-2 white--text">Clear chat</span>
+          </v-btn>
+
           <v-btn
             :loading="loading2"
             :disabled="loading2"
             color="grey darken-1"
-            @click="clickedButtonStateName = 'loading2'"
-          >
+            @click="initClearBoardLogic()">
             <span class="mr-2 white--text">Clear whiteboard</span>
-            <span slot="loader">Loading...</span>
+            <span slot="loader">Clearing...</span>
           </v-btn>
-
-          <v-btn @click="$root.$emit('clear-chat')" class="grey darken-1">
-            <span class="mr-2 white--text">Clear chat</span>
-          </v-btn>
-          <v-btn @click="$root.$emit('clear-whiteboard')" class="grey darken-1">
-            <span class="mr-2 white--text">Clear whiteboard</span>
-          </v-btn>
-          <popup fullscreen :explanationTitle="newTitle" 
+          <popup-button fullscreen :explanationTitle="newTitle" 
                  @input="newValue=> newTitle = newValue" 
                  @pre-save-explanation="handleSaving"
             />
@@ -99,11 +95,11 @@
 <script>
 import { mapState } from 'vuex'
 import db from '@/database.js'
-import Popup from '@/components/Popup.vue'
+import PopupButton from '@/components/PopupButton.vue'
 
 export default {
   components: {
-    Popup
+    PopupButton
   },
   computed: {
     ...mapState(['user'])
@@ -146,11 +142,15 @@ export default {
     clickedButtonStateName () {
       const buttonState = this.clickedButtonStateName 
       this[buttonState] = !this[buttonState]
-      setTimeout(() => (this[buttonState] = false), 1000)
+      this.$root.$on('delete-whiteboard-strokes-success', () => this[buttonState] = false)
       this.clickedButtonStateName = null
     }
   },
   methods: {
+    initClearBoardLogic() {
+      this.clickedButtonStateName = 'loading2'
+      this.$root.$emit('clear-whiteboard')
+    },
     updateNavbarButtons() {
       const path = this.$route.path
       if (path.substring(1, 12) == 'explanation') {
