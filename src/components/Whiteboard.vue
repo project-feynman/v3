@@ -190,8 +190,8 @@ export default {
           const touch = e.touches[0]; // get info for finger #1
           // there should be an additional scrolling parameter to take into account 
           // whiteboard size might become an issue
-          this.touchX = touch.pageX - this.canvas.getBoundingClientRect().left
-          this.touchY = touch.pageY - this.canvas.getBoundingClientRect().top
+          this.touchX = touch.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
+          this.touchY = touch.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
         }
       }
     }
