@@ -96,6 +96,8 @@ export default {
         this.lastY = y
         return
       }
+      this.ctx.strokeStyle = 'purple'
+      this.ctx.lineCap = 'round' // lines at different angles can join into each other
       // "trace" the line
       this.ctx.beginPath()
       this.ctx.moveTo(this.lastX, this.lastY)

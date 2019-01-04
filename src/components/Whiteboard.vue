@@ -81,6 +81,12 @@ export default {
               this.numOfStrokes += 1
               this.drawStroke(stroke.points)
             }
+          } 
+          else if (change.type === 'removed') {
+            // for OTHER users to also clear canvas (since the current user's UI is already updated)
+            // currently inefficient
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+            this.resetVariables()
           }
         })
       })
