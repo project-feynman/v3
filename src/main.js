@@ -14,6 +14,13 @@ Vue.use(VueFirestore)
 
 Vue.config.productionTip = false
 
+// register the service worker when the site loads
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', function() {
+		navigator.serviceWorker.register('/sw.js')
+	})
+}
+
 firebase.auth().onAuthStateChanged(async user => {
   if (user) {
     await store.dispatch('handleUserLogic', user)
