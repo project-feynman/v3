@@ -1,7 +1,7 @@
 <template>
   <div class="chat">
-    <v-card>
-      <ul v-if="messages" v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
+    <v-card v-if="messages">
+      <ul v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
         <v-card-text>
           <v-layout>
             <span class="teal--text">{{ firstName(message.author.name) }}:</span>

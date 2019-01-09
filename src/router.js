@@ -1,7 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Student from './views/Student'
-import Landing from './views/Landing'
 
 Vue.use(Router)
 
@@ -11,18 +9,19 @@ export default new Router({
   routes: [
     {
       path: '/',
-      component: Landing
+      component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
     {
-      path: '/student/:id',
-      component: Student
+      path: '/:teacher_id',
+      component: () => import(/* webpackChunkName: "tutorial" */ './views/Schedule.vue') 
     },
     {
-      path: '/explanation/:id',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/Explanation.vue')
+      path: '/:teacher_id/workspace/:id',
+      component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue') 
+    },
+    {
+      path: '/:teacher_id/answer/:id',
+      component: () => import(/* webpackChunkName: "answers" */ './views/Answer.vue')
     }
   ]
 })

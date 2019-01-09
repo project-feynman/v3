@@ -15,19 +15,21 @@
             </template>
           </v-layout>
         </v-card-title>
-
-        <ul v-if="table" v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
-          <v-card-text>
-            <v-layout>
-              <template v-if="table">
-                <span class="teal--text">{{ firstName(message.author.name) }}</span>
-                <!-- <span v-else class="teal--text">(This is your room)</span> -->
-              </template>
-              <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
-            </v-layout>
-            <span class="grey--text time">6:00 pm, January 1st</span>
-          </v-card-text>
-        </ul>
+        
+        <template v-if="table">
+          <ul v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
+            <v-card-text>
+              <v-layout>
+                <template v-if="table">
+                  <span class="teal--text">{{ firstName(message.author.name) }}</span>
+                  <!-- <span v-else class="teal--text">(This is your room)</span> -->
+                </template>
+                <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
+              </v-layout>
+              <span class="grey--text time">6:00 pm, January 1st</span>
+            </v-card-text>
+          </ul>
+        </template>
 
         <v-divider></v-divider>
 

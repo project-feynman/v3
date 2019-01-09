@@ -1,5 +1,9 @@
 <template>
   <nav>
+    <!-- prioritize -->
+    <!-- #1 - routing and database change -->
+    <!-- #2 - component changes -->
+
     <!-- <v-toolbar dark extended extension-height="7">
       <v-toolbar-side-icon></v-toolbar-side-icon>
       <v-toolbar-title class="white--text">Title</v-toolbar-title>
@@ -21,21 +25,19 @@
     
     <v-toolbar app extended extension-height="2">
 
-      <v-toolbar-side-icon v-if="user" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
-      <!-- <router-link to="/"> -->
+      <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
         <v-toolbar-title @click="$router.push('/')" class="headline text-uppercase">
-          18.600
+          Feynman Project
         </v-toolbar-title>
-      <!-- </router-link> -->
       <v-spacer></v-spacer>
 
       <template v-if="user">
 
         <template v-if="isExplanationPage">
 
-          <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
+          <!-- <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
             <span class="white--text">Delete</span>
-          </v-btn>
+          </v-btn> -->
 
           <v-btn @click="$root.$emit('play-explanation')" class="pink">
             <span class="white--text">Replay</span>
@@ -64,6 +66,8 @@
       <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
     </v-toolbar>
 
+    <!-- NAVIGATION DRAWER -->
+    <!-- quickfix -->
 
     <v-navigation-drawer v-if="user" v-model="drawerOpen" app class="white">
       <v-list>
@@ -83,17 +87,17 @@
         <v-divider></v-divider>
 
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
-          Students
+          Student Workspaces
         </v-subheader>
      
-        <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`">
+        <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/workspace/${workspace['.key']}`">
           <v-list-tile-content>
-            <v-badge v-if="student.isAskingQuestion" color="red">
+            <v-badge v-if="workspace.isAskingQuestion" color="red">
               <v-icon slot="badge" dark small>priority_high</v-icon>
-              <span>{{ student.owner.name }}</span>
+              <span>{{ workspace.ownerUid }}</span>
             </v-badge>
             <template v-else>
-              {{ student.owner.name }}
+              {{ workspace.ownerUid }}
             </template>
           </v-list-tile-content>
         </v-list-tile>
@@ -146,6 +150,7 @@ export default {
   },
   data() {
     return {
+      workspaces: null,
       currentTable: null,
       users: null,
       newTitle: '',
@@ -170,13 +175,21 @@ export default {
     }
   },
   async created() {
-    this.$binding('students', db.collection('students'))
-    await this.$binding('users', db.collection('users'))
-    await this.$binding('tables', db.collection('tables'))
-    this.$binding('explanations', db.collection('explanations'))
-    // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
-    setTimeout(() => this.drawerOpen = true, 0)
-    setTimeout(() => this.isLoading = false, 3000)
+    // const params = this.$route.params 
+    // if (this.$route.path == '/') {
+    //   this.showNavDrawer = false 
+    // } else if (params.teacher_id) { // teacher page 
+    //   console.log('TA page')
+    //   this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', params.teacher_id))
+    //   this.$binding('teacherExplanations', db.collection('explanations').where('teacher', '==', params.teacher_id))
+    //   // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
+    //   setTimeout(() => this.drawerOpen = true, 0)
+    // } else {
+    //   console.log('unknown page')
+    // }
+    // // await this.$binding('users', db.collection('users'))
+    // // await this.$binding('tables', db.collection('tables'))
+    // // this.$binding('explanations', db.collection('explanations'))
   },
   watch: {
     $route: {
@@ -197,12 +210,10 @@ export default {
     },
     async updateTableStatus(isAskingQuestion) {
       const tableId = this.$route.params.id
-      console.log('tableId =', tableId)
       const tableRef = db.collection('tables').doc(tableId)
       await tableRef.update({
         isAskingQuestion
       })
-      console.log('successfully updated table status')
     },
     initClearBoardLogic() {
       this.clickedButtonStateName = 'loading2'
@@ -210,14 +221,22 @@ export default {
     },
     updateNavbarButtons() {
       const path = this.$route.path
-      if (path.substring(1, 12) == 'explanation') {
+      const pathParts = path.split('/')
+      const params = this.$route.params 
+      if (params.teacher_id) {
+        console.log('TA page')
+        this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', params.teacher_id))
+        this.$binding('teacherExplanations', db.collection('explanations').where('teacher', '==', params.teacher_id))
+        setTimeout(() => this.drawerOpen = true, 0)
+      }
+      if (pathParts[1] == 'explanation') {
         this.isExplanationPage = true 
         this.isStudentPage = false 
         this.loadingChatLog = true
         this.loadingAnimation = true 
         this.$root.$on('finish-loading-chat-log', () => this.loadingChatLog = false )
         this.$root.$on('finish-loading-animation', () => this.loadingAnimation = false) 
-      } else if (path.substring(1, 8) == 'student') {
+      } else if (pathParts[1] == 'student') {
         this.isExplanationPage = false 
         this.isStudentPage = true
         // quick-fix
@@ -225,6 +244,8 @@ export default {
         this.loadingAnimation = false 
         this.$binding('currentTable', db.collection('tables').doc(this.$route.params.id))
       } else {
+        console.log('else case')
+
         this.isExplanationPage = false 
         this.isStudentPage = false
         // quick-fix 
@@ -234,11 +255,19 @@ export default {
 
 
 
+    // await this.$binding('users', db.collection('users'))
+    // await this.$binding('tables', db.collection('tables'))
+    // this.$binding('explanations', db.collection('explanations'))
+
+
+
+
+
     },
     async handleSaving() {
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
-        author: "Richard Feynman"
+        author: 'Richard Feynman'
       })
       this.$root.$emit('save-explanation', docRef.id)
     }

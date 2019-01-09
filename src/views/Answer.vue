@@ -15,12 +15,12 @@
 
 <script>
 import db from '@/database.js'
-import ChatLog from '@/components/ChatLog.vue'
+import Chatlog from '@/components/Chatlog.vue'
 import Animation from '@/components/Animation.vue'
 
 export default {
   components: {
-    ChatLog,
+    Chatlog,
     Animation
   },
   data() {
