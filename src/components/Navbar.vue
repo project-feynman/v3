@@ -33,11 +33,11 @@
 
       <template v-if="user">
 
-        <template v-if="isExplanationPage">
+        <template v-if="isExplanationPage && this.user.displayName == 'Elton Lin'">
 
-          <!-- <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
+          <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
             <span class="white--text">Delete</span>
-          </v-btn> -->
+          </v-btn>
 
           <v-btn @click="$root.$emit('play-explanation')" class="pink">
             <span class="white--text">Replay</span>
@@ -45,15 +45,15 @@
         </template>
 
         <template v-else-if="isStudentPage">
-          <v-btn @click="clearQuestion()" class="grey darken-1">
+          <!-- <v-btn @click="clearQuestion()" class="grey darken-1">
             <span class="white--text">Clear questions</span>
-          </v-btn>
+          </v-btn> -->
 
           <v-btn :loading="loading2"
                  :disabled="loading2"
                  color="grey darken-1"
                  @click="initClearBoardLogic()">
-            <span class="white--text">Clear whiteboard</span>
+            <span class="white--text">New Question</span>
             <span slot="loader">Clearing...</span>
           </v-btn>
           <popup-button fullscreen :explanationTitle="newTitle" 
@@ -68,7 +68,7 @@
 
     <!-- NAVIGATION DRAWER -->
     <!-- quickfix -->
-
+    <template v-if="$route.path != '/'">
     <v-navigation-drawer v-if="user" v-model="drawerOpen" app class="white">
       <v-list>
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
@@ -90,14 +90,14 @@
           Student Workspaces
         </v-subheader>
      
-        <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/workspace/${workspace['.key']}`">
+        <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`">
           <v-list-tile-content>
             <v-badge v-if="workspace.isAskingQuestion" color="red">
               <v-icon slot="badge" dark small>priority_high</v-icon>
               <span>{{ workspace.ownerUid }}</span>
             </v-badge>
             <template v-else>
-              {{ workspace.ownerUid }}
+              {{ workspace.ownerName }}
             </template>
           </v-list-tile-content>
         </v-list-tile>
@@ -107,8 +107,8 @@
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Concepts
         </v-subheader>
-    
-        <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/explanation/${explanation['.key']}`">
+
+        <v-list-tile v-for="explanation in teacherExplanations" :key="explanation.text" router :to="`/${teacherUid}/answer/${explanation['.key']}`">
           <v-list-tile-content>
             {{ explanation.title }}
           </v-list-tile-content>
@@ -129,6 +129,7 @@
 
       </v-list>
     </v-navigation-drawer>
+    </template>
 
   </nav>
 </template>
@@ -145,13 +146,16 @@ export default {
   computed: {
     ...mapState(['user']),
     isLoading() {
-      return this.loadingChatLog || this.loadingAnimation
+      return this.loadingAnimation
+    },
+    teacherUid() {
+      return this.$route.params.teacher_id
     }
   },
   data() {
     return {
       workspaces: null,
-      currentTable: null,
+      teacherExplanations: null,
       users: null,
       newTitle: '',
       students: null,
@@ -159,12 +163,6 @@ export default {
       isStudentPage: false, 
       isExplanationPage: false,
       drawerOpen: false,
-      explanations: [
-        { text: 'Moment Generating Functions' },
-        { text: 'Entropy' },
-        { text: 'Central Limit Theorem' },
-        { text: 'Stationary Distributions' }
-      ],
       clickedButtonStateName: null,
       loading: false,
       loading2: false,
@@ -223,51 +221,39 @@ export default {
       const path = this.$route.path
       const pathParts = path.split('/')
       const params = this.$route.params 
-      if (params.teacher_id) {
-        console.log('TA page')
+      if (params.teacher_id) { // TA's Office Page 
         this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', params.teacher_id))
-        this.$binding('teacherExplanations', db.collection('explanations').where('teacher', '==', params.teacher_id))
+        this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', params.teacher_id))
         setTimeout(() => this.drawerOpen = true, 0)
       }
-      if (pathParts[1] == 'explanation') {
+      if (pathParts[2] == 'answer') {
         this.isExplanationPage = true 
         this.isStudentPage = false 
         this.loadingChatLog = true
         this.loadingAnimation = true 
         this.$root.$on('finish-loading-chat-log', () => this.loadingChatLog = false )
         this.$root.$on('finish-loading-animation', () => this.loadingAnimation = false) 
-      } else if (pathParts[1] == 'student') {
+      } else if (pathParts[2] == 'workspace') {
         this.isExplanationPage = false 
         this.isStudentPage = true
         // quick-fix
         this.loadingChatLog = false 
         this.loadingAnimation = false 
-        this.$binding('currentTable', db.collection('tables').doc(this.$route.params.id))
       } else {
-        console.log('else case')
-
         this.isExplanationPage = false 
         this.isStudentPage = false
         // quick-fix 
         this.loadingChatLog = false 
         this.loadingAnimation = false 
       }
-
-
-
-    // await this.$binding('users', db.collection('users'))
-    // await this.$binding('tables', db.collection('tables'))
-    // this.$binding('explanations', db.collection('explanations'))
-
-
-
-
-
     },
     async handleSaving() {
+      console.log('handleSaving called in Navbar.vue')
+
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
-        author: 'Richard Feynman'
+        author: 'Richard Feynman',
+        teacherUid: this.$route.params.teacher_id
       })
       this.$root.$emit('save-explanation', docRef.id)
     }

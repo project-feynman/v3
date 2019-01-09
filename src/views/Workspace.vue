@@ -2,10 +2,11 @@
   <div class="student">
     <v-container fluid>
       <v-layout wrap>
-        <v-flex md4>
+        <!-- <v-flex md4>
           <chat v-if="ownerUid" :ownerUid="ownerUid"/>
-        </v-flex>
-        <v-flex md8>
+        </v-flex> -->
+        <h3 class="display-3" style="margin: auto;">Question Title</h3>
+        <v-flex md12 mx-2>
           <whiteboard v-if="ownerUid" :ownerUid="ownerUid"/>
         </v-flex>
       </v-layout>
