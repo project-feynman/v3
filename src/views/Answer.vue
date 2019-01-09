@@ -2,10 +2,10 @@
   <div class="about">
      <v-container fluid>
       <v-layout wrap>
-        <v-flex md4>
-          <chat-log :explanationUid="explanationId"/>
-        </v-flex>
-        <v-flex md8>
+        <!-- <v-flex md4>
+          <chatlog :explanationUid="explanationId"/>
+        </v-flex> -->
+        <v-flex md12 mx-2>
           <animation :explanationId="explanationId"/>
         </v-flex>
       </v-layout>

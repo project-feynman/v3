@@ -1,16 +1,16 @@
 <template>
   <v-dialog width="500" v-model="dialog">
     <v-btn slot="activator" class="pink darken-1">
-      <span class="mr-2 white--text">Save explanation</span>
+      <span class="mr-2 white--text">Save Answer</span>
     </v-btn>
     <v-card>
-      <v-card-title class="headline">New Explanation</v-card-title>
+      <!-- <v-card-title class="headline">New Explanation</v-card-title> -->
 
       <v-card-text>
         <v-input>
           <input placeholder="e.g. Markov Bounds" :value="explanationTitle" @input="$emit('input', $event.target.value)">
         </v-input>
-        To save the interaction, enter a title above
+        To save the answer, enter a title above
       </v-card-text>
 
       <v-card-actions>
