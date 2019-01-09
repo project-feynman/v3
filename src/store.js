@@ -9,12 +9,18 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    user: null
+    user: null,
+    isFetchingUser: true,
+    creatingTeacher: false
   },
   mutations: {
     SET_USER(state, user) {
-      console.log('SET_USER called')
       state.user = user 
+      // quick-fix
+      state.isFetchingUser = false 
+    },
+    SET_CREATING_TEACHER(state, boolean) {
+      state.creatingTeacher = boolean 
     }
   },
   actions: {
@@ -25,18 +31,18 @@ export default new Vuex.Store({
       if (mirrorUser.exists) {
         console.log('returning user')
       } else {
-        console.log('a new user and table are being created!')
+        console.log('a new user is being created!')
         const simplifiedUser = {
           name: user.displayName,
           uid: user.uid 
         }
+        if (context.state.creatingTeacher) {
+          console.log('and it is a teacher!')
+          simplifiedUser.isTeacher = true 
+          // fuck the subject number for now
+        }
         userRef.set(simplifiedUser)
-        const tableRef = db.collection('tables').doc(user.uid)
-        tableRef.set({
-          owner: simplifiedUser
-        })
       }
-      console.log('Vuex action completed')
     }
   }
 })

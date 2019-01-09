@@ -17,7 +17,7 @@ Vue.config.productionTip = false
 firebase.auth().onAuthStateChanged(async user => {
   if (user) {
     await store.dispatch('handleUserLogic', user)
-    router.push('/explanation/HLN17RpYYzqfVHqYsSK1')
+    // router.push('/explanation/HLN17RpYYzqfVHqYsSK1')
   } else {
     // necessary for detecting when the user logs out
     store.commit('SET_USER', null)
