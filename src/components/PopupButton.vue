@@ -10,7 +10,7 @@
         <v-input>
           <input placeholder="e.g. Markov Bounds" :value="explanationTitle" @input="$emit('input', $event.target.value)">
         </v-input>
-        To save the answer, enter a title above
+        To save as explanation, enter a title above
       </v-card-text>
 
       <v-card-actions>
