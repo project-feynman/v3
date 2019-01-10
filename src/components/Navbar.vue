@@ -172,23 +172,6 @@ export default {
       loadingAnimation: true
     }
   },
-  async created() {
-    // const params = this.$route.params 
-    // if (this.$route.path == '/') {
-    //   this.showNavDrawer = false 
-    // } else if (params.teacher_id) { // teacher page 
-    //   console.log('TA page')
-    //   this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', params.teacher_id))
-    //   this.$binding('teacherExplanations', db.collection('explanations').where('teacher', '==', params.teacher_id))
-    //   // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
-    //   setTimeout(() => this.drawerOpen = true, 0)
-    // } else {
-    //   console.log('unknown page')
-    // }
-    // // await this.$binding('users', db.collection('users'))
-    // // await this.$binding('tables', db.collection('tables'))
-    // // this.$binding('explanations', db.collection('explanations'))
-  },
   watch: {
     $route: {
       handler: 'updateNavbarButtons',
@@ -221,7 +204,7 @@ export default {
       const path = this.$route.path
       const pathParts = path.split('/')
       const params = this.$route.params 
-      if (params.teacher_id) { // TA's Office Page 
+      if (params.teacher_id && !this.workspaces && !this.teacherExplanations) { // TA's Office Page 
         this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', params.teacher_id))
         this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', params.teacher_id))
         setTimeout(() => this.drawerOpen = true, 0)
