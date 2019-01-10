@@ -12,28 +12,33 @@ export default {
   },
   watch: {
     isFetchingUser: {
-      handler: 'initTable', 
+      handler: 'initWorkspace', 
       immediate: true
     }
   },
   methods: {
-    async initTable() {
+    async initWorkspace() {
       if (!this.isFetchingUser && this.user) {
-        const userUid = this.user.uid
         const teacherUid = this.$route.params.teacher_id 
-
-        const workspaceId = userUid + '-' + teacherUid 
+        const workspaceId = this.user.uid + '-' + teacherUid 
         const ref = db.collection('workspaces').doc(workspaceId)
 
         const workspace = await ref.get()
         if (!workspace.exists) {
-          await ref.set({
-            ownerName: this.user.displayName,
+          let workspace = {
+            ownerName: this.user.name,
             ownerUid: this.user.uid,
-            teacherUid: this.$route.params.teacher_id 
-          })
+            teacherUid: this.$route.params.teacher_id,
+            isOffice: false,
+          }
+          console.log('this.user =', this.user)
+          if (this.user.isTeacher) {
+            workspace.isOffice = true 
+          }
+          await ref.set(workspace)
           console.log('successfully created new workspace')
         }
+        this.$router.push(`/${teacherUid}/workspace/${teacherUid}-${this.user.uid}`)
       }
     }
   }

@@ -13,29 +13,44 @@
           <div class="responsive-grid mt-5">
             <template v-for="TA in teachers">
               <v-layout :key="TA.uid">
+                
                 <v-flex>
+                   <v-card color="blue-grey darken-2" class="white--text">
+              <v-card-title primary-title>
+                <div>
+                  <div class="headline">{{ TA.name }}</div>
+                  <span>Enlist in the 6.006 Adventure, where you learn all about the best algorithms on the planet.</span>
+                </div>
+              </v-card-title>
+              <v-card-actions>
+                <v-btn flat dark @click="$router.push(TA.uid)">Enter</v-btn>
+              </v-card-actions>
+            </v-card>
+<!--             
                   <v-card>
                     <v-card-title primary-title>
                       <div>
-                        <h3 class="headline mb-0">{{ TA.name }}</h3>
-                        <div>6.006</div>
+                        <h3 class="headline mb-0">{{ TA.name }}, 6.006</h3>
+           
                       </div>
                     </v-card-title>
                     <v-card-actions>
                       <v-btn flat color="orange" @click="$router.push(TA.uid)">Enter</v-btn>
                     </v-card-actions>
-                  </v-card>
+                  </v-card> -->
                 </v-flex>
               </v-layout>
             </template>
           </div>
           <!-- LOGOUT -->
-          <v-btn @click="signOut()">Log out</v-btn>
+          <!-- <v-btn @click="signOut()">Log out</v-btn> -->
         </template>
         <template v-else>
           <v-layout align-center justify-center row fill-height wrap>
-            <v-btn @click="teacherSignIn()" color="pink darken--1 white--text">TA Sign-In</v-btn>
-            <v-btn @click="studentSignIn()" color="pink darken--1 white--text">Student Sign-In</v-btn>
+            <!-- <v-btn @click="teacherSignIn()" color="pink darken--1 white--text">TA Sign-In</v-btn>
+            <v-btn @click="studentSignIn()" color="pink darken--1 white--text">Student Sign-In</v-btn> -->
+             <v-btn @click="teacherSignIn()" color="error" dark large>SIGN UP AS A TEACHER</v-btn>
+             <v-btn @click="studentSignIn()" color="error" dark large>SIGN UP AS A STUDENT</v-btn>
           </v-layout>
         </template>
         <!-- <transition name="fade">
@@ -138,9 +153,9 @@ export default {
       const result = await firebase.auth().signInWithPopup(provider)
       // then main.js's onAuthStateChanged listener will dispatch an action
     },
-    async signOut() {
-      await firebase.auth().signOut()
-    }
+    // async signOut() {
+    //   await firebase.auth().signOut()
+    // }
   },
   data() {
     return {
@@ -164,7 +179,7 @@ export default {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .9s;
+  transition: opacity 1.0s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;

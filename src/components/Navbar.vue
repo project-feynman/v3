@@ -1,67 +1,29 @@
 <template>
-  <nav>
-    <!-- prioritize -->
-    <!-- #1 - routing and database change -->
-    <!-- #2 - component changes -->
-
-    <!-- <v-toolbar dark extended extension-height="7">
-      <v-toolbar-side-icon></v-toolbar-side-icon>
-      <v-toolbar-title class="white--text">Title</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn icon>
-        <v-icon>search</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon>apps</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon>refresh</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon>more_vert</v-icon>
-      </v-btn>
-      <v-progress-linear slot="extension" :indeterminate="true" class="ma-0">Progress?</v-progress-linear>      
-    </v-toolbar> -->
-    
+  <nav>    
     <v-toolbar app extended extension-height="2">
 
       <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
-        <v-toolbar-title @click="$router.push('/')" class="headline text-uppercase">
+        <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
           Feynman Project
+        </v-toolbar-title>
+        <v-toolbar-title v-else @click="$router.push('/')" class="headline text-uppercase">
+          Feynman Project (6.006)
         </v-toolbar-title>
       <v-spacer></v-spacer>
 
       <template v-if="user">
-
         <template v-if="isExplanationPage && this.user.displayName == 'Elton Lin'">
-
+          <!-- DELETE -->
           <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
             <span class="white--text">Delete</span>
           </v-btn>
-
+          <!-- REPLAY -->
           <v-btn @click="$root.$emit('play-explanation')" class="pink">
             <span class="white--text">Replay</span>
           </v-btn>
         </template>
-
-        <template v-else-if="isStudentPage">
-          <!-- <v-btn @click="clearQuestion()" class="grey darken-1">
-            <span class="white--text">Clear questions</span>
-          </v-btn> -->
-
-          <v-btn :loading="loading2"
-                 :disabled="loading2"
-                 color="grey darken-1"
-                 @click="initClearBoardLogic()">
-            <span class="white--text">New Question</span>
-            <span slot="loader">Clearing...</span>
-          </v-btn>
-          <popup-button fullscreen :explanationTitle="newTitle" 
-                 @input="newValue=> newTitle = newValue" 
-                 @pre-save-explanation="handleSaving"
-            />
-        </template>
-
+        <!-- Logout Button -->
+        <v-btn v-else-if="$route.path == '/'" @click="signOut()">Log out</v-btn>
       </template>
       <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
     </v-toolbar>
@@ -71,11 +33,12 @@
     <template v-if="$route.path != '/'">
     <v-navigation-drawer v-if="user" v-model="drawerOpen" app class="white">
       <v-list>
+<!-- 
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
-          Vishesh
+          TA
         </v-subheader>
  
-        <!-- <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`"> -->
+
         <v-list-tile>
           <v-list-tile-content>
             <span class="grey--text text--darken--3 mx-1">
@@ -84,20 +47,30 @@
           </v-list-tile-content>
         </v-list-tile>
 
-        <v-divider></v-divider>
+        <v-divider></v-divider> -->
 
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
-          Student Workspaces
+          Workspaces
         </v-subheader>
      
         <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`">
           <v-list-tile-content>
-            <v-badge v-if="workspace.isAskingQuestion" color="red">
-              <v-icon slot="badge" dark small>priority_high</v-icon>
-              <span>{{ workspace.ownerUid }}</span>
-            </v-badge>
+            <template v-if="workspace.isOffice">
+              <span>{{ workspace.ownerName }}'s Office</span>
+            </template>
             <template v-else>
-              {{ workspace.ownerName }}
+              <!-- new question asked -->
+              <v-badge v-if="workspace.isAskingQuestion && !workspace.isAnswered" color="red">
+                <v-icon slot="badge" dark small>priority_high</v-icon>
+                <span>{{ workspace.ownerName }}</span>
+              </v-badge>
+              <!-- new answer received-->
+              <v-badge v-else-if="workspace.isAnswered" color="green">
+                <v-icon slot="badge" dark small>priority_high</v-icon>
+                <span>{{ workspace.ownerName }}</span>
+              </v-badge>
+              <!-- empty -->
+              <span v-else>{{ workspace.ownerName }}</span>
             </template>
           </v-list-tile-content>
         </v-list-tile>
@@ -138,6 +111,7 @@
 import { mapState } from 'vuex'
 import db from '@/database.js'
 import PopupButton from '@/components/PopupButton.vue'
+import firebase from 'firebase/app'
 
 export default {
   components: {
@@ -185,6 +159,9 @@ export default {
     }
   },
   methods: {
+    async signOut() {
+      await firebase.auth().signOut()
+    },
     clearQuestion() {
       this.updateTableStatus(false)
       this.$root.$emit('clear-chat')

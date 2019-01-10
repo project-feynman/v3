@@ -5,6 +5,7 @@
         <!-- <v-flex md4>
           <chatlog :explanationUid="explanationId"/>
         </v-flex> -->
+        <p v-if="explanation">{{ explanation.question }}</p>
         <v-flex md12 mx-2>
           <animation :explanationId="explanationId"/>
         </v-flex>
@@ -25,19 +26,27 @@ export default {
   },
   data() {
     return {
-      explanationId: null 
+      explanationId: null,
+      explanation: null, 
     }
   },
-  created() {
-    this.explanationId = this.$route.params.id
-    this.$root.$on('delete-explanation', this.deleteExplanation)
-  },
+  // created() {
+  //   this.explanationId = this.$route.params.id
+  //   this.$root.$on('delete-explanation', this.deleteExplanation)
+  //   this.$binding('explanation', db.collection('explanations').doc(this.$route.params.id))
+  // },
   watch: {
-    $route(to, from) {
-      this.explanationId = this.$route.params.id
+    $route: {
+      handler: 'bindVariables',
+      immediate: true
     }
   },
   methods: {
+    bindVariables() {
+      this.explanationId = this.$route.params.id
+      this.$root.$on('delete-explanation', this.deleteExplanation)
+      this.$binding('explanation', db.collection('explanations').doc(this.$route.params.id))
+    },
     async deleteExplanation() {
       await db.collection('explanations').doc(this.explanationId).delete()
       console.log('deletion finished')

@@ -30,6 +30,7 @@ export default new Vuex.Store({
       const mirrorUser = await userRef.get() 
       if (mirrorUser.exists) {
         console.log('returning user')
+        context.commit('SET_USER', mirrorUser.data())
       } else {
         console.log('a new user is being created!')
         const simplifiedUser = {
