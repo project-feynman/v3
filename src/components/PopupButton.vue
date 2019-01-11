@@ -1,7 +1,7 @@
 <template>
   <v-dialog width="500" v-model="dialog">
     <v-btn slot="activator" class="pink darken-1">
-      <span class="mr-2 white--text">Save Answer</span>
+      <span class="white--text">Save Answer</span>
     </v-btn>
     <v-card>
       <!-- <v-card-title class="headline">New Explanation</v-card-title> -->

@@ -2,6 +2,17 @@
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
+    <template v-if="user">
+      <v-btn v-if="user.name == 'Elton Lin'" @click="handleDeletion()" class="red darken-2">
+        <span class="white--text">Delete</span>
+      </v-btn>
+    </template>
+    <v-btn :loading="loading3"
+            :disabled="loading3"
+            @click="initReplayLogic()">
+      <span>Preview Replay</span>
+      <span slot="loader">Replaying...</span>
+    </v-btn>
     <canvas id="myCanvas" height="800"></canvas>
   </div>
 </template>
@@ -26,9 +37,9 @@ export default {
       }
     }
   },
-  props: ['explanationId'],
   data() {
     return {
+      loading3: false,
       allStrokes: [],
       currentStroke: [],
       canvas: null,
@@ -53,6 +64,16 @@ export default {
     window.addEventListener('resize', this.rescaleCanvas, false)
   },
   methods: {
+    async initReplayLogic() {
+      this.loading3 = true
+      await this.playAnimation()
+      this.loading3 = false 
+    },
+    async handleDeletion() {
+      console.log('handleDeletion()')
+      await db.collection('explanations').doc(this.explanationId).delete()
+      console.log('successfully deleted document')
+    },
     async initData() {
       // visually wipe previous drawings
       if (this.ctx) {

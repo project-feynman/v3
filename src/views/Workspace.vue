@@ -94,13 +94,11 @@ export default {
     async submitQuestion() {
       const content = this.newMessage
       this.newMessage = null 
-      // this.updateTableStatus(true)
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
         isAskingQuestion: true,
         question: content 
       })
-      // this.addMessage()
     },
     async addMessage() {
       if (!this.newMessage) {
@@ -115,7 +113,6 @@ export default {
       })
     },
     async handleSaving() {
-      console.log('handleSaving called in Navbar.vue')
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
         question: this.workspace.question,
