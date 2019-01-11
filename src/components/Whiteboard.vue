@@ -3,16 +3,16 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
     <template v-if="workspace">
-        <v-btn :loading="loading3"
-              :disabled="loading3"
-              @click="initReplayLogic()">
+      <v-btn :loading="loading3"
+             :disabled="loading3"
+             @click="initReplayLogic()">
         <span>Preview Replay</span>
         <span slot="loader">Replaying...</span>
       </v-btn>
       <template v-if="!workspace.isAnswered">
         <v-btn :loading="loading2"
-                :disabled="loading2"
-                @click="initClearBoardLogic()">
+               :disabled="loading2"
+               @click="initClearBoardLogic()">
           <span>Clear Whiteboard</span>
           <span slot="loader">Clearing...</span>
         </v-btn>
