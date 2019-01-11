@@ -12,9 +12,9 @@
       <v-spacer></v-spacer>
 
       <template v-if="user">
-        <template v-if="isExplanationPage && this.user.displayName == 'Elton Lin'">
+        <template v-if="isExplanationPage">
           <!-- DELETE -->
-          <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
+          <v-btn v-if="user.name == 'Elton Lin'" @click="$root.$emit('delete-explanation')" class="red darken-2">
             <span class="white--text">Delete</span>
           </v-btn>
           <!-- REPLAY -->
@@ -33,22 +33,6 @@
     <template v-if="$route.path != '/'">
     <v-navigation-drawer v-if="user" v-model="drawerOpen" app class="white">
       <v-list>
-<!-- 
-        <v-subheader class="subheading black--text text-uppercase font-weight-black">
-          TA
-        </v-subheader>
- 
-
-        <v-list-tile>
-          <v-list-tile-content>
-            <span class="grey--text text--darken--3 mx-1">
-              Visesh is offline
-            </span>
-          </v-list-tile-content>
-        </v-list-tile>
-
-        <v-divider></v-divider> -->
-
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
           Workspaces
         </v-subheader>
@@ -141,7 +125,6 @@ export default {
       loading: false,
       loading2: false,
       loading3: false,
-      loading4: false,
       loadingChatLog: true, 
       loadingAnimation: true
     }

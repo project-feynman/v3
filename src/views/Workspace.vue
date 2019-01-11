@@ -1,7 +1,5 @@
 <template>
   <div class="student">
-    <!-- GREAT FOR DEBUGGING -->
-    <!-- <h2 v-if="workspace">{{ workspace }}</h2> -->
     <v-container fluid>
       <v-layout wrap>
         <template v-if="user && workspace">
@@ -41,8 +39,6 @@
 </template>
 
 <script>
-// a workspace document needs
-// now, what is a workspace - it's just a question - and it can just be a property within the workspace that's really nice 
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import db from '@/database'
@@ -68,18 +64,18 @@ export default {
       newTitle: null,
     }
   },
-  created() {
-    // I know this is duplicated, but it's a quick-fix given the circumstances 
-    this.ownerUid = this.$route.params.id
-    const workspaceId = this.$route.params.id 
-    this.$binding('workspace', db.collection('workspaces').doc(workspaceId))
-  },
   watch: {
-    $route(to, from) {
-      this.ownerUid = this.$route.params.id
+    $route: {
+      handler: 'bindVariables',
+      immediate: true
     }
   },
   methods: {
+    bindVariables() {
+      this.ownerUid = this.$route.params.id
+      const workspaceId = this.$route.params.id 
+      this.$binding('workspace', db.collection('workspaces').doc(workspaceId))
+    },
     async clearWorkspace() {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
