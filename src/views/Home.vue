@@ -13,31 +13,18 @@
           <div class="responsive-grid mt-5">
             <template v-for="TA in teachers">
               <v-layout :key="TA.uid">
-                
                 <v-flex>
-                   <v-card color="blue-grey darken-2" class="white--text">
-              <v-card-title primary-title>
-                <div>
-                  <div class="headline">{{ TA.name }}</div>
-                  <span>Enlist in the 6.006 Adventure, where you learn all about the best algorithms on the planet.</span>
-                </div>
-              </v-card-title>
-              <v-card-actions>
-                <v-btn flat dark @click="$router.push(TA.uid)">Enter</v-btn>
-              </v-card-actions>
-            </v-card>
-<!--             
-                  <v-card>
+                  <v-card color="blue-grey darken-2" class="white--text">
                     <v-card-title primary-title>
                       <div>
-                        <h3 class="headline mb-0">{{ TA.name }}, 6.006</h3>
-           
+                        <div class="headline">{{ TA.name }}</div>
+                        <span>Enlist in the 6.006 Adventure, where you learn all about the best algorithms on the planet.</span>
                       </div>
                     </v-card-title>
                     <v-card-actions>
-                      <v-btn flat color="orange" @click="$router.push(TA.uid)">Enter</v-btn>
+                      <v-btn flat dark @click="$router.push(TA.uid)">Enter</v-btn>
                     </v-card-actions>
-                  </v-card> -->
+                  </v-card>
                 </v-flex>
               </v-layout>
             </template>
