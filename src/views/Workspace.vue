@@ -8,11 +8,13 @@
           <!-- question has been answered -->
           <template v-if="workspace.isAnswered">
             <v-spacer></v-spacer>
+            <!-- SAVE EXPLANATION -->
             <popup-button 
               fullscreen :explanationTitle="newTitle" 
               @input="newValue=> newTitle = newValue" 
               @pre-save-explanation="handleSaving()"
             />
+            <!-- RESET WORKSPACE -->
             <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
           </template>
           <!-- no question yet  -->
@@ -28,7 +30,11 @@
               <v-btn block @click="submitQuestion()">Submit Question</v-btn>
             </v-flex>
           </v-layout>
-          <!-- whiteboard -->
+
+          <!-- RECORD BUTTON -->
+          <!-- <record-button/> -->
+
+          <!--  WHITEBOARD-->
           <v-flex md12>
             <whiteboard v-if="ownerUid && workspace.isAskingQuestion || workspace.isAnswered" :ownerUid="ownerUid" :workspace="workspace"/>
           </v-flex>
@@ -45,13 +51,15 @@ import db from '@/database'
 import Chat from '@/components/Chat'
 import Whiteboard from '@/components/Whiteboard'
 import PopupButton from '@/components/PopupButton'
+import RecordButton from '@/components/RecordButton'
 import { mapState } from 'vuex'
 
 export default {
   components: {
     Chat,
     Whiteboard,
-    PopupButton
+    PopupButton,
+    RecordButton
   },
   computed: {
     ...mapState(['user'])
@@ -85,11 +93,7 @@ export default {
       })
     },
     getHint() {
-      // if (this.user.uid == this.$route.params.id) {
-        return 'After submitting the question, your TA will be notified to answer ASAP'
-      // } else {
-      //   return 'Write an answer - aim for simplicity and elegance'
-      // }
+      return 'After submitting the question, your TA will be notified to answer ASAP'
     },
     async submitQuestion() {
       const content = this.newMessage
@@ -112,7 +116,7 @@ export default {
         author: this.author
       })
     },
-    async handleSaving() {
+    async handleSaving() { 
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
         question: this.workspace.question,

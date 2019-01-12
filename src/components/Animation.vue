@@ -13,7 +13,7 @@
       <span>Preview Replay</span>
       <span slot="loader">Replaying...</span>
     </v-btn>
-    <canvas id="myCanvas" height="800"></canvas>
+    <canvas id="myCanvas" height="700"></canvas>
   </div>
 </template>
 

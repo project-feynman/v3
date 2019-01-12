@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import RecordButton from '@/components/RecordButton'
 
 Vue.use(Router)
 
@@ -10,6 +11,10 @@ export default new Router({
     {
       path: '/',
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
+    },
+    {
+      path: '/record',
+      component: RecordButton
     },
     {
       path: '/:teacher_id',
