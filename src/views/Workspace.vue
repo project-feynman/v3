@@ -3,20 +3,6 @@
     <v-container fluid>
       <v-layout wrap>
         <template v-if="user && workspace">
-          <!-- question submitted already -->
-          <p>{{ workspace.question }}</p>
-          <!-- question has been answered -->
-          <template v-if="workspace.isAnswered">
-            <v-spacer></v-spacer>
-            <!-- SAVE EXPLANATION -->
-            <popup-button 
-              fullscreen :explanationTitle="newTitle" 
-              @input="newValue=> newTitle = newValue" 
-              @pre-save-explanation="handleSaving()"
-            />
-            <!-- RESET WORKSPACE -->
-            <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
-          </template>
           <!-- no question yet  -->
           <v-layout v-if="!workspace.question">
             <v-flex>
@@ -30,7 +16,20 @@
               <v-btn block @click="submitQuestion()">Submit Question</v-btn>
             </v-flex>
           </v-layout>
-
+          <!-- question submitted already -->
+          <p v-else>{{ workspace.question }}</p>
+          <!-- question has been answered -->
+          <template v-if="workspace.isAnswered">
+            <v-spacer></v-spacer>
+            <!-- SAVE EXPLANATION -->
+            <popup-button 
+              fullscreen :explanationTitle="newTitle" 
+              @input="newValue=> newTitle = newValue" 
+              @pre-save-explanation="handleSaving()"
+            />
+            <!-- RESET WORKSPACE -->
+            <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
+          </template>
           <!-- RECORD BUTTON -->
           <!-- <record-button/> -->
 
@@ -102,18 +101,6 @@ export default {
       await ref.update({
         isAskingQuestion: true,
         question: content 
-      })
-    },
-    async addMessage() {
-      if (!this.newMessage) {
-        return 
-      }
-      const content = this.newMessage
-      this.newMessage = null
-      const messagesRef = db.collection('tables').doc(this.ownerUid).collection('messages')
-      await messagesRef.doc(`${this.messages.length + 1}`).set({
-        content,
-        author: this.author
       })
     },
     async handleSaving() { 
