@@ -8,7 +8,7 @@
         <v-btn :loading="isReplaying"
               :disabled="isReplaying"
               @click="initReplayLogic()">
-          <span>PREVIEW REPLAY</span>
+          <span>REPLAY VISUALS</span>
           <span slot="loader">Replaying...</span>
         </v-btn>
         <!-- CLEAR WHITEBOARD -->
@@ -19,11 +19,11 @@
           <span slot="loader">Clearing...</span>
         </v-btn>
         <!-- START TIMER -->
-        <v-btn @click="startTimer()">START TIMER</v-btn>
+        <!-- <v-btn @click="startTimer()">START TIMER</v-btn> -->
         <v-btn @click="stopTimer()">STOP TIMER</v-btn>
         <p>{{ currentTime.toFixed(1) }}</p>
-        <!-- SUBMIT ANSWER -->
-        <!-- <v-btn @click="submitAnswer()">SUBMIT ANSWER</v-btn> -->
+        <!-- RECORD -->
+        <record-button @start-recording="startTimer()" @replay-recording="playVideo()" @end-recording="stopTimer()"/>
       </template>
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" height="700"></canvas>
@@ -36,9 +36,13 @@ import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/functions'
 import db from '@/database.js'
+import RecordButton from '@/components/RecordButton'
 
 export default {
   props: ['ownerUid', 'showButtons', 'workspace'],
+  components: {
+    RecordButton
+  },
   watch: {
     ownerUid: {
       handler: 'initData',
@@ -70,7 +74,8 @@ export default {
       lastX: -1,
       lastY: -1,
       unsubscribe: null,
-      redrawTimeout: null 
+      redrawTimeout: null,
+      idx: 0,
     }
   },
   mounted() {
@@ -255,6 +260,32 @@ export default {
       else if (n < 40) { return 100 } 
       else { return 30 }
     },
+    async playVideo() {
+      this.isPlayingVideo = true
+      this.currentTime = 0
+      this.idx = 0 
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      const checkWhetherStrokesShouldBePlayed = () => {
+        const startIdx = this.idx 
+        for (let i = startIdx; i < this.allStrokes.length; i++) {
+          const nextStroke = this.allStrokes[i]
+          if (Number(nextStroke.startTime) == this.currentTime.toFixed(1)) {
+            // specify the draw period 
+            const strokePeriod = (nextStroke.endTime - nextStroke.startTime) * 1000
+            this.drawPath(nextStroke, false, strokePeriod) // draw incrementally, not instantly
+            if (i == this.allStrokes.length - 1) {
+              clearInterval(this.playProgress)
+              this.isPlayingVideo = false 
+            }
+          } else {
+            this.idx = i 
+            break 
+          }
+        }
+        this.currentTime += 0.1
+      }
+      this.playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
+    },
     async playAnimation() {
 			if (!this.ctx || !this.canvas || !this.allStrokes) {
 				return
@@ -270,7 +301,7 @@ export default {
 				await timeout(strokePeriod / 100)
 			}
 		},
-    async drawPath(data, instant = true) {
+    async drawPath(data, instant = true, strokePeriod = 0) {
       // initialize styles
 			if (data.isEraser) {
 				this.ctx.strokeStyle = 'white'
@@ -282,12 +313,15 @@ export default {
       this.ctx.lineCap = 'round '
       // draw 
 			const points = data.points
+      const pointPeriod = strokePeriod / points.length
       for (let i = 0; i < points.length; i++) {
         const x = points[i].unitX * this.canvas.width
         const y = points[i].unitY * this.canvas.height
         this.drawLine(x, y, 3)
         if (!instant) {
-          await timeout(this.pointPeriod)
+          console.log('strokePeriod =', strokePeriod)
+          console.log('pointPeriod =', pointPeriod)
+          await timeout(pointPeriod)
         }
         if (i == points.length - 1) {
           this.lastX = -1 
