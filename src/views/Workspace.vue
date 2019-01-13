@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-layout wrap>
         <template v-if="user && workspace">
-          <!-- no question yet  -->
+          <!-- EMPTY -->
           <v-layout v-if="!workspace.question">
             <v-flex>
               <v-textarea
@@ -16,27 +16,33 @@
               <v-btn block @click="submitQuestion()">Submit Question</v-btn>
             </v-flex>
           </v-layout>
-          <!-- question submitted already -->
-          <p v-else>{{ workspace.question }}</p>
-          <!-- question has been answered -->
-          <template v-if="workspace.isAnswered">
-            <v-spacer></v-spacer>
-            <!-- SAVE EXPLANATION -->
-            <popup-button 
-              fullscreen :explanationTitle="newTitle" 
-              @input="newValue=> newTitle = newValue" 
-              @pre-save-explanation="handleSaving()"
-            />
-            <!-- RESET WORKSPACE -->
-            <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
+          <!-- QUESTION ANSWERED -->
+          <template v-else>
+            <p>{{ workspace.question }}</p>
+            <template v-if="!workspace.isAnswered">
+              <v-spacer/>
+              <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
+            </template>
+            <template v-else>
+              <v-spacer></v-spacer>
+              <!-- SAVE EXPLANATION -->
+              <popup-button 
+                fullscreen :explanationTitle="newTitle" 
+                @input="newValue=> newTitle = newValue" 
+                @pre-save-explanation="handleSaving()"
+              />
+              <!-- RESET WORKSPACE -->
+              <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
+            </template>
+            <!-- QUESTION ASKED, NEED ANSWER -->
+            <!-- RECORD BUTTON -->
+            <!-- <record-button/> -->
+            <!-- SUBMIT ANSWER -->
+             <!-- WHITEBOARD -->
+            <v-flex md12>
+              <whiteboard v-if="ownerUid" :ownerUid="ownerUid" :workspace="workspace" :showButtons="!workspace.isAnswered"/>
+            </v-flex>
           </template>
-          <!-- RECORD BUTTON -->
-          <!-- <record-button/> -->
-
-          <!--  WHITEBOARD-->
-          <v-flex md12>
-            <whiteboard v-if="ownerUid && workspace.isAskingQuestion || workspace.isAnswered" :ownerUid="ownerUid" :workspace="workspace"/>
-          </v-flex>
         </template>
       </v-layout>
     </v-container>
@@ -78,6 +84,13 @@ export default {
     }
   },
   methods: {
+    async submitAnswer() {
+      const ref = db.collection('workspaces').doc(this.$route.params.id)
+      await ref.update({
+        isAskingQuestion: false, 
+        isAnswered: true
+      })
+    },
     bindVariables() {
       this.ownerUid = this.$route.params.id
       const workspaceId = this.$route.params.id 
