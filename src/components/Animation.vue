@@ -7,14 +7,18 @@
         <span class="white--text">Delete</span>
       </v-btn>
     </template>
-    <!-- PLAY VIDEO -->
-    <v-btn @click="playVideo()">PLAY VIDEO</v-btn>
-
     <!-- PREVIEW REPLAY -->
     <v-btn :loading="isReplaying"
            :disabled="isReplaying"
            @click="initReplayLogic()">
-      <span>PREVIEW REPLAY</span>
+      <span>QUICKPLAY</span>
+      <span slot="loader">Replaying...</span>
+    </v-btn>
+    <!-- PLAY VIDEO -->
+    <v-btn :loading="isPlayingVideo"
+           :disabled="isPlayingVideo"
+           @click="playVideo()">
+      <span>PLAY VIDEO</span>
       <span slot="loader">Replaying...</span>
     </v-btn>
     <canvas id="myCanvas" height="700"></canvas>
@@ -43,6 +47,8 @@ export default {
   },
   data() {
     return {
+      playProgress: null,
+      isPlayingVideo: false,
       isReplaying: false,
       allStrokes: [],
       timer: null,
@@ -135,6 +141,8 @@ export default {
       this.lastY = y
     },
     async playVideo() {
+      this.isPlayingVideo = true
+      this.currentTime = 0
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       const checkWhetherStrokesShouldBePlayed = () => {
         const startIdx = this.idx 
@@ -144,6 +152,10 @@ export default {
             // specify the draw period 
             const strokePeriod = nextStroke.endTime - nextStroke.startTime
             this.drawPath(nextStroke, false, strokePeriod) // draw incrementally, not instantly
+            if (i == this.allStrokes.length - 1) {
+              clearInterval(this.playProgress)
+              this.isPlayingVideo = false 
+            }
           } else {
             this.idx = i 
             break 
@@ -151,7 +163,8 @@ export default {
         }
         this.currentTime += 0.1
       }
-      const playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
+      this.playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
+      // now, give a termination condition 
     },
     async playAnimation() {
 			if (!this.ctx || !this.canvas) {
