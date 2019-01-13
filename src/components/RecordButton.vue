@@ -17,29 +17,39 @@
 export default {
   data() {
     return {
-      timestamp: 0 
+      timestamp: 0,
+      audioElement: null 
+    }
+  },
+  methods: {
+    playRecording() {
+      this.audioElement.play()
+      // emit the done event to tell the whiteboard component that it is done 
+      // furthermore, get the audio length 
     }
   },
   mounted() { 
-    const chunks = []
+    let chunks = []
     let recorder = null
-    let audioElement = null
     let timer = null 
-
     // save the recording as a data-url
     const saveRecording = () => {
       const blob = new Blob(chunks, {
           type: 'audio/mp4; codecs=opus'
       })
       const url = URL.createObjectURL(blob)
-      audioElement.setAttribute('src', url)
-      audioElement.addEventListener('play', () => this.$emit('replay-recording'))
+      this.audioElement.setAttribute('src', url)
+      this.audioElement.addEventListener('play', () => this.$emit('replay-recording'))
+      this.audioElement.addEventListener('ended', () => this.$emit('replay-ended'))
+      // for testing purposes, newly recorded clips will start playing immediately
+      console.log('audio tracks =', this.audioElement.audioTracks)
+      this.audioElement.play()
+      console.log('audio duration =', this.audioElement.duration)
     }
-
     // wait until everything has loaded
     (() => {
         // initialize variables
-        audioElement = document.querySelector('.js-audio');
+        this.audioElement = document.querySelector('.js-audio');
         const startButton = document.querySelector('.js-start');
         const stopButton = document.querySelector('.js-stop');
         // get the user's audio input 
@@ -51,14 +61,14 @@ export default {
             recorder.onstop = saveRecording
         })
         startButton.addEventListener('mouseup', () => { 
+          // restart recording 
+          chunks = [] 
           this.$emit('start-recording')
           recorder.start()
-          // timer = setInterval(() => this.timestamp += 0.5, 500)
         })
         stopButton.addEventListener('mouseup', () => {
           this.$emit('end-recording')
           recorder.stop()
-          // clearInterval(timer)
         })
 
     })()
@@ -115,17 +125,13 @@ body {
   
   &--start:hover {
     background: $green;
-    
     border-color: darken($green, 5);
-    
     color: $white;
   }
     
   &--stop:hover {
     background: $blue;
-    
     border-color: darken($blue, 5);
-    
     color: $white;
   }
 }
