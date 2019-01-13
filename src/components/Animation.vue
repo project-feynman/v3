@@ -143,6 +143,7 @@ export default {
     async playVideo() {
       this.isPlayingVideo = true
       this.currentTime = 0
+      this.idx = 0 
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       const checkWhetherStrokesShouldBePlayed = () => {
         const startIdx = this.idx 
@@ -164,7 +165,6 @@ export default {
         this.currentTime += 0.1
       }
       this.playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
-      // now, give a termination condition 
     },
     async playAnimation() {
 			if (!this.ctx || !this.canvas) {
