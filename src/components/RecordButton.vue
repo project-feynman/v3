@@ -10,7 +10,6 @@
         <button class="js-stop button button--stop">Stop</button>
       </div>
     </div>
-    <p style="margin: auto;">Timestamp: {{ timestamp }}</p>
   </div>
 </template>
 
@@ -34,6 +33,7 @@ export default {
       })
       const url = URL.createObjectURL(blob)
       audioElement.setAttribute('src', url)
+      audioElement.addEventListener('play', () => this.$emit('replay-recording'))
     }
 
     // wait until everything has loaded
@@ -51,12 +51,14 @@ export default {
             recorder.onstop = saveRecording
         })
         startButton.addEventListener('mouseup', () => { 
+          this.$emit('start-recording')
           recorder.start()
-          timer = setInterval(() => this.timestamp += 0.5, 500)
+          // timer = setInterval(() => this.timestamp += 0.5, 500)
         })
         stopButton.addEventListener('mouseup', () => {
+          this.$emit('end-recording')
           recorder.stop()
-          clearInterval(timer)
+          // clearInterval(timer)
         })
 
     })()
