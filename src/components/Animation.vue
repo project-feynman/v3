@@ -137,19 +137,19 @@ export default {
     async playVideo() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       const checkWhetherStrokesShouldBePlayed = () => {
-        // console.log('currentTime =', currentTime)
-        // currentStroke represents the index of the next stroke that should be played 
-        this.currentTime += 0.1
-        const nextStroke = this.allStrokes[this.idx]
-        console.log('nextStroke.timestamp =', nextStroke.timestamp)
-        console.log('current time =', this.currentTime)
-        // what is the problem? timestamp is a string, currentTime is a float AND it is also 
-
-
-        if (Number(nextStroke.timestamp) == this.currentTime.toFixed(1)) {
-          this.drawPath(nextStroke, false) // draw incrementally, not instantly
-          this.idx += 1
+        const startIdx = this.idx 
+        for (let i = startIdx; i < this.allStrokes.length; i++) {
+          const nextStroke = this.allStrokes[i]
+          if (Number(nextStroke.startTime) == this.currentTime.toFixed(1)) {
+            // specify the draw period 
+            const strokePeriod = nextStroke.endTime - nextStroke.startTime
+            this.drawPath(nextStroke, false, strokePeriod) // draw incrementally, not instantly
+          } else {
+            this.idx = i 
+            break 
+          }
         }
+        this.currentTime += 0.1
       }
       const playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
     },
@@ -185,25 +185,25 @@ export default {
 				await timeout(strokePeriod / 100)
 			}
 		},
-    async drawPath(data, instant = true) {
+    async drawPath(data, instant = true, strokePeriod = 0) {
       // initialize styles
 			if (data.isEraser) {
 				this.ctx.strokeStyle = 'white'
 				this.ctx.lineWidth = 20
-				this.ctx.lineCap = 'round'
 			} else {
 				this.ctx.strokeStyle = 'purple'
 				this.ctx.lineWidth = 2
-				this.ctx.lineCap = 'round'
 			}
+      this.ctx.lineCap = 'round'
       // draw 
 			const points = data.points
+      const pointPeriod = strokePeriod / points.length
       for (let i = 0; i < points.length; i++) {
         const x = points[i]['unitX'] * this.canvas.width
         const y = points[i]['unitY'] * this.canvas.height
         this.drawLine(x, y, 3)
         if (!instant) {
-          await timeout(this.pointPeriod)
+          await timeout(pointPeriod)
         }
         if (i == points.length - 1) {
           this.lastX = -1 

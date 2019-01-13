@@ -62,6 +62,8 @@ export default {
       isReplaying: false,
       timer: null,
       currentTime: 0,
+      startTime: null,
+      endTime: null,
       touchX: null,
       touchY: null,
       lastX: -1,
@@ -210,6 +212,7 @@ export default {
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawLine(this.touchX, this.touchY, 2)
+      this.startTime = this.currentTime.toFixed(1)
     },
     touchMove(e) {
       e.preventDefault()
@@ -220,12 +223,13 @@ export default {
     touchEnd(e) {
       const strokeNumber = this.allStrokes.length + 1
       const stroke = {
-        points: this.currentStroke,
-        author: this.author,
         strokeNumber,
-        timestamp: this.currentTime.toFixed(1)
+        startTime: this.startTime,
+        endTime: this.currentTime.toFixed(1),
+        author: this.author,
+        points: this.currentStroke,
       }
-      console.log('stroke.timestamp =', stroke.timestamp)
+      console.log('stroke.timestamps =', stroke.startTime, stroke.endTime)
       // save 
       this.allStrokes.push(stroke)
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
