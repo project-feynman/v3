@@ -3,27 +3,38 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
     <template v-if="workspace">
+      <!-- QUICKPLAY -->
+      <v-btn :loading="isReplaying"
+             :disabled="isReplaying"
+             @click="initReplayLogic()">
+        <span>QUICKPLAY</span>
+        <span slot="loader">Replaying...</span>
+      </v-btn>
+      <!-- REPLAY VIDEO -->
+      <v-btn :loading="isPlayingVideo"
+             :disabled="isPlayingVideo"
+             @click="playVideo()">
+        <span>REPLAY VIDEO</span>
+        <span slot="loader">Replaying...</span>
+      </v-btn>
       <template v-if="showButtons">
-        <!-- REPLAY -->
-        <v-btn :loading="isReplaying"
-              :disabled="isReplaying"
-              @click="initReplayLogic()">
-          <span>REPLAY VISUALS</span>
-          <span slot="loader">Replaying...</span>
-        </v-btn>
         <!-- CLEAR WHITEBOARD -->
         <v-btn :loading="isClearing"
-                :disabled="isClearing"
-                @click="initClearBoardLogic()">
+               :disabled="isClearing"
+               @click="initClearBoardLogic()">
           <span>CLEAR WHITEBOARD</span>
           <span slot="loader">Clearing...</span>
         </v-btn>
         <!-- START TIMER -->
         <!-- <v-btn @click="startTimer()">START TIMER</v-btn> -->
-        <v-btn @click="stopTimer()">STOP TIMER</v-btn>
+        <!-- <v-btn @click="stopTimer()">STOP TIMER</v-btn> -->
         <p>{{ currentTime.toFixed(1) }}</p>
         <!-- RECORD -->
-        <record-button @start-recording="startTimer()" @replay-recording="playVideo()" @end-recording="stopTimer()"/>
+        <record-button ref="record-button"
+                       @start-recording="startTimer()" 
+                       @replay-recording="playVideo()" 
+                       @end-recording="stopTimer()"
+                       @replay-ended="isPlayingAudio = false"/>
       </template>
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" height="700"></canvas>
@@ -55,12 +66,23 @@ export default {
         name: this.user.name,
         uid: this.user.uid
       }
+    },
+    isPlayingVideo: {
+      get() {
+        return this.isPlayingAudio ||this.isPlayingVisual
+      },
+      set(isPlayingVideo) {
+        this.isPlayingAudio = true 
+        this.isPlayingVisual = true 
+      }
     }
   },
   data() {
     return {
       allStrokes: [],
       currentStroke: [],
+      isPlayingVisual: false,
+      isPlayingAudio: false,
       canvas: null,
       ctx: null,
       isClearing: false,
@@ -261,11 +283,13 @@ export default {
       else { return 30 }
     },
     async playVideo() {
-      this.isPlayingVideo = true
+      console.log('record button =', this.$refs)
+      this.isPlayingVideo = true 
+      this.$refs['record-button'].playRecording()
       this.currentTime = 0
       this.idx = 0 
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      const checkWhetherStrokesShouldBePlayed = () => {
+      const checkWhetherStrokesShouldBePlayed = async () => {
         const startIdx = this.idx 
         for (let i = startIdx; i < this.allStrokes.length; i++) {
           const nextStroke = this.allStrokes[i]
@@ -275,7 +299,7 @@ export default {
             this.drawPath(nextStroke, false, strokePeriod) // draw incrementally, not instantly
             if (i == this.allStrokes.length - 1) {
               clearInterval(this.playProgress)
-              this.isPlayingVideo = false 
+              this.isPlayingVisual = false 
             }
           } else {
             this.idx = i 
@@ -319,8 +343,6 @@ export default {
         const y = points[i].unitY * this.canvas.height
         this.drawLine(x, y, 3)
         if (!instant) {
-          console.log('strokePeriod =', strokePeriod)
-          console.log('pointPeriod =', pointPeriod)
           await timeout(pointPeriod)
         }
         if (i == points.length - 1) {
