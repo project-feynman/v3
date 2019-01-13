@@ -3,26 +3,28 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
     <template v-if="workspace">
-      <!-- REPLAY -->
-      <v-btn :loading="isReplaying"
-             :disabled="isReplaying"
-             @click="initReplayLogic()">
-        <span>PREVIEW REPLAY</span>
-        <span slot="loader">Replaying...</span>
-      </v-btn>
-      <!-- CLEAR WHITEBOARD -->
-      <v-btn :loading="isClearing"
-              :disabled="isClearing"
-              @click="initClearBoardLogic()">
-        <span>CLEAR WHITEBOARD</span>
-        <span slot="loader">Clearing...</span>
-      </v-btn>
-      <!-- START TIMER -->
-      <v-btn @click="startTimer()">START TIMER</v-btn>
-      <v-btn @click="stopTimer()">STOP TIMER</v-btn>
-      <p>{{ currentTime.toFixed(1) }}</p>
-      <!-- SUBMIT ANSWER -->
-      <v-btn @click="submitAnswer()">SUBMIT ANSWER</v-btn>
+      <template v-if="showButtons">
+        <!-- REPLAY -->
+        <v-btn :loading="isReplaying"
+              :disabled="isReplaying"
+              @click="initReplayLogic()">
+          <span>PREVIEW REPLAY</span>
+          <span slot="loader">Replaying...</span>
+        </v-btn>
+        <!-- CLEAR WHITEBOARD -->
+        <v-btn :loading="isClearing"
+                :disabled="isClearing"
+                @click="initClearBoardLogic()">
+          <span>CLEAR WHITEBOARD</span>
+          <span slot="loader">Clearing...</span>
+        </v-btn>
+        <!-- START TIMER -->
+        <v-btn @click="startTimer()">START TIMER</v-btn>
+        <v-btn @click="stopTimer()">STOP TIMER</v-btn>
+        <p>{{ currentTime.toFixed(1) }}</p>
+        <!-- SUBMIT ANSWER -->
+        <!-- <v-btn @click="submitAnswer()">SUBMIT ANSWER</v-btn> -->
+      </template>
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" height="700"></canvas>
     </template>
@@ -36,7 +38,7 @@ import 'firebase/functions'
 import db from '@/database.js'
 
 export default {
-  props: ['ownerUid'],
+  props: ['ownerUid', 'showButtons', 'workspace'],
   watch: {
     ownerUid: {
       handler: 'initData',
@@ -51,7 +53,6 @@ export default {
       }
     }
   },
-  props: ['ownerUid', 'workspace'],
   data() {
     return {
       allStrokes: [],
