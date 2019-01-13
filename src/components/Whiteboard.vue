@@ -89,6 +89,7 @@ export default {
     initClearBoardLogic() {
       this.loading2 = true 
       this.deleteStrokesSubcollection()
+      this.allStrokes = [] 
     },
     saveStrokes(explanationId) {
       const explanationRef = db.collection('explanations').doc(explanationId).collection('strokes')
