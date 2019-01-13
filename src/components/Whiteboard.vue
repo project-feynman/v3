@@ -3,23 +3,25 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
     <template v-if="workspace">
+      <!-- REPLAY -->
       <v-btn :loading="isReplaying"
              :disabled="isReplaying"
              @click="initReplayLogic()">
-        <span>Preview Replay</span>
+        <span>PREVIEW REPLAY</span>
         <span slot="loader">Replaying...</span>
       </v-btn>
-      <template v-if="!workspace.isAnswered">
-        <v-btn :loading="isClearing"
-               :disabled="isClearing"
-               @click="initClearBoardLogic()">
-          <span>Clear Whiteboard</span>
-          <span slot="loader">Clearing...</span>
-        </v-btn>
-        <v-btn @click="submitAnswer()">Submit Answer</v-btn>
-      </template>
+      <!-- CLEAR WHITEBOARD -->
+      <v-btn :loading="isClearing"
+              :disabled="isClearing"
+              @click="initClearBoardLogic()">
+        <span>CLEAR WHITEBOARD</span>
+        <span slot="loader">Clearing...</span>
+      </v-btn>
+      <!-- SUBMIT ANSWER -->
+      <v-btn @click="submitAnswer()">SUBMIT ANSWER</v-btn>
+      <!-- WHITEBOARD -->
+      <canvas id="myCanvas" height="700"></canvas>
     </template>
-    <canvas id="myCanvas" height="700"></canvas>
   </div>
 </template>
 
@@ -167,7 +169,7 @@ export default {
         console.log('err =', err)
       }
     },
-    drawLine(x, y, size=2) {
+    drawLine(x, y, size = 2) {
       if (this.lastX == -1) {
         this.lastX = x
         this.lastY = y
