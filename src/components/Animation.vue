@@ -7,10 +7,14 @@
         <span class="white--text">Delete</span>
       </v-btn>
     </template>
-    <v-btn :loading="loading3"
-            :disabled="loading3"
-            @click="initReplayLogic()">
-      <span>Preview Replay</span>
+    <!-- PLAY VIDEO -->
+    <v-btn @click="playVideo()">PLAY VIDEO</v-btn>
+
+    <!-- PREVIEW REPLAY -->
+    <v-btn :loading="isReplaying"
+           :disabled="isReplaying"
+           @click="initReplayLogic()">
+      <span>PREVIEW REPLAY</span>
       <span slot="loader">Replaying...</span>
     </v-btn>
     <canvas id="myCanvas" height="700"></canvas>
@@ -39,17 +43,16 @@ export default {
   },
   data() {
     return {
-      loading3: false,
+      isReplaying: false,
       allStrokes: [],
-      currentStroke: [],
+      timer: null,
+      currentTime: 0,
+      idx: 0,
+      index: 0,
       canvas: null,
       ctx: null,
-      touchX: null,
-      touchY: null,
       lastX: -1,
       lastY: -1,
-      numOfStrokes: 0,
-      unsubscribe: null,
       redrawTimeout: null 
     }
   },
@@ -65,9 +68,9 @@ export default {
   },
   methods: {
     async initReplayLogic() {
-      this.loading3 = true
+      this.isReplaying = true
       await this.playAnimation()
-      this.loading3 = false 
+      this.isReplaying = false 
     },
     async handleDeletion() {
       console.log('handleDeletion()')
@@ -130,6 +133,25 @@ export default {
       // Update the last position to reference the current position
       this.lastX = x
       this.lastY = y
+    },
+    async playVideo() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      const checkWhetherStrokesShouldBePlayed = () => {
+        // console.log('currentTime =', currentTime)
+        // currentStroke represents the index of the next stroke that should be played 
+        this.currentTime += 0.1
+        const nextStroke = this.allStrokes[this.idx]
+        console.log('nextStroke.timestamp =', nextStroke.timestamp)
+        console.log('current time =', this.currentTime)
+        // what is the problem? timestamp is a string, currentTime is a float AND it is also 
+
+
+        if (Number(nextStroke.timestamp) == this.currentTime.toFixed(1)) {
+          this.drawPath(nextStroke, false) // draw incrementally, not instantly
+          this.idx += 1
+        }
+      }
+      const playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
     },
     async playAnimation() {
 			if (!this.ctx || !this.canvas) {

@@ -117,13 +117,11 @@
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import Showcase from '@/components/Showcase.vue'
 import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
 
 export default {
   components: {
-    Showcase,
     Animation
   },
   computed: {

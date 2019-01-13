@@ -17,6 +17,10 @@
         <span>CLEAR WHITEBOARD</span>
         <span slot="loader">Clearing...</span>
       </v-btn>
+      <!-- START TIMER -->
+      <v-btn @click="startTimer()">START TIMER</v-btn>
+      <v-btn @click="stopTimer()">STOP TIMER</v-btn>
+      <p>{{ currentTime.toFixed(1) }}</p>
       <!-- SUBMIT ANSWER -->
       <v-btn @click="submitAnswer()">SUBMIT ANSWER</v-btn>
       <!-- WHITEBOARD -->
@@ -56,6 +60,8 @@ export default {
       ctx: null,
       isClearing: false,
       isReplaying: false,
+      timer: null,
+      currentTime: 0,
       touchX: null,
       touchY: null,
       lastX: -1,
@@ -74,6 +80,12 @@ export default {
     this.addStrokesListener()
   },
   methods: {
+    startTimer() {
+      this.timer = setInterval(() => this.currentTime += 0.1, 100)
+    },
+    stopTimer() {
+      clearInterval(this.timer)
+    },
     async submitAnswer() {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
@@ -110,9 +122,8 @@ export default {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
             const stroke = change.doc.data()
-            if (this.allStrokes.length == stroke.strokeNumber) {
-              return // board is already in sync 
-            } else {
+            // check if local strokes and db strokes are in sync 
+            if (this.allStrokes.length < stroke.strokeNumber) {
               this.drawStroke(stroke.points)
               this.allStrokes.push(stroke)
             }
@@ -211,8 +222,10 @@ export default {
       const stroke = {
         points: this.currentStroke,
         author: this.author,
-        strokeNumber
+        strokeNumber,
+        timestamp: this.currentTime.toFixed(1)
       }
+      console.log('stroke.timestamp =', stroke.timestamp)
       // save 
       this.allStrokes.push(stroke)
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
