@@ -38,10 +38,10 @@ export default {
 
     // wait until everything has loaded
     (() => {
+        // initialize variables
         audioElement = document.querySelector('.js-audio');
         const startButton = document.querySelector('.js-start');
         const stopButton = document.querySelector('.js-stop');
-        
         // get the user's audio input 
         navigator.mediaDevices.getUserMedia({
             audio: true 
