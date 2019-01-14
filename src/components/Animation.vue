@@ -15,10 +15,10 @@
       <span slot="loader">Replaying...</span>
     </v-btn>
     <!-- PLAY VIDEO -->
-    <v-btn :loading="isPlayingVideo"
-           :disabled="isPlayingVideo"
-           @click="playVideo()">
-      <span>PLAY VIDEO</span>
+    <v-btn :loading="isPlayingVisual"
+           :disabled="isPlayingVisual"
+           @click="playVisual()">
+      <span>REPLAY VISUAL</span>
       <span slot="loader">Replaying...</span>
     </v-btn>
     <canvas id="myCanvas" height="700"></canvas>
@@ -51,6 +51,7 @@ export default {
     return {
       playProgress: null,
       isPlayingVideo: false,
+      isPlayingVisual: false,
       isReplaying: false,
       allStrokes: [],
       timer: null,
