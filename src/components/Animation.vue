@@ -68,7 +68,7 @@ export default {
     this.initData()
   },
   mounted() {
-    this.$root.$on('play-explanation', this.playAnimation)
+    // this.$root.$on('play-explanation', this.playAnimation)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
@@ -77,7 +77,7 @@ export default {
   methods: {
     async initReplayLogic() {
       this.isReplaying = true
-      await this.playAnimation()
+      await this.quickplay()
       this.isReplaying = false 
     },
     async handleDeletion() {
@@ -86,16 +86,15 @@ export default {
       console.log('successfully deleted document')
     },
     async initData() {
-      // visually wipe previous drawings
       if (this.ctx) {
-        // already loaded an explanation before
+        // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
       this.allStrokes = [] 
       const strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('strokeNumber', 'asc')
       await this.$binding('allStrokes', strokesRef)
       this.$root.$emit('finish-loading-animation')
-      this.drawAllStrokes(this.allStrokes)
+      this.drawStrokesInstantly()
     },
   }
 }

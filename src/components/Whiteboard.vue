@@ -127,7 +127,7 @@ export default {
     },
     async initReplayLogic() {
       this.isReplaying = true
-      await this.playAnimation()
+      await this.quickplay()
       this.isReplaying = false 
     },
     initClearBoardLogic() {
@@ -143,7 +143,9 @@ export default {
     },
     initData() {
       // visually wipe previous drawings
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      if (this.ctx) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      }
       this.unsubscribe() 
       this.allStrokes = [] 
       this.addStrokesListener() 
@@ -156,7 +158,7 @@ export default {
             const stroke = change.doc.data()
             // check if local strokes and db strokes are in sync 
             if (this.allStrokes.length < stroke.strokeNumber) {
-              this.drawStroke(stroke.points)
+              this.drawStroke(stroke.points, null)
               this.allStrokes.push(stroke)
             }
           } 
@@ -169,13 +171,6 @@ export default {
         })
       })
     },
-    // rescaleCanvas() {
-    //   this.canvas.width = this.canvas.scrollWidth
-    //   this.canvas.height = this.canvas.scrollHeight
-    //   // only redraw when the user has finished resizing the window
-    //   clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
-    //   this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
-    // },
     resetVariables() {
       this.allStrokes = []
       this.lastX = -1
@@ -197,43 +192,23 @@ export default {
         console.log('err =', err)
       }
     },
-    drawLine(x, y, size = 2) {
-      if (this.lastX == -1) {
-        this.lastX = x
-        this.lastY = y
-        return
-      }
-      // set style 
-      this.ctx.strokeStyle = 'purple'
-      this.ctx.lineCap = 'round' // lines at different angles can join into each other
-      this.ctx.lineWidth = size
-      // "trace" the line
-      this.ctx.beginPath()
-      this.ctx.moveTo(this.lastX, this.lastY)
-      this.ctx.lineTo(x,y)
-      // draw the line
-      this.ctx.stroke()
-      // update position
-      this.lastX = x
-      this.lastY = y
-    },
     convertAndSavePoint(x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
       const unitY = parseFloat(y / this.canvas.height).toFixed(4)
       this.currentStroke.push({ unitX, unitY })
-      this.drawLine(this.touchX, this.touchY, 2)
+      this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart(e) {
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawLine(this.touchX, this.touchY, 2)
+      this.drawToPoint(this.touchX, this.touchY)
       this.startTime = this.currentTime.toFixed(1)
     },
     touchMove(e) {
       e.preventDefault()
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawLine(this.touchX, this.touchY, 2)
+      this.drawToPoint(this.touchX, this.touchY)
     },
     touchEnd(e) {
       const strokeNumber = this.allStrokes.length + 1
