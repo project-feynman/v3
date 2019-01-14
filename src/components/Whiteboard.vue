@@ -21,7 +21,7 @@
         <!-- CLEAR WHITEBOARD -->
         <v-btn :loading="isClearing"
                :disabled="isClearing"
-               @click="initClearBoardLogic()">
+               @click="initClearBoardLogic()"> 
           <span>CLEAR WHITEBOARD</span>
           <span slot="loader">Clearing...</span>
         </v-btn>
@@ -46,11 +46,13 @@
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/functions'
-import db from '@/database.js'
+import db from '@/database'
 import RecordButton from '@/components/RecordButton'
+import DrawMethods from '@/mixins/DrawMethods'
 
 export default {
   props: ['ownerUid', 'showButtons', 'workspace'],
+  mixins: [DrawMethods],
   components: {
     RecordButton
   },
@@ -174,24 +176,9 @@ export default {
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
       this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
     },
-    drawAllStrokes(strokes) {
-      for (let i = 0; i < strokes.length; i++) {
-        this.drawStroke(strokes[i].points )
-      }
-    },
     resetVariables() {
       this.allStrokes = []
       this.lastX = -1
-    },
-    drawStroke(points) {
-      for (let i = 0; i < points.length; i++) {
-        const x = points[i].unitX * this.canvas.width
-        const y = points[i].unitY * this.canvas.height
-        this.drawLine(x, y, 3)
-        if (i == points.length - 1) {
-          this.lastX = -1 
-        }
-      }
     },
     initTouchEvents() {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
@@ -257,7 +244,6 @@ export default {
         author: this.author,
         points: this.currentStroke,
       }
-      console.log('stroke.timestamps =', stroke.startTime, stroke.endTime)
       // save 
       this.allStrokes.push(stroke)
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
@@ -285,7 +271,7 @@ export default {
     async playVideo() {
       console.log('record button =', this.$refs)
       this.isPlayingVideo = true 
-      this.$refs['record-button'].playRecording()
+      // this.$refs['record-button'].playRecording()
       this.currentTime = 0
       this.idx = 0 
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -303,6 +289,7 @@ export default {
             }
           } else {
             this.idx = i 
+            this.isPlayingVideo = true
             break 
           }
         }
@@ -343,6 +330,8 @@ export default {
         const y = points[i].unitY * this.canvas.height
         this.drawLine(x, y, 3)
         if (!instant) {
+          // handle when timestamps are all uniform 
+          // console.log('pointPeriod =', pointPeriod)
           await timeout(pointPeriod)
         }
         if (i == points.length - 1) {

@@ -1,4 +1,5 @@
 <template>
+  <!-- https://kaliatech.github.io/web-audio-recording-tests/dist/#/test1 -->
   <!-- https://codepen.io/Sambego/pen/ZBPbbR -->
   <div>
     <div class="wrapper">
@@ -23,9 +24,17 @@ export default {
   },
   methods: {
     playRecording() {
-      this.audioElement.play()
-      // emit the done event to tell the whiteboard component that it is done 
-      // furthermore, get the audio length 
+      // just need to know whether there is a recording loaded or not - that wuld make life easy
+      try {
+        // console.log('audioElement =', audioElement)
+        status = this.audioElement.play()
+        // if (!status) {
+        //   throw('new exception')
+        // }
+      } catch(err) {
+        console.log("error caught")
+        this.$emit('replay-ended')
+      } 
     }
   },
   mounted() { 
@@ -41,10 +50,6 @@ export default {
       this.audioElement.setAttribute('src', url)
       this.audioElement.addEventListener('play', () => this.$emit('replay-recording'))
       this.audioElement.addEventListener('ended', () => this.$emit('replay-ended'))
-      // for testing purposes, newly recorded clips will start playing immediately
-      console.log('audio tracks =', this.audioElement.audioTracks)
-      this.audioElement.play()
-      console.log('audio duration =', this.audioElement.duration)
     }
     // wait until everything has loaded
     (() => {
@@ -59,6 +64,7 @@ export default {
             recorder = new MediaRecorder(stream);
             recorder.ondataavailable = event => chunks.push(event.data)
             recorder.onstop = saveRecording
+            // console.log('audio ready state =', this.audioElement.readyState)
         })
         startButton.addEventListener('mouseup', () => { 
           // restart recording 
