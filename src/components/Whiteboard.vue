@@ -10,13 +10,14 @@
         <span>QUICKPLAY</span>
         <span slot="loader">Replaying...</span>
       </v-btn>
-      <!-- REPLAY VIDEO -->
-      <v-btn :loading="isPlayingVideo"
-             :disabled="isPlayingVideo"
-             @click="playVideo()">
-        <span>REPLAY VIDEO</span>
+      <!-- REPLAY VISUAl -->
+      <v-btn :loading="isPlayingVisual"
+             :disabled="isPlayingVisual"
+             @click="playVisual()">
+        <span>REPLAY VISUAL</span>
         <span slot="loader">Replaying...</span>
       </v-btn>
+
       <template v-if="showButtons">
         <!-- CLEAR WHITEBOARD -->
         <v-btn :loading="isClearing"
@@ -28,7 +29,7 @@
         <!-- START TIMER -->
         <!-- <v-btn @click="startTimer()">START TIMER</v-btn> -->
         <!-- <v-btn @click="stopTimer()">STOP TIMER</v-btn> -->
-        <p>{{ currentTime.toFixed(1) }}</p>
+        <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
         <!-- RECORD -->
         <record-button ref="record-button"
                        @start-recording="startTimer()" 
@@ -71,7 +72,7 @@ export default {
     },
     isPlayingVideo: {
       get() {
-        return this.isPlayingAudio ||this.isPlayingVisual
+        return this.isPlayingAudio || this.isPlayingVisual
       },
       set(isPlayingVideo) {
         this.isPlayingAudio = true 
@@ -90,7 +91,7 @@ export default {
       isClearing: false,
       isReplaying: false,
       timer: null,
-      currentTime: 0,
+      currentTime: null,
       startTime: null,
       endTime: null,
       touchX: null,
@@ -113,6 +114,7 @@ export default {
   },
   methods: {
     startTimer() {
+      this.currentTime = 0 
       this.timer = setInterval(() => this.currentTime += 0.1, 100)
     },
     stopTimer() {
@@ -202,7 +204,9 @@ export default {
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
-      this.startTime = this.currentTime.toFixed(1)
+      if (this.currentTime) {
+        this.startTime = this.currentTime.toFixed(1)
+      }
     },
     touchMove(e) {
       e.preventDefault()
@@ -214,11 +218,13 @@ export default {
       const strokeNumber = this.allStrokes.length + 1
       const stroke = {
         strokeNumber,
-        startTime: this.startTime,
-        endTime: this.currentTime.toFixed(1),
-        author: this.author,
-        points: this.currentStroke,
+        author: this.author
       }
+      if (this.currentTime) {
+        stroke.startTime = this.startTime,
+        stroke.endTime = this.currentTime.toFixed(1)
+      }
+      stroke.points = this.currentStroke
       // save 
       this.allStrokes.push(stroke)
       const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')

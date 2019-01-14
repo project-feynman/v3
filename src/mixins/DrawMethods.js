@@ -7,10 +7,14 @@ export default {
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
       this.redrawTimeout = setTimeout(this.drawStrokesInstantly(), 400) // resizing the canvas causes all drawings to be lost 
     },
-    async playVideo() {
+    async playVisual() {
       // prevent the option of playing non-video supported video (because there was no recording in the first place)
       // breaks if there are strokes rendering simultaneously 
       // this.$refs['record-button'].playRecording()
+      if (this.allStrokes[0].startTime == null) {
+        // no video recorded 
+        return 
+      }
       this.isPlayingVideo = true 
       this.currentTime = 0
       this.idx = 0 
@@ -29,7 +33,6 @@ export default {
             }
           } else {
             this.idx = i 
-            this.isPlayingVideo = true
             break 
           }
         }
