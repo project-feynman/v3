@@ -27,6 +27,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import DrawMethods from '@/mixins/DrawMethods'
 import db from '@/database.js'
 
 export default {
@@ -36,6 +37,7 @@ export default {
       handler: 'initData',
     }
   },
+  mixins: [DrawMethods],
   computed: {
     ...mapState(['user']),
     author() {
@@ -102,24 +104,14 @@ export default {
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
       this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
     },
-    drawAllStrokes(strokes) {
-      if (!strokes) {
-        return 
-      }
-      for (let i = 0; i < strokes.length; i++) {
-        this.drawStroke(strokes[i].points )
-      }
-    },
-    drawStroke(points) {
-      for (let i = 0; i < points.length; i++) {
-        const x = points[i]['unitX'] * this.canvas.width
-        const y = points[i]['unitY'] * this.canvas.height
-        this.drawLine(x, y, 3)
-        if (i == points.length - 1) {
-          this.lastX = -1 
-        }
-      }
-    },
+    // drawAllStrokes(strokes) {
+    //   if (!strokes) {
+    //     return 
+    //   }
+    //   for (let i = 0; i < strokes.length; i++) {
+    //     this.drawStroke(strokes[i].points )
+    //   }
+    // },
     drawLine(x, y, size=3) {
       if (this.lastX == -1) {
         // means it's the start of the strokee
