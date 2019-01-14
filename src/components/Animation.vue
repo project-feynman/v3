@@ -104,14 +104,6 @@ export default {
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
       this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
     },
-    // drawAllStrokes(strokes) {
-    //   if (!strokes) {
-    //     return 
-    //   }
-    //   for (let i = 0; i < strokes.length; i++) {
-    //     this.drawStroke(strokes[i].points )
-    //   }
-    // },
     drawLine(x, y, size=3) {
       if (this.lastX == -1) {
         // means it's the start of the strokee
@@ -131,32 +123,6 @@ export default {
       // Update the last position to reference the current position
       this.lastX = x
       this.lastY = y
-    },
-    async playVideo() {
-      this.isPlayingVideo = true
-      this.currentTime = 0
-      this.idx = 0 
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      const checkWhetherStrokesShouldBePlayed = () => {
-        const startIdx = this.idx 
-        for (let i = startIdx; i < this.allStrokes.length; i++) {
-          const nextStroke = this.allStrokes[i]
-          if (Number(nextStroke.startTime) == this.currentTime.toFixed(1)) {
-            // specify the draw period 
-            const strokePeriod = nextStroke.endTime - nextStroke.startTime
-            this.drawPath(nextStroke, false, strokePeriod) // draw incrementally, not instantly
-            if (i == this.allStrokes.length - 1) {
-              clearInterval(this.playProgress)
-              this.isPlayingVideo = false 
-            }
-          } else {
-            this.idx = i 
-            break 
-          }
-        }
-        this.currentTime += 0.1
-      }
-      this.playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
     },
     async playAnimation() {
 			if (!this.ctx || !this.canvas) {
@@ -189,37 +155,6 @@ export default {
 				await this.drawPath(strokes[i], false) // draw incrementally, not instantly
 				await timeout(strokePeriod / 100)
 			}
-		},
-    async drawPath(data, instant = true, strokePeriod = 0) {
-      // initialize styles
-			if (data.isEraser) {
-				this.ctx.strokeStyle = 'white'
-				this.ctx.lineWidth = 20
-			} else {
-				this.ctx.strokeStyle = 'purple'
-				this.ctx.lineWidth = 2
-			}
-      this.ctx.lineCap = 'round'
-      // draw 
-			const points = data.points
-      const pointPeriod = strokePeriod / points.length
-      for (let i = 0; i < points.length; i++) {
-        const x = points[i]['unitX'] * this.canvas.width
-        const y = points[i]['unitY'] * this.canvas.height
-        this.drawLine(x, y, 3)
-        if (!instant) {
-          await timeout(pointPeriod)
-        }
-        if (i == points.length - 1) {
-          this.lastX = -1 
-        }
-      }
-			function timeout(ms) {
-				return new Promise(resolve => setTimeout(resolve, ms))
-			}
-			let promise = new Promise(resolve => setTimeout(resolve, 0))
-			promise.catch(error => console.log('error =', error))
-			return promise
 		}
   }
 }
