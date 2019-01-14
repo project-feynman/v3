@@ -169,13 +169,13 @@ export default {
         })
       })
     },
-    rescaleCanvas() {
-      this.canvas.width = this.canvas.scrollWidth
-      this.canvas.height = this.canvas.scrollHeight
-      // only redraw when the user has finished resizing the window
-      clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
-      this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
-    },
+    // rescaleCanvas() {
+    //   this.canvas.width = this.canvas.scrollWidth
+    //   this.canvas.height = this.canvas.scrollHeight
+    //   // only redraw when the user has finished resizing the window
+    //   clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
+    //   this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
+    // },
     resetVariables() {
       this.allStrokes = []
       this.lastX = -1
@@ -260,29 +260,7 @@ export default {
           this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
         }
       }
-    },
-    // ANIMATION RELATED FUNCTIONS
-    getDrawSpeed(n) {
-      if (n < 10) { return 500 } 
-      else if (n < 20) { return 250 } 
-      else if (n < 40) { return 100 } 
-      else { return 30 }
-    },
-    async playAnimation() {
-			if (!this.ctx || !this.canvas || !this.allStrokes) {
-				return
-			}
-			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-			function timeout(ms) {
-				return new Promise(resolve => setTimeout(resolve, ms))
-			}
-			const n = this.allStrokes.length
-			const strokePeriod = this.getDrawSpeed(n)
-			for (let i=0; i<n; i++) {
-				await this.drawPath(this.allStrokes[i], false) // draw incrementally, not instantly
-				await timeout(strokePeriod / 100)
-			}
-		}
+    }
   }
 }
 </script>
