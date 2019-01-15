@@ -103,7 +103,6 @@ export default {
         xhr.responseType = 'blob'
         xhr.onload = event => {
           const blob = xhr.response;
-          console.log('blob successfully downloaded =', blob)
           const blobURL = URL.createObjectURL(blob)
           const newRecording = {
             blob,
@@ -119,6 +118,8 @@ export default {
             // outdated local data 
             this.recordings = [] 
             this.recordings.push(newRecording)
+          } else {
+            console.log('local audio file is already in sync')
           }
         }
         xhr.open('GET', this.audioURL)
