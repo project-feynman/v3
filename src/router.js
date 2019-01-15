@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import AudioRecorder from '@/components/AudioRecorder'
 
 Vue.use(Router)
 
@@ -11,10 +10,6 @@ export default new Router({
     {
       path: '/',
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
-    },
-    {
-      path: '/record',
-      component: AudioRecorder
     },
     {
       path: '/:teacher_id',
