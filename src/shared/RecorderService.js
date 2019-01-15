@@ -261,6 +261,7 @@ export default class RecorderService {
   }
 
   stopRecording () {
+    console.log('stopRecording()')
     if (this.state === 'inactive') {
       return
     }
@@ -270,11 +271,15 @@ export default class RecorderService {
     }
     else {
       this.state = 'inactive'
+
+      console.log('sample rate =', this.audioCtx.sampleRate)
+      console.log('slicing =', this.slicing)
+
       this.encoderWorker.postMessage(['dump', this.audioCtx.sampleRate])
       clearInterval(this.slicing)
 
       // TODO: There should be a more robust way to handle this
-      // Without something like this, I think  the last recorded sample could be lost due to timing
+      // Without something like this, I think the last recorded sample could be lost due to timing
       // setTimeout(() => {
       //   this.state = 'inactive'
       //   this.encoderWorker.postMessage(['dump', this.audioCtx.sampleRate])
@@ -283,9 +288,7 @@ export default class RecorderService {
   }
 
   _onDataAvailable (evt) {
-    console.log("onDataAvailable")
-    // console.log('state', this.mediaRecorder.state)
-    // console.log('evt.data', evt.data)
+    console.log("_onDataAvailable(evt)")
 
     this.chunks.push(evt.data)
     this.chunkType = evt.data.type
@@ -295,7 +298,6 @@ export default class RecorderService {
     }
 
     let blob = new Blob(this.chunks, {'type': this.chunkType})
-    console.log('blob =', blob)
     let blobUrl = URL.createObjectURL(blob)
     const recording = {
       blob,

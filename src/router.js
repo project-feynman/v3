@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import RecordButton from '@/components/RecordButton'
 import AudioRecorder from '@/components/AudioRecorder'
 
 Vue.use(Router)

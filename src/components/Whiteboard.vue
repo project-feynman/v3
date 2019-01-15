@@ -26,16 +26,7 @@
           <span>CLEAR WHITEBOARD</span>
           <span slot="loader">Clearing...</span>
         </v-btn>
-        <!-- START TIMER -->
-        <!-- <v-btn @click="startTimer()">START TIMER</v-btn> -->
-        <!-- <v-btn @click="stopTimer()">STOP TIMER</v-btn> -->
         <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
-        <!-- RECORD -->
-        <record-button ref="record-button"
-                       @start-recording="startTimer()" 
-                       @replay-recording="playVideo()" 
-                       @end-recording="stopTimer()"
-                       @replay-ended="isPlayingAudio = false"/>
       </template>
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" height="700"></canvas>
@@ -48,18 +39,21 @@ import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/functions'
 import db from '@/database'
-import RecordButton from '@/components/RecordButton'
 import DrawMethods from '@/mixins/DrawMethods'
 
 export default {
-  props: ['ownerUid', 'showButtons', 'workspace'],
+  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording'],
   mixins: [DrawMethods],
-  components: {
-    RecordButton
-  },
   watch: {
     ownerUid: {
       handler: 'initData',
+    },
+    isRecording() {
+      if (this.isRecording) {
+        this.startTimer()
+      } else {
+        this.stopTimer()
+      }
     }
   },
   computed: {

@@ -21,7 +21,14 @@
             <p>{{ workspace.question }}</p>
             <template v-if="!workspace.isAnswered">
               <v-spacer/>
+              <!-- SUBMIT ANSWER -->
               <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
+              <!-- AUDIO RECORDER -->
+              <audio-recorder ref="audio-recorder"
+                              :audioUrl="workspace.audioUrl"
+                              @start-recording="isRecording = true" 
+                              @end-recording="isRecording = false"
+                              @file-uploaded="audio => saveFileReference(audio)"/>
             </template>
             <template v-else>
               <v-spacer></v-spacer>
@@ -34,13 +41,13 @@
               <!-- RESET WORKSPACE -->
               <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
             </template>
-            <!-- QUESTION ASKED, NEED ANSWER -->
-            <!-- RECORD BUTTON -->
-            <!-- <record-button/> -->
-            <!-- SUBMIT ANSWER -->
              <!-- WHITEBOARD -->
             <v-flex md12>
-              <whiteboard v-if="ownerUid" :ownerUid="ownerUid" :workspace="workspace" :showButtons="!workspace.isAnswered"/>
+              <whiteboard v-if="ownerUid" 
+                          :ownerUid="ownerUid" 
+                          :workspace="workspace" 
+                          :showButtons="!workspace.isAnswered"
+                          :isRecording="isRecording"/>
             </v-flex>
           </template>
         </template>
@@ -56,7 +63,7 @@ import db from '@/database'
 import Chat from '@/components/Chat'
 import Whiteboard from '@/components/Whiteboard'
 import PopupButton from '@/components/PopupButton'
-import RecordButton from '@/components/RecordButton'
+import AudioRecorder from '@/components/AudioRecorder'
 import { mapState } from 'vuex'
 
 export default {
@@ -64,13 +71,14 @@ export default {
     Chat,
     Whiteboard,
     PopupButton,
-    RecordButton
+    AudioRecorder
   },
   computed: {
     ...mapState(['user'])
   },
   data() {
     return {
+      isRecording: false,
       ownerUid: null,
       newMessage: null,
       workspace: null,
@@ -84,6 +92,14 @@ export default {
     }
   },
   methods: {
+    async saveFileReference({ url, path }) {
+      const ref = db.collection('workspaces').doc(this.$route.params.id)
+      await ref.update({
+        audioUrl: url,
+        audioPath: path
+      })
+      console.log('successfully saved audio url to workspace')
+    },
     async submitAnswer() {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
