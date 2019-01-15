@@ -2,14 +2,6 @@
   <v-container mb-5>
     <v-layout row wrap>
       <div class="test1">
-        <h2 v-if="recordings">{{ recordings }}</h2>
-        <h3>Test 1
-          <span v-if="$vuetify.breakpoint.xsOnly"><br></span>
-          <span v-if="!$vuetify.breakpoint.xsOnly"> - </span>
-          Repeatable Recording &amp; Playback
-        </h3>
-        <p>Click start/stop multiple times to create multiple recordings. Works on all modern browser/device
-          combinations, including iOS/Safari 11.2.x and newer.</p>
         <div>
           <v-btn @click="startRecording" :disabled="recordingInProgress">Start Recording
           </v-btn>
@@ -27,16 +19,7 @@
           <label>{{ micGain }}</label>
         </div>
       </v-flex>
-    </v-layout>
-    <v-layout row wrap class="ml-1 mt-1">
-      <v-checkbox v-model="addDynamicsCompressor"
-                  label="Add dynamics compressor to audio graph"
-                  :disabled="recordingInProgress"></v-checkbox>
-    </v-layout>
-    <v-layout row wrap class="ml-1 mt-1">
-      <v-checkbox v-model="cleanupWhenFinished"
-                  label="Stop tracks and close audio context when recording stopped"></v-checkbox>
-    </v-layout>
+    </v-layout> 
     <v-layout column wrap v-if="recordings.length > 0">
       <h4 class="mt-3">Recordings</h4>
       <div v-for="(recording, idx) in recordings" :key="recording.ts">
@@ -48,7 +31,7 @@
               </div>
               <div class="ml-3">
                 <div>
-                  <audio :src="recording.blobUrl" controls="true"/>
+                  <audio id="audio-element" :src="recording.blobURL" controls="true"/>
                 </div>
                 <div>
                   size: {{recording.size | fileSizeToHumanSize}}, type: {{recording.mimeType}}
@@ -72,6 +55,7 @@ import utils from '@/shared/Utils'
 
 export default {
   name: 'Test1',
+  props: ['audioUrl'],
   filters: {
     fileSizeToHumanSize (val) {
       return utils.humanFileSize(val, true)
@@ -90,9 +74,13 @@ export default {
   },
   created () {
     this.recorderSrvc = new RecorderService()
-    this.recorderSrvc.em.addEventListener('recording', (evt) => this.onNewRecording(evt))
+    this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
   },
   watch: {
+    audioUrl: {
+      handler: 'downloadAudioFile',
+      immediate: true,
+    },
     cleanupWhenFinished (val) {
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
     },
@@ -102,35 +90,80 @@ export default {
     }
   },
   methods: {
+    playAudio() {
+      const audioElement = document.getElementById('audio-element')
+      console.log('audioElement =', audioElement)
+      if (audioElement) {
+        audioElement.play()
+      }
+    },
+    downloadAudioFile() {
+      if (this.audioUrl) {
+        var xhr = new XMLHttpRequest()
+        xhr.responseType = 'blob'
+        xhr.onload = event => {
+          const blob = xhr.response;
+          console.log('blob successfully downloaded =', blob)
+          const blobURL = URL.createObjectURL(blob)
+          const recording = {
+            blob,
+            ts: new Date().getTime(),
+            blobURL,
+            mimeType: blob.type,
+            size: blob.size,
+          }
+          this.recordings.push(recording)
+        }
+        xhr.open('GET', this.audioUrl)
+        xhr.send()
+      }
+    },
+    getUid() {
+      function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+          .toString(16)
+          .substring(1)
+      }
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
+    },
     startRecording () {
+      this.$emit('start-recording')
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
       this.recorderSrvc.config.createDynamicsCompressorNode = this.addDynamicsCompressor
       this.recorderSrvc.startRecording()
-        .then(() => {
-          this.recordingInProgress = true
-        })
-        .catch(error => {
-          console.error('Exception while start recording: ' + error)
-          alert('Exception while start recording: ' + error.message)
-        })
+        .then(() => this.recordingInProgress = true)
+        .catch(error => alert('Exception while start recording: ' + error.message))
     },
     stopRecording () {
+      this.$emit('end-recording')
       this.recorderSrvc.stopRecording()
       this.recordingInProgress = false
-
     },
     onNewRecording (evt) {
       this.recordings.push(evt.detail.recording)
-      console.log('new recording added to recordings')
-      // attempt to save it to Firebase 
       const storageRef = firebase.storage().ref()
-      const recordingsRef = storageRef.child('recording')
-
-
+      const id = this.getUid() 
+      const recordingRef = storageRef.child(`recordings/${id}`)
       // upload blob 
       const audioFile = this.recordings[0].blob 
-      recordingsRef.put(audioFile).then(snapshot => console.log('uploaded blob!'))
-
+      let uploadTask = recordingRef.put(audioFile)
+      uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+        snapshot => {
+          let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          console.log('Upload is ' + progress + '% done')
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED: // or 'paused'
+              console.log('Upload is paused')
+              break
+            case firebase.storage.TaskState.RUNNING: // or 'running'
+              console.log('Upload is running')
+              break
+          }
+        }, error => console.log('error =', error), async () => {
+        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
+        this.$emit('file-uploaded', { url: downloadURL, path: id })
+        console.log('File available at', downloadURL)
+      })
     }
   }
 }
