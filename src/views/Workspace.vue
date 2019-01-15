@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-layout wrap>
         <template v-if="user && workspace">
-          <!-- EMPTY -->
+          <!-- INITIAL STATE-->
           <v-layout v-if="!workspace.question">
             <v-flex>
               <v-textarea
@@ -21,29 +21,38 @@
             <p>{{ workspace.question }}</p>
             <template v-if="!workspace.isAnswered">
               <v-spacer/>
+              <!-- PREVIEW VIDEO -->
+              <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
+
               <!-- SUBMIT ANSWER -->
               <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
+
               <!-- AUDIO RECORDER -->
               <audio-recorder ref="audio-recorder"
-                              :audioUrl="workspace.audioUrl"
+                              :audioURL="workspace.audioURL"
+                              :audioPath="workspace.audioPath"
                               @start-recording="isRecording = true" 
                               @end-recording="isRecording = false"
                               @file-uploaded="audio => saveFileReference(audio)"/>
             </template>
             <template v-else>
               <v-spacer></v-spacer>
+
               <!-- SAVE EXPLANATION -->
               <popup-button 
                 fullscreen :explanationTitle="newTitle" 
                 @input="newValue=> newTitle = newValue" 
                 @pre-save-explanation="handleSaving()"
               />
+
               <!-- RESET WORKSPACE -->
               <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
             </template>
+
              <!-- WHITEBOARD -->
             <v-flex md12>
               <whiteboard v-if="ownerUid" 
+                          ref="whiteboard"
                           :ownerUid="ownerUid" 
                           :workspace="workspace" 
                           :showButtons="!workspace.isAnswered"
@@ -92,13 +101,18 @@ export default {
     }
   },
   methods: {
+    playVideo() {
+      const audioRecorder = this.$refs['audio-recorder']
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) { whiteboard.playVisual() }
+      if (audioRecorder) { audioRecorder.playAudio() } 
+    },
     async saveFileReference({ url, path }) {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
-        audioUrl: url,
+        audioURL: url,
         audioPath: path
       })
-      console.log('successfully saved audio url to workspace')
     },
     async submitAnswer() {
       const ref = db.collection('workspaces').doc(this.$route.params.id)

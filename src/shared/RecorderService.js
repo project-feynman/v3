@@ -271,10 +271,6 @@ export default class RecorderService {
     }
     else {
       this.state = 'inactive'
-
-      console.log('sample rate =', this.audioCtx.sampleRate)
-      console.log('slicing =', this.slicing)
-
       this.encoderWorker.postMessage(['dump', this.audioCtx.sampleRate])
       clearInterval(this.slicing)
 
@@ -302,7 +298,7 @@ export default class RecorderService {
     const recording = {
       blob,
       ts: new Date().getTime(),
-      blobUrl: blobUrl,
+      blobURL: blobUrl,
       mimeType: blob.type,
       size: blob.size,
     }

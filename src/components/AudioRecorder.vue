@@ -31,6 +31,7 @@
               </div>
               <div class="ml-3">
                 <div>
+                  <!-- AUDIO PLAYER -->
                   <audio id="audio-element" :src="recording.blobURL" controls="true"/>
                 </div>
                 <div>
@@ -55,7 +56,7 @@ import utils from '@/shared/Utils'
 
 export default {
   name: 'Test1',
-  props: ['audioUrl'],
+  props: ['audioURL', 'audioPath'],
   filters: {
     fileSizeToHumanSize (val) {
       return utils.humanFileSize(val, true)
@@ -77,7 +78,7 @@ export default {
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
   },
   watch: {
-    audioUrl: {
+    audioURL: {
       handler: 'downloadAudioFile',
       immediate: true,
     },
@@ -92,33 +93,39 @@ export default {
   methods: {
     playAudio() {
       const audioElement = document.getElementById('audio-element')
-      console.log('audioElement =', audioElement)
       if (audioElement) {
         audioElement.play()
       }
     },
     downloadAudioFile() {
-      if (this.audioUrl) {
+      if (this.audioURL) {
         var xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
         xhr.onload = event => {
           const blob = xhr.response;
           console.log('blob successfully downloaded =', blob)
           const blobURL = URL.createObjectURL(blob)
-          const recording = {
+          const newRecording = {
             blob,
             ts: new Date().getTime(),
             blobURL,
             mimeType: blob.type,
             size: blob.size,
           }
-          this.recordings.push(recording)
+          if (this.recordings.length == 0) {
+            // initial load or just empty local data
+            this.recordings.push(newRecording)
+          } else if (this.recordings[0].size != newRecording.size) {
+            // outdated local data 
+            this.recordings = [] 
+            this.recordings.push(newRecording)
+          }
         }
-        xhr.open('GET', this.audioUrl)
+        xhr.open('GET', this.audioURL)
         xhr.send()
       }
     },
-    getUid() {
+    getRandomUID() {
       function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)
           .toString(16)
@@ -140,29 +147,39 @@ export default {
       this.recordingInProgress = false
     },
     onNewRecording (evt) {
+      // replace existing recording 
+      this.recordings = [] 
       this.recordings.push(evt.detail.recording)
       const storageRef = firebase.storage().ref()
-      const id = this.getUid() 
-      const recordingRef = storageRef.child(`recordings/${id}`)
+      // reuse path if possible
+      let recordingRef = ''
+      let path = ''
+      if (this.audioPath) {
+        path = this.audioPath
+        recordingRef = storageRef.child(`recordings/${path}`)
+      } else {
+        path = this.getRandomUID()
+        recordingRef = storageRef.child(`recordings/${path}`)
+      }
       // upload blob 
       const audioFile = this.recordings[0].blob 
       let uploadTask = recordingRef.put(audioFile)
-      uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, // or 'state_changed'
+      uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
         snapshot => {
           let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          console.log('Upload is ' + progress + '% done')
+          // console.log('Upload is ' + progress + '% done')
           switch (snapshot.state) {
-            case firebase.storage.TaskState.PAUSED: // or 'paused'
-              console.log('Upload is paused')
+            case firebase.storage.TaskState.PAUSED:
+              // console.log('Upload is paused')
               break
-            case firebase.storage.TaskState.RUNNING: // or 'running'
-              console.log('Upload is running')
+            case firebase.storage.TaskState.RUNNING: 
+              // console.log('Upload is running')
               break
           }
         }, error => console.log('error =', error), async () => {
         const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
-        this.$emit('file-uploaded', { url: downloadURL, path: id })
-        console.log('File available at', downloadURL)
+        this.$emit('file-uploaded', { url: downloadURL, path })
+        console.log('File available at (should be unique each time)', downloadURL)
       })
     }
   }
