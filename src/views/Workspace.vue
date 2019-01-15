@@ -26,17 +26,22 @@
 
               <!-- SUBMIT ANSWER -->
               <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
-
-              <!-- AUDIO RECORDER -->
-              <audio-recorder ref="audio-recorder"
-                              :audioURL="workspace.audioURL"
-                              :audioPath="workspace.audioPath"
-                              @start-recording="isRecording = true" 
-                              @end-recording="isRecording = false"
-                              @file-uploaded="audio => saveFileReference(audio)"/>
             </template>
-            <template v-else>
+            <!-- AUDIO RECORDER -->
+            <audio-recorder v-show="!workspace.isAnswered"
+                            ref="audio-recorder"
+                            :audioURL="workspace.audioURL"
+                            :audioPath="workspace.audioPath"
+                            @start-recording="isRecording = true" 
+                            @end-recording="isRecording = false"
+                            @file-uploaded="audio => saveFileReference(audio)"/>
+
+
+    
+            <template v-if="workspace.isAnswered">
               <v-spacer></v-spacer>
+              <!-- PREVIEW VIDEO -->
+              <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
 
               <!-- SAVE EXPLANATION -->
               <popup-button 
