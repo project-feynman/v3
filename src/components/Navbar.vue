@@ -4,13 +4,14 @@
     <v-toolbar app extended extension-height="2">
 
       <!-- open navbar button -->
-      <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
-        <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
-          Feynman Project
-        </v-toolbar-title>
-        <v-toolbar-title v-else @click="$router.push('/')" class="headline text-uppercase">
-          Feynman Project (6.006)
-        </v-toolbar-title>
+      <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/>
+      <!-- fix this section -->
+      <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
+        Feynman
+      </v-toolbar-title>
+      <v-toolbar-title v-else @click="$router.push('/')" class="headline text-uppercase">
+        Feynman (6.006)
+      </v-toolbar-title>
       <v-spacer></v-spacer>
 
       <!-- logout button -->
