@@ -5,20 +5,20 @@
     <template v-if="workspace">
 
       <!-- QUICKPLAY -->
-      <v-btn :loading="isReplaying"
+      <!-- <v-btn :loading="isReplaying"
              :disabled="isReplaying"
              @click="initReplayLogic()">
         <span>QUICKPLAY</span>
         <span slot="loader">Replaying...</span>
-      </v-btn>
+      </v-btn> -->
 
-      <!-- REPLAY VISUAl -->
-      <v-btn :loading="isPlayingVisual"
+      <!-- REPLAY VISUAL -->
+      <!-- <v-btn :loading="isPlayingVisual"
              :disabled="isPlayingVisual"
              @click="playVisual()">
         <span>REPLAY VISUAL</span>
         <span slot="loader">Replaying...</span>
-      </v-btn>
+      </v-btn> -->
 
       <template v-if="showButtons">
         <!-- CLEAR WHITEBOARD -->
