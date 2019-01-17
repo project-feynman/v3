@@ -115,7 +115,6 @@ export default {
       this.$store.commit('SET_CREATING_TEACHER', true)
       const provider = new firebase.auth.GoogleAuthProvider() 
       await firebase.auth().signInWithRedirect(provider)
-      // const result = await firebase.auth().signInWithPopup(provider) 
     },
     async studentSignIn() {
       const provider = new firebase.auth.GoogleAuthProvider()

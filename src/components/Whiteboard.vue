@@ -3,6 +3,7 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
     <template v-if="workspace">
+
       <!-- QUICKPLAY -->
       <v-btn :loading="isReplaying"
              :disabled="isReplaying"
@@ -10,6 +11,7 @@
         <span>QUICKPLAY</span>
         <span slot="loader">Replaying...</span>
       </v-btn>
+
       <!-- REPLAY VISUAl -->
       <v-btn :loading="isPlayingVisual"
              :disabled="isPlayingVisual"
@@ -28,8 +30,10 @@
         </v-btn>
         <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
       </template>
+
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" height="700"></canvas>
+
     </template>
   </div>
 </template>
@@ -147,7 +151,7 @@ export default {
       this.addStrokesListener() 
     },
     addStrokesListener() {
-      const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes').orderBy('strokeNumber')
+      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes').orderBy('strokeNumber')
       this.unsubscribe = strokesRef.onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
@@ -177,7 +181,7 @@ export default {
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection() {
-      const path = `students/${this.ownerUid}/strokes`
+      const path = `workspaces/${this.$route.params.id}/strokes`
       var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
       try {
         const result = await deleteFn({ path: path })
@@ -221,7 +225,7 @@ export default {
       stroke.points = this.currentStroke
       // save 
       this.allStrokes.push(stroke)
-      const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
+      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
       strokesRef.doc(`${strokeNumber}`).set(stroke)
       // reset 
       this.currentStroke = []
