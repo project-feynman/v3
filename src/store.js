@@ -25,24 +25,23 @@ export default new Vuex.Store({
   },
   actions: {
     async handleUserLogic(context, user) {
-      context.commit('SET_USER', user) // commit the user to avoid blocking page load 
+      let simplifiedUser = {
+        name: user.displayName,
+        uid: user.uid 
+      }
+      context.commit('SET_USER', simplifiedUser) // commit the user to avoid blocking page load 
       const userRef = db.collection('users').doc(user.uid) 
       const mirrorUser = await userRef.get() 
       if (mirrorUser.exists) {
-        console.log('returning user')
         context.commit('SET_USER', mirrorUser.data())
+        console.log('user document fetched')
       } else {
-        console.log('a new user is being created!')
-        const simplifiedUser = {
-          name: user.displayName,
-          uid: user.uid 
-        }
         if (context.state.creatingTeacher) {
-          console.log('and it is a teacher!')
           simplifiedUser.isTeacher = true 
-          // fuck the subject number for now
         }
         userRef.set(simplifiedUser)
+        context.commit('SET_USER', simplifiedUser)
+        console.log('user document fetched')
       }
     }
   }

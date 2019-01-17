@@ -1,7 +1,9 @@
 <template>
-  <nav>    
+  <nav>  
+    <!-- NAVBAR  --> 
     <v-toolbar app extended extension-height="2">
-      <!-- OPEN NAVBAR BUTTON -->
+
+      <!-- open navbar button -->
       <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
         <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
           Feynman Project
@@ -10,11 +12,14 @@
           Feynman Project (6.006)
         </v-toolbar-title>
       <v-spacer></v-spacer>
-      <!-- LOGOUT BUTTON -->
+
+      <!-- logout button -->
       <v-btn v-if="user && $route.path == '/'" @click="signOut()">Log out</v-btn>
-      <!-- LOADING INDICATOR -->
+
+      <!-- loading indicator -->
       <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
     </v-toolbar>
+
 
     <!-- NAVIGATION DRAWER -->
     <v-navigation-drawer v-if="user && $route.path != '/'" v-model="drawerOpen" app class="white">
@@ -23,45 +28,36 @@
           Workspaces
         </v-subheader>
      
-        <!-- WORKSPACES -->
+        <!-- workspaces -->
         <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`">
           <v-list-tile-content>
-            <template v-if="workspace.isOffice">
-              <span>{{ workspace.ownerName }}'s Office</span>
-            </template>
+            <span v-if="workspace.isOffice">{{ workspace.ownerName }}'s Office</span>
             <template v-else>
-
               <v-badge v-if="workspace.isAskingQuestion && !workspace.isAnswered" color="red">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
-
               <v-badge v-else-if="workspace.isAnswered" color="green">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
-
               <span v-else>{{ workspace.ownerName }}</span>
-
             </template>
           </v-list-tile-content>
         </v-list-tile>
 
         <v-divider></v-divider>
 
-        <!-- SAVED CONTENT -->
+        <!-- saved content -->
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Concepts
         </v-subheader>
-
         <v-list-tile v-for="explanation in teacherExplanations" :key="explanation.text" router :to="`/${teacherUid}/answer/${explanation['.key']}`">
           <v-list-tile-content>
             {{ explanation.title }}
           </v-list-tile-content>
         </v-list-tile>
-
-        <v-divider></v-divider>
-
+        <v-divider/>
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Examples
         </v-subheader>
@@ -72,7 +68,6 @@
             </span>
           </v-list-tile-content>
         </v-list-tile>
-
       </v-list>
     </v-navigation-drawer>
   </nav>
