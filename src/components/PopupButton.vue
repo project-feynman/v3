@@ -15,7 +15,7 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-
+        <!-- CANCEL -->
         <v-btn
           color="green darken-1"
           flat="flat"
@@ -23,7 +23,7 @@
         >
           Cancel
         </v-btn>
-
+        <!-- SAVE -->
         <v-btn
           color="green darken-1"
           flat="flat"
