@@ -15,7 +15,8 @@ export default class RecorderService {
     this.chunks = []
     this.chunkType = ''
 
-    this.usingMediaRecorder = window.MediaRecorder || false
+    // this.usingMediaRecorder = window.MediaRecorder || false
+    this.usingMediaRecorder = false 
 
     this.encoderMimeType = 'audio/wav'
 
@@ -42,7 +43,6 @@ export default class RecorderService {
   }
 
   startRecording (timeslice) {
-    console.log('startRecording()')
     if (this.state !== 'inactive') {
       return
     }
@@ -83,44 +83,42 @@ export default class RecorderService {
 
     // Create web worker for doing the encoding
     if (!this.usingMediaRecorder) {
-      if (this.config.manualEncoderId === 'mp3') {
-        // This also works and avoids weirdness imports with workers
-        // this.encoderWorker = new Worker(BASE_URL + '/workers/encoder-ogg-worker.js')
-        this.encoderWorker = this.createWorker(EncoderMp3)
-        this.encoderWorker.postMessage(['init', {baseUrl: BASE_URL, sampleRate: this.audioCtx.sampleRate}])
-        this.encoderMimeType = 'audio/mpeg'
-      }
-      else if (this.config.manualEncoderId === 'ogg') {
-        this.encoderWorker = this.createWorker(EncoderOgg)
-        this.encoderWorker.postMessage(['init', {baseUrl: BASE_URL, sampleRate: this.audioCtx.sampleRate}])
-        this.encoderMimeType = 'audio/ogg'
-      }
-      else {
-        this.encoderWorker = this.createWorker(EncoderWav)
-        this.encoderMimeType = 'audio/wav'
-      }
-      this.encoderWorker.addEventListener('message', (e) => {
+      // if (this.config.manualEncoderId === 'mp3') {
+      //   // This also works and avoids weirdness imports with workers
+      //   // this.encoderWorker = new Worker(BASE_URL + '/workers/encoder-ogg-worker.js')
+      //   this.encoderWorker = this.createWorker(EncoderMp3)
+      //   this.encoderWorker.postMessage(['init', {baseUrl: BASE_URL, sampleRate: this.audioCtx.sampleRate}])
+      //   this.encoderMimeType = 'audio/mpeg'
+      // }
+      // else if (this.config.manualEncoderId === 'ogg') {
+      //   this.encoderWorker = this.createWorker(EncoderOgg)
+      //   this.encoderWorker.postMessage(['init', {baseUrl: BASE_URL, sampleRate: this.audioCtx.sampleRate}])
+      //   this.encoderMimeType = 'audio/ogg'
+      // }
+      // else {
+      //   this.encoderWorker = this.createWorker(EncoderWav)
+      //   this.encoderMimeType = 'audio/wav'
+      // }
+      this.encoderWorker = this.createWorker(EncoderWav)
+      this.encoderMimeType = 'audio/wav'
+      this.encoderWorker.addEventListener('message', e => {
         console.log('message event fired')
         let event = new Event('dataavailable')
-        if (this.config.manualEncoderId === 'ogg') {
-          event.data = e.data
-        }
-        else {
-          event.data = new Blob(e.data, {type: this.encoderMimeType})
-        }
+        // if (this.config.manualEncoderId === 'ogg') {
+        //   event.data = e.data
+        // }
+        // else {
+        event.data = new Blob(e.data, {type: this.encoderMimeType})
+        // }
         this._onDataAvailable(event)
       })
     }
 
     // This will prompt user for permission if needed
     return navigator.mediaDevices.getUserMedia(this.config.userMediaConstraints)
-      .then((stream) => {
-        this._startRecordingWithStream(stream, timeslice)
-      })
-      .catch((error) => {
-        alert('Error with getUserMedia: ' + error.message) // temp: helps when testing for strange issues on ios/safari
-        console.log(error)
-      })
+      .then(stream => this._startRecordingWithStream(stream, timeslice))
+      .catch(error => alert('Error with getUserMedia: ' + error.message)) // temp: helps when testing for strange issues on ios/safari
+
   }
 
   setMicGain (newGain) {
@@ -284,8 +282,6 @@ export default class RecorderService {
   }
 
   _onDataAvailable (evt) {
-    console.log("_onDataAvailable(evt)")
-
     this.chunks.push(evt.data)
     this.chunkType = evt.data.type
 
@@ -341,7 +337,7 @@ export default class RecorderService {
 
     if (this.config.stopTracksAndCloseCtxWhenFinished) {
       // This removes the red bar in iOS/Safari
-      this.micAudioStream.getTracks().forEach((track) => track.stop())
+      this.micAudioStream.getTracks().forEach(track => track.stop())
       this.micAudioStream = null
 
       this.audioCtx.close()
