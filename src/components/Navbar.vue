@@ -1,7 +1,7 @@
 <template>
   <nav>    
     <v-toolbar app extended extension-height="2">
-
+      <!-- OPEN NAVBAR BUTTON -->
       <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
         <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
           Feynman Project
@@ -10,7 +10,7 @@
           Feynman Project (6.006)
         </v-toolbar-title>
       <v-spacer></v-spacer>
-      <!-- LOGOUT -->
+      <!-- LOGOUT BUTTON -->
       <v-btn v-if="user && $route.path == '/'" @click="signOut()">Log out</v-btn>
       <!-- LOADING INDICATOR -->
       <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
@@ -23,30 +23,33 @@
           Workspaces
         </v-subheader>
      
+        <!-- WORKSPACES -->
         <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`">
           <v-list-tile-content>
             <template v-if="workspace.isOffice">
               <span>{{ workspace.ownerName }}'s Office</span>
             </template>
             <template v-else>
-              <!-- new question asked -->
+
               <v-badge v-if="workspace.isAskingQuestion && !workspace.isAnswered" color="red">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
-              <!-- new answer received -->
+
               <v-badge v-else-if="workspace.isAnswered" color="green">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
-              <!-- empty -->
+
               <span v-else>{{ workspace.ownerName }}</span>
+
             </template>
           </v-list-tile-content>
         </v-list-tile>
 
         <v-divider></v-divider>
 
+        <!-- SAVED CONTENT -->
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Concepts
         </v-subheader>
@@ -96,6 +99,7 @@ export default {
   },
   data() {
     return {
+      prev_teacherUid: null,
       workspaces: null,
       teacherExplanations: null,
       newTitle: '',
@@ -125,14 +129,19 @@ export default {
       await firebase.auth().signOut()
     },
     updateNavbarButtons() {
+      // update workspaces and teacher explanations
       const path = this.$route.path
       const pathParts = path.split('/')
-      const params = this.$route.params 
-      if (params.teacher_id && !this.workspaces && !this.teacherExplanations) { // TA's Office Page 
-        this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', params.teacher_id))
-        this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', params.teacher_id))
-        console.log('this.teacherExplanations =', this.teacherExplanations)
-        setTimeout(() => this.drawerOpen = true, 0)
+      const teacher_id = this.$route.params.teacher_id
+      // the navbar content should not reload everytime the user navigates between the workspaces, but should update
+      // everytime the user visits a different TA page
+      if (teacher_id) { // TA's office page 
+        if (teacher_id != this.prev_teacherUid) {
+          this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id))
+          this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', teacher_id))
+          this.prev_teacherUid = teacher_id 
+          setTimeout(() => this.drawerOpen = true, 0)
+        }
       }
       if (pathParts[2] == 'answer') {
         this.isExplanationPage = true 
