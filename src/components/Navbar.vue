@@ -34,7 +34,7 @@
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
-              <!-- new answer received-->
+              <!-- new answer received -->
               <v-badge v-else-if="workspace.isAnswered" color="green">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>

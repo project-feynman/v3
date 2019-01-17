@@ -1,5 +1,5 @@
 <template>
-  <div></div>
+  <div v-if="feedback">{{ feedback }}</div>
 </template>
 
 <script>
@@ -16,13 +16,18 @@ export default {
       immediate: true
     }
   },
+  data() {
+    return {
+      feedback: ''
+    }
+  },
   methods: {
     async initWorkspace() {
       if (!this.isFetchingUser && this.user) {
-        const teacherUid = this.$route.params.teacher_id 
+        const teacherUid = this.$route.params.teacher_id
         const workspaceId = this.user.uid + '-' + teacherUid 
         const ref = db.collection('workspaces').doc(workspaceId)
-
+          
         const workspace = await ref.get()
         if (!workspace.exists) {
           let workspace = {
@@ -32,11 +37,13 @@ export default {
             isOffice: false,
           }
           console.log('this.user =', this.user)
+          this.feedback = this.user 
           if (this.user.isTeacher) {
             workspace.isOffice = true 
           }
           await ref.set(workspace)
           console.log('successfully created new workspace')
+          this.feedback = 'successfully created a new workspace for you!'
         }
         this.$router.push(`/${teacherUid}/workspace/${teacherUid}-${this.user.uid}`)
       }

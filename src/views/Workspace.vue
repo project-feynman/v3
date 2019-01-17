@@ -35,9 +35,7 @@
                             @start-recording="isRecording = true" 
                             @end-recording="isRecording = false"
                             @file-uploaded="audio => saveFileReference(audio)"/>
-
-
-    
+      
             <template v-if="workspace.isAnswered">
               <v-spacer></v-spacer>
               <!-- PREVIEW VIDEO -->
