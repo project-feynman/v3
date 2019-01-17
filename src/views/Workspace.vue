@@ -25,7 +25,7 @@
               <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
 
               <!-- SUBMIT ANSWER -->
-              <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
+              <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT AS ANSWER</v-btn>
             </template>
             <!-- AUDIO RECORDER -->
             <audio-recorder v-show="!workspace.isAnswered"

@@ -3,14 +3,16 @@
     <v-layout row wrap>
       <div class="test1">
         <div>
-          <v-btn @click="startRecording" :disabled="recordingInProgress">Start Recording
+          <v-btn v-if="!recordingInProgress" @click="startRecording" :disabled="recordingInProgress">
+            Start Recording
           </v-btn>
-          <v-btn @click="stopRecording" :disabled="!recordingInProgress">Stop Recording</v-btn>
+          <v-btn v-if="recordingInProgress" @click="stopRecording" :disabled="!recordingInProgress">Stop Recording</v-btn>
           <v-icon :class="recordingInProgress ? 'live' : ''">mic</v-icon>
         </div>
       </div>
     </v-layout>
-    <v-layout row wrap class="ml-1 mt-1">
+    <!-- MIC GAIN -->
+    <!-- <v-layout row wrap class="ml-1 mt-1">
       <v-flex xs10 md6>
         <v-slider label="Mic Gain" :max="500" v-model="micGainSlider"></v-slider>
       </v-flex>
@@ -19,8 +21,11 @@
           <label>{{ micGain }}</label>
         </div>
       </v-flex>
-    </v-layout> 
-    <v-layout column wrap v-if="recordings.length > 0">
+    </v-layout>  -->
+    <!-- don't show for now -->
+
+    <v-layout column wrap v-show="false">
+    <!-- <v-layout column wrap v-if="recordings.length > 0"> -->
       <h4 class="mt-3">Recordings</h4>
       <div v-for="(recording, idx) in recordings" :key="recording.ts">
         <v-card>
@@ -41,7 +46,7 @@
             </v-layout>
           </v-card-title>
         </v-card>
-        <v-divider v-if="idx !== (recordings.length-1)"/>
+        <!-- <v-divider v-if="idx !== (recordings.length-1)"/> -->
       </div>
     </v-layout>
   </v-container>
