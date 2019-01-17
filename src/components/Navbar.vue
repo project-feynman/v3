@@ -5,6 +5,7 @@
 
       <!-- open navbar button -->
       <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/>
+
       <!-- fix this section -->
       <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
         Feynman
@@ -20,7 +21,6 @@
       <!-- loading indicator -->
       <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
     </v-toolbar>
-
 
     <!-- NAVIGATION DRAWER -->
     <v-navigation-drawer v-if="user && $route.path != '/'" v-model="drawerOpen" app class="white">
@@ -140,14 +140,11 @@ export default {
         }
       }
       if (pathParts[2] == 'answer') {
-        this.isExplanationPage = true 
         this.loadingAnimation = true 
         this.$root.$on('finish-loading-animation', () => this.loadingAnimation = false) 
       } else if (pathParts[2] == 'workspace') {
-        this.isExplanationPage = false 
         this.loadingAnimation = false 
       } else {
-        this.isExplanationPage = false 
         this.loadingAnimation = false 
       }
     }
