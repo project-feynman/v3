@@ -11,9 +11,11 @@ export default {
       // prevent the option of playing non-video supported video (because there was no recording in the first place)
       // breaks if there are strokes rendering simultaneously 
       // this.$refs['record-button'].playRecording()
-      if (this.allStrokes[0].startTime == null) {
-        // no video recorded 
+      if (!this.allStrokes || this.allStrokes.length == 0) {
         return 
+      }
+      if (this.allStrokes[0].startTime == null) {
+        return // no video recorded 
       }
       this.isPlayingVideo = true 
       this.currentTime = 0

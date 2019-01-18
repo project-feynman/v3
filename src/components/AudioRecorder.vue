@@ -1,55 +1,24 @@
 <template>
-  <v-container mb-5>
-    <v-layout row wrap>
-      <div class="test1">
+  <div>
+    <v-btn v-if="!recordingInProgress" @click="startRecording" :disabled="recordingInProgress">
+      START RECORDING
+    </v-btn>
+    <v-btn v-else @click="stopRecording" :disabled="!recordingInProgress">
+      Stop Recording
+    </v-btn>
+    <!-- <v-icon :class="recordingInProgress ? 'live' : ''">mic</v-icon> -->
+    <div v-show="false">
+      <div v-for="recording in recordings" :key="recording.ts">
         <div>
-          <v-btn v-if="!recordingInProgress" @click="startRecording" :disabled="recordingInProgress">
-            Start Recording
-          </v-btn>
-          <v-btn v-if="recordingInProgress" @click="stopRecording" :disabled="!recordingInProgress">Stop Recording</v-btn>
-          <v-icon :class="recordingInProgress ? 'live' : ''">mic</v-icon>
+          <!-- AUDIO PLAYER -->
+          <audio id="audio-element" :src="recording.blobURL" controls="true"/>
+        </div>
+        <div>
+          size: {{recording.size | fileSizeToHumanSize}}, type: {{recording.mimeType}}
         </div>
       </div>
-    </v-layout>
-    <!-- MIC GAIN -->
-    <!-- <v-layout row wrap class="ml-1 mt-1">
-      <v-flex xs10 md6>
-        <v-slider label="Mic Gain" :max="500" v-model="micGainSlider"></v-slider>
-      </v-flex>
-      <v-flex xs2>
-        <div class="input-group">
-          <label>{{ micGain }}</label>
-        </div>
-      </v-flex>
-    </v-layout>  -->
-    <!-- don't show for now -->
-
-    <v-layout column wrap v-show="false">
-    <!-- <v-layout column wrap v-if="recordings.length > 0"> -->
-      <h4 class="mt-3">Recordings</h4>
-      <div v-for="(recording, idx) in recordings" :key="recording.ts">
-        <v-card>
-          <v-card-title primary-title>
-            <v-layout column wrap>
-              <div>
-                <h3>Recording #{{ idx + 1 }}</h3>
-              </div>
-              <div class="ml-3">
-                <div>
-                  <!-- AUDIO PLAYER -->
-                  <audio id="audio-element" :src="recording.blobURL" controls="true"/>
-                </div>
-                <div>
-                  size: {{recording.size | fileSizeToHumanSize}}, type: {{recording.mimeType}}
-                </div>
-              </div>
-            </v-layout>
-          </v-card-title>
-        </v-card>
-        <!-- <v-divider v-if="idx !== (recordings.length-1)"/> -->
-      </div>
-    </v-layout>
-  </v-container>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -72,7 +41,6 @@ export default {
       recordingInProgress: false,
       supportedMimeTypes: [],
       recordings: [],
-      micGainSlider: 100,
       micGain: 1.0,
       cleanupWhenFinished: true,
       addDynamicsCompressor: false
@@ -89,10 +57,6 @@ export default {
     },
     cleanupWhenFinished (val) {
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
-    },
-    micGainSlider () {
-      this.micGain = (this.micGainSlider * 0.01).toFixed(2)
-      this.recorderSrvc.setMicGain(this.micGain)
     }
   },
   methods: {
@@ -191,14 +155,3 @@ export default {
   }
 }
 </script>
-<style lang="stylus" scoped="true">
-  @import '~vuetify/src/stylus/settings/_variables'
-  @media screen and (min-width: $grid-breakpoints.sm)
-    audio
-      width 35em
-  @media screen and (max-width: ($grid-breakpoints.sm - 1))
-    audio
-      width 100%
-  .live
-    color red
-</style>
