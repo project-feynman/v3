@@ -13,7 +13,7 @@
                 :hint="getHint()"
                 class="mb-2"
               ></v-textarea>
-              <v-btn block @click="submitQuestion()">Submit Question</v-btn>
+              <v-btn block @click="submitQuestion()">SUBMIT QUESTION</v-btn>
             </v-flex>
           </v-layout>
           <!-- QUESTION ANSWERED -->
@@ -21,20 +21,22 @@
             <p>{{ workspace.question }}</p>
             <template v-if="!workspace.isAnswered">
               <v-spacer/>
+
+              <!-- AUDIO RECORDER -->
+              <audio-recorder v-show="!workspace.isAnswered"
+                      ref="audio-recorder"
+                      :audioURL="workspace.audioURL"
+                      :audioPath="workspace.audioPath"
+                      @start-recording="isRecording = true" 
+                      @end-recording="isRecording = false"
+                      @file-uploaded="audio => saveFileReference(audio)"/>
+
               <!-- PREVIEW VIDEO -->
               <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
 
               <!-- SUBMIT ANSWER -->
-              <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT AS ANSWER</v-btn>
+              <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
             </template>
-            <!-- AUDIO RECORDER -->
-            <audio-recorder v-show="!workspace.isAnswered"
-                            ref="audio-recorder"
-                            :audioURL="workspace.audioURL"
-                            :audioPath="workspace.audioPath"
-                            @start-recording="isRecording = true" 
-                            @end-recording="isRecording = false"
-                            @file-uploaded="audio => saveFileReference(audio)"/>
       
             <template v-if="workspace.isAnswered">
               <v-spacer></v-spacer>
