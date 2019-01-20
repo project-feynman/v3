@@ -53,9 +53,7 @@ export default {
       const ref = db.collection('explanations').doc(this.$route.params.id)
       const explanationDoc = await ref.get() 
       if (explanationDoc.exists) {
-        console.log('data =', explanationDoc.data())
         this.explanation = explanationDoc.data()
-        console.log('audioURl =', this.explanation.audioURL)
       }
       // this.$binding('explanation', db.collection('explanations').doc(this.$route.params.id))
       // console.log('explanation document =', this.explanation.title)
