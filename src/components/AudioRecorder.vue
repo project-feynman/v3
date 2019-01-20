@@ -68,8 +68,8 @@ export default {
       const storageRef = firebase.storage().ref()
       const path = this.getRandomUID()
       const recordingRef = storageRef.child(`recordings/${path}`)
-      console.log('this.recordings =', this.recordings)
-      console.log('this.recordings[0] =', this.recordings[0])
+      // console.log('this.recordings =', this.recordings)
+      // console.log('this.recordings[0] =', this.recordings[0])
       const audioFile = this.recordings[0].blob 
       let uploadTask = recordingRef.put(audioFile)
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
@@ -110,11 +110,9 @@ export default {
     },
     downloadAudioFile() {
       if (this.audioURL) {
-        console.log('downloading audio file!')
         var xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
         xhr.onload = event => {
-          console.log('audio obtained!')
           const blob = xhr.response;
           const blobURL = URL.createObjectURL(blob)
           const newRecording = {
