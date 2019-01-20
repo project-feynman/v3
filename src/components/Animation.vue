@@ -15,12 +15,12 @@
       <span slot="loader">Replaying...</span>
     </v-btn>
     <!-- PLAY VIDEO -->
-    <v-btn :loading="isPlayingVisual"
+    <!-- <v-btn :loading="isPlayingVisual"
            :disabled="isPlayingVisual"
            @click="playVisual()">
       <span>REPLAY VISUAL</span>
       <span slot="loader">Replaying...</span>
-    </v-btn>
+    </v-btn> -->
     <canvas id="myCanvas" height="700"></canvas>
   </div>
 </template>
