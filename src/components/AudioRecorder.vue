@@ -24,6 +24,7 @@
 <script>
 import firebase from 'firebase/app'
 import 'firebase/storage'
+import db from '@/database.js'
 
 import RecorderService from '@/shared/RecorderService.js'
 import utils from '@/shared/Utils'
@@ -49,6 +50,7 @@ export default {
   created () {
     this.recorderSrvc = new RecorderService()
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
+    this.$root.$on('save-explanation', docId => this.saveAudio(docId))
   },
   watch: {
     audioURL: {
@@ -60,7 +62,47 @@ export default {
     }
   },
   methods: {
+    saveAudio(docId) {
+      // duplicate audio file 
+      console.log('duplicating audio file')
+      const storageRef = firebase.storage().ref()
+      const path = this.getRandomUID()
+      const recordingRef = storageRef.child(`recordings/${path}`)
+      console.log('this.recordings =', this.recordings)
+      console.log('this.recordings[0] =', this.recordings[0])
+      const audioFile = this.recordings[0].blob 
+      let uploadTask = recordingRef.put(audioFile)
+      uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
+        // #1
+        snapshot => {
+          let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+          // console.log('Upload is ' + progress + '% done')
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED:
+              // console.log('Upload is paused')
+              break
+            case firebase.storage.TaskState.RUNNING: 
+              // console.log('Upload is running')
+              break
+          }
+        }, 
+        // #2
+        error => console.log('error =', error), 
+        // #3
+        async () => {
+          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
+          // update the explanation doc to contain a pointer to the new duplicated audio file 
+          const explanationRef = db.collection('explanations').doc(docId) 
+          await explanationRef.update({
+            audioPath: path,
+            audioURL: downloadURL
+          })
+          console.log('upload was successful!')
+        }
+      )
+    },
     playAudio() {
+      console.log('playAudio')
       const audioElement = document.getElementById('audio-element')
       if (audioElement) {
         audioElement.play()
@@ -68,9 +110,11 @@ export default {
     },
     downloadAudioFile() {
       if (this.audioURL) {
+        console.log('downloading audio file!')
         var xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
         xhr.onload = event => {
+          console.log('audio obtained!')
           const blob = xhr.response;
           const blobURL = URL.createObjectURL(blob)
           const newRecording = {
@@ -154,4 +198,6 @@ export default {
     }
   }
 }
+
+
 </script>
