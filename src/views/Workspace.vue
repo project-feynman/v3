@@ -40,6 +40,15 @@
       
             <template v-if="workspace.isAnswered">
               <v-spacer></v-spacer>
+              <!-- AUDIO RECORDER -->
+              <audio-recorder v-show="false"
+                      ref="audio-recorder"
+                      :audioURL="workspace.audioURL"
+                      :audioPath="workspace.audioPath"
+                      @start-recording="isRecording = true" 
+                      @end-recording="isRecording = false"
+                      @file-uploaded="audio => saveFileReference(audio)"/>
+
               <!-- PREVIEW VIDEO -->
               <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
 
@@ -155,9 +164,12 @@ export default {
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
         question: this.workspace.question,
-        author: 'Richard Feynman',
+        authorUid: this.user.uid,
+        authorName: this.user.name,
         teacherUid: this.$route.params.teacher_id
       })
+      // now the document is saved, now strokes can be saved to that document 
+      // perhaps re-write as Whiteboard is a child of Workspace
       this.$root.$emit('save-explanation', docRef.id)
     }
   }
