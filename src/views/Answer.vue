@@ -44,7 +44,6 @@ export default {
     playVideo() {
       const audioRecorder = this.$refs['audio-recorder']
       const animation = this.$refs['animation']
-      console.log('animation and audioRecorder =', audioRecorder, animation)
       if (animation) { animation.playVisual() }
       if (audioRecorder) { audioRecorder.playAudio() } 
     },

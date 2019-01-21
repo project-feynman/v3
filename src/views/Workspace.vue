@@ -9,7 +9,7 @@
               <v-textarea
                 name="input-7-1"
                 label="Question Area"
-                v-model="newMessage"
+                v-model="newQuestion"
                 :hint="getHint()"
                 class="mb-2"
               ></v-textarea>
@@ -103,7 +103,7 @@ export default {
     return {
       isRecording: false,
       ownerUid: null,
-      newMessage: null,
+      newQuestion: null,
       workspace: null,
       newTitle: null,
     }
@@ -152,8 +152,8 @@ export default {
       return 'After submitting the question, your TA will be notified to answer ASAP'
     },
     async submitQuestion() {
-      const content = this.newMessage
-      this.newMessage = null 
+      const content = this.newQuestion
+      this.newQuestion = null 
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
         isAskingQuestion: true,
@@ -170,7 +170,14 @@ export default {
       })
       // now the document is saved, now strokes can be saved to that document 
       // perhaps re-write as Whiteboard is a child of Workspace
-      this.$root.$emit('save-explanation', docRef.id)
+      // don't use root event listeners - makes things complicated
+      const audioRecorder = this.$refs['audio-recorder']
+      const whiteboard = this.$refs['whiteboard']
+      audioRecorder.saveAudio(docRef.id)
+      whiteboard.saveStrokes(docRef.id)
+
+
+      // this.$root.$emit('save-explanation', docRef.id)
     }
   }
 }

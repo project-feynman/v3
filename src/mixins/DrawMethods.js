@@ -9,13 +9,12 @@ export default {
     },
     async playVisual() {
       // prevent the option of playing non-video supported video (because there was no recording in the first place)
-      // breaks if there are strokes rendering simultaneously 
-      // this.$refs['record-button'].playRecording()
+      // would break if there are strokes rendering simultaneously 
       if (!this.allStrokes || this.allStrokes.length == 0) {
         return 
       }
       if (this.allStrokes[0].startTime == null) {
-        return // no video recorded 
+        return // no video recorded (person did not press the record button before drawing)
       }
       this.isPlayingVideo = true 
       this.currentTime = 0
@@ -62,7 +61,7 @@ export default {
           const y = point.unitY * this.canvas.height
           this.drawToPoint(x, y)
           if (pointPeriod != null) {
-            await new Promise(resolve => setTimeout(resolve, pointPeriod)) // this line is really important, in that it's what makes the function take time to finish executing 
+            await new Promise(resolve => setTimeout(resolve, pointPeriod)) 
           }
         }
         this.lastX = -1
