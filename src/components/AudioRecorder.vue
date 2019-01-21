@@ -50,7 +50,6 @@ export default {
   created () {
     this.recorderSrvc = new RecorderService()
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
-    this.$root.$on('save-explanation', docId => this.saveAudio(docId))
   },
   watch: {
     audioURL: {
@@ -65,6 +64,7 @@ export default {
     saveAudio(docId) {
       // duplicate audio file 
       console.log('duplicating audio file')
+      // save to random path 
       const storageRef = firebase.storage().ref()
       const path = this.getRandomUID()
       const recordingRef = storageRef.child(`recordings/${path}`)
@@ -110,7 +110,7 @@ export default {
     },
     downloadAudioFile() {
       if (this.audioURL) {
-        var xhr = new XMLHttpRequest()
+        let xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
         xhr.onload = event => {
           const blob = xhr.response;
@@ -126,9 +126,11 @@ export default {
             // initial load or just empty local data
             this.recordings.push(newRecording)
           } else if (this.recordings[0].size != newRecording.size) {
+            // i.e. new recording was made OR this is a new workspace 
             // outdated local data 
             this.recordings = [] 
             this.recordings.push(newRecording)
+            console.log('successfully synced audio file')
           } else {
             console.log('local audio file is already in sync')
           }
@@ -169,6 +171,7 @@ export default {
       if (this.audioPath) {
         path = this.audioPath
         recordingRef = storageRef.child(`recordings/${path}`)
+        console.log('new recording will replace existing recording on the Cloud')
       } else {
         path = this.getRandomUID()
         recordingRef = storageRef.child(`recordings/${path}`)

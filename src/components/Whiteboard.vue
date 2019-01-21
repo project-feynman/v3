@@ -102,7 +102,6 @@ export default {
     }
   },
   mounted() {
-    this.$root.$on('save-explanation', docId => this.saveStrokes(docId))
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
