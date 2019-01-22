@@ -61,7 +61,7 @@ export default {
     }
   },
   methods: {
-    saveAudio(docId) {
+    saveAudio (docId) {
       // duplicate audio file 
       console.log('duplicating audio file')
       // save to random path 
@@ -101,14 +101,14 @@ export default {
         }
       )
     },
-    playAudio() {
+    playAudio () {
       console.log('playAudio')
       const audioElement = document.getElementById('audio-element')
       if (audioElement) {
         audioElement.play()
       }
     },
-    downloadAudioFile() {
+    downloadAudioFile () {
       if (this.audioURL) {
         let xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
