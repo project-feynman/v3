@@ -27,7 +27,7 @@ export default {
           if (Number(nextStroke.startTime) == this.currentTime.toFixed(1)) {
             const strokePeriod = (nextStroke.endTime - nextStroke.startTime) * 1000
             const pointPeriod = strokePeriod / nextStroke.points.length 
-            this.drawStroke(nextStroke.points, pointPeriod)
+            this.drawStroke(nextStroke, pointPeriod)
             if (i == this.allStrokes.length - 1) {
               clearInterval(this.playProgress)
               this.isPlayingVisual = false 
@@ -44,18 +44,18 @@ export default {
     async quickplay() {
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       for (const stroke of this.allStrokes) {
-        await this.drawStroke(stroke.points)
+        await this.drawStroke(stroke)
       }
 		},
     drawStrokesInstantly() {
       for (const stroke of this.allStrokes) {
-        this.drawStroke(stroke.points, null)
+        this.drawStroke(stroke, null)
       }
     },
     // null is instant, 0 is quickplay, otherwise it's a realtime replay
-    async drawStroke(points, pointPeriod = 0) {
+    async drawStroke({ points, color }, pointPeriod = 0) {
       return new Promise(async resolve => {
-        this.setStyle()
+        this.setStyle(color)
         for (const point of points) {
           const x = point.unitX * this.canvas.width
           const y = point.unitY * this.canvas.height
@@ -74,15 +74,15 @@ export default {
         this.lastY = y
         return
       }
-      this.setStyle()
       this.traceLineTo(x, y)
       this.ctx.stroke() 
       // update position
       this.lastX = x
       this.lastY = y
     },
-    setStyle() {
-      this.ctx.strokeStyle = 'purple'
+    setStyle(color = 'yellow') {
+      this.ctx.strokeStyle = color
+      // this.ctx.strokeStyle = this.color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
       this.ctx.lineWidth = 2
     },

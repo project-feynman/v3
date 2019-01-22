@@ -49,7 +49,7 @@ export default {
       }
     },
     color() {
-      console.log('color =', this.color)
+      console.log('user picked a color =', this.color)
     }
   },
   computed: {
@@ -150,7 +150,7 @@ export default {
             const stroke = change.doc.data()
             // check if local strokes and db strokes are in sync 
             if (this.allStrokes.length < stroke.strokeNumber) {
-              this.drawStroke(stroke.points, null)
+              this.drawStroke(stroke, null)
               this.allStrokes.push(stroke)
             }
           } 
@@ -163,16 +163,16 @@ export default {
         })
       })
     },
-    resetVariables() {
+    resetVariables () {
       this.allStrokes = []
       this.lastX = -1
     },
-    initTouchEvents() {
+    initTouchEvents () {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
-    async deleteStrokesSubcollection() {
+    async deleteStrokesSubcollection () {
       const path = `workspaces/${this.$route.params.id}/strokes`
       var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
       try {
@@ -191,6 +191,7 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart(e) {
+      this.setStyle(this.color)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -208,7 +209,8 @@ export default {
       const strokeNumber = this.allStrokes.length + 1
       const stroke = {
         strokeNumber,
-        author: this.author
+        author: this.author,
+        color: this.color
       }
       if (this.currentTime) {
         stroke.startTime = this.startTime,
