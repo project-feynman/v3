@@ -4,7 +4,7 @@
   <div class="whiteboard">
     <template v-if="workspace">
 
-      <template v-if="showButtons">
+      <v-layout v-if="showButtons" row>
         <!-- CLEAR WHITEBOARD -->
         <v-btn :loading="isClearing"
                :disabled="isClearing"
@@ -13,8 +13,10 @@
           <span slot="loader">Clearing...</span>
         </v-btn>
         <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
-      </template>
-      <swatches v-model="color" />
+        <v-btn @click="useEraser()">ERASER</v-btn>
+        <swatches v-model="color" />
+      </v-layout>
+
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" height="700"></canvas>
 
@@ -49,7 +51,11 @@ export default {
       }
     },
     color() {
+      // bad - high surface area for bugs 
       console.log('user picked a color =', this.color)
+      if (this.color != 'rgb(192, 230, 253)') {
+        this.lineWidth = 2
+      }
     }
   },
   computed: {
@@ -91,7 +97,8 @@ export default {
       unsubscribe: null,
       redrawTimeout: null,
       idx: 0,
-      color: '#1CA085'
+      color: '#1CA085',
+      lineWidth: 2
     }
   },
   mounted() {
@@ -103,6 +110,10 @@ export default {
     this.addStrokesListener()
   },
   methods: {
+    useEraser() {
+      this.color = 'rgb(192, 230, 253)'
+      this.lineWidth = 15
+    },
     startTimer() {
       this.currentTime = 0 
       this.timer = setInterval(() => this.currentTime += 0.1, 100)
@@ -155,8 +166,7 @@ export default {
             }
           } 
           else if (change.type === 'removed') {
-            // to clear canvas for OTHER users (since the current user's UI is already updated)
-            // is inefficient
+            // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
             this.resetVariables()
           }
@@ -191,7 +201,7 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart(e) {
-      this.setStyle(this.color)
+      this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -210,7 +220,8 @@ export default {
       const stroke = {
         strokeNumber,
         author: this.author,
-        color: this.color
+        color: this.color,
+        lineWidth: this.lineWidth
       }
       if (this.currentTime) {
         stroke.startTime = this.startTime,
