@@ -168,16 +168,11 @@ export default {
         authorName: this.user.name,
         teacherUid: this.$route.params.teacher_id
       })
-      // now the document is saved, now strokes can be saved to that document 
-      // perhaps re-write as Whiteboard is a child of Workspace
-      // don't use root event listeners - makes things complicated
+      // now strokes can be saved as subcollections to that document 
       const audioRecorder = this.$refs['audio-recorder']
       const whiteboard = this.$refs['whiteboard']
       audioRecorder.saveAudio(docRef.id)
       whiteboard.saveStrokes(docRef.id)
-
-
-      // this.$root.$emit('save-explanation', docRef.id)
     }
   }
 }

@@ -4,22 +4,6 @@
   <div class="whiteboard">
     <template v-if="workspace">
 
-      <!-- QUICKPLAY -->
-      <!-- <v-btn :loading="isReplaying"
-             :disabled="isReplaying"
-             @click="initReplayLogic()">
-        <span>QUICKPLAY</span>
-        <span slot="loader">Replaying...</span>
-      </v-btn> -->
-
-      <!-- REPLAY VISUAL -->
-      <!-- <v-btn :loading="isPlayingVisual"
-             :disabled="isPlayingVisual"
-             @click="playVisual()">
-        <span>REPLAY VISUAL</span>
-        <span slot="loader">Replaying...</span>
-      </v-btn> -->
-
       <template v-if="showButtons">
         <!-- CLEAR WHITEBOARD -->
         <v-btn :loading="isClearing"
@@ -30,7 +14,7 @@
         </v-btn>
         <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
       </template>
-
+      <swatches v-model="color" />
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" height="700"></canvas>
 
@@ -42,11 +26,16 @@
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/functions'
-import db from '@/database'
-import DrawMethods from '@/mixins/DrawMethods'
+import db from '@/database.js'
+import DrawMethods from '@/mixins/DrawMethods.js'
+import Swatches from 'vue-swatches'
+import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
   props: ['ownerUid', 'showButtons', 'workspace', 'isRecording'],
+  components: {
+    Swatches
+  },
   mixins: [DrawMethods],
   watch: {
     ownerUid: {
@@ -58,6 +47,9 @@ export default {
       } else {
         this.stopTimer()
       }
+    },
+    color() {
+      console.log('color =', this.color)
     }
   },
   computed: {
@@ -99,6 +91,7 @@ export default {
       unsubscribe: null,
       redrawTimeout: null,
       idx: 0,
+      color: '#1CA085'
     }
   },
   mounted() {
