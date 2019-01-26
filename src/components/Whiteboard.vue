@@ -1,7 +1,7 @@
 <template>
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
-  <div class="whiteboard">
+  <div id="whiteboard">
     <template v-if="workspace">
 
       <v-layout v-if="showButtons" row>
@@ -12,13 +12,19 @@
           <span>CLEAR WHITEBOARD</span>
           <span slot="loader">Clearing...</span>
         </v-btn>
+
+        <!-- timer -->
         <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
+
+        <!-- eraser -->
         <v-btn @click="useEraser()">ERASER</v-btn>
+
+        <!-- color palette  -->
         <swatches v-model="color" />
       </v-layout>
 
       <!-- WHITEBOARD -->
-      <canvas id="myCanvas" height="700"></canvas>
+      <canvas id="myCanvas" :height="height"></canvas>
 
     </template>
   </div>
@@ -58,6 +64,9 @@ export default {
       }
     }
   },
+  created() {
+    console.log('created')
+  },
   computed: {
     ...mapState(['user']),
     author() {
@@ -78,6 +87,7 @@ export default {
   },
   data() {
     return {
+      height: 700,
       allStrokes: [],
       currentStroke: [],
       isPlayingVisual: false,
@@ -108,6 +118,13 @@ export default {
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
     this.addStrokesListener()
+    const whiteboard = document.getElementById('myCanvas')
+    console.log('whiteboard =', whiteboard)
+    var rect = whiteboard.getBoundingClientRect()
+    // 20 is the margin
+    console.log('window.innerHeight =', window.innerHeight)
+    // 64 is the height of the navbar, 36 is the height of the buttons
+    whiteboard.setAttribute('height', `${window.innerHeight - rect.y - 35 }`)
   },
   methods: {
     useEraser() {
