@@ -23,7 +23,11 @@
     </v-toolbar>
 
     <!-- NAVIGATION DRAWER -->
-    <v-navigation-drawer v-if="user && $route.path != '/'" v-model="drawerOpen" app class="white">
+    <v-navigation-drawer v-if="user && $route.path != '/'" 
+                         v-model="drawerOpen" 
+                         width="200"
+                         app 
+                         class="white">
       <v-list>
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
           Workspaces
@@ -65,7 +69,7 @@
         <v-list-tile>
           <v-list-tile-content>
             <span class="grey--text text--darken--3 mx-1">
-              (There are no examples yet)
+              (There are no examples)
             </span>
           </v-list-tile-content>
         </v-list-tile>
