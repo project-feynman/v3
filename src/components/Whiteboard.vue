@@ -64,9 +64,6 @@ export default {
       }
     }
   },
-  created() {
-    console.log('created')
-  },
   computed: {
     ...mapState(['user']),
     author() {
@@ -118,13 +115,6 @@ export default {
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
     this.addStrokesListener()
-    const whiteboard = document.getElementById('myCanvas')
-    console.log('whiteboard =', whiteboard)
-    var rect = whiteboard.getBoundingClientRect()
-    // 20 is the margin
-    console.log('window.innerHeight =', window.innerHeight)
-    // 64 is the height of the navbar, 36 is the height of the buttons
-    whiteboard.setAttribute('height', `${window.innerHeight - rect.y - 35 }`)
   },
   methods: {
     useEraser() {

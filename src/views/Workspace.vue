@@ -1,9 +1,9 @@
 <template>
   <div class="student">
     <v-container fluid>
-      <v-layout wrap>
-        <template v-if="user && workspace">
-          <!-- INITIAL STATE-->
+      <template v-if="user && workspace">
+        <!-- INITIAL STATE-->
+        <template v-if="!workspace.question">
           <v-layout v-if="!workspace.question">
             <v-flex>
               <v-textarea
@@ -16,65 +16,70 @@
               <v-btn block @click="submitQuestion()">SUBMIT QUESTION</v-btn>
             </v-flex>
           </v-layout>
-          <!-- QUESTION ANSWERED -->
-          <template v-else>
-            <p>{{ workspace.question }}</p>
-            <template v-if="!workspace.isAnswered">
-              <v-spacer/>
 
-              <!-- AUDIO RECORDER -->
-              <audio-recorder v-show="!workspace.isAnswered"
-                      ref="audio-recorder"
-                      :audioURL="workspace.audioURL"
-                      :audioPath="workspace.audioPath"
-                      @start-recording="isRecording = true" 
-                      @end-recording="isRecording = false"
-                      @file-uploaded="audio => saveFileReference(audio)"/>
+          <!-- PAST ANSWERS -->
 
-              <!-- PREVIEW VIDEO -->
-              <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
+        </template>
 
-              <!-- SUBMIT ANSWER -->
-              <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
-            </template>
-      
-            <template v-if="workspace.isAnswered">
-              <v-spacer></v-spacer>
-              <!-- AUDIO RECORDER -->
-              <audio-recorder v-show="false"
-                      ref="audio-recorder"
-                      :audioURL="workspace.audioURL"
-                      :audioPath="workspace.audioPath"
-                      @start-recording="isRecording = true" 
-                      @end-recording="isRecording = false"
-                      @file-uploaded="audio => saveFileReference(audio)"/>
+        <!-- QUESTION ANSWERED -->
+        <template v-else>
+          <p>{{ workspace.question }}</p>
+          <template v-if="!workspace.isAnswered">
+            <v-spacer/>
 
-              <!-- PREVIEW VIDEO -->
-              <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
+            <!-- AUDIO RECORDER -->
+            <audio-recorder v-show="!workspace.isAnswered"
+                    ref="audio-recorder"
+                    :audioURL="workspace.audioURL"
+                    :audioPath="workspace.audioPath"
+                    @start-recording="isRecording = true" 
+                    @end-recording="isRecording = false"
+                    @file-uploaded="audio => saveFileReference(audio)"/>
 
-              <!-- SAVE EXPLANATION -->
-              <popup-button 
-                fullscreen :explanationTitle="newTitle" 
-                @input="newValue=> newTitle = newValue" 
-                @pre-save-explanation="handleSaving()"
-              />
+            <!-- PREVIEW VIDEO -->
+            <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
 
-              <!-- RESET WORKSPACE -->
-              <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
-            </template>
+            <!-- SUBMIT ANSWER -->
+            <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
+          </template>
+    
+          <template v-if="workspace.isAnswered">
+            <v-spacer></v-spacer>
+            <!-- AUDIO RECORDER -->
+            <audio-recorder v-show="false"
+                    ref="audio-recorder"
+                    :audioURL="workspace.audioURL"
+                    :audioPath="workspace.audioPath"
+                    @start-recording="isRecording = true" 
+                    @end-recording="isRecording = false"
+                    @file-uploaded="audio => saveFileReference(audio)"/>
 
-             <!-- WHITEBOARD -->
-            <v-flex md12>
-              <whiteboard v-if="ownerUid" 
-                          ref="whiteboard"
-                          :ownerUid="ownerUid" 
-                          :workspace="workspace" 
-                          :showButtons="!workspace.isAnswered"
-                          :isRecording="isRecording"/>
-            </v-flex>
+            <!-- PREVIEW VIDEO -->
+            <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
+
+            <!-- SAVE EXPLANATION -->
+            <popup-button 
+              fullscreen :explanationTitle="newTitle" 
+              @input="newValue=> newTitle = newValue" 
+              @pre-save-explanation="handleSaving()"
+            />
+
+            <!-- RESET WORKSPACE -->
+            <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
+          </template>
+
+            <!-- WHITEBOARD -->
+          <!-- <v-flex md12> -->
+            <whiteboard v-if="ownerUid" 
+                        ref="whiteboard"
+                        :ownerUid="ownerUid" 
+                        :workspace="workspace" 
+                        :showButtons="!workspace.isAnswered"
+                        :isRecording="isRecording"/>
+          <!-- </v-flex> -->
+
           </template>
         </template>
-      </v-layout>
     </v-container>
   </div>
 </template>
@@ -177,3 +182,13 @@ export default {
   }
 }
 </script>
+
+<style>
+.responsive-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 0.97fr));
+	grid-gap: 30px;
+	max-width: 90%;
+	margin: 0 auto 30px;
+}
+</style>

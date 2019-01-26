@@ -2,6 +2,10 @@ export default {
   methods: {
     rescaleCanvas() {
       // only redraw when the user has finished resizing the window
+      // first adjust height manually (since browser only handles width automatically)
+      const rect = this.canvas.getBoundingClientRect()
+      this.canvas.setAttribute('height', `${window.innerHeight - rect.y - 35 }`)
+      // then, make the drawing coordinate system 1:1 with the actual size of the canvas
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
