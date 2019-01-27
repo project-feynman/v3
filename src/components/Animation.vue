@@ -76,9 +76,7 @@ export default {
       this.isReplaying = false 
     },
     async handleDeletion() {
-      console.log('handleDeletion()')
       await db.collection('explanations').doc(this.explanationId).delete()
-      console.log('successfully deleted document')
     },
     async initData() {
       if (this.ctx) {
