@@ -17,7 +17,6 @@
               <v-btn block @click="submitQuestion()">SUBMIT QUESTION</v-btn>
             </v-flex>
           </v-layout>
-          <!-- PAST ANSWERS -->
         </template>
 
         <!-- QUESTION ASKED -->
@@ -36,10 +35,11 @@
                   @file-uploaded="audio => saveFileReference(audio)"/>
 
           <template v-if="!workspace.isAnswered">
+            <p style="text-align: center;">{{ feedback }}</p>
             <v-layout>
               <div v-if="!workspace.isAnswered" style="margin: auto;">
                 <v-btn v-if="!isRecording" @click="startRecording()">
-                  START EXPLANATION
+                  START RECORDING
                 </v-btn>
                 <v-btn v-else @click="stopRecording()">
                   STOP RECORDING
@@ -77,7 +77,7 @@
                       @whiteboard-cleared="handleWhiteboardClear()"
                       :ownerUid="ownerUid" 
                       :workspace="workspace" 
-                      :showButtons="isRecording"
+                      :showButtons="!workspace.isAnswered"
                       :isRecording="isRecording"
                       :isAnswered="workspace.isAnswered"/>
 
@@ -116,6 +116,7 @@ export default {
       newQuestion: null,
       workspace: null,
       newTitle: null,
+      feedback: 'Tip: you can setup drawings before you start recording :]'
     }
   },
   watch: {
@@ -128,11 +129,15 @@ export default {
     handleWhiteboardClear() {
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
+        this.feedback = 'Initializing whiteboard...'
         whiteboard.initTouchEvents()
         whiteboard.currentTime = 0 
+        this.feedback = 'Whiteboard ready!'
+        setTimeout(() => this.feedback = 'Tip: you can setup drawings before you start recording :]', 1500)
       }
     },
     async retryAnswer() {
+      this.feedback = 'Clearing whiteboard...'
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
         whiteboard.deleteStrokesSubcollection()
