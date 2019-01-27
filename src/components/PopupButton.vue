@@ -15,11 +15,9 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <!-- CANCEL -->
-        <v-btn
-          color="green darken-1"
-          flat="flat"
-          @click="dialog = false"
-        >
+        <v-btn color="green darken-1"
+               flat="flat"
+               @click="dialog = false">
           Cancel
         </v-btn>
         <!-- SAVE -->

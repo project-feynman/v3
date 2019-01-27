@@ -16,7 +16,6 @@
             <!-- timer -->
             <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
 
-            <!-- eraser -->
             <v-btn @click="useEraser()">
               ERASER
             </v-btn>
@@ -43,7 +42,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording'],
+  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording', 'isAnswered'],
   components: {
     Swatches
   },
@@ -55,12 +54,19 @@ export default {
     isRecording() {
       if (this.isRecording) {
         this.startTimer()
-        this.initTouchEvents()
+        // this.initTouchEvents()
       } else {
         this.stopTimer()
-        this.removeTouchEvents()
+        // this.removeTouchEvents()
       }
     },
+    // isAnswered() {
+    //   if (this.isAnswered) {
+    //     this.removeTouchEvents()
+    //   } else {
+    //     this.initTouchEvents()
+    //   }
+    // },
     color() {
       // bad - high surface area for bugs 
       console.log('user picked a color =', this.color)
@@ -118,7 +124,7 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    // this.initTouchEvents()
+    this.initTouchEvents()
     this.addStrokesListener()
   },
   methods: {
