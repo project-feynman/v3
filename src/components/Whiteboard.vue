@@ -60,13 +60,6 @@ export default {
         // this.removeTouchEvents()
       }
     },
-    // isAnswered() {
-    //   if (this.isAnswered) {
-    //     this.removeTouchEvents()
-    //   } else {
-    //     this.initTouchEvents()
-    //   }
-    // },
     color() {
       // bad - high surface area for bugs 
       console.log('user picked a color =', this.color)
@@ -124,7 +117,9 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    this.initTouchEvents()
+    if (this.workspace.isAnswered == false) {
+      this.initTouchEvents()
+    }
     this.addStrokesListener()
   },
   methods: {
