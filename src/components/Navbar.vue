@@ -15,11 +15,17 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <!-- logout button -->
-      <v-btn v-if="user && $route.path == '/'" @click="signOut()">Log out</v-btn>
+      <v-btn v-if="user && $route.path == '/'" @click="signOut()">
+        LOG OUT
+      </v-btn>
 
       <!-- loading indicator -->
-      <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
+      <v-progress-linear v-if="isLoading" 
+                         slot="extension" 
+                         :indeterminate="true" 
+                         height="2" 
+                         class="ma-0"/>
+
     </v-toolbar>
 
     <!-- NAVIGATION DRAWER -->
