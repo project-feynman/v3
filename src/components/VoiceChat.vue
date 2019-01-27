@@ -1,5 +1,6 @@
 <template>
   <div>
+    <p>{{ debug }}</p>
     <v-btn
       @click="connected ? endVoiceChat() : joinVoiceChat()"
     >{{connected ? "End Voice Chat":"Join Voice Chat"}}</v-btn>
@@ -18,7 +19,8 @@ export default {
   data() {
     return {
       myPeer: null,
-      connected: false
+      connected: false,
+      debug: 'debug'
     };
   },
   methods: {
@@ -111,6 +113,11 @@ export default {
           audioElement.srcObject = stream;
         } catch (error) {
           audioElement.src = window.URL.createObjectURL(stream);
+          // const printStatement = {}
+          this.debug = {
+            createObjectURLWorks: audioElement.src,
+            error: error
+          }
         }
         audioElement.play();
       });

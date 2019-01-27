@@ -61,8 +61,6 @@ export default {
       const storageRef = firebase.storage().ref()
       const path = this.getRandomUID()
       const recordingRef = storageRef.child(`recordings/${path}`)
-      // console.log('this.recordings =', this.recordings)
-      // console.log('this.recordings[0] =', this.recordings[0])
       const audioFile = this.recordings[0].blob 
       let uploadTask = recordingRef.put(audioFile)
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
@@ -95,7 +93,6 @@ export default {
       )
     },
     playAudio () {
-      console.log('playAudio')
       const audioElement = document.getElementById('audio-element')
       if (audioElement) {
         audioElement.play()
@@ -123,9 +120,9 @@ export default {
             // outdated local data 
             this.recordings = [] 
             this.recordings.push(newRecording)
-            console.log('successfully synced audio file')
+            // console.log('successfully synced audio file')
           } else {
-            console.log('local audio file is already in sync')
+            // local file already in sync
           }
         }
         xhr.open('GET', this.audioURL)
@@ -164,7 +161,7 @@ export default {
       if (this.audioPath) {
         path = this.audioPath
         recordingRef = storageRef.child(`recordings/${path}`)
-        console.log('new recording will replace existing recording on the Cloud')
+        // console.log('new recording will replace existing recording on the Cloud')
       } else {
         path = this.getRandomUID()
         recordingRef = storageRef.child(`recordings/${path}`)
@@ -187,7 +184,6 @@ export default {
         }, error => console.log('error =', error), async () => {
         const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
         this.$emit('file-uploaded', { url: downloadURL, path })
-        console.log('File available at (should be unique each time)', downloadURL)
       })
     }
   }
