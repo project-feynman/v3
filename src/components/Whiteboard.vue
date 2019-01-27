@@ -54,10 +54,8 @@ export default {
     isRecording() {
       if (this.isRecording) {
         this.startTimer()
-        // this.initTouchEvents()
       } else {
         this.stopTimer()
-        // this.removeTouchEvents()
       }
     },
     color() {
@@ -108,7 +106,7 @@ export default {
       unsubscribe: null,
       redrawTimeout: null,
       idx: 0,
-      color: '#1CA085',
+      color: '#A463BF',
       lineWidth: 2
     }
   },
