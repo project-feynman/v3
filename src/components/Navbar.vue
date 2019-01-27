@@ -11,19 +11,29 @@
         Feynman
       </v-toolbar-title>
       <v-toolbar-title v-else @click="$router.push('/')" class="headline text-uppercase">
-        Feynman (7.012)
+        Feynman
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <!-- logout button -->
-      <v-btn v-if="user && $route.path == '/'" @click="signOut()">Log out</v-btn>
+      <v-btn v-if="user && $route.path == '/'" @click="signOut()">
+        LOG OUT
+      </v-btn>
 
       <!-- loading indicator -->
-      <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
+      <v-progress-linear v-if="isLoading" 
+                         slot="extension" 
+                         :indeterminate="true" 
+                         height="2" 
+                         class="ma-0"/>
+
     </v-toolbar>
 
     <!-- NAVIGATION DRAWER -->
-    <v-navigation-drawer v-if="user && $route.path != '/'" v-model="drawerOpen" app class="white">
+    <v-navigation-drawer v-if="user && $route.path != '/'" 
+                         v-model="drawerOpen" 
+                         width="200"
+                         app 
+                         class="white">
       <v-list>
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
           Workspaces
@@ -34,7 +44,7 @@
           <v-list-tile-content>
             <span v-if="workspace.isOffice">{{ workspace.ownerName }}'s Office</span>
             <template v-else>
-              <v-badge v-if="workspace.isAskingQuestion && !workspace.isAnswered" color="red">
+              <v-badge v-if="workspace.question && !workspace.isAnswered" color="red">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
@@ -53,7 +63,9 @@
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Concepts
         </v-subheader>
-        <v-list-tile v-for="explanation in teacherExplanations" :key="explanation.text" router :to="`/${teacherUid}/answer/${explanation['.key']}`">
+        <v-list-tile v-for="explanation in teacherExplanations" 
+                     :key="explanation.text" 
+                     router :to="`/${teacherUid}/answer/${explanation['.key']}`">
           <v-list-tile-content>
             {{ explanation.title }}
           </v-list-tile-content>
@@ -65,7 +77,7 @@
         <v-list-tile>
           <v-list-tile-content>
             <span class="grey--text text--darken--3 mx-1">
-              (There are no examples yet)
+              (There are no examples)
             </span>
           </v-list-tile-content>
         </v-list-tile>

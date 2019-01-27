@@ -1,8 +1,8 @@
 <template>
-    <div style="height: 100%;">
+    <div style="height: 80%;">
         
         <!-- RICHARD FEYNMAN'S QUOTE -->
-        <transition name="fade">
+        <transition name="fade" @after-leave="showTeachers = true">
           <template v-if="isFetchingUser">
             <v-layout align-center justify-center row fill-height wrap>
               <blockquote class="my-quote blockquote text-md-center">"If you can't explain it simply, you don't understand it." - Richard Feynman</blockquote>
@@ -11,7 +11,7 @@
         </transition>
 
         <!-- LIST OF TEACHERS -->
-        <template v-if="user">
+        <template v-if="!isFetchingUser && user">
           <div class="responsive-grid mt-5">
             <template v-for="teacher in teachers">
               <v-layout :key="teacher.uid">
@@ -31,13 +31,22 @@
               </v-layout>
             </template>
           </div>
+
+          <v-btn @click="becomeTeacher()"
+                 absolute
+                 dark
+                 fab
+                 bot
+                 right
+                 color="pink">
+            <v-icon>add</v-icon>
+          </v-btn>
         </template>
 
         <!-- SIGN-IN BUTTONS -->
-        <template v-else>
+        <template v-else-if="!isFetchingUser && !user">
           <v-layout align-center justify-center row fill-height wrap>
-             <v-btn @click="teacherSignIn()" color="error" dark large>SIGN IN AS A TEACHER</v-btn>
-             <v-btn @click="studentSignIn()" color="error" dark large>SIGN IN AS A STUDENT</v-btn>
+             <v-btn @click="studentSignIn()" color="error" dark large>SIGN IN</v-btn>
           </v-layout>
         </template>
 
@@ -59,10 +68,12 @@ export default {
     ...mapState(['user', 'isFetchingUser'])
   },
   methods: {
-    async teacherSignIn() {
-      this.$store.commit('SET_CREATING_TEACHER', true)
-      const provider = new firebase.auth.GoogleAuthProvider() 
-      await firebase.auth().signInWithRedirect(provider)
+    async becomeTeacher() {
+      const ref = db.collection('users').doc(this.user.uid)
+      await ref.update({
+        isTeacher: true,
+        description: 'You will be able to edit this soon!'
+      })
     },
     async studentSignIn() {
       const provider = new firebase.auth.GoogleAuthProvider()
@@ -72,7 +83,8 @@ export default {
   },
   data() {
     return {
-      teachers: null
+      teachers: null,
+      showTeachers: false 
     }
   },
   async created() {
@@ -83,7 +95,7 @@ export default {
 
 <style>
 .my-quote {
-  font-size: 2.4em
+  font-size: 2em
 }
 
 .fade-enter-active, .fade-leave-active {

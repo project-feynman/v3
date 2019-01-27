@@ -34,11 +34,7 @@ export default new Vuex.Store({
       const mirrorUser = await userRef.get() 
       if (mirrorUser.exists) {
         context.commit('SET_USER', mirrorUser.data())
-        console.log('user document fetched')
       } else {
-        if (context.state.creatingTeacher) {
-          simplifiedUser.isTeacher = true 
-        }
         userRef.set(simplifiedUser)
         context.commit('SET_USER', simplifiedUser)
         console.log('user document fetched')
