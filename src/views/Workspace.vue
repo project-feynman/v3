@@ -74,6 +74,7 @@
           <!-- WHITEBOARD -->
           <whiteboard v-if="ownerUid" 
                       ref="whiteboard"
+                      @whiteboard-cleared="handleWhiteboardClear()"
                       :ownerUid="ownerUid" 
                       :workspace="workspace" 
                       :showButtons="isRecording"
@@ -122,12 +123,17 @@ export default {
     }
   },
   methods: {
+    handleWhiteboardClear() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.initTouchEvents()
+        whiteboard.currentTime = 0 
+      }
+    },
     async retryAnswer() {
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
         whiteboard.deleteStrokesSubcollection()
-        whiteboard.initTouchEvents()
-        whiteboard.currentTime = 0 
       }
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({

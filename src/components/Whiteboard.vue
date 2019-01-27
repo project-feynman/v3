@@ -201,7 +201,6 @@ export default {
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
     removeTouchEvents() {
-      console.log('removeTouchEvents()')
       this.canvas.removeEventListener('touchstart', this.touchStart, false)
       this.canvas.removeEventListener('touchend', this.touchEnd, false)
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
@@ -214,6 +213,7 @@ export default {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.resetVariables()
         this.isClearing = false 
+        this.$emit('whiteboard-cleared')
       } catch(err) {
         console.log('err =', err)
       }
