@@ -55,9 +55,10 @@ export default {
     isRecording() {
       if (this.isRecording) {
         this.startTimer()
-        // this.initTouchEvents()
+        this.initTouchEvents()
       } else {
         this.stopTimer()
+        this.removeTouchEvents()
       }
     },
     color() {
@@ -117,7 +118,7 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    this.initTouchEvents()
+    // this.initTouchEvents()
     this.addStrokesListener()
   },
   methods: {
@@ -192,6 +193,12 @@ export default {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
+    },
+    removeTouchEvents() {
+      console.log('removeTouchEvents()')
+      this.canvas.removeEventListener('touchstart', this.touchStart, false)
+      this.canvas.removeEventListener('touchend', this.touchEnd, false)
+      this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
       const path = `workspaces/${this.$route.params.id}/strokes`

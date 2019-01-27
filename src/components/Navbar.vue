@@ -11,7 +11,7 @@
         Feynman
       </v-toolbar-title>
       <v-toolbar-title v-else @click="$router.push('/')" class="headline text-uppercase">
-        Feynman (7.012)
+        Feynman
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
