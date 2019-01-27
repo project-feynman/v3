@@ -1,13 +1,21 @@
 <template>
   <div class="about">
      <v-container fluid>
+        <div style="text-align: center;">
+          <p v-if="explanation" class="body-2">{{ explanation.question }}</p>
+        </div>
+
       <v-layout wrap>
-        <v-btn @click="playVideo()">PLAY VIDEO</v-btn>
-        <p v-if="explanation">{{ explanation.question }}</p>
-        <v-flex md12>
-          <animation ref="animation" :explanationId="explanationId"/>
-        </v-flex>
+        <div style="margin: auto;">
+          <v-btn @click="playVideo()">PLAY VIDEO</v-btn>
+          <template v-if="user">
+            <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
+          </template>
+          <v-btn @click="quickplay()">QUICKPLAY</v-btn>
+        </div>
       </v-layout>
+
+      <animation ref="animation" :explanationId="explanationId"/>
     </v-container>
     <template v-if="explanation">
       <audio-recorder v-show="false" 
@@ -22,11 +30,15 @@
 import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
+import { mapState } from 'vuex'
 
 export default {
   components: {
     Animation,
     AudioRecorder
+  },
+  computed: {
+    ...mapState(['user'])
   },
   data() {
     return {
@@ -46,6 +58,18 @@ export default {
       const animation = this.$refs['animation']
       if (animation) { animation.playVisual() }
       if (audioRecorder) { audioRecorder.playAudio() } 
+    },
+    deleteVideo() {
+      const animation = this.$refs['animation']
+      if (animation) {
+        animation.handleDeletion()
+      }
+    },
+    quickplay() {
+      const animation = this.$refs['animation']
+      if (animation) {
+        animation.quickplay()
+      }
     },
     async bindVariables() {
       this.explanationId = this.$route.params.id

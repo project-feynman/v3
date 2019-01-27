@@ -1,24 +1,32 @@
 <template>
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
-  <div class="whiteboard">
+  <div id="whiteboard">
     <template v-if="workspace">
+      <template v-if="showButtons">
+          <div style="display: flex;">
+            <!-- CLEAR WHITEBOARD -->
+            <!-- <v-btn :loading="isClearing"
+                   :disabled="isClearing"
+                   @click="initClearBoardLogic()"> 
+              <span>CLEAR WHITEBOARD</span>
+              <span slot="loader">Clearing...</span>
+            </v-btn> -->
+            
+            <!-- timer -->
+            <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
 
-      <v-layout v-if="showButtons" row>
-        <!-- CLEAR WHITEBOARD -->
-        <v-btn :loading="isClearing"
-               :disabled="isClearing"
-               @click="initClearBoardLogic()"> 
-          <span>CLEAR WHITEBOARD</span>
-          <span slot="loader">Clearing...</span>
-        </v-btn>
-        <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
-        <v-btn @click="useEraser()">ERASER</v-btn>
-        <swatches v-model="color" />
-      </v-layout>
+            <v-btn @click="useEraser()">
+              ERASER
+            </v-btn>
+
+            <!-- color palette  -->
+            <swatches v-model="color" />
+        </div>
+      </template>
 
       <!-- WHITEBOARD -->
-      <canvas id="myCanvas" height="700"></canvas>
+      <canvas id="myCanvas" :height="height"></canvas>
 
     </template>
   </div>
@@ -34,7 +42,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording'],
+  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording', 'isAnswered'],
   components: {
     Swatches
   },
@@ -78,6 +86,7 @@ export default {
   },
   data() {
     return {
+      height: 700,
       allStrokes: [],
       currentStroke: [],
       isPlayingVisual: false,
@@ -97,7 +106,7 @@ export default {
       unsubscribe: null,
       redrawTimeout: null,
       idx: 0,
-      color: '#1CA085',
+      color: '#A463BF',
       lineWidth: 2
     }
   },
@@ -106,7 +115,9 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    this.initTouchEvents()
+    if (this.workspace.isAnswered == false) {
+      this.initTouchEvents()
+    }
     this.addStrokesListener()
   },
   methods: {
@@ -143,6 +154,9 @@ export default {
       this.allStrokes.forEach(stroke => {
         explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
       })
+      // also remember the width
+      console.log('width, height =', this.canvas.scrollWidth, this.canvas.scrollHeight)
+
     },
     initData() {
       // visually wipe previous drawings
@@ -182,6 +196,11 @@ export default {
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
+    removeTouchEvents() {
+      this.canvas.removeEventListener('touchstart', this.touchStart, false)
+      this.canvas.removeEventListener('touchend', this.touchEnd, false)
+      this.canvas.removeEventListener('touchmove', this.touchMove, false)
+    },
     async deleteStrokesSubcollection () {
       const path = `workspaces/${this.$route.params.id}/strokes`
       var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
@@ -190,6 +209,7 @@ export default {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.resetVariables()
         this.isClearing = false 
+        this.$emit('whiteboard-cleared')
       } catch(err) {
         console.log('err =', err)
       }

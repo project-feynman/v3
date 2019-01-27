@@ -1,10 +1,11 @@
 <template>
   <div class="student">
     <v-container fluid>
-      <v-layout wrap>
-        <template v-if="user && workspace">
-          <!-- INITIAL STATE-->
-          <v-layout v-if="!workspace.question">
+      <template v-if="user && workspace">
+        <!-- INITIAL STATE-->
+        <template v-if="!workspace.question">
+          <!-- QUESTION AREA -->
+          <v-layout>
             <v-flex>
               <v-textarea
                 name="input-7-1"
@@ -16,67 +17,72 @@
               <v-btn block @click="submitQuestion()">SUBMIT QUESTION</v-btn>
             </v-flex>
           </v-layout>
-          <!-- QUESTION ANSWERED -->
-          <template v-else>
-            <p>{{ workspace.question }}</p>
-            <template v-if="!workspace.isAnswered">
-              <v-spacer/>
-              <voice-chat :workspaceId="$route.params.id" :user="user"></voice-chat>
+          <!-- PAST ANSWERS -->
+        </template>
 
-              <!-- AUDIO RECORDER -->
-              <audio-recorder v-show="!workspace.isAnswered"
-                      ref="audio-recorder"
-                      :audioURL="workspace.audioURL"
-                      :audioPath="workspace.audioPath"
-                      @start-recording="isRecording = true" 
-                      @end-recording="isRecording = false"
-                      @file-uploaded="audio => saveFileReference(audio)"/>
+        <!-- QUESTION ASKED -->
+        <template v-else>
+          <p class="body-2" style="text-align: center;">
+            {{ workspace.question }}
+          </p>
+          <voice-chat :user="user" :workspaceId="$route.params.id"></voice-chat>
+          <!-- HIDDEN AUDIO RECORDER -->
+          <audio-recorder v-show="false"
+                  ref="audio-recorder"
+                  :audioURL="workspace.audioURL"
+                  :audioPath="workspace.audioPath"
+                  @start-recording="isRecording = true" 
+                  @end-recording="isRecording = false"
+                  @file-uploaded="audio => saveFileReference(audio)"/>
 
-              <!-- PREVIEW VIDEO -->
-              <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
-
-              <!-- SUBMIT ANSWER -->
-              <v-btn @click="submitAnswer()" color="pink darken--1 white--text">SUBMIT ANSWER</v-btn>
-            </template>
-      
-            <template v-if="workspace.isAnswered">
-              <v-spacer></v-spacer>
-
-              <!-- AUDIO RECORDER -->
-              <audio-recorder v-show="false"
-                      ref="audio-recorder"
-                      :audioURL="workspace.audioURL"
-                      :audioPath="workspace.audioPath"
-                      @start-recording="isRecording = true" 
-                      @end-recording="isRecording = false"
-                      @file-uploaded="audio => saveFileReference(audio)"/>
-
-              <!-- PREVIEW VIDEO -->
-              <v-btn @click="playVideo()">PREVIEW VIDEO</v-btn>
-
-              <!-- SAVE EXPLANATION -->
+          <template v-if="!workspace.isAnswered">
+            <v-layout>
+              <div v-if="!workspace.isAnswered" style="margin: auto;">
+                <v-btn v-if="!isRecording" @click="startRecording()">
+                  START EXPLANATION
+                </v-btn>
+                <v-btn v-else @click="stopRecording()">
+                  STOP RECORDING
+                </v-btn>
+              </div>
+            </v-layout>
+          </template>
+          
+          <v-layout v-else>
+            <div style="margin: auto;">
+              <v-btn @click="playVideo()">
+                PLAY VIDEO
+              </v-btn>
+              <v-btn @click="quickplay()">
+                QUICKPLAY
+              </v-btn>
+              <v-btn @click="retryAnswer()">
+                RETRY ANSWER
+              </v-btn>
+              <!-- SAVE VIDEO-->
               <popup-button 
                 fullscreen :explanationTitle="newTitle" 
                 @input="newValue=> newTitle = newValue" 
                 @pre-save-explanation="handleSaving()"
               />
+              <v-btn @click="clearWorkspace()">
+                NEW QUESTION
+              </v-btn>
+            </div>
+          </v-layout>
 
-              <!-- RESET WORKSPACE -->
-              <v-btn @click="clearWorkspace()">NEW QUESTION</v-btn>
-            </template>
+          <!-- WHITEBOARD -->
+          <whiteboard v-if="ownerUid" 
+                      ref="whiteboard"
+                      @whiteboard-cleared="handleWhiteboardClear()"
+                      :ownerUid="ownerUid" 
+                      :workspace="workspace" 
+                      :showButtons="isRecording"
+                      :isRecording="isRecording"
+                      :isAnswered="workspace.isAnswered"/>
 
-             <!-- WHITEBOARD -->
-            <v-flex md12>
-              <whiteboard v-if="ownerUid" 
-                          ref="whiteboard"
-                          :ownerUid="ownerUid" 
-                          :workspace="workspace" 
-                          :showButtons="!workspace.isAnswered"
-                          :isRecording="isRecording"/>
-            </v-flex>
           </template>
         </template>
-      </v-layout>
     </v-container>
   </div>
 </template>
@@ -119,11 +125,51 @@ export default {
     }
   },
   methods: {
+    handleWhiteboardClear() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.initTouchEvents()
+        whiteboard.currentTime = 0 
+      }
+    },
+    async retryAnswer() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.deleteStrokesSubcollection()
+      }
+      const ref = db.collection('workspaces').doc(this.$route.params.id)
+      await ref.update({
+        isAnswered: false
+      })
+    },
+    startRecording() {
+      const audioRecorder = this.$refs['audio-recorder']
+      if (audioRecorder) {
+        this.isRecording = true 
+        audioRecorder.startRecording()
+      }
+    },
+    stopRecording() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.removeTouchEvents()
+      }
+      const audioRecorder = this.$refs['audio-recorder']
+      if (audioRecorder) {
+        audioRecorder.stopRecording()
+        this.isRecording = false
+        this.submitAnswer()
+      }
+    },
     playVideo() {
       const audioRecorder = this.$refs['audio-recorder']
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) { whiteboard.playVisual() }
       if (audioRecorder) { audioRecorder.playAudio() } 
+    },
+    quickplay() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) { whiteboard.quickplay() }
     },
     async saveFileReference({ url, path }) {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
@@ -135,7 +181,6 @@ export default {
     async submitAnswer() {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
-        isAskingQuestion: false, 
         isAnswered: true
       })
     },
@@ -145,10 +190,14 @@ export default {
       this.$binding('workspace', db.collection('workspaces').doc(workspaceId))
     },
     async clearWorkspace() {
+      // also update this because a new question is asked
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.deleteStrokesSubcollection()
+      }
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
         question: '', 
-        isAskingQuestion: false, 
         isAnswered: false,
       })
     },
@@ -160,7 +209,6 @@ export default {
       this.newQuestion = null 
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
-        isAskingQuestion: true,
         question: content 
       })
     },
@@ -181,3 +229,13 @@ export default {
   }
 }
 </script>
+
+<style>
+.responsive-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 0.97fr));
+	grid-gap: 30px;
+	max-width: 90%;
+	margin: 0 auto 30px;
+}
+</style>
