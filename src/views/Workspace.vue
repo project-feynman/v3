@@ -71,13 +71,13 @@
             </div>
           </v-layout>
 
-            <!-- WHITEBOARD -->
-            <whiteboard v-if="ownerUid" 
-                        ref="whiteboard"
-                        :ownerUid="ownerUid" 
-                        :workspace="workspace" 
-                        :showButtons="isRecording"
-                        :isRecording="isRecording"/>
+          <!-- WHITEBOARD -->
+          <whiteboard v-if="ownerUid" 
+                      ref="whiteboard"
+                      :ownerUid="ownerUid" 
+                      :workspace="workspace" 
+                      :showButtons="isRecording"
+                      :isRecording="isRecording"/>
 
           </template>
         </template>
