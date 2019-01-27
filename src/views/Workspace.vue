@@ -134,8 +134,8 @@ export default {
     startRecording() {
       const audioRecorder = this.$refs['audio-recorder']
       if (audioRecorder) {
-        audioRecorder.startRecording()
         this.isRecording = true 
+        audioRecorder.startRecording()
       }
     },
     stopRecording() {
