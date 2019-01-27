@@ -7,7 +7,7 @@
 
       <v-card-text>
         <v-input>
-          <input placeholder="e.g. Markov Bounds" :value="explanationTitle" @input="$emit('input', $event.target.value)">
+          <input v-focus placeholder="e.g. Markov Bounds" :value="explanationTitle" @input="$emit('input', $event.target.value)">
         </v-input>
         To save as explanation, enter a title above
       </v-card-text>
