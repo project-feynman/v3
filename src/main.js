@@ -9,10 +9,22 @@ import 'firebase/auth'
 import VueFirestore from 'vue-firestore'
 import VueChatScroll from 'vue-chat-scroll'
 
+// plugins 
 Vue.use(VueChatScroll)
 Vue.use(VueFirestore)
 
 Vue.config.productionTip = false
+
+// Register a global custom directive called `v-focus`
+Vue.directive('focus', {
+  // when the bound element is inserted into the DOM
+  inserted: function (el) {
+    el.focus()
+  },
+  update: function (el) {
+    el.focus()
+  }
+})
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
