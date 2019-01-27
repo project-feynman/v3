@@ -17,13 +17,23 @@ export default {
       if (!this.allStrokes || this.allStrokes.length == 0) {
         return 
       }
-      if (this.allStrokes[0].startTime == null) {
-        return // no video recorded (person did not press the record button before drawing)
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.idx = 0 
+      if (!this.allStrokes[0].startTime) {
+        // there are initial setup strokes - load instantly as setup 
+        const n = this.allStrokes.length 
+        for (let i = 0; i < n; i++) {
+          const stroke = this.allStrokes[i]
+          if (!stroke.startTime) {
+            this.drawStroke(stroke, null)
+          } else {
+            this.idx = i 
+            break 
+          }
+        }
       }
       this.isPlayingVideo = true 
       this.currentTime = 0
-      this.idx = 0 
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       const checkWhetherStrokesShouldBePlayed = async () => {
         const startIdx = this.idx 
         for (let i = startIdx; i < this.allStrokes.length; i++) {
