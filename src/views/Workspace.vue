@@ -22,9 +22,9 @@
 
         <!-- QUESTION ASKED -->
         <template v-else>
-          <div style="text-align: center;">
-            <p class="body-2">{{ workspace.question }}</p>
-          </div>
+          <p class="body-2" style="text-align: center;">
+            {{ workspace.question }}
+          </p>
 
           <!-- HIDDEN AUDIO RECORDER -->
           <audio-recorder v-show="false"
@@ -77,7 +77,8 @@
                       :ownerUid="ownerUid" 
                       :workspace="workspace" 
                       :showButtons="isRecording"
-                      :isRecording="isRecording"/>
+                      :isRecording="isRecording"
+                      :isAnswered="workspace.isAnswered"/>
 
           </template>
         </template>
@@ -125,6 +126,8 @@ export default {
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
         whiteboard.deleteStrokesSubcollection()
+        whiteboard.initTouchEvents()
+        whiteboard.currentTime = 0 
       }
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
@@ -139,6 +142,10 @@ export default {
       }
     },
     stopRecording() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.removeTouchEvents()
+      }
       const audioRecorder = this.$refs['audio-recorder']
       if (audioRecorder) {
         audioRecorder.stopRecording()
