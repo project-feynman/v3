@@ -1,8 +1,13 @@
 <template>
   <div>
-    <v-btn
-      @click="connected ? endVoiceChat() : joinVoiceChat()"
-    >{{connected ? "End Voice Chat":"Join Voice Chat"}}</v-btn>
+    <v-btn v-if="connected" @click="endVoiceChat()">End Voice Chat</v-btn>
+    <v-btn v-if="!connected && !waiting" @click="joinVoiceChat()">
+      Join
+      <strong v-if="waitingPeers.length>0">&nbsp;{{waitingPeers.join(", ")}}&nbsp;</strong>
+      in Voice Chat
+    </v-btn>
+    <v-btn v-if="!connected && waiting" @click="cancelVoiceRequest()">Waiting/Cancel</v-btn>
+
     <audio id="vc-audio"/>
   </div>
 </template>
@@ -18,14 +23,43 @@ export default {
   data() {
     return {
       myPeer: null,
-      connected: false
+      connected: false,
+      waiting: false,
+      waitingPeers: []
     };
   },
+  created() {
+    db.collection("workspaces")
+      .doc(this.workspaceId)
+      .collection("peers")
+      .onSnapshot(snapshot => {
+        this.waitingPeers = [];
+        snapshot.forEach(peer => this.waitingPeers.push(peer.data().name));
+      });
+    window.addEventListener(
+      "beforeunload",
+      (e => {
+        // db.collection("workspaces")
+        //   .doc(this.workspaceId)
+        //   .collection("peers")
+        //   .doc(this.user.uid)
+        //   .delete();
+        this.myPeer && this.myPeer.destroy();
+      }).bind(this)
+    );
+  },
+  beforeDestroy() {
+    this.myPeer && this.myPeer.destroy();
+  },
   methods: {
+    cancelVoiceRequest() {
+      this.myPeer.destroy();
+    },
     endVoiceChat() {
       this.myPeer.destroy();
     },
     async joinVoiceChat() {
+      this.waiting = true;
       const userUID = this.user.uid,
         workspaceId = this.workspaceId;
       const peersRef = db
@@ -44,32 +78,25 @@ export default {
         stream: stream
       });
 
-      this.myPeer.on("signal", async function(data) {
-        // when peer1 has signaling data, give it to peer2 somehow
-        // peer2.signal(data);
-        peersRef
-          .doc(userUID)
-          .get()
-          .then(snapshot => {
-            console.log(snapshot);
-            return snapshot.exists;
-          })
-          .then(isPeerDataOnFirestore => {
-            console.log("signaldata");
-            console.log(data);
-            console.log(isPeerDataOnFirestore);
-            if (!isPeerDataOnFirestore) {
-              console.log("firsttimesetting signal data");
-              peersRef
-                .doc(userUID)
-                .set({ data })
-                .then(response => {
-                  // console.log("response");
-                  // console.log(response);
-                });
-            }
-          });
-      });
+      this.myPeer.on(
+        "signal",
+        async function(data) {
+          // when peer1 has signaling data, give it to peer2 somehow
+          // peer2.signal(data);
+          peersRef
+            .doc(userUID)
+            .get()
+            .then(snapshot => {
+              console.log(snapshot);
+              return snapshot.exists;
+            })
+            .then(isPeerDataOnFirestore => {
+              if (!isPeerDataOnFirestore) {
+                peersRef.doc(userUID).set({ data, name: this.user.name });
+              }
+            });
+        }.bind(this)
+      );
 
       const peerUnsub = peersRef.onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
@@ -86,6 +113,7 @@ export default {
       this.myPeer.on(
         "connect",
         function() {
+          this.waiting = false;
           peerUnsub();
           peersRef.get().then(querySnapshot => {
             querySnapshot.forEach(doc => {
@@ -99,6 +127,13 @@ export default {
       this.myPeer.on(
         "close",
         function() {
+          this.waiting = false;
+          peerUnsub();
+          peersRef.get().then(querySnapshot => {
+            querySnapshot.forEach(doc => {
+              doc.ref.delete().then(() => console.log("del"));
+            });
+          });
           stream.getTracks()[0].stop();
           this.connected = false;
         }.bind(this)
