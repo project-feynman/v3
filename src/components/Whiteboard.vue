@@ -154,6 +154,9 @@ export default {
       this.allStrokes.forEach(stroke => {
         explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
       })
+      // also remember the width
+      console.log('width, height =', this.canvas.scrollWidth, this.canvas.scrollHeight)
+
     },
     initData() {
       // visually wipe previous drawings
