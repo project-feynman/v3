@@ -14,7 +14,7 @@
       <span>QUICKPLAY</span>
       <span slot="loader">Replaying...</span>
     </v-btn> -->
-    <canvas id="myCanvas" height="700"></canvas>
+    <canvas id="myCanvas" :height="height"></canvas>
   </div>
 </template>
 
@@ -42,6 +42,7 @@ export default {
   },
   data() {
     return {
+      height: 700,
       playProgress: null,
       isPlayingVideo: false,
       isPlayingVisual: false,
