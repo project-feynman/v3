@@ -3,17 +3,17 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div class="whiteboard">
     <template v-if="user">
-      <v-btn v-if="user.name == 'Elton Lin'" @click="handleDeletion()" class="red darken-2">
+      <!-- <v-btn v-if="user.name == 'Elton Lin'" @click="handleDeletion()" class="red darken-2">
         <span class="white--text">Delete</span>
-      </v-btn>
+      </v-btn> -->
     </template>
     <!-- PREVIEW REPLAY -->
-    <v-btn :loading="isReplaying"
+    <!-- <v-btn :loading="isReplaying"
            :disabled="isReplaying"
            @click="initReplayLogic()">
       <span>QUICKPLAY</span>
       <span slot="loader">Replaying...</span>
-    </v-btn>
+    </v-btn> -->
     <canvas id="myCanvas" height="700"></canvas>
   </div>
 </template>
