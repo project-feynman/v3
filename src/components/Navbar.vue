@@ -44,7 +44,7 @@
           <v-list-tile-content>
             <span v-if="workspace.isOffice">{{ workspace.ownerName }}'s Office</span>
             <template v-else>
-              <v-badge v-if="workspace.isAskingQuestion && !workspace.isAnswered" color="red">
+              <v-badge v-if="workspace.question && !workspace.isAnswered" color="red">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
@@ -63,7 +63,9 @@
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Concepts
         </v-subheader>
-        <v-list-tile v-for="explanation in teacherExplanations" :key="explanation.text" router :to="`/${teacherUid}/answer/${explanation['.key']}`">
+        <v-list-tile v-for="explanation in teacherExplanations" 
+                     :key="explanation.text" 
+                     router :to="`/${teacherUid}/answer/${explanation['.key']}`">
           <v-list-tile-content>
             {{ explanation.title }}
           </v-list-tile-content>
