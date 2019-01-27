@@ -3,25 +3,28 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div id="whiteboard">
     <template v-if="workspace">
+      <template v-if="showButtons">
+          <div style="display: flex;">
+            <!-- CLEAR WHITEBOARD -->
+            <!-- <v-btn :loading="isClearing"
+                   :disabled="isClearing"
+                   @click="initClearBoardLogic()"> 
+              <span>CLEAR WHITEBOARD</span>
+              <span slot="loader">Clearing...</span>
+            </v-btn> -->
+            
+            <!-- timer -->
+            <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
 
-      <v-layout v-if="showButtons" row>
-        <!-- CLEAR WHITEBOARD -->
-        <v-btn :loading="isClearing"
-               :disabled="isClearing"
-               @click="initClearBoardLogic()"> 
-          <span>CLEAR WHITEBOARD</span>
-          <span slot="loader">Clearing...</span>
-        </v-btn>
+            <!-- eraser -->
+            <v-btn @click="useEraser()">
+              ERASER
+            </v-btn>
 
-        <!-- timer -->
-        <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p>
-
-        <!-- eraser -->
-        <v-btn @click="useEraser()">ERASER</v-btn>
-
-        <!-- color palette  -->
-        <swatches v-model="color" />
-      </v-layout>
+            <!-- color palette  -->
+            <swatches v-model="color" />
+        </div>
+      </template>
 
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" :height="height"></canvas>
@@ -52,6 +55,7 @@ export default {
     isRecording() {
       if (this.isRecording) {
         this.startTimer()
+        // this.initTouchEvents()
       } else {
         this.stopTimer()
       }
