@@ -74,7 +74,8 @@ export default {
     async becomeTeacher() {
       const ref = db.collection('users').doc(this.user.uid)
       await ref.update({
-        isTeacher: true
+        isTeacher: true,
+        description: 'You will be able to edit this soon!'
       })
     },
     async teacherSignIn() {
