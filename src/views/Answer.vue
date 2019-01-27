@@ -2,7 +2,7 @@
   <div class="about">
      <v-container fluid>
         <div style="text-align: center;">
-          <p v-if="explanation" class="headline">{{ explanation.question }}</p>
+          <p v-if="explanation" class="body-2">{{ explanation.question }}</p>
         </div>
 
       <v-layout wrap>

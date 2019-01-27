@@ -23,7 +23,7 @@
         <!-- QUESTION ASKED -->
         <template v-else>
           <div style="text-align: center;">
-            <p class="headline">{{ workspace.question }}</p>
+            <p class="body-2">{{ workspace.question }}</p>
           </div>
 
           <!-- HIDDEN AUDIO RECORDER -->
