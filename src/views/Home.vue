@@ -1,5 +1,5 @@
 <template>
-    <div style="height: 100%;">
+    <div>
         
         <!-- RICHARD FEYNMAN'S QUOTE -->
         <transition name="fade">
@@ -41,6 +41,18 @@
           </v-layout>
         </template>
 
+         <v-btn
+              @click="becomeTeacher()"
+              absolute
+              dark
+              fab
+              bot
+              right
+              color="pink"
+            >
+              <v-icon>add</v-icon>
+        </v-btn>
+
     </div>
 </template>
 
@@ -59,6 +71,12 @@ export default {
     ...mapState(['user', 'isFetchingUser'])
   },
   methods: {
+    async becomeTeacher() {
+      const ref = db.collection('users').doc(this.user.uid)
+      await ref.update({
+        isTeacher: true
+      })
+    },
     async teacherSignIn() {
       this.$store.commit('SET_CREATING_TEACHER', true)
       const provider = new firebase.auth.GoogleAuthProvider() 
@@ -83,7 +101,7 @@ export default {
 
 <style>
 .my-quote {
-  font-size: 2.4em
+  font-size: 2em
 }
 
 .fade-enter-active, .fade-leave-active {
