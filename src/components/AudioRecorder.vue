@@ -1,12 +1,5 @@
 <template>
   <div>
-    <v-btn v-if="!recordingInProgress" @click="startRecording" :disabled="recordingInProgress">
-      START RECORDING
-    </v-btn>
-    <v-btn v-else @click="stopRecording" :disabled="!recordingInProgress">
-      Stop Recording
-    </v-btn>
-    <!-- <v-icon :class="recordingInProgress ? 'live' : ''">mic</v-icon> -->
     <div v-show="false">
       <div v-for="recording in recordings" :key="recording.ts">
         <div>
