@@ -53,6 +53,9 @@
               <v-btn @click="playVideo()">
                 PLAY VIDEO
               </v-btn>
+              <v-btn @click="quickplay()">
+                QUICKPLAY
+              </v-btn>
               <v-btn @click="retryAnswer()">
                 RETRY ANSWER
               </v-btn>
@@ -148,6 +151,10 @@ export default {
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) { whiteboard.playVisual() }
       if (audioRecorder) { audioRecorder.playAudio() } 
+    },
+    quickplay() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) { whiteboard.quickplay() }
     },
     async saveFileReference({ url, path }) {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
