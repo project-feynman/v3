@@ -1,8 +1,8 @@
 <template>
-    <div style="height: 80%;">
+    <div style="height: 100%;">
         
         <!-- RICHARD FEYNMAN'S QUOTE -->
-        <transition name="fade" @after-leave="showTeachers = true">
+        <transition name="fade" @after-leave="transitionFinished = true">
           <template v-if="isFetchingUser">
             <v-layout align-center justify-center row fill-height wrap>
               <blockquote class="my-quote blockquote text-md-center">"If you can't explain it simply, you don't understand it." - Richard Feynman</blockquote>
@@ -11,7 +11,7 @@
         </transition>
 
         <!-- LIST OF TEACHERS -->
-        <template v-if="!isFetchingUser && user">
+        <template v-if="user">
           <div class="responsive-grid mt-5">
             <template v-for="teacher in teachers">
               <v-layout :key="teacher.uid">
@@ -44,7 +44,7 @@
         </template>
 
         <!-- SIGN-IN BUTTONS -->
-        <template v-else-if="!isFetchingUser && !user">
+        <template v-else>
           <v-layout align-center justify-center row fill-height wrap>
              <v-btn @click="studentSignIn()" color="error" dark large>SIGN IN</v-btn>
           </v-layout>
@@ -84,7 +84,7 @@ export default {
   data() {
     return {
       teachers: null,
-      showTeachers: false 
+      transitionFinished: false,
     }
   },
   async created() {
