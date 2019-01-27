@@ -21,6 +21,7 @@
             <p>{{ workspace.question }}</p>
             <template v-if="!workspace.isAnswered">
               <v-spacer/>
+              <voice-chat :workspaceId="$route.params.id" :user="user"></voice-chat>
 
               <!-- AUDIO RECORDER -->
               <audio-recorder v-show="!workspace.isAnswered"
@@ -40,6 +41,7 @@
       
             <template v-if="workspace.isAnswered">
               <v-spacer></v-spacer>
+
               <!-- AUDIO RECORDER -->
               <audio-recorder v-show="false"
                       ref="audio-recorder"
@@ -87,6 +89,7 @@ import Chat from '@/components/Chat'
 import Whiteboard from '@/components/Whiteboard'
 import PopupButton from '@/components/PopupButton'
 import AudioRecorder from '@/components/AudioRecorder'
+import VoiceChat from '@/components/VoiceChat'
 import { mapState } from 'vuex'
 
 export default {
@@ -94,7 +97,8 @@ export default {
     Chat,
     Whiteboard,
     PopupButton,
-    AudioRecorder
+    AudioRecorder,
+    VoiceChat
   },
   computed: {
     ...mapState(['user'])
