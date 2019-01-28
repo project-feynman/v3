@@ -4,8 +4,7 @@
       <span class="white--text">Save Video</span>
     </v-btn>
     <v-card>
-      
-
+    
       <v-card-text>
         <v-input>
           <input v-focus placeholder="e.g. Markov Bounds" :value="explanationTitle" @input="$emit('input', $event.target.value)">

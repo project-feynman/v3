@@ -4,7 +4,7 @@
         <!-- <div style="text-align: center;">
           <p v-if="explanation" class="body-2">{{ explanation.question }}</p>
         </div> -->
-
+    <!-- <p v-if="explanation">{{ explanation }}</p> -->
     <template v-if="explanation">
       <audio-recorder v-show="false" 
                       ref="audio-recorder"
