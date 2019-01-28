@@ -1,7 +1,7 @@
 <template>
-  <nav v-if="showNavbar">  
+  <nav>  
     <!-- NAVBAR  --> 
-    <v-toolbar app extended extension-height="2" id="navbar">
+    <v-toolbar app v-if="showNavbar" extended extension-height="2" id="navbar">
 
       <!-- open navbar button -->
       <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/>
@@ -108,13 +108,18 @@ export default {
   },
   created () {
     this.$root.$on('toggle-navbar', () => {
-      this.showNavbar = !this.showNavbar
-      // to prevent the offset bug 
-      this.drawerOpen = !this.drawerOpen
-      this.drawerOpen = false
+      // offset bug might be annoying 
+      if (this.showNavbar) {
+        this.showNavbar = false 
+        this.drawerOpen = false 
+      } else {
+        this.showNavbar = true
+        this.drawerOpen = true
+      }
     })
     this.$root.$on('open-navbar', () => {
       this.showNavbar = true 
+      this.drawerOpen = false
     })
     this.$root.$on('close-navbar', () => {
       this.showNavbar = false
@@ -122,6 +127,7 @@ export default {
       this.drawerOpen = !this.drawerOpen
       this.drawerOpen = false
     })
+    this.$root.$on('toggle-sidenav', () => this.drawerOpen = !this.drawerOpen)
   },
   data () {
     return {
