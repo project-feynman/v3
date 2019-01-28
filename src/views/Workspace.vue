@@ -34,48 +34,9 @@
                   @end-recording="isRecording = false"
                   @file-uploaded="audio => saveFileReference(audio)"/>
 
-          <template v-if="!workspace.isAnswered">
+     
             <!-- <p style="text-align: center;">{{ feedback }}</p> -->
-            <v-layout id="whiteboard-buttons-layout">
-              <div v-if="!workspace.isAnswered" style="margin: auto;">
-                <v-btn>
-                  SHOW QUESTION
-                </v-btn>
-                <v-btn>
-                  SELECT COLOR
-                </v-btn>
-                <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
-                  START RECORDING
-                </v-btn>
-                <v-btn v-else @click="stopRecording()" color="pink white--text">
-                  STOP RECORDING
-                </v-btn>
-              </div>
-            </v-layout>
-          </template>
-          
-          <v-layout v-else id="whiteboard-buttons-layout">
-            <div style="margin: auto;">
-              <v-btn @click="playVideo()">
-                PLAY VIDEO
-              </v-btn>
-              <!-- <v-btn @click="quickplay()">
-                QUICKPLAY
-              </v-btn> -->
-              <v-btn @click="retryAnswer()">
-                RETRY ANSWER
-              </v-btn>
-              <!-- SAVE VIDEO-->
-              <popup-button 
-                fullscreen :explanationTitle="newTitle" 
-                @input="newValue=> newTitle = newValue" 
-                @pre-save-explanation="handleSaving()"
-              />
-              <v-btn @click="clearWorkspace()">
-                RESET WORKSPACE
-              </v-btn>
-            </div>
-          </v-layout>
+     
 
           <!-- WHITEBOARD -->
           <whiteboard v-if="ownerUid" 
@@ -86,7 +47,58 @@
                       :showButtons="false"
                       :isRecording="isRecording"
                       :isAnswered="workspace.isAnswered"
-                      :parentHeight="parentHeight"/>
+                      :parentHeight="parentHeight">
+            <v-layout v-if="!workspace.isAnswered" id="whiteboard-buttons-layout">
+              <div style="margin: auto;" v-if="!workspace.isAnswered">
+                <v-btn>
+                  SHOW QUESTION
+                </v-btn>
+                <v-btn @click="useEraser()">
+                  USE ERASER
+                </v-btn>
+                <v-btn v-if="!isRecording" @click="$root.$emit('toggle-navbar')">
+                  TOGGLE FULLSCREEN
+                </v-btn>
+                <!-- <true-popup-button>
+                  <template slot="text">
+                    {{ workspace.question }}
+                  </template>
+                  <template slot="button">
+                    <v-btn @click="dialog = false">BUTTON</v-btn>
+                  </template>
+                </true-popup-button> -->
+                <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
+                  START RECORDING
+                </v-btn>
+                <v-btn v-else @click="stopRecording()" color="pink white--text">
+                  STOP RECORDING
+                </v-btn>
+              </div>
+            </v-layout>
+          
+            <v-layout v-else id="whiteboard-buttons-layout">
+              <div style="margin: auto;">
+                <v-btn @click="playVideo()">
+                  PLAY VIDEO
+                </v-btn>
+                <!-- <v-btn @click="quickplay()">
+                  QUICKPLAY
+                </v-btn> -->
+                <v-btn @click="retryAnswer()">
+                  RETRY ANSWER
+                </v-btn>
+                <!-- SAVE VIDEO-->
+                <popup-button 
+                  fullscreen :explanationTitle="newTitle" 
+                  @input="newValue=> newTitle = newValue" 
+                  @pre-save-explanation="handleSaving()"
+                />
+                <v-btn @click="clearWorkspace()">
+                  RESET WORKSPACE
+                </v-btn>
+              </div>
+            </v-layout>
+          </whiteboard>
 
           </template>
         </template>
@@ -98,20 +110,23 @@
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import db from '@/database'
-import Chat from '@/components/Chat'
-import Whiteboard from '@/components/Whiteboard'
-import PopupButton from '@/components/PopupButton'
-import AudioRecorder from '@/components/AudioRecorder'
-import VoiceChat from '@/components/VoiceChat'
+// import Chat from '@/components/Chat'
+import Whiteboard from '@/components/Whiteboard.vue'
+import PopupButton from '@/components/PopupButton.vue'
+import AudioRecorder from '@/components/AudioRecorder.vue'
+import VoiceChat from '@/components/VoiceChat.vue'
+import TruePopupButton from '@/components/TruePopupButton.vue'
+
 import { mapState } from 'vuex'
 
 export default {
   components: {
-    Chat,
+    // Chat,
     Whiteboard,
     PopupButton,
     AudioRecorder,
-    VoiceChat
+    VoiceChat,
+    TruePopupButton
   },
   computed: {
     ...mapState(['user'])
@@ -135,6 +150,12 @@ export default {
     }
   },
   methods: {
+    useEraser() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.useEraser()
+      }
+    },
     hideNavbar() {
       this.$root.$emit('toggle-navbar')
     },
@@ -162,7 +183,7 @@ export default {
       })
     },
     startRecording() {
-      this.$root.$emit('close-navbar')
+      // this.$root.$emit('close-navbar')
       const audioRecorder = this.$refs['audio-recorder']
       if (audioRecorder) {
         this.isRecording = true 
