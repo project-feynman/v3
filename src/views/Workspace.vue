@@ -1,11 +1,11 @@
 <template>
-  <div class="student">
-    <v-container fluid>
+  <div id="workspace">
+    <v-container fluid class="pa-0">
       <template v-if="user && workspace">
         <!-- INITIAL STATE-->
         <template v-if="!workspace.question">
           <!-- QUESTION AREA -->
-          <v-layout>
+          <v-layout style="width: 92%; margin: auto;" class="pt-5">
             <v-flex>
               <v-textarea
                 name="input-7-1"
@@ -21,10 +21,10 @@
 
         <!-- QUESTION ASKED -->
         <template v-else>
-          <p class="body-2" style="text-align: center;">
+          <!-- <p class="body-2" style="text-align: center;">
             {{ workspace.question }}
-          </p>
-          <voice-chat :user="user" :workspaceId="$route.params.id"></voice-chat>
+          </p> -->
+          <!-- <voice-chat :user="user" :workspaceId="$route.params.id"/> -->
           <!-- HIDDEN AUDIO RECORDER -->
           <audio-recorder v-show="false"
                   ref="audio-recorder"
@@ -35,27 +35,33 @@
                   @file-uploaded="audio => saveFileReference(audio)"/>
 
           <template v-if="!workspace.isAnswered">
-            <p style="text-align: center;">{{ feedback }}</p>
-            <v-layout>
+            <!-- <p style="text-align: center;">{{ feedback }}</p> -->
+            <v-layout id="whiteboard-buttons-layout">
               <div v-if="!workspace.isAnswered" style="margin: auto;">
-                <v-btn v-if="!isRecording" @click="startRecording()">
+                <v-btn>
+                  SHOW QUESTION
+                </v-btn>
+                <v-btn>
+                  SELECT COLOR
+                </v-btn>
+                <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
                   START RECORDING
                 </v-btn>
-                <v-btn v-else @click="stopRecording()">
+                <v-btn v-else @click="stopRecording()" color="pink white--text">
                   STOP RECORDING
                 </v-btn>
               </div>
             </v-layout>
           </template>
           
-          <v-layout v-else>
+          <v-layout v-else id="whiteboard-buttons-layout">
             <div style="margin: auto;">
               <v-btn @click="playVideo()">
                 PLAY VIDEO
               </v-btn>
-              <v-btn @click="quickplay()">
+              <!-- <v-btn @click="quickplay()">
                 QUICKPLAY
-              </v-btn>
+              </v-btn> -->
               <v-btn @click="retryAnswer()">
                 RETRY ANSWER
               </v-btn>
@@ -66,7 +72,7 @@
                 @pre-save-explanation="handleSaving()"
               />
               <v-btn @click="clearWorkspace()">
-                NEW QUESTION
+                RESET WORKSPACE
               </v-btn>
             </div>
           </v-layout>
@@ -77,9 +83,10 @@
                       @whiteboard-cleared="handleWhiteboardClear()"
                       :ownerUid="ownerUid" 
                       :workspace="workspace" 
-                      :showButtons="!workspace.isAnswered"
+                      :showButtons="false"
                       :isRecording="isRecording"
-                      :isAnswered="workspace.isAnswered"/>
+                      :isAnswered="workspace.isAnswered"
+                      :parentHeight="parentHeight"/>
 
           </template>
         </template>
@@ -111,12 +118,14 @@ export default {
   },
   data() {
     return {
+      whiteboardReady: true,
       isRecording: false,
       ownerUid: null,
       newQuestion: null,
       workspace: null,
       newTitle: null,
-      feedback: 'Tip: you can setup drawings before you start recording :]'
+      feedback: 'Tip: you can setup drawings before you start recording :]',
+      parentHeight: 0
     }
   },
   watch: {
@@ -126,6 +135,9 @@ export default {
     }
   },
   methods: {
+    hideNavbar() {
+      this.$root.$emit('toggle-navbar')
+    },
     handleWhiteboardClear() {
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
@@ -133,10 +145,12 @@ export default {
         whiteboard.initTouchEvents()
         whiteboard.currentTime = 0 
         this.feedback = 'Whiteboard ready!'
+        this.whiteboardReady = true 
         setTimeout(() => this.feedback = 'Tip: you can setup drawings before you start recording :]', 1500)
       }
     },
     async retryAnswer() {
+      this.whiteboardReady = false 
       this.feedback = 'Clearing whiteboard...'
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
@@ -148,13 +162,16 @@ export default {
       })
     },
     startRecording() {
+      this.$root.$emit('close-navbar')
       const audioRecorder = this.$refs['audio-recorder']
       if (audioRecorder) {
         this.isRecording = true 
         audioRecorder.startRecording()
+        this.feedback = 'Recording your strokes and audio...'
       }
     },
     stopRecording() {
+      this.$root.$emit('open-navbar')
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
         whiteboard.removeTouchEvents()
@@ -234,13 +251,3 @@ export default {
   }
 }
 </script>
-
-<style>
-.responsive-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(250px, 0.97fr));
-	grid-gap: 30px;
-	max-width: 90%;
-	margin: 0 auto 30px;
-}
-</style>

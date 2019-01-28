@@ -1,12 +1,7 @@
 <template>
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
-  <div class="whiteboard">
-    <template v-if="user">
-      <!-- <v-btn v-if="user.name == 'Elton Lin'" @click="handleDeletion()" class="red darken-2">
-        <span class="white--text">Delete</span>
-      </v-btn> -->
-    </template>
+  <div id="whiteboard">
     <!-- PREVIEW REPLAY -->
     <!-- <v-btn :loading="isReplaying"
            :disabled="isReplaying"
@@ -14,7 +9,7 @@
       <span>QUICKPLAY</span>
       <span slot="loader">Replaying...</span>
     </v-btn> -->
-    <canvas id="myCanvas" :height="height"></canvas>
+    <canvas id="myCanvas" :height="height"></canvas>`
   </div>
 </template>
 
@@ -42,7 +37,7 @@ export default {
   },
   data() {
     return {
-      height: 700,
+      height: 800,
       playProgress: null,
       isPlayingVideo: false,
       isPlayingVisual: false,
@@ -56,18 +51,42 @@ export default {
       ctx: null,
       lastX: -1,
       lastY: -1,
-      redrawTimeout: null 
+      redrawTimeout: null,
+      interval: null 
     }
   },
   async created() {
     this.initData()
   },
   mounted() {
-    // this.$root.$on('play-explanation', this.playAnimation)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
+    // new code 
+      this.interval = setInterval(() => {
+      const navbar = document.getElementById('navbar')
+      const row = document.getElementById('whiteboard-buttons-layout')
+      let navbarHeight = 0 
+      let rowHeight = 0
+      if (navbar) {
+        navbarHeight = navbar.scrollHeight
+      }
+      if (row) {
+        rowHeight = row.scrollHeight
+      }
+      if (this.oldNavbarHeight != navbarHeight || this.oldWindowHeight != window.innerHeight || this.oldRowHeight != rowHeight) {
+        this.canvas.setAttribute('height', `${window.innerHeight - navbarHeight - rowHeight - 10}`)
+        this.rescaleCanvas()
+        this.oldNavbarHeight = navbarHeight 
+        this.oldWindowHeight = window.innerHeight
+        this.oldRowHeight = row.scrollHeight
+      }
+    }, 1000)
+  },
+  beforeDestroy() {
+    console.log('beforeDestroy()')
+    clearInterval(this.interval)
   },
   methods: {
     async initReplayLogic() {
