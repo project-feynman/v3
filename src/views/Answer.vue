@@ -19,7 +19,30 @@
             <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
           </template>
           <v-btn @click="quickplay()">QUICKPLAY</v-btn>
-          <v-btn>SHOW QUESTION</v-btn>
+           <v-dialog v-model="dialog" max-width="290">
+                  <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn>
+                  <v-card>
+                    <v-card-title class="headline">
+                      <slot name="title">
+                        Question
+                      </slot>
+                    </v-card-title>
+
+                    <v-card-text>
+                      <slot name="text">
+                        <p v-if="explanation">{{ explanation.question }}</p>
+                      </slot>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <slot name="button">
+
+                      </slot>
+                      <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+          <!-- <v-btn>SHOW QUESTION</v-btn> -->
         </div>
       </v-layout>
 
@@ -46,6 +69,7 @@ export default {
     return {
       explanationId: null,
       explanation: null, 
+      dialog: false 
     }
   },
   watch: {
