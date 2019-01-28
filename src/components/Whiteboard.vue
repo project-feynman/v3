@@ -42,7 +42,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording', 'isAnswered'],
+  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording', 'isAnswered', 'parentHeight'],
   components: {
     Swatches
   },
@@ -66,6 +66,7 @@ export default {
       }
     }
   },
+  
   computed: {
     ...mapState(['user']),
     author() {
@@ -86,7 +87,7 @@ export default {
   },
   data() {
     return {
-      height: 700,
+      height: 800,
       allStrokes: [],
       currentStroke: [],
       isPlayingVisual: false,
@@ -107,7 +108,11 @@ export default {
       redrawTimeout: null,
       idx: 0,
       color: '#A463BF',
-      lineWidth: 2
+      lineWidth: 2,
+      oldNavbarHeight: 0,
+      oldRowHeight: 0,
+      oldWindowHeight: 0,
+      interval: null 
     }
   },
   mounted() {
@@ -119,6 +124,30 @@ export default {
       this.initTouchEvents()
     }
     this.addStrokesListener()
+    // new code
+    this.interval = setInterval(() => {
+      const navbar = document.getElementById('navbar')
+      const row = document.getElementById('whiteboard-buttons-layout')
+      let navbarHeight = 0 
+      let rowHeight = 0
+      if (navbar) {
+        navbarHeight = navbar.scrollHeight
+      }
+      if (row) {
+        rowHeight = row.scrollHeight
+      }
+      if (this.oldNavbarHeight != navbarHeight || this.oldWindowHeight != window.innerHeight || this.oldRowHeight != rowHeight) {
+        this.canvas.setAttribute('height', `${window.innerHeight - navbarHeight - rowHeight - 10}`)
+        this.rescaleCanvas()
+        this.oldNavbarHeight = navbarHeight 
+        this.oldWindowHeight = window.innerHeight
+        this.oldRowHeight = row.scrollHeight
+      }
+    }, 1000)
+  },
+  beforeDestroy() {
+    console.log('beforeDestroy()')
+    clearInterval(this.interval)
   },
   methods: {
     useEraser() {

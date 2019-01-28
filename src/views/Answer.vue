@@ -1,28 +1,30 @@
 <template>
-  <div class="about">
-     <v-container fluid>
-        <div style="text-align: center;">
+  <div class="answer">
+     <v-container fluid class="pa-0">
+        <!-- <div style="text-align: center;">
           <p v-if="explanation" class="body-2">{{ explanation.question }}</p>
-        </div>
+        </div> -->
 
-      <v-layout wrap>
-        <div style="margin: auto;">
-          <v-btn @click="playVideo()">PLAY VIDEO</v-btn>
-          <template v-if="user">
-            <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
-          </template>
-          <v-btn @click="quickplay()">QUICKPLAY</v-btn>
-        </div>
-      </v-layout>
-
-      <animation ref="animation" :explanationId="explanationId"/>
-    </v-container>
     <template v-if="explanation">
       <audio-recorder v-show="false" 
                       ref="audio-recorder"
                       :audioURL="explanation.audioURL"
                       :audioPath="explanation.audioPath"/>
     </template>
+
+      <v-layout id="whiteboard-buttons-layout">
+        <div style="margin: auto;">
+          <v-btn @click="playVideo()">PLAY VIDEO</v-btn>
+          <template v-if="user">
+            <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
+          </template>
+          <v-btn @click="quickplay()">QUICKPLAY</v-btn>
+          <v-btn>SHOW QUESTION</v-btn>
+        </div>
+      </v-layout>
+
+      <animation ref="animation" :explanationId="explanationId"/>
+    </v-container>
   </div>
 </template>
 

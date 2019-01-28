@@ -1,7 +1,7 @@
 <template>
-  <nav>  
+  <nav v-if="showNavbar">  
     <!-- NAVBAR  --> 
-    <v-toolbar app extended extension-height="2">
+    <v-toolbar app extended extension-height="2" id="navbar">
 
       <!-- open navbar button -->
       <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/>
@@ -15,7 +15,8 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <v-btn v-if="user && $route.path == '/'" @click="signOut()">
+      <v-btn v-if="user && $route.path == '/'" 
+             @click="signOut()">
         LOG OUT
       </v-btn>
 
@@ -105,8 +106,26 @@ export default {
       return this.$route.params.teacher_id
     }
   },
-  data() {
+  created () {
+    this.$root.$on('toggle-navbar', () => {
+      this.showNavbar = !this.showNavbar
+      // to prevent the offset bug 
+      this.drawerOpen = !this.drawerOpen
+      this.drawerOpen = false
+    })
+    this.$root.$on('open-navbar', () => {
+      this.showNavbar = true 
+    })
+    this.$root.$on('close-navbar', () => {
+      this.showNavbar = false
+      // to prevent the offset bug 
+      this.drawerOpen = !this.drawerOpen
+      this.drawerOpen = false
+    })
+  },
+  data () {
     return {
+      showNavbar: true,
       prev_teacherUid: null,
       workspaces: null,
       teacherExplanations: null,
@@ -163,3 +182,5 @@ export default {
   }
 }
 </script>
+
+
