@@ -3,8 +3,8 @@
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div id="whiteboard">
     <template v-if="workspace">
-      <template v-if="showButtons">
-          <div style="display: flex;">
+      <template v-if="true">
+          <div style="display: flex; justify-content: center;">
             <!-- CLEAR WHITEBOARD -->
             <!-- <v-btn :loading="isClearing"
                    :disabled="isClearing"
@@ -15,14 +15,19 @@
             
             <!-- timer -->
             <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
+            <slot>
 
-            <v-btn @click="useEraser()">
-              ERASER
-            </v-btn>
-
+            </slot>
             <!-- color palette  -->
-            <swatches v-model="color" />
-        </div>
+            <div>
+    <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="40" 
+              :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '0px', height: '30px' }">
+
+
+    </swatches>
+            <!-- <swatches v-model="color" class="mt-2" style="height: 90%;"/> -->
+            </div>
+          </div>
       </template>
 
       <!-- WHITEBOARD -->
@@ -108,6 +113,7 @@ export default {
       redrawTimeout: null,
       idx: 0,
       color: '#A463BF',
+      colors: ['#F64272', 'orange', 'green', '#A463BF', 'rgb(192, 230, 253)'],
       lineWidth: 2,
       oldNavbarHeight: 0,
       oldRowHeight: 0,

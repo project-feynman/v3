@@ -4,6 +4,7 @@
       <span class="white--text">Save Video</span>
     </v-btn>
     <v-card>
+      
 
       <v-card-text>
         <v-input>
@@ -26,7 +27,6 @@
                @click="handleSave()">
           Save
         </v-btn>
-
       </v-card-actions>
     </v-card>
   </v-dialog>
