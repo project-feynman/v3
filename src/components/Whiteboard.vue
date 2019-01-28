@@ -2,38 +2,28 @@
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div id="whiteboard">
-    <template v-if="workspace">
-      <template v-if="true">
-          <div style="display: flex; justify-content: center;">
-            <!-- CLEAR WHITEBOARD -->
-            <!-- <v-btn :loading="isClearing"
-                   :disabled="isClearing"
-                   @click="initClearBoardLogic()"> 
-              <span>CLEAR WHITEBOARD</span>
-              <span slot="loader">Clearing...</span>
-            </v-btn> -->
-            
-            <!-- timer -->
-            <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
-            <slot>
+    <div v-if="workspace" style="display: flex; justify-content: center;">
+      <!-- CLEAR WHITEBOARD -->
+      <!-- <v-btn :loading="isClearing"
+              :disabled="isClearing"
+              @click="initClearBoardLogic()"> 
+        <span>CLEAR WHITEBOARD</span>
+        <span slot="loader">Clearing...</span>
+      </v-btn> -->
+      
+      <!-- timer -->
+      <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
+      <slot>
 
-            </slot>
-            <!-- color palette  -->
-            <div>
-    <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="40" 
-              :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '0px', height: '30px' }">
-
-
-    </swatches>
-            <!-- <swatches v-model="color" class="mt-2" style="height: 90%;"/> -->
-            </div>
-          </div>
-      </template>
-
-      <!-- WHITEBOARD -->
-      <canvas id="myCanvas" :height="height"></canvas>
-
-    </template>
+      </slot>
+      <!-- color palette  -->
+      <swatches v-if="showButtons" 
+                v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="40" 
+                :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '0px', height: '30px' }">
+      </swatches>
+    </div>
+    <!-- WHITEBOARD -->
+    <canvas id="myCanvas" :height="height"></canvas>
   </div>
 </template>
 
@@ -63,15 +53,18 @@ export default {
         this.stopTimer()
       }
     },
+    // isAnswered() {
+    //   if (!workspace.isAnswered) {
+    //     this.initTouchEvents()
+    //   }
+    // },
     color() {
       // bad - high surface area for bugs 
-      console.log('user picked a color =', this.color)
       if (this.color != 'rgb(192, 230, 253)') {
         this.lineWidth = 2
       }
     }
   },
-  
   computed: {
     ...mapState(['user']),
     author() {
@@ -113,7 +106,7 @@ export default {
       redrawTimeout: null,
       idx: 0,
       color: '#A463BF',
-      colors: ['#F64272', 'orange', 'green', '#A463BF', 'rgb(192, 230, 253)'],
+      colors: ['#F64272', 'orange', '#A463BF'],
       lineWidth: 2,
       oldNavbarHeight: 0,
       oldRowHeight: 0,
@@ -126,7 +119,7 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    if (this.workspace.isAnswered == false) {
+    if (!this.workspace.isAnswered) {
       this.initTouchEvents()
     }
     this.addStrokesListener()
@@ -152,10 +145,12 @@ export default {
     }, 1000)
   },
   beforeDestroy() {
-    console.log('beforeDestroy()')
     clearInterval(this.interval)
   },
   methods: {
+    getHeightToWidthRatio() {
+      return this.canvas.scrollHeight / this.canvas.scrollWidth
+    },
     useEraser() {
       this.color = 'rgb(192, 230, 253)'
       this.lineWidth = 15
@@ -198,8 +193,8 @@ export default {
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
-      this.unsubscribe() 
       this.allStrokes = [] 
+      this.unsubscribe() 
       this.addStrokesListener() 
     },
     addStrokesListener() {
