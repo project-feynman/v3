@@ -33,31 +33,49 @@
                   @start-recording="isRecording = true" 
                   @end-recording="isRecording = false"
                   @file-uploaded="audio => saveFileReference(audio)"/>
-
-     
+ 
             <!-- <p style="text-align: center;">{{ feedback }}</p> -->
-     
-
+    
           <!-- WHITEBOARD -->
           <whiteboard v-if="ownerUid" 
                       ref="whiteboard"
                       @whiteboard-cleared="handleWhiteboardClear()"
                       :ownerUid="ownerUid" 
                       :workspace="workspace" 
-                      :showButtons="false"
+                      :showButtons="!workspace.isAnswered"
                       :isRecording="isRecording"
                       :isAnswered="workspace.isAnswered"
                       :parentHeight="parentHeight">
             <v-layout v-if="!workspace.isAnswered" id="whiteboard-buttons-layout">
               <div style="margin: auto;" v-if="!workspace.isAnswered">
-                <v-btn>
-                  SHOW QUESTION
-                </v-btn>
+                <v-dialog v-model="dialog" max-width="290">
+                  <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn>
+                  <v-card>
+                    <v-card-title class="headline">
+                      <slot name="title">
+                        Question
+                      </slot>
+                    </v-card-title>
+
+                    <v-card-text>
+                      <slot name="text">
+                        {{ workspace.question }}
+                      </slot>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <slot name="button">
+
+                      </slot>
+                      <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
                 <v-btn @click="useEraser()">
                   USE ERASER
                 </v-btn>
                 <v-btn v-if="!isRecording" @click="$root.$emit('toggle-navbar')">
-                  TOGGLE FULLSCREEN
+                  FULLSCREEN
                 </v-btn>
                 <!-- <true-popup-button>
                   <template slot="text">
@@ -68,16 +86,16 @@
                   </template>
                 </true-popup-button> -->
                 <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
-                  START RECORDING
+                  START VIDEO
                 </v-btn>
                 <v-btn v-else @click="stopRecording()" color="pink white--text">
-                  STOP RECORDING
+                  STOP VIDEO
                 </v-btn>
               </div>
             </v-layout>
           
             <v-layout v-else id="whiteboard-buttons-layout">
-              <div style="margin: auto;">
+              <div v-if="!workspace.answerAccepted" style="margin: auto;">
                 <v-btn @click="playVideo()">
                   PLAY VIDEO
                 </v-btn>
@@ -93,6 +111,17 @@
                   @input="newValue=> newTitle = newValue" 
                   @pre-save-explanation="handleSaving()"
                 />
+                <v-btn @click="finishAnswering()">
+                  FINISH
+                </v-btn>
+              </div>
+              <div v-else style="margin: auto;">
+                <v-btn @click="playVideo()" class="pink white--text">
+                  PLAY VIDEO
+                </v-btn>
+                <v-btn @click="quickplay()">
+                  QUICKPLAY
+                </v-btn>
                 <v-btn @click="clearWorkspace()">
                   RESET WORKSPACE
                 </v-btn>
@@ -110,7 +139,6 @@
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import db from '@/database'
-// import Chat from '@/components/Chat'
 import Whiteboard from '@/components/Whiteboard.vue'
 import PopupButton from '@/components/PopupButton.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
@@ -121,7 +149,6 @@ import { mapState } from 'vuex'
 
 export default {
   components: {
-    // Chat,
     Whiteboard,
     PopupButton,
     AudioRecorder,
@@ -140,7 +167,8 @@ export default {
       workspace: null,
       newTitle: null,
       feedback: 'Tip: you can setup drawings before you start recording :]',
-      parentHeight: 0
+      parentHeight: 0,
+      dialog: false
     }
   },
   watch: {
@@ -150,6 +178,13 @@ export default {
     }
   },
   methods: {
+    async finishAnswering() {
+      this.$root.$emit('open-navbar')
+      const ref = db.collection('workspaces').doc(this.$route.params.id)
+      await ref.update({
+        answerAccepted: true,
+      })
+    },
     useEraser() {
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
@@ -192,7 +227,7 @@ export default {
       }
     },
     stopRecording() {
-      this.$root.$emit('open-navbar')
+      // this.$root.$emit('open-navbar')
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
         whiteboard.removeTouchEvents()
@@ -242,6 +277,7 @@ export default {
       await ref.update({
         question: '', 
         isAnswered: false,
+        answerAccepted: false,
       })
     },
     getHint() {
@@ -256,16 +292,21 @@ export default {
       })
     },
     async handleSaving() { 
+      // save aspect ratio
+      const whiteboard = this.$refs['whiteboard']
+      const heightToWidthRatio = whiteboard.getHeightToWidthRatio()
+      console.log('aspectRatio =', heightToWidthRatio)
+
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
         question: this.workspace.question,
         authorUid: this.user.uid,
         authorName: this.user.name,
-        teacherUid: this.$route.params.teacher_id
+        teacherUid: this.$route.params.teacher_id,
+        heightToWidthRatio
       })
       // now strokes can be saved as subcollections to that document 
       const audioRecorder = this.$refs['audio-recorder']
-      const whiteboard = this.$refs['whiteboard']
       audioRecorder.saveAudio(docRef.id)
       whiteboard.saveStrokes(docRef.id)
     }
