@@ -1,4 +1,15 @@
 export default {
+  watch: {
+    allStrokes() {
+      if (this.playProgress) {
+        clearInterval(this.playProgress)
+      }
+    }
+  },
+  beforeDestroy() {
+    console.log('stopping video play')
+    clearInterval(this.playProgress)
+  },
   methods: {
     rescaleCanvas() {
       // only redraw when the user has finished resizing the window
