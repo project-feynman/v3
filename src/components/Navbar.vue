@@ -15,6 +15,40 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
+      
+    
+
+      <!-- NAVBAR -->
+      <v-dialog v-model="dialog" max-width="290">
+           <v-btn slot="activator"
+              color="blue-grey"
+              class="white--text"
+              @click="showNumber = true">
+          Customer Support
+        <v-icon right dark>phone</v-icon>
+      </v-btn>
+        <!-- <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn> -->
+        <v-card>
+          <v-card-title class="headline">
+            Call 503 250 3868
+          </v-card-title>
+
+          <v-card-text>
+            For very professional help :].
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <slot name="button">
+
+            </slot>
+            <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+
+
+
       <v-btn v-if="user && $route.path == '/'" 
              @click="signOut()">
         LOG OUT
@@ -84,6 +118,7 @@
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
+
   </nav>
 </template>
 
@@ -142,7 +177,8 @@ export default {
       loading: false,
       loading2: false,
       loading3: false,
-      loadingAnimation: true
+      loadingAnimation: true,
+      dialog: false
     }
   },
   watch: {
