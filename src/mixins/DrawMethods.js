@@ -7,8 +7,12 @@ export default {
     }
   },
   beforeDestroy() {
+    // clean up everything 
     console.log('stopping video play')
-    clearInterval(this.playProgress)
+    if (this.playProgress) {
+      console.log('this.playProgress =', this.playProgress)
+      clearInterval(this.playProgress)
+    }
   },
   methods: {
     rescaleCanvas() {
