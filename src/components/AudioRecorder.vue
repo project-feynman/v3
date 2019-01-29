@@ -88,6 +88,7 @@ export default {
             audioPath: path,
             audioURL: downloadURL
           })
+          this.$root.$emit('audio-uploaded')
           console.log('upload was successful!')
         }
       )
