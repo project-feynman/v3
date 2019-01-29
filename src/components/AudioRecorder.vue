@@ -97,6 +97,7 @@ export default {
       const audioElement = document.getElementById('audio-element')
       if (audioElement) {
         audioElement.play()
+        audioElement.addEventListener('ended', () => this.$emit('audio-finished'), false)
       }
     },
     downloadAudioFile () {

@@ -2,13 +2,15 @@ export default {
   watch: {
     allStrokes() {
       if (this.playProgress) {
+        console.log('allStrokes changed - likely because video was switched - removing setInterval')
         clearInterval(this.playProgress)
+        this.playProgress = null 
       }
     }
   },
   beforeDestroy() {
     // clean up everything 
-    console.log('stopping video play')
+    console.log('beforeDestroy()')
     if (this.playProgress) {
       console.log('this.playProgress =', this.playProgress)
       clearInterval(this.playProgress)
@@ -24,8 +26,10 @@ export default {
       this.redrawTimeout = setTimeout(this.drawStrokesInstantly(), 400) // resizing the canvas causes all drawings to be lost 
     },
     async playVisual() {
-      // prevent the option of playing non-video supported video (because there was no recording in the first place)
-      // would break if there are strokes rendering simultaneously 
+      if (this.playProgress) {
+        // already in the middle of playing video 
+        return 
+      }
       if (!this.allStrokes || this.allStrokes.length == 0) {
         return 
       }
@@ -46,26 +50,32 @@ export default {
       }
       this.isPlayingVideo = true 
       this.currentTime = 0
-      const checkWhetherStrokesShouldBePlayed = async () => {
+      // would break if there are strokes rendering simultaneously 
+      const checkIfNextStrokeShouldPlay = async () => {
         const startIdx = this.idx 
-        for (let i = startIdx; i < this.allStrokes.length; i++) {
+        const n = this.allStrokes.length 
+        for (let i = startIdx; i < n; i++) {
           const nextStroke = this.allStrokes[i]
           if (Number(nextStroke.startTime) == this.currentTime.toFixed(1)) {
             const strokePeriod = (nextStroke.endTime - nextStroke.startTime) * 1000
             const pointPeriod = strokePeriod / nextStroke.points.length 
             this.drawStroke(nextStroke, pointPeriod)
-            if (i == this.allStrokes.length - 1) {
+            if (i == n-1) {
               clearInterval(this.playProgress)
-              this.isPlayingVisual = false 
+              console.log('animation finished')
+              this.$emit('animation-finished')
+              this.playProgress = null 
             }
           } else {
             this.idx = i 
+            // strokes finished playing
+            this.$emit('animation-finished')
             break 
           }
         }
         this.currentTime += 0.1
       }
-      this.playProgress = setInterval(checkWhetherStrokesShouldBePlayed, 100)
+      this.playProgress = setInterval(checkIfNextStrokeShouldPlay, 100)
     },
     async quickplay() {
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
