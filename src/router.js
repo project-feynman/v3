@@ -21,7 +21,7 @@ export default new Router({
     },
     {
       path: '/:teacher_id/answer/:id',
-      component: () => import(/* webpackChunkName: "answers" */ './views/Answer.vue')
+      component: () => import(/* webpackChunkName: "answer" */ './views/Answer.vue')
     }
   ]
 })
