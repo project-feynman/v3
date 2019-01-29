@@ -46,6 +46,7 @@
                       :isRecording="isRecording"
                       :isAnswered="workspace.isAnswered"
                       :parentHeight="parentHeight">
+
             <v-layout v-if="!workspace.isAnswered" id="whiteboard-buttons-layout">
               <div style="margin: auto;" v-if="!workspace.isAnswered">
                 <v-dialog v-model="dialog" max-width="290">
@@ -117,11 +118,17 @@
               </div>
               <div v-else style="margin: auto;">
                 <v-btn @click="playVideo()" class="pink white--text">
-                  PLAY VIDEO
+                  SEE ANSWER
                 </v-btn>
                 <v-btn @click="quickplay()">
                   QUICKPLAY
                 </v-btn>
+                <!-- SAVE VIDEO-->
+                <popup-button 
+                  fullscreen :explanationTitle="newTitle" 
+                  @input="newValue=> newTitle = newValue" 
+                  @pre-save-explanation="handleSaving()"
+                />
                 <v-btn @click="clearWorkspace()">
                   RESET WORKSPACE
                 </v-btn>

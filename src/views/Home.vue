@@ -32,7 +32,7 @@
             </template>
           </div>
 
-          <v-btn @click="becomeTeacher()"
+          <!-- <v-btn @click="becomeTeacher()"
                  absolute
                  dark
                  fab
@@ -40,7 +40,7 @@
                  right
                  color="pink">
             <v-icon>add</v-icon>
-          </v-btn>
+          </v-btn> -->
         </template>
 
         <!-- SIGN-IN BUTTONS -->
