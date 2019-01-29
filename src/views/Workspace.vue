@@ -21,9 +21,7 @@
 
         <!-- QUESTION ASKED -->
         <template v-else>
-          <!-- <p class="body-2" style="text-align: center;">
-            {{ workspace.question }}
-          </p> -->
+          <!-- VOICE CHAT -->
           <!-- <voice-chat :user="user" :workspaceId="$route.params.id"/> -->
           <!-- HIDDEN AUDIO RECORDER -->
           <audio-recorder v-show="false"
@@ -145,7 +143,7 @@
 <script>
 import firebase from 'firebase/app'
 import 'firebase/firestore'
-import db from '@/database'
+import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
 import PopupButton from '@/components/PopupButton.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
@@ -303,7 +301,6 @@ export default {
       const whiteboard = this.$refs['whiteboard']
       const heightToWidthRatio = whiteboard.getHeightToWidthRatio()
       console.log('aspectRatio =', heightToWidthRatio)
-
       const docRef = await db.collection('explanations').add({
         title: this.newTitle,
         question: this.workspace.question,
