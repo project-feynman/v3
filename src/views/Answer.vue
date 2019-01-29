@@ -5,44 +5,57 @@
           <audio-recorder v-show="false" 
                           ref="audio-recorder"
                           :audioURL="explanation.audioURL"
-                          :audioPath="explanation.audioPath"/>
+                          :audioPath="explanation.audioPath"
+                          @audio-finished="isPlayingAudio = false"/>
         </template>
 
       <v-layout id="whiteboard-buttons-layout">
         <div style="margin: auto;">
-          <v-btn @click="playVideo()">PLAY VIDEO</v-btn>
+
+          <!-- PREVIEW REPLAY -->
+          <v-btn :loading="isPlayingVideo"
+                 :disabled="isPlayingVideo"
+                 @click="playVideo()">
+            <span>PLAY VIDEO</span>
+            <span slot="loader">Replaying...</span>
+          </v-btn>
+
+          <!-- <v-btn @click="playVideo()">PLAY VIDEO</v-btn> -->
           <template v-if="user">
             <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
           </template>
           <v-btn @click="quickplay()">QUICKPLAY</v-btn>
-           <v-dialog v-model="dialog" max-width="290">
-                  <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn>
-                  <v-card>
-                    <v-card-title class="headline">
-                      <slot name="title">
-                        Question
-                      </slot>
-                    </v-card-title>
+          <!-- DIALOG -->
+          <v-dialog v-model="dialog" max-width="290">
+            <!-- SEE QUESTION -->
+            <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn>
+            <v-card>
+              <v-card-title class="headline">
+                <slot name="title">
+                  Question
+                </slot>
+              </v-card-title>
 
-                    <v-card-text>
-                      <slot name="text">
-                        <p v-if="explanation">{{ explanation.question }}</p>
-                      </slot>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <slot name="button">
+              <v-card-text>
+                <slot name="text">
+                  <p v-if="explanation">{{ explanation.question }}</p>
+                </slot>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <slot name="button">
 
-                      </slot>
-                      <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-          <!-- <v-btn>SHOW QUESTION</v-btn> -->
+                </slot>
+                <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </div>
       </v-layout>
-
-      <animation ref="animation" :explanationId="explanationId"/>
+      <!-- ANIMATION -->
+      <animation ref="animation" 
+                 :explanationId="explanationId"
+                 @animation-finished="handleEvent()"/>
     </v-container>
   </div>
 </template>
@@ -59,13 +72,26 @@ export default {
     AudioRecorder
   },
   computed: {
-    ...mapState(['user'])
+    ...mapState(['user']),
+    isPlayingVideo: {
+      get() {
+        return this.isPlayingVisual || this.isPlayingAudio
+      },
+      set(isPlayingVideo) {
+        if (isPlayingVideo) {
+          this.isPlayingVisual = true 
+          this.isPlayingAudio = true 
+        }
+      }
+    }
   },
   data() {
     return {
       explanationId: null,
       explanation: null, 
-      dialog: false 
+      dialog: false,
+      isPlayingAudio: false,
+      isPlayingVisual: false,
     }
   },
   watch: {
@@ -75,7 +101,11 @@ export default {
     }
   },
   methods: {
+    handleEvent() {
+      this.isPlayingVisual = false 
+    },
     playVideo() {
+      this.isPlayingVideo = true
       const audioRecorder = this.$refs['audio-recorder']
       const animation = this.$refs['animation']
       if (animation) { animation.playVisual() }
