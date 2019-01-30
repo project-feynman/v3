@@ -3,6 +3,7 @@ import './plugins/vuetify'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import './notifications'
 import './registerServiceWorker'
 import firebase from 'firebase/app'
 import 'firebase/auth'
@@ -14,11 +15,28 @@ Vue.use(VueFirestore)
 
 Vue.config.productionTip = false
 
+var db = firebase.firestore()
+var subscription = undefined
+
 // register the service worker when the site loads
 if ('serviceWorker' in navigator) {
-	window.addEventListener('load', function() {
-		navigator.serviceWorker.register('/sw.js')
-	})
+	navigator.serviceWorker.register('/sw.js').then(
+		function(serviceWorkerRegistration) {
+			serviceWorkerRegistration.pushManager.subscribe().then(
+				function(pushSubscription) {
+					console.log('main')
+					console.log(typeof(registration))
+					console.log(JSON.stringify(registration))
+					subscription = pushSubscription
+					console.log(JSON.stringify(subscription))
+					sendSubscriptionToFirebase()
+				}, function(err){
+					// handle error during subscription
+					console.log("Error: push subscription failed.\t" + err)
+				}
+			)
+		}
+	)
 }
 
 firebase.auth().onAuthStateChanged(async user => {
