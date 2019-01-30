@@ -1,8 +1,29 @@
 <template>
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
-  <div class="whiteboard">
-    <canvas id="myCanvas" height="800"></canvas>
+  <div id="whiteboard">
+    <div v-if="workspace" style="display: flex; justify-content: center;">
+      <!-- CLEAR WHITEBOARD -->
+      <!-- <v-btn :loading="isClearing"
+              :disabled="isClearing"
+              @click="initClearBoardLogic()"> 
+        <span>CLEAR WHITEBOARD</span>
+        <span slot="loader">Clearing...</span>
+      </v-btn> -->
+      
+      <!-- timer -->
+      <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
+      <slot>
+
+      </slot>
+      <!-- color palette  -->
+      <swatches v-if="showButtons" 
+                v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="40" 
+                :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '0px', height: '30px' }">
+      </swatches>
+    </div>
+    <!-- WHITEBOARD -->
+    <canvas id="myCanvas" :height="height"></canvas>
   </div>
 </template>
 
@@ -11,188 +32,266 @@ import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/functions'
 import db from '@/database.js'
+import DrawMethods from '@/mixins/DrawMethods.js'
+import Swatches from 'vue-swatches'
+import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['ownerUid'],
+  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording', 'isAnswered', 'parentHeight'],
+  components: {
+    Swatches
+  },
+  mixins: [DrawMethods],
   watch: {
     ownerUid: {
       handler: 'initData',
+    },
+    isRecording() {
+      if (this.isRecording) {
+        this.startTimer()
+      } else {
+        this.stopTimer()
+      }
+    },
+    // isAnswered() {
+    //   if (!workspace.isAnswered) {
+    //     this.initTouchEvents()
+    //   }
+    // },
+    color() {
+      // bad - high surface area for bugs 
+      if (this.color != 'rgb(192, 230, 253)') {
+        this.lineWidth = 2
+      }
     }
   },
   computed: {
     ...mapState(['user']),
     author() {
       return {
-        name: this.user.displayName,
+        name: this.user.name,
         uid: this.user.uid
+      }
+    },
+    isPlayingVideo: {
+      get() {
+        return this.isPlayingAudio || this.isPlayingVisual
+      },
+      set(isPlayingVideo) {
+        this.isPlayingAudio = true 
+        this.isPlayingVisual = true 
       }
     }
   },
-  props: ['ownerUid'],
   data() {
     return {
+      height: 800,
       allStrokes: [],
       currentStroke: [],
+      isPlayingVisual: false,
+      isPlayingAudio: false,
       canvas: null,
       ctx: null,
+      isClearing: false,
+      isReplaying: false,
+      timer: null,
+      currentTime: null,
+      startTime: null,
+      endTime: null,
       touchX: null,
       touchY: null,
       lastX: -1,
       lastY: -1,
-      numOfStrokes: 0,
       unsubscribe: null,
-      redrawTimeout: null 
+      redrawTimeout: null,
+      idx: 0,
+      color: '#A463BF',
+      colors: ['#F64272', 'orange', '#A463BF'],
+      lineWidth: 2,
+      oldNavbarHeight: 0,
+      oldRowHeight: 0,
+      oldWindowHeight: 0,
+      interval: null 
     }
   },
   mounted() {
-    this.$root.$on('clear-whiteboard', this.deleteStrokesSubcollection) // listen to Navbar's "clear whiteboard" button
-    this.$root.$on('save-explanation', docId => this.saveStrokes(docId))
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    this.initTouchEvents()
+    if (!this.workspace.isAnswered) {
+      this.initTouchEvents()
+    }
     this.addStrokesListener()
+    // new code
+    this.interval = setInterval(() => {
+      const navbar = document.getElementById('navbar')
+      const row = document.getElementById('whiteboard-buttons-layout')
+      let navbarHeight = 0 
+      let rowHeight = 0
+      if (navbar) {
+        navbarHeight = navbar.scrollHeight
+      }
+      if (row) {
+        rowHeight = row.scrollHeight
+      }
+      if (this.oldNavbarHeight != navbarHeight || this.oldWindowHeight != window.innerHeight || this.oldRowHeight != rowHeight) {
+        this.canvas.setAttribute('height', `${window.innerHeight - navbarHeight - rowHeight - 10}`)
+        this.rescaleCanvas()
+        this.oldNavbarHeight = navbarHeight 
+        this.oldWindowHeight = window.innerHeight
+        this.oldRowHeight = row.scrollHeight
+      }
+    }, 1000)
+  },
+  beforeDestroy() {
+    clearInterval(this.interval)
   },
   methods: {
+    getHeightToWidthRatio() {
+      return this.canvas.scrollHeight / this.canvas.scrollWidth
+    },
+    useEraser() {
+      this.color = 'rgb(192, 230, 253)'
+      this.lineWidth = 15
+    },
+    startTimer() {
+      this.currentTime = 0 
+      this.timer = setInterval(() => this.currentTime += 0.1, 100)
+    },
+    stopTimer() {
+      clearInterval(this.timer)
+    },
+    async submitAnswer() {
+      const ref = db.collection('workspaces').doc(this.$route.params.id)
+      await ref.update({
+        isAskingQuestion: false, 
+        isAnswered: true
+      })
+    },
+    async initReplayLogic() {
+      this.isReplaying = true
+      await this.quickplay()
+      this.isReplaying = false 
+    },
+    initClearBoardLogic() {
+      this.isClearing = true 
+      this.deleteStrokesSubcollection()
+      this.allStrokes = [] 
+    },
     saveStrokes(explanationId) {
       const explanationRef = db.collection('explanations').doc(explanationId).collection('strokes')
       this.allStrokes.forEach(stroke => {
         explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
       })
+      // also remember the width
+      console.log('width, height =', this.canvas.scrollWidth, this.canvas.scrollHeight)
+
     },
     initData() {
       // visually wipe previous drawings
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      this.unsubscribe() 
+      if (this.ctx) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      }
       this.allStrokes = [] 
+      this.unsubscribe() 
       this.addStrokesListener() 
     },
     addStrokesListener() {
-      const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
+      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes').orderBy('strokeNumber')
       this.unsubscribe = strokesRef.onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
             const stroke = change.doc.data()
-            this.allStrokes.push(stroke)
-            if (this.numOfStrokes == stroke.strokeNumber) {
-              return // board is already in sync 
-            } else {
-              this.numOfStrokes += 1
-              this.drawStroke(stroke.points)
+            // check if local strokes and db strokes are in sync 
+            if (this.allStrokes.length < stroke.strokeNumber) {
+              this.drawStroke(stroke, null)
+              this.allStrokes.push(stroke)
             }
           } 
           else if (change.type === 'removed') {
-            // for OTHER users to also clear canvas (since the current user's UI is already updated)
-            // currently inefficient
+            // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
             this.resetVariables()
           }
         })
       })
     },
-    rescaleCanvas() {
-      this.canvas.width = this.canvas.scrollWidth
-      this.canvas.height = this.canvas.scrollHeight
-      // only redraw when the user has finished resizing the window
-      clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
-      this.redrawTimeout = setTimeout(this.drawAllStrokes(this.allStrokes), 400) // resizing the canvas causes all drawings to be lost 
-    },
-    drawAllStrokes(strokes) {
-      for (let i = 0; i < strokes.length; i++) {
-        this.drawStroke(strokes[i].points )
-      }
-    },
-    resetVariables() {
+    resetVariables () {
       this.allStrokes = []
       this.lastX = -1
-      this.numOfStrokes = 0
     },
-    drawStroke(points) {
-      for (let i = 0; i < points.length; i++) {
-        const x = points[i]['unitX'] * this.canvas.width
-        const y = points[i]['unitY'] * this.canvas.height
-        this.drawLine(x, y, 3)
-        if (i == points.length - 1) {
-          this.lastX = -1 
-        }
-      }
-    },
-    initTouchEvents() {
+    initTouchEvents () {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
-    async deleteStrokesSubcollection() { // rename this function to deleteStrokesOnFirestore
-      const path = `students/${this.ownerUid}/strokes`
+    removeTouchEvents() {
+      this.canvas.removeEventListener('touchstart', this.touchStart, false)
+      this.canvas.removeEventListener('touchend', this.touchEnd, false)
+      this.canvas.removeEventListener('touchmove', this.touchMove, false)
+    },
+    async deleteStrokesSubcollection () {
+      const path = `workspaces/${this.$route.params.id}/strokes`
       var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
-     
       try {
         const result = await deleteFn({ path: path })
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.resetVariables()
-        this.$root.$emit('delete-whiteboard-strokes-success')
+        this.isClearing = false 
+        this.$emit('whiteboard-cleared')
       } catch(err) {
         console.log('err =', err)
       }
-    },
-    drawLine(x, y, size=3) {
-      if (this.lastX == -1) {
-        // means it's the start of the strokee
-        this.lastX = x
-        this.lastY = y
-        return
-      }
-      this.ctx.strokeStyle = 'purple'
-      this.ctx.lineCap = 'round' // lines at different angles can join into each other
-      // "trace" the line
-      this.ctx.beginPath()
-      this.ctx.moveTo(this.lastX, this.lastY)
-      this.ctx.lineTo(x,y)
-      this.ctx.lineWidth = size
-      // draw the line
-      this.ctx.stroke()
-      // Update the last position to reference the current position
-      this.lastX = x
-      this.lastY = y
     },
     convertAndSavePoint(x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
       const unitY = parseFloat(y / this.canvas.height).toFixed(4)
       this.currentStroke.push({ unitX, unitY })
-      this.drawLine(this.touchX, this.touchY, 3)
+      this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart(e) {
+      this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawLine(this.touchX, this.touchY, 3)
+      this.drawToPoint(this.touchX, this.touchY)
+      if (this.currentTime) {
+        this.startTime = this.currentTime.toFixed(1)
+      }
     },
     touchMove(e) {
       e.preventDefault()
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawLine(this.touchX, this.touchY, 3)
+      this.drawToPoint(this.touchX, this.touchY)
     },
     touchEnd(e) {
-      const strokeNumber = this.numOfStrokes + 1 
-      this.numOfStrokes += 1
-      const strokesRef = db.collection('students').doc(this.ownerUid).collection('strokes')
-      strokesRef.doc(`${strokeNumber}`).set({
-        points: this.currentStroke,
+      const strokeNumber = this.allStrokes.length + 1
+      const stroke = {
+        strokeNumber,
         author: this.author,
-        strokeNumber
-      })
+        color: this.color,
+        lineWidth: this.lineWidth
+      }
+      if (this.currentTime) {
+        stroke.startTime = this.startTime,
+        stroke.endTime = this.currentTime.toFixed(1)
+      }
+      stroke.points = this.currentStroke
+      // save 
+      this.allStrokes.push(stroke)
+      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
+      strokesRef.doc(`${strokeNumber}`).set(stroke)
+      // reset 
       this.currentStroke = []
       this.lastX = -1
     },
     getTouchPos(e) {
       if (e.touches) {
-        if (e.touches.length == 1) { // only deal with one finger
-          const touch = e.touches[0]; // get info for finger #1
-          // there should be an additional scrolling parameter to take into account 
-          // whiteboard size might become an issue
-          this.touchX = touch.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
-          this.touchY = touch.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
+        if (e.touches.length == 1) { 
+          const finger1 = e.touches[0] 
+          this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
+          this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
         }
       }
     }
