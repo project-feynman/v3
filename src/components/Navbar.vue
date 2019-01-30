@@ -1,128 +1,121 @@
 <template>
-  <nav>
-    <!-- <v-toolbar dark extended extension-height="7">
-      <v-toolbar-side-icon></v-toolbar-side-icon>
-      <v-toolbar-title class="white--text">Title</v-toolbar-title>
+  <nav>  
+    <!-- NAVBAR  --> 
+    <v-toolbar app v-if="showNavbar" extended extension-height="2" id="navbar">
+
+      <!-- open navbar button -->
+      <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/>
+
+      <!-- fix this section -->
+      <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
+        Feynman
+      </v-toolbar-title>
+      <v-toolbar-title v-else @click="$router.push('/')" class="headline text-uppercase">
+        Feynman
+      </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon>
-        <v-icon>search</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon>apps</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon>refresh</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon>more_vert</v-icon>
-      </v-btn>
-      <v-progress-linear slot="extension" :indeterminate="true" class="ma-0">Progress?</v-progress-linear>      
-    </v-toolbar> -->
+
+      
     
-    <v-toolbar app extended extension-height="2">
 
-      <v-toolbar-side-icon v-if="user" @click="drawerOpen = !drawerOpen"></v-toolbar-side-icon>
-      <!-- <router-link to="/"> -->
-        <v-toolbar-title @click="$router.push('/')" class="headline text-uppercase">
-          18.600
-        </v-toolbar-title>
-      <!-- </router-link> -->
-      <v-spacer></v-spacer>
+      <!-- NAVBAR -->
+      <v-dialog v-model="dialog" max-width="290">
+           <v-btn slot="activator"
+              color="blue-grey"
+              class="white--text"
+              @click="showNumber = true">
+          Customer Support
+        <v-icon right dark>phone</v-icon>
+      </v-btn>
+        <!-- <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn> -->
+        <v-card>
+          <v-card-title class="headline">
+            Call 503 250 3868
+          </v-card-title>
 
-      <template v-if="user">
+          <v-card-text>
+            For very professional help :].
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <slot name="button">
 
-        <template v-if="isExplanationPage">
+            </slot>
+            <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
 
-          <v-btn @click="$root.$emit('delete-explanation')" class="red darken-2">
-            <span class="white--text">Delete</span>
-          </v-btn>
 
-          <v-btn @click="$root.$emit('play-explanation')" class="pink">
-            <span class="white--text">Replay</span>
-          </v-btn>
-        </template>
 
-        <template v-else-if="isStudentPage">
-          <v-btn @click="clearQuestion()" class="grey darken-1">
-            <span class="white--text">Clear questions</span>
-          </v-btn>
 
-          <v-btn :loading="loading2"
-                 :disabled="loading2"
-                 color="grey darken-1"
-                 @click="initClearBoardLogic()">
-            <span class="white--text">Clear whiteboard</span>
-            <span slot="loader">Clearing...</span>
-          </v-btn>
-          <popup-button fullscreen :explanationTitle="newTitle" 
-                 @input="newValue=> newTitle = newValue" 
-                 @pre-save-explanation="handleSaving"
-            />
-        </template>
+      <v-btn v-if="user && $route.path == '/'" 
+             @click="signOut()">
+        LOG OUT
+      </v-btn>
 
-      </template>
-      <v-progress-linear slot="extension" v-if="isLoading" :indeterminate="true" height="2" class="ma-0"></v-progress-linear>
+      <!-- loading indicator -->
+      <v-progress-linear v-if="isLoading" 
+                         slot="extension" 
+                         :indeterminate="true" 
+                         height="2" 
+                         class="ma-0"/>
+
     </v-toolbar>
 
-
-    <v-navigation-drawer v-if="user" v-model="drawerOpen" app class="white">
+    <!-- NAVIGATION DRAWER -->
+    <v-navigation-drawer v-if="user && $route.path != '/'" 
+                         v-model="drawerOpen" 
+                         width="200"
+                         app 
+                         class="white">
       <v-list>
-        <v-subheader class="subheading black--text text-uppercase font-weight-black">
-          Vishesh
-        </v-subheader>
- 
-        <!-- <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`"> -->
-        <v-list-tile>
-          <v-list-tile-content>
-            <span class="grey--text text--darken--3 mx-1">
-              Visesh is offline
-            </span>
-          </v-list-tile-content>
-        </v-list-tile>
-
-        <v-divider></v-divider>
-
         <v-subheader class="black--text subheading text-uppercase font-weight-black">
-          Students
+          Workspaces
         </v-subheader>
      
-        <v-list-tile v-for="student in tables" :key="student['.key']" router :to="`/student/${student['.key']}`">
+        <!-- workspaces -->
+        <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`">
           <v-list-tile-content>
-            <v-badge v-if="student.isAskingQuestion" color="red">
-              <v-icon slot="badge" dark small>priority_high</v-icon>
-              <span>{{ student.owner.name }}</span>
-            </v-badge>
+            <span v-if="workspace.isOffice">{{ workspace.ownerName }}'s Office</span>
             <template v-else>
-              {{ student.owner.name }}
+              <v-badge v-if="workspace.question && !workspace.isAnswered" color="red">
+                <v-icon slot="badge" dark small>priority_high</v-icon>
+                <span>{{ workspace.ownerName }}</span>
+              </v-badge>
+              <v-badge v-else-if="workspace.isAnswered" color="green">
+                <v-icon slot="badge" dark small>priority_high</v-icon>
+                <span>{{ workspace.ownerName }}</span>
+              </v-badge>
+              <span v-else>{{ workspace.ownerName }}</span>
             </template>
           </v-list-tile-content>
         </v-list-tile>
 
         <v-divider></v-divider>
 
+        <!-- saved content -->
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Concepts
         </v-subheader>
-    
-        <v-list-tile v-for="explanation in explanations" :key="explanation.text" router :to="`/explanation/${explanation['.key']}`">
+        <v-list-tile v-for="explanation in teacherExplanations" 
+                     :key="explanation.text" 
+                     router :to="`/${teacherUid}/answer/${explanation['.key']}`">
           <v-list-tile-content>
             {{ explanation.title }}
           </v-list-tile-content>
         </v-list-tile>
-
-        <v-divider></v-divider>
-
+        <v-divider/>
         <v-subheader class="subheading black--text text-uppercase font-weight-black">
           Examples
         </v-subheader>
         <v-list-tile>
           <v-list-tile-content>
             <span class="grey--text text--darken--3 mx-1">
-              (There are no examples yet)
+              (There are no examples)
             </span>
           </v-list-tile-content>
         </v-list-tile>
-
       </v-list>
     </v-navigation-drawer>
 
@@ -133,6 +126,7 @@
 import { mapState } from 'vuex'
 import db from '@/database.js'
 import PopupButton from '@/components/PopupButton.vue'
+import firebase from 'firebase/app'
 
 export default {
   components: {
@@ -141,42 +135,51 @@ export default {
   computed: {
     ...mapState(['user']),
     isLoading() {
-      return this.loadingChatLog || this.loadingAnimation
+      return this.loadingAnimation
+    },
+    teacherUid() {
+      return this.$route.params.teacher_id
     }
   },
-  data() {
+  created () {
+    this.$root.$on('toggle-navbar', () => {
+      // offset bug might be annoying 
+      if (this.showNavbar) {
+        this.showNavbar = false 
+        this.drawerOpen = false 
+      } else {
+        this.showNavbar = true
+        this.drawerOpen = true
+      }
+    })
+    this.$root.$on('open-navbar', () => {
+      this.showNavbar = true 
+      this.drawerOpen = false
+    })
+    this.$root.$on('close-navbar', () => {
+      this.showNavbar = false
+      // to prevent the offset bug 
+      this.drawerOpen = !this.drawerOpen
+      this.drawerOpen = false
+    })
+    this.$root.$on('toggle-sidenav', () => this.drawerOpen = !this.drawerOpen)
+  },
+  data () {
     return {
-      currentTable: null,
-      users: null,
+      showNavbar: true,
+      prev_teacherUid: null,
+      workspaces: null,
+      teacherExplanations: null,
       newTitle: '',
-      students: null,
-      tables: null,
-      isStudentPage: false, 
       isExplanationPage: false,
       drawerOpen: false,
-      explanations: [
-        { text: 'Moment Generating Functions' },
-        { text: 'Entropy' },
-        { text: 'Central Limit Theorem' },
-        { text: 'Stationary Distributions' }
-      ],
       clickedButtonStateName: null,
       loading: false,
       loading2: false,
       loading3: false,
-      loading4: false,
-      loadingChatLog: true, 
-      loadingAnimation: true
+      loadingAnimation: true,
+      dialog: false
     }
-  },
-  async created() {
-    this.$binding('students', db.collection('students'))
-    await this.$binding('users', db.collection('users'))
-    await this.$binding('tables', db.collection('tables'))
-    this.$binding('explanations', db.collection('explanations'))
-    // quick-fix: if the drawer is open without a delay, the whiteboard doesn't the touch location correctly (it has an offset)
-    setTimeout(() => this.drawerOpen = true, 0)
-    setTimeout(() => this.isLoading = false, 3000)
   },
   watch: {
     $route: {
@@ -191,57 +194,35 @@ export default {
     }
   },
   methods: {
-    clearQuestion() {
-      this.updateTableStatus(false)
-      this.$root.$emit('clear-chat')
-    },
-    async updateTableStatus(isAskingQuestion) {
-      const tableId = this.$route.params.id
-      console.log('tableId =', tableId)
-      const tableRef = db.collection('tables').doc(tableId)
-      await tableRef.update({
-        isAskingQuestion
-      })
-      console.log('successfully updated table status')
-    },
-    initClearBoardLogic() {
-      this.clickedButtonStateName = 'loading2'
-      this.$root.$emit('clear-whiteboard')
+    async signOut() {
+      await firebase.auth().signOut()
     },
     updateNavbarButtons() {
+      // update workspaces and teacher explanations
       const path = this.$route.path
-      if (path.substring(1, 12) == 'explanation') {
-        this.isExplanationPage = true 
-        this.isStudentPage = false 
-        this.loadingChatLog = true
+      const pathParts = path.split('/')
+      const teacher_id = this.$route.params.teacher_id
+      // the navbar content should not reload everytime the user navigates between the workspaces, but should update
+      // everytime the user visits a different TA page
+      if (teacher_id) { // TA's office page 
+        if (teacher_id != this.prev_teacherUid) {
+          this.$binding('workspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id))
+          this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', teacher_id))
+          this.prev_teacherUid = teacher_id 
+          setTimeout(() => this.drawerOpen = true, 0)
+        }
+      }
+      if (pathParts[2] == 'answer') {
         this.loadingAnimation = true 
-        this.$root.$on('finish-loading-chat-log', () => this.loadingChatLog = false )
         this.$root.$on('finish-loading-animation', () => this.loadingAnimation = false) 
-      } else if (path.substring(1, 8) == 'student') {
-        this.isExplanationPage = false 
-        this.isStudentPage = true
-        // quick-fix
-        this.loadingChatLog = false 
+      } else if (pathParts[2] == 'workspace') {
         this.loadingAnimation = false 
-        this.$binding('currentTable', db.collection('tables').doc(this.$route.params.id))
       } else {
-        this.isExplanationPage = false 
-        this.isStudentPage = false
-        // quick-fix 
-        this.loadingChatLog = false 
         this.loadingAnimation = false 
       }
-
-
-
-    },
-    async handleSaving() {
-      const docRef = await db.collection('explanations').add({
-        title: this.newTitle,
-        author: "Richard Feynman"
-      })
-      this.$root.$emit('save-explanation', docRef.id)
     }
   }
 }
 </script>
+
+
