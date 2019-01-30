@@ -1,5 +1,5 @@
 self.addEventListener('install', function(event) {
-	//TODO: create registering the push subcription to the database here
+	console.log('worked')
 })
 self.addEventListener('push', function(event) {
   console.log(event.data.json())

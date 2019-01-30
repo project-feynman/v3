@@ -2,13 +2,21 @@ const admin = require('firebase-admin')
 const functions = require('firebase-functions');
 const firebase_tools = require('firebase-tools')
 const webpush = require('web-push')
+const config = require('./config')
 
 admin.initializeApp()
+
+const vapidKeys = config.vapidKeys
+webpush.setVapidDetails(
+	'mailto:hubewasi@gmail.com',
+	vapidKeys.publicKey,
+	vapidKeys.privateKey
+)
 
 const firestore = admin.firestore()
 firestore.settings({timestampsInSnapshots: true})
 
-exports.notificationOnNewMessage = functions.firestore.document('/students/{uid}/messages/{mid]').onCreate((doc, context) => {
+exports.notificationOnNewMessage = functions.firestore.document('/users/{uid}/messages/{mid]').onCreate((doc, context) => {
 	const params = context.params;
 
 	const messageId = params.mid;
@@ -18,55 +26,61 @@ exports.notificationOnNewMessage = functions.firestore.document('/students/{uid}
 	const authorName = author.displayName;
 	const authorUid = author.uid
 
-	receivers = firestore.collection('/students/' + chatroomUid + '/participants/')
+	receivers = firestore.collection('/users/' + chatroomUid + '/participants/')
 	receivers.listDocuments().then(documentRefs => {
 		return firestore.getAll(documentRefs)
 	}).then(receiverSnaps => {
 		documentSnaps.forEach(documentSnap => {
-			const currentUid = documentSnap.data().uid
-			const userDocRef = firestore.doc('/students/' + currentUid)
-			userDocRef.get().then(userDocSnap => {
-				if(userDocSnap.exists) {
-					var receiverSubscriptions = userDocSnap.data().subscriptions
-					if(!receiverSubscriptions) {
-						return;
-					}
-					receiverSubscriptions.forEach(function(sub) {
-						const subscription = JSON.parse(sub)
-						const payload = {
-							senderName,
-							body: message.content,
-							type: "message"
-						}
-						webpush.sendNotification(subscription, JSON.stringify(payload)).catch((err) => console.log(receiverUid + '\n' + sub + '\n' + err))
-					})
-				}
-				else {
-					console.log("Nonexistent user with uid given in participants\nUid: " + currentUid)
-					return null
-				}
-			})
-		})
-	})
-	receiverUids = receivers.map((receiver) => receiver.uid)
-	receiverUids.forEach(function(receiverUid) {
-		firestore.doc('/users/' + receiverUid).get().then(async snapshot => {
-			
+			sendNotificationByUid(documentSnap.uid, authorName + " sent a message...", doc.data().content)	
 		})
 	})
 
 	return null;
 })
 
-/* AUTO-CREATED FUNCTIONS */
+exports.sendNotificationByUid = functions.https.onCall((data, context) => {
+	_sendNotificationByUid(data.uid, data.title, data.body)
+})
 
-exports.updateParticipantsForUserChatroom = functions.firestore.document('/students/{uid}/messages/{mid}').onCreate((doc, context) => {
+function _sendNotificationByUid(uid, title, body) {
+	const userDocRef = firestore.doc('/users/' + uid)
+	userDocRef.get().then(userDocSnap => {
+		if(userDocSnap.exists) {
+			firestore.collection('/users/' + uid + '/subscriptions/').get().then(subscriptionDocs => {
+				if(subscriptionDocs.docs == 0) {
+					return;
+				}
+				subscriptionDocs.forEach(function(subscriptionDoc) {
+					const subscriptionDocData = subscriptionDoc.data()
+					console.log(subscriptionDocData)
+					const subscription = subscriptionDocData.subscription
+					const JSONsubscription = JSON.parse(subscription)
+					const payload = {
+						title,
+						body,
+						type: "notification"
+					}
+					webpush.sendNotification(JSONsubscription, JSON.stringify(payload))
+					.catch((err) => {
+						console.log("error while sending notification to uid: " + uid + " subscription: " + subscription)
+					})
+				})
+			})
+		}
+		else {
+			console.log("Uid not linked to any user or undefined\nUID: " + uid)
+			return null
+		}
+	})
+}
+
+exports.updateParticipantsForUserChatroom = functions.firestore.document('/users/{uid}/messages/{mid}').onCreate((doc, context) => {
 	const params = context.params;
 	const author = params.author;
 	const authorUid = author.uid;
 	const authorName = author.name
 
-	const colref = firebase.colection("/students/" + context.params.uid + "/participants");
+	const colref = firebase.colection("/users/" + context.params.uid + "/participants");
 
 	colref.where("uid", "==", authorUid).then(querySnapshot => {
 		if(querySnapshot.empty) {
@@ -76,7 +90,9 @@ exports.updateParticipantsForUserChatroom = functions.firestore.document('/stude
 			})
 		}
 	})
-})/**
+})
+/* AUTO-CREATED FUNCTIONS */
+/**
  * Callable function that creates a custom auth token with the
  * custom attribute "admin" set to true.
  * 
