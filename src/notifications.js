@@ -2,31 +2,34 @@ import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
 
-
-function sendSubscriptionToFirebase() {
-	var user = firebase.auth().currentUser
-	console.log('here')
-	if(user) {
-		var uid = user.uid
-		console.log('uid == ' + uid + ": " + uid == "tdUR6vn0LdOuqGKzrA3EmsVpXOv1")
-		var col = firebase.colection('users/' + uid + '/subscriptions/')
-		var query = col.where("subscription","==", JSON.stringify(subscription))
-		query.get().then(function(snapshot) {
-			if(snapshot.docs) {
-				return
-			} else {
-				col.add({
-					subscription: JSON.stringify(subscription),
-					timestamp: Math.floor(Date.now() / 1000)
-				})
+if ('serviceWorker' in navigator) {
+	navigator.serviceWorker.register('/sw.js').then(serviceWorkerRegistration => {
+		const pk = "BP2vmGK7bwpT4ijgezOrTWuWnUUSiSnczWuYnYXcKCYsbceHxdxT82Txrtpa0UHYHyFw_gpbhJaPSsSbWK-EfTo"
+		serviceWorkerRegistration.pushManager.subscribe(
+		{
+			userVisibleOnly: true,
+			applicationServerKey: urlB64ToUint8Array(pk)
+		}).then(
+			function(pushSubscription) {
+				sendSubscriptionToFirebase(pushSubcription)
+				console.log('hree0')
+			}, function(err){
+				// handle error during subscription
+				console.log("Error: push subscription failed.\t" + err)
 			}
-		})
-	} else {
-		firebase.auth().onAuthStateChanged(function(user) {
-			var uid = user.uid
-			var col = firebase.colection('users/' + uid + '/subscriptions/')
-			var query = col.where("subscription","==", JSON.stringify(subscription))
+		)
+	})
+}
 
+navigator.serviceWorker.ready.then(serviceWorkerRegistration => {
+	serviceWorkerRegistration.pushManager.getSubscription().then(subscription => {
+		console.log('here')
+		const db = firebase.firestore()
+		var user = firebase.auth().currentUser
+		if(user) {
+			var uid = user.uid
+			var col = db.collection('users/' + uid + '/subscriptions/')
+			var query = col.where("subscription","==", JSON.stringify(subscription))
 			query.get().then(function(snapshot) {
 				if(snapshot.docs) {
 					return
@@ -37,6 +40,40 @@ function sendSubscriptionToFirebase() {
 					})
 				}
 			})
-		})
-	}
+		} else {
+			firebase.auth().onAuthStateChanged(function(user) {
+				console.log('at least i got here')
+				var uid = user.uid
+				var col = db.collection('/users/' + uid + '/subscriptions/')
+				var query = col.where("subscription","==", JSON.stringify(subscription))
+
+				query.get().then(function(snapshot) {
+					if(snapshot.docs.length != 0) {
+						console.log(snapshot.docs)
+						return
+					} else {
+						col.add({
+							subscription: JSON.stringify(subscription),
+							timestamp: Math.floor(Date.now() / 1000)
+						})
+					}
+				})
+			})
+		}
+	})
+})
+// helper function for dealing with VAPID key
+function urlB64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
 }
