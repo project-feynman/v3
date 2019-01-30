@@ -62,7 +62,7 @@ function _sendNotificationByUid(uid, title, body) {
 					}
 					webpush.sendNotification(JSONsubscription, JSON.stringify(payload))
 					.catch((err) => {
-						console.log("error while sending notification to uid: " + uid + " subscription: " + subscription)
+						console.log("error while sending notification to uid: " + uid + " subscription: " + subscription + "\n" + err)
 					})
 				})
 			})
