@@ -14,3 +14,6 @@ const firebaseApp = firebase.initializeApp(config)
 firebaseApp.firestore().settings({ timestampsInSnapshots: true })
 
 export default firebaseApp.firestore()
+
+// TO PREVENT CORS ISSUES, RUN:
+// gsutil cors set cors.json gs://feynman-mvp.appspot.com
