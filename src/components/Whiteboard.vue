@@ -290,6 +290,7 @@ export default {
       if (e.touches) {
         if (e.touches.length == 1) { 
           const finger1 = e.touches[0] 
+          // console.log('finger1.touchType =', finger1.touchType)
           this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
           this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
         }
