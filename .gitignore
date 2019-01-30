@@ -21,3 +21,4 @@ yarn-error.log*
 *.sw*
 .vimrc
 functions/config
+*firebase-debug.log
