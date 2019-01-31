@@ -10,55 +10,58 @@ if ('serviceWorker' in navigator) {
 			userVisibleOnly: true,
 			applicationServerKey: urlB64ToUint8Array(pk)
 		}).then(
-			function(_) { }, function(err){
-				// handle error during subscription
-				console.log("Error: push subscription failed.\t" + err)
-			}
-		)
+			function(pushSubscription) { sendSubscriptionToFirestore(pushSubscription) }, function(err){
+				// try to unsubscribe and subscribe again on error
+				serviceWorkerRegistration.pushManager.getSubscription(obsoleteSub => {
+					obsoleteSub.unsubscribe()
+					serviceWorkerRegistration.pushManager.subscribe(
+					{
+						userVisibleOnly: true,
+						applicationServerKey: urlB64ToUint8Array(pk)
+					}).then(function(pushSubscription) { sendSubscriptionToFirestore(pushSubscription) }, function(err){
+					console.log("Error: push subscription failed.\t" + err)
+				})
+			})
+		})
 	})
 }
 
-navigator.serviceWorker.ready.then(serviceWorkerRegistration => {
-	serviceWorkerRegistration.pushManager.getSubscription().then(subscription => {
-		console.log('here')
-		const db = firebase.firestore()
-		var user = firebase.auth().currentUser
-		if(user) {
-			var uid = user.uid
-			var col = db.collection('users/' + uid + '/subscriptions/')
-			var query = col.where("subscription","==", JSON.stringify(subscription))
-			query.get().then(function(snapshot) {
-				if(snapshot.docs) {
-					return
-				} else {
-					col.add({
-						subscription: JSON.stringify(subscription),
-						timestamp: Math.floor(Date.now() / 1000)
-					})
-				}
-			})
-		} else {
-			firebase.auth().onAuthStateChanged(function(user) {
-				console.log('at least i got here')
-				var uid = user.uid
-				var col = db.collection('/users/' + uid + '/subscriptions/')
-				var query = col.where("subscription","==", JSON.stringify(subscription))
+function sendSubscriptionToFirestore(pushSubscription) {
+  const db = firebase.firestore()
+  var user = firebase.auth().currentUser
+  if(user) {
+	  var uid = user.uid
+	  var col = db.collection('users/' + uid + '/subscriptions/')
+	  var query = col.where("subscription","==", JSON.stringify(subscription))
+	  query.get().then(function(snapshot) {
+		  if(snapshot.docs) {
+			  return
+		  } else {
+			  col.add({
+				  subscription: JSON.stringify(subscription),
+				  timestamp: Math.floor(Date.now() / 1000)
+			  })
+		  }
+	  })
+  } else {
+	  firebase.auth().onAuthStateChanged(function(user) {
+		  var uid = user.uid
+		  var col = db.collection('/users/' + uid + '/subscriptions/')
+		  var query = col.where("subscription","==", JSON.stringify(subscription))
 
-				query.get().then(function(snapshot) {
-					if(snapshot.docs.length != 0) {
-						console.log(snapshot.docs)
-						return
-					} else {
-						col.add({
-							subscription: JSON.stringify(subscription),
-							timestamp: Math.floor(Date.now() / 1000)
-						})
-					}
-				})
-			})
-		}
-	})
-})
+		  query.get().then(function(snapshot) {
+			  if(snapshot.docs.length != 0) {
+				  return
+			  } else {
+				  col.add({
+					  subscription: JSON.stringify(subscription),
+					  timestamp: Math.floor(Date.now() / 1000)
+				  })
+			  }
+		  })
+	  })
+  }
+}
 // helper function for dealing with VAPID key
 function urlB64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
