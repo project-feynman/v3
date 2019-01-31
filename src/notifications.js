@@ -1,6 +1,7 @@
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
+import db from '@/database.js'
 
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('/sw.js').then(serviceWorkerRegistration => {
@@ -32,40 +33,19 @@ if ('serviceWorker' in navigator) {
 }
 
 function sendSubscriptionToFirestore(subscription) {
-  const db = firebase.firestore()
-  var user = firebase.auth().currentUser
-  if(user) {
-	  var uid = user.uid
-	  var col = db.collection('users/' + uid + '/subscriptions/')
-	  var query = col.where("subscription","==", JSON.stringify(subscription))
-	  query.get().then(function(snapshot) {
-		  if(snapshot.docs) {
-			  return
-		  } else {
-			  col.add({
-				  subscription: JSON.stringify(subscription),
-				  timestamp: Math.floor(Date.now() / 1000)
-			  })
-		  }
-	  })
-  } else {
-	  firebase.auth().onAuthStateChanged(function(user) {
-		  var uid = user.uid
-		  var col = db.collection('/users/' + uid + '/subscriptions/')
-		  var query = col.where("subscription","==", JSON.stringify(subscription))
+	  firebase.auth().onAuthStateChanged(async user => {
+		  const uid = user.uid
+		  const col = db.collection('/users/' + uid + '/subscriptions/')
+		  const query = col.where('subscription','==', JSON.stringify(subscription))
 
-		  query.get().then(function(snapshot) {
-			  if(snapshot.docs.length != 0) {
-				  return
-			  } else {
-				  col.add({
-					  subscription: JSON.stringify(subscription),
-					  timestamp: Math.floor(Date.now() / 1000)
-				  })
-			  }
-		  })
-	  })
-  }
+      const snapshot = await query.get()
+      if (snapshot.docs.length == 0) {
+        col.add({
+          subscription: JSON.stringify(subscription),
+          timestamp: Math.floor(Date.now() / 1000)
+        })
+      }
+  })
 }
 // helper function for dealing with VAPID key
 function urlB64ToUint8Array(base64String) {
