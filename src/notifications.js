@@ -10,7 +10,9 @@ if ('serviceWorker' in navigator) {
 			userVisibleOnly: true,
 			applicationServerKey: urlB64ToUint8Array(pk)
 		}).then(
-			function(pushSubscription) { sendSubscriptionToFirestore(pushSubscription) }, function(err){
+			function(pushSubscription) {
+				sendSubscriptionToFirestore(pushSubscription) 
+			}, function(err){
 				// try to unsubscribe and subscribe again on error
 				serviceWorkerRegistration.pushManager.getSubscription(obsoleteSub => {
 					obsoleteSub.unsubscribe()
@@ -18,15 +20,18 @@ if ('serviceWorker' in navigator) {
 					{
 						userVisibleOnly: true,
 						applicationServerKey: urlB64ToUint8Array(pk)
-					}).then(function(pushSubscription) { sendSubscriptionToFirestore(pushSubscription) }, function(err){
-					console.log("Error: push subscription failed.\t" + err)
-				})
+					}).then(function(pushSubscription) {
+						sendSubscriptionToFirestore(pushSubscription) 
+					}, function(err){
+						console.log("Error: push subscription failed.\t" + err)
+					}
+				)
 			})
 		})
 	})
 }
 
-function sendSubscriptionToFirestore(pushSubscription) {
+function sendSubscriptionToFirestore(subscription) {
   const db = firebase.firestore()
   var user = firebase.auth().currentUser
   if(user) {
