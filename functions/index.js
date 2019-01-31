@@ -31,7 +31,7 @@ exports.notificationOnNewMessage = functions.firestore.document('/users/{uid}/me
 		return firestore.getAll(documentRefs)
 	}).then(receiverSnaps => {
 		documentSnaps.forEach(documentSnap => {
-			sendNotificationByUid(documentSnap.uid, authorName + " sent a message...", doc.data().content)	
+			_sendNotificationByUid(documentSnap.uid, authorName + " sent a message...", doc.data().content)	
 		})
 	})
 
