@@ -10,10 +10,7 @@ if ('serviceWorker' in navigator) {
 			userVisibleOnly: true,
 			applicationServerKey: urlB64ToUint8Array(pk)
 		}).then(
-			function(pushSubscription) {
-				sendSubscriptionToFirebase(pushSubcription)
-				console.log('hree0')
-			}, function(err){
+			function(_) { }, function(err){
 				// handle error during subscription
 				console.log("Error: push subscription failed.\t" + err)
 			}
