@@ -4,7 +4,7 @@ import 'firebase/auth'
 
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('/sw.js').then(serviceWorkerRegistration => {
-		const pk = "BP2vmGK7bwpT4ijgezOrTWuWnUUSiSnczWuYnYXcKCYsbceHxdxT82Txrtpa0UHYHyFw_gpbhJaPSsSbWK-EfTo"
+		const pk = "BNEwazYWUSz564A2glevVL7D4qYwaeWuj73Ux8lwYtb-biwlPqYyoc5B4QY_YyZxeR_GSMX4zqmK50yphVFS3_Y"
 		serviceWorkerRegistration.pushManager.subscribe(
 		{
 			userVisibleOnly: true,

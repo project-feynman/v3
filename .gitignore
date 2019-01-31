@@ -20,5 +20,4 @@ yarn-error.log*
 *.sln
 *.sw*
 .vimrc
-functions/config
 *firebase-debug.log
