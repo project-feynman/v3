@@ -1,15 +1,13 @@
 <template>
-  <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
-  <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div id="whiteboard">
     <div v-if="workspace" style="display: flex; justify-content: center;">
       <!-- CLEAR WHITEBOARD -->
-      <!-- <v-btn :loading="isClearing"
-              :disabled="isClearing"
-              @click="initClearBoardLogic()"> 
-        <span>CLEAR WHITEBOARD</span>
-        <span slot="loader">Clearing...</span>
-      </v-btn> -->
+        <!-- <v-btn :loading="isClearing"
+                :disabled="isClearing"
+                @click="initClearBoardLogic()"> 
+          <span>CLEAR WHITEBOARD</span>
+          <span slot="loader">Clearing...</span>
+        </v-btn> -->
       
       <!-- timer -->
       <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->

@@ -3,7 +3,7 @@
     <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
       <v-btn slot="activator" color="primary" dark>Open Dialog</v-btn>
       <v-card>
-        <v-toolbar dark color="primary">
+        <v-toolbar id="whiteboard-toolbar" dark color="primary">
           <v-toolbar-title>Settings</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
