@@ -1,7 +1,7 @@
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/auth'
-import db from '@/database.js'
+// import db from '@/database.js'
 
 if ('serviceWorker' in navigator) {
 	navigator.serviceWorker.register('/sw.js').then(serviceWorkerRegistration => {
@@ -34,6 +34,7 @@ if ('serviceWorker' in navigator) {
 
 function sendSubscriptionToFirestore(subscription) {
 	  firebase.auth().onAuthStateChanged(async user => {
+      const db = firebase.firestore()
 		  const uid = user.uid
 		  const col = db.collection('/users/' + uid + '/subscriptions/')
 		  const query = col.where('subscription','==', JSON.stringify(subscription))
