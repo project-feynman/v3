@@ -2,9 +2,15 @@ const admin = require('firebase-admin')
 const functions = require('firebase-functions');
 const firebase_tools = require('firebase-tools')
 const webpush = require('web-push')
+const nodemailer = require('nodemailer')
 const config = require('./config')
+//TODO: add the path to creds
+const adminCredentials = require('path/to/credentials')
 
-admin.initializeApp()
+admin.initializeApp({
+	credential: admin.credential.cert(adminCredentials),
+	databaseUrl: "https://feynman-mvp.firebaseio.com"
+})
 
 const vapidKeys = config.vapidKeys
 webpush.setVapidDetails(
@@ -13,10 +19,20 @@ webpush.setVapidDetails(
 	vapidKeys.privateKey
 )
 
+const gmailPass = config.gmailPass
+const transporter = nodemailer.createTransport({
+	service: "gmail",
+	auth: {
+		user: gmailPass.username,
+		password: gmailPass.password
+	}
+})
 const firestore = admin.firestore()
 firestore.settings({timestampsInSnapshots: true})
 
-exports.notificationOnNewMessage = functions.firestore.document('/users/{uid}/messages/{mid]').onCreate((doc, context) => {
+exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{uid}/messages/{mid}').onCreate((doc, context) => {
+	_updateParticipants()
+	
 	const params = context.params;
 
 	const messageId = params.mid;
@@ -38,6 +54,37 @@ exports.notificationOnNewMessage = functions.firestore.document('/users/{uid}/me
 	return null;
 })
 
+exports.updateParticipants = functions.https.onCall((data, context) => {
+	_updateParticipants(data.workspaceid)
+})
+
+function _updateParticipants(workspaceid) {
+	//TBD
+}
+
+exports.sendEmailByUid = functions.https.onCall((data, context) => {
+	//temporarily email instead of uid
+	//TODO: change back to uid
+	_sendEmailByUid(data.email, data.title, data.subject, data.body)
+})
+
+function _sendEmailByUid(uid, title, subject, body) {
+	admin.auth().getUser(uid).then(user => {
+		const userEmail = user.email
+
+		const message = {
+			from: "feynmannotif@gmail.com",
+			to: userEmail,
+			subject,
+			text: body,
+		}
+
+		transporter.sendMail(message, (error, response) => {
+			console.log(error)
+			console.log(response)
+		})
+	})
+}
 exports.sendNotificationByUid = functions.https.onCall((data, context) => {
 	_sendNotificationByUid(data.uid, data.title, data.body)
 })
