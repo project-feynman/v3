@@ -1,5 +1,5 @@
 <template>
-  <v-layout row justify-center lazy>
+  <!-- <v-layout row justify-center lazy> -->
     <v-dialog v-model="dialog" fullscreen hide-overlay>
       <v-btn slot="activator" color="primary" dark>Use Whiteboard</v-btn>
       <v-card>
@@ -15,7 +15,7 @@
         </slot>
       </v-card>
     </v-dialog>
-  </v-layout>
+  <!-- </v-layout> -->
 </template>
 
 <script>

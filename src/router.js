@@ -12,10 +12,6 @@ export default new Router({
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
     {
-      path: '/beta-workspace',
-      component: () => import(/* webpackChunkName: "answer" */ './views/BetaWorkspace.vue')
-    },
-    {
       path: '/:teacher_id',
       component: () => import(/* webpackChunkName: "tutorial" */ './views/Schedule.vue') 
     },

@@ -1,6 +1,7 @@
 export default {
   methods: {
     rescaleCanvas() {
+      console.log('rescaleCanvas()')
       // only redraw when the user has finished resizing the window
       // then, make the drawing coordinate system 1:1 with the actual size of the canvas
       this.canvas.width = this.canvas.scrollWidth
