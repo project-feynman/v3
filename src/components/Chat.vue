@@ -1,33 +1,34 @@
 <template>
   <div class="chat">
     <v-card>
-
-        <v-card-title>
-          <v-layout>
-            <template v-if="table && user">
-              <template v-if="table.owner">
-                <template v-if="user.uid != $route.params.id"> 
-                  <h3 v-if="user.uid != $route.params.id">{{ table.owner.name }}</h3>
-                  <v-icon right small color="green" class="mx-2">fiber_manual_record</v-icon>
-                </template>
-                <h3 v-else>Your workspace</h3>
-              </template> 
-            </template>
-          </v-layout>
-        </v-card-title>
+      <v-card-title>
+        <v-layout>
+          <template v-if="table && user">
+            <template v-if="table.owner">
+              <template v-if="user.uid != $route.params.id"> 
+                <h3 v-if="user.uid != $route.params.id">{{ table.owner.name }}</h3>
+                <v-icon right small color="green" class="mx-2">fiber_manual_record</v-icon>
+              </template>
+              <h3 v-else>Your workspace</h3>
+            </template> 
+          </template>
+        </v-layout>
+      </v-card-title>
         
         <template v-if="table">
           <ul v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
-            <v-card-text>
-              <v-layout>
-                <template v-if="table">
-                  <span class="teal--text">{{ firstName(message.author.name) }}</span>
-                  <!-- <span v-else class="teal--text">(This is your room)</span> -->
-                </template>
-                <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
-              </v-layout>
-              <span class="grey--text time">6:00 pm, January 1st</span>
-            </v-card-text>
+            <li>
+              <v-card-text>
+                <v-layout>
+                  <template v-if="table">
+                    <span class="teal--text">{{ firstName(message.author.name) }}</span>
+                    <!-- <span v-else class="teal--text">(This is your room)</span> -->
+                  </template>
+                  <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
+                </v-layout>
+                <span class="grey--text time">{{ message.timestamp }}</span>
+              </v-card-text>
+            </li>
           </ul>
         </template>
 
@@ -43,13 +44,15 @@
                 :hint="getHint()"
                 class="mb-2"
               ></v-textarea>
-              <div style="display: flex;">
+              <template v-if="user">
+                <!-- <v-btn v-if="user.uid === $route.params.id" block @click="submitQuestion()">Submit Question</v-btn> -->
+                <v-btn @click="addMessage()" block>SEND MESSAGE</v-btn>
+              </template>
+              <div style="display: flex; justify-content: center;">
+                <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn>
+                <v-btn @click="askForHelp()">TOGGLE HELP</v-btn>
                 <slot></slot>
               </div>
-              <template v-if="user">
-                <v-btn v-if="user.uid === $route.params.id" block @click="submitQuestion()">Submit Question</v-btn>
-                <v-btn v-else @click="addMessage()" block>Submit Answer</v-btn>
-              </template>
             </v-flex>
           </v-layout>
         </v-card-actions>
@@ -60,6 +63,7 @@
 
 
 <script>
+import moment from 'moment'
 import db from '@/database.js'
 import { mapState } from 'vuex'
 
@@ -77,7 +81,7 @@ export default {
     ...mapState(['user']),
     author() {
       return {
-        name: this.user.displayName,
+        name: this.user.name,
         uid: this.user.uid 
       }
     }
@@ -93,12 +97,15 @@ export default {
     }
   },
   methods: {
+    askForHelp() {
+      const ref = db.collection('workspaces').doc(this.ownerUid)
+      console.log('this.table =', this.table)
+      ref.update({
+        isAskingQuestion: !this.table.isAskingQuestion
+      })
+    },  
     getHint() {
-      if (this.user.uid == this.$route.params.id) {
-        return 'After submitting the question, your TA will be notified to answer ASAP'
-      } else {
-        return 'Write an answer - aim for simplicity and elegance'
-      }
+      return ''
     },
     submitQuestion() {
       this.updateTableStatus(true)
@@ -123,7 +130,7 @@ export default {
       })
     },
     bindVariables() {
-      const ownerRef = db.collection('tables').doc(this.ownerUid)
+      const ownerRef = db.collection('workspaces').doc(this.ownerUid)
       this.$binding('table', ownerRef)
       this.$binding('messages', ownerRef.collection('messages'))
     },
@@ -137,14 +144,16 @@ export default {
       }
       const content = this.newMessage
       this.newMessage = null
-      const messagesRef = db.collection('tables').doc(this.ownerUid).collection('messages')
+      const timestamp = moment(Date.now()).format('lll')
+      const messagesRef = db.collection('workspaces').doc(this.ownerUid).collection('messages')
       await messagesRef.doc(`${this.messages.length + 1}`).set({
         content,
-        author: this.author
+        author: this.author,
+        timestamp
       })
     },
     async clearMessages() {
-      const messagesRef = db.collection('tables').doc(this.ownerUid).collection('messages')
+      const messagesRef = db.collection('workspaces').doc(this.ownerUid).collection('messages')
       for (let i=1; i < this.messages.length +1; i++) {
         messagesRef.doc(`${i}`).delete()
       }
@@ -172,5 +181,4 @@ export default {
 .messages::-webkit-scrollbar-thumb {
 	background: #aaa;
 }
-
 </style>

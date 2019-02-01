@@ -8,19 +8,11 @@
           <span>CLEAR WHITEBOARD</span>
           <span slot="loader">Clearing...</span>
         </v-btn> -->
-      
-      <!-- timer -->
-      <!-- <p v-if="currentTime">{{ currentTime.toFixed(1) }}</p> -->
       <slot>
 
       </slot>
-      <!-- color palette  -->
-      <swatches v-if="showButtons" 
-                v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="40" 
-                :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '0px', height: '30px' }">
-      </swatches>
     </div>
-    <!-- WHITEBOARD -->
+    <!-- CANVAS -->
     <canvas id="myCanvas" :height="height"></canvas>
   </div>
 </template>
@@ -35,7 +27,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered'],
+  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered', 'color', 'colors'],
   components: {
     Swatches
   },
@@ -103,8 +95,8 @@ export default {
       unsubscribe: null,
       redrawTimeout: null,
       idx: 0,
-      color: '#A463BF',
-      colors: ['#F64272', 'orange', '#A463BF'],
+      // color: '#A463BF',
+      // colors: ['#F64272', 'orange', '#A463BF'],
       lineWidth: 2,
       oldNavbarHeight: 0,
       oldRowHeight: 0,
@@ -113,34 +105,37 @@ export default {
     }
   },
   mounted() {
+    console.log('whiteboard is mounted')
     this.canvas = document.getElementById('myCanvas')
+    console.log('before, canvas =', this.canvas)
+    this.canvas.height = 1000
+    console.log('after, canvas =', this.canvas)
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    if (!this.workspace.isAnswered) {
-      this.initTouchEvents()
+    if (workspace) {
+      if (!this.workspace.isAnswered) {
+        this.initTouchEvents()
+      }
     }
     this.addStrokesListener()
     // new code
-    this.interval = setInterval(() => {
-      const navbar = document.getElementById('navbar')
-      const row = document.getElementById('whiteboard-buttons-layout')
-      let navbarHeight = 0 
-      let rowHeight = 0
-      if (navbar) {
-        navbarHeight = navbar.scrollHeight
-      }
-      if (row) {
-        rowHeight = row.scrollHeight
-      }
-      if (this.oldNavbarHeight != navbarHeight || this.oldWindowHeight != window.innerHeight || this.oldRowHeight != rowHeight) {
-        this.canvas.setAttribute('height', `${window.innerHeight - navbarHeight - rowHeight - 10}`)
-        this.rescaleCanvas()
-        this.oldNavbarHeight = navbarHeight 
-        this.oldWindowHeight = window.innerHeight
-        this.oldRowHeight = row.scrollHeight
-      }
-    }, 1000)
+    // const resizeToFullscreen = () => {
+    //   console.log('resizeToFullscreen()')
+    //   const navbar = document.getElementById('whiteboard-toolbar')
+    //   if (this.oldWindowHeight != window.innerHeight) {
+    //     console.log('navbar.scrollHeight =', navbar.scrollHeight)
+    //     // this.canvas.setAttribute('scrollHeight', window.innerHeight - 64 - 10)
+    //     this.canvas.height = window.innerHeight - 64 - 10
+    //     // this.canvas.scrollHeight = window.innerHeight - 64 - 10
+    //     // this.canvas.setAttribute('height', window.innerHeight - navbar.scrollHeight - 20) 
+    //     console.log('new height =', window.innerHeight - 64 - 10)
+    //     this.oldWindowHeight = window.innerHeight
+    //     this.oldNavbarHeight = navbar.scrollHeight
+    //     this.rescaleCanvas()
+    //   }
+    // }
+    // setInterval(resizeToFullscreen, 1000)
   },
   beforeDestroy() {
     clearInterval(this.interval)
@@ -213,6 +208,7 @@ export default {
       this.lastX = -1
     },
     initTouchEvents () {
+      console.log('initTouchEvents9)')
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
@@ -294,6 +290,7 @@ export default {
 <style>
 #myCanvas {
   width: 100%;
+  height: 90vh;
   background-color: rgb(192, 230, 253);
 }
 </style>

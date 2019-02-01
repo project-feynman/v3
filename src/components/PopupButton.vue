@@ -1,10 +1,9 @@
 <template>
-  <v-dialog width="500" persistent v-model="dialog">
+  <v-dialog width="500" persistent v-model="savePopup">
     <v-btn slot="activator" class="pink darken-1">
       <span class="white--text">Save Video</span>
     </v-btn>
     <v-card>
-    
       <v-card-text>
         <v-input>
           <input v-focus placeholder="e.g. Markov Bounds" :value="explanationTitle" @input="$emit('input', $event.target.value)">
@@ -18,7 +17,7 @@
         <template v-if="!isSavingVideo">
           <v-btn color="green darken-1"
                  flat="flat"
-                 @click="dialog = false">
+                 @click="savePopup = false">
             Cancel
           </v-btn>
           <!-- SAVE -->
@@ -39,13 +38,12 @@ export default {
   props: ['explanationTitle'],
   created() {
     this.$root.$on('audio-uploaded', () => {
-      this.dialog = false
+      this.savePopup = false
       this.isSavingVideo = false 
     }) 
   },
   methods: {
     handleSave() {
-      // this.dialog = false 
       // emit it to workspace
       this.isSavingVideo = true 
       this.$emit('pre-save-explanation')
@@ -54,7 +52,7 @@ export default {
   data() {
     return {
       isSavingVideo: false, 
-      dialog: false
+      savePopup: false
     }
   }
 }
