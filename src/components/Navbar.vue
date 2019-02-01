@@ -15,9 +15,6 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      
-    
-
       <!-- NAVBAR -->
       <v-dialog v-model="dialog" max-width="290">
            <v-btn slot="activator"

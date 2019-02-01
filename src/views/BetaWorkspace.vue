@@ -1,9 +1,10 @@
 <template>
   <div>
-    <beta-popup-button>
-      <beta-whiteboard/>
-    </beta-popup-button>
-    <chat></chat>
+    <chat>
+      <beta-popup-button>
+        <beta-whiteboard/>
+      </beta-popup-button>
+    </chat>
     <h2>Beta Workspace</h2>
   </div>
 </template>
