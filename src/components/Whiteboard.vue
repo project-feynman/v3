@@ -160,13 +160,6 @@ export default {
     stopTimer() {
       clearInterval(this.timer)
     },
-    async submitAnswer() {
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
-        isAskingQuestion: false, 
-        isAnswered: true
-      })
-    },
     async initReplayLogic() {
       this.isReplaying = true
       await this.quickplay()

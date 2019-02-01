@@ -1,10 +1,10 @@
 <template>
   <div>
-    <!-- <beta-popup-button>
+    <beta-popup-button>
       <beta-whiteboard/>
     </beta-popup-button>
     <chat></chat>
-    <h2>Beta Workspace</h2> -->
+    <h2>Beta Workspace</h2>
   </div>
 </template>
 
