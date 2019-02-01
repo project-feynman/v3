@@ -35,13 +35,13 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['ownerUid', 'showButtons', 'workspace', 'isRecording', 'isAnswered', 'parentHeight'],
+  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered'],
   components: {
     Swatches
   },
   mixins: [DrawMethods],
   watch: {
-    ownerUid: {
+    workspace: {
       handler: 'initData',
     },
     isRecording() {
@@ -177,9 +177,9 @@ export default {
       })
       // also remember the width
       console.log('width, height =', this.canvas.scrollWidth, this.canvas.scrollHeight)
-
     },
     initData() {
+      console.log('initData()')
       // visually wipe previous drawings
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
