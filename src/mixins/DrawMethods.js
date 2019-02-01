@@ -78,6 +78,7 @@ export default {
       this.playProgress = setInterval(checkIfNextStrokeShouldPlay, 100)
     },
     async quickplay() {
+      console.log('quickplay()')
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       for (const stroke of this.allStrokes) {
         await this.drawStroke(stroke)

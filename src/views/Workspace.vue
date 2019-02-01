@@ -1,120 +1,72 @@
 <template>
   <div id="workspace">
     <v-container fluid class="pa-0">
+      <chat :ownerUid="$route.params.id">
       <template v-if="user && workspace">
-        <!-- INITIAL STATE-->
-        <template v-if="!workspace.question">
-          <!-- QUESTION AREA -->
-          <v-layout style="width: 92%; margin: auto;" class="pt-5">
-            <v-flex>
-              <v-textarea
-                name="input-7-1"
-                label="Question Area"
-                v-model="newQuestion"
-                :hint="getHint()"
-                class="mb-2"
-              ></v-textarea>
-              <v-btn block @click="submitQuestion()">SUBMIT QUESTION</v-btn>
-            </v-flex>
-          </v-layout>
-        </template>
-
-        <!-- QUESTION ASKED -->
-        <template v-else>
-          <!-- VOICE CHAT -->
-          <!-- <voice-chat :user="user" :workspaceId="$route.params.id"/> -->
-          <!-- HIDDEN AUDIO RECORDER -->
-          <audio-recorder v-show="false"
-                  ref="audio-recorder"
-                  :audioURL="workspace.audioURL"
-                  :audioPath="workspace.audioPath"
-                  @start-recording="isRecording = true" 
-                  @end-recording="isRecording = false"
-                  @file-uploaded="audio => saveFileReference(audio)"/>
- 
-            <!-- <p style="text-align: center;">{{ feedback }}</p> -->
-    
-          <!-- WHITEBOARD -->
-          <whiteboard v-if="ownerUid" 
-                      ref="whiteboard"
-                      @whiteboard-cleared="handleWhiteboardClear()"
-                      :ownerUid="ownerUid" 
-                      :workspace="workspace" 
-                      :showButtons="!workspace.isAnswered"
-                      :isRecording="isRecording"
-                      :isAnswered="workspace.isAnswered"
-                      :parentHeight="parentHeight">
-
-            <v-layout v-if="!workspace.isAnswered" id="whiteboard-buttons-layout">
-              <div style="margin: auto;" v-if="!workspace.isAnswered">
-                <v-dialog v-model="dialog" max-width="290">
-                  <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn>
-                  <v-card>
-                    <v-card-title class="headline">
-                      <slot name="title">
+        <div class="text-xs-center">
+          <v-btn @click="whiteboardPopup = true">Use Whiteboard</v-btn>
+        </div>
+        <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
+          <v-card v-if="whiteboardPopup">
+            <v-toolbar id="whiteboard-toolbar" color="grey">
+              <v-toolbar-title class="white--text">Whiteboard</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <template v-if="!workspace.isAnswered">
+                  <!-- SEE QUESTION BUTTON -->
+                  <v-btn color="primary" dark @click="dialog = true">SEE QUESTION</v-btn>
+                  <v-dialog v-model="dialog" max-width="290">
+                    <!-- <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn> -->
+                    <v-card>
+                      <v-card-title class="headline">
                         Question
-                      </slot>
-                    </v-card-title>
-
-                    <v-card-text>
-                      <slot name="text">
+                      </v-card-title>
+                      <v-card-text>
                         {{ workspace.question }}
-                      </slot>
-                    </v-card-text>
-                    <v-card-actions>
-                      <v-spacer></v-spacer>
-                      <slot name="button">
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+                  <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
+                    START VIDEO
+                  </v-btn>
+                  <v-btn v-else @click="stopRecording()" color="pink white--text">
+                    STOP VIDEO
+                  </v-btn>
+                  <v-btn @click="useEraser()">
+                    USE ERASER
+                  </v-btn>
+                  <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="55" 
+                            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }">
+                  </swatches>
+                </template>
+                <template v-else>
 
-                      </slot>
-                      <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-                <v-btn @click="useEraser()">
-                  USE ERASER
-                </v-btn>
-                <v-btn v-if="!isRecording" @click="$root.$emit('toggle-navbar')">
-                  FULLSCREEN
-                </v-btn>
-                <!-- <true-popup-button>
-                  <template slot="text">
-                    {{ workspace.question }}
-                  </template>
-                  <template slot="button">
-                    <v-btn @click="dialog = false">BUTTON</v-btn>
-                  </template>
-                </true-popup-button> -->
-                <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
-                  START VIDEO
-                </v-btn>
-                <v-btn v-else @click="stopRecording()" color="pink white--text">
-                  STOP VIDEO
-                </v-btn>
-              </div>
-            </v-layout>
-          
-            <v-layout v-else id="whiteboard-buttons-layout">
-              <div v-if="!workspace.answerAccepted" style="margin: auto;">
-                <v-btn @click="playVideo()">
-                  PLAY VIDEO
-                </v-btn>
-                <!-- <v-btn @click="quickplay()">
-                  QUICKPLAY
-                </v-btn> -->
-                <v-btn @click="retryAnswer()">
-                  RETRY ANSWER
-                </v-btn>
-                <!-- SAVE VIDEO-->
-                <popup-button 
-                  fullscreen :explanationTitle="newTitle" 
-                  @input="newValue=> newTitle = newValue" 
-                  @pre-save-explanation="handleSaving()"
-                />
-                <v-btn @click="finishAnswering()">
-                  FINISH
-                </v-btn>
-              </div>
-              <div v-else style="margin: auto;">
+                <template v-if="!workspace.answerAccepted" style="margin: auto;">
+                  <v-btn @click="playVideo()">
+                    PLAY VIDEO
+                  </v-btn>
+                  <!-- <v-btn @click="quickplay()">
+                    QUICKPLAY
+                  </v-btn> -->
+                  <v-btn @click="retryAnswer()">
+                    RETRY ANSWER
+                  </v-btn>
+                  <!-- SAVE VIDEO-->
+
+                  <popup-button 
+                    fullscreen :explanationTitle="newTitle" 
+                    @input="newValue=> newTitle = newValue" 
+                    @pre-save-explanation="handleSaving()"
+                  />
+                  <v-btn @click="finishAnswering()">
+                    FINISH
+                  </v-btn>
+              </template>
+              <template v-else style="margin: auto;">
                 <v-btn @click="playVideo()" class="pink white--text">
                   SEE ANSWER
                 </v-btn>
@@ -130,25 +82,54 @@
                 <v-btn @click="clearWorkspace()">
                   RESET WORKSPACE
                 </v-btn>
-              </div>
-            </v-layout>
-          </whiteboard>
-
-          </template>
+              </template>
+                </template>
+                 <!-- <v-btn icon>
+                  <v-icon>clear</v-icon>
+                </v-btn> -->
+                <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
+              </v-toolbar-items>
+            </v-toolbar>
+            <whiteboard
+              v-if="loadCanvas"
+              ref="whiteboard"
+              @whiteboard-cleared="handleWhiteboardClear()"
+              :workspace="workspace" 
+              :showButtons="!workspace.isAnswered"
+              :isRecording="isRecording"
+              :isAnswered="workspace.isAnswered"
+              :color="color"
+              :colors="colors">
+            </whiteboard>
+            <audio-recorder v-show="false"
+                            ref="audio-recorder"
+                            :audioURL="workspace.audioURL"
+                            :audioPath="workspace.audioPath"
+                            @start-recording="isRecording = true" 
+                            @end-recording="isRecording = false"
+                            @file-uploaded="audio => saveFileReference(audio)"/>
+            </v-card>
+          </v-dialog>
         </template>
+        </chat>
     </v-container>
   </div>
 </template>
 
 <script>
+import TestCanvas from '@/components/TestCanvas.vue'
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
 import PopupButton from '@/components/PopupButton.vue'
+import BetaPopupButton from '@/components/BetaPopupButton.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import VoiceChat from '@/components/VoiceChat.vue'
 import TruePopupButton from '@/components/TruePopupButton.vue'
+import Chat from '@/components/Chat.vue'
+import Swatches from 'vue-swatches'
+import "vue-swatches/dist/vue-swatches.min.css"
 
 import { mapState } from 'vuex'
 
@@ -158,13 +139,19 @@ export default {
     PopupButton,
     AudioRecorder,
     VoiceChat,
-    TruePopupButton
+    BetaPopupButton,
+    TruePopupButton,
+    TestCanvas,
+    Swatches,
+    Chat
   },
   computed: {
     ...mapState(['user'])
   },
   data() {
     return {
+      savePopup: false,
+      whiteboardPopup: false,
       whiteboardReady: true,
       isRecording: false,
       ownerUid: null,
@@ -172,8 +159,10 @@ export default {
       workspace: null,
       newTitle: null,
       feedback: 'Tip: you can setup drawings before you start recording :]',
-      parentHeight: 0,
-      dialog: false
+      dialog: false,
+      loadCanvas: false,
+      color: '#A463BF',
+      colors: ['#F64272', 'orange', '#A463BF']
     }
   },
   watch: {
@@ -181,6 +170,9 @@ export default {
       handler: 'bindVariables',
       immediate: true
     }
+  },
+  created() {
+    setTimeout(() => this.loadCanvas = true, 2000)
   },
   methods: {
     async finishAnswering() {
@@ -191,10 +183,8 @@ export default {
       })
     },
     useEraser() {
-      const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        whiteboard.useEraser()
-      }
+      this.color = 'rgb(192, 230, 253)'
+      this.lineWidth = 15
     },
     hideNavbar() {
       this.$root.$emit('toggle-navbar')

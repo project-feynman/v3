@@ -15,18 +15,15 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      
-    
-
       <!-- NAVBAR -->
       <v-dialog v-model="dialog" max-width="290">
-           <v-btn slot="activator"
+        <v-btn slot="activator"
               color="blue-grey"
               class="white--text"
               @click="showNumber = true">
           Customer Support
-        <v-icon right dark>phone</v-icon>
-      </v-btn>
+          <v-icon right dark>phone</v-icon>
+        </v-btn>
         <!-- <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn> -->
         <v-card>
           <v-card-title class="headline">
@@ -45,9 +42,6 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-
-
-
 
       <v-btn v-if="user && $route.path == '/'" 
              @click="signOut()">
@@ -79,14 +73,14 @@
           <v-list-tile-content>
             <span v-if="workspace.isOffice">{{ workspace.ownerName }}'s Office</span>
             <template v-else>
-              <v-badge v-if="workspace.question && !workspace.isAnswered" color="red">
+              <v-badge v-if="workspace.isAskingQuestion" color="red">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
-              <v-badge v-else-if="workspace.isAnswered" color="green">
+              <!-- <v-badge v-else-if="workspace.isAnswered" color="green">
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
-              </v-badge>
+              </v-badge> -->
               <span v-else>{{ workspace.ownerName }}</span>
             </template>
           </v-list-tile-content>

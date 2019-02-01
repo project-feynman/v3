@@ -3,7 +3,7 @@ import './plugins/vuetify'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-// import './registerServiceWorker'
+import './notifications'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import VueFirestore from 'vue-firestore'
@@ -14,6 +14,9 @@ Vue.use(VueChatScroll)
 Vue.use(VueFirestore)
 
 Vue.config.productionTip = false
+
+var db = firebase.firestore()
+var subscription = undefined
 
 // Register a global custom directive called `v-focus`
 Vue.directive('focus', {
