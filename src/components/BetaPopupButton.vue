@@ -1,7 +1,7 @@
 <template>
-  <v-layout row justify-center>
-    <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
-      <v-btn slot="activator" color="primary" dark>Open Dialog</v-btn>
+  <v-layout row justify-center lazy>
+    <v-dialog v-model="dialog" fullscreen hide-overlay>
+      <v-btn slot="activator" color="primary" dark>Use Whiteboard</v-btn>
       <v-card>
         <v-toolbar id="whiteboard-toolbar" dark color="primary">
           <v-toolbar-title>Settings</v-toolbar-title>

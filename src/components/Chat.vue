@@ -43,6 +43,9 @@
                 :hint="getHint()"
                 class="mb-2"
               ></v-textarea>
+              <div style="display: flex;">
+                <slot></slot>
+              </div>
               <template v-if="user">
                 <v-btn v-if="user.uid === $route.params.id" block @click="submitQuestion()">Submit Question</v-btn>
                 <v-btn v-else @click="addMessage()" block>Submit Answer</v-btn>
