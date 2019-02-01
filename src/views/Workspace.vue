@@ -35,15 +35,13 @@
             <!-- <p style="text-align: center;">{{ feedback }}</p> -->
     
           <!-- WHITEBOARD -->
-          <whiteboard v-if="ownerUid" 
+          <whiteboard v-if="workspace" 
                       ref="whiteboard"
                       @whiteboard-cleared="handleWhiteboardClear()"
-                      :ownerUid="ownerUid" 
                       :workspace="workspace" 
                       :showButtons="!workspace.isAnswered"
                       :isRecording="isRecording"
-                      :isAnswered="workspace.isAnswered"
-                      :parentHeight="parentHeight">
+                      :isAnswered="workspace.isAnswered">
 
             <v-layout v-if="!workspace.isAnswered" id="whiteboard-buttons-layout">
               <div style="margin: auto;" v-if="!workspace.isAnswered">
@@ -172,7 +170,6 @@ export default {
       workspace: null,
       newTitle: null,
       feedback: 'Tip: you can setup drawings before you start recording :]',
-      parentHeight: 0,
       dialog: false
     }
   },
