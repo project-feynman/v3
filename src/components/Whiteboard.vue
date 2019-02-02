@@ -119,23 +119,6 @@ export default {
       }
     }
     this.addStrokesListener()
-    // new code
-    // const resizeToFullscreen = () => {
-    //   console.log('resizeToFullscreen()')
-    //   const navbar = document.getElementById('whiteboard-toolbar')
-    //   if (this.oldWindowHeight != window.innerHeight) {
-    //     console.log('navbar.scrollHeight =', navbar.scrollHeight)
-    //     // this.canvas.setAttribute('scrollHeight', window.innerHeight - 64 - 10)
-    //     this.canvas.height = window.innerHeight - 64 - 10
-    //     // this.canvas.scrollHeight = window.innerHeight - 64 - 10
-    //     // this.canvas.setAttribute('height', window.innerHeight - navbar.scrollHeight - 20) 
-    //     console.log('new height =', window.innerHeight - 64 - 10)
-    //     this.oldWindowHeight = window.innerHeight
-    //     this.oldNavbarHeight = navbar.scrollHeight
-    //     this.rescaleCanvas()
-    //   }
-    // }
-    // setInterval(resizeToFullscreen, 1000)
   },
   beforeDestroy() {
     clearInterval(this.interval)

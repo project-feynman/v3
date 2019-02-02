@@ -186,9 +186,6 @@ export default {
       this.color = 'rgb(192, 230, 253)'
       this.lineWidth = 15
     },
-    hideNavbar() {
-      this.$root.$emit('toggle-navbar')
-    },
     handleWhiteboardClear() {
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
@@ -213,7 +210,6 @@ export default {
       })
     },
     startRecording() {
-      // this.$root.$emit('close-navbar')
       const audioRecorder = this.$refs['audio-recorder']
       if (audioRecorder) {
         this.isRecording = true 
@@ -222,7 +218,6 @@ export default {
       }
     },
     stopRecording() {
-      // this.$root.$emit('open-navbar')
       const whiteboard = this.$refs['whiteboard']
       if (whiteboard) {
         whiteboard.removeTouchEvents()
