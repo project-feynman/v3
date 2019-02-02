@@ -19,5 +19,5 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
-.vimrc
+*.vimrc
 *firebase-debug.log
