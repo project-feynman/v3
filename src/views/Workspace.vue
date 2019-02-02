@@ -3,6 +3,7 @@
     <v-container fluid class="pa-0">
       <chat :ownerUid="$route.params.id">
       <template v-if="user && workspace">
+        <voice-chat :workspaceId="$route.params.id" :user="user"/>
         <div class="text-xs-center">
           <v-btn @click="whiteboardPopup = true">Use Whiteboard</v-btn>
         </div>

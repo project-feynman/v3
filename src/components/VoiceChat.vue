@@ -1,6 +1,6 @@
 <template>
   <div>
-    <p>{{ debug }}</p>
+    <!-- <p>{{ debug }}</p> -->
 
     <v-btn v-if="connected" @click="endVoiceChat()">End Voice Chat</v-btn>
     <v-btn v-if="!connected && !waiting" @click="joinVoiceChat()">
