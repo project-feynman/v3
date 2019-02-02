@@ -14,56 +14,10 @@
           </template>
         </v-layout>
       </v-card-title>
-<<<<<<< HEAD
-        
-        <template v-if="table">
-          <ul class="messages" v-chat-scroll>
-            <template v-for="message in messages">
-              <v-card-text :key="message['.key']">
-                <v-layout>
-                  <template v-if="table">
-                    <span class="teal--text">{{ firstName(message.author.name) }}</span>
-                    <!-- <span v-else class="teal--text">(This is your room)</span> -->
 
-                  </template>
-                  <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
-                </v-layout>
-                <span class="grey--text time">{{ message.timestamp }}</span>
-              </v-card-text>
-            </template>
-          </ul>
-        </template>
-
-        <v-divider></v-divider>
-
-        <v-card-actions>
-          <v-layout>
-            <v-flex>
-              <v-textarea
-                name="input-7-1"
-                label="Text area"
-                v-model="newMessage"
-                :hint="getHint()"
-                class="mb-2"
-              ></v-textarea>
-              <template v-if="user">
-                <!-- <v-btn v-if="user.uid === $route.params.id" block @click="submitQuestion()">Submit Question</v-btn> -->
-                <v-btn @click="addMessage()" block>SEND MESSAGE</v-btn>
-              </template>
-              <div style="display: flex; justify-content: center;">
-                <!-- <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn>
-                <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn> -->
-                <v-btn @click="askForHelp()" color="pink white--text">ASK FOR HELP</v-btn>
-                <slot></slot>
-              </div>
-            </v-flex>
-          </v-layout>
-        </v-card-actions>
-=======
       <div id="myModal" @click="modalDisplay='none'" :style="{display: modalDisplay}" class="modal">
         <img @click="(e)=>e.stopPropagation()" class="modal-content" :src="selectedDisplayImage">
       </div>
->>>>>>> ca712dcb100960ce228412d80de05327b948b9de
 
       <template v-if="table">
         <ul class="messages" v-chat-scroll>
@@ -108,7 +62,7 @@
             </template>
             <div style="display: flex; justify-content: center;">
               <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn>
-              <v-btn @click="askForHelp()">TOGGLE HELP</v-btn>
+              <v-btn @click="askForHelp()" class="pink white--text">TOGGLE HELP</v-btn>
               <slot></slot>
             </div>
           </v-flex>
@@ -291,13 +245,8 @@ export default {
 }
 
 .messages {
-<<<<<<< HEAD
-	height: 50vh;
-	overflow: auto;
-=======
   height: 60vh;
   overflow: auto;
->>>>>>> ca712dcb100960ce228412d80de05327b948b9de
 }
 .messages::-webkit-scrollbar {
   width: 3px;
