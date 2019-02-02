@@ -202,29 +202,6 @@ export default {
       return this.$route.params.teacher_id
     }
   },
-  created () {
-    this.$root.$on('toggle-navbar', () => {
-      // offset bug might be annoying 
-      if (this.showNavbar) {
-        this.showNavbar = false 
-        this.drawerOpen = false 
-      } else {
-        this.showNavbar = true
-        this.drawerOpen = true
-      }
-    })
-    this.$root.$on('open-navbar', () => {
-      this.showNavbar = true 
-      this.drawerOpen = false
-    })
-    this.$root.$on('close-navbar', () => {
-      this.showNavbar = false
-      // to prevent the offset bug 
-      this.drawerOpen = !this.drawerOpen
-      this.drawerOpen = false
-    })
-    this.$root.$on('toggle-sidenav', () => this.drawerOpen = !this.drawerOpen)
-  },
   data () {
     return {
       showNavbar: true,
