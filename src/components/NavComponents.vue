@@ -92,7 +92,11 @@
             :key="workspace['.key']"
             router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`"
           >
-            <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
+            <v-badge v-if="workspace.isAskingQuestion" color="red">
+              <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
+              <v-icon slot="badge" dark small>priority_high</v-icon>
+            </v-badge>
+            <v-list-tile-title v-else>{{ workspace.ownerName }}</v-list-tile-title>
           </v-list-tile>
         </v-list-group>
 
@@ -109,7 +113,11 @@
             :key="workspace['.key']"
             router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`"
           >
-            <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
+            <v-badge v-if="workspace.isAskingQuestion" color="red">
+              <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
+              <v-icon slot="badge" dark small>priority_high</v-icon>
+            </v-badge>
+            <v-list-tile-title v-else>{{ workspace.ownerName }}</v-list-tile-title>
           </v-list-tile>
 
         </v-list-group>
@@ -304,7 +312,7 @@ export default {
         if (teacher_id != this.prev_teacherUid) {
           // update workspaces and teacher explanations
           this.$binding('teacherWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', true))
-          this.$binding('studentWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', false))
+          this.$binding('studentWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', false).orderBy('isAskingQuestion', 'desc'))
           this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', teacher_id))
           this.prev_teacherUid = teacher_id 
           setTimeout(() => this.drawerOpen = true, 0) // quick-fix for whiteboard touch detection offset bug 

@@ -23,6 +23,7 @@
                   <template v-if="table">
                     <span class="teal--text">{{ firstName(message.author.name) }}</span>
                     <!-- <span v-else class="teal--text">(This is your room)</span> -->
+
                   </template>
                   <span class="grey--text text--darken--3 mx-1">{{ message.content }}</span>
                 </v-layout>
@@ -49,8 +50,9 @@
                 <v-btn @click="addMessage()" block>SEND MESSAGE</v-btn>
               </template>
               <div style="display: flex; justify-content: center;">
-                <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn>
-                <v-btn @click="askForHelp()">TOGGLE HELP</v-btn>
+                <!-- <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn>
+                <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn> -->
+                <v-btn @click="askForHelp()" color="pink white--text">ASK FOR HELP</v-btn>
                 <slot></slot>
               </div>
             </v-flex>
@@ -164,7 +166,7 @@ export default {
 
 <style>
 .chat-window {
-  height: 90vh;
+  height: 80vh;
 }
 
 .time {
@@ -173,7 +175,7 @@ export default {
 }
 
 .messages {
-	height: 60vh;
+	height: 50vh;
 	overflow: auto;
 }
 .messages::-webkit-scrollbar {
