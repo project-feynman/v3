@@ -74,7 +74,7 @@
         value="true"
       >
         <v-list-tile slot="activator">
-          <v-list-tile-title>Users</v-list-tile-title>
+          <v-list-tile-title>Saved Content</v-list-tile-title>
         </v-list-tile>
 
         <v-list-group
@@ -83,7 +83,7 @@
           value="true"
         >
           <v-list-tile slot="activator">
-            <v-list-tile-title>Admin</v-list-tile-title>
+            <v-list-tile-title>Concepts</v-list-tile-title>
           </v-list-tile>
 
           <v-list-tile
@@ -103,7 +103,7 @@
           no-action
         >
           <v-list-tile slot="activator">
-            <v-list-tile-title>Actions</v-list-tile-title>
+            <v-list-tile-title>Solutions</v-list-tile-title>
           </v-list-tile>
 
           <v-list-tile
@@ -117,14 +117,12 @@
             </v-list-tile-action>
           </v-list-tile>
         </v-list-group>
+
       </v-list-group>
+
+
     </v-list>
   </v-navigation-drawer>
-
-
-
-
-
 
     <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXX -->
 
