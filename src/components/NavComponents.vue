@@ -58,10 +58,11 @@
     <v-navigation-drawer
       app
       stateless
+      v-if="user && $route.path != '/'"
       v-model="drawerOpen"
     >
     <v-list>
-      <v-list-tile>
+      <v-list-tile router to="/">
         <v-list-tile-action>
           <v-icon>home</v-icon>
         </v-list-tile-action>
@@ -111,8 +112,6 @@
             <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
           </v-list-tile>
 
-    
-          
         </v-list-group>
 
       </v-list-group>
@@ -120,7 +119,7 @@
 
 
       <v-list-group
-        prepend-icon="account_circle"
+        prepend-icon="library_books"
         value="true"
       >
         <v-list-tile slot="activator">
