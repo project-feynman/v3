@@ -1,0 +1,9 @@
+this.vapidKeys = {
+	publicKey: "BNEwazYWUSz564A2glevVL7D4qYwaeWuj73Ux8lwYtb-biwlPqYyoc5B4QY_YyZxeR_GSMX4zqmK50yphVFS3_Y",
+	privateKey: "lJjweOtUWZwH_dS19DeHT7bQ7CM5-jLvh-kD6VIYIh8"
+}
+
+this.gmailPass = {
+	username: "feynmannotif",
+	password: "5/~u|5FQ^Caw"
+}

@@ -6,7 +6,7 @@
     <v-btn v-if="!connected && !waiting" @click="joinVoiceChat()">
       Join
       <strong v-if="waitingPeers.length>0">&nbsp;{{waitingPeers.join(", ")}}&nbsp;</strong>
-      in Voice Chat
+      Voice Chat
     </v-btn>
     <v-btn v-if="!connected && waiting" @click="cancelVoiceRequest()">Waiting/Cancel</v-btn>
 

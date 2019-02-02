@@ -170,6 +170,16 @@ export default {
     $route: {
       handler: 'bindVariables',
       immediate: true
+    },
+    user() {
+      if (this.user) {
+        const ref = db.collection('workspaces').doc(this.$route.params.id).collection('participants').doc(this.user.uid)
+        const simpleUser = {
+          name: this.user.name,
+          uid: this.user.uid 
+        }
+        ref.set(simpleUser) 
+      }
     }
   },
   created() {

@@ -69,6 +69,10 @@
         <v-list-tile-title>Home</v-list-tile-title>
       </v-list-tile>
 
+
+      
+
+
       <v-list-group
         prepend-icon="account_circle"
         value="true"
@@ -76,6 +80,29 @@
         <v-list-tile slot="activator">
           <v-list-tile-title>Workspaces</v-list-tile-title>
         </v-list-tile>
+        
+        <!-- FIRST SUBLIST -->
+        <v-list-group
+          sub-group
+          no-action
+        >
+          <v-list-tile slot="activator">
+            <v-list-tile-title>Students</v-list-tile-title>
+          </v-list-tile>
+
+          <v-list-tile
+            v-for="workspace in studentWorkspaces"
+            :key="workspace['.key']"
+            router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`"
+          >
+            <v-badge v-if="workspace.isAskingQuestion" color="red">
+              <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
+              <v-icon slot="badge" dark small>priority_high</v-icon>
+            </v-badge>
+            <v-list-tile-title v-else>{{ workspace.ownerName }}</v-list-tile-title>
+          </v-list-tile>
+
+        </v-list-group>
 
         <v-list-group
           no-action
@@ -92,27 +119,16 @@
             :key="workspace['.key']"
             router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`"
           >
-            <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
-          </v-list-tile>
-        </v-list-group>
-
-        <v-list-group
-          sub-group
-          no-action
-        >
-          <v-list-tile slot="activator">
-            <v-list-tile-title>Students</v-list-tile-title>
-          </v-list-tile>
-
-          <v-list-tile
-            v-for="workspace in studentWorkspaces"
-            :key="workspace['.key']"
-            router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`"
-          >
-            <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
+            <v-badge v-if="workspace.isAskingQuestion" color="red">
+              <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
+              <v-icon slot="badge" dark small>priority_high</v-icon>
+            </v-badge>
+            <v-list-tile-title v-else>{{ workspace.ownerName }}</v-list-tile-title>
           </v-list-tile>
 
         </v-list-group>
+
+  
 
       </v-list-group>
 
@@ -138,12 +154,8 @@
           <v-list-tile
             v-for="explanation in teacherExplanations"
             :key="explanation['.key']"
-            router :to="`/${teacherUid}/answer/${explanation['.key']}`"
-          >
+            router :to="`/${teacherUid}/answer/${explanation['.key']}`">
             <v-list-tile-title>{{ explanation.title }}</v-list-tile-title>
-            <!-- <v-list-tile-action>
-              <v-icon></v-icon>
-            </v-list-tile-action> -->
           </v-list-tile>
         </v-list-group>
 
@@ -172,60 +184,6 @@
 
     </v-list>
   </v-navigation-drawer>
-
-    <!-- XXXXXXXXXXXXXXXXXXXXXXXXXXX -->
-
-    <!-- NAVIGATION DRAWER -->
-    <!-- <v-navigation-drawer v-if="user && $route.path != '/'" 
-                         v-model="drawerOpen" 
-                         width="200"
-                         app 
-                         class="white">
-      <v-list>
-        <v-subheader class="black--text subheading text-uppercase font-weight-black">
-          Workspaces
-        </v-subheader>
-      -->
-        <!-- workspaces -->
-        <!-- <v-list-tile v-for="workspace in workspaces" :key="workspace['.key']" router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`">
-          <v-list-tile-content>
-            <span v-if="workspace.isOffice">{{ workspace.ownerName }}'s Office</span>
-            <template v-else>
-              <v-badge v-if="workspace.isAskingQuestion" color="red">
-                <v-icon slot="badge" dark small>priority_high</v-icon>
-                <span>{{ workspace.ownerName }}</span>
-              </v-badge>
-              <span v-else>{{ workspace.ownerName }}</span>
-            </template>
-          </v-list-tile-content>
-        </v-list-tile>
-
-        <v-divider></v-divider> -->
-
-        <!-- saved content -->
-        <!-- <v-subheader class="subheading black--text text-uppercase font-weight-black">
-          Concepts
-        </v-subheader>
-        <v-list-tile v-for="explanation in teacherExplanations" 
-                     :key="explanation.text" 
-                     router :to="`/${teacherUid}/answer/${explanation['.key']}`">
-          <v-list-tile-content>
-            {{ explanation.title }}
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-divider/>
-        <v-subheader class="subheading black--text text-uppercase font-weight-black">
-          Examples
-        </v-subheader>
-        <v-list-tile>
-          <v-list-tile-content>
-            <span class="grey--text text--darken--3 mx-1">
-              (There are no examples)
-            </span>
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list>
-    </v-navigation-drawer> -->
 
   </nav>
 </template>
@@ -304,7 +262,7 @@ export default {
         if (teacher_id != this.prev_teacherUid) {
           // update workspaces and teacher explanations
           this.$binding('teacherWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', true))
-          this.$binding('studentWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', false))
+          this.$binding('studentWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', false).orderBy('isAskingQuestion', 'desc'))
           this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', teacher_id))
           this.prev_teacherUid = teacher_id 
           setTimeout(() => this.drawerOpen = true, 0) // quick-fix for whiteboard touch detection offset bug 
