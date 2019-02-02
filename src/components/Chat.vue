@@ -135,6 +135,7 @@ export default {
       });
       console.log("successfully updated table status");
     },
+
     saveMessages(explanationId) {
       const explanationRef = db
         .collection("explanations")
@@ -171,6 +172,7 @@ export default {
         .collection("workspaces")
         .doc(this.ownerUid)
         .collection("messages");
+
       await messagesRef.doc(`${this.messages.length + 1}`).set({
         content,
         author: this.author,
