@@ -55,13 +55,12 @@
               class="mb-2"
             ></v-textarea>
             <template v-if="user">
-              <!-- <v-btn v-if="user.uid === $route.params.id" block @click="submitQuestion()">Submit Question</v-btn> -->
               <v-btn @click="addMessage()" block>SEND MESSAGE</v-btn>
-              <v-btn @click="selectImage()">SELECT IMAGE</v-btn>
               <input type="file" id="image-selector" style="display:none" @change="selectorChanged">
             </template>
             <div style="display: flex; justify-content: center;">
               <v-btn @click="clearMessages()">CLEAR MESSAGES</v-btn>
+              <v-btn @click="selectImage()">{{!selectedImage ? "SELECT IMAGE": selectedImage.name}}</v-btn>
               <v-btn @click="askForHelp()" class="pink white--text">TOGGLE HELP</v-btn>
               <slot></slot>
             </div>
@@ -83,7 +82,7 @@ export default {
   props: ["ownerUid"],
   data() {
     return {
-      newMessage: null,
+      newMessage: '',
       marker: true,
       messages: null,
       table: null,
@@ -159,15 +158,19 @@ export default {
       return names[0];
     },
     async addMessage() {
-      if (!this.newMessage) {
-        return;
+      if (!this.newMessage && !this.selectedImage) {
+        return 
       }
       let fileURL = null;
       if (this.selectedImage !== null) {
-        fileURL = await this.uploadImage();
+        const imageContent = this.selectedImage 
+        fileURL = await this.uploadImage()
       }
+      
+      // RESET
       const content = this.newMessage;
-      this.newMessage = null;
+      this.newMessage = '';
+      this.selectedImage = null 
       const timestamp = moment(Date.now()).format("lll");
       const messagesRef = db
         .collection("workspaces")
