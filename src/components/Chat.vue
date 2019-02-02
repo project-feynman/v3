@@ -1,6 +1,6 @@
 <template>
   <div class="chat">
-    <v-card>
+    <v-card class="chat-window">
       <v-card-title>
         <v-layout>
           <template v-if="table && user">
@@ -16,9 +16,9 @@
       </v-card-title>
         
         <template v-if="table">
-          <ul v-for="message in messages" :key="message['.key']" v-chat-scroll class="messages">
-            <li>
-              <v-card-text>
+          <ul class="messages" v-chat-scroll>
+            <template v-for="message in messages">
+              <v-card-text :key="message['.key']">
                 <v-layout>
                   <template v-if="table">
                     <span class="teal--text">{{ firstName(message.author.name) }}</span>
@@ -28,7 +28,7 @@
                 </v-layout>
                 <span class="grey--text time">{{ message.timestamp }}</span>
               </v-card-text>
-            </li>
+            </template>
           </ul>
         </template>
 
@@ -163,13 +163,17 @@ export default {
 </script>
 
 <style>
+.chat-window {
+  height: 90vh;
+}
+
 .time {
 	display: block;
 	font-size: 0.8em;
 }
 
 .messages {
-	max-height: 300px;
+	height: 60vh;
 	overflow: auto;
 }
 .messages::-webkit-scrollbar {
