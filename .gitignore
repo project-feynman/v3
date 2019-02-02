@@ -21,4 +21,7 @@ yarn-error.log*
 *.sw*
 *.vimrc
 *firebase-debug.log
+
+# Sensitive data
 functions/config
+functions/feynman*

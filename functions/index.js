@@ -4,8 +4,7 @@ const firebase_tools = require('firebase-tools')
 const webpush = require('web-push')
 const nodemailer = require('nodemailer')
 const config = require('./config')
-//TODO: add the path to creds
-const adminCredentials = require('path/to/credentials')
+const adminCredentials = require('./feynman-mvp-firebase-adminsdk-3zyg9-421740ce6a.json')
 
 admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
@@ -30,59 +29,111 @@ const transporter = nodemailer.createTransport({
 const firestore = admin.firestore()
 firestore.settings({timestampsInSnapshots: true})
 
-exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{uid}/messages/{mid}').onCreate((doc, context) => {
+exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{wid}/messages/{mid}').onCreate((doc, context) => {
 	_updateParticipants()
 	
 	const params = context.params;
+	const workspaceDocSnap = doc
+	const workspaceDocData = workspaceDocumentSnap.data()
 
 	const messageId = params.mid;
-	const chatroomUid = params.uid;
+	const chatroomId = params.wid;
 
-	const author = doc.author;
-	const authorName = author.displayName;
+	const author = workspaceDocData.author;
+	const authorName = author.name;
 	const authorUid = author.uid
+	const messageContent = workspaceDocData.content
+	const messageTimestamp = workspaceDocData.timestamp
 
-	receivers = firestore.collection('/users/' + chatroomUid + '/participants/')
-	receivers.listDocuments().then(documentRefs => {
-		return firestore.getAll(documentRefs)
-	}).then(receiverSnaps => {
-		documentSnaps.forEach(documentSnap => {
-			_sendNotificationByUid(documentSnap.uid, authorName + " sent a message...", doc.data().content)	
+	participantsDoc = firestore.doc('/workspaces/' + chatroomId + '/participants/')
+
+	participantsDoc.get().then(participantsDocSnap => {
+		const participantsDocData = participantsDocSnap.data()
+		const participantsUids = participantsDocData.participants
+
+		participantsUids.forEach(participantUid => {
+			if(participantUid !== authorUid) {
+				_sendNotificationByUid(participantUid, authorName + " sent a message...", messageContent)	
+			}
 		})
 	})
 
 	return null;
 })
 
+exports.emailOnStudentHelp = functions.firestore.document('/workspaces/{wid}').onChange((change, context) => {
+	const workspaceDocDataBefore = change.before
+	const workspaceDocDataAfter = change.after
+	const params = context.params
+
+	// if before they werent asking and after they are, then it's the change i'm interested in
+	// otherwise end the execution
+	if(!(workspaceDocDataAfter.isAskingQuestion === true && workspaceDocDataBefore.isAskingQuestion === false)) {
+		return
+	}
+
+	const askerUid = workspaceDocDataBefore.ownerUid
+	const askerName = workspaceDocDataBefore.ownerName
+	const askerFirstName = askerName.split(' ')[0]
+
+	const workspaceOwnerUid = workspaceDocDataBefore.teacherUid
+	const workspaceId = params.wid
+
+	const workspaceUrl = "https://feynman.online/" + workspaceOwnerUid + "/workspace/" + workspaceId,
+
+
+	firestore.collection('/workspaces/').where('isOffice', '==', 'true').then(assistants => {
+		_sendEmailByUid(
+			askerUid, 
+			askerFirstName + " asked a question on Feynman.",
+			askerName + " asked a question in a workspace you're a TA in. Here's the link to the workspace: " + workspaceUrl,
+			"<p>" + askerName + " asked a question in a workspace you're a TA in. Click <a href=\"" + workspaceUrl + "\"here</a> to go there. "
+		)
+	})
+	
+	// SUBJECT: "{first NAME} asked a question
+	// BODY: "{NAME} asked a question in a workspace you're a TA in. Here's the link to the workspace: {LINK}"
+	// HTML: same but LINK is an href
+})
+
+
 exports.updateParticipants = functions.https.onCall((data, context) => {
 	_updateParticipants(data.workspaceid)
 })
 
-function _updateParticipants(workspaceid) {
-	//TBD
+function _updateParticipants(workspaceId) {
+	//WIP
+	const participantsDoc = firestore.doc('/workspaces/' + workspaceId)
+
+	participantsDoc.get().then(participantsDocSnap => {
+		const participantsDocData = participantsDocSnap.data()
+	})
 }
 
 exports.sendEmailByUid = functions.https.onCall((data, context) => {
-	//temporarily email instead of uid
-	//TODO: change back to uid
-	_sendEmailByUid(data.email, data.title, data.subject, data.body)
+	_sendEmailByUid(data.uid, data.title, data.subject, data.body)
 })
 
-function _sendEmailByUid(uid, title, subject, body) {
+function _sendEmailByUid(uid, subject, body, html) {
 	admin.auth().getUser(uid).then(user => {
 		const userEmail = user.email
+		_sendEmail(userEmail, subject, body, html)
+	})
+}
 
-		const message = {
-			from: "feynmannotif@gmail.com",
-			to: userEmail,
-			subject,
-			text: body,
-		}
+function _sendEmail(email, subject, body, html) {
 
-		transporter.sendMail(message, (error, response) => {
-			console.log(error)
-			console.log(response)
-		})
+	const message = {
+		from: "feynmannotif@gmail.com",
+		to: email,
+		subject,
+		body,
+		html
+	}
+
+	transporter.sendMail(message, (error, response) => {
+		console.log(error)
+		console.log(response)
 	})
 }
 exports.sendNotificationByUid = functions.https.onCall((data, context) => {
@@ -129,8 +180,8 @@ exports.updateParticipantsForUserChatroom = functions.firestore.document('/users
 
 	const colref = firebase.colection("/users/" + context.params.uid + "/participants");
 
-	colref.where("uid", "==", authorUid).then(querySnapshot => {
-		if(querySnapshot.empty) {
+	colref.where("uid", "==", authorUid).then(querySnap => {
+		if(querySnap.empty) {
 			colref.add({
 				authorUid,
 				authorName
