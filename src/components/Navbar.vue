@@ -21,7 +21,7 @@
               color="blue-grey"
               class="white--text"
               @click="showNumber = true">
-          Customer Support
+          Report Error
           <v-icon right dark>phone</v-icon>
         </v-btn>
         <!-- <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn> -->
@@ -54,7 +54,6 @@
                          :indeterminate="true" 
                          height="2" 
                          class="ma-0"/>
-
     </v-toolbar>
 
     <!-- NAVIGATION DRAWER -->
@@ -77,10 +76,6 @@
                 <v-icon slot="badge" dark small>priority_high</v-icon>
                 <span>{{ workspace.ownerName }}</span>
               </v-badge>
-              <!-- <v-badge v-else-if="workspace.isAnswered" color="green">
-                <v-icon slot="badge" dark small>priority_high</v-icon>
-                <span>{{ workspace.ownerName }}</span>
-              </v-badge> -->
               <span v-else>{{ workspace.ownerName }}</span>
             </template>
           </v-list-tile-content>
