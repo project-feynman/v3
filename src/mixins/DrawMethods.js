@@ -40,6 +40,7 @@ export default {
         for (let i = startIdx; i < n; i++) {
           const nextStroke = this.allStrokes[i]
           if (Number(nextStroke.startTime) == this.currentTime.toFixed(1)) {
+            console.log('startTime =', nextStroke.startTime)
             const strokePeriod = (nextStroke.endTime - nextStroke.startTime) * 1000
             const pointPeriod = strokePeriod / nextStroke.points.length 
             this.drawStroke(nextStroke, pointPeriod)

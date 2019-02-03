@@ -139,8 +139,6 @@ export default {
       this.allStrokes.forEach(stroke => {
         explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
       })
-      // also remember the width
-      console.log('width, height =', this.canvas.scrollWidth, this.canvas.scrollHeight)
     },
     initData() {
       // visually wipe previous drawings
@@ -176,13 +174,11 @@ export default {
       this.lastX = -1
     },
     initTouchEvents () {
-      console.log('initTouchEvents()')
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
     removeTouchEvents() {
-      console.log('removeTouchEvents()')
       this.canvas.removeEventListener('touchstart', this.touchStart, false)
       this.canvas.removeEventListener('touchend', this.touchEnd, false)
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
