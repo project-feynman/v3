@@ -13,7 +13,7 @@
       </slot>
     </div>
     <!-- CANVAS -->
-    <canvas id="myCanvas" :height="height"></canvas>
+    <canvas id="myCanvas"></canvas>
   </div>
 </template>
 
@@ -70,7 +70,6 @@ export default {
   data() {
     return {
       stylus: false, 
-      height: 800,
       allStrokes: [],
       currentStroke: [],
       isPlayingVisual: false,
@@ -95,7 +94,6 @@ export default {
   },
   mounted() {
     this.canvas = document.getElementById('myCanvas')
-    // this.canvas.height = 1000
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
