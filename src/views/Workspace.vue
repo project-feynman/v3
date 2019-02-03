@@ -34,6 +34,9 @@
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
+                  <v-btn @click="clearWhiteboard()">
+                    CLEAR WHITEBOARD
+                  </v-btn>
                   <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
                     START VIDEO
                   </v-btn>
@@ -100,7 +103,6 @@
             <whiteboard
                         v-if="loadCanvas"
                         ref="whiteboard"
-                        @whiteboard-cleared="handleWhiteboardClear()"
                         :workspace="workspace" 
                         :showButtons="!workspace.isAnswered"
                         :isRecording="isRecording"
@@ -202,6 +204,12 @@ export default {
     setTimeout(() => this.loadCanvas = true, 2000)
   },
   methods: {
+    clearWhiteboard() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.deleteStrokesSubcollection()
+      }
+    },
     toggleDisableTouch() {
       this.disableTouch = !this.disableTouch
     },
@@ -216,24 +224,9 @@ export default {
       this.color = 'rgb(192, 230, 253)'
       this.lineWidth = 18
     },
-    handleWhiteboardClear() {
-      const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        this.feedback = 'Initializing whiteboard...'
-        whiteboard.initTouchEvents()
-        whiteboard.currentTime = 0 
-        this.feedback = 'Whiteboard ready!'
-        this.whiteboardReady = true 
-        setTimeout(() => this.feedback = 'Tip: you can setup drawings before you start recording :]', 1500)
-      }
-    },
     async retryAnswer() {
-      this.whiteboardReady = false 
-      this.feedback = 'Clearing whiteboard...'
       const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        whiteboard.deleteStrokesSubcollection()
-      }
+      whiteboard.currentTime = 0 
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
         isAnswered: false
@@ -256,6 +249,7 @@ export default {
       if (audioRecorder) {
         audioRecorder.stopRecording()
         this.isRecording = false
+        // disable touch
         this.submitAnswer()
       }
     },

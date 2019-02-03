@@ -43,17 +43,11 @@ export default {
         this.stopTimer()
       }
     },
-    // isAnswered() {
-    //   if (!workspace.isAnswered) {
-    //     this.initTouchEvents()
-    //   }
-    // },
-    // color() {
-    //   // bad - high surface area for bugs 
-    //   if (this.color != 'rgb(192, 230, 253)') {
-    //     this.lineWidth = 2
-    //   }
-    // }
+    isAnswered() {
+      if (!workspace.isAnswered) {
+        this.initTouchEvents()
+      }
+    }
   },
   computed: {
     ...mapState(['user']),
@@ -96,12 +90,6 @@ export default {
       unsubscribe: null,
       redrawTimeout: null,
       idx: 0,
-      // color: '#A463BF',
-      // colors: ['#F64272', 'orange', '#A463BF'],
-      // lineWidth: 2,
-      oldNavbarHeight: 0,
-      oldRowHeight: 0,
-      oldWindowHeight: 0,
       interval: null 
     }
   },
@@ -189,27 +177,34 @@ export default {
       this.lastX = -1
     },
     initTouchEvents () {
+      console.log('initTouchEvents()')
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
     removeTouchEvents() {
+      console.log('removeTouchEvents()')
       this.canvas.removeEventListener('touchstart', this.touchStart, false)
       this.canvas.removeEventListener('touchend', this.touchEnd, false)
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
-      const path = `workspaces/${this.$route.params.id}/strokes`
-      var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
-      try {
-        const result = await deleteFn({ path: path })
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.resetVariables()
-        this.isClearing = false 
-        this.$emit('whiteboard-cleared')
-      } catch(err) {
-        console.log('err =', err)
+      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
+      for (let i = 1; i < this.allStrokes.length + 1; i++) {
+        strokesRef.doc(`${i}`).delete()
       }
+      // this.$emit('whiteboard-cleared')
+      // const path = `workspaces/${this.$route.params.id}/strokes`
+      // var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
+      // try {
+      //   const result = await deleteFn({ path: path })
+      //   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      //   this.resetVariables()
+      //   this.isClearing = false 
+      //   this.$emit('whiteboard-cleared')
+      // } catch(err) {
+      //   console.log('err =', err)
+      // }
     },
     convertAndSavePoint(x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
