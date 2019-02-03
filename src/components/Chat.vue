@@ -115,6 +115,14 @@ export default {
     askForHelp() {
       const ref = db.collection("workspaces").doc(this.ownerUid);
       console.log("this.table =", this.table);
+      if (!this.table.isAskingQuestion) {
+        //only send email when students ask question, not when they un-ask
+        let emailOnStudentHelp = firebase.functions().httpsCallable('emailOnStudentHelp')
+        let response = emailOnStudentHelp({
+          ownername: this.table.ownerName,
+          ownerUid: this.table.ownerUid
+        })
+      }
       ref.update({
         isAskingQuestion: !this.table.isAskingQuestion
       });

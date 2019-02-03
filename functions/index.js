@@ -61,39 +61,48 @@ exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{wi
 	return null;
 })
 
-exports.emailOnStudentHelp = functions.firestore.document('/workspaces/{wid}').onChange((change, context) => {
-	const workspaceDocDataBefore = change.before
-	const workspaceDocDataAfter = change.after
-	const params = context.params
+exports.emailOnStudentHelp = functions.https.onCall((data, context) => {
+	// const workspaceDocDataBefore = change.before
+	// const workspaceDocDataAfter = change.after
+	// const params = context.params
 
-	// if before they werent asking and after they are, then it's the change i'm interested in
-	// otherwise end the execution
-	if(!(workspaceDocDataAfter.isAskingQuestion === true && workspaceDocDataBefore.isAskingQuestion === false)) {
-		return
-	}
+	// // if before they werent asking and after they are, then it's the change i'm interested in
+	// // otherwise end the execution
+	// if(!(workspaceDocDataAfter.isAskingQuestion === true && workspaceDocDataBefore.isAskingQuestion === false)) {
+	// 	return
+	// }
 
-	const askerUid = workspaceDocDataBefore.ownerUid
-	const askerName = workspaceDocDataBefore.ownerName
-	const askerFirstName = askerName.split(' ')[0]
+	// const askerUid = workspaceDocDataBefore.ownerUid
+	// const askerName = workspaceDocDataBefore.ownerName
+	// const askerFirstName = askerName.split(' ')[0]
 
-	const workspaceOwnerUid = workspaceDocDataBefore.teacherUid
-	const workspaceId = params.wid
+	// const workspaceOwnerUid = workspaceDocDataBefore.teacherUid
+	// const workspaceId = params.wid
 
-	const workspaceUrl = "https://feynman.online/" + workspaceOwnerUid + "/workspace/" + workspaceId,
+	// const workspaceUrl = "https://feynman.online/" + workspaceOwnerUid + "/workspace/" + workspaceId
 
 
-	firestore.collection('/workspaces/').where('isOffice', '==', 'true').then(assistants => {
-		_sendEmailByUid(
-			askerUid, 
-			askerFirstName + " asked a question on Feynman.",
-			askerName + " asked a question in a workspace you're a TA in. Here's the link to the workspace: " + workspaceUrl,
-			"<p>" + askerName + " asked a question in a workspace you're a TA in. Click <a href=\"" + workspaceUrl + "\"here</a> to go there. "
-		)
-	})
+	// firestore.collection('/workspaces/').where('isOffice', '==', 'true').then(assistants => {
+	// 	_sendEmailByUid(
+	// 		askerUid, 
+	// 		askerFirstName + " asked a question on Feynman.",
+	// 		askerName + " asked a question in a workspace you're a TA in. Here's the link to the workspace: " + workspaceUrl,
+	// 		"<p>" + askerName + " asked a question in a workspace you're a TA in. Click <a href=\"" + workspaceUrl + "\"here</a> to go there. "
+	// 	)
+	// })
 	
 	// SUBJECT: "{first NAME} asked a question
 	// BODY: "{NAME} asked a question in a workspace you're a TA in. Here's the link to the workspace: {LINK}"
 	// HTML: same but LINK is an href
+
+	firestore.collection('/workspaces/').where('isOffice', '==', 'true').then(assistants => {
+		_sendEmailByUid(
+			data.ownerUid, 
+			data.ownerName + " asked a question on Feynman.",
+			data.ownerName + " asked a question in a workspace you're a TA in. Here's the link to the workspace: " + "TODO",
+			"<p>" + data.ownerName + " asked a question in a workspace you're a TA in. Click <a href=\"" + "TODO" + "\"here</a> to go there. "
+		)
+	})
 })
 
 
