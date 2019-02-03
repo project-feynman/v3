@@ -2,7 +2,7 @@
   <div class="answer">
      <v-container fluid class="pa-0">
         <template v-if="explanation">
-          <audio-recorder v-show="false" 
+          <audio-recorder v-show="true" 
                           ref="audio-recorder"
                           :audioURL="explanation.audioURL"
                           :audioPath="explanation.audioPath"

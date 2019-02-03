@@ -1,14 +1,12 @@
 <template>
   <div>
-    <div v-show="false">
-      <div v-for="recording in recordings" :key="recording.ts">
-        <div>
-          <!-- AUDIO PLAYER -->
-          <audio id="audio-element" :src="recording.blobURL" controls="true"/>
-        </div>
-        <div>
-          size: {{recording.size | fileSizeToHumanSize}}, type: {{recording.mimeType}}
-        </div>
+    <div v-for="recording in recordings" :key="recording.ts">
+      <div>
+        <!-- AUDIO PLAYER -->
+        <audio id="audio-element" :src="recording.blobURL" controls="true"/>
+      </div>
+      <div>
+        size: {{recording.size | fileSizeToHumanSize}}, type: {{recording.mimeType}}
       </div>
     </div>
   </div>
