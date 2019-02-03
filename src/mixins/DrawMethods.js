@@ -30,7 +30,6 @@ export default {
      * @param {*} getTimeInSeconds A function which returns the current time to draw to in seconds
      */
     async playVisual(getTimeInSeconds) {
-
       if (this.playProgress) {
         // already in the middle of playing video 
         return 

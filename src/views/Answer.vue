@@ -1,30 +1,22 @@
 <template>
   <div class="answer">
      <v-container fluid class="pa-0">
-        <template v-if="explanation">
-          <audio-recorder v-show="true" 
-                          ref="audio-recorder"
-                          :audioURL="explanation.audioURL"
-                          :audioPath="explanation.audioPath"
-                          @audio-finished="isPlayingAudio = false"/>
-        </template>
-
       <v-layout id="whiteboard-buttons-layout">
         <div style="margin: auto;">
 
           <!-- PREVIEW REPLAY -->
-          <v-btn :loading="isPlayingVideo"
+          <!--<v-btn :loading="isPlayingVideo"
                  :disabled="isPlayingVideo"
                  @click="playVideo()">
             <span>PLAY VIDEO</span>
             <span slot="loader">Replaying...</span>
-          </v-btn>
+          </v-btn>-->
 
           <!-- <v-btn @click="playVideo()">PLAY VIDEO</v-btn> -->
           <template v-if="user">
             <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
           </template>
-          <v-btn @click="quickplay()">QUICKPLAY</v-btn>
+          <!--<v-btn @click="quickplay()">QUICKPLAY</v-btn>-->
           <!-- DIALOG -->
           <v-dialog v-model="dialog" max-width="290">
             <!-- SEE QUESTION -->
@@ -52,10 +44,20 @@
           </v-dialog>
         </div>
       </v-layout>
+
       <!-- ANIMATION -->
       <animation ref="animation" 
                  :explanationId="explanationId"
+                 @animation-loaded="animationLoaded=true"
                  @animation-finished="handleEvent()"/>
+
+      <template v-if="explanation">
+        <audio-recorder v-show="true"
+                        ref="audio-recorder"
+                        :audioURL="explanation.audioURL"
+                        :audioPath="explanation.audioPath"
+                        @recorder-mounted="recorderMounted=true"/>
+      </template>
     </v-container>
   </div>
 </template>
@@ -83,6 +85,11 @@ export default {
           this.isPlayingAudio = true 
         }
       }
+    },
+    resourcesLoaded: {
+      get() {
+        return this.recorderMounted && this.animationLoaded
+      }
     }
   },
   data() {
@@ -92,26 +99,35 @@ export default {
       dialog: false,
       isPlayingAudio: false,
       isPlayingVisual: false,
+      recorderMounted: false,
+      animationLoaded: false
     }
   },
   watch: {
     $route: {
       handler: 'bindVariables',
       immediate: true
+    },
+    resourcesLoaded: {
+      handler: 'syncAnimation',
     }
   },
   methods: {
+    syncAnimation() {
+      if (this.resourcesLoaded) {
+        console.log("hi!")
+        this.isPlayingVideo = true
+
+        console.log(this.$refs)
+        const audioRecorder = this.$refs['audio-recorder']
+        console.assert(audioRecorder) // We require audio playback -- it's how we control playback.
+
+        const animation = this.$refs['animation']
+        animation.playVisual(audioRecorder.getAudioTime)
+      }
+    },
     handleEvent() {
       this.isPlayingVisual = false 
-    },
-    playVideo() {
-      this.isPlayingVideo = true
-      const audioRecorder = this.$refs['audio-recorder']
-      const animation = this.$refs['animation']
-      
-      console.assert(audioRecorder) // We require audio playback atm.
-      audioRecorder.playAudio()
-      animation.playVisual(audioRecorder.getAudioTime)
     },
     deleteVideo() {
       const animation = this.$refs['animation']

@@ -4,9 +4,6 @@
       <vue-plyr ref="plyr">
         <audio id="audio-element" :src="recording.blobURL" controls="true"/>
       </vue-plyr>
-      <div>
-        size: {{recording.size | fileSizeToHumanSize}}, type: {{recording.mimeType}}
-      </div>
     </div>
   </div>
 </template>
@@ -40,6 +37,9 @@ export default {
   created () {
     this.recorderSrvc = new RecorderService()
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
+  },
+  mounted() {
+    this.$emit('recorder-mounted')
   },
   watch: {
     audioURL: {
@@ -90,15 +90,12 @@ export default {
         }
       )
     },
-    playAudio () {
-      const audioElement = document.getElementById('audio-element')
-      if (audioElement) {
-        audioElement.play()
-        audioElement.addEventListener('ended', () => this.$emit('audio-finished'), false)
-      }
-    },
     getAudioTime() {
-      return document.getElementById('audio-element').currentTime
+      const audioElement = document.getElementById('audio-element')
+      if (!audioElement) {
+        return 0;
+      }
+      return audioElement.currentTime
     },
     downloadAudioFile () {
       if (this.audioURL) {
