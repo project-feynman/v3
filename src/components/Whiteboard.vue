@@ -27,7 +27,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered', 'color', 'colors'],
+  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch'],
   components: {
     Swatches
   },
@@ -75,6 +75,7 @@ export default {
   },
   data() {
     return {
+      stylus: false, 
       height: 800,
       allStrokes: [],
       currentStroke: [],
@@ -105,11 +106,8 @@ export default {
     }
   },
   mounted() {
-    console.log('whiteboard is mounted')
     this.canvas = document.getElementById('myCanvas')
-    console.log('before, canvas =', this.canvas)
-    this.canvas.height = 1000
-    console.log('after, canvas =', this.canvas)
+    // this.canvas.height = 1000
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
@@ -221,6 +219,19 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart(e) {
+      console.log('disableTouch =', this.disableTouch)
+      if (this.disableTouch) {
+        if (e.touches) {
+          if (e.touches.length == 1) {
+            if (e.touches[0].touchType != 'stylus') {
+              console.log('not a stylus, TOUCH START')
+              return
+            } else {
+              this.stylus = true 
+            }
+          }
+        }
+      }
       this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
@@ -231,11 +242,25 @@ export default {
     },
     touchMove(e) {
       e.preventDefault()
+      if (this.disableTouch) {
+        if (e.touches) {
+          if (e.touches.length == 1) {
+            if (e.touches[0].touchType != 'stylus') {
+              console.log('not a stylus, TOUCH MOVE')
+              return
+            } 
+          }
+        }
+      }
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchEnd(e) {
+      if (this.currentStroke.length == 0) {
+        // user is touching the screen despite that touch is disabled
+        return 
+      }
       const strokeNumber = this.allStrokes.length + 1
       const stroke = {
         strokeNumber,

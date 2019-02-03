@@ -1,6 +1,9 @@
 <template>
   <div id="workspace">
     <v-container fluid class="pa-0">
+           <!-- <v-btn @click="toggleDisableTouch()">
+                    DISABLE TOUCH
+                  </v-btn> -->
       <chat :ownerUid="$route.params.id">
       <template v-if="user && workspace">
         <voice-chat :workspaceId="$route.params.id" :user="user"/>
@@ -36,6 +39,9 @@
                   </v-btn>
                   <v-btn v-else @click="stopRecording()" color="pink white--text">
                     STOP VIDEO
+                  </v-btn>
+                  <v-btn @click="toggleDisableTouch()">
+                    {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
                   </v-btn>
                   <v-btn @click="useEraser()">
                     USE ERASER
@@ -92,15 +98,16 @@
               </v-toolbar-items>
             </v-toolbar>
             <whiteboard
-              v-if="loadCanvas"
-              ref="whiteboard"
-              @whiteboard-cleared="handleWhiteboardClear()"
-              :workspace="workspace" 
-              :showButtons="!workspace.isAnswered"
-              :isRecording="isRecording"
-              :isAnswered="workspace.isAnswered"
-              :color="color"
-              :colors="colors">
+                        v-if="loadCanvas"
+                        ref="whiteboard"
+                        @whiteboard-cleared="handleWhiteboardClear()"
+                        :workspace="workspace" 
+                        :showButtons="!workspace.isAnswered"
+                        :isRecording="isRecording"
+                        :isAnswered="workspace.isAnswered"
+                        :disableTouch="disableTouch"
+                        :color="color"
+                        :colors="colors">
             </whiteboard>
             <audio-recorder v-show="false"
                             ref="audio-recorder"
@@ -156,6 +163,7 @@ export default {
       whiteboardReady: true,
       isRecording: false,
       ownerUid: null,
+      disableTouch: false,
       newQuestion: null,
       workspace: null,
       newTitle: null,
@@ -186,6 +194,12 @@ export default {
     setTimeout(() => this.loadCanvas = true, 2000)
   },
   methods: {
+    toggleDisableTouch() {
+      console.log('toggleDisableTouch()')
+      console.log('before, this.disableTouch =', this.disableTouch)
+      this.disableTouch = !this.disableTouch
+      console.log('disableTouch is now =', this.disableTouch)
+    },
     async finishAnswering() {
       this.$root.$emit('open-navbar')
       const ref = db.collection('workspaces').doc(this.$route.params.id)
