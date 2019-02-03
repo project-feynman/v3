@@ -89,7 +89,6 @@ export default {
       this.allStrokes = [] 
       const strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
       await this.$binding('allStrokes', strokesRef)
-      console.log('after retrieving allStrokes =', this.allStrokes)
       this.$root.$emit('finish-loading-animation')
       this.drawStrokesInstantly()
     },
