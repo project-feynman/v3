@@ -8,12 +8,6 @@ export default {
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
       this.redrawTimeout = setTimeout(this.drawStrokesInstantly(), 400) // resizing the canvas causes all drawings to be lost 
     },
-    // quickfix
-    // getNanosCounter() {
-    //   const startTime = (new Date()).getTime()
-    //   console.log('returning =', (new Date()).getTime() - startTime)
-    //   return () => (new Date()).getTime() - startTime
-    // },
     /**
      * @param {*} getTimeInSeconds A function which returns the current time to draw to in seconds
      */

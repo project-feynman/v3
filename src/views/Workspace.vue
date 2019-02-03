@@ -246,8 +246,8 @@ export default {
     playVideo() {
       const audioRecorder = this.$refs['audio-recorder']
       const whiteboard = this.$refs['whiteboard']
-
-      if (whiteboard) { whiteboard.playVisual(audioRecorder.getAudioTime) }
+      whiteboard.sortStrokesByTimestamp()
+      whiteboard.playVisual(audioRecorder.getAudioTime)
       if (audioRecorder) { audioRecorder.playAudio() } 
     },
     quickplay() {

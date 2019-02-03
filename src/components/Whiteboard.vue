@@ -108,6 +108,9 @@ export default {
     clearInterval(this.interval)
   },
   methods: {
+    sortStrokesByTimestamp() {
+      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime))
+    },
     getHeightToWidthRatio() {
       return this.canvas.scrollHeight / this.canvas.scrollWidth
     },
@@ -241,8 +244,8 @@ export default {
         lineWidth: this.lineWidth
       }
       if (this.currentTime) {
-        stroke.startTime = this.startTime,
-        stroke.endTime = this.currentTime.toFixed(1)
+        stroke.startTime = Number(this.startTime),
+        stroke.endTime = Number(this.currentTime.toFixed(1))
       }
       stroke.points = this.currentStroke
       // save 
