@@ -101,7 +101,7 @@ export default {
 <style>
 #myCanvas {
   width: 100%;
-  height: 90vh;
+  height: 70vh;
   background-color: rgb(192, 230, 253);
   cursor: crosshair;
 }
