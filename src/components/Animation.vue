@@ -2,7 +2,7 @@
   <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
   <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div id="whiteboard">
-    <canvas id="myCanvas" :height="height"></canvas>`
+    <canvas id="myCanvas" :height="height"></canvas>
   </div>
 </template>
 
@@ -91,6 +91,7 @@ export default {
       await this.$binding('allStrokes', strokesRef)
       this.$root.$emit('finish-loading-animation')
       this.drawStrokesInstantly()
+      this.$emit('animation-loaded')
     },
   }
 }
@@ -99,7 +100,7 @@ export default {
 <style>
 #myCanvas {
   width: 100%;
-  height: 90vh;
+  height: 70vh;
   background-color: rgb(192, 230, 253);
   cursor: crosshair;
 }
