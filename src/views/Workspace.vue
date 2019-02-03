@@ -34,6 +34,9 @@
                       </v-card-actions>
                     </v-card>
                   </v-dialog>
+                  <v-btn @click="clearWhiteboard()">
+                    CLEAR WHITEBOARD
+                  </v-btn>
                   <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
                     START VIDEO
                   </v-btn>
@@ -91,18 +94,14 @@
                 </v-btn>
               </template>
                 </template>
-                 <!-- <v-btn icon>
-                  <v-icon>clear</v-icon>
-                </v-btn> -->
                 <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <whiteboard
                         v-if="loadCanvas"
                         ref="whiteboard"
-                        @whiteboard-cleared="handleWhiteboardClear()"
+                        :workspaceID="workspace['.key']"
                         :workspace="workspace" 
-                        :showButtons="!workspace.isAnswered"
                         :isRecording="isRecording"
                         :isAnswered="workspace.isAnswered"
                         :disableTouch="disableTouch"
@@ -135,7 +134,6 @@ import PopupButton from '@/components/PopupButton.vue'
 import BetaPopupButton from '@/components/BetaPopupButton.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import VoiceChat from '@/components/VoiceChat.vue'
-import TruePopupButton from '@/components/TruePopupButton.vue'
 import Chat from '@/components/Chat.vue'
 import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
@@ -149,7 +147,6 @@ export default {
     AudioRecorder,
     VoiceChat,
     BetaPopupButton,
-    TruePopupButton,
     TestCanvas,
     Swatches,
     Chat
@@ -202,6 +199,12 @@ export default {
     setTimeout(() => this.loadCanvas = true, 2000)
   },
   methods: {
+    clearWhiteboard() {
+      const whiteboard = this.$refs['whiteboard']
+      if (whiteboard) {
+        whiteboard.deleteStrokesSubcollection()
+      }
+    },
     toggleDisableTouch() {
       this.disableTouch = !this.disableTouch
     },
@@ -216,24 +219,9 @@ export default {
       this.color = 'rgb(192, 230, 253)'
       this.lineWidth = 18
     },
-    handleWhiteboardClear() {
-      const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        this.feedback = 'Initializing whiteboard...'
-        whiteboard.initTouchEvents()
-        whiteboard.currentTime = 0 
-        this.feedback = 'Whiteboard ready!'
-        this.whiteboardReady = true 
-        setTimeout(() => this.feedback = 'Tip: you can setup drawings before you start recording :]', 1500)
-      }
-    },
     async retryAnswer() {
-      this.whiteboardReady = false 
-      this.feedback = 'Clearing whiteboard...'
       const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        whiteboard.deleteStrokesSubcollection()
-      }
+      whiteboard.currentTime = 0 
       const ref = db.collection('workspaces').doc(this.$route.params.id)
       await ref.update({
         isAnswered: false
@@ -241,28 +229,25 @@ export default {
     },
     startRecording() {
       const audioRecorder = this.$refs['audio-recorder']
-      if (audioRecorder) {
-        this.isRecording = true 
-        audioRecorder.startRecording()
-        this.feedback = 'Recording your strokes and audio...'
-      }
+      this.isRecording = true 
+      audioRecorder.startRecording()
     },
     stopRecording() {
       const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        whiteboard.removeTouchEvents()
-      }
       const audioRecorder = this.$refs['audio-recorder']
-      if (audioRecorder) {
-        audioRecorder.stopRecording()
-        this.isRecording = false
-        this.submitAnswer()
-      }
+      whiteboard.removeTouchEvents()
+      audioRecorder.stopRecording()
+      this.isRecording = false
+      const ref = db.collection('workspaces').doc(this.$route.params.id)
+      ref.update({
+        isAnswered: true
+      })
     },
     playVideo() {
       const audioRecorder = this.$refs['audio-recorder']
       const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) { whiteboard.playVisual() }
+      whiteboard.sortStrokesByTimestamp()
+      whiteboard.playVisual(audioRecorder.getAudioTime)
       if (audioRecorder) { audioRecorder.playAudio() } 
     },
     quickplay() {
@@ -274,12 +259,6 @@ export default {
       await ref.update({
         audioURL: url,
         audioPath: path
-      })
-    },
-    async submitAnswer() {
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
-        isAnswered: true
       })
     },
     bindVariables() {

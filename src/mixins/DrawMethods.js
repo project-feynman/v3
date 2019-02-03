@@ -1,21 +1,4 @@
 export default {
-  watch: {
-    allStrokes() {
-      if (this.playProgress) {
-        console.log('allStrokes changed - likely because video was switched - removing setInterval')
-        clearInterval(this.playProgress)
-        this.playProgress = null 
-      }
-    }
-  },
-  beforeDestroy() {
-    // clean up everything 
-    console.log('beforeDestroy()')
-    if (this.playProgress) {
-      console.log('this.playProgress =', this.playProgress)
-      clearInterval(this.playProgress)
-    }
-  },
   methods: {
     rescaleCanvas() {
       // only redraw when the user has finished resizing the window
@@ -25,7 +8,6 @@ export default {
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
       this.redrawTimeout = setTimeout(this.drawStrokesInstantly(), 400) // resizing the canvas causes all drawings to be lost 
     },
-
     /**
      * @param {*} getTimeInSeconds A function which returns the current time to draw to in seconds
      */

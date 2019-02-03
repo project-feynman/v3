@@ -102,7 +102,6 @@ export default class RecorderService {
       this.encoderWorker = this.createWorker(EncoderWav)
       this.encoderMimeType = 'audio/wav'
       this.encoderWorker.addEventListener('message', e => {
-        console.log('message event fired')
         let event = new Event('dataavailable')
         // if (this.config.manualEncoderId === 'ogg') {
         //   event.data = e.data
@@ -259,7 +258,6 @@ export default class RecorderService {
   }
 
   stopRecording () {
-    console.log('stopRecording()')
     if (this.state === 'inactive') {
       return
     }

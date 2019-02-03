@@ -13,7 +13,7 @@
       </slot>
     </div>
     <!-- CANVAS -->
-    <canvas id="myCanvas" :height="height"></canvas>
+    <canvas id="myCanvas"></canvas>
   </div>
 </template>
 
@@ -27,13 +27,13 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth'],
+  props: ['workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth', 'workspaceID'],
   components: {
     Swatches
   },
   mixins: [DrawMethods],
   watch: {
-    workspace: {
+    workspaceID: {
       handler: 'initData',
     },
     isRecording() {
@@ -43,17 +43,11 @@ export default {
         this.stopTimer()
       }
     },
-    // isAnswered() {
-    //   if (!workspace.isAnswered) {
-    //     this.initTouchEvents()
-    //   }
-    // },
-    // color() {
-    //   // bad - high surface area for bugs 
-    //   if (this.color != 'rgb(192, 230, 253)') {
-    //     this.lineWidth = 2
-    //   }
-    // }
+    isAnswered() {
+      if (!this.isAnswered) {
+        this.initTouchEvents()
+      }
+    }
   },
   computed: {
     ...mapState(['user']),
@@ -76,7 +70,6 @@ export default {
   data() {
     return {
       stylus: false, 
-      height: 800,
       allStrokes: [],
       currentStroke: [],
       isPlayingVisual: false,
@@ -96,18 +89,11 @@ export default {
       unsubscribe: null,
       redrawTimeout: null,
       idx: 0,
-      // color: '#A463BF',
-      // colors: ['#F64272', 'orange', '#A463BF'],
-      // lineWidth: 2,
-      oldNavbarHeight: 0,
-      oldRowHeight: 0,
-      oldWindowHeight: 0,
       interval: null 
     }
   },
   mounted() {
     this.canvas = document.getElementById('myCanvas')
-    // this.canvas.height = 1000
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
@@ -122,6 +108,9 @@ export default {
     clearInterval(this.interval)
   },
   methods: {
+    sortStrokesByTimestamp() {
+      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime))
+    },
     getHeightToWidthRatio() {
       return this.canvas.scrollHeight / this.canvas.scrollWidth
     },
@@ -151,11 +140,8 @@ export default {
       this.allStrokes.forEach(stroke => {
         explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
       })
-      // also remember the width
-      console.log('width, height =', this.canvas.scrollWidth, this.canvas.scrollHeight)
     },
     initData() {
-      console.log('initData()')
       // visually wipe previous drawings
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -199,16 +185,9 @@ export default {
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
-      const path = `workspaces/${this.$route.params.id}/strokes`
-      var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
-      try {
-        const result = await deleteFn({ path: path })
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.resetVariables()
-        this.isClearing = false 
-        this.$emit('whiteboard-cleared')
-      } catch(err) {
-        console.log('err =', err)
+      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
+      for (let i = 1; i < this.allStrokes.length + 1; i++) {
+        strokesRef.doc(`${i}`).delete()
       }
     },
     convertAndSavePoint(x, y) {
@@ -265,8 +244,8 @@ export default {
         lineWidth: this.lineWidth
       }
       if (this.currentTime) {
-        stroke.startTime = this.startTime,
-        stroke.endTime = this.currentTime.toFixed(1)
+        stroke.startTime = Number(this.startTime),
+        stroke.endTime = Number(this.currentTime.toFixed(1))
       }
       stroke.points = this.currentStroke
       // save 
@@ -278,14 +257,9 @@ export default {
       this.lastX = -1
     },
     getTouchPos(e) {
-      if (e.touches) {
-        if (e.touches.length == 1) { 
-          const finger1 = e.touches[0] 
-          // console.log('finger1.touchType =', finger1.touchType)
-          this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
-          this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
-        }
-      }
+      const finger1 = e.touches[0] 
+      this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
+      this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
     }
   }
 }
