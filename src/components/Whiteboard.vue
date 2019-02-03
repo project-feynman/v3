@@ -27,13 +27,13 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth'],
+  props: ['workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth', 'workspaceID'],
   components: {
     Swatches
   },
   mixins: [DrawMethods],
   watch: {
-    workspace: {
+    workspaceID: {
       handler: 'initData',
     },
     isRecording() {
@@ -44,7 +44,7 @@ export default {
       }
     },
     isAnswered() {
-      if (!workspace.isAnswered) {
+      if (!this.isAnswered) {
         this.initTouchEvents()
       }
     }
@@ -143,7 +143,6 @@ export default {
       console.log('width, height =', this.canvas.scrollWidth, this.canvas.scrollHeight)
     },
     initData() {
-      console.log('initData()')
       // visually wipe previous drawings
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -193,18 +192,6 @@ export default {
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         strokesRef.doc(`${i}`).delete()
       }
-      // this.$emit('whiteboard-cleared')
-      // const path = `workspaces/${this.$route.params.id}/strokes`
-      // var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
-      // try {
-      //   const result = await deleteFn({ path: path })
-      //   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      //   this.resetVariables()
-      //   this.isClearing = false 
-      //   this.$emit('whiteboard-cleared')
-      // } catch(err) {
-      //   console.log('err =', err)
-      // }
     },
     convertAndSavePoint(x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
@@ -273,14 +260,9 @@ export default {
       this.lastX = -1
     },
     getTouchPos(e) {
-      if (e.touches) {
-        if (e.touches.length == 1) { 
-          const finger1 = e.touches[0] 
-          // console.log('finger1.touchType =', finger1.touchType)
-          this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
-          this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
-        }
-      }
+      const finger1 = e.touches[0] 
+      this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
+      this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
     }
   }
 }

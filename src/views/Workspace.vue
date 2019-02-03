@@ -94,17 +94,14 @@
                 </v-btn>
               </template>
                 </template>
-                 <!-- <v-btn icon>
-                  <v-icon>clear</v-icon>
-                </v-btn> -->
                 <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
               </v-toolbar-items>
             </v-toolbar>
             <whiteboard
                         v-if="loadCanvas"
                         ref="whiteboard"
+                        :workspaceID="workspace['.key']"
                         :workspace="workspace" 
-                        :showButtons="!workspace.isAnswered"
                         :isRecording="isRecording"
                         :isAnswered="workspace.isAnswered"
                         :disableTouch="disableTouch"
@@ -137,7 +134,6 @@ import PopupButton from '@/components/PopupButton.vue'
 import BetaPopupButton from '@/components/BetaPopupButton.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import VoiceChat from '@/components/VoiceChat.vue'
-import TruePopupButton from '@/components/TruePopupButton.vue'
 import Chat from '@/components/Chat.vue'
 import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
@@ -151,7 +147,6 @@ export default {
     AudioRecorder,
     VoiceChat,
     BetaPopupButton,
-    TruePopupButton,
     TestCanvas,
     Swatches,
     Chat
@@ -234,24 +229,19 @@ export default {
     },
     startRecording() {
       const audioRecorder = this.$refs['audio-recorder']
-      if (audioRecorder) {
-        this.isRecording = true 
-        audioRecorder.startRecording()
-        this.feedback = 'Recording your strokes and audio...'
-      }
+      this.isRecording = true 
+      audioRecorder.startRecording()
     },
     stopRecording() {
       const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        whiteboard.removeTouchEvents()
-      }
       const audioRecorder = this.$refs['audio-recorder']
-      if (audioRecorder) {
-        audioRecorder.stopRecording()
-        this.isRecording = false
-        // disable touch
-        this.submitAnswer()
-      }
+      whiteboard.removeTouchEvents()
+      audioRecorder.stopRecording()
+      this.isRecording = false
+      const ref = db.collection('workspaces').doc(this.$route.params.id)
+      ref.update({
+        isAnswered: true
+      })
     },
     playVideo() {
       const audioRecorder = this.$refs['audio-recorder']
@@ -268,12 +258,6 @@ export default {
       await ref.update({
         audioURL: url,
         audioPath: path
-      })
-    },
-    async submitAnswer() {
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
-        isAnswered: true
       })
     },
     bindVariables() {
