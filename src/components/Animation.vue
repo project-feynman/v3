@@ -16,6 +16,13 @@ export default {
   watch: {
     explanationId: {
       handler: 'initData',
+    },
+    allStrokes() {
+      if (this.playProgress) {
+        console.log('allStrokes changed - likely because video was switched - removing setInterval')
+        clearInterval(this.playProgress)
+        this.playProgress = null 
+      }
     }
   },
   mixins: [DrawMethods],
@@ -56,30 +63,14 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    // new code 
-      this.interval = setInterval(() => {
-      const navbar = document.getElementById('navbar')
-      const row = document.getElementById('whiteboard-buttons-layout')
-      let navbarHeight = 0 
-      let rowHeight = 0
-      if (navbar) {
-        navbarHeight = navbar.scrollHeight
-      }
-      if (row) {
-        rowHeight = row.scrollHeight
-      }
-      if (this.oldNavbarHeight != navbarHeight || this.oldWindowHeight != window.innerHeight || this.oldRowHeight != rowHeight) {
-        this.canvas.setAttribute('height', `${window.innerHeight - navbarHeight - rowHeight - 10}`)
-        this.rescaleCanvas()
-        this.oldNavbarHeight = navbarHeight 
-        this.oldWindowHeight = window.innerHeight
-        this.oldRowHeight = row.scrollHeight
-      }
-    }, 1000)
   },
   beforeDestroy() {
+    // clean up everything 
     console.log('beforeDestroy()')
-    clearInterval(this.interval)
+    if (this.playProgress) {
+      console.log('this.playProgress =', this.playProgress)
+      clearInterval(this.playProgress)
+    }
   },
   methods: {
     async initReplayLogic() {
@@ -108,6 +99,7 @@ export default {
 <style>
 #myCanvas {
   width: 100%;
+  height: 90vh;
   background-color: rgb(192, 230, 253);
   cursor: crosshair;
 }
