@@ -108,8 +108,10 @@ export default {
       this.isPlayingVideo = true
       const audioRecorder = this.$refs['audio-recorder']
       const animation = this.$refs['animation']
-      if (animation) { animation.playVisual() }
-      if (audioRecorder) { audioRecorder.playAudio() } 
+      
+      console.assert(audioRecorder) // We require audio playback atm.
+      audioRecorder.playAudio()
+      animation.playVisual(audioRecorder.getAudioTime)
     },
     deleteVideo() {
       const animation = this.$refs['animation']

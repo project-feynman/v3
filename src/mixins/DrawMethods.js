@@ -25,7 +25,12 @@ export default {
       clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
       this.redrawTimeout = setTimeout(this.drawStrokesInstantly(), 400) // resizing the canvas causes all drawings to be lost 
     },
-    async playVisual() {
+
+    /**
+     * @param {*} getTimeInSeconds A function which returns the current time to draw to in seconds
+     */
+    async playVisual(getTimeInSeconds) {
+
       if (this.playProgress) {
         // already in the middle of playing video 
         return 
@@ -33,49 +38,56 @@ export default {
       if (!this.allStrokes || this.allStrokes.length == 0) {
         return 
       }
+
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      this.idx = 0 
-      if (!this.allStrokes[0].startTime) {
-        // there are initial setup strokes - load instantly as setup 
-        const n = this.allStrokes.length 
-        for (let i = 0; i < n; i++) {
-          const stroke = this.allStrokes[i]
-          if (!stroke.startTime) {
-            this.drawStroke(stroke, null)
-          } else {
-            this.idx = i 
-            break 
-          }
-        }
-      }
-      this.isPlayingVideo = true 
-      this.currentTime = 0
-      // would break if there are strokes rendering simultaneously 
-      const checkIfNextStrokeShouldPlay = async () => {
-        const startIdx = this.idx 
-        const n = this.allStrokes.length 
-        for (let i = startIdx; i < n; i++) {
-          const nextStroke = this.allStrokes[i]
-          if (Number(nextStroke.startTime) == this.currentTime.toFixed(1)) {
-            const strokePeriod = (nextStroke.endTime - nextStroke.startTime) * 1000
-            const pointPeriod = strokePeriod / nextStroke.points.length 
-            this.drawStroke(nextStroke, pointPeriod)
-            if (i == n-1) {
-              clearInterval(this.playProgress)
-              console.log('animation finished')
-              this.$emit('animation-finished')
-              this.playProgress = null 
+      this.isPlayingVideo = true
+      this.numStrokesDrawn = 0
+
+      this.playProgress = setInterval(async () => {
+        const currentTime = getTimeInSeconds()
+        console.log(currentTime, this.numStrokesDrawn, this.allStrokes.length)
+        const prevStartTime = (() => {
+          if (this.numStrokesDrawn == 0) return 0
+          
+          const prevStartTime = this.allStrokes[this.numStrokesDrawn - 1].startTime
+          if (prevStartTime) return prevStartTime
+          return 0
+        })()
+
+        if (prevStartTime < currentTime) {
+          // Continue drawing without clearing
+          for(; this.numStrokesDrawn < this.allStrokes.length;
+                this.numStrokesDrawn++) {
+            const stroke = this.allStrokes[this.numStrokesDrawn]
+            if (!stroke.startTime || stroke.startTime <= currentTime) {
+              const strokePeriod = (stroke.endTime - stroke.startTime) * 1000
+              const pointPeriod = strokePeriod / stroke.points.length 
+              this.drawStroke(stroke, pointPeriod)
+            } else {
+              break
             }
-          } else {
-            this.idx = i 
-            // strokes finished playing
-            this.$emit('animation-finished')
-            break 
           }
+        } else {
+          // Need to redraw from beginning
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+          this.numStrokesDrawn = 0
+          this.allStrokes.forEach(stroke => {
+            if (!stroke.startTime || stroke.startTime <= currentTime) {
+              this.drawStroke(stroke, null)
+              this.numStrokesDrawn++
+            }
+          })
         }
-        this.currentTime += 0.1
-      }
-      this.playProgress = setInterval(checkIfNextStrokeShouldPlay, 100)
+
+        console.log('animation finished')
+        this.$emit('animation-finished')
+
+        if (this.numStrokesDrawn == this.allStrokes.length) {
+          console.log('finished all strokes')
+          //clearInterval(this.playProgress)
+          //this.playProgress = null
+        }
+      }, 100)
     },
     async quickplay() {
       console.log('quickplay()')
@@ -90,20 +102,30 @@ export default {
       }
     },
     // null is instant, 0 is quickplay, otherwise it's a realtime replay
-    async drawStroke({ points, color, lineWidth }, pointPeriod = 0) {
+    drawStroke({ points, color, lineWidth }, pointPeriod = 0) {
       return new Promise(async resolve => {
-        this.setStyle(color, lineWidth)
-        for (const point of points) {
-          const x = point.unitX * this.canvas.width
-          const y = point.unitY * this.canvas.height
-          this.drawToPoint(x, y)
+        for (let i = 1; i < points.length; i++) {
+          const prevPoint = points[i - 1]
+          const prevX = prevPoint.unitX * this.canvas.width
+          const prevY = prevPoint.unitY * this.canvas.height
+
+          const curPoint = points[i]
+          const curX = curPoint.unitX * this.canvas.width
+          const curY = curPoint.unitY * this.canvas.height
+
+          this.setStyle(color, lineWidth)
+          this.ctx.beginPath()
+          this.ctx.moveTo(prevX, prevY)
+          this.ctx.lineTo(curX, curY)
+          this.ctx.stroke()
+
           if (pointPeriod != null) {
             await new Promise(resolve => setTimeout(resolve, pointPeriod)) 
           }
         }
-        this.lastX = -1
+
         resolve()
-      })  
+      })
     },
     drawToPoint(x, y) {
       if (this.lastX == -1) {

@@ -98,6 +98,9 @@ export default {
         audioElement.addEventListener('ended', () => this.$emit('audio-finished'), false)
       }
     },
+    getAudioTime() {
+      return document.getElementById('audio-element').currentTime
+    },
     downloadAudioFile () {
       if (this.audioURL) {
         let xhr = new XMLHttpRequest()
