@@ -1,10 +1,9 @@
 <template>
   <div>
     <div v-for="recording in recordings" :key="recording.ts">
-      <div>
-        <!-- AUDIO PLAYER -->
+      <vue-plyr ref="plyr">
         <audio id="audio-element" :src="recording.blobURL" controls="true"/>
-      </div>
+      </vue-plyr>
       <div>
         size: {{recording.size | fileSizeToHumanSize}}, type: {{recording.mimeType}}
       </div>

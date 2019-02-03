@@ -8,10 +8,13 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import VueFirestore from 'vue-firestore'
 import VueChatScroll from 'vue-chat-scroll'
+import VuePlyr from 'vue-plyr'
+import 'vue-plyr/dist/vue-plyr.css'
 
 // plugins 
 Vue.use(VueChatScroll)
 Vue.use(VueFirestore)
+Vue.use(VuePlyr)
 
 Vue.config.productionTip = false
 
