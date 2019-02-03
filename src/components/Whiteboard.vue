@@ -27,7 +27,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch'],
+  props: ['showButtons', 'workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth'],
   components: {
     Swatches
   },
@@ -48,12 +48,12 @@ export default {
     //     this.initTouchEvents()
     //   }
     // },
-    color() {
-      // bad - high surface area for bugs 
-      if (this.color != 'rgb(192, 230, 253)') {
-        this.lineWidth = 2
-      }
-    }
+    // color() {
+    //   // bad - high surface area for bugs 
+    //   if (this.color != 'rgb(192, 230, 253)') {
+    //     this.lineWidth = 2
+    //   }
+    // }
   },
   computed: {
     ...mapState(['user']),
@@ -98,7 +98,7 @@ export default {
       idx: 0,
       // color: '#A463BF',
       // colors: ['#F64272', 'orange', '#A463BF'],
-      lineWidth: 2,
+      // lineWidth: 2,
       oldNavbarHeight: 0,
       oldRowHeight: 0,
       oldWindowHeight: 0,
@@ -189,7 +189,6 @@ export default {
       this.lastX = -1
     },
     initTouchEvents () {
-      console.log('initTouchEvents9)')
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
@@ -219,12 +218,10 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart(e) {
-      console.log('disableTouch =', this.disableTouch)
       if (this.disableTouch) {
         if (e.touches) {
           if (e.touches.length == 1) {
             if (e.touches[0].touchType != 'stylus') {
-              console.log('not a stylus, TOUCH START')
               return
             } else {
               this.stylus = true 
@@ -246,7 +243,6 @@ export default {
         if (e.touches) {
           if (e.touches.length == 1) {
             if (e.touches[0].touchType != 'stylus') {
-              console.log('not a stylus, TOUCH MOVE')
               return
             } 
           }

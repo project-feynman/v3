@@ -107,7 +107,8 @@
                         :isAnswered="workspace.isAnswered"
                         :disableTouch="disableTouch"
                         :color="color"
-                        :colors="colors">
+                        :colors="colors"
+                        :lineWidth="lineWidth">
             </whiteboard>
             <audio-recorder v-show="false"
                             ref="audio-recorder"
@@ -171,6 +172,7 @@ export default {
       dialog: false,
       loadCanvas: false,
       color: '#A463BF',
+      lineWidth: 2,
       colors: ['#F64272', 'orange', '#A463BF']
     }
   },
@@ -188,6 +190,12 @@ export default {
         }
         ref.set(simpleUser) 
       }
+    },
+    color() {
+      // bad - high surface area for bugs 
+      if (this.color != 'rgb(192, 230, 253)') {
+        this.lineWidth = 2
+      }
     }
   },
   created() {
@@ -195,10 +203,7 @@ export default {
   },
   methods: {
     toggleDisableTouch() {
-      console.log('toggleDisableTouch()')
-      console.log('before, this.disableTouch =', this.disableTouch)
       this.disableTouch = !this.disableTouch
-      console.log('disableTouch is now =', this.disableTouch)
     },
     async finishAnswering() {
       this.$root.$emit('open-navbar')
@@ -209,7 +214,7 @@ export default {
     },
     useEraser() {
       this.color = 'rgb(192, 230, 253)'
-      this.lineWidth = 15
+      this.lineWidth = 18
     },
     handleWhiteboardClear() {
       const whiteboard = this.$refs['whiteboard']
