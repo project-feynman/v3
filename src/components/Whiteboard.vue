@@ -79,7 +79,7 @@ export default {
       isClearing: false,
       isReplaying: false,
       timer: null,
-      currentTime: null,
+      currentTime: 0,
       startTime: null,
       endTime: null,
       touchX: null,
@@ -197,13 +197,14 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart(e) {
+      if (e.touches.length != 1) {
+        return 
+      }
       if (this.disableTouch) {
-        if (e.touches) {
-          if (e.touches.length == 1) {
-            if (e.touches[0].touchType != 'stylus') {
-              return
-            } 
-          }
+        if (e.touches.length == 1) {
+          if (e.touches[0].touchType != 'stylus') {
+            return
+          } 
         }
       }
       this.setStyle(this.color, this.lineWidth)
@@ -215,16 +216,17 @@ export default {
       }
     },
     touchMove(e) {
-      e.preventDefault()
+      if (e.touches.length != 1) {
+        return 
+      }
       if (this.disableTouch) {
-        if (e.touches) {
-          if (e.touches.length == 1) {
-            if (e.touches[0].touchType != 'stylus') {
-              return
-            } 
-          }
+        if (e.touches.length == 1) {
+          if (e.touches[0].touchType != 'stylus') {
+            return
+          } 
         }
       }
+      e.preventDefault()
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)

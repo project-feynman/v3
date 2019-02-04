@@ -90,7 +90,7 @@
           <v-list-tile-title>Workspaces</v-list-tile-title>
         </v-list-tile>
         
-        <!-- FIRST SUBLIST -->
+        <!-- STUDENTS SUBLIST -->
         <!-- <v-list-group
           sub-group
           no-action
