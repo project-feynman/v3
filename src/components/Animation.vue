@@ -87,7 +87,12 @@ export default {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
       this.allStrokes = [] 
-      const strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
+      let strokesRef
+      if (this.$route.params.id == 'OS63skygvahbbPwEK3LH') {
+        strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('strokeNumber', 'asc')
+      } else {
+        strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
+      } 
       await this.$binding('allStrokes', strokesRef)
       this.$root.$emit('finish-loading-animation')
       this.drawStrokesInstantly()
