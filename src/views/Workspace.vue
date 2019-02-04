@@ -5,7 +5,7 @@
       <template v-if="user && workspace">
         <!-- <voice-chat :workspaceId="$route.params.id" :user="user"/> -->
         <v-layout align-center justify-center row fill-height wrap>
-               <div class="text-xs-center">
+          <div class="text-xs-center">
           <v-btn @click="whiteboardPopup = true" color="pink white--text">
             Use Whiteboard
           </v-btn>
@@ -56,11 +56,11 @@
                 <template v-else>
 
                 <template style="margin: auto;">
-                  <v-btn @click="playVideo()">
+                  <!-- <v-btn @click="playVideo()">
                     PLAY VIDEO
-                  </v-btn>
+                  </v-btn> -->
                   <v-btn @click="quickplay()">
-                    QUICKPLAY
+                    PREVIEW
                   </v-btn>
                   <v-btn @click="retryAnswer()">
                     RETRY 
