@@ -15,18 +15,20 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-    
+      <template v-if="user && $route.path == '/'">
       <new-class-popup v-model="newClassPopup"
                        @create-class="courseNumber => createClass(courseNumber)">
-      
       </new-class-popup>
-      <v-btn v-if="$route.path == '/'" 
+      <v-btn
              @click="newClassPopup = true" 
              class="pink white--text">
         New Class
       </v-btn>
-      <v-dialog v-model="dialog" max-width="290">
-        <v-btn slot="activator"
+      </template>
+      <!-- <v-dialog v-model="dialog" max-width="290">
+        <v-btn 
+              v-if="user"
+              slot="activator"
               color="blue-grey"
               class="white--text"
               @click="showNumber = true">
@@ -49,7 +51,7 @@
             <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
           </v-card-actions>
         </v-card>
-      </v-dialog>
+      </v-dialog> -->
 
       <v-btn v-if="user && $route.path == '/'" 
              @click="signOut()">
