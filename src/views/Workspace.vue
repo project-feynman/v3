@@ -183,7 +183,8 @@ export default {
         const ref = db.collection('workspaces').doc(this.$route.params.id).collection('participants').doc(this.user.uid)
         const simpleUser = {
           name: this.user.name,
-          uid: this.user.uid 
+          uid: this.user.uid,
+					timestamp: Math.round((new Date()).getTime() / 1000)
         }
         ref.set(simpleUser) 
       }
