@@ -63,12 +63,12 @@ exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{wi
 })
 
 exports.emailOnStudentHelp = functions.firestore.document('/workspaces/{wid}').onUpdate((change, context) => {
-	const workspaceDocDataBefore = change.before
-	const workspaceDocDataAfter = change.after
+	const workspaceDocDataBefore = change.before.data()
+	const workspaceDocDataAfter = change.after.data()
 	const params = context.params
 
-	const askingBefore = workspaceDocDatBefore.isAskingQuestion
-	const askingAfter = workspaceDocDatAfter.isAskingQuestion
+	const askingBefore = workspaceDocDataBefore.isAskingQuestion
+	const askingAfter = workspaceDocDataAfter.isAskingQuestion
 	// if before they werent asking and after they are, then it's the change i'm interested in
 	// otherwise end the execution
 	if(!(workspaceDocDataAfter.isAskingQuestion === true && workspaceDocDataBefore.isAskingQuestion === false)) {
@@ -78,20 +78,24 @@ exports.emailOnStudentHelp = functions.firestore.document('/workspaces/{wid}').o
 	const askerUid = workspaceDocDataBefore.ownerUid
 	const askerName = workspaceDocDataBefore.ownerName
 	const askerFirstName = askerName.split(' ')[0]
-
+    
 	const workspaceOwnerUid = workspaceDocDataBefore.teacherUid
 	const workspaceId = params.wid
 
 	const workspaceUrl = "https://feynman.online/" + workspaceOwnerUid + "/workspace/" + workspaceId
 
 
-	firestore.collection('/workspaces/').where('isOffice', '==', 'true').then(assistants => {
-		_sendEmailByUid(
-			askerUid, 
-			askerFirstName + " asked a question on Feynman.",
-			askerName + " asked a question in a workspace you're a TA in. Here's the link to the workspace: " + workspaceUrl,
-			"<p>" + askerName + " asked a question in a workspace you're a TA in. Click <a href=\"" + workspaceUrl + "\"here</a> to go there. "
-		)
+	firestore.collection('/workspaces/').where('teacherUid', '==', workspaceOwnerUid).where('isOffice', '==', true).get().then(assistantsQuerySnap => {
+		const assistantsQueryDocsSnaps = assistantsQuerySnap.docs
+		assistantsQueryDocsSnaps.forEach(assitantQueryDocSnap => {
+			const assistantQueryDocData = assitantQueryDocSnap.data()
+			_sendEmailByUid(
+				assistantQueryDocData.ownerUid,
+				askerFirstName + " asked a question on Feynman.",
+				askerName + " asked a question in a workspace you're a TA in. Here's the link to the workspace: " + workspaceUrl,
+				"<p>" + askerName + " asked a question in a workspace you're a TA in. Click <a href=\"" + workspaceUrl + "\">here</a> to go there. "
+			)
+		})
 	})
 	
 	// SUBJECT: "{first NAME} asked a question
@@ -126,13 +130,13 @@ function _sendEmailByUid(uid, subject, body, html) {
 	})
 }
 
-function _sendEmail(email, subject, body, html) {
+function _sendEmail(email, subject, text, html) {
 
 	const message = {
-		from: "feynmannotif@gmail.com",
+		from: '"Feynman Notifications" feynmannotif@gmail.com',
 		to: email,
 		subject,
-		body,
+		text,
 		html
 	}
 
