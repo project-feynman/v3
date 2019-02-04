@@ -6,7 +6,7 @@ An application for helping streamline student requirements and staff efforts int
 
 ## Intro
 
-![Home Layout](docs\home_layout.PNG)
+![Home Layout](docs/home_layout.PNG)
 
 Many professors, TAs and students would make great explanation videos - but they don't. 
 Feynman is a visual, process-oriented Q&A platform where videos are created as by-products. 
@@ -23,11 +23,11 @@ Feynman is a visual, process-oriented Q&A platform where videos are created as b
 
 ## User Stories
 
-![Personal Page](docs\personal_page.PNG)
+![Personal Page](docs/personal_page.PNG)
 
 **Watch this space**
 
-![A sample solution](docs\answer.PNG)
+![A sample solution](docs/answer.PNG)
 
 ## Getting Started
 
@@ -51,6 +51,8 @@ Please use the app as you like and feel free to submit issues to [our GitHub rep
 The website is currently [deployed here](https://feynman.online/). Please feel free to sign in and experiment.
 
 ## Our Approach
+
+**Watch this space**
 
 ## Contributing
 
