@@ -38,9 +38,9 @@ export default {
     this.recorderSrvc = new RecorderService()
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
   },
-  mounted() {
-    this.$emit('recorder-mounted')
-  },
+  // mounted() {
+  //   this.$emit('recorder-mounted')
+  // },
   watch: {
     audioURL: {
       handler: 'downloadAudioFile',
@@ -113,13 +113,16 @@ export default {
           if (this.recordings.length == 0) {
             // initial load or just empty local data
             this.recordings.push(newRecording)
+            this.$emit('recorder-loaded')
           } else if (this.recordings[0].size != newRecording.size) {
             // i.e. new recording was made OR this is a new workspace 
             // outdated local data 
             this.recordings = [] 
             this.recordings.push(newRecording)
+            this.$emit('recorder-loaded')
             // console.log('successfully synced audio file')
           } else {
+            this.$emit('recorder-loaded')
             // local file already in sync
           }
         }

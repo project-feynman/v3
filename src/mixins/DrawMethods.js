@@ -60,8 +60,8 @@ export default {
           })
         }
 
-        console.log('animation finished')
-        this.$emit('animation-finished')
+        // console.log('animation finished')
+        // this.$emit('animation-finished')
 
         if (this.numStrokesDrawn == this.allStrokes.length) {
           console.log('finished all strokes')

@@ -45,7 +45,7 @@
                         ref="audio-recorder"
                         :audioURL="explanation.audioURL"
                         :audioPath="explanation.audioPath"
-                        @recorder-mounted="recorderMounted=true"/>
+                        @recorder-loaded="recorderLoaded=true"/>
       </template>
     </v-container>
   </div>
@@ -64,29 +64,19 @@ export default {
   },
   computed: {
     ...mapState(['user']),
-    isPlayingVideo: {
-      get() {
-        return this.isPlayingVisual || this.isPlayingAudio
-      },
-      set(isPlayingVideo) {
-        if (isPlayingVideo) {
-          this.isPlayingVisual = true 
-          this.isPlayingAudio = true 
-        }
-      }
-    },
     resourcesLoaded() {
-      return this.recorderMounted && this.animationLoaded
+      return this.recorderLoaded && this.animationLoaded
     }
+  },
+  created() {
+    console.log('ANSWER CREATED')
   },
   data() {
     return {
       explanationId: null,
       explanation: null, 
       dialog: false,
-      isPlayingAudio: false,
-      isPlayingVisual: false,
-      recorderMounted: false,
+      recorderLoaded: false,
       animationLoaded: false
     }
   },
@@ -103,15 +93,11 @@ export default {
     syncAnimation() {
       if (this.resourcesLoaded) {
         console.log('syncAnimation()')
-        this.isPlayingVideo = true
         const audioRecorder = this.$refs['audio-recorder']
         const animation = this.$refs['animation']
         console.assert(audioRecorder) // We require audio playback -- it's how we control playback.
         animation.playVisual(audioRecorder.getAudioTime)
       }
-    },
-    handleEvent() {
-      this.isPlayingVisual = false 
     },
     deleteVideo() {
       const animation = this.$refs['animation']
@@ -126,6 +112,8 @@ export default {
       }
     },
     async bindVariables() {
+      this.recorderLoaded = false 
+      this.animationLoaded = false 
       this.explanationId = this.$route.params.id
       const ref = db.collection('explanations').doc(this.$route.params.id)
       const explanationDoc = await ref.get() 
