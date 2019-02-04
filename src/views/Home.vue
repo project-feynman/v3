@@ -1,5 +1,7 @@
 <template>
     <div style="height: 100%;">
+
+        <!-- https://github.com/LingDingDong/feynman-mvp -->
         
         <!-- RICHARD FEYNMAN'S QUOTE -->
         <transition name="fade" @after-leave="transitionFinished = true">
