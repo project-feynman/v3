@@ -56,20 +56,18 @@
                 <template v-else>
 
                 <template style="margin: auto;">
-                  <!-- <v-btn @click="playVideo()">
-                    PLAY VIDEO
-                  </v-btn> -->
                   <v-btn @click="quickplay()">
                     PREVIEW
                   </v-btn>
                   <v-btn @click="retryAnswer()">
                     RETRY 
                   </v-btn>
-                  <!-- SAVE VIDEO-->
-                  <popup-button 
-                    fullscreen :explanationTitle="newTitle" 
-                    @input="newValue=> newTitle = newValue" 
-                    @pre-save-explanation="handleSaving()"
+                  <v-btn @click="saveVideoPopup = true" class="pink white--text">
+                    SAVE VIDEO
+                  </v-btn>
+                  <save-video-popup v-model="saveVideoPopup"
+                                    @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+                                    fullscreen
                   />
               </template>
                 </template>
@@ -109,7 +107,7 @@ import firebase from 'firebase/app'
 import 'firebase/firestore'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
-import PopupButton from '@/components/PopupButton.vue'
+import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
 import BetaPopupButton from '@/components/BetaPopupButton.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import VoiceChat from '@/components/VoiceChat.vue'
@@ -122,7 +120,7 @@ import { mapState } from 'vuex'
 export default {
   components: {
     Whiteboard,
-    PopupButton,
+    SaveVideoPopup,
     AudioRecorder,
     VoiceChat,
     BetaPopupButton,
@@ -135,6 +133,7 @@ export default {
   },
   data() {
     return {
+      saveVideoPopup: false,
       savePopup: false,
       whiteboardPopup: false,
       whiteboardReady: true,
@@ -263,13 +262,13 @@ export default {
         question: content 
       })
     },
-    async handleSaving() { 
+    async handleSaving(videoTitle) { 
       // save aspect ratio
       const whiteboard = this.$refs['whiteboard']
       const heightToWidthRatio = whiteboard.getHeightToWidthRatio()
       console.log('aspectRatio =', heightToWidthRatio)
       const docRef = await db.collection('explanations').add({
-        title: this.newTitle,
+        title: videoTitle,
         question: this.workspace.question,
         authorUid: this.user.uid,
         authorName: this.user.name,
