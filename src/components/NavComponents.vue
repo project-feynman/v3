@@ -23,10 +23,10 @@
               @click="showNumber = true">
           Report Error
         </v-btn>
-        <!-- <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn> -->
+
         <v-card>
           <v-card-title class="headline">
-            Call 503 250 3868
+            eltonlin@mit.edu
           </v-card-title>
 
           <v-card-text>
@@ -82,7 +82,7 @@
         </v-list-tile>
         
         <!-- FIRST SUBLIST -->
-        <v-list-group
+        <!-- <v-list-group
           sub-group
           no-action
         >
@@ -102,8 +102,9 @@
             <v-list-tile-title v-else>{{ workspace.ownerName }}</v-list-tile-title>
           </v-list-tile>
 
-        </v-list-group>
+        </v-list-group> -->
 
+        <!-- TEACHER LIST -->
         <v-list-group
           no-action
           sub-group
@@ -139,7 +140,7 @@
         value="true"
       >
         <v-list-tile slot="activator">
-          <v-list-tile-title>Saved Content</v-list-tile-title>
+          <v-list-tile-title>Shared Content</v-list-tile-title>
         </v-list-tile>
 
         <v-list-group
@@ -159,7 +160,7 @@
           </v-list-tile>
         </v-list-group>
 
-        <v-list-group
+        <!-- <v-list-group
           sub-group
           no-action
         >
@@ -177,7 +178,7 @@
               <v-icon v-text="crud[1]"></v-icon>
             </v-list-tile-action>
           </v-list-tile>
-        </v-list-group>
+        </v-list-group> -->
 
       </v-list-group>
 

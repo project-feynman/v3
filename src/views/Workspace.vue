@@ -1,15 +1,16 @@
 <template>
   <div id="workspace">
     <v-container fluid class="pa-0">
-           <!-- <v-btn @click="toggleDisableTouch()">
-                    DISABLE TOUCH
-                  </v-btn> -->
-      <chat :ownerUid="$route.params.id">
+      <!-- <chat :ownerUid="$route.params.id"> -->
       <template v-if="user && workspace">
-        <voice-chat :workspaceId="$route.params.id" :user="user"/>
-        <div class="text-xs-center">
-          <v-btn @click="whiteboardPopup = true">Use Whiteboard</v-btn>
+        <!-- <voice-chat :workspaceId="$route.params.id" :user="user"/> -->
+        <v-layout align-center justify-center row fill-height wrap>
+               <div class="text-xs-center">
+          <v-btn @click="whiteboardPopup = true" color="pink white--text">
+            Use Whiteboard
+          </v-btn>
         </div>
+          </v-layout>
         <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
           <v-card v-if="whiteboardPopup">
             <v-toolbar id="whiteboard-toolbar" color="grey">
@@ -18,9 +19,8 @@
               <v-toolbar-items>
                 <template v-if="!workspace.isAnswered">
                   <!-- SEE QUESTION BUTTON -->
-                  <v-btn color="primary" dark @click="dialog = true">SEE QUESTION</v-btn>
+                  <!-- <v-btn color="primary" dark @click="dialog = true">SEE QUESTION</v-btn>
                   <v-dialog v-model="dialog" max-width="290">
-                    <!-- <v-btn slot="activator" color="primary" dark>SEE QUESTION</v-btn> -->
                     <v-card>
                       <v-card-title class="headline">
                         Question
@@ -33,7 +33,7 @@
                         <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
                       </v-card-actions>
                     </v-card>
-                  </v-dialog>
+                  </v-dialog> -->
                   <v-btn @click="clearWhiteboard()">
                     CLEAR WHITEBOARD
                   </v-btn>
@@ -43,9 +43,9 @@
                   <v-btn v-else @click="stopRecording()" color="pink white--text">
                     STOP VIDEO
                   </v-btn>
-                  <v-btn @click="toggleDisableTouch()">
+                  <!-- <v-btn @click="toggleDisableTouch()">
                     {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
-                  </v-btn>
+                  </v-btn> -->
                   <v-btn @click="useEraser()">
                     USE ERASER
                   </v-btn>
@@ -55,43 +55,22 @@
                 </template>
                 <template v-else>
 
-                <template v-if="!workspace.answerAccepted" style="margin: auto;">
+                <template style="margin: auto;">
                   <v-btn @click="playVideo()">
                     PLAY VIDEO
                   </v-btn>
-                  <!-- <v-btn @click="quickplay()">
+                  <v-btn @click="quickplay()">
                     QUICKPLAY
-                  </v-btn> -->
+                  </v-btn>
                   <v-btn @click="retryAnswer()">
-                    RETRY ANSWER
+                    RETRY 
                   </v-btn>
                   <!-- SAVE VIDEO-->
-
                   <popup-button 
                     fullscreen :explanationTitle="newTitle" 
                     @input="newValue=> newTitle = newValue" 
                     @pre-save-explanation="handleSaving()"
                   />
-                  <v-btn @click="finishAnswering()">
-                    FINISH
-                  </v-btn>
-              </template>
-              <template v-else style="margin: auto;">
-                <v-btn @click="playVideo()" class="pink white--text">
-                  SEE ANSWER
-                </v-btn>
-                <v-btn @click="quickplay()">
-                  QUICKPLAY
-                </v-btn>
-                <!-- SAVE VIDEO-->
-                <popup-button 
-                  fullscreen :explanationTitle="newTitle" 
-                  @input="newValue=> newTitle = newValue" 
-                  @pre-save-explanation="handleSaving()"
-                />
-                <v-btn @click="clearWorkspace()">
-                  RESET WORKSPACE
-                </v-btn>
               </template>
                 </template>
                 <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
@@ -119,7 +98,7 @@
             </v-card>
           </v-dialog>
         </template>
-        </chat>
+        <!-- </chat> -->
     </v-container>
   </div>
 </template>
@@ -161,7 +140,7 @@ export default {
       whiteboardReady: true,
       isRecording: false,
       ownerUid: null,
-      disableTouch: false,
+      disableTouch: true,
       newQuestion: null,
       workspace: null,
       newTitle: null,
@@ -207,13 +186,6 @@ export default {
     },
     toggleDisableTouch() {
       this.disableTouch = !this.disableTouch
-    },
-    async finishAnswering() {
-      this.$root.$emit('open-navbar')
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
-        answerAccepted: true,
-      })
     },
     useEraser() {
       this.color = 'rgb(192, 230, 253)'

@@ -202,9 +202,7 @@ export default {
           if (e.touches.length == 1) {
             if (e.touches[0].touchType != 'stylus') {
               return
-            } else {
-              this.stylus = true 
-            }
+            } 
           }
         }
       }
