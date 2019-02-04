@@ -8,9 +8,8 @@ An application for helping streamline student requirements and staff efforts int
 
 ![Home Layout](docs\home_layout.PNG)
 
-Some of the most precious explanations occur when a TA is helping a student. However, year after year, those explanations are "lost", meaning other students lose out, and other teachers have to re-invent the wheel. 
-
-Feynman is platform where elegant explanations from Teaching Assistants are captured to benefit all students, forever.
+Many professors, TAs and students would make great explanation videos - but they don't. 
+Feynman is a visual, process-oriented Q&A platform where videos are created as by-products. 
 
 ## Team
 
@@ -21,8 +20,6 @@ Feynman is platform where elegant explanations from Teaching Assistants are capt
 * [hubierti3](https://github.com/hubierti3)
 * [Yang Yan](https://github.com/GilgameshxZero)
 * [Kirill Zabrodin](https://github.com/kirillzabrodin)
-
-
 
 ## User Stories
 
