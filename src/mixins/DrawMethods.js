@@ -26,7 +26,7 @@ export default {
 
       this.playProgress = setInterval(async () => {
         const currentTime = getTimeInSeconds()
-        console.log(currentTime, this.numStrokesDrawn, this.allStrokes.length)
+        // console.log(currentTime, this.numStrokesDrawn, this.allStrokes.length)
         const prevStartTime = (() => {
           if (this.numStrokesDrawn == 0) return 0
           

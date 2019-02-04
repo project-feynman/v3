@@ -19,8 +19,8 @@
                   <v-card color="blue-grey darken-2" class="white--text">
                     <v-card-title primary-title>
                       <div>
-                        <div class="headline">{{ teacher.name }}</div>
-                        <span>{{ teacher.description }}</span>
+                        <div class="headline">{{ teacher.description }}</div>
+                        <!-- <span>{{ teacher.description }}</span> -->
                       </div>
                     </v-card-title>
                     <v-card-actions>

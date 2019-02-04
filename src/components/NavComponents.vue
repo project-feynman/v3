@@ -15,7 +15,12 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
 
-      <!-- NAVBAR -->
+    
+      <new-class-popup v-model="newClassPopup"
+                       @create-class="courseNumber => createClass(courseNumber)">
+      
+      </new-class-popup>
+      <v-btn @click="newClassPopup = true" class="pink white--text">New Class</v-btn>
       <v-dialog v-model="dialog" max-width="290">
         <v-btn slot="activator"
               color="blue-grey"
@@ -194,10 +199,12 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 import PopupButton from '@/components/PopupButton.vue'
 import firebase from 'firebase/app'
+import NewClassPopup from '@/components/NewClassPopup.vue'
 
 export default {
   components: {
-    PopupButton
+    PopupButton,
+    NewClassPopup,
   },
   computed: {
     ...mapState(['user']),
@@ -210,6 +217,7 @@ export default {
   },
   data () {
     return {
+      newClassPopup: false,
       showNavbar: true,
       prev_teacherUid: null,
       teacherWorkspaces: null,
@@ -250,6 +258,14 @@ export default {
     }
   },
   methods: {
+    createClass(courseNumber) {
+      console.log('create-class')
+      const ref = db.collection('users').doc(this.user.uid) 
+      ref.update({
+        isTeacher: true,
+        description: courseNumber
+      })
+    },
     async signOut() {
       await firebase.auth().signOut()
     },

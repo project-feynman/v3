@@ -3,20 +3,9 @@
      <v-container fluid class="pa-0">
       <v-layout id="whiteboard-buttons-layout">
         <div style="margin: auto;">
-
-          <!-- PREVIEW REPLAY -->
-          <!--<v-btn :loading="isPlayingVideo"
-                 :disabled="isPlayingVideo"
-                 @click="playVideo()">
-            <span>PLAY VIDEO</span>
-            <span slot="loader">Replaying...</span>
-          </v-btn>-->
-
-          <!-- <v-btn @click="playVideo()">PLAY VIDEO</v-btn> -->
           <template v-if="user">
             <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
           </template>
-          <!--<v-btn @click="quickplay()">QUICKPLAY</v-btn>-->
           <!-- DIALOG -->
           <v-dialog v-model="dialog" max-width="290">
             <!-- SEE QUESTION -->
@@ -86,10 +75,8 @@ export default {
         }
       }
     },
-    resourcesLoaded: {
-      get() {
-        return this.recorderMounted && this.animationLoaded
-      }
+    resourcesLoaded() {
+      return this.recorderMounted && this.animationLoaded
     }
   },
   data() {
@@ -115,14 +102,11 @@ export default {
   methods: {
     syncAnimation() {
       if (this.resourcesLoaded) {
-        console.log("hi!")
+        console.log('syncAnimation()')
         this.isPlayingVideo = true
-
-        console.log(this.$refs)
         const audioRecorder = this.$refs['audio-recorder']
-        console.assert(audioRecorder) // We require audio playback -- it's how we control playback.
-
         const animation = this.$refs['animation']
+        console.assert(audioRecorder) // We require audio playback -- it's how we control playback.
         animation.playVisual(audioRecorder.getAudioTime)
       }
     },
@@ -148,9 +132,7 @@ export default {
       if (explanationDoc.exists) {
         this.explanation = explanationDoc.data()
       }
-      // this.$binding('explanation', db.collection('explanations').doc(this.$route.params.id))
-      // console.log('explanation document =', this.explanation.title)
-    },
+    }
   }
 }
 </script>

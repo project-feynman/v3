@@ -53,9 +53,8 @@ export default {
   methods: {
     saveAudio (docId) {
       // duplicate audio file 
-      console.log('duplicating audio file')
-      // save to random path 
       const storageRef = firebase.storage().ref()
+      // save to random path 
       const path = this.getRandomUID()
       const recordingRef = storageRef.child(`recordings/${path}`)
       const audioFile = this.recordings[0].blob 
@@ -85,7 +84,7 @@ export default {
             audioPath: path,
             audioURL: downloadURL
           })
-          this.$root.$emit('audio-uploaded')
+          this.$root.$emit('audio-uploaded', docId)
           console.log('upload was successful!')
         }
       )
@@ -93,7 +92,7 @@ export default {
     getAudioTime() {
       const audioElement = document.getElementById('audio-element')
       if (!audioElement) {
-        return 0;
+        return 0
       }
       return audioElement.currentTime
     },
