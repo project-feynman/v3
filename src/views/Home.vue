@@ -46,12 +46,12 @@
         </template>
 
         <!-- SIGN-IN BUTTONS -->
-        <template v-else>
+        <!-- <template v-else>
           <v-layout align-center justify-center row fill-height wrap>
              <v-btn @click="studentSignIn()" color="error" dark large>SIGN IN</v-btn>
              <v-btn @click="anonSignIn()" color="error" dark large>Anonymous</v-btn>
           </v-layout>
-        </template>
+        </template> -->
 
     </div>
 </template>
@@ -78,11 +78,11 @@ export default {
         description: 'You will be able to edit this soon!'
       })
     },
-    async studentSignIn() {
-      const provider = new firebase.auth.GoogleAuthProvider()
-      await firebase.auth().signInWithRedirect(provider)
-      // then main.js's onAuthStateChanged listener will dispatch an action
-    },
+    // async studentSignIn() {
+    //   const provider = new firebase.auth.GoogleAuthProvider()
+    //   await firebase.auth().signInWithRedirect(provider)
+    //   // then main.js's onAuthStateChanged listener will dispatch an action
+    // },
     async anonSignIn() {
       await firebase.auth().signInAnonymously()
     },
@@ -95,6 +95,7 @@ export default {
   },
   async created() {
     this.$binding('teachers', db.collection('users').where('isTeacher', '==', true))
+    await firebase.auth().signInAnonymously()
   }
 }
 </script>
