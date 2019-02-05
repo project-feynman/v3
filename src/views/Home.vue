@@ -49,6 +49,7 @@
         <template v-else>
           <v-layout align-center justify-center row fill-height wrap>
              <v-btn @click="studentSignIn()" color="error" dark large>SIGN IN</v-btn>
+             <v-btn @click="anonSignIn()" color="error" dark large>Anonymous</v-btn>
           </v-layout>
         </template>
 
@@ -81,7 +82,10 @@ export default {
       const provider = new firebase.auth.GoogleAuthProvider()
       await firebase.auth().signInWithRedirect(provider)
       // then main.js's onAuthStateChanged listener will dispatch an action
-    }
+    },
+    async anonSignIn() {
+      await firebase.auth().signInAnonymously()
+    },
   },
   data() {
     return {
