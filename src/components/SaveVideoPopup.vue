@@ -6,10 +6,21 @@
     <v-card>
       <v-card-text>
         <template v-if="!shareableURL">
-          <v-input>
+          <v-container align-center justify-center>
+            <v-layout>
+          <v-flex>
+            <v-text-field
+              label="Title"
+              v-model="videoTitle"
+              placeholder="e.g. Djikstra's Algorithm">
+            </v-text-field>
+          </v-flex>
+            </v-layout>
+          </v-container>
+          <!-- <v-input>
             <input v-focus placeholder="e.g. Djikstra" v-model="videoTitle">
-          </v-input>
-          <p>To save as explanation, enter a title above</p>
+          </v-input> -->
+          <!-- <p>To save as explanation, enter a title above</p> -->
         </template>
         <template v-else>
           <p>Shareable Video Link</p>
@@ -23,7 +34,7 @@
           <v-btn color="green darken-1"
                  flat="flat"
                  @click="handleClose()">
-            Close
+            CANCEL
           </v-btn>
 
           <v-btn
@@ -65,6 +76,9 @@ export default {
   },
   methods: {
     handleSave() {
+      if (!this.videoTitle) {
+        return 
+      }
       this.isSavingVideo = true 
       this.$emit('pre-save-explanation', this.videoTitle)
     },
