@@ -269,10 +269,10 @@ export default {
       console.log('aspectRatio =', heightToWidthRatio)
       const docRef = await db.collection('explanations').add({
         title: videoTitle,
-        question: this.workspace.question,
-        authorUid: this.user.uid,
-        authorName: this.user.name,
-        teacherUid: this.$route.params.teacher_id,
+        question: this.workspace.question || "Anonymous",
+        authorUid: this.user.uid || "Anonymous",
+        authorName: this.user.name || "Anonymous",
+        teacherUid: this.$route.params.teacher_id || "Anonymous",
         heightToWidthRatio
       })
       // now strokes can be saved as subcollections to that document 

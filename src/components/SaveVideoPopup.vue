@@ -13,7 +13,7 @@
         </template>
         <template v-else>
           <p>Shareable Video Link</p>
-          <p>{{ shareableURL }}</p>
+          <p id="link_url">{{ shareableURL }}</p>
         </template>
       </v-card-text>
 
@@ -23,7 +23,7 @@
           <v-btn color="green darken-1"
                  flat="flat"
                  @click="handleClose()">
-            CANCEL
+            Close
           </v-btn>
 
           <v-btn
@@ -34,9 +34,14 @@
           </v-btn>
         </template>
         <p v-else-if="isSavingVideo" class="pink--text">Saving video (this could take a while...)</p>
-        <v-btn v-else @click="$emit('input', !value)">
-          OK
-        </v-btn>
+        <template v-else>
+          <v-btn v-clipboard="returnLinkURL()">
+            Copy to clipboard
+          </v-btn>
+          <v-btn @click="$emit('input', !value)">
+            OK
+          </v-btn>
+        </template>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -66,6 +71,9 @@ export default {
     handleClose() {
       this.shareableURL = null 
       this.$emit('input', !this.value)
+    },
+    returnLinkURL() {
+      return this.shareableURL
     }
   },
 }
