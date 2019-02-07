@@ -146,7 +146,7 @@ export default {
       feedback: 'Tip: you can setup drawings before you start recording :]',
       dialog: false,
       loadCanvas: false,
-      color: '#A463BF',
+      color: '#F64272',
       lineWidth: 2,
       colors: ['#F64272', 'orange', '#A463BF']
     }
