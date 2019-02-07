@@ -13,7 +13,7 @@ export default new Router({
     },
     {
       path: '/:teacher_id',
-      component: () => import(/* webpackChunkName: "tutorial" */ './views/Schedule.vue') 
+      component: () => import(/* webpackChunkName: "tutorial" */ './views/Tutorial.vue') 
     },
     {
       path: '/:teacher_id/workspace/:id',

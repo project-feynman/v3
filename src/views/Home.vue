@@ -96,6 +96,7 @@ export default {
   async created() {
     this.$binding('teachers', db.collection('users').where('isTeacher', '==', true))
     await firebase.auth().signInAnonymously()
+    console.log('signed in anonymously')
   }
 }
 </script>

@@ -3,7 +3,7 @@ import './plugins/vuetify'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import './notifications'
+// import './notifications'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import VueFirestore from 'vue-firestore'
@@ -20,24 +20,12 @@ Vue.use(Clipboard)
 
 Vue.config.productionTip = false
 
-var db = firebase.firestore()
-var subscription = undefined
-
-// Register a global custom directive called `v-focus`
-Vue.directive('focus', {
-  // when the bound element is inserted into the DOM
-  inserted: function (el) {
-    el.focus()
-  },
-  update: function (el) {
-    el.focus()
-  }
-})
-
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
+    console.log('user is logged in')
     store.dispatch('handleUserLogic', user)
   } else {
+    console.log('user not logged in')
     // necessary for detecting when the user logs out
     store.commit('SET_USER', null)
   }
