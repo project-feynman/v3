@@ -1,7 +1,6 @@
 <template>
   <div id="workspace">
     <v-container fluid class="pa-0">
-      <!-- <chat :ownerUid="$route.params.id"> -->
       <template v-if="user && workspace">
         <!-- <voice-chat :workspaceId="$route.params.id" :user="user"/> -->
         <v-layout align-center justify-center row fill-height wrap>
@@ -18,26 +17,16 @@
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <template v-if="!workspace.isAnswered">
-                  <!-- SEE QUESTION BUTTON -->
-                  <!-- <v-btn color="primary" dark @click="dialog = true">SEE QUESTION</v-btn>
-                  <v-dialog v-model="dialog" max-width="290">
-                    <v-card>
-                      <v-card-title class="headline">
-                        Question
-                      </v-card-title>
-                      <v-card-text>
-                        {{ workspace.question }}
-                      </v-card-text>
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog> -->
+                  <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="55" 
+                            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }">
+                  </swatches>
+                  <v-btn @click="useEraser()">
+                    USE ERASER
+                  </v-btn>
                   <v-btn @click="clearWhiteboard()">
                     CLEAR WHITEBOARD
                   </v-btn>
-                  <v-btn v-if="!isRecording" :disabled="!whiteboardReady" @click="startRecording()" color="pink white--text">
+                  <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
                     START VIDEO
                   </v-btn>
                   <v-btn v-else @click="stopRecording()" color="pink white--text">
@@ -46,16 +35,9 @@
                   <!-- <v-btn @click="toggleDisableTouch()">
                     {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
                   </v-btn> -->
-                  <v-btn @click="useEraser()">
-                    USE ERASER
-                  </v-btn>
-                  <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="55" 
-                            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }">
-                  </swatches>
+           
                 </template>
                 <template v-else>
-
-                <template style="margin: auto;">
                   <v-btn @click="quickplay()">
                     PREVIEW
                   </v-btn>
@@ -69,7 +51,6 @@
                                     @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
                                     fullscreen
                   />
-              </template>
                 </template>
                 <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
               </v-toolbar-items>
@@ -96,22 +77,17 @@
             </v-card>
           </v-dialog>
         </template>
-        <!-- </chat> -->
     </v-container>
   </div>
 </template>
 
 <script>
-import TestCanvas from '@/components/TestCanvas.vue'
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
 import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
-import BetaPopupButton from '@/components/BetaPopupButton.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
-import VoiceChat from '@/components/VoiceChat.vue'
-import Chat from '@/components/Chat.vue'
 import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
@@ -122,11 +98,7 @@ export default {
     Whiteboard,
     SaveVideoPopup,
     AudioRecorder,
-    VoiceChat,
-    BetaPopupButton,
-    TestCanvas,
-    Swatches,
-    Chat
+    Swatches
   },
   computed: {
     ...mapState(['user'])
@@ -134,17 +106,10 @@ export default {
   data() {
     return {
       saveVideoPopup: false,
-      savePopup: false,
       whiteboardPopup: false,
-      whiteboardReady: true,
       isRecording: false,
-      ownerUid: null,
       disableTouch: true,
-      newQuestion: null,
       workspace: null,
-      newTitle: null,
-      feedback: 'Tip: you can setup drawings before you start recording :]',
-      dialog: false,
       loadCanvas: false,
       color: '#F64272',
       lineWidth: 2,
@@ -156,17 +121,6 @@ export default {
       handler: 'bindVariables',
       immediate: true
     },
-    user() {
-      if (this.user) {
-        const ref = db.collection('workspaces').doc(this.$route.params.id).collection('participants').doc(this.user.uid)
-        const simpleUser = {
-          name: this.user.name,
-          uid: this.user.uid,
-					timestamp: Math.round((new Date()).getTime() / 1000)
-        }
-        ref.set(simpleUser) 
-      }
-    },
     color() {
       // bad - high surface area for bugs 
       if (this.color != 'rgb(192, 230, 253)') {
@@ -175,14 +129,13 @@ export default {
     }
   },
   created() {
-    setTimeout(() => this.loadCanvas = true, 2000)
+    // necessary for canvas to not be invisible during initial render
+    setTimeout(() => this.loadCanvas = true, 0)
   },
   methods: {
     clearWhiteboard() {
       const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        whiteboard.deleteStrokesSubcollection()
-      }
+      whiteboard.deleteStrokesSubcollection()
     },
     toggleDisableTouch() {
       this.disableTouch = !this.disableTouch
@@ -224,7 +177,7 @@ export default {
     },
     quickplay() {
       const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) { whiteboard.quickplay() }
+      whiteboard.quickplay() 
     },
     async saveFileReference({ url, path }) {
       const ref = db.collection('workspaces').doc(this.$route.params.id)
@@ -234,39 +187,12 @@ export default {
       })
     },
     bindVariables() {
-      this.ownerUid = this.$route.params.id
       const workspaceId = this.$route.params.id 
       this.$binding('workspace', db.collection('workspaces').doc(workspaceId))
     },
-    async clearWorkspace() {
-      // also update this because a new question is asked
-      const whiteboard = this.$refs['whiteboard']
-      if (whiteboard) {
-        whiteboard.deleteStrokesSubcollection()
-      }
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
-        question: '', 
-        isAnswered: false,
-        answerAccepted: false,
-      })
-    },
-    getHint() {
-      return 'After submitting the question, your TA will be notified to answer ASAP'
-    },
-    async submitQuestion() {
-      const content = this.newQuestion
-      this.newQuestion = null 
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
-        question: content 
-      })
-    },
     async handleSaving(videoTitle) { 
-      // save aspect ratio
       const whiteboard = this.$refs['whiteboard']
       const heightToWidthRatio = whiteboard.getHeightToWidthRatio()
-      console.log('aspectRatio =', heightToWidthRatio)
       const docRef = await db.collection('explanations').add({
         title: videoTitle,
         question: this.workspace.question || "Anonymous",
