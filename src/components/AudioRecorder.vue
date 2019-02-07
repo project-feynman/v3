@@ -17,7 +17,6 @@ import RecorderService from '@/shared/RecorderService.js'
 import utils from '@/shared/Utils'
 
 export default {
-  name: 'Test1',
   props: ['audioURL', 'audioPath'],
   filters: {
     fileSizeToHumanSize (val) {
@@ -38,9 +37,6 @@ export default {
     this.recorderSrvc = new RecorderService()
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
   },
-  // mounted() {
-  //   this.$emit('recorder-mounted')
-  // },
   watch: {
     audioURL: {
       handler: 'downloadAudioFile',

@@ -2,7 +2,6 @@
   <div id="workspace">
     <v-container fluid class="pa-0">
       <template v-if="user && workspace">
-        <!-- <voice-chat :workspaceId="$route.params.id" :user="user"/> -->
         <v-layout align-center justify-center row fill-height wrap>
           <div class="text-xs-center">
           <v-btn @click="whiteboardPopup = true" color="pink white--text">
@@ -35,7 +34,6 @@
                   <!-- <v-btn @click="toggleDisableTouch()">
                     {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
                   </v-btn> -->
-           
                 </template>
                 <template v-else>
                   <v-btn @click="quickplay()">

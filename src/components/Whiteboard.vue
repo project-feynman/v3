@@ -1,13 +1,6 @@
 <template>
   <div id="whiteboard">
     <div v-if="workspace" style="display: flex; justify-content: center;">
-      <!-- CLEAR WHITEBOARD -->
-        <!-- <v-btn :loading="isClearing"
-                :disabled="isClearing"
-                @click="initClearBoardLogic()"> 
-          <span>CLEAR WHITEBOARD</span>
-          <span slot="loader">Clearing...</span>
-        </v-btn> -->
       <slot>
 
       </slot>
@@ -56,15 +49,6 @@ export default {
         name: this.user.name,
         uid: this.user.uid
       }
-    },
-    isPlayingVideo: {
-      get() {
-        return this.isPlayingAudio || this.isPlayingVisual
-      },
-      set(isPlayingVideo) {
-        this.isPlayingAudio = true 
-        this.isPlayingVisual = true 
-      }
     }
   },
   data() {
@@ -72,8 +56,6 @@ export default {
       stylus: false, 
       allStrokes: [],
       currentStroke: [],
-      isPlayingVisual: false,
-      isPlayingAudio: false,
       canvas: null,
       ctx: null,
       isClearing: false,
@@ -97,6 +79,7 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
+    // for some reason, this is needed
     if (workspace) {
       if (!this.workspace.isAnswered) {
         this.initTouchEvents()
@@ -126,9 +109,7 @@ export default {
       clearInterval(this.timer)
     },
     async initReplayLogic() {
-      this.isReplaying = true
       await this.quickplay()
-      this.isReplaying = false 
     },
     initClearBoardLogic() {
       this.isClearing = true 
