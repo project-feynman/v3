@@ -1,80 +1,82 @@
 <template>
   <div id="workspace">
-    <v-container fluid class="pa-0">
-      <template v-if="user && workspace">
-        <v-layout align-center justify-center row fill-height wrap>
-          <div class="text-xs-center">
-          <v-btn @click="whiteboardPopup = true" color="pink white--text">
-            Use Whiteboard
-          </v-btn>
-        </div>
-          </v-layout>
-        <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
-          <v-card v-if="whiteboardPopup">
-            <v-toolbar id="whiteboard-toolbar" color="grey">
-              <v-toolbar-title class="white--text">Whiteboard</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <template v-if="!workspace.isAnswered">
-                  <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="55" 
-                            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }">
-                  </swatches>
-                  <v-btn @click="useEraser()">
-                    USE ERASER
-                  </v-btn>
-                  <v-btn @click="clearWhiteboard()">
-                    CLEAR WHITEBOARD
-                  </v-btn>
-                  <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
-                    START VIDEO
-                  </v-btn>
-                  <v-btn v-else @click="stopRecording()" color="pink white--text">
-                    STOP VIDEO
-                  </v-btn>
-                  <!-- <v-btn @click="toggleDisableTouch()">
-                    {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
-                  </v-btn> -->
-                </template>
-                <template v-else>
-                  <v-btn @click="quickplay()">
-                    PREVIEW
-                  </v-btn>
-                  <v-btn @click="retryAnswer()">
-                    RETRY 
-                  </v-btn>
-                  <v-btn @click="saveVideoPopup = true" class="pink white--text">
-                    SAVE VIDEO
-                  </v-btn>
-                  <save-video-popup v-model="saveVideoPopup"
-                                    @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-                                    fullscreen
-                  />
-                </template>
-                <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
-              </v-toolbar-items>
-            </v-toolbar>
-            <whiteboard
-                        v-if="loadCanvas"
-                        ref="whiteboard"
-                        :workspaceID="workspace['.key']"
-                        :workspace="workspace" 
-                        :isRecording="isRecording"
-                        :isAnswered="workspace.isAnswered"
-                        :disableTouch="disableTouch"
-                        :color="color"
-                        :colors="colors"
-                        :lineWidth="lineWidth">
-            </whiteboard>
-            <audio-recorder v-show="false"
-                            ref="audio-recorder"
-                            :audioURL="workspace.audioURL"
-                            :audioPath="workspace.audioPath"
-                            @start-recording="isRecording = true" 
-                            @end-recording="isRecording = false"
-                            @file-uploaded="audio => saveFileReference(audio)"/>
-            </v-card>
-          </v-dialog>
-        </template>
+    <v-container v-if="user && workspace" fluid class="pa-0">
+      <v-layout align-center justify-center row fill-height wrap>
+        <div class="text-xs-center">
+        <v-btn @click="whiteboardPopup = true" color="pink white--text">
+          USE WHITEBOARD
+        </v-btn>
+      </div>
+        </v-layout>
+      <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
+        <v-card v-if="whiteboardPopup">
+          <v-toolbar id="whiteboard-toolbar" color="grey">
+            <v-toolbar-title class="white--text">Whiteboard</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <template v-if="!workspace.isAnswered">
+                <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="55" 
+                          :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }">
+                </swatches>
+                <v-btn @click="useEraser()">
+                  USE ERASER
+                </v-btn>
+                <v-btn @click="clearWhiteboard()">
+                  CLEAR WHITEBOARD
+                </v-btn>
+                <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
+                  START VIDEO
+                </v-btn>
+                <v-btn v-else @click="stopRecording()" color="pink white--text">
+                  STOP VIDEO
+                </v-btn>
+                <!-- <v-btn @click="toggleDisableTouch()">
+                  {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
+                </v-btn> -->
+              </template>
+              <template v-else>
+                <v-btn @click="quickplay()">
+                  PREVIEW
+                </v-btn>
+                <v-btn @click="retryAnswer()">
+                  RETRY 
+                </v-btn>
+                <v-btn @click="saveVideoPopup = true" class="pink white--text">
+                  SAVE VIDEO
+                </v-btn>
+                <save-video-popup v-model="saveVideoPopup"
+                                  @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+                                  fullscreen
+                />
+              </template>
+              <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+          <whiteboard
+                      v-if="loadCanvas"
+                      ref="whiteboard"
+                      :workspaceID="workspace['.key']"
+                      :workspace="workspace" 
+                      :isRecording="isRecording"
+                      :isAnswered="workspace.isAnswered"
+                      :disableTouch="disableTouch"
+                      :color="color"
+                      :colors="colors"
+                      :lineWidth="lineWidth">
+          </whiteboard>
+          <audio-recorder v-show="false"
+                          ref="audio-recorder"
+                          :audioURL="workspace.audioURL"
+                          :audioPath="workspace.audioPath"
+                          @start-recording="isRecording = true" 
+                          @end-recording="isRecording = false"
+                          @file-uploaded="audio => saveFileReference(audio)"/>
+          </v-card>
+        </v-dialog>
+
+        <!-- VIDEO PLAYER -->
+        <video/>        
+
     </v-container>
   </div>
 </template>
@@ -86,6 +88,7 @@ import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
 import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
+import Video from '@/views/Video.vue'
 import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
@@ -96,7 +99,8 @@ export default {
     Whiteboard,
     SaveVideoPopup,
     AudioRecorder,
-    Swatches
+    Swatches,
+    Video
   },
   computed: {
     ...mapState(['user'])
