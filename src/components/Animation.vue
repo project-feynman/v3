@@ -1,8 +1,10 @@
 <template>
-  <!-- http://www.ckollars.org/canvas-two-coordinate-scales.html#scaling -->
-  <!-- https://zipso.net/a-simple-touchscreen-sketchpad-using-javascript-and-html5/ -->
   <div id="whiteboard">
-    <canvas id="myCanvas" :height="height"></canvas>
+    <canvas id="myCanvas" 
+            style="width: 100%;
+                   height: 80vh;
+                   background-color: rgb(192, 230, 253);">
+    </canvas>
   </div>
 </template>
 
@@ -12,14 +14,14 @@ import DrawMethods from '@/mixins/DrawMethods'
 import db from '@/database.js'
 
 export default {
-  props: ['explanationId'],
+  props: ['explanationId', 'strokes', 'workspaceId'],
   watch: {
     explanationId: {
       handler: 'initData',
+      immediate: true 
     },
     allStrokes() {
       if (this.playProgress) {
-        console.log('allStrokes changed - likely because video was switched - removing setInterval')
         clearInterval(this.playProgress)
         this.playProgress = null 
       }
@@ -37,10 +39,7 @@ export default {
   },
   data() {
     return {
-      height: 800,
       playProgress: null,
-      isPlayingVideo: false,
-      isPlayingVisual: false,
       isReplaying: false,
       allStrokes: [],
       timer: null,
@@ -55,20 +54,19 @@ export default {
       interval: null 
     }
   },
-  async created() {
-    this.initData()
-  },
   mounted() {
+    this.$root.$on('whiteboard-closed', () => {
+      console.log('whiteboard closed')
+      this.initData()
+    })
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
   },
   beforeDestroy() {
-    // clean up everything 
-    console.log('beforeDestroy()')
+    // clean up everything - needs testing
     if (this.playProgress) {
-      console.log('this.playProgress =', this.playProgress)
       clearInterval(this.playProgress)
     }
   },
@@ -82,31 +80,41 @@ export default {
       await db.collection('explanations').doc(this.explanationId).delete()
     },
     async initData() {
+      this.$emit('animation-loading')
+      let strokesRef
       if (this.ctx) {
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
-      this.allStrokes = [] 
-      let strokesRef
-      if (this.$route.params.id == 'OS63skygvahbbPwEK3LH') {
-        strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('strokeNumber', 'asc')
-      } else {
-        strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
-      } 
-      await this.$binding('allStrokes', strokesRef)
-      this.$root.$emit('finish-loading-animation')
-      this.drawStrokesInstantly()
-      this.$emit('animation-loaded')
-    },
+      if (this.strokes) {
+        console.log('strokes is defined')
+        this.allStrokes = strokes
+        this.$root.$emit('finish-loading-animation')
+        this.drawStrokesInstantly()
+        this.$emit('animation-loaded')
+      } else if (this.workspaceId) {
+        this.allStrokes = [] 
+        strokesRef = db.collection('workspaces').doc(this.workspaceId).collection('strokes').orderBy('startTime', 'asc')
+        await this.$binding('allStrokes', strokesRef)
+        this.$emit('animation-loaded')
+        console.log('workspace animation loaded!')
+      }
+      // old code
+      else {
+        this.allStrokes = [] 
+        if (this.$route.params.id == 'OS63skygvahbbPwEK3LH') {
+          strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('strokeNumber', 'asc')
+        } else {
+          strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
+        } 
+        await this.$binding('allStrokes', strokesRef)
+        this.$root.$emit('finish-loading-animation')
+        this.drawStrokesInstantly()
+        this.$emit('animation-loaded')
+      }
+    }
   }
 }
 </script>
 
-<style>
-#myCanvas {
-  width: 100%;
-  height: 70vh;
-  background-color: rgb(192, 230, 253);
-  cursor: crosshair;
-}
-</style>
+

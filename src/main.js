@@ -20,6 +20,8 @@ Vue.use(Clipboard)
 
 Vue.config.productionTip = false
 
+firebase.auth().signInAnonymously()
+
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     console.log('user is logged in')

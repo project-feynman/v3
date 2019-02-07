@@ -21,7 +21,7 @@ export default new Router({
     },
     {
       path: '/:teacher_id/answer/:id',
-      component: () => import(/* webpackChunkName: "video" */ './views/Video.vue')
+      component: () => import(/* webpackChunkName: "video" */ './views/DoodleVideo.vue')
     }
   ]
 })

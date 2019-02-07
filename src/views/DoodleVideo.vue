@@ -1,25 +1,45 @@
 <template>
-  <div class="answer">
+  <div class="video">
      <v-container fluid class="pa-0">
-      <v-layout id="whiteboard-buttons-layout">
+      <!-- ROW OF BUTTONS -->
+      <v-layout>
         <div style="margin: auto;">
           <template v-if="user">
             <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
           </template>
         </div>
       </v-layout>
+      <template>
+        <animation v-if="strokes"
+                   ref="animation" 
+                   @animation-loaded="animationLoaded=true"
+                   @animation-finished="handleEvent()"/>
 
-      <!-- ANIMATION -->
-      <animation ref="animation" 
-                 :explanationId="explanationId"
-                 @animation-loaded="animationLoaded=true"
-                 @animation-finished="handleEvent()"/>
+        <animation v-else-if="workspaceId"
+                   ref="animation" 
+                   :workspaceId="workspaceId"
+                   @animation-loading="animationLoaded=false"
+                   @animation-loaded="animationLoaded=true"
+                   @animation-finished="handleEvent()"/>
 
-      <template v-if="explanation">
-        <audio-recorder v-show="true"
+        <animation v-else
+                   ref="animation" 
+                   :explanationId="explanationId"
+                   @animation-loaded="animationLoaded=true"
+                   @animation-finished="handleEvent()"/>
+      </template>
+
+      <template>
+        <!-- QUICKFIX -->
+        <audio-recorder v-if="audioURL"
+                        ref="audio-recorder"
+                        :audioURL="audioURL"
+                        @recorder-loaded="recorderLoaded=true"/>
+
+        <!-- BACKWARDS COMPATIBILITY -->
+        <audio-recorder v-else-if="explanation"
                         ref="audio-recorder"
                         :audioURL="explanation.audioURL"
-                        :audioPath="explanation.audioPath"
                         @recorder-loaded="recorderLoaded=true"/>
       </template>
     </v-container>
@@ -33,6 +53,11 @@ import AudioRecorder from '@/components/AudioRecorder.vue'
 import { mapState } from 'vuex'
 
 export default {
+  props: {
+    strokes: Array,
+    audioURL: String,
+    workspaceId: String
+  },
   components: {
     Animation,
     AudioRecorder
@@ -56,9 +81,8 @@ export default {
       handler: 'bindVariables',
       immediate: true
     },
-    resourcesLoaded: {
-      handler: 'syncAnimation',
-    }
+    animationLoaded: 'syncAnimation',
+    recorderLoaded: 'syncAnimation'
   },
   methods: {
     syncAnimation() {

@@ -18,11 +18,6 @@ import utils from '@/shared/Utils'
 
 export default {
   props: ['audioURL', 'audioPath'],
-  filters: {
-    fileSizeToHumanSize (val) {
-      return utils.humanFileSize(val, true)
-    }
-  },
   data () {
     return {
       recordingInProgress: false,
@@ -43,10 +38,55 @@ export default {
       immediate: true,
     },
     cleanupWhenFinished (val) {
+      // recording cleanup
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
     }
   },
   methods: {
+    // METHODS NEEDED FOR PLAYBACK
+    getAudioTime() {
+      const audioElement = document.getElementById('audio-element')
+      if (!audioElement) {
+        return 0
+      }
+      return audioElement.currentTime
+    },
+    downloadAudioFile () {
+      console.log('downloadAudioFile')
+      if (this.audioURL) {
+        let xhr = new XMLHttpRequest()
+        xhr.responseType = 'blob'
+        xhr.onload = event => {
+          const blob = xhr.response;
+          const blobURL = URL.createObjectURL(blob)
+          const newRecording = {
+            blob,
+            ts: new Date().getTime(),
+            blobURL,
+            mimeType: blob.type,
+            size: blob.size,
+          }
+          if (this.recordings.length == 0) {
+            // initial load or just empty local data
+            this.recordings.push(newRecording)
+            this.$emit('recorder-loaded')
+          } else if (this.recordings[0].size != newRecording.size) {
+            // i.e. new recording was made OR this is a new workspace 
+            // outdated local data 
+            this.recordings = [] 
+            this.recordings.push(newRecording)
+            this.$emit('recorder-loaded')
+            // console.log('successfully synced audio file')
+          } else {
+            this.$emit('recorder-loaded')
+            // local file already in sync
+          }
+        }
+        xhr.open('GET', this.audioURL)
+        xhr.send()
+      }
+    },
+    // METHODS NEEDED FOR RECORDING
     saveAudio (docId) {
       // duplicate audio file 
       const storageRef = firebase.storage().ref()
@@ -84,47 +124,6 @@ export default {
           console.log('upload was successful!')
         }
       )
-    },
-    getAudioTime() {
-      const audioElement = document.getElementById('audio-element')
-      if (!audioElement) {
-        return 0
-      }
-      return audioElement.currentTime
-    },
-    downloadAudioFile () {
-      if (this.audioURL) {
-        let xhr = new XMLHttpRequest()
-        xhr.responseType = 'blob'
-        xhr.onload = event => {
-          const blob = xhr.response;
-          const blobURL = URL.createObjectURL(blob)
-          const newRecording = {
-            blob,
-            ts: new Date().getTime(),
-            blobURL,
-            mimeType: blob.type,
-            size: blob.size,
-          }
-          if (this.recordings.length == 0) {
-            // initial load or just empty local data
-            this.recordings.push(newRecording)
-            this.$emit('recorder-loaded')
-          } else if (this.recordings[0].size != newRecording.size) {
-            // i.e. new recording was made OR this is a new workspace 
-            // outdated local data 
-            this.recordings = [] 
-            this.recordings.push(newRecording)
-            this.$emit('recorder-loaded')
-            // console.log('successfully synced audio file')
-          } else {
-            this.$emit('recorder-loaded')
-            // local file already in sync
-          }
-        }
-        xhr.open('GET', this.audioURL)
-        xhr.send()
-      }
     },
     getRandomUID() {
       function s4() {

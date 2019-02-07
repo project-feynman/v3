@@ -24,15 +24,15 @@
                 <v-btn @click="clearWhiteboard()">
                   CLEAR WHITEBOARD
                 </v-btn>
+                <v-btn @click="toggleDisableTouch()">
+                  {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
+                </v-btn>
                 <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
                   START VIDEO
                 </v-btn>
                 <v-btn v-else @click="stopRecording()" color="pink white--text">
                   STOP VIDEO
                 </v-btn>
-                <!-- <v-btn @click="toggleDisableTouch()">
-                  {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
-                </v-btn> -->
               </template>
               <template v-else>
                 <v-btn @click="quickplay()">
@@ -49,11 +49,10 @@
                                   fullscreen
                 />
               </template>
-              <v-btn dark flat @click="whiteboardPopup = false">EXIT</v-btn>
+              <v-btn dark flat @click="handleExit()">EXIT</v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <whiteboard
-                      v-if="loadCanvas"
+          <whiteboard v-if="loadCanvas"
                       ref="whiteboard"
                       :workspaceID="workspace['.key']"
                       :workspace="workspace" 
@@ -73,10 +72,11 @@
                           @file-uploaded="audio => saveFileReference(audio)"/>
           </v-card>
         </v-dialog>
-
         <!-- VIDEO PLAYER -->
-        <video/>     
-
+        <doodle-video ref="doodle-video"
+                      :audioURL="workspace.audioURL" 
+                      :workspaceId="$route.params.id">     
+        </doodle-video>
     </v-container>
   </div>
 </template>
@@ -88,7 +88,7 @@ import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
 import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
-import Video from '@/views/Video.vue'
+import DoodleVideo from '@/views/DoodleVideo.vue'
 import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
@@ -100,7 +100,7 @@ export default {
     SaveVideoPopup,
     AudioRecorder,
     Swatches,
-    Video
+    DoodleVideo
   },
   computed: {
     ...mapState(['user'])
@@ -135,6 +135,10 @@ export default {
     setTimeout(() => this.loadCanvas = true, 0)
   },
   methods: {
+    handleExit() {
+      this.whiteboardPopup = false
+      this.$root.$emit('whiteboard-closed')
+    },
     clearWhiteboard() {
       const whiteboard = this.$refs['whiteboard']
       whiteboard.deleteStrokesSubcollection()

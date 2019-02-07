@@ -1,12 +1,8 @@
 <template>
   <div id="whiteboard">
-    <div v-if="workspace" style="display: flex; justify-content: center;">
-      <slot>
-
-      </slot>
-    </div>
-    <!-- CANVAS -->
-    <canvas id="myCanvas"></canvas>
+    <canvas id="myCanvas" 
+            style="height: 90vh; width: 100%; background-color: rgb(192, 230, 253);">
+    </canvas>
   </div>
 </template>
 
@@ -245,11 +241,3 @@ export default {
   }
 }
 </script>
-
-<style>
-#myCanvas {
-  width: 100%;
-  height: 90vh;
-  background-color: rgb(192, 230, 253);
-}
-</style>

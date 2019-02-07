@@ -1,8 +1,5 @@
 <template>
     <div style="height: 100%;">
-
-        <!-- https://github.com/LingDingDong/feynman-mvp -->
-        
         <!-- RICHARD FEYNMAN'S QUOTE -->
         <transition name="fade" @after-leave="transitionFinished = true">
           <template v-if="isFetchingUser">
@@ -22,7 +19,6 @@
                     <v-card-title primary-title>
                       <div>
                         <div class="headline">{{ teacher.description }}</div>
-                        <!-- <span>{{ teacher.description }}</span> -->
                       </div>
                     </v-card-title>
                     <v-card-actions>
@@ -33,26 +29,7 @@
               </v-layout>
             </template>
           </div>
-
-          <!-- <v-btn @click="becomeTeacher()"
-                 absolute
-                 dark
-                 fab
-                 bot
-                 right
-                 color="pink">
-            <v-icon>add</v-icon>
-          </v-btn> -->
         </template>
-
-        <!-- SIGN-IN BUTTONS -->
-        <!-- <template v-else>
-          <v-layout align-center justify-center row fill-height wrap>
-             <v-btn @click="studentSignIn()" color="error" dark large>SIGN IN</v-btn>
-             <v-btn @click="anonSignIn()" color="error" dark large>Anonymous</v-btn>
-          </v-layout>
-        </template> -->
-
     </div>
 </template>
 
@@ -77,15 +54,7 @@ export default {
         isTeacher: true,
         description: 'You will be able to edit this soon!'
       })
-    },
-    // async studentSignIn() {
-    //   const provider = new firebase.auth.GoogleAuthProvider()
-    //   await firebase.auth().signInWithRedirect(provider)
-    //   // then main.js's onAuthStateChanged listener will dispatch an action
-    // },
-    async anonSignIn() {
-      await firebase.auth().signInAnonymously()
-    },
+    }
   },
   data() {
     return {
@@ -95,8 +64,6 @@ export default {
   },
   async created() {
     this.$binding('teachers', db.collection('users').where('isTeacher', '==', true))
-    await firebase.auth().signInAnonymously()
-    console.log('signed in anonymously')
   }
 }
 </script>
