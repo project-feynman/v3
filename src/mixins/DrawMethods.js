@@ -28,7 +28,6 @@ export default {
         // console.log(currentTime, this.numStrokesDrawn, this.allStrokes.length)
         const prevStartTime = (() => {
           if (this.numStrokesDrawn == 0) return 0
-          
           const prevStartTime = this.allStrokes[this.numStrokesDrawn - 1].startTime
           if (prevStartTime) return prevStartTime
           return 0
@@ -48,7 +47,7 @@ export default {
             }
           }
         } else {
-          // Need to redraw from beginning
+          // need to redraw from beginning
           this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
           this.numStrokesDrawn = 0
           this.allStrokes.forEach(stroke => {

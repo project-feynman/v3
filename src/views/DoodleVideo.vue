@@ -4,7 +4,7 @@
       <v-layout>
         <div style="margin: auto;">
           <template v-if="user">
-            <v-btn v-if="user.name == 'Elton Lin'" @click="deleteVideo()">DELETE VIDEO</v-btn>
+            <v-btn @click="deleteVideo()">DELETE VIDEO</v-btn>
           </template>
         </div>
       </v-layout>

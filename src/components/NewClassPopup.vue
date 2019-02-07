@@ -1,7 +1,6 @@
 <template>
   <v-layout row justify-center>
     <v-dialog v-model="value" persistent max-width="600px">
-      <!-- <v-btn slot="activator" color="primary" dark>Open Dialog</v-btn> -->
       <v-card>
         <v-card-title>
           <span class="headline">New Class</span>

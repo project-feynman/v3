@@ -21,7 +21,6 @@
           <p id="link_url">{{ shareableURL }}</p>
         </template>
       </v-card-text>
-
       <v-card-actions>
         <v-spacer></v-spacer>
         <template v-if="!shareableURL && !isSavingVideo">
@@ -37,7 +36,7 @@
             SAVE
           </v-btn>
         </template>
-        <p v-else-if="isSavingVideo" class="pink--text">Saving video (this could take a while...)</p>
+        <p v-else-if="isSavingVideo" class="pink--text">Saving video...</p>
         <template v-else>
           <v-btn v-clipboard="returnLinkURL()">
             COPY TO CLIPBOARD

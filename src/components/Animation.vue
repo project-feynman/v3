@@ -90,7 +90,7 @@ export default {
         console.log('strokes is defined')
         this.allStrokes = strokes
         this.$root.$emit('finish-loading-animation')
-        this.drawStrokesInstantly()
+        // this.drawStrokesInstantly()
         this.$emit('animation-loaded')
       } else if (this.workspaceId) {
         this.allStrokes = [] 
@@ -109,7 +109,7 @@ export default {
         } 
         await this.$binding('allStrokes', strokesRef)
         this.$root.$emit('finish-loading-animation')
-        this.drawStrokesInstantly()
+        // this.drawStrokesInstantly()
         this.$emit('animation-loaded')
       }
     }
