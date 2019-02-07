@@ -1,7 +1,6 @@
 <template>
   <div class="video">
      <v-container fluid class="pa-0">
-      <!-- ROW OF BUTTONS -->
       <v-layout>
         <div style="margin: auto;">
           <template v-if="user">
@@ -34,6 +33,7 @@
         <audio-recorder v-if="audioURL"
                         ref="audio-recorder"
                         :audioURL="audioURL"
+                        @recorder-loading="recorderLoaded=false"
                         @recorder-loaded="recorderLoaded=true"/>
 
         <!-- BACKWARDS COMPATIBILITY -->
@@ -81,14 +81,19 @@ export default {
       handler: 'bindVariables',
       immediate: true
     },
-    animationLoaded: 'syncAnimation',
-    recorderLoaded: 'syncAnimation'
+    recorderLoaded() {
+      this.syncAnimation()
+    },
+    animationLoaded() {
+      this.syncAnimation()
+    }
   },
   methods: {
     syncAnimation() {
       if (this.resourcesLoaded) {
         const audioRecorder = this.$refs['audio-recorder']
         const animation = this.$refs['animation']
+        console.log('playVisual)')
         animation.playVisual(audioRecorder.getAudioTime)
       }
     },

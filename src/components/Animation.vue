@@ -2,7 +2,7 @@
   <div id="whiteboard">
     <canvas id="myCanvas" 
             style="width: 100%;
-                   height: 80vh;
+                   height: 75vh;
                    background-color: rgb(192, 230, 253);">
     </canvas>
   </div>

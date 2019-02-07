@@ -52,6 +52,7 @@ export default {
       return audioElement.currentTime
     },
     downloadAudioFile () {
+      this.$emit('recorder-loading')
       console.log('downloadAudioFile')
       if (this.audioURL) {
         let xhr = new XMLHttpRequest()

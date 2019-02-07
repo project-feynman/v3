@@ -19,7 +19,6 @@ export default {
       if (!this.allStrokes || this.allStrokes.length == 0) {
         return 
       }
-
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       this.isPlayingVideo = true
       this.numStrokesDrawn = 0
@@ -36,7 +35,7 @@ export default {
         })()
 
         if (prevStartTime < currentTime) {
-          // Continue drawing without clearing
+          // continue drawing without clearing
           for(; this.numStrokesDrawn < this.allStrokes.length;
                 this.numStrokesDrawn++) {
             const stroke = this.allStrokes[this.numStrokesDrawn]
@@ -59,9 +58,6 @@ export default {
             }
           })
         }
-
-        // console.log('animation finished')
-        // this.$emit('animation-finished')
 
         if (this.numStrokesDrawn == this.allStrokes.length) {
           console.log('finished all strokes')
