@@ -75,7 +75,7 @@
         </v-dialog>
 
         <!-- VIDEO PLAYER -->
-        <video/>        
+        <video/>     
 
     </v-container>
   </div>

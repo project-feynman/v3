@@ -19,40 +19,12 @@
       <new-class-popup v-model="newClassPopup"
                        @create-class="courseNumber => createClass(courseNumber)">
       </new-class-popup>
-      <v-btn
-             @click="newClassPopup = true" 
+      <v-btn @click="newClassPopup = true" 
              class="pink white--text">
-        New Class
+        NEW CLASS
       </v-btn>
       </template>
-      <!-- <v-dialog v-model="dialog" max-width="290">
-        <v-btn 
-              v-if="user"
-              slot="activator"
-              color="blue-grey"
-              class="white--text"
-              @click="showNumber = true">
-          Report Error
-        </v-btn>
-
-        <v-card>
-          <v-card-title class="headline">
-            eltonlin@mit.edu
-          </v-card-title>
-
-          <v-card-text>
-            For very professional help :].
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <slot name="button">
-
-            </slot>
-            <v-btn color="green darken-1" flat @click="dialog = false">OK</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog> -->
-
+ 
       <!-- <v-btn v-if="user && $route.path == '/'" 
              @click="signOut()">
         LOG OUT
@@ -79,10 +51,6 @@
         </v-list-tile-action>
         <v-list-tile-title>Home</v-list-tile-title>
       </v-list-tile>
-
-
-      
-
 
       <v-list-group
         prepend-icon="account_circle"
@@ -139,11 +107,7 @@
           </v-list-tile>
 
         </v-list-group>
-
-  
-
       </v-list-group>
-
 
 
       <v-list-group
@@ -282,7 +246,8 @@ export default {
       if (teacher_id) { // TA's office page 
         if (teacher_id != this.prev_teacherUid) {
           // update workspaces and teacher explanations
-          this.$binding('teacherWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', true))
+          // this.$binding('teacherWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', true))
+          this.$binding('teacherWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id))
           this.$binding('studentWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', false).orderBy('isAskingQuestion', 'desc'))
           this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', teacher_id))
           this.prev_teacherUid = teacher_id 

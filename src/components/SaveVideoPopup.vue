@@ -31,8 +31,7 @@
             CANCEL
           </v-btn>
 
-          <v-btn
-                 color="green darken-1"
+          <v-btn color="green darken-1"
                  flat="flat"
                  @click="handleSave()">
             SAVE
