@@ -3,9 +3,9 @@
      <v-container fluid class="pa-0">
       <v-layout>
         <div style="margin: auto;">
-          <template v-if="user">
+          <!-- <template v-if="user">
             <v-btn @click="deleteVideo()">DELETE VIDEO</v-btn>
-          </template>
+          </template> -->
         </div>
       </v-layout>
       <template>
