@@ -1,6 +1,5 @@
 <template>
   <div class="video">
-    <p v-if="user">{{ user }}</p>
      <v-container fluid class="pa-0">
       <v-layout>
         <div v-if="video" style="margin: auto;">
