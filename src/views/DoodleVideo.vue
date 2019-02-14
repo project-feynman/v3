@@ -1,9 +1,10 @@
 <template>
   <div class="video">
+    <p v-if="user">{{ user }}</p>
      <v-container fluid class="pa-0">
       <v-layout>
         <div v-if="video" style="margin: auto;">
-          <template v-if="user.uid == video.authorUid">
+          <template v-if="user.name == 'Elton Lin'">
             <v-btn @click="deleteVideo()" class="red">DELETE VIDEO</v-btn>
           </template>
         </div>

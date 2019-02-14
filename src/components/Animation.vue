@@ -79,7 +79,6 @@ export default {
       const classID = this.$route.params.teacher_id
       const videoID = this.$route.params.id
       db.collection('classes').doc(classID).collection('videos').doc(videoID).delete()
-      // cleanly delete later 
     },
     async initData() {
       this.$emit('animation-loading')

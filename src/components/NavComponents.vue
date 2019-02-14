@@ -21,6 +21,9 @@
              class="pink white--text">
         NEW CLASS
       </v-btn>
+      <v-btn v-if="user.name == 'Anonymous'" @click="loginWithGoogle()">
+        GOOGLE LOGIN
+      </v-btn>
       </template>
  
       <!-- <v-btn v-if="user && $route.path == '/'" 
@@ -165,6 +168,7 @@
 import { mapState } from 'vuex'
 import db from '@/database.js'
 import firebase from 'firebase/app'
+import 'firebase/auth'
 import NewClassPopup from '@/components/NewClassPopup.vue'
 
 export default {
@@ -212,14 +216,17 @@ export default {
   },
   methods: {
     createClass(courseNumber) {
-      console.log('create-class')
       const ref = db.collection('classes').doc(courseNumber) 
       ref.set({
         courseNumber
       })
     },
-    async signOut() {
-      await firebase.auth().signOut()
+    signOut() {
+      firebase.auth().signOut()
+    },
+    loginWithGoogle() {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider);
     },
     updateNavComponents() {
       const path = this.$route.path
