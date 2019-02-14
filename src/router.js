@@ -20,7 +20,7 @@ export default new Router({
       component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue') 
     },
     {
-      path: '/:teacher_id/answer/:id',
+      path: '/:teacher_id/:id',
       component: () => import(/* webpackChunkName: "video" */ './views/DoodleVideo.vue')
     }
   ]

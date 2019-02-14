@@ -1,28 +1,27 @@
 <template>
   <div id="workspace">
-    <v-container v-if="user && workspace" fluid class="pa-0">
+    <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
       <v-layout align-center justify-center row fill-height wrap>
         <div class="text-xs-center">
-        <v-btn @click="whiteboardPopup = true" color="pink white--text">
-          USE WHITEBOARD
-        </v-btn>
-      </div>
-        </v-layout>
+          <v-btn @click="whiteboardPopup = true" color="pink white--text">
+            USE WHITEBOARD
+          </v-btn>
+        </div>
+      </v-layout>
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
         <v-card v-if="whiteboardPopup">
           <v-toolbar id="whiteboard-toolbar" color="grey">
-            <v-toolbar-title class="white--text">Whiteboard</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <template v-if="!workspace.isAnswered">
+              <template v-if="!whiteboard.isAnswered">
                 <swatches v-model="color" :colors="colors" inline background-color="rgba(0, 0, 0, 0)" swatch-size="55" 
                           :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }">
                 </swatches>
                 <v-btn @click="useEraser()">
-                  USE ERASER
+                  ERASER
                 </v-btn>
                 <v-btn @click="clearWhiteboard()">
-                  CLEAR WHITEBOARD
+                  CLEAR BOARD
                 </v-btn>
                 <v-btn @click="toggleDisableTouch()">
                   {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
@@ -54,10 +53,10 @@
           </v-toolbar>
           <whiteboard v-if="loadCanvas"
                       ref="whiteboard"
-                      :workspaceID="workspace['.key']"
+                      :whiteboardID="workspace.whiteboardID"
                       :workspace="workspace" 
                       :isRecording="isRecording"
-                      :isAnswered="workspace.isAnswered"
+                      :isAnswered="whiteboard.isAnswered"
                       :disableTouch="disableTouch"
                       :color="color"
                       :colors="colors"
@@ -68,15 +67,15 @@
                           :audioURL="workspace.audioURL"
                           :audioPath="workspace.audioPath"
                           @start-recording="isRecording = true" 
-                          @end-recording="isRecording = false"
                           @file-uploaded="audio => saveFileReference(audio)"/>
+
           </v-card>
         </v-dialog>
         <!-- VIDEO PLAYER -->
-        <doodle-video ref="doodle-video"
+        <!-- <doodle-video ref="doodle-video"
                       :audioURL="workspace.audioURL" 
                       :workspaceId="$route.params.id">     
-        </doodle-video>
+        </doodle-video> -->
     </v-container>
   </div>
 </template>
@@ -91,6 +90,7 @@ import AudioRecorder from '@/components/AudioRecorder.vue'
 import DoodleVideo from '@/views/DoodleVideo.vue'
 import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
+import slugify from 'slugify'
 
 import { mapState } from 'vuex'
 
@@ -110,8 +110,10 @@ export default {
       saveVideoPopup: false,
       whiteboardPopup: false,
       isRecording: false,
-      disableTouch: true,
+      disableTouch: false,
       workspace: null,
+      whiteboard: null,
+      whiteboardRef: null,
       loadCanvas: false,
       color: '#F64272',
       lineWidth: 2,
@@ -153,8 +155,7 @@ export default {
     async retryAnswer() {
       const whiteboard = this.$refs['whiteboard']
       whiteboard.currentTime = 0 
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
+      await this.whiteboardRef.update({
         isAnswered: false
       })
     },
@@ -164,13 +165,12 @@ export default {
       audioRecorder.startRecording()
     },
     stopRecording() {
+      this.isRecording = false
       const whiteboard = this.$refs['whiteboard']
       const audioRecorder = this.$refs['audio-recorder']
       whiteboard.removeTouchEvents()
       audioRecorder.stopRecording()
-      this.isRecording = false
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      ref.update({
+      this.whiteboardRef.update({
         isAnswered: true
       })
     },
@@ -179,38 +179,48 @@ export default {
       const whiteboard = this.$refs['whiteboard']
       whiteboard.sortStrokesByTimestamp()
       whiteboard.playVisual(audioRecorder.getAudioTime)
-      if (audioRecorder) { audioRecorder.playAudio() } 
+      audioRecorder.playAudio()
     },
     quickplay() {
       const whiteboard = this.$refs['whiteboard']
       whiteboard.quickplay() 
     },
     async saveFileReference({ url, path }) {
-      const ref = db.collection('workspaces').doc(this.$route.params.id)
-      await ref.update({
+      // console.log('saveFileReference()')
+      await this.whiteboardRef.update({
         audioURL: url,
         audioPath: path
       })
     },
-    bindVariables() {
-      const workspaceId = this.$route.params.id 
-      this.$binding('workspace', db.collection('workspaces').doc(workspaceId))
+    async bindVariables() {
+      const userUID = this.$route.params.id 
+      const classID = this.$route.params.teacher_id 
+      await this.$binding('workspace', db.collection('classes').doc(classID).collection('workspaces').doc(userUID))
+      this.whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
+      this.$binding('whiteboard', this.whiteboardRef) 
     },
     async handleSaving(videoTitle) { 
       const whiteboard = this.$refs['whiteboard']
-      const heightToWidthRatio = whiteboard.getHeightToWidthRatio()
-      const docRef = await db.collection('explanations').add({
+      const classID = this.$route.params.teacher_id
+      const videoID = slugify(videoTitle, {
+        replacement: '-',
+        lower: true
+      })
+      const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
+      docRef.set({
         title: videoTitle,
-        question: this.workspace.question || "Anonymous",
+        whiteboardID: this.workspace.whiteboardID,
         authorUid: this.user.uid || "Anonymous",
         authorName: this.user.name || "Anonymous",
-        teacherUid: this.$route.params.teacher_id || "Anonymous",
-        heightToWidthRatio
       })
       // now strokes can be saved as subcollections to that document 
       const audioRecorder = this.$refs['audio-recorder']
-      audioRecorder.saveAudio(docRef.id)
-      whiteboard.saveStrokes(docRef.id)
+      const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid) // alright this is going to be awesome
+      workspaceRef.update({
+        whiteboardID: newWhiteboardRef.id
+      })
+      this.$root.$emit('audio-uploaded', docRef.id)
     }
   }
 }

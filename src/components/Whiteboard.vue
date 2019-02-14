@@ -16,13 +16,13 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth', 'workspaceID'],
+  props: ['workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth', 'whiteboardID'],
   components: {
     Swatches
   },
   mixins: [DrawMethods],
   watch: {
-    workspaceID: {
+    whiteboardID: {
       handler: 'initData',
     },
     isRecording() {
@@ -49,6 +49,7 @@ export default {
   },
   data() {
     return {
+      strokesRef: null,
       stylus: false, 
       allStrokes: [],
       currentStroke: [],
@@ -69,6 +70,10 @@ export default {
       idx: 0,
       interval: null 
     }
+  },
+  created() {
+    this.strokesRef = db.collection('whiteboards').doc(this.whiteboardID).collection('strokes')
+    // this.strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
   },
   mounted() {
     this.canvas = document.getElementById('myCanvas')
@@ -112,6 +117,7 @@ export default {
       this.deleteStrokesSubcollection()
       this.allStrokes = [] 
     },
+    // might not be necessary anymore in the new architecture 
     saveStrokes(explanationId) {
       const explanationRef = db.collection('explanations').doc(explanationId).collection('strokes')
       this.allStrokes.forEach(stroke => {
@@ -128,8 +134,8 @@ export default {
       this.addStrokesListener() 
     },
     addStrokesListener() {
-      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes').orderBy('strokeNumber')
-      this.unsubscribe = strokesRef.onSnapshot(snapshot => {
+      // const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes').orderBy('strokeNumber')
+      this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
             const stroke = change.doc.data()
@@ -162,9 +168,9 @@ export default {
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
-      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
+      // const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
-        strokesRef.doc(`${i}`).delete()
+        this.strokesRef.doc(`${i}`).delete()
       }
     },
     convertAndSavePoint(x, y) {
@@ -227,8 +233,8 @@ export default {
       stroke.points = this.currentStroke
       // save 
       this.allStrokes.push(stroke)
-      const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
-      strokesRef.doc(`${strokeNumber}`).set(stroke)
+      // const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
+      this.strokesRef.doc(`${strokeNumber}`).set(stroke)
       // reset 
       this.currentStroke = []
       this.lastX = -1

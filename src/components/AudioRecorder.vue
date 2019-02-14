@@ -30,12 +30,13 @@ export default {
   },
   created () {
     this.recorderSrvc = new RecorderService()
+    // this is the key thing - this will trigger onNewRecording - always remember this line!
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
   },
   watch: {
     audioURL: {
       handler: 'downloadAudioFile',
-      immediate: true,
+      immediate: true
     },
     cleanupWhenFinished (val) {
       // recording cleanup
@@ -140,14 +141,14 @@ export default {
       this.recorderSrvc.config.createDynamicsCompressorNode = this.addDynamicsCompressor
       this.recorderSrvc.startRecording()
         .then(() => this.recordingInProgress = true)
-        .catch(error => alert('Exception while start recording: ' + error.message))
+        .catch(error => alert('Recording error: ' + error.message))
     },
     stopRecording () {
-      this.$emit('end-recording')
+      // this.$emit('end-recording')
       this.recorderSrvc.stopRecording()
       this.recordingInProgress = false
     },
-    onNewRecording (evt) {
+    async onNewRecording (evt) {
       // replace existing recording 
       this.recordings = [] 
       this.recordings.push(evt.detail.recording)
@@ -161,27 +162,20 @@ export default {
         // console.log('new recording will replace existing recording on the Cloud')
       } else {
         path = this.getRandomUID()
+        console.log('there is no path, generating random UID')
         recordingRef = storageRef.child(`recordings/${path}`)
       }
       // upload blob 
       const audioFile = this.recordings[0].blob 
-      let uploadTask = recordingRef.put(audioFile)
+      const uploadTask = recordingRef.put(audioFile)
       uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
-        snapshot => {
-          let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-          // console.log('Upload is ' + progress + '% done')
-          switch (snapshot.state) {
-            case firebase.storage.TaskState.PAUSED:
-              // console.log('Upload is paused')
-              break
-            case firebase.storage.TaskState.RUNNING: 
-              // console.log('Upload is running')
-              break
-          }
-        }, error => console.log('error =', error), async () => {
-        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
-        this.$emit('file-uploaded', { url: downloadURL, path })
-      })
+        snapshot => {}, 
+        error => console.log('error =', error), 
+        async () => {
+          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
+          this.$emit('file-uploaded', { url: downloadURL, path })
+        }
+      )
     }
   }
 }

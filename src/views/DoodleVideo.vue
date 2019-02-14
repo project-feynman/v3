@@ -2,10 +2,10 @@
   <div class="video">
      <v-container fluid class="pa-0">
       <v-layout>
-        <div style="margin: auto;">
-          <!-- <template v-if="user">
-            <v-btn @click="deleteVideo()">DELETE VIDEO</v-btn>
-          </template> -->
+        <div v-if="video" style="margin: auto;">
+          <template v-if="user.uid == video.authorUid">
+            <v-btn @click="deleteVideo()" class="red">DELETE VIDEO</v-btn>
+          </template>
         </div>
       </v-layout>
       <template>
@@ -21,7 +21,7 @@
                    @animation-loaded="animationLoaded=true"
                    @animation-finished="handleEvent()"/>
 
-        <animation v-else
+        <animation v-else-if="explanation"
                    ref="animation" 
                    :explanationId="explanationId"
                    @animation-loaded="animationLoaded=true"
@@ -70,6 +70,7 @@ export default {
   },
   data() {
     return {
+      video: null,
       explanationId: null,
       explanation: null, 
       recorderLoaded: false,
@@ -93,16 +94,17 @@ export default {
       if (this.resourcesLoaded) {
         const audioRecorder = this.$refs['audio-recorder']
         const animation = this.$refs['animation']
-        console.log('playVisual)')
         animation.playVisual(audioRecorder.getAudioTime)
       }
     },
     deleteVideo() {
+      // delete the video document
+      // delete the strokes
+      // delete the audio 
       const animation = this.$refs['animation']
       if (animation) {
         animation.handleDeletion()
       }
-      // delete audio too
     },
     quickplay() {
       const animation = this.$refs['animation']
@@ -111,12 +113,19 @@ export default {
     async bindVariables() {
       this.recorderLoaded = false 
       this.animationLoaded = false 
-      this.explanationId = this.$route.params.id
-      const ref = db.collection('explanations').doc(this.$route.params.id)
-      const explanationDoc = await ref.get() 
-      if (explanationDoc.exists) {
-        this.explanation = explanationDoc.data()
+      const classID = this.$route.params.teacher_id
+      // fetch video doc 
+      const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
+      const videoDoc = await ref.get()
+      this.video = videoDoc.data()
+      this.explanationId = this.video.whiteboardID
+      // now fetch whiteboard 
+      const whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
+      const whiteboardDoc = await whiteboardRef.get() 
+      if (whiteboardDoc.exists) {
+        this.explanation = whiteboardDoc.data()
       }
+
     }
   }
 }

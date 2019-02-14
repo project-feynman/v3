@@ -26,28 +26,23 @@ export default {
   methods: {
     async initWorkspace() {
       if (!this.isFetchingUser && this.user) {
-        const teacherUid = this.$route.params.teacher_id
-        const userWorkspaceId = this.user.uid + '-' + teacherUid 
-        const ref = db.collection('workspaces').doc(userWorkspaceId)
+        const classID = this.$route.params.teacher_id
+        const ref = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
         const workspace = await ref.get()
         if (!workspace.exists) {
+          // create a whiteboard 
+          const whiteboardRef = await db.collection('whiteboards').add({})
           let workspace = {
             ownerName: this.user.name,
-            ownerUid: this.user.uid,
-            teacherUid: this.$route.params.teacher_id,
-            isOffice: false,
-          }
-          this.feedback = this.user 
-          if (this.user.isTeacher && this.user.uid == this.$route.params.teacher_id) {
-            workspace.isOffice = true 
+            ownerUID: this.user.uid,
+            whiteboardID: whiteboardRef.id 
           }
           await ref.set(workspace)
-          console.log('successfully created new workspace')
           this.feedback = 'successfully created a new workspace for you!'
         } else {
           console.log('redirecting to the user workspace')
         }
-        this.$router.push(`/${teacherUid}/workspace/${userWorkspaceId}`)
+        this.$router.push(`/${classID}/workspace/${this.user.uid}`)
       }
     }
   }

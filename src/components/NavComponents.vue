@@ -7,12 +7,10 @@
       <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/>
 
       <!-- fix this section -->
-      <v-toolbar-title v-if="!$route.params.teacher_id" @click="$router.push('/')" class="headline text-uppercase">
-        Feynman
+      <v-toolbar-title @click="$router.push('/')" class="headline text-uppercase">
+        {{ $route.params.teacher_id ? $route.params.teacher_id : "Feynman" }}
       </v-toolbar-title>
-      <v-toolbar-title v-else @click="$router.push('/')" class="headline text-uppercase">
-        Feynman
-      </v-toolbar-title>
+
       <v-spacer></v-spacer>
 
       <template v-if="user && $route.path == '/'">
@@ -109,7 +107,6 @@
         </v-list-group>
       </v-list-group>
 
-
       <v-list-group
         prepend-icon="library_books"
         value="true"
@@ -130,7 +127,7 @@
           <v-list-tile
             v-for="explanation in teacherExplanations"
             :key="explanation['.key']"
-            router :to="`/${teacherUid}/answer/${explanation['.key']}`">
+            router :to="`/${teacherUid}/${explanation['.key']}`">
             <v-list-tile-title>{{ explanation.title }}</v-list-tile-title>
           </v-list-tile>
         </v-list-group>
@@ -197,20 +194,8 @@ export default {
       drawerOpen: false,
       clickedButtonStateName: null,
       loading: false,
-      loading2: false,
-      loading3: false,
       loadingAnimation: true,
       dialog: false,
-       admins: [
-        ['Management', 'people_outline'],
-        ['Settings', 'settings']
-      ],
-      cruds: [
-        ['Create', 'add'],
-        ['Read', 'insert_drive_file'],
-        ['Update', 'update'],
-        ['Delete', 'delete']
-      ]
     }
   },
   watch: {
@@ -228,10 +213,9 @@ export default {
   methods: {
     createClass(courseNumber) {
       console.log('create-class')
-      const ref = db.collection('users').doc(this.user.uid) 
-      ref.update({
-        isTeacher: true,
-        description: courseNumber
+      const ref = db.collection('classes').doc(courseNumber) 
+      ref.set({
+        courseNumber
       })
     },
     async signOut() {
@@ -241,15 +225,16 @@ export default {
       const path = this.$route.path
       const pathParts = path.split('/')
       const teacher_id = this.$route.params.teacher_id
+      const classID = this.$route.params.teacher_id
       // sidenav content should not reload everytime the user navigates between the workspaces, but should update
       // everytime the user visits a different TA page
       if (teacher_id) { // TA's office page 
         if (teacher_id != this.prev_teacherUid) {
           // update workspaces and teacher explanations
           // this.$binding('teacherWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', true))
-          this.$binding('teacherWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id))
-          this.$binding('studentWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', false).orderBy('isAskingQuestion', 'desc'))
-          this.$binding('teacherExplanations', db.collection('explanations').where('teacherUid', '==', teacher_id))
+          this.$binding('teacherWorkspaces', db.collection('classes').doc(classID).collection('workspaces'))
+          // this.$binding('studentWorkspaces', db.collection('workspaces').where('teacherUid', '==', teacher_id).where('isOffice', '==', false).orderBy('isAskingQuestion', 'desc'))
+          this.$binding('teacherExplanations', db.collection('classes').doc(classID).collection('videos'))
           this.prev_teacherUid = teacher_id 
           setTimeout(() => this.drawerOpen = true, 0) // quick-fix for whiteboard touch detection offset bug 
         }

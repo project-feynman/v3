@@ -18,11 +18,11 @@
                   <v-card color="blue-grey darken-2" class="white--text">
                     <v-card-title primary-title>
                       <div>
-                        <div class="headline">{{ teacher.description }}</div>
+                        <div class="headline">{{ teacher.courseNumber }}</div>
                       </div>
                     </v-card-title>
                     <v-card-actions>
-                      <v-btn flat dark @click="$router.push(teacher.uid)">Enter</v-btn>
+                      <v-btn flat dark @click="$router.push(teacher.courseNumber)">Enter</v-btn>
                     </v-card-actions>
                   </v-card>
                 </v-flex>
@@ -63,7 +63,7 @@ export default {
     }
   },
   async created() {
-    this.$binding('teachers', db.collection('users').where('isTeacher', '==', true))
+    this.$binding('teachers', db.collection('classes'))
   }
 }
 </script>

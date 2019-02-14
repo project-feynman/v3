@@ -56,7 +56,6 @@ export default {
   },
   mounted() {
     this.$root.$on('whiteboard-closed', () => {
-      console.log('whiteboard closed')
       this.initData()
     })
     this.canvas = document.getElementById('myCanvas')
@@ -76,8 +75,11 @@ export default {
       await this.quickplay()
       this.isReplaying = false 
     },
-    async handleDeletion() {
-      await db.collection('explanations').doc(this.explanationId).delete()
+    handleDeletion() {
+      const classID = this.$route.params.teacher_id
+      const videoID = this.$route.params.id
+      db.collection('classes').doc(classID).collection('videos').doc(videoID).delete()
+      // cleanly delete later 
     },
     async initData() {
       this.$emit('animation-loading')
@@ -105,7 +107,8 @@ export default {
         if (this.$route.params.id == 'OS63skygvahbbPwEK3LH') {
           strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('strokeNumber', 'asc')
         } else {
-          strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
+          strokesRef = db.collection('whiteboards').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
+          // strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
         } 
         await this.$binding('allStrokes', strokesRef)
         this.$root.$emit('finish-loading-animation')
