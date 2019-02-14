@@ -21,9 +21,9 @@
              class="pink white--text">
         NEW CLASS
       </v-btn>
-      <v-btn v-if="user.name == 'Anonymous'" @click="loginWithGoogle()">
+      <!-- <v-btn v-if="user.name == 'Anonymous'" @click="loginWithGoogle()">
         GOOGLE LOGIN
-      </v-btn>
+      </v-btn> -->
       </template>
  
       <!-- <v-btn v-if="user && $route.path == '/'" 
