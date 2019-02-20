@@ -1,35 +1,36 @@
 <template>
-    <div style="height: 100%;">
+    <div style="height: 90%;">
         <!-- RICHARD FEYNMAN'S QUOTE -->
-        <transition name="fade" @after-leave="transitionFinished = true">
-          <template v-if="isFetchingUser">
-            <v-layout align-center justify-center row fill-height wrap>
+        <transition name="fade" mode="out-in" @after-leave="transitionFinished = true">
+          <!-- <template v-if="isFetchingUser"> -->
+            <v-layout v-if="isFetchingUser" key="quote" align-center justify-center row fill-height wrap>
               <blockquote class="my-quote blockquote text-md-center">"If you can't explain it simply, you don't understand it." - Richard Feynman</blockquote>
             </v-layout>
-          </template>
-        </transition>
+          <!-- </template> -->
 
-        <!-- LIST OF TEACHERS -->
-        <template v-if="user">
-          <div class="responsive-grid mt-5">
-            <template v-for="teacher in teachers">
-              <v-layout :key="teacher.uid">
-                <v-flex>
-                  <v-card color="blue-grey darken-2" class="white--text">
-                    <v-card-title primary-title>
-                      <div>
-                        <div class="headline">{{ teacher.courseNumber }}</div>
-                      </div>
-                    </v-card-title>
-                    <v-card-actions>
-                      <v-btn flat dark @click="$router.push(teacher.courseNumber)">Enter</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                </v-flex>
-              </v-layout>
-            </template>
-          </div>
-        </template>
+                  <!-- LIST OF TEACHERS -->
+          <!-- <template v-else> -->
+            <div v-else key="class-list" class="responsive-grid mt-5">
+              <template v-for="teacher in teachers">
+                <v-layout :key="teacher.uid">
+                  <v-flex>
+                    <v-card color="blue-grey darken-2" class="white--text">
+                      <v-card-title primary-title>
+                        <div>
+                          <div class="headline">{{ teacher.courseNumber }}</div>
+                        </div>
+                      </v-card-title>
+                      <v-card-actions>
+                        <v-btn flat dark @click="$router.push(teacher.courseNumber)">Enter</v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-flex>
+                </v-layout>
+              </template>
+            </div>
+          <!-- </template> -->
+
+        </transition>
     </div>
 </template>
 
@@ -74,7 +75,7 @@ export default {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 1.0s;
+  transition: opacity 0.7s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
