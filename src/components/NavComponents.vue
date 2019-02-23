@@ -26,10 +26,10 @@
       </v-btn> -->
       </template>
  
-      <!-- <v-btn v-if="user && $route.path == '/'" 
+      <v-btn v-if="user && $route.path == '/'" 
              @click="signOut()">
         LOG OUT
-      </v-btn> -->
+      </v-btn>
 
       <!-- loading indicator -->
       <v-progress-linear v-if="isLoading" 

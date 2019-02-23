@@ -2,7 +2,7 @@
   <div class="video">
      <v-container fluid class="pa-0">
       <v-layout>
-        <div v-if="video" style="margin: auto;">
+        <div v-if="video && user" style="margin: auto;">
           <template v-if="user.name == 'Elton Lin'">
             <v-btn @click="deleteVideo()" class="red">DELETE VIDEO</v-btn>
           </template>
