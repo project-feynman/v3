@@ -4,10 +4,10 @@
     <v-toolbar app v-if="showNavbar" extended extension-height="2" id="navbar">
 
       <!-- open navbar button -->
-      <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/>
+      <!-- <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/> -->
 
       <!-- fix this section -->
-      <v-toolbar-title @click="$router.push('/')" class="headline text-uppercase">
+      <v-toolbar-title class="headline text-uppercase">
         {{ $route.params.teacher_id ? $route.params.teacher_id : "Feynman" }}
       </v-toolbar-title>
 
@@ -21,9 +21,7 @@
              class="pink white--text">
         NEW CLASS
       </v-btn>
-      <!-- <v-btn v-if="user.name == 'Anonymous'" @click="loginWithGoogle()">
-        GOOGLE LOGIN
-      </v-btn> -->
+
       </template>
  
       <v-btn v-if="user && $route.path == '/'" 
@@ -84,48 +82,36 @@
 
         </v-list-group> -->
 
-        <!-- TEACHER LIST -->
-        <v-list-group
-          no-action
-          sub-group
-          value="true"
-        >
 
-         <v-list-tile slot="activator">
-            <v-list-tile-title>Teachers</v-list-tile-title>
-          </v-list-tile>
-
-          <v-list-tile
-            v-for="workspace in teacherWorkspaces"
-            :key="workspace['.key']"
-            router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`"
+          <v-list-tile v-for="(workspace, idx) in teacherWorkspaces"
+                       :key="workspace['.key']"
+                       router :to="`/${$route.params.teacher_id}/workspace/${workspace['.key']}`"
           >
             <v-badge v-if="workspace.isAskingQuestion" color="red">
               <v-list-tile-title>{{ workspace.ownerName }}</v-list-tile-title>
               <v-icon slot="badge" dark small>priority_high</v-icon>
             </v-badge>
-            <v-list-tile-title v-else>{{ workspace.ownerName }}</v-list-tile-title>
+            <v-list-tile-title v-else>Workspace {{ idx }}</v-list-tile-title>
           </v-list-tile>
 
         </v-list-group>
-      </v-list-group>
 
       <v-list-group
         prepend-icon="library_books"
         value="true"
       >
         <v-list-tile slot="activator">
-          <v-list-tile-title>Shared Content</v-list-tile-title>
+          <v-list-tile-title>Saved Explanations</v-list-tile-title>
         </v-list-tile>
-
+<!-- 
         <v-list-group
           no-action
           sub-group
           value="true"
-        >
-          <v-list-tile slot="activator">
+        > -->
+          <!-- <v-list-tile slot="activator">
             <v-list-tile-title>Concepts</v-list-tile-title>
-          </v-list-tile>
+          </v-list-tile> -->
 
           <v-list-tile
             v-for="explanation in teacherExplanations"
@@ -134,28 +120,8 @@
             <v-list-tile-title>{{ explanation.title }}</v-list-tile-title>
           </v-list-tile>
         </v-list-group>
-
-        <!-- <v-list-group
-          sub-group
-          no-action
-        >
-          <v-list-tile slot="activator">
-            <v-list-tile-title>Solutions</v-list-tile-title>
-          </v-list-tile>
-
-          <v-list-tile
-            v-for="(crud, i) in cruds"
-            :key="i"
-            @click=""
-          >
-            <v-list-tile-title v-text="crud[0]"></v-list-tile-title>
-            <v-list-tile-action>
-              <v-icon v-text="crud[1]"></v-icon>
-            </v-list-tile-action>
-          </v-list-tile>
-        </v-list-group> -->
-
-      </v-list-group>
+<!-- 
+      </v-list-group> -->
 
 
     </v-list>
