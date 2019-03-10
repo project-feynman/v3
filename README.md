@@ -6,8 +6,6 @@ Feynman is a website where students can draw and talk in real-time over a whiteb
 
 ## Intro
 
-![Home Layout](docs/home_layout.PNG)
-
 **Problem**
 It's hard to get help from classmates. On Piazza, instructors answer 95% of the questions.
 
