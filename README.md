@@ -2,8 +2,6 @@
 
 Feynman is a website where students can draw and talk in real-time over a whiteboard, and save the resultant explanations for other classmates
 
-### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) | [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
-
 ## Intro
 
 **Problem**
