@@ -2,7 +2,7 @@
 
 Feynman is a website where students can draw and talk in real-time over a whiteboard, and save the resultant explanations for other classmates
 
-### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) |  [User stories](https://github.com/LingDingDong/feynman-mvp#user-stories) |  [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) |  [Usage](https://github.com/LingDingDong/feynman-mvp#usage) |  [Testing](https://github.com/LingDingDong/feynman-mvp#testing) |   [Deployment](https://github.com/LingDingDong/feynman-mvp#deployment) |   [Our approach](https://github.com/LingDingDong/feynman-mvp#our-approach) |  [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
+### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) |  [User stories](https://github.com/LingDingDong/feynman-mvp#user-stories) |  [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) |  [Usage](https://github.com/LingDingDong/feynman-mvp#usage) |  [Testing](https://github.com/LingDingDong/feynman-mvp#testing) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
 
 ## Intro
 
@@ -42,14 +42,6 @@ You will need to change the [database.js](src\database.js) file to link to your 
 Please use the app as you like and feel free to submit issues to [our GitHub repo](https://github.com/LingDingDong/feynman-mvp) for any flaws, PRs with suggested features are also welcome.
 
 ## Testing
-
-**Watch this space**
-
-## Deployment
-
-The website is currently [deployed here](https://feynman.online/). Please feel free to sign in and experiment.
-
-## Our Approach
 
 **Watch this space**
 
