@@ -27,10 +27,6 @@ Feynman is a system where videos are created as by-products of people explaining
 
 ## User Stories
 
-![Personal Page](docs/personal_page.PNG)
-
-**Watch this space**
-
 ![A sample solution](docs/answer.PNG)
 
 ## Getting Started
