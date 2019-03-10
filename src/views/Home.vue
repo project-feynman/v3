@@ -34,12 +34,12 @@
       <div v-else>
         <v-layout align-center justify-center row fill-height wrap>
           <p>
-            The solutions provided by staff members are sometimes hard to understand because:
+            Existing solutions are hard to understand because:
           </p> 
           <ul>
-            <li>It's text-based, even though a diagram is desperately needed</li>
-            <li>Its too brief, and omits crucial steps in the thought process, because the staff assumes the students know as much as they do</li> 
-            <li>Too formal, and does not expand upon the "Why" behind solving a problem, and the conceptual implications</li> 
+            <li>Text-based: even though a diagram is desperately needed</li>
+            <li>Brief: omits crucial steps in the thought process, because the staff assumes the students know as much as they do</li> 
+            <li>Formal: rigorous, but complicated and unintuitive</li> 
           </ul>
           <ul>
             <li>Visual: a picture is worth a thousand words</li>

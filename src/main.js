@@ -20,14 +20,10 @@ Vue.use(Clipboard)
 
 Vue.config.productionTip = false
 
-// firebase.auth().signInAnonymously()
-
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
-    console.log('user is logged in')
     store.dispatch('handleUserLogic', user)
   } else {
-    console.log('user not logged in')
     // necessary for detecting when the user logs out
     store.commit('SET_USER', null)
   }
