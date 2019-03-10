@@ -2,7 +2,7 @@
 
 Feynman is a website where students can draw and talk in real-time over a whiteboard, and save the resultant explanations for other classmates
 
-### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) |  [User stories](https://github.com/LingDingDong/feynman-mvp#user-stories) |  [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
+### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) | [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
 
 ## Intro
 
@@ -15,6 +15,8 @@ Nearly nobody deliberately makes explanation videos because the process is unrew
 **Solution**
 Feynman is a system where videos are created as by-products of people explaining things to each other.
 
+![A sample solution](docs/answer.PNG)
+
 ## Contributors
 
 * [Elton Lin](https://github.com/LingDingDong)
@@ -24,10 +26,6 @@ Feynman is a system where videos are created as by-products of people explaining
 * [hubierti3](https://github.com/hubierti3)
 * [Yang Yan](https://github.com/GilgameshxZero)
 * [Kirill Zabrodin](https://github.com/kirillzabrodin)
-
-## User Stories
-
-![A sample solution](docs/answer.PNG)
 
 ## Getting Started
 
