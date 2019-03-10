@@ -1,6 +1,6 @@
-# Feynman Development   [![Build Status](https://travis-ci.com/LingDingDong/feynman-mvp.svg?branch=master)](https://travis-ci.com/LingDingDong/feynman-mvp)
+# Feynman Project   [![Build Status](https://travis-ci.com/LingDingDong/feynman-mvp.svg?branch=master)](https://travis-ci.com/LingDingDong/feynman-mvp)
 
-An application for helping streamline student requirements and staff efforts into a coherent scalable solution for teaching establishments.
+Feynman is a website where students can draw and talk in real-time over a whiteboard, and save the resultant explanations for other classmates
 
 ### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) |  [User stories](https://github.com/LingDingDong/feynman-mvp#user-stories) |  [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) |  [Usage](https://github.com/LingDingDong/feynman-mvp#usage) |  [Testing](https://github.com/LingDingDong/feynman-mvp#testing) |   [Deployment](https://github.com/LingDingDong/feynman-mvp#deployment) |   [Our approach](https://github.com/LingDingDong/feynman-mvp#our-approach) |  [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
 
@@ -8,10 +8,16 @@ An application for helping streamline student requirements and staff efforts int
 
 ![Home Layout](docs/home_layout.PNG)
 
-Many professors, TAs and students would make great explanation videos - but they don't. 
-Feynman is a visual, process-oriented Q&A platform where videos are created as by-products. 
+**Problem**
+It's hard to get help from classmates. On Piazza, instructors answer 95% of the questions.
 
-## Team
+**Observation**
+Nearly nobody deliberately makes explanation videos because the process is unrewarding and lacks human feedback. However, people like explaining things in person. 
+
+**Solution**
+Feynman is a system where videos are created as by-products of people explaining things to each other.
+
+## Contributors
 
 * [Elton Lin](https://github.com/LingDingDong)
 * [huBlerTi2](https://github.com/huBIerTi2)
@@ -40,7 +46,6 @@ You will need to change the [database.js](src\database.js) file to link to your 
 ## Usage
 
 Please use the app as you like and feel free to submit issues to [our GitHub repo](https://github.com/LingDingDong/feynman-mvp) for any flaws, PRs with suggested features are also welcome.
-
 
 ## Testing
 
