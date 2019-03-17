@@ -39,8 +39,6 @@
       </div>
       <!-- LOGIN BUTTON -->
       <div v-else>
-      <!-- <v-layout v-else align-center justify-center row fill-height wrap> -->
-  
         <div class="text-xs-center mt-3">
           <p>Here, friends and strangers alike explain concepts simply to help each other</p>
           <v-btn bottom large @click="loginPopup = !loginPopup">
@@ -52,7 +50,6 @@
                      @sign-in="payload => signIn(payload)">
         </login-popup>
       </div>
-      <!-- </v-layout> -->
     </transition>
 
   </div>

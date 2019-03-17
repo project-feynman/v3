@@ -1,10 +1,14 @@
 <template>
   <div>
-    <div v-for="recording in recordings" :key="recording.ts">
-      <vue-plyr ref="plyr">
-        <audio id="audio-element" :src="recording.blobURL" controls="true"/>
-      </vue-plyr>
-    </div>
+    <!-- <div v-for="recording in recordings" :key="recording.ts"> -->
+      <div v-if="recordings.length != 0">
+        <vue-plyr ref="plyr">
+          <!-- <audio id="audio-element" :src="recording.blobURL" controls="true"/> -->
+          <audio id="audio-element" :src="recordings[0].blobURL" controls="true"/>
+        </vue-plyr>
+      </div>
+
+    <!-- </div> -->
   </div>
 </template>
 
@@ -12,7 +16,6 @@
 import firebase from 'firebase/app'
 import 'firebase/storage'
 import db from '@/database.js'
-
 import RecorderService from '@/shared/RecorderService.js'
 import utils from '@/shared/Utils'
 
@@ -38,9 +41,25 @@ export default {
       handler: 'downloadAudioFile',
       immediate: true
     },
+    recordings () {
+      if (this.recordings) {
+        this.$nextTick(() => {
+			    this.player.on('play', () => this.$emit('play'))
+          this.player.on('seeking', () => this.$emit('seeking'))
+          console.log('events will fire if something happens')
+		    })
+      }
+    },
     cleanupWhenFinished (val) {
       // recording cleanup
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
+    }
+  },
+  computed: {
+    player () {
+      console.log('this.$refs.plyr =', this.$refs.plyr)
+  
+      return this.$refs.plyr.player
     }
   },
   methods: {

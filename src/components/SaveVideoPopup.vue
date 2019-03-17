@@ -62,7 +62,7 @@ export default {
   },
   created() {
     this.$root.$on('audio-uploaded', videoDocId => {
-      this.shareableURL = `feynman.online/${this.$route.params.teacher_id}/${videoDocId}`
+      this.shareableURL = `explain.mit.edu/${this.$route.params.teacher_id}/${videoDocId}`
       this.isSavingVideo = false 
     }) 
   },

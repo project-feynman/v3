@@ -111,7 +111,7 @@ export default {
         } 
         await this.$binding('allStrokes', strokesRef)
         this.$root.$emit('finish-loading-animation')
-        // this.drawStrokesInstantly()
+        this.drawStrokesInstantly()
         this.$emit('animation-loaded')
       }
     }

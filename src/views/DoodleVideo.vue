@@ -34,11 +34,15 @@
                         ref="audio-recorder"
                         :audioURL="audioURL"
                         @recorder-loading="recorderLoaded=false"
+                        @play="syncAnimation()"
+                        @seeking="syncAnimation()"
                         @recorder-loaded="recorderLoaded=true"/>
 
         <!-- BACKWARDS COMPATIBILITY -->
         <audio-recorder v-else-if="explanation"
                         ref="audio-recorder"
+                        @play="syncAnimation()"
+                        @seeking="syncAnimation()"
                         :audioURL="explanation.audioURL"
                         @recorder-loaded="recorderLoaded=true"/>
       </template>
@@ -74,7 +78,8 @@ export default {
       explanationId: null,
       explanation: null, 
       recorderLoaded: false,
-      animationLoaded: false
+      animationLoaded: false,
+      syncedVisualAndAudio: false
     }
   },
   watch: {
@@ -82,22 +87,28 @@ export default {
       handler: 'bindVariables',
       immediate: true
     },
-    recorderLoaded() {
-      this.syncAnimation()
-    },
-    animationLoaded() {
-      this.syncAnimation()
-    }
+    // recorderLoaded() {
+    //   this.syncAnimation()
+    // },
+    // animationLoaded() {
+    //   this.syncAnimation()
+    // }
   },
   methods: {
     syncAnimation() {
-      if (this.resourcesLoaded) {
+      console.log('sync animation')
+      if (this.syncedVisualAndAudio) {
+        console.log('skip sync')
+        return 
+      } else if (this.resourcesLoaded) {
         const audioRecorder = this.$refs['audio-recorder']
         const animation = this.$refs['animation']
         animation.playVisual(audioRecorder.getAudioTime)
+        this.syncedVisualAndAudio = true
       }
     },
     deleteVideo() {
+      // let fires burn
       // delete the video document
       // delete the strokes
       // delete the audio 
