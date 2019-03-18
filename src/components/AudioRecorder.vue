@@ -46,7 +46,6 @@ export default {
         this.$nextTick(() => {
 			    this.player.on('play', () => this.$emit('play'))
           this.player.on('seeking', () => this.$emit('seeking'))
-          console.log('events will fire if something happens')
 		    })
       }
     },
@@ -57,8 +56,6 @@ export default {
   },
   computed: {
     player () {
-      console.log('this.$refs.plyr =', this.$refs.plyr)
-  
       return this.$refs.plyr.player
     }
   },
