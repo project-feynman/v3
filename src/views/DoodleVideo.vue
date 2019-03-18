@@ -9,19 +9,19 @@
         </div>
       </v-layout>
       <template>
-        <animation v-if="strokes"
+        <!-- <animation v-if="strokes"
                    ref="animation" 
                    @animation-loaded="animationLoaded=true"
-                   @animation-finished="handleEvent()"/>
+                   @animation-finished="handleEvent()"/> -->
 
-        <animation v-else-if="workspaceId"
+        <!-- <animation v-else-if="workspaceId"
                    ref="animation" 
                    :workspaceId="workspaceId"
                    @animation-loading="animationLoaded=false"
                    @animation-loaded="animationLoaded=true"
-                   @animation-finished="handleEvent()"/>
+                   @animation-finished="handleEvent()"/> -->
 
-        <animation v-else-if="explanation"
+        <animation v-if="explanation"
                    ref="animation" 
                    :explanationId="explanationId"
                    @animation-loaded="animationLoaded=true"
@@ -86,24 +86,16 @@ export default {
     $route: {
       handler: 'bindVariables',
       immediate: true
-    },
-    // recorderLoaded() {
-    //   this.syncAnimation()
-    // },
-    // animationLoaded() {
-    //   this.syncAnimation()
-    // }
+    }
   },
   methods: {
     syncAnimation() {
-      console.log('sync animation')
       if (this.syncedVisualAndAudio) {
-        console.log('skip sync')
         return 
       } else if (this.resourcesLoaded) {
         const audioRecorder = this.$refs['audio-recorder']
         const animation = this.$refs['animation']
-        animation.playVisual(audioRecorder.getAudioTime)
+        animation.startSync(audioRecorder.getAudioTime)
         this.syncedVisualAndAudio = true
       }
     },
@@ -134,7 +126,9 @@ export default {
       const whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
       const whiteboardDoc = await whiteboardRef.get() 
       if (whiteboardDoc.exists) {
+        console.log('whiteboardID =', this.video.whiteboardID)
         this.explanation = whiteboardDoc.data()
+        console.log('whiteboard =', this.explanation)
       }
 
     }
