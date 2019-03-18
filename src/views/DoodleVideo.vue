@@ -88,6 +88,9 @@ export default {
       immediate: true
     }
   },
+  destroyed () {
+    console.log('destroyed')
+  },
   methods: {
     syncAnimation() {
       if (this.syncedVisualAndAudio) {
@@ -114,6 +117,8 @@ export default {
       animation.quickplay()
     },
     async bindVariables() {
+      // this.$forceUpdate()
+      this.syncedVisualAndAudio = false 
       this.recorderLoaded = false 
       this.animationLoaded = false 
       const classID = this.$route.params.teacher_id
@@ -126,9 +131,9 @@ export default {
       const whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
       const whiteboardDoc = await whiteboardRef.get() 
       if (whiteboardDoc.exists) {
-        console.log('whiteboardID =', this.video.whiteboardID)
+        // console.log('whiteboardID =', this.video.whiteboardID)
         this.explanation = whiteboardDoc.data()
-        console.log('whiteboard =', this.explanation)
+        // console.log('whiteboard =', this.explanation)
       }
 
     }

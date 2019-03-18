@@ -22,6 +22,7 @@ export default {
     },
     allStrokes() {
       if (this.playProgress) {
+        console.log('removing playProgress()')
         clearInterval(this.playProgress)
         this.playProgress = null 
       }
@@ -81,6 +82,8 @@ export default {
       db.collection('classes').doc(classID).collection('videos').doc(videoID).delete()
     },
     async initData() {
+      console.log('init data')
+      this.indexOfNextStroke = 0
       this.$emit('animation-loading')
       let strokesRef
       if (this.ctx) {
