@@ -61,7 +61,7 @@ export default {
     })
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
-    this.rescaleCanvas()
+    this.rescaleCanvas() // should rename to rescale and redraw
     window.addEventListener('resize', this.rescaleCanvas, false)
   },
   beforeDestroy() {
@@ -71,44 +71,15 @@ export default {
     }
   },
   methods: {
-    async initReplayLogic() {
-      this.isReplaying = true
-      await this.quickplay()
-      this.isReplaying = false 
-    },
-    handleDeletion() {
-      const classID = this.$route.params.teacher_id
-      const videoID = this.$route.params.id
-      db.collection('classes').doc(classID).collection('videos').doc(videoID).delete()
-    },
     async initData() {
-      console.log('init data')
       this.indexOfNextStroke = 0
       this.$emit('animation-loading')
-      let strokesRef
       if (this.ctx) {
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
       if (this.strokes) {
-        console.log('strokes is defined')
-        this.allStrokes = strokes
-        this.$root.$emit('finish-loading-animation')
-        // this.drawStrokesInstantly()
-        this.$emit('animation-loaded')
-      } else if (this.workspaceId) {
-        this.allStrokes = [] 
-        strokesRef = db.collection('workspaces').doc(this.workspaceId).collection('strokes').orderBy('startTime', 'asc')
-        await this.$binding('allStrokes', strokesRef)
-        this.$emit('animation-loaded')
-        console.log('workspace animation loaded!')
-      }
-      else {
-        this.allStrokes = [] 
-        strokesRef = db.collection('whiteboards').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
-        await this.$binding('allStrokes', strokesRef)
-        this.$root.$emit('finish-loading-animation')
-        this.drawStrokesInstantly()
+        this.allStrokes = this.strokes
         this.$emit('animation-loaded')
       }
     }

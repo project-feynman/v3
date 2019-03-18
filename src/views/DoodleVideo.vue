@@ -3,7 +3,6 @@
      <v-container fluid class="pa-0">
       <v-layout>
         <div v-if="video && user" style="margin: auto;">
-          <p>{{ user }}</p>
           <template v-if="user.email == 'eltonlin1998@gmail.com'">
             <div class="text-xs-center">
               <v-btn @click="deleteVideo()" class="red white--text">
@@ -14,21 +13,9 @@
         </div>
       </v-layout>
       <template>
-        <!-- <animation v-if="strokes"
+        <animation v-if="allStrokes"
                    ref="animation" 
-                   @animation-loaded="animationLoaded=true"
-                   @animation-finished="handleEvent()"/> -->
-
-        <!-- <animation v-else-if="workspaceId"
-                   ref="animation" 
-                   :workspaceId="workspaceId"
-                   @animation-loading="animationLoaded=false"
-                   @animation-loaded="animationLoaded=true"
-                   @animation-finished="handleEvent()"/> -->
-
-        <animation v-if="explanation"
-                   ref="animation" 
-                   :explanationId="explanationId"
+                   :strokes="allStrokes"
                    @animation-loaded="animationLoaded=true"
                    @animation-finished="handleEvent()"/>
       </template>
@@ -46,9 +33,9 @@
         <!-- BACKWARDS COMPATIBILITY -->
         <audio-recorder v-else-if="explanation"
                         ref="audio-recorder"
+                        :audioURL="explanation.audioURL"
                         @play="syncAnimation()"
                         @seeking="syncAnimation()"
-                        :audioURL="explanation.audioURL"
                         @recorder-loaded="recorderLoaded=true"/>
       </template>
     </v-container>
@@ -82,13 +69,13 @@ export default {
   data() {
     return {
       video: null,
-      explanationId: null,
       explanation: null, 
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
       whiteboardRef: null,
-      audioFileRef: null 
+      audioFileRef: null,
+      allStrokes: null
     }
   },
   watch: {
@@ -96,9 +83,6 @@ export default {
       handler: 'bindVariables',
       immediate: true
     }
-  },
-  destroyed () {
-    console.log('destroyed')
   },
   methods: {
     syncAnimation() {
@@ -112,45 +96,40 @@ export default {
       }
     },
     deleteVideo() {
-      // delete the video document
       const classID = this.$route.params.teacher_id
       const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
       videoRef.delete()
-      // delete the strokes (screw the subcolletions for who honestly cares)
+      // delete the strokes (screw the subcollections for who honestly cares)
       this.whiteboardRef.delete() 
-      // delete the audio 
       this.audioFileRef.delete()
       console.log('successfully deleted master document, strokes and audio file')
-      // 
-      // const animation = this.$refs['animation']
-      // if (animation) {
-      //   animation.handleDeletion()
-      // }
     },
     quickplay() {
       const animation = this.$refs['animation']
       animation.quickplay()
     },
     async bindVariables() {
-      // this.$forceUpdate()
+      // initialize/reset variables
       this.syncedVisualAndAudio = false 
       this.recorderLoaded = false 
       this.animationLoaded = false 
       const classID = this.$route.params.teacher_id
-      // fetch video doc 
+
+      // fetch video document
       const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
       const videoDoc = await ref.get()
       this.video = videoDoc.data()
-      this.explanationId = this.video.whiteboardID
-      // now fetch whiteboard 
-      const whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
-      this.whiteboardRef = whiteboardRef 
-      const whiteboardDoc = await whiteboardRef.get() 
-      if (whiteboardDoc.exists) {
-        const storageRef = firebase.storage().ref()
-        this.explanation = whiteboardDoc.data()
-        this.audioFileRef = storageRef.child(`recordings/${this.explanation.audioPath}`)
-      }
+      
+      // bind strokes
+      const strokesRef = db.collection('whiteboards').doc(this.video.whiteboardID).collection('strokes').orderBy('startTime', 'asc')
+      await this.$binding('allStrokes', strokesRef)
+
+      // now bind references to make it easy to delete things
+      this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
+      const whiteboardDoc = await this.whiteboardRef.get() 
+      this.explanation = whiteboardDoc.data()
+      const storageRef = firebase.storage().ref()
+      this.audioFileRef = storageRef.child(`recordings/${this.explanation.audioPath}`)
     }
   }
 }
