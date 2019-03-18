@@ -7,8 +7,8 @@
       <!-- <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/> -->
 
       <!-- fix this section -->
-      <v-toolbar-title class="headline text-uppercase">
-        {{ $route.params.teacher_id ? $route.params.teacher_id : "Feynman" }}
+      <v-toolbar-title class="headline">
+        {{ $route.params.teacher_id ? $route.params.teacher_id : "ExplainMIT" }}
       </v-toolbar-title>
 
       <v-spacer></v-spacer>

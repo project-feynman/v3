@@ -45,8 +45,7 @@
                 </v-btn>
                 <save-video-popup v-model="saveVideoPopup"
                                   @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-                                  fullscreen
-                />
+                                  fullscreen/>
               </template>
               <v-btn dark flat @click="handleExit()">EXIT</v-btn>
             </v-toolbar-items>
@@ -200,23 +199,29 @@ export default {
       this.$binding('whiteboard', this.whiteboardRef) 
     },
     async handleSaving(videoTitle) { 
+      // create a new explanation document that points to the whiteboard
       const whiteboard = this.$refs['whiteboard']
       const classID = this.$route.params.teacher_id
       const videoID = slugify(videoTitle, {
         replacement: '-',
         lower: true
       })
+      // console.log('whiteboardID =', this.workspace.whiteboardID)
+      // let oldWhiteboard = db.collection('whiteboards').doc(this.workspace.whiteboardID).collection('strokes')
+      // oldWhiteboard = await oldWhiteboard.get() 
+      // console.log('old whiteboard strokes =', oldWhiteboard.data())
+
       const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
       docRef.set({
         title: videoTitle,
         whiteboardID: this.workspace.whiteboardID,
-        authorUid: this.user.uid || "Anonymous",
-        authorName: this.user.name || "Anonymous",
+        authorUid: this.user.uid || 'Anonymous',
+        authorName: this.user.name || 'Anonymous',
       })
-      // now strokes can be saved as subcollections to that document 
+      // initialize a new whiteboard for the workspace
       const audioRecorder = this.$refs['audio-recorder']
       const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
-      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid) // alright this is going to be awesome
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       })
