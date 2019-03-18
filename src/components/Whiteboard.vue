@@ -59,7 +59,7 @@ export default {
       isReplaying: false,
       timer: null,
       currentTime: 0,
-      startTime: null,
+      startTime: 0,
       endTime: null,
       touchX: null,
       touchY: null,
@@ -117,13 +117,13 @@ export default {
       this.deleteStrokesSubcollection()
       this.allStrokes = [] 
     },
-    // might not be necessary anymore in the new architecture 
-    saveStrokes(explanationId) {
-      const explanationRef = db.collection('explanations').doc(explanationId).collection('strokes')
-      this.allStrokes.forEach(stroke => {
-        explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
-      })
-    },
+    // MIGHT NOT BE NECESSARY ANYMORE
+    // saveStrokes(explanationId) {
+    //   const explanationRef = db.collection('explanations').doc(explanationId).collection('strokes')
+    //   this.allStrokes.forEach(stroke => {
+    //     explanationRef.doc(`${stroke.strokeNumber}`).set(stroke)
+    //   })
+    // },
     initData() {
       // visually wipe previous drawings
       if (this.ctx) {
@@ -143,6 +143,7 @@ export default {
             if (this.allStrokes.length < stroke.strokeNumber) {
               this.drawStroke(stroke, null)
               this.allStrokes.push(stroke)
+              console.log('this.allStrokes =', this.allStrokes)
             }
           } 
           else if (change.type === 'removed') {
@@ -226,15 +227,20 @@ export default {
         color: this.color,
         lineWidth: this.lineWidth
       }
-      if (this.currentTime) {
-        stroke.startTime = Number(this.startTime),
-        stroke.endTime = Number(this.currentTime.toFixed(1))
-      }
+   
+      stroke.startTime = Number(this.startTime),
+      stroke.endTime = Number(this.currentTime.toFixed(1))
+    
+      // if (this.currentTime) {
+      //   stroke.startTime = Number(this.startTime),
+      //   stroke.endTime = Number(this.currentTime.toFixed(1))
+      // }
       stroke.points = this.currentStroke
       // save 
       this.allStrokes.push(stroke)
       // const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
       this.strokesRef.doc(`${strokeNumber}`).set(stroke)
+      console.log('new stroke start time =', stroke.startTime)
       // reset 
       this.currentStroke = []
       this.lastX = -1

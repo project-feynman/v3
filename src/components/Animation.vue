@@ -100,15 +100,9 @@ export default {
         this.$emit('animation-loaded')
         console.log('workspace animation loaded!')
       }
-      // old code
       else {
         this.allStrokes = [] 
-        if (this.$route.params.id == 'OS63skygvahbbPwEK3LH') {
-          strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('strokeNumber', 'asc')
-        } else {
-          strokesRef = db.collection('whiteboards').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
-          // strokesRef = db.collection('explanations').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
-        } 
+        strokesRef = db.collection('whiteboards').doc(this.explanationId).collection('strokes').orderBy('startTime', 'asc')
         await this.$binding('allStrokes', strokesRef)
         this.$root.$emit('finish-loading-animation')
         this.drawStrokesInstantly()
