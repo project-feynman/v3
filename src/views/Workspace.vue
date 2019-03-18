@@ -212,6 +212,7 @@ export default {
       // console.log('old whiteboard strokes =', oldWhiteboard.data())
 
       const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
+      console.log('can save as Elton')
       docRef.set({
         title: videoTitle,
         whiteboardID: this.workspace.whiteboardID,

@@ -22,9 +22,11 @@ export default new Vuex.Store({
   },
   actions: {
     async handleUserLogic(context, user) {
+      console.log('user', user)
       let simplifiedUser = {
         name: user.displayName || "Anonymous",
-        uid: user.uid 
+        uid: user.uid,
+        email: user.email 
       }
       context.commit('SET_USER', simplifiedUser) // commit the user to avoid blocking page load 
       const userRef = db.collection('users').doc(user.uid) 

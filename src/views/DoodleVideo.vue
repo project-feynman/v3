@@ -3,8 +3,13 @@
      <v-container fluid class="pa-0">
       <v-layout>
         <div v-if="video && user" style="margin: auto;">
-          <template v-if="user.name == 'Elton Lin'">
-            <v-btn @click="deleteVideo()" class="red">DELETE VIDEO</v-btn>
+          <p>{{ user }}</p>
+          <template v-if="user.email == 'eltonlin1998@gmail.com'">
+            <div class="text-xs-center">
+              <v-btn @click="deleteVideo()" class="red white--text">
+                DELETE VIDEO
+              </v-btn>
+            </div>
           </template>
         </div>
       </v-layout>
@@ -55,6 +60,8 @@ import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import { mapState } from 'vuex'
+import firebase from 'firebase/app'
+import 'firebase/storage'
 
 export default {
   props: {
@@ -79,7 +86,9 @@ export default {
       explanation: null, 
       recorderLoaded: false,
       animationLoaded: false,
-      syncedVisualAndAudio: false
+      syncedVisualAndAudio: false,
+      whiteboardRef: null,
+      audioFileRef: null 
     }
   },
   watch: {
@@ -103,14 +112,20 @@ export default {
       }
     },
     deleteVideo() {
-      // let fires burn
       // delete the video document
-      // delete the strokes
+      const classID = this.$route.params.teacher_id
+      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
+      videoRef.delete()
+      // delete the strokes (screw the subcolletions for who honestly cares)
+      this.whiteboardRef.delete() 
       // delete the audio 
-      const animation = this.$refs['animation']
-      if (animation) {
-        animation.handleDeletion()
-      }
+      this.audioFileRef.delete()
+      console.log('successfully deleted master document, strokes and audio file')
+      // 
+      // const animation = this.$refs['animation']
+      // if (animation) {
+      //   animation.handleDeletion()
+      // }
     },
     quickplay() {
       const animation = this.$refs['animation']
@@ -129,13 +144,13 @@ export default {
       this.explanationId = this.video.whiteboardID
       // now fetch whiteboard 
       const whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
+      this.whiteboardRef = whiteboardRef 
       const whiteboardDoc = await whiteboardRef.get() 
       if (whiteboardDoc.exists) {
-        // console.log('whiteboardID =', this.video.whiteboardID)
+        const storageRef = firebase.storage().ref()
         this.explanation = whiteboardDoc.data()
-        // console.log('whiteboard =', this.explanation)
+        this.audioFileRef = storageRef.child(`recordings/${this.explanation.audioPath}`)
       }
-
     }
   }
 }
