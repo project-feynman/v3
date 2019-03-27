@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <nav-components/>
-    <v-content >
+    <v-content id="background">
       <router-view/>
     </v-content>
   </v-app>
@@ -17,3 +17,9 @@ export default {
   }
 }
 </script>
+
+<style>
+#background {
+  background-color: #C0C0C0;
+}
+</style>

@@ -1,12 +1,16 @@
 <template>
   <nav>  
     <!-- NAVBAR  --> 
-    <v-toolbar app v-if="showNavbar" extended extension-height="2" id="navbar">
+    <v-toolbar v-if="showNavbar" 
+               app 
+               color="white"
+               extended 
+               extension-height="2" 
+               id="navbar">
 
       <!-- open navbar button -->
       <!-- <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/> -->
 
-      <!-- fix this section -->
       <v-toolbar-title class="headline">
         {{ $route.params.teacher_id ? $route.params.teacher_id : "ExplainMIT" }}
       </v-toolbar-title>

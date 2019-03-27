@@ -21,15 +21,15 @@
         <v-layout v-for="subject in teachers" :key="subject.uid">
           <v-flex>
             <v-card @click="$router.push(subject.courseNumber)"
-                    color="blue-grey darken-2" 
-                    class="white--text">
+                    color="grey lighten-5" 
+                    class="black--text">
               <v-card-title primary-title>
                 <div class="headline">
                   {{ subject.courseNumber }}
                 </div>
               </v-card-title>
               <v-card-actions>
-                <v-btn flat dark @click="$router.push(subject.courseNumber)">
+                <v-btn flat dark class="black--text" @click="$router.push(subject.courseNumber)">
                   ENTER
                 </v-btn>
               </v-card-actions>

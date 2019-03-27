@@ -136,7 +136,6 @@ export default {
             if (this.allStrokes.length < stroke.strokeNumber) {
               this.drawStroke(stroke, null)
               this.allStrokes.push(stroke)
-              console.log('this.allStrokes =', this.allStrokes)
             }
           } 
           else if (change.type === 'removed') {
