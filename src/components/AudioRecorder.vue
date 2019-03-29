@@ -7,7 +7,6 @@
           <audio id="audio-element" :src="recordings[0].blobURL" controls="true"/>
         </vue-plyr>
       </div>
-
     <!-- </div> -->
   </div>
 </template>

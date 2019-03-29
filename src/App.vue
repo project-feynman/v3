@@ -20,6 +20,6 @@ export default {
 
 <style>
 #background {
-  background-color: #C0C0C0;
+  background-color: rgb(180, 210, 255)
 }
 </style>

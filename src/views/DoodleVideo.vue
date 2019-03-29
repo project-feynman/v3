@@ -1,54 +1,58 @@
 <template>
   <div class="video">
-     <v-container fluid class="pa-0">
+    <v-container fluid class="pa-0">
       <v-layout>
         <div v-if="video && user" style="margin: auto;">
           <template v-if="user.email == 'eltonlin1998@gmail.com'">
             <div class="text-xs-center">
-              <v-btn @click="deleteVideo()" class="red white--text">
-                DELETE VIDEO
-              </v-btn>
+              <v-btn @click="deleteVideo()" class="red white--text">DELETE VIDEO</v-btn>
             </div>
           </template>
         </div>
       </v-layout>
       <template>
-        <animation v-if="allStrokes"
-                   ref="animation" 
-                   :strokes="allStrokes"
-                   @animation-loaded="animationLoaded=true"
-                   @animation-finished="handleEvent()"/>
+        <animation
+          v-if="allStrokes"
+          ref="animation"
+          :strokes="allStrokes"
+          @animation-loaded="animationLoaded=true"
+          @animation-finished="handleEvent()"
+        />
       </template>
 
       <template>
         <!-- QUICKFIX -->
-        <audio-recorder v-if="audioURL"
-                        ref="audio-recorder"
-                        :audioURL="audioURL"
-                        @recorder-loading="recorderLoaded=false"
-                        @play="syncAnimation()"
-                        @seeking="syncAnimation()"
-                        @recorder-loaded="recorderLoaded=true"/>
+        <audio-recorder
+          v-if="audioURL"
+          ref="audio-recorder"
+          :audioURL="audioURL"
+          @recorder-loading="recorderLoaded=false"
+          @play="syncAnimation()"
+          @seeking="syncAnimation()"
+          @recorder-loaded="recorderLoaded=true"
+        />
 
         <!-- BACKWARDS COMPATIBILITY -->
-        <audio-recorder v-else-if="explanation"
-                        ref="audio-recorder"
-                        :audioURL="explanation.audioURL"
-                        @play="syncAnimation()"
-                        @seeking="syncAnimation()"
-                        @recorder-loaded="recorderLoaded=true"/>
+        <audio-recorder
+          v-else-if="explanation"
+          ref="audio-recorder"
+          :audioURL="explanation.audioURL"
+          @play="syncAnimation()"
+          @seeking="syncAnimation()"
+          @recorder-loaded="recorderLoaded=true"
+        />
       </template>
     </v-container>
   </div>
 </template>
 
 <script>
-import db from '@/database.js'
-import Animation from '@/components/Animation.vue'
-import AudioRecorder from '@/components/AudioRecorder.vue'
-import { mapState } from 'vuex'
-import firebase from 'firebase/app'
-import 'firebase/storage'
+import db from "@/database.js";
+import Animation from "@/components/Animation.vue";
+import AudioRecorder from "@/components/AudioRecorder.vue";
+import { mapState } from "vuex";
+import firebase from "firebase/app";
+import "firebase/storage";
 
 export default {
   props: {
@@ -61,76 +65,94 @@ export default {
     AudioRecorder
   },
   computed: {
-    ...mapState(['user']),
+    ...mapState(["user"]),
     resourcesLoaded() {
-      return this.recorderLoaded && this.animationLoaded
+      return this.recorderLoaded && this.animationLoaded;
     }
   },
   data() {
     return {
       video: null,
-      explanation: null, 
+      explanation: null,
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
       whiteboardRef: null,
       audioFileRef: null,
       allStrokes: null
-    }
+    };
   },
   watch: {
     $route: {
-      handler: 'bindVariables',
+      handler: "bindVariables",
       immediate: true
     }
   },
   methods: {
     syncAnimation() {
       if (this.syncedVisualAndAudio) {
-        return 
+        return;
       } else if (this.resourcesLoaded) {
-        const audioRecorder = this.$refs['audio-recorder']
-        const animation = this.$refs['animation']
-        animation.startSync(audioRecorder.getAudioTime)
-        this.syncedVisualAndAudio = true
+        const audioRecorder = this.$refs["audio-recorder"];
+        const animation = this.$refs["animation"];
+        animation.startSync(audioRecorder.getAudioTime);
+        this.syncedVisualAndAudio = true;
       }
     },
     deleteVideo() {
-      const classID = this.$route.params.teacher_id
-      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
-      videoRef.delete()
+      const classID = this.$route.params.class_id;
+      const videoRef = db
+        .collection("classes")
+        .doc(classID)
+        .collection("videos")
+        .doc(this.$route.params.id);
+      videoRef.delete();
       // delete the strokes (screw the subcollections for who honestly cares)
-      this.whiteboardRef.delete() 
-      this.audioFileRef.delete()
-      console.log('successfully deleted master document, strokes and audio file')
+      this.whiteboardRef.delete();
+      this.audioFileRef.delete();
+      console.log(
+        "successfully deleted master document, strokes and audio file"
+      );
     },
     quickplay() {
-      const animation = this.$refs['animation']
-      animation.quickplay()
+      const animation = this.$refs["animation"];
+      animation.quickplay();
     },
     async bindVariables() {
       // initialize/reset variables
-      this.syncedVisualAndAudio = false 
-      this.recorderLoaded = false 
-      this.animationLoaded = false 
-      const classID = this.$route.params.teacher_id
+      this.syncedVisualAndAudio = false;
+      this.recorderLoaded = false;
+      this.animationLoaded = false;
+      const classID = this.$route.params.class_id;
 
       // fetch video document
-      const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
-      const videoDoc = await ref.get()
-      this.video = videoDoc.data()
-      
+      const ref = db
+        .collection("classes")
+        .doc(classID)
+        .collection("videos")
+        .doc(this.$route.params.id);
+      const videoDoc = await ref.get();
+      this.video = videoDoc.data();
+
       // bind strokes
-      const strokesRef = db.collection('whiteboards').doc(this.video.whiteboardID).collection('strokes').orderBy('startTime', 'asc')
-      await this.$binding('allStrokes', strokesRef)
+      const strokesRef = db
+        .collection("whiteboards")
+        .doc(this.video.whiteboardID)
+        .collection("strokes")
+        .orderBy("startTime", "asc");
+      await this.$binding("allStrokes", strokesRef);
 
       // now bind references to make it easy to delete things
-      this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
-      const whiteboardDoc = await this.whiteboardRef.get() 
-      this.explanation = whiteboardDoc.data()
-      const storageRef = firebase.storage().ref()
-      this.audioFileRef = storageRef.child(`recordings/${this.explanation.audioPath}`)
+      this.whiteboardRef = db
+        .collection("whiteboards")
+        .doc(this.video.whiteboardID);
+      const whiteboardDoc = await this.whiteboardRef.get();
+      this.explanation = whiteboardDoc.data();
+      const storageRef = firebase.storage().ref();
+      this.audioFileRef = storageRef.child(
+        `recordings/${this.explanation.audioPath}`
+      );
     }
   }
-}
+};
 </script>

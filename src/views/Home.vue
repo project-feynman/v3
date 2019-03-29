@@ -11,9 +11,9 @@
     </v-snackbar>
 
     <transition name="fade" mode="out-in" @after-leave="transitionFinished = true">
-      <!-- RICHARD FEYNMAN'S QUOTE -->
+      <!-- EINSTEIN'S QUOTE -->
       <v-layout v-if="isFetchingUser" key="quote" align-center justify-center row fill-height wrap>
-        <blockquote class="my-quote blockquote text-md-center">"If you can't explain it simply, you don't understand it." - Richard Feynman</blockquote>
+        <blockquote class="my-quote blockquote text-md white--text">"It should be possible to explain the laws of physics to a barmaid." - Albert Einstein</blockquote>
       </v-layout>
 
       <!-- LIST OF CLASSES -->
@@ -21,7 +21,7 @@
         <v-layout v-for="subject in teachers" :key="subject.uid">
           <v-flex>
             <v-card @click="$router.push(subject.courseNumber)"
-                    color="grey lighten-5" 
+                    color="white" 
                     class="black--text">
               <v-card-title primary-title>
                 <div class="headline">
@@ -118,7 +118,7 @@ export default {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s;
+  transition: opacity 1s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
