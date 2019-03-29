@@ -14,17 +14,21 @@ import DrawMethods from '@/mixins/DrawMethods'
 import db from '@/database.js'
 
 export default {
-  props: ['explanationId', 'strokes', 'workspaceId'],
+  props: {
+    strokes: {
+      type: Array
+    }
+  },
   watch: {
-    explanationId: {
+    strokes: {
       handler: 'initData',
       immediate: true 
     },
     allStrokes() {
       if (this.playProgress) {
-        console.log('removing playProgress()')
         clearInterval(this.playProgress)
         this.playProgress = null 
+        console.log('terminated playProgress()')
       }
     }
   },
@@ -72,15 +76,16 @@ export default {
   },
   methods: {
     async initData() {
+      if (!this.strokes) {
+        return 
+      }
       this.indexOfNextStroke = 0
-      this.$emit('animation-loading')
+      this.allStrokes = this.strokes
+      this.$emit('animation-loaded')
       if (this.ctx) {
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      }
-      if (this.strokes) {
-        this.allStrokes = this.strokes
-        this.$emit('animation-loaded')
+        this.rescaleCanvas()
       }
     }
   }
