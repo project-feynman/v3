@@ -12,15 +12,19 @@ export default new Router({
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
     {
-      path: '/:teacher_id',
-      component: () => import(/* webpackChunkName: "tutorial" */ './views/Tutorial.vue') 
+      path: '/playground',
+      component: () => import(/* webpackChunkName: "home" */ './components/Playground.vue')
     },
     {
-      path: '/:teacher_id/workspace/:id',
-      component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue') 
+      path: '/:class_id',
+      component: () => import(/* webpackChunkName: "tutorial" */ './views/Tutorial.vue')
     },
     {
-      path: '/:teacher_id/:id',
+      path: '/:class_id/workspace/:id',
+      component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue')
+    },
+    {
+      path: '/:class_id/:id',
       component: () => import(/* webpackChunkName: "video" */ './views/DoodleVideo.vue')
     }
   ]

@@ -22,7 +22,6 @@ export default new Vuex.Store({
   },
   actions: {
     async handleUserLogic(context, user) {
-      console.log('user', user)
       let simplifiedUser = {
         name: user.displayName || "Anonymous",
         uid: user.uid,

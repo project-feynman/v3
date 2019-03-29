@@ -26,7 +26,7 @@ export default {
   methods: {
     async initWorkspace() {
       if (!this.isFetchingUser && this.user) {
-        const classID = this.$route.params.teacher_id
+        const classID = this.$route.params.class_id 
         const ref = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
         const workspace = await ref.get()
         if (!workspace.exists) {

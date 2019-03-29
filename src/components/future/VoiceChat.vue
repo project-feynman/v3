@@ -1,15 +1,13 @@
 <template>
   <div>
     <!-- <p>{{ debug }}</p> -->
-
-    <v-btn v-if="connected" @click="endVoiceChat()">End Voice Chat</v-btn>
+    <v-btn v-if="connected" @click="endVoiceChat()">END VOICE CHAT</v-btn>
     <v-btn v-if="!connected && !waiting" @click="joinVoiceChat()">
       Join
-      <strong v-if="waitingPeers.length>0">&nbsp;{{waitingPeers.join(", ")}}&nbsp;</strong>
+      <strong v-if="waitingPeers.length>0">&nbsp;{{ waitingPeers.join(", ") }}&nbsp;</strong>
       Voice Chat
     </v-btn>
-    <v-btn v-if="!connected && waiting" @click="cancelVoiceRequest()">Waiting/Cancel</v-btn>
-
+    <v-btn v-if="!connected && waiting" @click="cancelVoiceRequest()">WAITING/CANCEL</v-btn>
     <audio id="vc-audio"/>
   </div>
 </template>
@@ -70,7 +68,6 @@ export default {
         .doc(workspaceId)
         .collection("peers");
       const isInitator = await peersRef.get().then(querySnapshot => {
-        console.log("querySnapshot");
         console.log(querySnapshot);
         return querySnapshot.empty;
       });
