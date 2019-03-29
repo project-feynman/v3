@@ -16,7 +16,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['workspace', 'isRecording', 'isAnswered', 'color', 'colors', 'disableTouch', 'lineWidth', 'whiteboardID'],
+  props: ['workspace', 'isRecording', 'isAnswered', 'color', 'disableTouch', 'lineWidth', 'whiteboardID'],
   components: {
     Swatches
   },
@@ -73,7 +73,6 @@ export default {
   },
   created() {
     this.strokesRef = db.collection('whiteboards').doc(this.whiteboardID).collection('strokes')
-    // this.strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
   },
   mounted() {
     this.canvas = document.getElementById('myCanvas')
@@ -127,7 +126,6 @@ export default {
       this.addStrokesListener() 
     },
     addStrokesListener() {
-      // const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes').orderBy('strokeNumber')
       this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
@@ -176,12 +174,8 @@ export default {
       if (e.touches.length != 1) {
         return 
       }
-      if (this.disableTouch) {
-        if (e.touches.length == 1) {
-          if (e.touches[0].touchType != 'stylus') {
-            return
-          } 
-        }
+      if (this.disableTouch && this.isFinger(e)) {
+        return
       }
       this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
@@ -195,12 +189,8 @@ export default {
       if (e.touches.length != 1) {
         return 
       }
-      if (this.disableTouch) {
-        if (e.touches.length == 1) {
-          if (e.touches[0].touchType != 'stylus') {
-            return
-          } 
-        }
+      if (this.disableTouch && this.isFinger(e)) {
+        return
       }
       e.preventDefault()
       this.getTouchPos(e)
@@ -219,13 +209,11 @@ export default {
         color: this.color,
         lineWidth: this.lineWidth
       }
-   
       stroke.startTime = Number(this.startTime),
       stroke.endTime = Number(this.currentTime.toFixed(1))
       stroke.points = this.currentStroke
       // save 
       this.allStrokes.push(stroke)
-      // const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
       this.strokesRef.doc(`${strokeNumber}`).set(stroke)
       // reset 
       this.currentStroke = []
@@ -235,7 +223,15 @@ export default {
       const finger1 = e.touches[0] 
       this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
       this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
-    }
+    },
+    isFinger(e) {
+      if (e.touches.length == 1) {
+        if (e.touches[0].touchType != 'stylus') {
+          return true 
+        } 
+      }
+      return false
+    },
   }
 }
 </script>
