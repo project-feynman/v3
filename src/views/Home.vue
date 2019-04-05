@@ -12,17 +12,19 @@
 
     <transition name="fade" mode="out-in" @after-leave="transitionFinished = true">
       <!-- EINSTEIN'S QUOTE -->
-      <v-layout v-if="isFetchingUser" key="quote" align-center justify-center row fill-height wrap>
+      <!-- <v-layout v-if="isFetchingUser" key="quote" align-center justify-center row fill-height wrap>
         <blockquote class="my-quote blockquote text-md white--text">"It should be possible to explain the laws of physics to a barmaid." - Albert Einstein</blockquote>
-      </v-layout>
+      </v-layout> -->
+      <div v-if="isFetchingUser" key="quote">
+      </div>
 
       <!-- LIST OF CLASSES -->
-      <div v-else-if="user" key="class-list" class="responsive-grid mt-5">
+      <div v-if="user" key="class-list" class="responsive-grid mt-5">
         <v-layout v-for="subject in teachers" :key="subject.uid">
           <v-flex>
-            <v-card @click="$router.push(subject.courseNumber)"
+            <v-card flat @click="$router.push(subject.courseNumber)"
                     color="white" 
-                    class="black--text">
+                    class="black--text bordered">
               <v-card-title primary-title>
                 <div class="headline">
                   {{ subject.courseNumber }}
@@ -118,7 +120,7 @@ export default {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 1s;
+  transition: opacity .25s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
@@ -130,5 +132,9 @@ export default {
 	grid-gap: 30px;
 	max-width: 90%;
 	margin: 0 auto 30px;
+}
+
+.bordered {
+  border-color: black;
 }
 </style>

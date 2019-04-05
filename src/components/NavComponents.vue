@@ -1,7 +1,7 @@
 <template>
   <nav>
     <!-- NAVBAR  -->
-    <v-toolbar v-if="showNavbar" app color="white" extended extension-height="2" id="navbar">
+    <v-toolbar v-if="showNavbar" app flat color="white" extended extension-height="2" id="navbar">
       <!-- open navbar button -->
       <!-- <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/> -->
 
@@ -16,10 +16,15 @@
           v-model="newClassPopup"
           @create-class="courseNumber => createClass(courseNumber)"
         ></new-class-popup>
-        <v-btn @click="newClassPopup = true" class="pink white--text">NEW CLASS</v-btn>
+
+        <v-btn icon @click="newClassPopup = true">
+          <v-icon>add</v-icon>
+        </v-btn>
+        <!-- <v-btn flat @click="newClassPopup = true" class="pink white--text">NEW CLASS</v-btn> -->
       </template>
 
-      <v-btn v-if="user && $route.path == '/'" @click="signOut()">LOG OUT</v-btn>
+      <v-btn v-if="user && $route.path == '/'" icon @click="signOut()"><v-icon>account_circle</v-icon></v-btn>
+      <!-- <v-btn flat v-if="user && $route.path == '/'" class="grey black--text" @click="signOut()">LOG OUT</v-btn> -->
 
       <!-- loading indicator -->
       <v-progress-linear
