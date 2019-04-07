@@ -16,7 +16,7 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['workspace', 'isRecording', 'isAnswered', 'color', 'disableTouch', 'lineWidth', 'whiteboardID'],
+  props: ['whiteboardID', 'isRecording', 'isAnswered', 'color', 'disableTouch', 'lineWidth'],
   components: {
     Swatches
   },
@@ -115,7 +115,6 @@ export default {
       this.allStrokes = [] 
     },
     initData() {
-      console.log('whiteboardID =', this.whiteboardID)
       if (!this.whiteboardID) {
         return
       }
@@ -129,7 +128,6 @@ export default {
       this.continuouslySyncBoardWithDB() 
     },
     continuouslySyncBoardWithDB() {
-      console.log('continuouslySyncBoardWithDB')
       this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
@@ -153,7 +151,6 @@ export default {
       this.lastX = -1
     },
     initTouchEvents () {
-      console.log('initTouchEvents()')
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)

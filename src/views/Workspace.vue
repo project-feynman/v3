@@ -2,6 +2,11 @@
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
       <!-- <div class="text-xs-center">{{ workspace.members }}</div> -->
+      <!-- <v-layout align-center justify-center row fill-height wrap>
+        <div class="text-xs-center">
+          <v-btn @click="whiteboardPopup = true" color="pink white--text">USE WHITEBOARD</v-btn>
+        </div>
+      </v-layout> -->
       <whiteboard
           v-if="loadCanvas"
           ref="whiteboard"
@@ -14,11 +19,6 @@
           :colors="colors"
           :lineWidth="lineWidth"
       ></whiteboard>
-      <!-- <v-layout align-center justify-center row fill-height wrap>
-        <div class="text-xs-center">
-          <v-btn @click="whiteboardPopup = true" color="pink white--text">USE WHITEBOARD</v-btn>
-        </div>
-      </v-layout> -->
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
         <v-card v-if="whiteboardPopup">
           <v-toolbar id="whiteboard-toolbar" color="grey">
@@ -145,6 +145,7 @@ export default {
   created() {
     // necessary for canvas to not be invisible during initial render
     setTimeout(() => (this.loadCanvas = true), 0);
+    this.$root.$on("open-whiteboard", () => this.whiteboardPopup = true)
   },
   // beforeDestroy() {
   //   console.log("beforeDestroy()");

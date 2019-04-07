@@ -159,7 +159,8 @@ export default {
   },
   methods: {
     toggleFullscreen() {
-      this.drawerOpen = !this.drawerOpen
+      this.$root.$emit('open-whiteboard')
+      // this.drawerOpen = !this.drawerOpen
     },
     createClass(courseNumber) {
       const ref = db.collection("classes").doc(courseNumber);

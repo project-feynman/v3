@@ -13,7 +13,7 @@ export default new Router({
     },
     {
       path: '/video-chat',
-      component: () => import(/* webpackChunkName: "home" */ './views/VideoChat.vue')
+      component: () => import(/* webpackChunkName: "video-chat" */ './views/VideoChat.vue')
     },
     {
       path: '/:class_id',
