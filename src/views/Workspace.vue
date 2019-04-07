@@ -1,12 +1,24 @@
 <template>
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
-      <div class="text-xs-center">{{ workspace.members }}</div>
-      <v-layout align-center justify-center row fill-height wrap>
+      <!-- <div class="text-xs-center">{{ workspace.members }}</div> -->
+      <whiteboard
+          v-if="loadCanvas"
+          ref="whiteboard"
+          :whiteboardID="workspace.whiteboardID"
+          :workspace="workspace"
+          :isRecording="isRecording"
+          :isAnswered="whiteboard.isAnswered"
+          :disableTouch="disableTouch"
+          :color="color"
+          :colors="colors"
+          :lineWidth="lineWidth"
+      ></whiteboard>
+      <!-- <v-layout align-center justify-center row fill-height wrap>
         <div class="text-xs-center">
           <v-btn @click="whiteboardPopup = true" color="pink white--text">USE WHITEBOARD</v-btn>
         </div>
-      </v-layout>
+      </v-layout> -->
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
         <v-card v-if="whiteboardPopup">
           <v-toolbar id="whiteboard-toolbar" color="grey">
@@ -134,9 +146,9 @@ export default {
     // necessary for canvas to not be invisible during initial render
     setTimeout(() => (this.loadCanvas = true), 0);
   },
-  beforeDestroy() {
-    console.log("beforeDestroy()");
-  },
+  // beforeDestroy() {
+  //   console.log("beforeDestroy()");
+  // },
   methods: {
     handleExit() {
       this.whiteboardPopup = false;
@@ -195,44 +207,26 @@ export default {
     },
     async bindVariables() {
       if (this.prevWorkspaceRef) {
-        // the problem is, I want user presence
-        // I established that maintaining a members array
-        // is going to sufficient for now
-        // however, when do you add?
-        // adding is also simple
-        // the problem is when you leave
-        // I think the easiest way is to re-render everything
-
         // otherwise without re-rendering, there are two cases
         // 1) user closes the window or just leaves completely
         // 2) the user switched to another workspace
         // 3) component is destroyed
-
-        // something unexpected - when I witch from a workspace to a Doodle Video,
-        // the beforeCreate() is not called
         await this.prevWorkspaceRef.update({
           members: firebase.firestore.FieldValue.arrayRemove(this.user)
-        });
-        console.log("member removed");
+        })
       }
       const userUID = this.$route.params.id;
       const classID = this.$route.params.class_id;
-      const workspaceRef = db
-        .collection("classes")
-        .doc(classID)
-        .collection("workspaces")
-        .doc(userUID);
+      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(userUID);
       await this.$binding("workspace", workspaceRef);
-      this.whiteboardRef = db
-        .collection("whiteboards")
-        .doc(this.workspace.whiteboardID);
-      this.$binding("whiteboard", this.whiteboardRef);
+      this.whiteboardRef = db.collection("whiteboards").doc(this.workspace.whiteboardID)
+      this.$binding("whiteboard", this.whiteboardRef)
       // now show participants
       await workspaceRef.update({
         members: firebase.firestore.FieldValue.arrayUnion(this.user)
-      });
+      })
       this.prevWorkspaceRef = workspaceRef;
-      console.log("this.workspace.members =", this.workspace.members);
+      // console.log("this.workspace.members =", this.workspace.members);
     },
     async handleSaving(videoTitle) {
       // create a new explanation document that points to the whiteboard
@@ -242,11 +236,7 @@ export default {
         replacement: "-",
         lower: true
       });
-      const docRef = await db
-        .collection("classes")
-        .doc(classID)
-        .collection("videos")
-        .doc(videoID);
+      const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID);
       docRef.set({
         title: videoTitle,
         whiteboardID: this.workspace.whiteboardID,
@@ -254,15 +244,9 @@ export default {
         authorName: this.user.name || "Anonymous"
       });
       // initialize a new whiteboard for the workspace
-      const audioRecorder = this.$refs["audio-recorder"];
-      const newWhiteboardRef = await db
-        .collection("whiteboards")
-        .add({ isAnswered: false });
-      const workspaceRef = db
-        .collection("classes")
-        .doc(classID)
-        .collection("workspaces")
-        .doc(this.user.uid);
+      const audioRecorder = this.$refs["audio-recorder"]
+      const newWhiteboardRef = await db.collection("whiteboards").add({ isAnswered: false })
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       });

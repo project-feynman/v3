@@ -71,21 +71,19 @@ export default {
       interval: null 
     }
   },
-  created() {
+  // created() and mounted() are for initial renders of the board - I don't know why the initData watcher cannot 
+  // replace both - but in the future, we can reduce the surface area of this code
+  created () {
     this.strokesRef = db.collection('whiteboards').doc(this.whiteboardID).collection('strokes')
   },
-  mounted() {
+  mounted () {
+    // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    // for some reason, this is needed
-    if (workspace) {
-      if (!this.workspace.isAnswered) {
-        this.initTouchEvents()
-      }
-    }
-    this.addStrokesListener()
+    this.initTouchEvents()
+    this.continuouslySyncBoardWithDB()
   },
   beforeDestroy() {
     clearInterval(this.interval)
@@ -117,15 +115,21 @@ export default {
       this.allStrokes = [] 
     },
     initData() {
+      console.log('whiteboardID =', this.whiteboardID)
+      if (!this.whiteboardID) {
+        return
+      }
+      this.strokesRef = db.collection('whiteboards').doc(this.whiteboardID).collection('strokes')
       // visually wipe previous drawings
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
       this.allStrokes = [] 
       this.unsubscribe() 
-      this.addStrokesListener() 
+      this.continuouslySyncBoardWithDB() 
     },
-    addStrokesListener() {
+    continuouslySyncBoardWithDB() {
+      console.log('continuouslySyncBoardWithDB')
       this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
@@ -149,6 +153,7 @@ export default {
       this.lastX = -1
     },
     initTouchEvents () {
+      console.log('initTouchEvents()')
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
@@ -159,7 +164,6 @@ export default {
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
-      // const strokesRef = db.collection('workspaces').doc(this.$route.params.id).collection('strokes')
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         this.strokesRef.doc(`${i}`).delete()
       }

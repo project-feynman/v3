@@ -18,14 +18,17 @@
         ></new-class-popup>
 
         <v-btn icon @click="newClassPopup = true">
-          <v-icon>add</v-icon>
+          <v-icon medium>add</v-icon>
         </v-btn>
-        <!-- <v-btn flat @click="newClassPopup = true" class="pink white--text">NEW CLASS</v-btn> -->
       </template>
 
-      <v-btn v-if="user && $route.path == '/'" icon @click="signOut()"><v-icon>account_circle</v-icon></v-btn>
-      <!-- <v-btn flat v-if="user && $route.path == '/'" class="grey black--text" @click="signOut()">LOG OUT</v-btn> -->
-
+      <v-btn v-if="user && $route.path == '/'" icon @click="signOut()">
+        <v-icon medium>account_circle</v-icon>
+      </v-btn>
+  
+      <v-btn v-if="user && $route.path != '/'" icon @click="toggleFullscreen()">
+        <v-icon medium>fullscreen</v-icon>
+      </v-btn>
       <!-- loading indicator -->
       <v-progress-linear
         v-if="isLoading"
@@ -155,6 +158,9 @@ export default {
     }
   },
   methods: {
+    toggleFullscreen() {
+      this.drawerOpen = !this.drawerOpen
+    },
     createClass(courseNumber) {
       const ref = db.collection("classes").doc(courseNumber);
       ref.set({
