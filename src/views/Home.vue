@@ -24,7 +24,7 @@
           <v-flex>
             <v-card flat @click="$router.push(subject.courseNumber)"
                     color="white" 
-                    class="black--text bordered">
+                    class="black--text cursor-pointer">
               <v-card-title primary-title>
                 <div class="headline">
                   {{ subject.courseNumber }}
@@ -120,7 +120,7 @@ export default {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+  transition: opacity .7s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
@@ -134,7 +134,7 @@ export default {
 	margin: 0 auto 30px;
 }
 
-.bordered {
-  border-color: black;
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
