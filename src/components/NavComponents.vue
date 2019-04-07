@@ -58,14 +58,18 @@
             :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
           >
             <template v-if="workspace.members">
-              <v-badge v-if="workspace.members.length != 0" color="red">
+              <template v-if="workspace.members.length != 0">
                 <v-list-tile-title>
-                  {{ idx }}
-                  ({{ workspace.members.length }} people)
+                  Workspace {{ idx }}
                 </v-list-tile-title>
-                <v-icon slot="badge" dark small>priority_high</v-icon>
-              </v-badge>
-              <div v-else class="text-xs-center">{{ idx }}</div>
+                <v-icon 
+                  v-for="idx in workspace.members.length + 2" 
+                  :key="idx"
+                  color="pink">
+                  person
+                </v-icon>
+              </template>
+              <div v-else class="text-xs-center">Workspace {{ idx }}</div>
             </template>
 
             <v-list-tile-title v-else class="black--text">Workspace {{ idx }}</v-list-tile-title>
