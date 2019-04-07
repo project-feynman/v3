@@ -30,7 +30,6 @@ export default {
   },
   created () {
     this.connection = new RTCMultiConnection()
-    // console.log('connection =', connection)
     this.connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/'
 
     this.connection.socketMessageEvent = 'video-conference-demo';
@@ -42,43 +41,40 @@ export default {
     this.connection.sdpConstraints.mandatory = {
       OfferToReceiveAudio: true,
       OfferToReceiveVideo: true
-    };
+    }
 
     this.connection.autoCreateMediaElement = false;
     this.connection.onstream = (event) => {
-        this.videosList.push({
-            id: event.streamid,
-            srcObject: event.stream,
-            muted: event.type === 'local'
-        });
-    };
+      this.videosList.push({
+        id: event.streamid,
+        srcObject: event.stream,
+        muted: event.type === 'local'
+      })
+    }
 
     this.connection.onstreamended = (event) => {
-        var newList = [];
-        this.videosList.forEach(function(item) {
-            if(item.id !== event.streamid) {
-                newList.push(item);
-            }
-        });
-        this.videosList = newList; 
-    };
-
-    console.log('connection =', this.connection)
-
+      var newList = [];
+      this.videosList.forEach(item => {
+        if (item.id !== event.streamid) {
+          newList.push(item)
+        }
+      })
+      this.videosList = newList
+    }
   },
   mounted () {
     document.getElementById('open-room').onclick = () => {
-      this.disableInputButtons();
+      this.disableInputButtons()
       this.connection.open(document.getElementById('room-id').value, () => {
           this.showRoomURL(this.connection.sessionid);
       });
     };
     document.getElementById('join-room').onclick = () => {
-      this.disableInputButtons();
+      this.disableInputButtons()
       this.connection.join(document.getElementById('room-id').value);
     };
     document.getElementById('open-or-join-room').onclick = () => {
-      this.disableInputButtons();
+      this.disableInputButtons()
       this.connection.openOrJoin(document.getElementById('room-id').value, (isRoomExist, roomid) => {
           if (isRoomExist === false && this.connection.isInitiator === true) {
             // if room doesn't exist, it means that current user will create the room
@@ -91,7 +87,7 @@ export default {
       var params = {},
           r = /([^&=]+)=?([^&]*)/g;
       function d(s) {
-          return decodeURIComponent(s.replace(/\+/g, ' '));
+        return decodeURIComponent(s.replace(/\+/g, ' '));
       }
       var match, search = window.location.search;
       while (match = r.exec(search.substring(1)))
@@ -99,23 +95,23 @@ export default {
       window.params = params;
     })();
 
-    var roomid = '';
+    var roomid = ''
     if (localStorage.getItem(this.connection.socketMessageEvent)) {
-        roomid = localStorage.getItem(this.connection.socketMessageEvent);
+      roomid = localStorage.getItem(this.connection.socketMessageEvent)
     } else {
-        roomid = this.connection.token();
+      roomid = this.connection.token();
     }
-    document.getElementById('room-id').value = roomid;
+    document.getElementById('room-id').value = roomid
     document.getElementById('room-id').onkeyup = () => {
         localStorage.setItem(this.connection.socketMessageEvent, document.getElementById('room-id').value);
-    };
+    }
     var hashString = location.hash.replace('#', '');
     if (hashString.length && hashString.indexOf('comment-') == 0) {
-        hashString = '';
+      hashString = ''
     }
-    var roomid = params.roomid;
+    var roomid = params.roomid
     if (!roomid && hashString.length) {
-        roomid = hashString;
+        roomid = hashString
     }
     if (roomid && roomid.length) {
         document.getElementById('room-id').value = roomid;
@@ -132,12 +128,12 @@ export default {
         })();
         this.disableInputButtons();
     }
-    // detect 2G
-    if(navigator.connection &&
-      navigator.connection.type === 'cellular' &&
-      navigator.connection.downlinkMax <= 0.115) {
-      alert('2G is not supported. Please use a better internet service.');
-    }
+    // // detect 2G
+    // if(navigator.connection &&
+    //   navigator.connection.type === 'cellular' &&
+    //   navigator.connection.downlinkMax <= 0.115) {
+    //   alert('2G is not supported. Please use a better internet service.');
+    // }
   },
   methods: {
     disableInputButtons () {
@@ -148,15 +144,15 @@ export default {
       document.getElementById('room-id').disabled = true;
     },
     showRoomURL (roomid) {
-      var roomHashURL = '#' + roomid;
-      var roomQueryStringURL = '?roomid=' + roomid;
-      var html = '<h2>Unique URL for your room:</h2><br>';
-      html += 'Hash URL: <a href="' + roomHashURL + '" target="_blank">' + roomHashURL + '</a>';
-      html += '<br>';
-      html += 'QueryString URL: <a href="' + roomQueryStringURL + '" target="_blank">' + roomQueryStringURL + '</a>';
-      var roomURLsDiv = document.getElementById('room-urls');
+      var roomHashURL = '#' + roomid
+      var roomQueryStringURL = '?roomid=' + roomid
+      var html = '<h2>Unique URL for your room:</h2><br>'
+      html += 'Hash URL: <a href="' + roomHashURL + '" target="_blank">' + roomHashURL + '</a>'
+      html += '<br>'
+      html += 'QueryString URL: <a href="' + roomQueryStringURL + '" target="_blank">' + roomQueryStringURL + '</a>'
+      var roomURLsDiv = document.getElementById('room-urls')
       roomURLsDiv.innerHTML = html;
-      roomURLsDiv.style.display = 'block';
+      roomURLsDiv.style.display = 'block'
     }
   }
 }

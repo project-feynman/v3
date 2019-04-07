@@ -36,7 +36,6 @@
         class="ma-0"
       />
     </v-toolbar>
-    <!-- v-if="user && $route.path != '/'" -->
     <v-navigation-drawer app stateless v-if="$route.path != '/'" v-model="drawerOpen">
       <v-list>
         <v-list-tile router to="/">
@@ -65,7 +64,8 @@
                 <v-icon 
                   v-for="idx in workspace.members.length + 2" 
                   :key="idx"
-                  color="pink">
+                  color="pink"
+                >
                   person
                 </v-icon>
               </template>
@@ -80,16 +80,6 @@
           <v-list-tile slot="activator">
             <v-list-tile-title>Saved Explanations</v-list-tile-title>
           </v-list-tile>
-          <!-- 
-        <v-list-group
-          no-action
-          sub-group
-          value="true"
-          >-->
-          <!-- <v-list-tile slot="activator">
-            <v-list-tile-title>Concepts</v-list-tile-title>
-          </v-list-tile>-->
-
           <v-list-tile
             v-for="explanation in teacherExplanations"
             :key="explanation['.key']"
@@ -99,8 +89,6 @@
             <v-list-tile-title>{{ explanation.title }}</v-list-tile-title>
           </v-list-tile>
         </v-list-group>
-        <!-- 
-        </v-list-group>-->
       </v-list>
     </v-navigation-drawer>
   </nav>
