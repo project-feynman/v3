@@ -1,20 +1,18 @@
 <template>
   <div style="height: 90%;">
-
+    <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn color="pink"
-             flat
-             @click="snackbar = false">
+      <v-btn 
+        color="pink"
+        flat
+        @click="snackbar = false"
+      >
         CLOSE
       </v-btn>
     </v-snackbar>
 
     <transition name="fade" mode="out-in" @after-leave="transitionFinished = true">
-      <!-- EINSTEIN'S QUOTE -->
-      <!-- <v-layout v-if="isFetchingUser" key="quote" align-center justify-center row fill-height wrap>
-        <blockquote class="my-quote blockquote text-md white--text">"It should be possible to explain the laws of physics to a barmaid." - Albert Einstein</blockquote>
-      </v-layout> -->
       <div v-if="isFetchingUser" key="quote">
       </div>
 
@@ -47,10 +45,11 @@
             LOGIN
           </v-btn>
         </div>
-        <login-popup v-model="loginPopup" 
-                     @sign-up="payload => signUp(payload)"
-                     @sign-in="payload => signIn(payload)">
-        </login-popup>
+        <login-popup 
+          v-model="loginPopup" 
+          @sign-up="payload => signUp(payload)"
+          @sign-in="payload => signIn(payload)"
+        />
       </div>
     </transition>
 

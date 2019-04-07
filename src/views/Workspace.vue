@@ -2,11 +2,11 @@
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
       <!-- <div class="text-xs-center">{{ workspace.members }}</div> -->
+      <video-chat :workspaceID="workspace['.key']"/>
       <whiteboard
           v-if="loadCanvas"
           ref="whiteboard"
           :whiteboardID="workspace.whiteboardID"
-          :workspace="workspace"
           :isRecording="isRecording"
           :isAnswered="whiteboard.isAnswered"
           :disableTouch="disableTouch"
@@ -85,16 +85,16 @@
 </template>
 
 <script>
-import firebase from "firebase/app";
-import "firebase/firestore";
-import db from "@/database.js";
-import Whiteboard from "@/components/Whiteboard.vue";
-import SaveVideoPopup from "@/components/SaveVideoPopup.vue";
-import AudioRecorder from "@/components/AudioRecorder.vue";
-import DoodleVideo from "@/views/DoodleVideo.vue";
-import Swatches from "vue-swatches";
-import "vue-swatches/dist/vue-swatches.min.css";
-import slugify from "slugify";
+import firebase from "firebase/app"
+import "firebase/firestore"
+import db from "@/database.js"
+import Whiteboard from "@/components/Whiteboard.vue"
+import SaveVideoPopup from "@/components/SaveVideoPopup.vue"
+import AudioRecorder from "@/components/AudioRecorder.vue"
+import VideoChat from "@/components/VideoChat.vue"
+import Swatches from "vue-swatches"
+import "vue-swatches/dist/vue-swatches.min.css"
+import slugify from "slugify"
 
 import { mapState } from "vuex";
 
@@ -102,9 +102,9 @@ export default {
   components: {
     Whiteboard,
     SaveVideoPopup,
+    VideoChat,
     AudioRecorder,
     Swatches,
-    DoodleVideo
   },
   computed: {
     ...mapState(["user"])

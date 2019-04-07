@@ -1,15 +1,15 @@
 <template>
   <!-- https://github.com/muaz-khan/RTCMultiConnection/blob/master/demos/vuejs-video-conferencing.html -->
   <div>
-    <h1>VIDEO CHAT</h1>
     <input type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
     <div id="open-room">Open Room</div> 
     <div id="join-room">Join Room</div> 
     <div id="open-or-join-room">Open or Join Room</div> 
+    <v-btn @click="leaveRoom()">Leave voice chat</v-btn>
     <todo-item
       v-for="item in videosList"
-      v-bind:todo="item"
-      v-bind:key="item.id">
+      :todo="item"
+      :key="item.id">
     </todo-item>
     <div id="room-urls" style="text-align: center;display: none;background: #F1EDED;margin: 15px -10px;border: 1px solid rgb(189, 189, 189);border-left: 0;border-right: 0;"></div>
   </div>
@@ -19,6 +19,7 @@
 import TodoItem from '@/components/TodoItem.vue'
 
 export default {
+  props: ['workspaceID'],
   components: {
     TodoItem
   },
@@ -26,6 +27,11 @@ export default {
     return {
       videosList: [],
       connection: null
+    }
+  },
+  watch: {
+    workspaceID: {
+      handler: 'leavePrevAndJoinNew'
     }
   },
   created () {
@@ -53,7 +59,7 @@ export default {
     }
 
     this.connection.onstreamended = (event) => {
-      var newList = [];
+      var newList = []
       this.videosList.forEach(item => {
         if (item.id !== event.streamid) {
           newList.push(item)
@@ -66,22 +72,22 @@ export default {
     document.getElementById('open-room').onclick = () => {
       this.disableInputButtons()
       this.connection.open(document.getElementById('room-id').value, () => {
-          this.showRoomURL(this.connection.sessionid);
-      });
-    };
+        this.showRoomURL(this.connection.sessionid)
+      })
+    }
     document.getElementById('join-room').onclick = () => {
       this.disableInputButtons()
-      this.connection.join(document.getElementById('room-id').value);
-    };
+      this.connection.join(document.getElementById('room-id').value)
+    }
     document.getElementById('open-or-join-room').onclick = () => {
       this.disableInputButtons()
       this.connection.openOrJoin(document.getElementById('room-id').value, (isRoomExist, roomid) => {
-          if (isRoomExist === false && this.connection.isInitiator === true) {
-            // if room doesn't exist, it means that current user will create the room
-            this.showRoomURL(roomid);
-          }
-      });
-    };
+        if (isRoomExist === false && this.connection.isInitiator === true) {
+          // if room doesn't exist, it means that current user will create the room
+          this.showRoomURL(roomid);
+        }
+      })
+    }
 
     (function() {
       var params = {},
@@ -91,51 +97,71 @@ export default {
       }
       var match, search = window.location.search;
       while (match = r.exec(search.substring(1)))
-          params[d(match[1])] = d(match[2]);
-      window.params = params;
-    })();
+          params[d(match[1])] = d(match[2])
+      window.params = params
+    })()
 
     var roomid = ''
     if (localStorage.getItem(this.connection.socketMessageEvent)) {
       roomid = localStorage.getItem(this.connection.socketMessageEvent)
     } else {
-      roomid = this.connection.token();
+      roomid = this.connection.token()
     }
+    roomid = this.workspaceID
     document.getElementById('room-id').value = roomid
     document.getElementById('room-id').onkeyup = () => {
-        localStorage.setItem(this.connection.socketMessageEvent, document.getElementById('room-id').value);
+      localStorage.setItem(this.connection.socketMessageEvent, document.getElementById('room-id').value)
     }
-    var hashString = location.hash.replace('#', '');
+    var hashString = location.hash.replace('#', '')
     if (hashString.length && hashString.indexOf('comment-') == 0) {
       hashString = ''
     }
+    // console.log('params =', params)
+    // console.log('hashString =', hashString)
     var roomid = params.roomid
     if (!roomid && hashString.length) {
-        roomid = hashString
+      roomid = hashString
     }
+    // JOIN ROOM 
+
+    this.openOrJoinRoom()
+
     if (roomid && roomid.length) {
-        document.getElementById('room-id').value = roomid;
-        localStorage.setItem(this.connection.socketMessageEvent, roomid);
-        // auto-join-room
-        (function reCheckRoomPresence() {
-            this.connection.checkPresence(roomid, function(isRoomExist) {
-                if (isRoomExist) {
-                    this.connection.join(roomid);
-                    return;
-                }
-                setTimeout(reCheckRoomPresence, 5000);
-            });
-        })();
-        this.disableInputButtons();
+      document.getElementById('room-id').value = roomid
+      localStorage.setItem(this.connection.socketMessageEvent, roomid)
+      // auto-join-room
+      (function reCheckRoomPresence() {
+        this.connection.checkPresence(roomid, function(isRoomExist) {
+          if (isRoomExist) {
+              this.connection.join(roomid)
+              return
+          }
+          setTimeout(reCheckRoomPresence, 5000)
+        })
+      })()
+      this.disableInputButtons()
     }
-    // // detect 2G
-    // if(navigator.connection &&
-    //   navigator.connection.type === 'cellular' &&
-    //   navigator.connection.downlinkMax <= 0.115) {
-    //   alert('2G is not supported. Please use a better internet service.');
-    // }
   },
   methods: {
+    leavePrevAndJoinNew() {
+      this.videoList = [] 
+    },
+    leaveRoom () {
+      this.connection.getAllParticipants().forEach(participantId => {
+          console.log('disconnecting participant =', participantId)
+          this.connection.disconnectWith( participantId );
+      });
+      this.videosList = [] 
+    },
+    openOrJoinRoom () {
+      this.disableInputButtons()
+      this.connection.openOrJoin(document.getElementById('room-id').value, (isRoomExist, roomid) => {
+        if (isRoomExist === false && this.connection.isInitiator === true) {
+          // if room doesn't exist, it means that current user will create the room
+          this.showRoomURL(roomid)
+        }
+      })
+    },
     disableInputButtons () {
       document.getElementById('room-id').onkeyup();
       document.getElementById('open-or-join-room').disabled = true;
