@@ -2,12 +2,10 @@
   <nav>
     <!-- NAVBAR  -->
     <v-toolbar v-if="showNavbar" app flat color="white" extended extension-height="2" id="navbar">
-      <!-- open navbar button -->
-      <!-- <v-toolbar-side-icon v-if="user && $route.path != '/'" @click="drawerOpen = !drawerOpen"/> -->
-
-      <v-toolbar-title
-        class="headline font-weight-light"
-      >{{ $route.params.teacher_id ? $route.params.teacher_id : "ExplainMIT" }}</v-toolbar-title>
+      <img src="favicon.ico">
+      <v-toolbar-title class="headline font-weight-light ml-2">
+        {{ $route.params.class_id ? $route.params.class_id : "ExplainMIT" }}
+      </v-toolbar-title>
 
       <v-spacer></v-spacer>
 

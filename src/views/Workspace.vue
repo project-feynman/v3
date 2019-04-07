@@ -2,11 +2,6 @@
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
       <!-- <div class="text-xs-center">{{ workspace.members }}</div> -->
-      <!-- <v-layout align-center justify-center row fill-height wrap>
-        <div class="text-xs-center">
-          <v-btn @click="whiteboardPopup = true" color="pink white--text">USE WHITEBOARD</v-btn>
-        </div>
-      </v-layout> -->
       <whiteboard
           v-if="loadCanvas"
           ref="whiteboard"
