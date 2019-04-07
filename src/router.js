@@ -12,8 +12,8 @@ export default new Router({
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
     {
-      path: '/playground',
-      component: () => import(/* webpackChunkName: "home" */ './components/Playground.vue')
+      path: '/video-chat',
+      component: () => import(/* webpackChunkName: "home" */ './views/VideoChat.vue')
     },
     {
       path: '/:class_id',
