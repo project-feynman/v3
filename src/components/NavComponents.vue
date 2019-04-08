@@ -66,7 +66,7 @@
                   Workspace {{ idx }}
                 </v-list-tile-title>
                 <v-icon 
-                  v-for="idx in workspace.members.length + 2" 
+                  v-for="idx in workspace.members.length" 
                   :key="idx"
                   color="pink"
                 >
@@ -157,7 +157,6 @@ export default {
     },
     toggleFullscreen() {
       this.$root.$emit('open-whiteboard')
-      // this.drawerOpen = !this.drawerOpen
     },
     createClass(courseNumber) {
       const ref = db.collection("classes").doc(courseNumber);

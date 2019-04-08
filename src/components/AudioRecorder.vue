@@ -69,7 +69,7 @@ export default {
     },
     downloadAudioFile () {
       this.$emit('recorder-loading')
-      console.log('downloadAudioFile')
+      // console.log('downloadAudioFile')
       if (this.audioURL) {
         let xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'

@@ -11,12 +11,6 @@
         </div>
       </v-layout>
 
-      <!-- <template v-if="explanation">
-        <div v-if="!explanation.audioURL" class="text-xs-center">
-          <v-btn @click="quickplay()">REPLAY DOODLE</v-btn>
-        </div>
-      </template> -->
-
       <animation
         v-if="allStrokes"
         ref="animation"
@@ -35,7 +29,7 @@
           @recorder-loaded="recorderLoaded=true"
         />
       </template>
-
+      
       <template>
         <!-- FUTURE FIX -->
         <!-- <audio-recorder
@@ -128,7 +122,6 @@ export default {
       const ref = db.collection("classes").doc(classID).collection("videos").doc(this.$route.params.video_id)
       const videoDoc = await ref.get()
       this.video = videoDoc.data()
-      console.log('video =', this.video)
       this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID);
       const whiteboardDoc = await this.whiteboardRef.get()
       this.explanation = whiteboardDoc.data()
@@ -138,7 +131,6 @@ export default {
       if (this.explanation.audioPath) {
         await this.$binding('allStrokes', strokesRef.orderBy('startTime', 'asc'))
       } else {
-        console.log('has no audioPath')
         await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'))
       }
 
