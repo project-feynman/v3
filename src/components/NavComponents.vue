@@ -23,8 +23,12 @@
       <v-btn v-if="user && $route.path == '/'" icon @click="signOut()">
         <v-icon medium>account_circle</v-icon>
       </v-btn>
-  
-      <v-btn v-if="user && $route.path != '/'" icon @click="toggleFullscreen()">
+      
+      <v-btn v-else-if="user && $route.params.video_id" icon @click="replaySilentAnimation()">
+        <v-icon medium>replay</v-icon>
+      </v-btn>
+
+      <v-btn v-else-if="user && $route.path != '/' " icon @click="toggleFullscreen()">
         <v-icon medium>fullscreen</v-icon>
       </v-btn>
       <!-- loading indicator -->
@@ -148,6 +152,9 @@ export default {
     }
   },
   methods: {
+    replaySilentAnimation () {
+      this.$root.$emit('replay-silent-animation')
+    },
     toggleFullscreen() {
       this.$root.$emit('open-whiteboard')
       // this.drawerOpen = !this.drawerOpen

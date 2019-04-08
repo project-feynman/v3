@@ -10,19 +10,35 @@
           </template>
         </div>
       </v-layout>
-      <template>
-        <animation
-          v-if="allStrokes"
-          ref="animation"
-          :strokes="allStrokes"
-          @animation-loaded="animationLoaded=true"
-          @animation-finished="handleEvent()"
+
+      <!-- <template v-if="explanation">
+        <div v-if="!explanation.audioURL" class="text-xs-center">
+          <v-btn @click="quickplay()">REPLAY DOODLE</v-btn>
+        </div>
+      </template> -->
+
+      <animation
+        v-if="allStrokes"
+        ref="animation"
+        :strokes="allStrokes"
+        @animation-loaded="animationLoaded=true"
+        @animation-finished="handleEvent()"
+      />
+
+      <template v-if="explanation">
+        <audio-recorder
+          v-if="explanation.audioURL"
+          ref="audio-recorder"
+          :audioURL="explanation.audioURL"
+          @play="syncAnimation()"
+          @seeking="syncAnimation()"
+          @recorder-loaded="recorderLoaded=true"
         />
       </template>
 
       <template>
-        <!-- QUICKFIX -->
-        <audio-recorder
+        <!-- FUTURE FIX -->
+        <!-- <audio-recorder
           v-if="audioURL"
           ref="audio-recorder"
           :audioURL="audioURL"
@@ -30,17 +46,7 @@
           @play="syncAnimation()"
           @seeking="syncAnimation()"
           @recorder-loaded="recorderLoaded=true"
-        />
-
-        <!-- BACKWARDS COMPATIBILITY -->
-        <audio-recorder
-          v-else-if="explanation"
-          ref="audio-recorder"
-          :audioURL="explanation.audioURL"
-          @play="syncAnimation()"
-          @seeking="syncAnimation()"
-          @recorder-loaded="recorderLoaded=true"
-        />
+        /> -->
       </template>
     </v-container>
   </div>
@@ -70,7 +76,7 @@ export default {
       return this.recorderLoaded && this.animationLoaded;
     }
   },
-  data() {
+  data () {
     return {
       video: null,
       explanation: null,
@@ -80,11 +86,11 @@ export default {
       whiteboardRef: null,
       audioFileRef: null,
       allStrokes: null
-    };
+    }
   },
   watch: {
     $route: {
-      handler: "bindVariables",
+      handler: 'bindVariables',
       immediate: true
     }
   },
@@ -93,29 +99,22 @@ export default {
       if (this.syncedVisualAndAudio) {
         return;
       } else if (this.resourcesLoaded) {
-        const audioRecorder = this.$refs["audio-recorder"];
-        const animation = this.$refs["animation"];
-        animation.startSync(audioRecorder.getAudioTime);
-        this.syncedVisualAndAudio = true;
+        const audioRecorder = this.$refs["audio-recorder"]
+        const animation = this.$refs["animation"]
+        animation.startSync(audioRecorder.getAudioTime)
+        this.syncedVisualAndAudio = true
       }
     },
     deleteVideo() {
-      const classID = this.$route.params.class_id;
-      const videoRef = db
-        .collection("classes")
-        .doc(classID)
-        .collection("videos")
-        .doc(this.$route.params.id);
-      videoRef.delete();
+      const classID = this.$route.params.class_id
+      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
+      videoRef.delete()
       // delete the strokes (screw the subcollections for who honestly cares)
-      this.whiteboardRef.delete();
-      this.audioFileRef.delete();
-      console.log(
-        "successfully deleted master document, strokes and audio file"
-      );
+      this.whiteboardRef.delete()
+      this.audioFileRef.delete()
     },
     quickplay() {
-      const animation = this.$refs["animation"];
+      const animation = this.$refs["animation"]
       animation.quickplay();
     },
     async bindVariables() {
@@ -126,32 +125,29 @@ export default {
       const classID = this.$route.params.class_id;
 
       // fetch video document
-      const ref = db
-        .collection("classes")
-        .doc(classID)
-        .collection("videos")
-        .doc(this.$route.params.id);
-      const videoDoc = await ref.get();
-      this.video = videoDoc.data();
+      const ref = db.collection("classes").doc(classID).collection("videos").doc(this.$route.params.video_id)
+      const videoDoc = await ref.get()
+      this.video = videoDoc.data()
+      console.log('video =', this.video)
+      this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID);
+      const whiteboardDoc = await this.whiteboardRef.get()
+      this.explanation = whiteboardDoc.data()
 
       // bind strokes
-      const strokesRef = db
-        .collection("whiteboards")
-        .doc(this.video.whiteboardID)
-        .collection("strokes")
-        .orderBy("startTime", "asc");
-      await this.$binding("allStrokes", strokesRef);
+      const strokesRef = db.collection('whiteboards').doc(this.video.whiteboardID).collection('strokes')
+      if (this.explanation.audioPath) {
+        await this.$binding('allStrokes', strokesRef.orderBy('startTime', 'asc'))
+      } else {
+        console.log('has no audioPath')
+        await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'))
+      }
+
+      // other setup
+      this.$root.$on('replay-silent-animation', this.quickplay)
 
       // now bind references to make it easy to delete things
-      this.whiteboardRef = db
-        .collection("whiteboards")
-        .doc(this.video.whiteboardID);
-      const whiteboardDoc = await this.whiteboardRef.get();
-      this.explanation = whiteboardDoc.data();
-      const storageRef = firebase.storage().ref();
-      this.audioFileRef = storageRef.child(
-        `recordings/${this.explanation.audioPath}`
-      );
+      const storageRef = firebase.storage().ref()
+      this.audioFileRef = storageRef.child(`recordings/${this.explanation.audioPath}`)
     }
   }
 };

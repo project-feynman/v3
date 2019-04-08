@@ -1,11 +1,15 @@
 <template>
   <!-- https://github.com/muaz-khan/RTCMultiConnection/blob/master/demos/vuejs-video-conferencing.html -->
   <div>
-    <input type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
-    <div id="open-room">Open Room</div> 
-    <div id="join-room">Join Room</div> 
-    <div id="open-or-join-room">Open or Join Room</div> 
-    <v-btn @click="leaveRoom()">Leave voice chat</v-btn>
+    <div v-show="false">
+      <input type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
+      <div id="open-room">Open Room</div> 
+      <div id="join-room">Join Room</div> 
+      <div id="open-or-join-room">Open or Join Room</div> 
+    </div>
+    <div class="text-xs-center">
+      <v-btn @click="leaveRoom()">Leave voice chat</v-btn>
+    </div>
     <todo-item
       v-for="item in videosList"
       :todo="item"

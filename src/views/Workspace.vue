@@ -16,6 +16,12 @@
       ></whiteboard>
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
         <v-card v-if="whiteboardPopup">
+          <!-- SAVE VIDEO POPUP -->
+          <save-video-popup
+            v-model="saveVideoPopup"
+            @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+            fullscreen
+          />
           <v-toolbar id="whiteboard-toolbar" color="grey">
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -28,27 +34,39 @@
                   swatch-size="55"
                   :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
                 ></swatches>
-                <v-btn @click="useEraser()">ERASER</v-btn>
-                <v-btn @click="clearWhiteboard()">CLEAR BOARD</v-btn>
-                <v-btn
-                  @click="toggleDisableTouch()"
-                >{{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}</v-btn>
+                <v-btn @click="useEraser()">
+                  ERASER
+                </v-btn>
+                <v-btn @click="clearWhiteboard()">
+                  CLEAR BOARD
+                </v-btn>
+                <v-btn @click="toggleDisableTouch()">
+                  {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
+                </v-btn>
+                <v-btn @click="saveVideoPopup = true">
+                  SAVE DOODLE
+                </v-btn>
                 <v-btn
                   v-if="!isRecording"
                   @click="startRecording()"
                   color="pink white--text"
-                >START VIDEO</v-btn>
-                <v-btn v-else @click="stopRecording()" color="pink white--text">STOP VIDEO</v-btn>
+                >
+                  RECORD VIDEO
+                </v-btn>
+                <v-btn v-else @click="stopRecording()" color="pink white--text">
+                  STOP VIDEO
+                </v-btn>
               </template>
               <template v-else>
-                <v-btn @click="quickplay()">PREVIEW</v-btn>
-                <v-btn @click="retryAnswer()">RETRY</v-btn>
-                <v-btn @click="saveVideoPopup = true" class="pink white--text">SAVE VIDEO</v-btn>
-                <save-video-popup
-                  v-model="saveVideoPopup"
-                  @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-                  fullscreen
-                />
+                <v-btn @click="quickplay()">
+                  PREVIEW
+                </v-btn>
+                <v-btn @click="retryAnswer()">
+                  RETRY
+                </v-btn>
+                <v-btn @click="saveVideoPopup = true" class="pink white--text">
+                  SAVE VIDEO
+                </v-btn>
               </template>
               <v-btn dark flat @click="handleExit()">EXIT</v-btn>
             </v-toolbar-items>
@@ -75,11 +93,6 @@
           />
         </v-card>
       </v-dialog>
-      <!-- VIDEO PLAYER -->
-      <!-- <doodle-video ref="doodle-video"
-                      :audioURL="workspace.audioURL" 
-                      :workspaceId="$route.params.id">     
-      </doodle-video>-->
     </v-container>
   </div>
 </template>
@@ -226,27 +239,25 @@ export default {
     },
     async handleSaving(videoTitle) {
       // create a new explanation document that points to the whiteboard
-      const whiteboard = this.$refs["whiteboard"];
-      const classID = this.$route.params.class_id;
+      const classID = this.$route.params.class_id
       const videoID = slugify(videoTitle, {
-        replacement: "-",
+        replacement: '-',
         lower: true
-      });
-      const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID);
+      })
+      const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
       docRef.set({
         title: videoTitle,
         whiteboardID: this.workspace.whiteboardID,
-        authorUid: this.user.uid || "Anonymous",
-        authorName: this.user.name || "Anonymous"
-      });
+        authorUID: this.user.uid || 'Anonymous',
+        authorName: this.user.name || 'Anonymous'
+      })
       // initialize a new whiteboard for the workspace
-      const audioRecorder = this.$refs["audio-recorder"]
       const newWhiteboardRef = await db.collection("whiteboards").add({ isAnswered: false })
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
-      });
-      this.$root.$emit("audio-uploaded", docRef.id);
+      })
+      this.$root.$emit('audio-uploaded', docRef.id)
     }
   }
 };
