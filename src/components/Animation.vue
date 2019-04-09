@@ -2,7 +2,7 @@
   <div id="whiteboard">
     <canvas id="myCanvas" 
             style="width: 100%;
-                   height: 75vh;
+                   height: 90vh;
                    background-color: rgb(192, 230, 253);">
     </canvas>
   </div>
@@ -17,6 +17,9 @@ export default {
   props: {
     strokes: {
       type: Array
+    },
+    autoplay: {
+      type: Boolean
     }
   },
   watch: {
@@ -60,13 +63,20 @@ export default {
     }
   },
   mounted() {
+    console.log('mounted')
     this.$root.$on('whiteboard-closed', () => {
       this.initData()
     })
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
-    this.rescaleCanvas() // should rename to rescale and redraw
+    if (this.autoplay) {
+      this.rescaleCanvas()
+      setTimeout(this.quickplay, 1000)
+    } else {
+      this.rescaleCanvas() // should rename to rescale and redraw
+    }
     window.addEventListener('resize', this.rescaleCanvas, false)
+
   },
   beforeDestroy() {
     // clean up everything - needs testing

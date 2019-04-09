@@ -41,11 +41,17 @@
       <!-- LOGIN BUTTON -->
       <div v-else>
         <!-- ADD DRAWINGS HERE -->
+
         <div class="text-xs-center mt-3">
           <p>Here, friends and strangers alike explain concepts simply to help each other</p>
           <v-btn bottom large @click="loginPopup = !loginPopup">
             LOGIN
           </v-btn>
+          <animation 
+            v-if="strokes"
+            :strokes="strokes"
+            :autoplay="true">
+          </animation>
         </div>
         <login-popup 
           v-model="loginPopup" 
@@ -65,11 +71,13 @@ import 'firebase/auth'
 import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
 import LoginPopup from '@/components/LoginPopup.vue'
+import DoodleAnimation from '@/components/DoodleAnimation.vue'
 
 export default {
   components: {
     Animation,
-    LoginPopup
+    LoginPopup,
+    DoodleAnimation
   },
   computed: {
     ...mapState(['user', 'isFetchingUser'])
@@ -106,11 +114,22 @@ export default {
       transitionFinished: false,
       loginPopup: false,
       snackbar: false,
-      snackbarMessage: ''
+      snackbarMessage: '',
+      demoDoodle: null,
+      strokes: null
     }
   },
   async created() {
     this.$binding('teachers', db.collection('classes'))
+    const demoRef = db.collection('whiteboards')
+    // const demoRef = db.collection('whiteboards').orderBy('audioPath', 'asc').limit(1)
+    await this.$binding('demoDoodle', demoRef)
+    console.log('demoDoodle =', this.demoDoodle)
+    const randomNumber = Math.floor(Math.random() * this.demoDoodle.length);
+    const strokesRef = db.collection('whiteboards').doc(this.demoDoodle[randomNumber]['.key']).collection('strokes').orderBy('strokeNumber', 'asc')
+    this.$binding('strokes', strokesRef)
+    console.log('this.strokes =', this.strokes)
+ 
   }
 }
 </script>
