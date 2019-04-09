@@ -140,7 +140,7 @@ export default {
   },
   watch: {
     $route: {
-      handler: "bindVariables",
+      handler: 'bindVariables',
       immediate: true
     },
     color() {
@@ -155,9 +155,12 @@ export default {
     setTimeout(() => (this.loadCanvas = true), 0);
     this.$root.$on("open-whiteboard", () => this.whiteboardPopup = true)
   },
-  // beforeDestroy() {
-  //   console.log("beforeDestroy()");
-  // },
+  async beforeDestroy () {
+    await this.prevWorkspaceRef.update({
+      members: firebase.firestore.FieldValue.arrayRemove(this.user)
+    })
+    console.log('successfully removed member')
+  },
   methods: {
     handleExit() {
       this.whiteboardPopup = false;
@@ -171,15 +174,15 @@ export default {
       this.disableTouch = !this.disableTouch;
     },
     useEraser() {
-      this.color = "rgb(192, 230, 253)";
-      this.lineWidth = 18;
+      this.color = "rgb(192, 230, 253)"
+      this.lineWidth = 18
     },
     async retryAnswer() {
       const whiteboard = this.$refs["whiteboard"];
       whiteboard.currentTime = 0;
       await this.whiteboardRef.update({
         isAnswered: false
-      });
+      })
     },
     startRecording() {
       const audioRecorder = this.$refs["audio-recorder"];
@@ -216,26 +219,40 @@ export default {
     },
     async bindVariables() {
       if (this.prevWorkspaceRef) {
-        // otherwise without re-rendering, there are two cases
-        // 1) user closes the window or just leaves completely
-        // 2) the user switched to another workspace
-        // 3) component is destroyed
         await this.prevWorkspaceRef.update({
           members: firebase.firestore.FieldValue.arrayRemove(this.user)
         })
       }
-      const userUID = this.$route.params.id;
-      const classID = this.$route.params.class_id;
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(userUID);
-      await this.$binding("workspace", workspaceRef);
+      const userUID = this.$route.params.id
+      const classID = this.$route.params.class_id
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
+      await this.$binding('workspace', workspaceRef)
       this.whiteboardRef = db.collection("whiteboards").doc(this.workspace.whiteboardID)
       this.$binding("whiteboard", this.whiteboardRef)
       // now show participants
       await workspaceRef.update({
         members: firebase.firestore.FieldValue.arrayUnion(this.user)
       })
-      this.prevWorkspaceRef = workspaceRef;
-      // console.log("this.workspace.members =", this.workspace.members);
+      this.prevWorkspaceRef = workspaceRef
+
+      //  window.addEventListener('beforeunload', () => {
+      //     this.prevWorkspaceRef.update({
+      //       members: firebase.firestore.FieldValue.arrayRemove(this.user)
+      //     })
+      //   }, false)
+      // window.onbeforeunload = (event) => {
+      //   event.preventDefault()
+      //   // return 'Hello World'
+      //   this.prevWorkspaceRef.update({
+      //     members: firebase.firestore.FieldValue.arrayRemove(this.user)
+      //   })
+      //   event.returnValue = `${this.prevWorkspaceRef}`
+      //   // alert(`${this.prevWorkspaceRef}`)
+      //   return null
+      //   // console.log('memberes are finished')
+      //   // return "do you really want to close?"
+      // }
+      // console.log('window.unbeforeunload =', window.onbeforeunload)
     },
     async handleSaving(videoTitle) {
       // create a new explanation document that points to the whiteboard
