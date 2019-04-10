@@ -21,7 +21,7 @@
       </template>
 
       <v-btn v-if="user && $route.path == '/'" icon @click="signOut()">
-        <v-icon medium>account_circle</v-icon>
+        <v-icon large color="pink">account_circle</v-icon>
       </v-btn>
       
       <v-btn v-else-if="user && $route.params.video_id" icon @click="replaySilentAnimation()">

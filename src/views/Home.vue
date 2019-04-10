@@ -40,24 +40,36 @@
 
       <!-- LOGIN BUTTON -->
       <div v-else>
-        <!-- ADD DRAWINGS HERE -->
-
-        <div class="text-xs-center mt-3">
-          <p>Here, friends and strangers alike explain concepts simply to help each other</p>
-          <v-btn bottom large @click="loginPopup = !loginPopup">
-            LOGIN
+        <p class="text-xs-center mt-4 headline font-weight-light">
+          Here, friends and strangers alike explain concepts to help each other.
+        </p>
+        <v-layout row justify-center class="mb-4">
+          <v-btn @click="createAccountPopup = true">
+            CREATE ACCOUNT
           </v-btn>
-          <animation 
-            v-if="strokes"
-            :strokes="strokes"
-            :autoplay="true">
-          </animation>
-        </div>
+          <v-btn @click="loginPopup = true">
+            LOG IN
+          </v-btn>
+        </v-layout>
+        
+        <animation 
+          v-if="strokes"
+          :strokes="strokes"
+          :autoplay="true">
+        </animation>
+
         <login-popup 
           v-model="loginPopup" 
-          @sign-up="payload => signUp(payload)"
+          :newAccount="false"
           @sign-in="payload => signIn(payload)"
         />
+        <!-- CREATE ACCOUNT -->
+        <login-popup 
+          v-model="createAccountPopup" 
+          :newAccount="true"
+          @create-account="payload => signUp(payload)"
+        />
+
       </div>
     </transition>
 
@@ -82,11 +94,28 @@ export default {
   computed: {
     ...mapState(['user', 'isFetchingUser'])
   },
+  data() {
+    return {
+      newAccount: false,
+      teachers: null,
+      transitionFinished: false,
+      loginPopup: false,
+      createAccountPopup: false,
+      snackbar: false,
+      snackbarMessage: '',
+      demoDoodle: null,
+      strokes: null
+    }
+  },
   methods: {
+    createNewAccount() {
+      this.newAccount = true 
+      this.loginPopup = true
+    },
     signIn({ email, password }) {
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(user => {
-          this.snackbarMessage = `Welcome to Feynman!`
+          this.snackbarMessage = `Welcome to ExplainMIT!`
           this.snackbar = true 
           this.loginPopup = false 
         })
@@ -95,7 +124,7 @@ export default {
           this.snackbar = true 
         })
     },
-    signUp({ email, password }) {
+    signUp({ email, password, nickname }) {
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then(user => {
           this.snackbarMessage = `Welcome to Feynman!`
@@ -108,28 +137,13 @@ export default {
         })
     }
   },
-  data() {
-    return {
-      teachers: null,
-      transitionFinished: false,
-      loginPopup: false,
-      snackbar: false,
-      snackbarMessage: '',
-      demoDoodle: null,
-      strokes: null
-    }
-  },
   async created() {
     this.$binding('teachers', db.collection('classes'))
     const demoRef = db.collection('whiteboards')
-    // const demoRef = db.collection('whiteboards').orderBy('audioPath', 'asc').limit(1)
     await this.$binding('demoDoodle', demoRef)
-    console.log('demoDoodle =', this.demoDoodle)
     const randomNumber = Math.floor(Math.random() * this.demoDoodle.length);
     const strokesRef = db.collection('whiteboards').doc(this.demoDoodle[randomNumber]['.key']).collection('strokes').orderBy('strokeNumber', 'asc')
-    this.$binding('strokes', strokesRef)
-    console.log('this.strokes =', this.strokes)
- 
+    this.$binding('strokes', strokesRef) 
   }
 }
 </script>

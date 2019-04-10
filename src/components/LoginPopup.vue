@@ -1,19 +1,21 @@
 <template>
   <v-layout row justify-center>
     <v-dialog v-model="value" persistent max-width="600px">
-      <!-- <v-btn slot="activator" color="primary" dark>Open Dialog</v-btn> -->
       <v-card>
-        <v-card-title>
-          <span class="headline">Login Form</span>
-        </v-card-title>
+        <!-- <v-card-title>
+          <span class="headline">Welcome</span>
+        </v-card-title> -->
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <v-text-field v-model="email" label="Email" required></v-text-field>
+                <v-text-field v-model="email" label="Email" required/>
               </v-flex>
               <v-flex xs12>
-                <v-text-field v-model="password" label="Password" type="password" required></v-text-field>
+                <v-text-field v-model="password" label="Password" type="password" required/>
+              </v-flex>
+              <v-flex xs12 v-if="newAccount">
+                <v-text-field v-model="nickname" label="Nickname" required/>
               </v-flex>
             </v-layout>
           </v-container>
@@ -23,11 +25,15 @@
           <v-btn color="blue darken-1" flat @click="$emit('input', !value)">
             CANCEL
           </v-btn>
-          <v-btn color="blue darken-1" flat @click="$emit('sign-up', { email,  password })">
-            SIGN UP
+          <v-btn 
+            v-if="newAccount" 
+            @click="$emit('create-account', { email,  password })"
+            color="blue darken-1" flat 
+          >
+            CREATE ACCOUNT
           </v-btn>
-          <v-btn color="blue darken-1" flat @click="$emit('sign-in', { email,  password })">
-            SIGN IN
+          <v-btn v-else color="blue darken-1" flat @click="$emit('sign-in', { email,  password })">
+            LOG IN
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -38,15 +44,20 @@
 <script>
 export default {
   props: {
-    value: Boolean
+    value: Boolean,
+    newAccount: Boolean
   },
   data: () => ({
     email: '',
-    password: ''
+    password: '',
+    nickname: ''
   }),
   methods: {
     handleLogin() {
       this.$emit('login', { email: this.email, password: this.password })
+    },
+    handleCreateAccount() {
+      this.$emit('create-account', { email: this.email, password: this.password, nickname: this.nickname })
     }
   }
 }
