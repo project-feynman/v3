@@ -8,8 +8,23 @@
               <v-flex xs12>
                 <v-text-field v-model="email" label="Email" required/>
               </v-flex>
-              <v-flex xs12>
-                <v-text-field v-model="password" label="Password" type="password" required/>
+              <v-flex xs12 v-if="newAccount">
+                <v-text-field 
+                  v-model="password" 
+                  v-on:keyup.enter="$emit('create-account', { email,  password })" 
+                  label="Password" 
+                  type="password" 
+                  required
+                />
+              </v-flex>
+              <v-flex xs12 v-else>
+                <v-text-field 
+                  v-model="password" 
+                  v-on:keyup.enter="$emit('sign-in', { email,  password })" 
+                  label="Password" 
+                  type="password" 
+                  required
+                />
               </v-flex>
               <!-- <v-flex xs12 v-if="newAccount">
                 <v-text-field v-model="nickname" label="Nickname" required/>
