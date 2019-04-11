@@ -16,6 +16,10 @@ export default new Router({
       component: () => import(/* webpackChunkName: "tutorial" */ './views/Tutorial.vue')
     },
     {
+      path: '/:class_id/ranking',
+      component: () => import(/* webpackChunkName: "ranking" */ './views/Ranking.vue')
+    },
+    {
       path: '/:class_id/workspace/:id',
       component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue')
     },

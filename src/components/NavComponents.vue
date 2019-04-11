@@ -46,11 +46,19 @@
     </v-toolbar>
     <v-navigation-drawer app stateless v-if="$route.path != '/'" v-model="drawerOpen">
       <v-list>
+        <!-- HOME -->
         <v-list-tile router to="/">
           <v-list-tile-action>
             <v-icon>home</v-icon>
           </v-list-tile-action>
           <v-list-tile-title>Home</v-list-tile-title>
+        </v-list-tile>
+
+        <v-list-tile router :to="`/${$route.params.class_id}/ranking`">
+          <v-list-tile-action>
+            <v-icon>poll</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-title>Ranking</v-list-tile-title>
         </v-list-tile>
 
         <v-list-group prepend-icon="account_circle" value="true">
