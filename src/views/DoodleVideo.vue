@@ -101,11 +101,15 @@ export default {
     },
     deleteVideo() {
       const classID = this.$route.params.class_id
-      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.id)
+      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
       videoRef.delete()
       // delete the strokes (screw the subcollections for who honestly cares)
-      this.whiteboardRef.delete()
-      this.audioFileRef.delete()
+      if (this.whiteboardRef) {
+        this.whiteboardRef.delete()
+      }
+      if (this.audioFileRef) {
+        this.audioFileRef.delete()
+      }
     },
     quickplay() {
       const animation = this.$refs["animation"]
