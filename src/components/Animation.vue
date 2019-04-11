@@ -70,7 +70,7 @@ export default {
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     if (this.autoplay) {
-      this.rescaleCanvas()
+      this.rescaleCanvas(false)
       setTimeout(this.quickplay, 1000)
     } else {
       this.rescaleCanvas() // should rename to rescale and redraw
