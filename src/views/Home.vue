@@ -44,10 +44,10 @@
           Here, friends and strangers alike explain concepts to help each other.
         </p>
         <v-layout row justify-center class="mb-4">
-          <v-btn @click="createAccountPopup = true" :depressed="true">
+          <v-btn @click="createAccountPopup = true" dark color="grey" :depressed="true">
             CREATE ACCOUNT
           </v-btn>
-          <v-btn @click="loginPopup = true" :depressed="true">
+          <v-btn @click="loginPopup = true" dark color="grey" :depressed="true">
             LOG IN
           </v-btn>
         </v-layout>
