@@ -181,7 +181,11 @@ export default {
       this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawToPoint(this.touchX, this.touchY)
+      function callback(x, y) {
+        return () => this.drawToPoint(x, y)
+      }
+      window.requestAnimationFrame(callback(this.touchX, this.touchY))
+      // this.drawToPoint(this.touchX, this.touchY)
       if (this.currentTime) {
         this.startTime = this.currentTime.toFixed(1)
       }
@@ -196,7 +200,11 @@ export default {
       e.preventDefault()
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawToPoint(this.touchX, this.touchY)
+      function callback(x, y) {
+        return () => this.drawToPoint(x, y)
+      }
+      window.requestAnimationFrame(callback(this.touchX, this.touchY))
+      // this.drawToPoint(this.touchX, this.touchY)
     },
     touchEnd(e) {
       if (this.currentStroke.length == 0) {
