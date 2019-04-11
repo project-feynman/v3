@@ -42,7 +42,7 @@ export default {
     ...mapState(['user']),
     author() {
       return {
-        name: this.user.name,
+        name: this.user.name || 'anonymous',
         uid: this.user.uid
       }
     }
@@ -206,7 +206,7 @@ export default {
       const strokeNumber = this.allStrokes.length + 1
       const stroke = {
         strokeNumber,
-        author: this.author,
+        author: this.author || 'anonymous',
         color: this.color,
         lineWidth: this.lineWidth
       }
