@@ -15,9 +15,13 @@
           @create-class="courseNumber => createClass(courseNumber)"
         ></new-class-popup>
 
-        <v-btn icon @click="newClassPopup = true">
+        <!-- <v-btn icon @click="newClassPopup = true">
           <v-icon medium>add</v-icon>
+        </v-btn> -->
+        <v-btn @click="newClassPopup = true" flat>
+          CREATE CLASS
         </v-btn>
+
       </template>
 
       <v-btn v-if="user && $route.path == '/'" icon @click="signOut()">

@@ -2,9 +2,6 @@
   <v-layout row justify-center>
     <v-dialog v-model="value" persistent max-width="600px">
       <v-card>
-        <!-- <v-card-title>
-          <span class="headline">Welcome</span>
-        </v-card-title> -->
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
@@ -14,9 +11,9 @@
               <v-flex xs12>
                 <v-text-field v-model="password" label="Password" type="password" required/>
               </v-flex>
-              <v-flex xs12 v-if="newAccount">
+              <!-- <v-flex xs12 v-if="newAccount">
                 <v-text-field v-model="nickname" label="Nickname" required/>
-              </v-flex>
+              </v-flex> -->
             </v-layout>
           </v-container>
         </v-card-text>
@@ -55,9 +52,6 @@ export default {
   methods: {
     handleLogin() {
       this.$emit('login', { email: this.email, password: this.password })
-    },
-    handleCreateAccount() {
-      this.$emit('create-account', { email: this.email, password: this.password, nickname: this.nickname })
     }
   }
 }

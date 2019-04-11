@@ -21,21 +21,28 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    async handleUserLogic(context, user) {
+    async handleUserLogic(context, { nickname, uid, email }) {
+      // console.log('handleUserLogic()')
+      // console.log('nickname =', nickname)
       let simplifiedUser = {
-        name: user.displayName || "Anonymous",
-        uid: user.uid,
-        email: user.email 
+        uid,
+        email,
+        nickname: "Anonymous"
+      }
+      if (nickname) {
+        simplifiedUser.nickname = nickname 
       }
       context.commit('SET_USER', simplifiedUser) // commit the user to avoid blocking page load 
-      const userRef = db.collection('users').doc(user.uid) 
+      const userRef = db.collection('users').doc(uid) 
       const mirrorUser = await userRef.get() 
       if (mirrorUser.exists) {
         context.commit('SET_USER', mirrorUser.data())
       } else {
         userRef.set(simplifiedUser)
+        console.log('simplifiedUser =', simplifiedUser)
         context.commit('SET_USER', simplifiedUser)
-        console.log('user document fetched')
+        console.log('successfully created mirror user')
+        // console.log('user document fetched')
       }
     }
   }

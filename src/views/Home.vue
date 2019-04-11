@@ -67,7 +67,7 @@
         <login-popup 
           v-model="createAccountPopup" 
           :newAccount="true"
-          @create-account="payload => signUp(payload)"
+          @create-account="payload => createAccount(payload)"
         />
 
       </div>
@@ -115,7 +115,8 @@ export default {
     signIn({ email, password }) {
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(user => {
-          this.snackbarMessage = `Welcome to ExplainMIT!`
+          this.$store.dispatch('handleUserLogic', user)
+          this.snackbarMessage = `Welcome back!`
           this.snackbar = true 
           this.loginPopup = false 
         })
@@ -124,10 +125,14 @@ export default {
           this.snackbar = true 
         })
     },
-    signUp({ email, password, nickname }) {
+    createAccount({ email, password, nickname }) {
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then(user => {
-          this.snackbarMessage = `Welcome to Feynman!`
+          console.log('nickname =', nickname)
+          user.nickname = nickname
+          console.log('user.nickname =', user.nickname)
+          this.$store.dispatch('handleUserLogic', user)
+          this.snackbarMessage = `Welcome to ExplainMIT, ${ nickname }!`
           this.snackbar = true 
           this.loginPopup = false
         })
@@ -137,7 +142,7 @@ export default {
         })
     }
   },
-  async created() {
+  async created () {
     this.$binding('teachers', db.collection('classes'))
     const demoRef = db.collection('whiteboards')
     await this.$binding('demoDoodle', demoRef)
@@ -149,10 +154,6 @@ export default {
 </script>
 
 <style>
-.my-quote {
-  font-size: 2em
-}
-
 .fade-enter-active, .fade-leave-active {
   transition: opacity .7s;
 }
