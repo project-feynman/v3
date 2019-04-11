@@ -33,7 +33,7 @@ export default {
           // create a whiteboard 
           const whiteboardRef = await db.collection('whiteboards').add({})
           let workspace = {
-            ownerName: this.user.name,
+            // ownerName: this.user.name,
             ownerUID: this.user.uid,
             whiteboardID: whiteboardRef.id 
           }
