@@ -44,10 +44,10 @@
           Here, friends and strangers alike explain concepts to help each other.
         </p>
         <v-layout row justify-center class="mb-4">
-          <v-btn @click="createAccountPopup = true">
+          <v-btn @click="createAccountPopup = true" :depressed="true">
             CREATE ACCOUNT
           </v-btn>
-          <v-btn @click="loginPopup = true">
+          <v-btn @click="loginPopup = true" :depressed="true">
             LOG IN
           </v-btn>
         </v-layout>
@@ -116,7 +116,7 @@ export default {
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(user => {
           this.$store.dispatch('handleUserLogic', user)
-          this.snackbarMessage = `Welcome back!`
+          this.snackbarMessage = `Welcome to ExplainMIT!`
           this.snackbar = true 
           this.loginPopup = false 
         })
@@ -125,14 +125,10 @@ export default {
           this.snackbar = true 
         })
     },
-    createAccount({ email, password, nickname }) {
+    createAccount({ email, password }) {
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then(user => {
-          console.log('nickname =', nickname)
-          user.nickname = nickname
-          console.log('user.nickname =', user.nickname)
-          this.$store.dispatch('handleUserLogic', user)
-          this.snackbarMessage = `Welcome to ExplainMIT, ${ nickname }!`
+          this.snackbarMessage = `Welcome to ExplainMIT!`
           this.snackbar = true 
           this.loginPopup = false
         })
@@ -144,7 +140,7 @@ export default {
   },
   async created () {
     this.$binding('teachers', db.collection('classes'))
-    const demoRef = db.collection('whiteboards')
+    const demoRef = db.collection('whiteboards').where('isSaved', '==', true)
     await this.$binding('demoDoodle', demoRef)
     const randomNumber = Math.floor(Math.random() * this.demoDoodle.length);
     const strokesRef = db.collection('whiteboards').doc(this.demoDoodle[randomNumber]['.key']).collection('strokes').orderBy('strokeNumber', 'asc')

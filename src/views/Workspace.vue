@@ -178,32 +178,32 @@ export default {
       this.lineWidth = 18
     },
     async retryAnswer() {
-      const whiteboard = this.$refs["whiteboard"];
+      const whiteboard = this.$refs["whiteboard"]
       whiteboard.currentTime = 0;
       await this.whiteboardRef.update({
         isAnswered: false
       })
     },
     startRecording() {
-      const audioRecorder = this.$refs["audio-recorder"];
-      this.isRecording = true;
-      audioRecorder.startRecording();
+      const audioRecorder = this.$refs["audio-recorder"]
+      this.isRecording = true
+      audioRecorder.startRecording()
     },
     stopRecording() {
-      this.isRecording = false;
-      const whiteboard = this.$refs["whiteboard"];
-      const audioRecorder = this.$refs["audio-recorder"];
-      whiteboard.removeTouchEvents();
-      audioRecorder.stopRecording();
+      this.isRecording = false
+      const whiteboard = this.$refs["whiteboard"]
+      const audioRecorder = this.$refs["audio-recorder"]
+      whiteboard.removeTouchEvents()
+      audioRecorder.stopRecording()
       this.whiteboardRef.update({
         isAnswered: true
       });
     },
     playVideo() {
-      const audioRecorder = this.$refs["audio-recorder"];
-      const whiteboard = this.$refs["whiteboard"];
-      whiteboard.sortStrokesByTimestamp();
-      whiteboard.playVisual(audioRecorder.getAudioTime);
+      const audioRecorder = this.$refs["audio-recorder"]
+      const whiteboard = this.$refs["whiteboard"]
+      whiteboard.sortStrokesByTimestamp()
+      whiteboard.playVisual(audioRecorder.getAudioTime)
       audioRecorder.playAudio();
     },
     quickplay() {
@@ -211,7 +211,6 @@ export default {
       whiteboard.quickplay();
     },
     async saveFileReference({ url, path }) {
-      // console.log('saveFileReference()')
       await this.whiteboardRef.update({
         audioURL: url,
         audioPath: path
@@ -234,27 +233,13 @@ export default {
         members: firebase.firestore.FieldValue.arrayUnion(this.user)
       })
       this.prevWorkspaceRef = workspaceRef
-
-      //  window.addEventListener('beforeunload', () => {
-      //     this.prevWorkspaceRef.update({
-      //       members: firebase.firestore.FieldValue.arrayRemove(this.user)
-      //     })
-      //   }, false)
-      // window.onbeforeunload = (event) => {
-      //   event.preventDefault()
-      //   // return 'Hello World'
-      //   this.prevWorkspaceRef.update({
-      //     members: firebase.firestore.FieldValue.arrayRemove(this.user)
-      //   })
-      //   event.returnValue = `${this.prevWorkspaceRef}`
-      //   // alert(`${this.prevWorkspaceRef}`)
-      //   return null
-      //   // console.log('memberes are finished')
-      //   // return "do you really want to close?"
-      // }
-      // console.log('window.unbeforeunload =', window.onbeforeunload)
     },
     async handleSaving(videoTitle) {
+      // mark the whiteboard as saved 
+      const whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
+      whiteboardRef.update({
+        isSaved: true
+      })
       // create a new explanation document that points to the whiteboard
       const classID = this.$route.params.class_id
       const videoID = slugify(videoTitle, {
