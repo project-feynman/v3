@@ -3,7 +3,7 @@
     <!-- NAVBAR  -->
     <v-toolbar v-if="showNavbar" app flat color="white" extended extension-height="2" id="navbar">
       <img src="favicon.ico">
-      <v-toolbar-title class="headline font-weight-light ml-2">
+      <v-toolbar-title class="headline font-weight-regular ml-2">
         {{ $route.params.class_id ? $route.params.class_id : "ExplainMIT" }}
       </v-toolbar-title>
 
