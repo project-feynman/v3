@@ -8,24 +8,37 @@
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
-
+      
       <template v-if="user && $route.path == '/'">
         <new-class-popup
           v-model="newClassPopup"
           @create-class="courseNumber => createClass(courseNumber)"
         ></new-class-popup>
 
-        <!-- <v-btn icon @click="newClassPopup = true">
-          <v-icon medium>add</v-icon>
-        </v-btn> -->
-        <v-btn @click="newClassPopup = true" flat>
+        <!-- <v-btn @click="newClassPopup = true" dark color="grey">
           CREATE CLASS
-        </v-btn>
+        </v-btn> -->
+
+        
+      <v-btn icon>
+        <v-icon color="grey darken-2">notifications</v-icon>
+      </v-btn>
+
+         <v-btn icon @click="newClassPopup = true">
+          <v-icon color="grey darken-2">library_add</v-icon>
+         </v-btn>
 
       </template>
 
-      <v-btn v-if="user && $route.path == '/'" icon @click="signOut()">
-        <v-icon large color="pink">account_circle</v-icon>
+      <v-btn 
+        v-if="user && $route.path == '/'"  
+        @click="signOut()" 
+        icon 
+        class="ml-4"
+      >
+        <v-icon large color="pink">
+          account_circle
+        </v-icon>
       </v-btn>
       
       <v-btn v-else-if="user && $route.params.video_id" icon @click="replaySilentAnimation()">

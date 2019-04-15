@@ -14,10 +14,11 @@
 
     <transition name="fade" mode="out-in" @after-leave="transitionFinished = true">
       <div v-if="isFetchingUser" key="quote">
+        
       </div>
 
       <!-- LIST OF CLASSES -->
-      <div v-if="user" key="class-list" class="responsive-grid mt-5">
+      <div v-else-if="!isFetchingUser && user" key="class-list" class="responsive-grid mt-5">
         <v-layout v-for="subject in teachers" :key="subject.uid">
           <v-flex>
             <v-card flat @click="$router.push(subject.courseNumber)"
@@ -39,7 +40,7 @@
       </div>
 
       <!-- LOGIN BUTTON -->
-      <div v-else>
+      <div v-else key="landing">
         <p class="text-xs-center mt-4 headline font-weight-light">
           Here, friends and strangers alike explain concepts to help each other.
         </p>
@@ -55,8 +56,8 @@
         <animation 
           v-if="strokes"
           :strokes="strokes"
-          :autoplay="true">
-        </animation>
+          :autoplay="true"
+        />
 
         <login-popup 
           v-model="loginPopup" 
