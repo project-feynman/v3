@@ -2,7 +2,7 @@
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
       <!-- <div class="text-xs-center">{{ workspace.members }}</div> -->
-      <!-- <video-chat :workspaceID="workspace['.key']"/> -->
+      <video-chat :workspaceID="workspace['.key']"/>
       <whiteboard
           v-if="loadCanvas"
           ref="whiteboard"

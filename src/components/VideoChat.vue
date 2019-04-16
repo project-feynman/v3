@@ -1,15 +1,24 @@
 <template>
   <!-- https://github.com/muaz-khan/RTCMultiConnection/blob/master/demos/vuejs-video-conferencing.html -->
   <div>
+    <div class="text-xs-center">
+      <div>My ID: {{ myID }}</div>
+      <div>{{ participants.length }} other people connected to voice chat: {{ participants }}</div>
+    </div>
+
     <div v-show="false">
       <input type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
       <div id="open-room">Open Room</div> 
       <div id="join-room">Join Room</div> 
-      <div id="open-or-join-room">Open or Join Room</div> 
+      <div id="open-or-join-room">OPEN OR JOIN ROOM</div> 
     </div>
+    <!-- CONNECT/DISCONNECT BUTTONS -->
     <div class="text-xs-center">
-      <v-btn @click="leaveRoom()">Leave voice chat</v-btn>
+      <!-- <v-btn @click="stopWebcam()">STOP WEB CAM</v-btn> -->
+      <v-btn @click="openOrJoinRoom()">CONNECT TO VOICE CHAT</v-btn>
+      <v-btn @click="leaveRoom()">DISCONNECT TO VOICE CHAT</v-btn>
     </div>
+    <!-- VIDEOS -->
     <todo-item
       v-for="item in videosList"
       :todo="item"
@@ -30,7 +39,9 @@ export default {
   data () {
     return {
       videosList: [],
-      connection: null
+      connection: null,
+      participants: [],
+      myID: ''
     }
   },
   watch: {
@@ -45,16 +56,26 @@ export default {
     this.connection.socketMessageEvent = 'video-conference-demo';
     this.connection.session = {
       audio: true,
-      video: true
+      video: false
+      // video: false
+    }
+    console.log('this.connection.session =', this.connection.session)
+
+    // MAGIC LINE DO NOT REMOVE
+    this.connection.mediaConstraints = {
+      audio: true,
+      video: false
     }
 
     this.connection.sdpConstraints.mandatory = {
       OfferToReceiveAudio: true,
-      OfferToReceiveVideo: true
+      OfferToReceiveVideo: false
     }
 
     this.connection.autoCreateMediaElement = false;
     this.connection.onstream = (event) => {
+      setTimeout(this.showAllParticipants, 1000)
+      console.log('onstream event')
       this.videosList.push({
         id: event.streamid,
         srcObject: event.stream,
@@ -63,6 +84,9 @@ export default {
     }
 
     this.connection.onstreamended = (event) => {
+      console.log('onstreamended event')
+      this.myID = this.connection.userid
+      setTimeout(this.showAllParticipants, 1000)
       var newList = []
       this.videosList.forEach(item => {
         if (item.id !== event.streamid) {
@@ -73,16 +97,16 @@ export default {
     }
   },
   mounted () {
-    document.getElementById('open-room').onclick = () => {
-      this.disableInputButtons()
-      this.connection.open(document.getElementById('room-id').value, () => {
-        this.showRoomURL(this.connection.sessionid)
-      })
-    }
-    document.getElementById('join-room').onclick = () => {
-      this.disableInputButtons()
-      this.connection.join(document.getElementById('room-id').value)
-    }
+    // document.getElementById('open-room').onclick = () => {
+    //   this.disableInputButtons()
+    //   this.connection.open(document.getElementById('room-id').value, () => {
+    //     this.showRoomURL(this.connection.sessionid)
+    //   })
+    // }
+    // document.getElementById('join-room').onclick = () => {
+    //   this.disableInputButtons()
+    //   this.connection.join(document.getElementById('room-id').value)
+    // }
     document.getElementById('open-or-join-room').onclick = () => {
       this.disableInputButtons()
       this.connection.openOrJoin(document.getElementById('room-id').value, (isRoomExist, roomid) => {
@@ -111,6 +135,8 @@ export default {
     } else {
       roomid = this.connection.token()
     }
+
+    // workspace ID is the server ID
     roomid = this.workspaceID
     document.getElementById('room-id').value = roomid
     document.getElementById('room-id').onkeyup = () => {
@@ -120,15 +146,36 @@ export default {
     if (hashString.length && hashString.indexOf('comment-') == 0) {
       hashString = ''
     }
-    // console.log('params =', params)
-    // console.log('hashString =', hashString)
+
     var roomid = params.roomid
     if (!roomid && hashString.length) {
       roomid = hashString
     }
-    // JOIN ROOM 
 
-    this.openOrJoinRoom()
+    // // JOIN ROOM 
+    // console.log('CALLED OPENORJOINROOM()')
+    // this.openOrJoinRoom()
+
+    this.connection.onNewParticipant = (participantId, userPreferences) => {
+      console.log('NEW PARTICIPANT JOINED, LET"S UPDATE THE PARTICIPANTS LIST')
+      setTimeout(this.showAllParticipants, 1000)
+      // this.showAllParticipants()
+      // if OfferToReceiveAudio/OfferToReceiveVideo should be enabled for specific users
+      userPreferences.localPeerSdpConstraints.OfferToReceiveAudio = true
+      userPreferences.localPeerSdpConstraints.OfferToReceiveVideo = false
+
+      userPreferences.dontAttachStream = false; // according to situation
+      userPreferences.dontGetRemoteStream = false;  // according to situation
+
+      // below line must be included. Above all lines are optional.
+      // if below line is NOT included; "join-request" will be considered rejected.
+      this.connection.acceptParticipationRequest(participantId, userPreferences);
+    }
+
+
+
+
+
 
     if (roomid && roomid.length) {
       document.getElementById('room-id').value = roomid
@@ -147,14 +194,36 @@ export default {
     }
   },
   methods: {
+    stopWebcam () {
+      this.connection.attachStreams.forEach(function(stream) {
+          stream.stop();
+      });
+    },
+    updateParticipants () {
+      this.participants = []
+      this.connection.getAllParticipants().forEach(participantID => {
+        this.participants.push(participantID)
+      })
+    },
+    showAllParticipants () {
+      this.participants = [] 
+      this.connection.getAllParticipants().forEach(participantId => {
+        this.participants.push(participantId)
+      })
+
+    },
     leavePrevAndJoinNew() {
       this.videoList = [] 
     },
     leaveRoom () {
-      this.connection.getAllParticipants().forEach(participantId => {
-          console.log('disconnecting participant =', participantId)
-          this.connection.disconnectWith( participantId );
-      });
+      // for each OTHER person, disconnect the stream with them 
+      this.participants.forEach(participantID => this.connection.disconnectWith(participantID))
+
+
+      // this.connection.getAllParticipants().forEach(participantId => {
+      //     console.log('disconnecting participant =', participantId)
+      //     this.connection.disconnectWith( participantId );
+      // });
       this.videosList = [] 
     },
     openOrJoinRoom () {
