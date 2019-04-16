@@ -8,7 +8,7 @@
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
-      
+
       <template v-if="user && $route.path == '/'">
         <new-class-popup
           v-model="newClassPopup"
@@ -18,7 +18,6 @@
         <!-- <v-btn @click="newClassPopup = true" dark color="grey">
           CREATE CLASS
         </v-btn> -->
-
         
       <v-btn icon>
         <v-icon color="grey darken-2">notifications</v-icon>
@@ -58,7 +57,7 @@
       />
     </v-toolbar>
     <v-navigation-drawer app stateless v-if="$route.path != '/'" v-model="drawerOpen">
-      <v-list>
+      <v-list class="pb-0">
         <!-- HOME -->
         <v-list-tile router to="/">
           <v-list-tile-action>
@@ -66,15 +65,21 @@
           </v-list-tile-action>
           <v-list-tile-title>Home</v-list-tile-title>
         </v-list-tile>
-
+        <v-divider/>
+        <!-- RANKING -->
         <v-list-tile router :to="`/${$route.params.class_id}/ranking`">
           <v-list-tile-action>
             <v-icon>poll</v-icon>
           </v-list-tile-action>
           <v-list-tile-title>Ranking</v-list-tile-title>
         </v-list-tile>
+      </v-list>
+      <v-divider/>
 
-        <v-list-group prepend-icon="account_circle" value="true">
+      <v-list three-line subheader>
+
+        <!-- WORKSPACES -->
+        <v-list-group prepend-icon="meeting_room" value="true">
           <v-list-tile slot="activator">
             <v-list-tile-title>Workspaces</v-list-tile-title>
           </v-list-tile>
@@ -85,29 +90,38 @@
             router
             :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
           >
+            <v-list-tile-content>
+            <!-- TITLE -->
             <template v-if="workspace.members">
-              <template v-if="workspace.members.length != 0">
-                <v-list-tile-title>
-                  Workspace {{ idx }}
-                </v-list-tile-title>
-                <v-icon 
-                  v-for="idx in workspace.members.length" 
-                  :key="idx"
-                  color="pink"
-                >
-                  person
-                </v-icon>
-              </template>
-              <div v-else class="text-xs-center">Workspace {{ idx }}</div>
+              <v-list-tile-title>
+                Workspace {{ idx }}
+              </v-list-tile-title>
+              <!-- <v-icon 
+                v-for="idx in workspace.members.length" 
+                :key="idx"
+                color="pink"
+              >
+                person
+              </v-icon> -->
             </template>
+            <div v-else class="text-xs-center">Workspace {{ idx }}</div>
+              <!-- SUBTITLE  -->
+              <v-list-tile-sub-title>
+                <template v-if="workspace.members">
+                  <div v-for="member in workspace.members" :key="member.email" class="ml-3">
+                    {{ member.email }}
+                  </div>
+                </template>
+              </v-list-tile-sub-title>
 
-            <v-list-tile-title v-else class="black--text">Workspace {{ idx }}</v-list-tile-title>
+            </v-list-tile-content>
           </v-list-tile>
+          
         </v-list-group>
 
-        <v-list-group prepend-icon="library_books" value="true">
+        <v-list-group prepend-icon="file_copy" value="true">
           <v-list-tile slot="activator">
-            <v-list-tile-title>Saved Explanations</v-list-tile-title>
+            <v-list-tile-title>Explanations</v-list-tile-title>
           </v-list-tile>
           <v-list-tile
             v-for="explanation in teacherExplanations"

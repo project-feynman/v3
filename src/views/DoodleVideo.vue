@@ -91,7 +91,7 @@ export default {
   methods: {
     syncAnimation() {
       if (this.syncedVisualAndAudio) {
-        return;
+        return
       } else if (this.resourcesLoaded) {
         const audioRecorder = this.$refs["audio-recorder"]
         const animation = this.$refs["animation"]
