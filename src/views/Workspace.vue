@@ -145,8 +145,8 @@ export default {
     },
     color() {
       // bad - high surface area for bugs
-      if (this.color != "rgb(192, 230, 253)") {
-        this.lineWidth = 2;
+      if (this.color != "rgb(76, 82, 82)") {
+        this.lineWidth = 2
       }
     }
   },
