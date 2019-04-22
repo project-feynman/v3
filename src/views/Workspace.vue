@@ -127,7 +127,7 @@ export default {
       saveVideoPopup: false,
       whiteboardPopup: false,
       isRecording: false,
-      disableTouch: false,
+      disableTouch: true,
       workspace: null,
       whiteboard: null,
       whiteboardRef: null,
