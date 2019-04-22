@@ -1,8 +1,8 @@
 <template>
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
-      <!-- <div class="text-xs-center">{{ workspace.members }}</div> -->
-      <video-chat :workspaceID="workspace['.key']"/>
+      <!-- <div class="text-xs-center"><v-btn color="grey" dark>CONNECT TO VOICE CHAT</v-btn></div> -->
+      <!-- <video-chat :workspaceID="workspace['.key']"/> -->
       <whiteboard
           v-if="loadCanvas"
           ref="whiteboard"
@@ -134,7 +134,7 @@ export default {
       loadCanvas: false,
       color: "#F64272",
       lineWidth: 2,
-      colors: ["#F64272", "orange", "#A463BF"],
+      colors: ["#F64272", "orange", "#A463BF", "#0AF2F2"],
       prevWorkspaceRef: null
     };
   },
@@ -189,7 +189,7 @@ export default {
       this.isRecording = true
       audioRecorder.startRecording()
     },
-    stopRecording() {
+    stopRecording () {
       this.isRecording = false
       const whiteboard = this.$refs["whiteboard"]
       const audioRecorder = this.$refs["audio-recorder"]
@@ -197,26 +197,26 @@ export default {
       audioRecorder.stopRecording()
       this.whiteboardRef.update({
         isAnswered: true
-      });
+      })
     },
-    playVideo() {
-      const audioRecorder = this.$refs["audio-recorder"]
-      const whiteboard = this.$refs["whiteboard"]
+    playVideo () {
+      const audioRecorder = this.$refs['audio-recorder']
+      const whiteboard = this.$refs['whiteboard']
       whiteboard.sortStrokesByTimestamp()
       whiteboard.playVisual(audioRecorder.getAudioTime)
       audioRecorder.playAudio();
     },
-    quickplay() {
-      const whiteboard = this.$refs["whiteboard"];
+    quickplay () {
+      const whiteboard = this.$refs['whiteboard']
       whiteboard.quickplay();
     },
     async saveFileReference({ url, path }) {
       await this.whiteboardRef.update({
         audioURL: url,
         audioPath: path
-      });
+      })
     },
-    async bindVariables() {
+    async bindVariables () {
       if (this.prevWorkspaceRef) {
         await this.prevWorkspaceRef.update({
           members: firebase.firestore.FieldValue.arrayRemove(this.user)

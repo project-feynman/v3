@@ -13,9 +13,7 @@
     </v-snackbar>
 
     <transition name="fade" mode="out-in" @after-leave="transitionFinished = true">
-      <div v-if="isFetchingUser" key="quote">
-        
-      </div>
+      <div v-if="isFetchingUser" key="loading..."></div>
 
       <!-- LIST OF CLASSES -->
       <div v-else-if="!isFetchingUser && user" key="class-list" class="responsive-grid mt-5">

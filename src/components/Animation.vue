@@ -3,7 +3,7 @@
     <canvas id="myCanvas" 
             style="width: 100%;
                    height: 90vh;
-                   background-color: rgb(192, 230, 253);">
+                   background-color: rgb(62, 66, 66)">
     </canvas>
   </div>
 </template>

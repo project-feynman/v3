@@ -14,7 +14,7 @@
     </div>
     <!-- CONNECT/DISCONNECT BUTTONS -->
     <div class="text-xs-center">
-      <!-- <v-btn @click="stopWebcam()">STOP WEB CAM</v-btn> -->
+      <v-btn @click="stopWebcam()">STOP STREAM</v-btn>
       <v-btn @click="openOrJoinRoom()">CONNECT TO VOICE CHAT</v-btn>
       <v-btn @click="leaveRoom()">DISCONNECT TO VOICE CHAT</v-btn>
     </div>
@@ -206,6 +206,7 @@ export default {
       })
     },
     showAllParticipants () {
+      this.myID = this.connection.userid
       this.participants = [] 
       this.connection.getAllParticipants().forEach(participantId => {
         this.participants.push(participantId)
