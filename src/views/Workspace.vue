@@ -174,7 +174,7 @@ export default {
       this.disableTouch = !this.disableTouch;
     },
     useEraser() {
-      this.color = "rgb(192, 230, 253)"
+      this.color = "rgb(76, 82, 82)"
       this.lineWidth = 18
     },
     async retryAnswer() {
