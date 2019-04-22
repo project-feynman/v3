@@ -134,7 +134,7 @@ export default {
       loadCanvas: false,
       color: "#F64272",
       lineWidth: 2,
-      colors: ["#F64272", "orange", "#A463BF", "#0AF2F2"],
+      colors: ["#F64272", "orange", "#0AF2F2"],
       prevWorkspaceRef: null
     };
   },
