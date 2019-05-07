@@ -28,26 +28,28 @@
 // 	auth: oauth
 // })
 
-// const firestore = admin.firestore()
-// firestore.settings({timestampsInSnapshots: true})
-
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-admin.initializeApp();
+const functions = require('firebase-functions')
+const admin = require('firebase-admin')
+admin.initializeApp()
 
 // Since this code will be running in the Cloud Functions environment
 // we call initialize Firestore without any arguments because it
 // detects authentication from the environment.
 const firestore = admin.firestore();
+firestore.settings({timestampsInSnapshots: true})
+
 
 exports.onUserStatusChanged = functions.database.ref('/status/{uid}').onUpdate(
   async (change, context) => {
     // Get the data written to Realtime Database
     const eventStatus = change.after.val()
+    // eventStatus = {
+    //   isOnline: false 
+    // }
 
     // Then use other event data to create a reference to the
     // corresponding Firestore document.
-    const userStatusFirestoreRef = firestore.doc(`/users/${context.params.uid}`)
+    const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`)
 
     // multiple requests may have been triggered, but earlier requests might not actually resolve earlier 
     // therefore it's necessary to compare the timestamps
@@ -60,17 +62,49 @@ exports.onUserStatusChanged = functions.database.ref('/status/{uid}').onUpdate(
       return null
     } else {
       // eventStatus.last_changed = new Date(eventStatus.last_changed)
-      return userStatusFirestoreRef.update(eventStatus)
+      return firestoreUserRef.update(eventStatus)
     }
   }
 )
 
+exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{class_id}/{workspace_id}').onUpdate(
+  async (change, context) => {
+    console.log("onWorkspaceParticipantsChanged()")
+     // obtain the data that was just written to Firebase
+    const userWhoLeft = change.after.val()
+    console.log('userWhoLeft =', userWhoLeft)
+    if (!userWhoLeft.uid) {
+    // if (userWhoLeft === { email: '', uid: '' }) {
+      console.log('false alarm')
+      // do nothing 
+    } else {
+      // why is this not printing below 
+      console.log('updating members')
+      const firebaseClassID = context.params.class_id.replace('-', '.')
+      // const testRef = firestore.collection('tests').doc('123')
+      // testRef.set({
+      //   userWhoLeft,
+      //   firebaseClassID
+      // })
+      // it's not supposed to be userWhoLeft.uid - you silly billy - you willy wonka 
+      const workspaceFirestoreRef = firestore.doc(`/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`)
+      console.log('ref =', `/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`)
+      workspaceFirestoreRef.update({
+        members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
+      })
+      // workspaceFirestoreRef.update({
+      //   participants: []
+      // })
+    }
+  }
+)
 
 // exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{wid}/messages/{mid}').onCreate((doc, context) => {
 // 	_updateParticipants()
 	
 // 	const params = context.params;
-// 	const workspaceDocSnap = doc
+// 	const workspaceDocSnap = docy
+
 // 	const workspaceDocData = workspaceDocumentSnap.data()
 
 // 	const messageId = params.mid;

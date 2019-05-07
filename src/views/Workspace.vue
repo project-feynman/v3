@@ -191,10 +191,10 @@ export default {
     setDisconnectHook() {
       // have a firebase workspace as well to mirror the participants data
       const classID = this.$route.params.class_id 
-      const userUID = this.$route.params.id
-      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
+      const workspaceID = this.$route.params.id
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(workspaceID)
       const firebaseClassID = classID.replace('.', '-')
-      const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${this.user.uid}`)
+      const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${workspaceID}`)
 
       firebase.database().ref('.info/connected').on('value', async snapshot => {
         if (snapshot.val() == false) { 
@@ -208,8 +208,11 @@ export default {
             members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
           })
           // reset it (otherwise setting the user is not actually triggering any changes)
+
+          // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
           firebaseRef.set({
-            email: ''
+            email: '',
+            uid: ''
           })
         }
       })
@@ -256,7 +259,7 @@ export default {
       const whiteboard = this.$refs['whiteboard']
       whiteboard.sortStrokesByTimestamp()
       whiteboard.playVisual(audioRecorder.getAudioTime)
-      audioRecorder.playAudio();
+      audioRecorder.playAudio()
     },
     quickplay () {
       const whiteboard = this.$refs['whiteboard']
