@@ -71,7 +71,8 @@
               <v-btn dark flat @click="handleExit()">EXIT</v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <whiteboard
+
+          <whiteboard 
             v-if="loadCanvas"
             ref="whiteboard"
             :whiteboardID="workspace.whiteboardID"
@@ -83,6 +84,7 @@
             :colors="colors"
             :lineWidth="lineWidth"
           ></whiteboard>
+
           <audio-recorder
             v-show="false"
             ref="audio-recorder"
@@ -91,6 +93,7 @@
             @start-recording="isRecording = true"
             @file-uploaded="audio => saveFileReference(audio)"
           />
+
         </v-card>
       </v-dialog>
     </v-container>
@@ -120,7 +123,13 @@ export default {
     Swatches,
   },
   computed: {
-    ...mapState(["user"])
+    ...mapState(['user']),
+    simpleUser() {
+      return {
+        email: this.user.email,
+        uid: this.user.uid
+      }
+    }
   },
   data() {
     return {
@@ -156,12 +165,55 @@ export default {
     this.$root.$on("open-whiteboard", () => this.whiteboardPopup = true)
   },
   async beforeDestroy () {
+    // when the user switches to any other place besides another workspace
     await this.prevWorkspaceRef.update({
-      members: firebase.firestore.FieldValue.arrayRemove(this.user)
+      members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
     })
     console.log('successfully removed member')
   },
   methods: {
+    async bindVariables () {
+      if (this.prevWorkspaceRef) {
+        await this.prevWorkspaceRef.update({
+          members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
+        })
+      }
+      
+      const userUID = this.$route.params.id
+      const classID = this.$route.params.class_id
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
+      await this.$binding('workspace', workspaceRef)
+      this.whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
+      this.$binding('whiteboard', this.whiteboardRef)
+      this.setDisconnectHook()
+      this.prevWorkspaceRef = workspaceRef
+    },
+    setDisconnectHook() {
+      // have a firebase workspace as well to mirror the participants data
+      const classID = this.$route.params.class_id 
+      const userUID = this.$route.params.id
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
+      const firebaseClassID = classID.replace('.', '-')
+      const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${this.user.uid}`)
+
+      firebase.database().ref('.info/connected').on('value', async snapshot => {
+        if (snapshot.val() == false) { 
+          // do nothing 
+        } else {
+          // wait till server successfully processes the onDisconnectHook()
+          await firebaseRef.onDisconnect().set(this.simpleUser) 
+          console.log('disconnect hook successfully set')
+          // then update the firestore directly (much faster)
+          workspaceRef.update({
+            members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
+          })
+          // reset it (otherwise setting the user is not actually triggering any changes)
+          firebaseRef.set({
+            email: ''
+          })
+        }
+      })
+    },
     handleExit() {
       this.whiteboardPopup = false;
       this.$root.$emit("whiteboard-closed");
@@ -215,24 +267,6 @@ export default {
         audioURL: url,
         audioPath: path
       })
-    },
-    async bindVariables () {
-      if (this.prevWorkspaceRef) {
-        await this.prevWorkspaceRef.update({
-          members: firebase.firestore.FieldValue.arrayRemove(this.user)
-        })
-      }
-      const userUID = this.$route.params.id
-      const classID = this.$route.params.class_id
-      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
-      await this.$binding('workspace', workspaceRef)
-      this.whiteboardRef = db.collection("whiteboards").doc(this.workspace.whiteboardID)
-      this.$binding("whiteboard", this.whiteboardRef)
-      // now show participants
-      await workspaceRef.update({
-        members: firebase.firestore.FieldValue.arrayUnion(this.user)
-      })
-      this.prevWorkspaceRef = workspaceRef
     },
     async handleSaving(videoTitle) {
       // mark the whiteboard as saved 
