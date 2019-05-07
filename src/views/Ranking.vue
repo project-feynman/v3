@@ -71,12 +71,11 @@ export default {
   methods: {
     async becomeHelper () {
       // enter the ranking
-      const ref = db.collection('users').doc(this.user.uid)
+      const userRef = db.collection('users').doc(this.user.uid)
       const classID = this.$route.params.class_id
-      ref.update({
+      userRef.update({
         classesHelped: firebase.firestore.FieldValue.arrayUnion(classID)
       })
-
       // receive new workspace if you didn't have one
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
       const workspace = await workspaceRef.get()
@@ -88,7 +87,7 @@ export default {
           ownerUID: this.user.uid,
           whiteboardID: whiteboardRef.id 
         }
-        await ref.set(workspace)
+        await workspaceRef.set(workspace)
       }
     }
   }
