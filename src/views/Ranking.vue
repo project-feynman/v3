@@ -1,87 +1,96 @@
 <template>
-   <v-layout row mt-5>
-    <v-flex xs12 sm6 offset-sm3>
-      <v-card>
-        <v-toolbar color="cyan" dark>
+  <div>
+    <div class="text-xs-center">
+      <v-btn @click="becomeHelper()">Become a helper</v-btn>
+    </div>
 
-          <v-toolbar-title>Ranking</v-toolbar-title>
+    <v-layout row mt-5>
 
-          <v-spacer></v-spacer>
 
-          <!-- <v-btn icon>
-            <v-icon>search</v-icon>
-          </v-btn> -->
-        </v-toolbar>
 
-        <v-list three-line>
-     
-          <template v-for="(item, index) in users">
-        
-            <v-subheader v-if="item.email" :key="index">
-              #{{ index + 1 }} {{ item.email }}
-            </v-subheader>
+      <v-flex xs12 sm6 offset-sm3>
+        <v-card>
+          <v-toolbar color="cyan" dark>
 
-              <!-- <v-list-tile-avatar>
-                <img :src="item.avatar">
-              </v-list-tile-avatar> -->
+            <v-toolbar-title>Helpers</v-toolbar-title>
 
-              <!-- <v-list-tile-content>
-                <v-list-tile-title v-html="item.title"></v-list-tile-title>
-                <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
-              </v-list-tile-content> -->
-  
-            <!-- <v-divider :key="index"></v-divider> -->
+            <v-spacer></v-spacer>
             
-          </template>
+            <!-- <v-btn icon>
+              <v-icon>search</v-icon>
+            </v-btn> -->
+          </v-toolbar>
 
-        </v-list>
-      </v-card>
-    </v-flex>
-  </v-layout>
+          <v-list three-line>
+      
+            <template v-for="(item, index) in users">
+          
+              <v-subheader v-if="item.email" :key="index">
+                #{{ index + 1 }} {{ item.email }}
+              </v-subheader>
+
+                <!-- <v-list-tile-avatar>
+                  <img :src="item.avatar">
+                </v-list-tile-avatar> -->
+
+                <!-- <v-list-tile-content>
+                  <v-list-tile-title v-html="item.title"></v-list-tile-title>
+                  <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
+                </v-list-tile-content> -->
+    
+              <!-- <v-divider :key="index"></v-divider> -->
+              
+            </template>
+
+          </v-list>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import db from '@/database.js'
-  export default {
-    created () {
-      this.$binding('users', db.collection('users'))
-    },
-    data () {
-      return {
-        users: null,
-        items: [
-          { header: 'Today' },
-          {
-            avatar: 'https://cdn.vuetifyjs.com/images/lists/1.jpg',
-            title: 'Brunch this weekend?',
-            subtitle: "<span class='text--primary'>Ali Connors</span> &mdash; I'll be in your neighborhood doing errands this weekend. Do you want to hang out?"
-          },
-          { divider: true, inset: true },
-          {
-            avatar: 'https://cdn.vuetifyjs.com/images/lists/2.jpg',
-            title: 'Summer BBQ <span class="grey--text text--lighten-1">4</span>',
-            subtitle: "<span class='text--primary'>to Alex, Scott, Jennifer</span> &mdash; Wish I could come, but I'm out of town this weekend."
-          },
-          { divider: true, inset: true },
-          {
-            avatar: 'https://cdn.vuetifyjs.com/images/lists/3.jpg',
-            title: 'Oui oui',
-            subtitle: "<span class='text--primary'>Sandra Adams</span> &mdash; Do you have Paris recommendations? Have you ever been?"
-          },
-          { divider: true, inset: true },
-          {
-            avatar: 'https://cdn.vuetifyjs.com/images/lists/4.jpg',
-            title: 'Birthday gift',
-            subtitle: "<span class='text--primary'>Trevor Hansen</span> &mdash; Have any ideas about what we should get Heidi for her birthday?"
-          },
-          { divider: true, inset: true },
-          {
-            avatar: 'https://cdn.vuetifyjs.com/images/lists/5.jpg',
-            title: 'Recipe to try',
-            subtitle: "<span class='text--primary'>Britta Holt</span> &mdash; We should eat this: Grate, Squash, Corn, and tomatillo Tacos."
-          }
-        ]
+import firebase from 'firebase/app'
+import 'firebase/firestore'
+import 'firebase/database'
+
+export default {
+  created () {
+    this.$binding('users', db.collection('users'))
+  },
+  data () {
+    return {
+      users: null
+    }
+  },
+  computed: {
+    ...mapState(['user'])
+  },
+  methods: {
+    async becomeHelper () {
+      // enter the ranking
+      const ref = db.collection('users').doc(this.user.uid)
+      const classID = this.$route.params.class_id
+      ref.update({
+        classesHelped: firebase.firestore.FieldValue.arrayUnion(classID)
+      })
+
+      // receive new workspace if you didn't have one
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
+      const workspace = await workspaceRef.get()
+      if (workspace.exists) {
+        // do nothing 
+      } else { 
+        const whiteboardRef = await db.collection('whiteboards').add({})
+        let workspace = {
+          ownerUID: this.user.uid,
+          whiteboardID: whiteboardRef.id 
+        }
+        await ref.set(workspace)
       }
     }
   }
+}
 </script>
