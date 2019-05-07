@@ -11,41 +11,26 @@ function setDisconnectHook(user) {
 	const firebaseRef = firebase.database().ref('/status/' + user.uid)
 	let isOffline = {
 		isOnline: false,
-		last_changed: firebase.firestore.FieldValue.serverTimestamp()
+		// last_changed: firebase.database.ServerValue.TIMESTAMP
 	}
 	let isOnline = {
 		isOnline: true,
-		last_changed: firebase.firestore.FieldValue.serverTimestamp()
+		// last_changed: firebase.database.ServerValue.TIMESTAMP
 	}
 
 	firebase.database().ref('.info/connected').on('value', async snapshot => {
-    console.log('snapshot.val() =', snapshot.val())
-    if (snapshot.val() == false) { return } 
-    console.log('setting the onDisconnect() hook...')
-    await firebaseRef.onDisconnect().set(isOffline) // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
-    // this is a lie
-    firebaseRef.set(isOnline)
-    // redundant, but MUCH faster
-    firebase.firestore().collection('users').doc(user.uid).update({
-      isOnline: true
-    })
+    if (snapshot.val() == false) { 
+      // do nothing 
+    } else {
+      await firebaseRef.onDisconnect().set(isOffline) // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
+      firebaseRef.set(isOnline)
+      // updating firestore directly is much faster
+      firebase.firestore().collection('users').doc(user.uid).update({
+        isOnline: true
+      })
+    }
   })
 }
-
-function syncFirestoreToVuex(ref) {
-  ref.onSnapshot(user => {
-    context.commit('SET_USER', user.data())
-    setDisconnectHook(user)
-  }) 
-}
-
-// ref.onSnapshot(mirror => {
-//   context.commit('setUser', mirror.data())
-//   if (!context.state.handledOnlineStatus) {
-//     checkOnlineStatusAndSetDisconnectHook(mirror.data())
-//     context.commit('setHandledOnlineStatus', true)
-//   }
-// })
 
 export default new Vuex.Store({
   state: {
@@ -67,16 +52,18 @@ export default new Vuex.Store({
       const mirrorUser = await userRef.get() 
       if (mirrorUser.exists) {
         // now set up syncing with the user copy
-          userRef.onSnapshot(user => {
-            context.commit('SET_USER', user.data())
-            setDisconnectHook({ uid })
-          }) 
+        userRef.onSnapshot(user => {
+          context.commit('SET_USER', user.data())
+          // delete previous onDisconnect() hook 
+          setDisconnectHook({ uid })
+        }) 
       } else {
         // create a new account
         userRef.set(simplifiedUser)
         // now set up syncing with the user copy
         userRef.onSnapshot(user => {
           context.commit('SET_USER', user.data())
+          // delete previous onDisconnect() hook 
           setDisconnectHook({ uid })
         }) 
       }

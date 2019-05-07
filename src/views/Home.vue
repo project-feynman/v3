@@ -19,7 +19,7 @@
       <div v-else-if="!isFetchingUser && user" key="class-list" class="responsive-grid mt-5">
         <v-layout v-for="subject in teachers" :key="subject.uid">
           <v-flex>
-            <v-card flat @click="$router.push(subject.courseNumber)"
+            <v-card flat @click="$router.push(`${subject.courseNumber}/ranking`)"
                     color="white" 
                     class="black--text cursor-pointer">
               <v-card-title primary-title>
@@ -28,7 +28,7 @@
                 </div>
               </v-card-title>
               <v-card-actions>
-                <v-btn flat dark class="black--text" @click="$router.push(subject.courseNumber)">
+                <v-btn flat dark class="black--text" @click="$router.push(`${subject.courseNumber}/ranking`)">
                   ENTER
                 </v-btn>
               </v-card-actions>
