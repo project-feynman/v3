@@ -2,6 +2,7 @@
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
       <div v-if="workspace" class="text-xs-center">
+        <v-btn @click="cleanupPrevWorkspace()">cleanUpPrevWorkspace()</v-btn>
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
         <!-- <v-btn color="grey" dark>
         </v-btn> -->
@@ -173,22 +174,12 @@ export default {
   },
   async beforeDestroy () {
     // when the user switches to any other place besides another workspace
-    await this.prevWorkspaceRef.update({
-      members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
-    })
-    console.log('successfully removed member')
+    this.cleanUpPrevWorkspace()
   },
   methods: {
-    updateHasAudioRoom () {
-      this.prevWorkspaceRef.update({
-        hasAudioRoom: true
-      })
-    },
     async bindVariables () {
       if (this.prevWorkspaceRef) {
-        await this.prevWorkspaceRef.update({
-          members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
-        })
+        await this.cleanUpPrevWorkspace()
       }
       const userUID = this.$route.params.id
       const classID = this.$route.params.class_id
@@ -198,6 +189,21 @@ export default {
       this.$binding('whiteboard', this.whiteboardRef)
       this.setDisconnectHook()
       this.prevWorkspaceRef = workspaceRef
+    },
+    async cleanUpPrevWorkspace () {
+      const promise = new Promise(async (resolve, reject) => {
+        await this.prevWorkspaceRef.update({
+          members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
+        })
+        const workspaceDoc = await this.prevWorkspaceRef.get()
+        if (workspaceDoc.data().members.length == 0) {
+          await this.prevWorkspaceRef.update({
+            hasAudioRoom: false
+          })
+        }
+        resolve()
+      })
+      return promise
     },
     setDisconnectHook() {
       // have a firebase workspace as well to mirror the participants data
@@ -248,6 +254,11 @@ export default {
       whiteboard.currentTime = 0;
       await this.whiteboardRef.update({
         isAnswered: false
+      })
+    },
+    updateHasAudioRoom () {
+      this.prevWorkspaceRef.update({
+        hasAudioRoom: true
       })
     },
     startRecording() {
