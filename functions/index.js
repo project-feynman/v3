@@ -74,27 +74,22 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{cla
     const userWhoLeft = change.after.val()
     console.log('userWhoLeft =', userWhoLeft)
     if (!userWhoLeft.uid) {
-    // if (userWhoLeft === { email: '', uid: '' }) {
       console.log('false alarm')
-      // do nothing 
     } else {
-      // why is this not printing below 
       console.log('updating members')
       const firebaseClassID = context.params.class_id.replace('-', '.')
-      // const testRef = firestore.collection('tests').doc('123')
-      // testRef.set({
-      //   userWhoLeft,
-      //   firebaseClassID
-      // })
-      // it's not supposed to be userWhoLeft.uid - you silly billy - you willy wonka 
       const workspaceFirestoreRef = firestore.doc(`/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`)
       console.log('ref =', `/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`)
-      workspaceFirestoreRef.update({
+      await workspaceFirestoreRef.update({
         members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
       })
-      // workspaceFirestoreRef.update({
-      //   participants: []
-      // })
+      const workspaceDoc = await workspaceFirestoreRef.get()
+      if (workspaceDoc.data().members.length == 0) {
+        workspaceFirestoreRef.update({
+          hasAudioRoom: false 
+        })
+        console.log('successfully updated hasAudioRoom to false')
+      }
     }
   }
 )

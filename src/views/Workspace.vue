@@ -1,8 +1,15 @@
 <template>
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
-      <!-- <div class="text-xs-center"><v-btn color="grey" dark>CONNECT TO VOICE CHAT</v-btn></div> -->
-      <!-- <video-chat :workspaceID="workspace['.key']"/> -->
+      <div v-if="workspace" class="text-xs-center">
+        <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
+        <!-- <v-btn color="grey" dark>
+        </v-btn> -->
+      </div>
+      <video-chat 
+        :workspaceID="workspace['.key']"
+        @open-room="updateHasAudioRoom()"
+      />
       <whiteboard
           v-if="loadCanvas"
           ref="whiteboard"
@@ -161,7 +168,7 @@ export default {
   },
   created() {
     // necessary for canvas to not be invisible during initial render
-    setTimeout(() => (this.loadCanvas = true), 0);
+    setTimeout(() => (this.loadCanvas = true), 0)
     this.$root.$on("open-whiteboard", () => this.whiteboardPopup = true)
   },
   async beforeDestroy () {
@@ -172,13 +179,17 @@ export default {
     console.log('successfully removed member')
   },
   methods: {
+    updateHasAudioRoom () {
+      this.prevWorkspaceRef.update({
+        hasAudioRoom: true
+      })
+    },
     async bindVariables () {
       if (this.prevWorkspaceRef) {
         await this.prevWorkspaceRef.update({
           members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
         })
       }
-      
       const userUID = this.$route.params.id
       const classID = this.$route.params.class_id
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
@@ -218,15 +229,15 @@ export default {
       })
     },
     handleExit() {
-      this.whiteboardPopup = false;
-      this.$root.$emit("whiteboard-closed");
+      this.whiteboardPopup = false
+      this.$root.$emit("whiteboard-closed")
     },
     clearWhiteboard() {
-      const whiteboard = this.$refs["whiteboard"];
-      whiteboard.deleteStrokesSubcollection();
+      const whiteboard = this.$refs["whiteboard"]
+      whiteboard.deleteStrokesSubcollection()
     },
     toggleDisableTouch() {
-      this.disableTouch = !this.disableTouch;
+      this.disableTouch = !this.disableTouch
     },
     useEraser() {
       this.color = "rgb(76, 82, 82)"
