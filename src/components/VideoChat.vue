@@ -3,20 +3,31 @@
   <div>
     <div class="text-xs-center">
       <div>My ID: {{ myID }}</div>
+      <template v-if="connection">
+        <div>connection.sessionid = {{ connection.sessionid }}</div>
+        <!-- <div>connection.channel = {{ connection.channel }}</div>  -->
+        <div>connection.peers = {{ connection.peers }}</div>
+        <!-- <div>Object.keys(connection.streamEvents).length = {{ Object.keys(connection.streamEvents) }}</div>
+        <div>connection.streamEvents = {{ connection.streamEvents }}</div> -->
+        <div>betaParticipants = {{ betaParticipants }}</div>
+        <input type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
+      </template>
       <div>{{ participants.length }} other people connected to voice chat: {{ participants }}</div>
     </div>
 
-    <div v-show="false">
-      <input type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
-      <div id="open-room">Open Room</div> 
-      <div id="join-room">Join Room</div> 
-      <div id="open-or-join-room">OPEN OR JOIN ROOM</div> 
+    <div v-show="true">
+      <v-btn><div id="open-room">OPEN ROOM</div></v-btn>
+      <v-btn><div id="join-room">JOIN ROOM</div></v-btn>
+      <v-btn @click="getOtherParticipants()">UPDATE PARTICIPANTS</v-btn>
+      <div v-show="false" id="open-or-join-room">OPEN OR JOIN ROOM</div> 
     </div>
     <!-- CONNECT/DISCONNECT BUTTONS -->
     <div class="text-xs-center">
-      <v-btn @click="stopWebcam()">STOP STREAM</v-btn>
-      <v-btn @click="openOrJoinRoom()">CONNECT TO VOICE CHAT</v-btn>
-      <v-btn @click="leaveRoom()">DISCONNECT TO VOICE CHAT</v-btn>
+      <v-btn @click="stopAllStreams()">STOP STREAM</v-btn>
+      <v-btn @click="closeSocket()">CLOSE SOCKET</v-btn>
+      <v-btn @click="deletePeer()">DELETE PEER</v-btn>
+      <v-btn @click="openOrJoinRoom()">OPEN OR JOIN ROOM</v-btn>
+      <v-btn @click="disconnectEachParticipant()">DISCONNECT TO VOICE CHAT</v-btn>
     </div>
     <!-- VIDEOS -->
     <todo-item
@@ -41,6 +52,7 @@ export default {
       videosList: [],
       connection: null,
       participants: [],
+      betaParticipants: [],
       myID: ''
     }
   },
@@ -50,10 +62,12 @@ export default {
     }
   },
   created () {
+    // set basic properties for RTCMulticonnection
     this.connection = new RTCMultiConnection()
+    console.log('initially, this.connection =', this.connection)
     this.connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/'
 
-    this.connection.socketMessageEvent = 'video-conference-demo';
+    this.connection.socketMessageEvent = 'video-conference-demo'
     this.connection.session = {
       audio: true,
       video: false
@@ -72,10 +86,17 @@ export default {
       OfferToReceiveVideo: false
     }
 
-    this.connection.autoCreateMediaElement = false;
+    this.connection.autoCreateMediaElement = false
+
+    // set event callbacks for the RTCMulticonnection 
     this.connection.onstream = (event) => {
-      setTimeout(this.showAllParticipants, 1000)
+      // does this mean you just received a stream or that you are 
+      // emitting a stream to someone else? 
+      // the distinction matters.
+      setTimeout(this.updateParticipants, 1000)
       console.log('onstream event')
+      console.log('event.stream =', event.stream)
+      // modify it - so that it rejects remote streams if it comes from yourself 
       this.videosList.push({
         id: event.streamid,
         srcObject: event.stream,
@@ -83,10 +104,22 @@ export default {
       })
     }
 
+    this.connection.onNewParticipant = event => {
+      console.log('onNewParticipant()')
+    }
+
+    this.connection.onleave = event => {
+      console.log('onleave()')
+    }
+
+    this.connection.onUserStatusChanged = event => {
+      console.log('onUserStatusChanged()')
+    }
+
     this.connection.onstreamended = (event) => {
       console.log('onstreamended event')
       this.myID = this.connection.userid
-      setTimeout(this.showAllParticipants, 1000)
+      setTimeout(this.updateParticipants, 1000)
       var newList = []
       this.videosList.forEach(item => {
         if (item.id !== event.streamid) {
@@ -97,69 +130,35 @@ export default {
     }
   },
   mounted () {
-    // document.getElementById('open-room').onclick = () => {
-    //   this.disableInputButtons()
-    //   this.connection.open(document.getElementById('room-id').value, () => {
-    //     this.showRoomURL(this.connection.sessionid)
-    //   })
-    // }
-    // document.getElementById('join-room').onclick = () => {
-    //   this.disableInputButtons()
-    //   this.connection.join(document.getElementById('room-id').value)
-    // }
+    document.getElementById('open-room').onclick = () => {
+      // this.disableInputButtons()
+      console.log(`document.getElementById('room-id').value = ${document.getElementById('room-id').value}`)
+      this.connection.open(document.getElementById('room-id').value, () => {
+        this.$emit('open-room')
+        // console.log('this.connection.sessionid =', this.connection.sessionid)
+        // this.showRoomURL(this.connection.sessionid)
+      })
+    }
+    document.getElementById('join-room').onclick = () => {
+      // this.disableInputButtons()
+      this.connection.join(document.getElementById('room-id').value)
+    }
     document.getElementById('open-or-join-room').onclick = () => {
-      this.disableInputButtons()
+      // this.disableInputButtons()
       this.connection.openOrJoin(document.getElementById('room-id').value, (isRoomExist, roomid) => {
         if (isRoomExist === false && this.connection.isInitiator === true) {
           // if room doesn't exist, it means that current user will create the room
-          this.showRoomURL(roomid);
         }
       })
     }
-
-    (function() {
-      var params = {},
-          r = /([^&=]+)=?([^&]*)/g;
-      function d(s) {
-        return decodeURIComponent(s.replace(/\+/g, ' '));
-      }
-      var match, search = window.location.search;
-      while (match = r.exec(search.substring(1)))
-          params[d(match[1])] = d(match[2])
-      window.params = params
-    })()
-
-    var roomid = ''
-    if (localStorage.getItem(this.connection.socketMessageEvent)) {
-      roomid = localStorage.getItem(this.connection.socketMessageEvent)
-    } else {
-      roomid = this.connection.token()
-    }
-
     // workspace ID is the server ID
-    roomid = this.workspaceID
+    const roomid = this.workspaceID
     document.getElementById('room-id').value = roomid
-    document.getElementById('room-id').onkeyup = () => {
-      localStorage.setItem(this.connection.socketMessageEvent, document.getElementById('room-id').value)
-    }
-    var hashString = location.hash.replace('#', '')
-    if (hashString.length && hashString.indexOf('comment-') == 0) {
-      hashString = ''
-    }
-
-    var roomid = params.roomid
-    if (!roomid && hashString.length) {
-      roomid = hashString
-    }
-
-    // // JOIN ROOM 
-    // console.log('CALLED OPENORJOINROOM()')
-    // this.openOrJoinRoom()
 
     this.connection.onNewParticipant = (participantId, userPreferences) => {
-      console.log('NEW PARTICIPANT JOINED, LET"S UPDATE THE PARTICIPANTS LIST')
-      setTimeout(this.showAllParticipants, 1000)
-      // this.showAllParticipants()
+      console.log('onNewParticipant()')
+      setTimeout(this.updateParticipants, 1000)
+      // this.updateParticipants()
       // if OfferToReceiveAudio/OfferToReceiveVideo should be enabled for specific users
       userPreferences.localPeerSdpConstraints.OfferToReceiveAudio = true
       userPreferences.localPeerSdpConstraints.OfferToReceiveVideo = false
@@ -172,59 +171,58 @@ export default {
       this.connection.acceptParticipationRequest(participantId, userPreferences);
     }
 
-
-
-
-
-
-    if (roomid && roomid.length) {
-      document.getElementById('room-id').value = roomid
-      localStorage.setItem(this.connection.socketMessageEvent, roomid)
-      // auto-join-room
-      (function reCheckRoomPresence() {
-        this.connection.checkPresence(roomid, function(isRoomExist) {
-          if (isRoomExist) {
-              this.connection.join(roomid)
-              return
-          }
-          setTimeout(reCheckRoomPresence, 5000)
-        })
-      })()
-      this.disableInputButtons()
-    }
+    this.connection.onPeerStateChanged = function(state) {
+      console.log('onPeerStateChanged()')
+      if (state.iceConnectionState.search(/closed|failed/gi) !== -1) {
+        console.error('Peer connection is closed between you & ', state.userid, state.extra, 'state:', state.iceConnectionState);
+      }
+    };
   },
   methods: {
-    stopWebcam () {
-      this.connection.attachStreams.forEach(function(stream) {
-          stream.stop();
-      });
+    closeSocket () {
+      this.connection.closeSocket()
     },
-    updateParticipants () {
-      this.participants = []
-      this.connection.getAllParticipants().forEach(participantID => {
-        this.participants.push(participantID)
+    deletePeer () {
+      // close a connection with a specific user - which of course is not the same as just removing yourself from everyone 
+      this.connection.deletePeer(this.myID)
+    },
+    getOtherParticipants () {
+      this.connection.getAllParticipants().forEach(participantId => {
+        this.betaParticipants.push(participantId)
+        var user = this.connection.peers[participantId]
+        // var hisFullName = user.extra.fullName
+        // var hisUID = user.userid
+        var hisNativePeer = user.peer
+        var hisIncomingStreams = user.peer.getRemoteStreams()
+        console.log('user =', user)
+        console.log('hisNativePeer =', user.peer)
+        console.log('hisIncomingStreams =', user.peer.getRemoteStreams())
+        // var hisDataChannels = user.channels
       })
     },
-    showAllParticipants () {
+    stopAllStreams () {
+      this.connection.attachStreams.forEach(function(stream) {
+        stream.stop()
+      })
+    },
+    updateParticipants () {
+      console.log('updateParticipants()')
       this.myID = this.connection.userid
       this.participants = [] 
       this.connection.getAllParticipants().forEach(participantId => {
         this.participants.push(participantId)
       })
-
     },
     leavePrevAndJoinNew() {
       this.videoList = [] 
     },
-    leaveRoom () {
+    disconnectEachParticipant () {
       // for each OTHER person, disconnect the stream with them 
       this.participants.forEach(participantID => this.connection.disconnectWith(participantID))
-
-
       // this.connection.getAllParticipants().forEach(participantId => {
       //     console.log('disconnecting participant =', participantId)
       //     this.connection.disconnectWith( participantId );
-      // });
+      // })
       this.videosList = [] 
     },
     openOrJoinRoom () {
@@ -232,28 +230,17 @@ export default {
       this.connection.openOrJoin(document.getElementById('room-id').value, (isRoomExist, roomid) => {
         if (isRoomExist === false && this.connection.isInitiator === true) {
           // if room doesn't exist, it means that current user will create the room
-          this.showRoomURL(roomid)
+          // this.showRoomURL(roomid)
         }
       })
     },
-    disableInputButtons () {
-      document.getElementById('room-id').onkeyup();
-      document.getElementById('open-or-join-room').disabled = true;
-      document.getElementById('open-room').disabled = true;
-      document.getElementById('join-room').disabled = true;
-      document.getElementById('room-id').disabled = true;
-    },
-    showRoomURL (roomid) {
-      var roomHashURL = '#' + roomid
-      var roomQueryStringURL = '?roomid=' + roomid
-      var html = '<h2>Unique URL for your room:</h2><br>'
-      html += 'Hash URL: <a href="' + roomHashURL + '" target="_blank">' + roomHashURL + '</a>'
-      html += '<br>'
-      html += 'QueryString URL: <a href="' + roomQueryStringURL + '" target="_blank">' + roomQueryStringURL + '</a>'
-      var roomURLsDiv = document.getElementById('room-urls')
-      roomURLsDiv.innerHTML = html;
-      roomURLsDiv.style.display = 'block'
-    }
+    // disableInputButtons () {
+    //   // document.getElementById('room-id').onkeyup();
+    //   document.getElementById('open-or-join-room').disabled = true
+    //   document.getElementById('open-room').disabled = true
+    //   document.getElementById('join-room').disabled = true
+    //   document.getElementById('room-id').disabled = true
+    // }
   }
 }
 </script>
