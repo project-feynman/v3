@@ -2,10 +2,7 @@
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
       <div v-if="workspace" class="text-xs-center">
-        <v-btn @click="cleanupPrevWorkspace()">cleanUpPrevWorkspace()</v-btn>
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
-        <!-- <v-btn color="grey" dark>
-        </v-btn> -->
       </div>
       <video-chat 
         :workspaceID="workspace['.key']"
@@ -225,9 +222,7 @@ export default {
             members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
           })
           // reset it (otherwise setting the user is not actually triggering any changes)
-
-          // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
-          firebaseRef.set({
+          firebaseRef.set({ // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
             email: '',
             uid: ''
           })

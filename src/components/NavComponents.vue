@@ -19,9 +19,9 @@
           CREATE CLASS
         </v-btn> -->
         
-      <v-btn icon>
+      <!-- <v-btn icon>
         <v-icon color="grey darken-2">notifications</v-icon>
-      </v-btn>
+      </v-btn> -->
 
          <v-btn icon @click="newClassPopup = true">
           <v-icon color="grey darken-2">library_add</v-icon>
@@ -71,7 +71,7 @@
           <v-list-tile-action>
             <v-icon>poll</v-icon>
           </v-list-tile-action>
-          <v-list-tile-title>Ranking</v-list-tile-title>
+          <v-list-tile-title>Classmates</v-list-tile-title>
         </v-list-tile>
       </v-list>
       <v-divider/>

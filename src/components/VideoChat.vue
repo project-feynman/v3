@@ -2,32 +2,32 @@
   <!-- https://github.com/muaz-khan/RTCMultiConnection/blob/master/demos/vuejs-video-conferencing.html -->
   <div>
     <div class="text-xs-center">
-      <div>My ID: {{ myID }}</div>
+      <!-- <div>My ID: {{ myID }}</div> -->
       <template v-if="connection">
-        <div>connection.sessionid = {{ connection.sessionid }}</div>
+        <!-- <div>connection.sessionid = {{ connection.sessionid }}</div> -->
         <!-- <div>connection.channel = {{ connection.channel }}</div>  -->
         <div>connection.peers = {{ connection.peers }}</div>
         <!-- <div>Object.keys(connection.streamEvents).length = {{ Object.keys(connection.streamEvents) }}</div>
         <div>connection.streamEvents = {{ connection.streamEvents }}</div> -->
-        <div>betaParticipants = {{ betaParticipants }}</div>
-        <input type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
+        <!-- <div>betaParticipants = {{ betaParticipants }}</div> -->
+        <input v-show="false" type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
       </template>
       <div>{{ participants.length }} other people connected to voice chat: {{ participants }}</div>
     </div>
 
-    <div v-show="true">
+    <div v-show="true" class="text-xs-center">
       <v-btn><div id="open-room">OPEN ROOM</div></v-btn>
       <v-btn><div id="join-room">JOIN ROOM</div></v-btn>
-      <v-btn @click="getOtherParticipants()">UPDATE PARTICIPANTS</v-btn>
+      <v-btn @click="stopAllStreams()">STOP STREAM</v-btn>
+      <!-- <v-btn @click="getOtherParticipants()">UPDATE PARTICIPANTS</v-btn> -->
       <div v-show="false" id="open-or-join-room">OPEN OR JOIN ROOM</div> 
     </div>
     <!-- CONNECT/DISCONNECT BUTTONS -->
     <div class="text-xs-center">
-      <v-btn @click="stopAllStreams()">STOP STREAM</v-btn>
-      <v-btn @click="closeSocket()">CLOSE SOCKET</v-btn>
-      <v-btn @click="deletePeer()">DELETE PEER</v-btn>
-      <v-btn @click="openOrJoinRoom()">OPEN OR JOIN ROOM</v-btn>
-      <v-btn @click="disconnectEachParticipant()">DISCONNECT TO VOICE CHAT</v-btn>
+      <!-- <v-btn @click="closeSocket()">CLOSE SOCKET</v-btn> -->
+      <!-- <v-btn @click="deletePeer()">DELETE PEER</v-btn> -->
+      <!-- <v-btn @click="openOrJoinRoom()">OPEN OR JOIN ROOM</v-btn> -->
+      <!-- <v-btn @click="disconnectEachParticipant()">DISCONNECT TO VOICE CHAT</v-btn> -->
     </div>
     <!-- VIDEOS -->
     <todo-item

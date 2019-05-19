@@ -1,7 +1,7 @@
 <template>
   <div id="whiteboard">
     <canvas id="myCanvas" 
-            style="height: 90vh; width: 100%; background-color: rgb(76, 82, 82)">
+            style="height: 90vh; width: 100%; background-color: rgb(62, 66, 66)">
     </canvas>
   </div>
 </template>

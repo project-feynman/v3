@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="text-xs-center">
-      <v-btn @click="becomeHelper()">Become a helper</v-btn>
+      <v-btn @click="becomeHelper()">Get a workspace</v-btn>
     </div>
 
     <v-layout row mt-5>
@@ -12,7 +12,7 @@
         <v-card>
           <v-toolbar color="cyan" dark>
 
-            <v-toolbar-title>Helpers</v-toolbar-title>
+            <v-toolbar-title>Classmates</v-toolbar-title>
 
             <v-spacer></v-spacer>
             

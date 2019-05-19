@@ -40,7 +40,7 @@
       <!-- LOGIN BUTTON -->
       <div v-else key="landing">
         <p class="text-xs-center mt-4 headline font-weight-light">
-          Here, friends and strangers alike explain concepts to help each other.
+          A place where people talk and draw to help each other
         </p>
         <v-layout row justify-center class="mb-4">
           <v-btn @click="createAccountPopup = true" dark color="grey" :depressed="true">
@@ -139,10 +139,11 @@ export default {
   },
   async created () {
     this.$binding('teachers', db.collection('classes'))
-    const demoRef = db.collection('whiteboards').where('isSaved', '==', true)
-    await this.$binding('demoDoodle', demoRef)
-    const randomNumber = Math.floor(Math.random() * this.demoDoodle.length);
-    const strokesRef = db.collection('whiteboards').doc(this.demoDoodle[randomNumber]['.key']).collection('strokes').orderBy('strokeNumber', 'asc')
+    // const demoRef = db.collection('whiteboards').where('isSaved', '==', true)
+    // await this.$binding('demoDoodle', demoRef)
+    // const randomNumber = Math.floor(Math.random() * this.demoDoodle.length)
+    // const strokesRef = db.collection('whiteboards').doc(this.demoDoodle[randomNumber]['.key']).collection('strokes').orderBy('strokeNumber', 'asc')
+    const strokesRef = db.collection('whiteboards').doc('iUuhvPRiGwoDwxei1HtP').collection('strokes').orderBy('strokeNumber', 'asc')
     this.$binding('strokes', strokesRef) 
   }
 }
