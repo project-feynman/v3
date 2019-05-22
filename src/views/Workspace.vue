@@ -8,6 +8,8 @@
         :workspaceID="workspace['.key']"
         @open-room="updateHasAudioRoom()"
       />
+
+      <!-- THIS IS THE WHITEBOARD THAT IS NOT FULLSCREEN -->
       <whiteboard
           v-if="loadCanvas"
           ref="whiteboard"
@@ -19,6 +21,8 @@
           :colors="colors"
           :lineWidth="lineWidth"
       ></whiteboard>
+
+      <!-- THIS IS THE FULLSCREEN WHITEBOARD -->
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
         <v-card v-if="whiteboardPopup">
           <!-- SAVE VIDEO POPUP -->
@@ -183,7 +187,9 @@ export default {
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
       await this.$binding('workspace', workspaceRef)
       this.whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
+      console.log('whiteboardID =', this.workspace.whiteboardID)
       this.$binding('whiteboard', this.whiteboardRef)
+      // console.log('this.whiteboard =', this.whiteboard)
       this.setDisconnectHook()
       this.prevWorkspaceRef = workspaceRef
     },
@@ -216,7 +222,6 @@ export default {
         } else {
           // wait till server successfully processes the onDisconnectHook()
           await firebaseRef.onDisconnect().set(this.simpleUser) 
-          console.log('disconnect hook successfully set')
           // then update the firestore directly (much faster)
           workspaceRef.update({
             members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
@@ -234,7 +239,7 @@ export default {
       this.$root.$emit("whiteboard-closed")
     },
     clearWhiteboard() {
-      const whiteboard = this.$refs["whiteboard"]
+      const whiteboard = this.$refs['whiteboard']
       whiteboard.deleteStrokesSubcollection()
     },
     toggleDisableTouch() {
@@ -280,7 +285,7 @@ export default {
     },
     quickplay () {
       const whiteboard = this.$refs['whiteboard']
-      whiteboard.quickplay();
+      whiteboard.quickplay()
     },
     async saveFileReference({ url, path }) {
       await this.whiteboardRef.update({
@@ -310,11 +315,13 @@ export default {
         authorName: this.user.name || 'Anonymous'
       })
       // initialize a new whiteboard for the workspace
+      const workspaceID = this.$route.params.id
       const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
-      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(workspaceID)
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       })
+      console.log('new whiteboard ID =', newWhiteboardRef.id)
       this.$root.$emit('audio-uploaded', docRef.id)
     }
   }
