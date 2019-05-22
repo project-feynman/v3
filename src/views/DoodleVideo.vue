@@ -100,12 +100,9 @@ export default {
       this.video = videoDoc.data()
 
       if (this.video.whiteboardID) {
-        console.log('this.video.whiteboardID =', this.video.whiteboardID)
-        console.log('this.video.title =', this.video.title)
         this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
         const whiteboardDoc = await this.whiteboardRef.get()
       }  
-
       if (this.video.audioURL) {
         this.betaAudioURL = this.video.audioURL
       }
