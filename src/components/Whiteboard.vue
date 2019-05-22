@@ -1,8 +1,11 @@
 <template>
   <div id="whiteboard">
     <canvas id="myCanvas" 
-            style="height: 90vh; width: 100%; background-color: rgb(62, 66, 66)">
-    </canvas>
+            style="height: 90vh; 
+                   width: 100%; 
+                   background-color: rgb(62, 66, 66)"
+    />
+    <!-- </canvas> -->
   </div>
 </template>
 

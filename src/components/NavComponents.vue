@@ -19,9 +19,9 @@
           CREATE CLASS
         </v-btn> -->
         
-      <!-- <v-btn icon>
-        <v-icon color="grey darken-2">notifications</v-icon>
-      </v-btn> -->
+          <!-- <v-btn icon>
+            <v-icon color="grey darken-2">notifications</v-icon>
+          </v-btn> -->
 
          <v-btn icon @click="newClassPopup = true">
           <v-icon color="grey darken-2">library_add</v-icon>

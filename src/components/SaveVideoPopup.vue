@@ -5,14 +5,15 @@
         <template v-if="!shareableURL">
           <v-container align-center justify-center>
             <v-layout>
-          <v-flex>
-            <v-text-field
-              label="Title"
-              v-model="videoTitle"
-              autofocus
-              placeholder="e.g. Djikstra's Algorithm">
-            </v-text-field>
-          </v-flex>
+              <v-flex>
+                <v-text-field
+                  label="Title"
+                  v-model="videoTitle"
+                  autofocus
+                  placeholder="e.g. Djikstra's Algorithm"
+                />
+                <!-- </v-text-field> -->
+              </v-flex>
             </v-layout>
           </v-container>
         </template>
@@ -24,9 +25,11 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <template v-if="!shareableURL && !isSavingVideo">
-          <v-btn color="green darken-1"
-                 flat="flat"
-                 @click="handleClose()">
+          <v-btn 
+            color="green darken-1"
+            flat="flat"
+            @click="handleClose()"
+          >
             CANCEL
           </v-btn>
 
@@ -81,6 +84,6 @@ export default {
     returnLinkURL() {
       return this.shareableURL
     }
-  },
+  }
 }
 </script>
