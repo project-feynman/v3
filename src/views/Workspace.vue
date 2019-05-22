@@ -187,7 +187,7 @@ export default {
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
       await this.$binding('workspace', workspaceRef)
       this.whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
-      console.log('whiteboardID =', this.workspace.whiteboardID)
+     
       this.$binding('whiteboard', this.whiteboardRef)
       // console.log('this.whiteboard =', this.whiteboard)
       this.setDisconnectHook()
