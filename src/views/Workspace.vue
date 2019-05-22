@@ -306,14 +306,21 @@ export default {
         lower: true
       })
       const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
-      docRef.set({
+
+      const videoObj = {
         title: videoTitle,
         whiteboardID: this.workspace.whiteboardID,
-        audioURL: this.whiteboard.audioURL,
-        audioPath: this.whiteboard.audioPath,
         authorUID: this.user.uid || 'Anonymous',
         authorName: this.user.name || 'Anonymous'
-      })
+      }
+
+      if (this.whiteboard.audioURL && this.whiteboard.audioPath) {
+        videoObj.audioURL = this.whiteboard.audioURL
+        videoObj.audioPath = this.whiteboard.audioPath
+      }
+     
+      docRef.set(videoObj)
+
       // initialize a new whiteboard for the workspace
       const workspaceID = this.$route.params.id
       const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
