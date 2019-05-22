@@ -64,7 +64,7 @@ export default {
   created () {
     // set basic properties for RTCMulticonnection
     this.connection = new RTCMultiConnection()
-    console.log('initially, this.connection =', this.connection)
+    // console.log('initially, this.connection =', this.connection)
     this.connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/'
 
     this.connection.socketMessageEvent = 'video-conference-demo'
@@ -73,7 +73,7 @@ export default {
       video: false
       // video: false
     }
-    console.log('this.connection.session =', this.connection.session)
+    // console.log('this.connection.session =', this.connection.session)
 
     // MAGIC LINE DO NOT REMOVE
     this.connection.mediaConstraints = {

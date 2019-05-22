@@ -3,11 +3,9 @@
     <v-container fluid class="pa-0">
       <v-layout>
         <div v-if="video && user" style="margin: auto;">
-          <template v-if="user.email == 'eltonlin1998@gmail.com'">
-            <div class="text-xs-center">
-              <v-btn @click="deleteVideo()" class="red white--text">DELETE VIDEO</v-btn>
-            </div>
-          </template>
+          <div v-if="user.email == 'eltonlin1998@gmail.com'" class="text-xs-center">
+            <v-btn @click="deleteVideo()" class="red white--text">DELETE VIDEO</v-btn>
+          </div>
         </div>
       </v-layout>
 
@@ -23,39 +21,28 @@
         v-if="betaAudioURL"
         ref="audio-recorder"
         :audioURL="betaAudioURL"
+        @recorder-loading="recorderLoaded=false"
         @play="syncAnimation()"
         @seeking="syncAnimation()"
         @recorder-loaded="recorderLoaded=true"
       />
-
-        <!-- FUTURE FIX -->
-        <!-- <audio-recorder
-          v-if="audioURL"
-          ref="audio-recorder"
-          :audioURL="audioURL"
-          @recorder-loading="recorderLoaded=false"
-          @play="syncAnimation()"
-          @seeking="syncAnimation()"
-          @recorder-loaded="recorderLoaded=true"
-        /> -->
 
     </v-container>
   </div>
 </template>
 
 <script>
-import db from "@/database.js";
-import Animation from "@/components/Animation.vue";
-import AudioRecorder from "@/components/AudioRecorder.vue";
-import { mapState } from "vuex";
-import firebase from "firebase/app";
-import "firebase/storage";
+import db from "@/database.js"
+import Animation from "@/components/Animation.vue"
+import AudioRecorder from "@/components/AudioRecorder.vue"
+import { mapState } from "vuex"
+import firebase from "firebase/app"
+import "firebase/storage"
 
 export default {
   props: {
     strokes: Array,
     audioURL: String,
-    workspaceId: String
   },
   components: {
     Animation,
@@ -90,8 +77,8 @@ export default {
       if (this.syncedVisualAndAudio) {
         return
       } else if (this.resourcesLoaded) {
-        const audioRecorder = this.$refs["audio-recorder"]
-        const animation = this.$refs["animation"]
+        const audioRecorder = this.$refs['audio-recorder']
+        const animation = this.$refs['animation']
         animation.startSync(audioRecorder.getAudioTime)
         this.syncedVisualAndAudio = true
       }
@@ -108,11 +95,13 @@ export default {
       const classID = this.$route.params.class_id
 
       // fetch video document
-      const ref = db.collection("classes").doc(classID).collection("videos").doc(this.$route.params.video_id)
+      const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
       const videoDoc = await ref.get()
       this.video = videoDoc.data()
 
       if (this.video.whiteboardID) {
+        console.log('this.video.whiteboardID =', this.video.whiteboardID)
+        console.log('this.video.title =', this.video.title)
         this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
         const whiteboardDoc = await this.whiteboardRef.get()
       }  
@@ -141,6 +130,7 @@ export default {
       const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
       videoRef.delete()
       // delete the strokes (screw the subcollections for who honestly cares)
+      // TODO: also delete the subcollections
       if (this.whiteboardRef) {
         this.whiteboardRef.delete()
       }

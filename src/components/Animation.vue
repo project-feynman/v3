@@ -63,7 +63,6 @@ export default {
     }
   },
   mounted() {
-    console.log('mounted')
     this.$root.$on('whiteboard-closed', () => {
       this.initData()
     })
@@ -76,7 +75,6 @@ export default {
       this.rescaleCanvas() // should rename to rescale and redraw
     }
     window.addEventListener('resize', this.rescaleCanvas, false)
-
   },
   beforeDestroy() {
     // clean up everything - needs testing

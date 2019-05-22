@@ -5,7 +5,6 @@
                    width: 100%; 
                    background-color: rgb(62, 66, 66)"
     />
-    <!-- </canvas> -->
   </div>
 </template>
 
@@ -24,23 +23,6 @@ export default {
     Swatches
   },
   mixins: [DrawMethods],
-  watch: {
-    whiteboardID: {
-      handler: 'initData',
-    },
-    isRecording() {
-      if (this.isRecording) {
-        this.startTimer()
-      } else {
-        this.stopTimer()
-      }
-    },
-    isAnswered() {
-      if (!this.isAnswered) {
-        this.initTouchEvents()
-      }
-    }
-  },
   computed: {
     ...mapState(['user']),
     author() {
@@ -58,8 +40,6 @@ export default {
       currentStroke: [],
       canvas: null,
       ctx: null,
-      isClearing: false,
-      isReplaying: false,
       timer: null,
       currentTime: 0,
       startTime: 0,
@@ -69,15 +49,27 @@ export default {
       lastX: -1,
       lastY: -1,
       unsubscribe: null,
-      redrawTimeout: null,
-      idx: 0,
+      redrawTimeout: null, // needed for mixins/DrawMethods.js
       interval: null 
     }
   },
-  // created() and mounted() are for initial renders of the board - I don't know why the initData watcher cannot 
-  // replace both - but in the future, we can reduce the surface area of this code
-  created () {
-    this.strokesRef = db.collection('whiteboards').doc(this.whiteboardID).collection('strokes')
+  watch: {
+    whiteboardID: {
+      handler: 'initData',
+      immediate: true
+    },
+    isRecording() {
+      if (this.isRecording) {
+        this.startTimer()
+      } else {
+        this.stopTimer()
+      }
+    },
+    isAnswered() {
+      if (!this.isAnswered) {
+        this.initTouchEvents()
+      }
+    }
   },
   mounted () {
     // the mounted() hook is never called for subsequent switches between whiteboards
@@ -113,7 +105,6 @@ export default {
       await this.quickplay()
     },
     initClearBoardLogic() {
-      this.isClearing = true 
       this.deleteStrokesSubcollection()
       this.allStrokes = [] 
     },
@@ -127,7 +118,9 @@ export default {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
       this.allStrokes = [] 
-      this.unsubscribe() 
+      if (this.unsubscribe) {
+        this.unsubscribe() 
+      }
       this.continuouslySyncBoardWithDB() 
     },
     continuouslySyncBoardWithDB() {
@@ -164,6 +157,7 @@ export default {
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
+      console.log('this.strokesRef =', this.strokesRef)
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         this.strokesRef.doc(`${i}`).delete()
       }
