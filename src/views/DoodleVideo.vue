@@ -84,8 +84,10 @@ export default {
       }
     },
     quickplay() {
-      const animation = this.$refs["animation"]
-      animation.quickplay()
+      const animation = this.$refs['animation']
+      if (animation) {
+        animation.quickplay()
+      }
     },
     async bindVariables() {
       // initialize/reset variables
@@ -115,8 +117,9 @@ export default {
         await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'))
       }
 
-      // other setup
-      this.$root.$on('replay-silent-animation', this.quickplay)
+      // other setup 
+      // TODO: stop using root listeners and instead use a navcomponent directly here
+      this.$root.$on('replay-silent-animation', this.quickplay) // when pressing the replay icon, the whiteboard will replay
 
       // now bind references to make it easy to delete things
       const storageRef = firebase.storage().ref()
