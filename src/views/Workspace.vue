@@ -294,7 +294,7 @@ export default {
       whiteboardRef.update({
         isSaved: true
       })
-      // create a new explanation document that points to the whiteboard
+      // create a new video document that points to the whiteboard
       const classID = this.$route.params.class_id
       const videoID = slugify(videoTitle, {
         replacement: '-',
@@ -304,11 +304,13 @@ export default {
       docRef.set({
         title: videoTitle,
         whiteboardID: this.workspace.whiteboardID,
+        audioURL: this.whiteboard.audioURL,
+        audioPath: this.whiteboard.audioPath,
         authorUID: this.user.uid || 'Anonymous',
         authorName: this.user.name || 'Anonymous'
       })
       // initialize a new whiteboard for the workspace
-      const newWhiteboardRef = await db.collection("whiteboards").add({ isAnswered: false })
+      const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id

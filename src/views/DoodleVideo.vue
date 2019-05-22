@@ -19,18 +19,15 @@
         @animation-finished="handleEvent()"
       />
 
-      <template v-if="explanation">
-        <audio-recorder
-          v-if="explanation.audioURL"
-          ref="audio-recorder"
-          :audioURL="explanation.audioURL"
-          @play="syncAnimation()"
-          @seeking="syncAnimation()"
-          @recorder-loaded="recorderLoaded=true"
-        />
-      </template>
-      
-      <template>
+      <audio-recorder
+        v-if="betaAudioURL"
+        ref="audio-recorder"
+        :audioURL="betaAudioURL"
+        @play="syncAnimation()"
+        @seeking="syncAnimation()"
+        @recorder-loaded="recorderLoaded=true"
+      />
+
         <!-- FUTURE FIX -->
         <!-- <audio-recorder
           v-if="audioURL"
@@ -41,7 +38,7 @@
           @seeking="syncAnimation()"
           @recorder-loaded="recorderLoaded=true"
         /> -->
-      </template>
+
     </v-container>
   </div>
 </template>
@@ -73,7 +70,7 @@ export default {
   data () {
     return {
       video: null,
-      explanation: null,
+      betaAudioURL: '',
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
@@ -99,6 +96,46 @@ export default {
         this.syncedVisualAndAudio = true
       }
     },
+    quickplay() {
+      const animation = this.$refs["animation"]
+      animation.quickplay()
+    },
+    async bindVariables() {
+      // initialize/reset variables
+      this.syncedVisualAndAudio = false
+      this.recorderLoaded = false
+      this.animationLoaded = false
+      const classID = this.$route.params.class_id
+
+      // fetch video document
+      const ref = db.collection("classes").doc(classID).collection("videos").doc(this.$route.params.video_id)
+      const videoDoc = await ref.get()
+      this.video = videoDoc.data()
+
+      if (this.video.whiteboardID) {
+        this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
+        const whiteboardDoc = await this.whiteboardRef.get()
+      }  
+
+      if (this.video.audioURL) {
+        this.betaAudioURL = this.video.audioURL
+      }
+    
+      // bind strokes
+      const strokesRef = db.collection('whiteboards').doc(this.video.whiteboardID).collection('strokes')
+      if (this.video.audioPath) {
+        await this.$binding('allStrokes', strokesRef.orderBy('startTime', 'asc'))
+      } else {
+        await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'))
+      }
+
+      // other setup
+      this.$root.$on('replay-silent-animation', this.quickplay)
+
+      // now bind references to make it easy to delete things
+      const storageRef = firebase.storage().ref()
+      this.audioFileRef = storageRef.child(`recordings/${this.video.audioPath}`)
+    },
     deleteVideo() {
       const classID = this.$route.params.class_id
       const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
@@ -110,40 +147,6 @@ export default {
       if (this.audioFileRef) {
         this.audioFileRef.delete()
       }
-    },
-    quickplay() {
-      const animation = this.$refs["animation"]
-      animation.quickplay();
-    },
-    async bindVariables() {
-      // initialize/reset variables
-      this.syncedVisualAndAudio = false;
-      this.recorderLoaded = false;
-      this.animationLoaded = false;
-      const classID = this.$route.params.class_id;
-
-      // fetch video document
-      const ref = db.collection("classes").doc(classID).collection("videos").doc(this.$route.params.video_id)
-      const videoDoc = await ref.get()
-      this.video = videoDoc.data()
-      this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID);
-      const whiteboardDoc = await this.whiteboardRef.get()
-      this.explanation = whiteboardDoc.data()
-
-      // bind strokes
-      const strokesRef = db.collection('whiteboards').doc(this.video.whiteboardID).collection('strokes')
-      if (this.explanation.audioPath) {
-        await this.$binding('allStrokes', strokesRef.orderBy('startTime', 'asc'))
-      } else {
-        await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'))
-      }
-
-      // other setup
-      this.$root.$on('replay-silent-animation', this.quickplay)
-
-      // now bind references to make it easy to delete things
-      const storageRef = firebase.storage().ref()
-      this.audioFileRef = storageRef.child(`recordings/${this.explanation.audioPath}`)
     }
   }
 };
