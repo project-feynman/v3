@@ -39,8 +39,12 @@ export default {
               }
             }
           }
-        } else if (this.allStrokes[this.indexOfNextStroke - 1].startTime > currentTime) {
-          // most recent stroke on canvas no longer belongs
+        } else if (this.indexOfNextStroke == 0) {
+          // do nothing
+        } else if (this.allStrokes[this.indexOfNextStroke - 1].startTime > currentTime) { 
+          // it's indexOfNextStroke - 1 because that is the index of current stroke!
+          // most recent i.e. current stroke on canvas no longer belongs
+          // however doesn't apply if there are no strokes at all on the page
           this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
           this.indexOfNextStroke = 0 
           this.allStrokes.forEach(stroke => {
@@ -55,9 +59,10 @@ export default {
     },
     nextStrokeStartTime() {
       if (this.indexOfNextStroke == this.allStrokes.length) {
-        // handle edge case
+        // handle edge case of last index
         return 999999999999
       } else {
+        // gracefully handles first index
         return this.allStrokes[this.indexOfNextStroke].startTime
       }
     },
