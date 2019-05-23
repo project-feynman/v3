@@ -36,8 +36,9 @@ import db from "@/database.js"
 import Animation from "@/components/Animation.vue"
 import AudioRecorder from "@/components/AudioRecorder.vue"
 import { mapState } from "vuex"
-import firebase from "firebase/app"
-import "firebase/storage"
+import firebase from 'firebase/app'
+import 'firebase/storage'
+import 'firebase/functions'
 
 export default {
   props: {
@@ -123,20 +124,27 @@ export default {
 
       // now bind references to make it easy to delete things
       const storageRef = firebase.storage().ref()
-      this.audioFileRef = storageRef.child(`recordings/${this.video.audioPath}`)
-    },
-    deleteVideo() {
-      const classID = this.$route.params.class_id
-      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
-      videoRef.delete()
-      // delete the strokes (screw the subcollections for who honestly cares)
-      // TODO: also delete the subcollections
-      if (this.whiteboardRef) {
-        this.whiteboardRef.delete()
+      if (this.video.audioPath) {
+        this.audioFileRef = storageRef.child(`recordings/${this.video.audioPath}`)
       }
+    },
+    async deleteVideo() {
+      const classID = this.$route.params.class_id
+      const videoID = this.$route.params.video_id
+      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)
+      videoRef.delete()
+      
+      // now call the cloud function
+      var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
+      const path = `whiteboards/${this.video.whiteboardID}`
+
+      deleteFn({ path })
+
       if (this.audioFileRef) {
         this.audioFileRef.delete()
       }
+      this.$router.push(`/${classID}/ranking`)
+
     }
   }
 };
