@@ -53,7 +53,7 @@
                 <v-btn @click="toggleDisableTouch()">
                   {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
                 </v-btn>
-                <v-btn @click="saveVideoPopup = true">
+                <v-btn @click="saveDoodle()">
                   SAVE DOODLE
                 </v-btn>
                 <v-btn
@@ -144,6 +144,7 @@ export default {
   data() {
     return {
       saveVideoPopup: false,
+      saveSilently: false,
       whiteboardPopup: false,
       isRecording: false,
       disableTouch: true,
@@ -162,14 +163,14 @@ export default {
       handler: 'bindVariables',
       immediate: true
     },
-    color() {
+    color () {
       // bad - high surface area for bugs
       if (this.color != "rgb(76, 82, 82)") {
         this.lineWidth = 2
       }
     }
   },
-  created() {
+  created () {
     // necessary for canvas to not be invisible during initial render
     setTimeout(() => (this.loadCanvas = true), 0)
     this.$root.$on("open-whiteboard", () => this.whiteboardPopup = true)
@@ -179,6 +180,14 @@ export default {
     this.cleanUpPrevWorkspace()
   },
   methods: {
+    saveDoodle() {
+      this.saveSilently = true 
+      this.saveVideoPopup = true
+    },
+    saveVideo() {
+      this.saveSilently = false
+      this.saveVideoPopup = true
+    },
     async bindVariables () {
       if (this.prevWorkspaceRef) {
         await this.cleanUpPrevWorkspace()
@@ -315,11 +324,13 @@ export default {
         authorName: this.user.name || 'Anonymous'
       }
 
-      if (this.whiteboard.audioURL && this.whiteboard.audioPath) {
-        videoObj.audioURL = this.whiteboard.audioURL
-        videoObj.audioPath = this.whiteboard.audioPath
+      if (!this.saveSilently) {
+        if (this.whiteboard.audioURL && this.whiteboard.audioPath) {
+          videoObj.audioURL = this.whiteboard.audioURL
+          videoObj.audioPath = this.whiteboard.audioPath
+        }
       }
-     
+ 
       docRef.set(videoObj)
 
       // initialize a new whiteboard for the workspace
