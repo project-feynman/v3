@@ -1,10 +1,11 @@
 <template>
   <div id="workspace">
     <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
-      <div v-if="workspace" class="text-xs-center">
+      <div class="text-xs-center">
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
       </div>
       <video-chat 
+        :hasAudioRoom="workspace.hasAudioRoom"
         :workspaceID="workspace['.key']"
         @open-room="updateHasAudioRoom()"
       />
@@ -110,7 +111,7 @@
 </template>
 
 <script>
-import firebase from "firebase/app"
+import firebase from 'firebase/app'
 import "firebase/firestore"
 import db from "@/database.js"
 import Whiteboard from "@/components/Whiteboard.vue"
@@ -121,7 +122,7 @@ import Swatches from "vue-swatches"
 import "vue-swatches/dist/vue-swatches.min.css"
 import slugify from "slugify"
 
-import { mapState } from "vuex";
+import { mapState } from "vuex"
 
 export default {
   components: {

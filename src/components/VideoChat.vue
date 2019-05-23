@@ -16,9 +16,16 @@
     </div>
 
     <div v-show="true" class="text-xs-center">
-      <v-btn><div id="open-room">OPEN ROOM</div></v-btn>
-      <v-btn><div id="join-room">JOIN ROOM</div></v-btn>
-      <v-btn @click="stopAllStreams()">STOP STREAM</v-btn>
+      <div v-show="!isStreamingLocally">
+        <v-btn v-show="!hasAudioRoom"><div id="open-room">OPEN ROOM</div></v-btn>
+        <v-btn v-show="hasAudioRoom"><div id="join-room">JOIN ROOM</div></v-btn>
+      </div>
+      <v-btn 
+        v-show="isStreamingLocally" 
+        @click="stopAllStreams()"
+      >
+        STOP STREAM
+      </v-btn>
       <!-- <v-btn @click="getOtherParticipants()">UPDATE PARTICIPANTS</v-btn> -->
       <div v-show="false" id="open-or-join-room">OPEN OR JOIN ROOM</div> 
     </div>
@@ -43,7 +50,7 @@
 import TodoItem from '@/components/TodoItem.vue'
 
 export default {
-  props: ['workspaceID'],
+  props: ['workspaceID', 'hasAudioRoom'],
   components: {
     TodoItem
   },
@@ -53,7 +60,8 @@ export default {
       connection: null,
       participants: [],
       betaParticipants: [],
-      myID: ''
+      myID: '',
+      isStreamingLocally: false
     }
   },
   watch: {
@@ -96,6 +104,7 @@ export default {
       setTimeout(this.updateParticipants, 1000)
       console.log('onstream event')
       console.log('event.stream =', event.stream)
+      this.isStreamingLocally = true
       // modify it - so that it rejects remote streams if it comes from yourself 
       this.videosList.push({
         id: event.streamid,

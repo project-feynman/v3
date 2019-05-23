@@ -8,3 +8,10 @@ export default {
   props: ['todo']
 }
 </script>
+
+<style>
+video {
+  height: 50px;
+  width: 25vw;
+}
+</style>
