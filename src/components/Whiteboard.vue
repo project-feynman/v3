@@ -90,10 +90,10 @@ export default {
     getHeightToWidthRatio() {
       return this.canvas.scrollHeight / this.canvas.scrollWidth
     },
-    useEraser() {
-      this.color = 'rgb(192, 230, 253)'
-      this.lineWidth = 15
-    },
+    // useEraser() {
+    //   this.color = 'rgb(192, 230, 253)'
+    //   this.lineWidth = 15
+    // },
     startTimer() {
       this.currentTime = 0 
       this.timer = setInterval(() => this.currentTime += 0.1, 100)
