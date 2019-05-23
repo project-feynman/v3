@@ -17,8 +17,8 @@
 
     <div v-show="true" class="text-xs-center">
       <div v-show="!isStreamingLocally">
-        <v-btn v-show="!hasAudioRoom"><div id="open-room">OPEN ROOM</div></v-btn>
-        <v-btn v-show="hasAudioRoom"><div id="join-room">JOIN ROOM</div></v-btn>
+        <v-btn v-show="!hasAudioRoom"><div id="open-room">OPEN AUDIO ROOM</div></v-btn>
+        <v-btn v-show="hasAudioRoom"><div id="join-room">JOIN AUDIO ROOM</div></v-btn>
       </div>
       <v-btn 
         v-show="isStreamingLocally" 
