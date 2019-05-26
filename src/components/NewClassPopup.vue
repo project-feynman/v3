@@ -27,13 +27,13 @@
 <script>
 export default {
   props: ['value'],
-  data() {
+  data () {
     return {
       courseNumber: ''
     }
   },
   methods: {
-    createClass() {
+    createClass () {
       this.$emit('input', !this.value)
       this.$emit('create-class', this.courseNumber)
     }

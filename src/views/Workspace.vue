@@ -141,7 +141,7 @@ export default {
       }
     }
   },
-  data() {
+  data () {
     return {
       saveVideoPopup: false,
       saveSilently: false,
@@ -180,11 +180,11 @@ export default {
     this.cleanUpPrevWorkspace()
   },
   methods: {
-    saveDoodle() {
+    saveDoodle () {
       this.saveSilently = true 
       this.saveVideoPopup = true
     },
-    saveVideo() {
+    saveVideo () {
       this.saveSilently = false
       this.saveVideoPopup = true
     },
@@ -218,7 +218,7 @@ export default {
       })
       return promise
     },
-    setDisconnectHook() {
+    setDisconnectHook () {
       // have a firebase workspace as well to mirror the participants data
       const classID = this.$route.params.class_id 
       const workspaceID = this.$route.params.id
@@ -244,22 +244,22 @@ export default {
         }
       })
     },
-    handleExit() {
+    handleExit () {
       this.whiteboardPopup = false
       this.$root.$emit("whiteboard-closed")
     },
-    clearWhiteboard() {
+    clearWhiteboard () {
       const whiteboard = this.$refs['whiteboard']
       whiteboard.deleteStrokesSubcollection()
     },
-    toggleDisableTouch() {
+    toggleDisableTouch () {
       this.disableTouch = !this.disableTouch
     },
-    useEraser() {
+    useEraser () {
       this.color = "rgb(62, 66, 66)"
       this.lineWidth = 18
     },
-    async retryAnswer() {
+    async retryAnswer () {
       const whiteboard = this.$refs["whiteboard"]
       whiteboard.currentTime = 0;
       await this.whiteboardRef.update({
@@ -340,7 +340,7 @@ export default {
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       })
-      console.log('new whiteboard ID =', newWhiteboardRef.id)
+
       this.$root.$emit('audio-uploaded', docRef.id)
     }
   }

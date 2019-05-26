@@ -3,16 +3,17 @@
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn 
-        color="pink"
-        flat
-        @click="snackbar = false"
-      >
+      <v-btn @click="snackbar = false"
+             color="pink"
+             flat>
         CLOSE
       </v-btn>
     </v-snackbar>
 
-    <transition name="fade" mode="out-in" @after-leave="transitionFinished = true">
+    <transition name="fade" 
+                mode="out-in" 
+                @after-leave="transitionFinished = true">
+
       <div v-if="isFetchingUser" key="loading..."></div>
 
       <!-- LIST OF CLASSES -->
@@ -62,6 +63,7 @@
           :newAccount="false"
           @sign-in="payload => signIn(payload)"
         />
+
         <!-- CREATE ACCOUNT -->
         <login-popup 
           v-model="createAccountPopup" 

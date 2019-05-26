@@ -1,5 +1,11 @@
 <template>
-  <video v-show="true" controls autoplay playsinline :srcObject.prop="todo.srcObject" :muted="todo.muted" :id="todo.id">
+  <video v-show="true" 
+         controls 
+         autoplay 
+         playsinline 
+         :srcObject.prop="todo.srcObject" 
+         :muted="todo.muted" 
+         :id="todo.id">
   </video>
 </template>
 

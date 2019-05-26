@@ -4,28 +4,26 @@
       <v-layout>
         <div v-if="video && user" style="margin: auto;">
           <div v-if="user.email == 'eltonlin1998@gmail.com'" class="text-xs-center">
-            <v-btn @click="deleteVideo()" class="red white--text">DELETE VIDEO</v-btn>
+            <v-btn @click="deleteVideo()" class="red white--text">
+              DELETE VIDEO
+            </v-btn>
           </div>
         </div>
       </v-layout>
 
-      <animation
-        v-if="allStrokes"
-        ref="animation"
-        :strokes="allStrokes"
-        @animation-loaded="animationLoaded=true"
-        @animation-finished="handleEvent()"
-      />
+      <animation v-if="allStrokes"
+                 ref="animation"
+                 :strokes="allStrokes"
+                 @animation-loaded="animationLoaded=true"
+                 @animation-finished="handleEvent()"/>
 
-      <audio-recorder
-        v-if="betaAudioURL"
-        ref="audio-recorder"
-        :audioURL="betaAudioURL"
-        @recorder-loading="recorderLoaded=false"
-        @play="syncAnimation()"
-        @seeking="syncAnimation()"
-        @recorder-loaded="recorderLoaded=true"
-      />
+      <audio-recorder v-if="betaAudioURL"
+                      ref="audio-recorder"
+                      :audioURL="betaAudioURL"
+                      @recorder-loading="recorderLoaded=false"
+                      @play="syncAnimation()"
+                      @seeking="syncAnimation()"
+                      @recorder-loaded="recorderLoaded=true"/>
 
     </v-container>
   </div>

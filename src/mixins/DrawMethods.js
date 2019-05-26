@@ -5,7 +5,7 @@ export default {
     }
   },
   methods: {
-    rescaleCanvas(redraw = true) {
+    rescaleCanvas (redraw = true) {
       // then, make the drawing coordinate system 1:1 with the actual size of the canvas
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
@@ -15,14 +15,14 @@ export default {
         this.redrawTimeout = setTimeout(this.drawStrokesInstantly, 400) // resizing the canvas causes all drawings to be lost 
       }
     },
-    async startSync(getTimeInSeconds) {
+    async startSync (getTimeInSeconds) {
       if (!this.allStrokes || this.allStrokes.length == 0) {
         return 
       }
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) // clear the initial preview
       this.playProgress = setInterval(() => this.syncVisualWithAudio(getTimeInSeconds), 100)
     },
-    syncVisualWithAudio(getTimeInSeconds) {
+    syncVisualWithAudio (getTimeInSeconds) {
         const n = this.allStrokes.length
         const currentTime = getTimeInSeconds()
         if (this.nextStrokeStartTime() <= currentTime) {
@@ -57,7 +57,7 @@ export default {
           // do nothing 
         }
     },
-    nextStrokeStartTime() {
+    nextStrokeStartTime () {
       if (this.indexOfNextStroke == this.allStrokes.length) {
         // handle edge case of last index
         return 999999999999
@@ -66,23 +66,23 @@ export default {
         return this.allStrokes[this.indexOfNextStroke].startTime
       }
     },
-    getPointPeriod(stroke) {
+    getPointPeriod (stroke) {
       const strokePeriod = (stroke.endTime - stroke.startTime) * 1000 
       return strokePeriod / stroke.points.length
     },
-    async quickplay() {
+    async quickplay () {
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       for (const stroke of this.allStrokes) {
         await this.drawStroke(stroke)
       }
 		},
-    drawStrokesInstantly() {
+    drawStrokesInstantly () {
       for (const stroke of this.allStrokes) {
         this.drawStroke(stroke, null)
       }
     },
     // null is instant, 0 is quickplay, otherwise it's a realtime replay
-    drawStroke({ points, color, lineWidth }, pointPeriod = 0) {
+    drawStroke ({ points, color, lineWidth }, pointPeriod = 0) {
       return new Promise(async resolve => {
         for (let i = 1; i < points.length; i++) {
           const prevPoint = points[i - 1]
@@ -106,7 +106,7 @@ export default {
         resolve()
       })
     },
-    drawToPoint(x, y) {
+    drawToPoint (x, y) {
       if (this.lastX == -1) {
         this.lastX = x
         this.lastY = y
@@ -118,12 +118,12 @@ export default {
       this.lastX = x
       this.lastY = y
     },
-    setStyle(color = 'yellow', lineWidth = 2) {
+    setStyle (color = 'yellow', lineWidth = 2) {
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
       this.ctx.lineWidth = lineWidth
     },
-    traceLineTo(x, y) {
+    traceLineTo (x, y) {
       this.ctx.beginPath()
       this.ctx.moveTo(this.lastX, this.lastY)
       this.ctx.lineTo(x,y)

@@ -6,8 +6,6 @@
 
     <v-layout row mt-5>
 
-
-
       <v-flex xs12 sm6 offset-sm3>
         <v-card>
           <v-toolbar color="cyan" dark>
@@ -76,12 +74,13 @@ export default {
       userRef.update({
         classesHelped: firebase.firestore.FieldValue.arrayUnion(classID)
       })
-      // receive new workspace if you didn't have one
+      // create a new workspace if you didn't have one
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)
       const workspace = await workspaceRef.get()
       if (workspace.exists) {
         // do nothing 
       } else { 
+        // create a new workspace pointed to a new whiteboard
         const whiteboardRef = await db.collection('whiteboards').add({})
         let workspace = {
           ownerUID: this.user.uid,

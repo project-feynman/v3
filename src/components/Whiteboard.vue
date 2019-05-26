@@ -3,8 +3,7 @@
     <canvas id="myCanvas" 
             style="height: 90vh; 
                    width: 100%; 
-                   background-color: rgb(62, 66, 66)"
-    />
+                   background-color: rgb(62, 66, 66)"/>
   </div>
 </template>
 
@@ -58,14 +57,14 @@ export default {
       handler: 'initData',
       immediate: true
     },
-    isRecording() {
+    isRecording () {
       if (this.isRecording) {
         this.startTimer()
       } else {
         this.stopTimer()
       }
     },
-    isAnswered() {
+    isAnswered () {
       if (!this.isAnswered) {
         this.initTouchEvents()
       }
@@ -84,31 +83,31 @@ export default {
     clearInterval(this.interval)
   },
   methods: {
-    sortStrokesByTimestamp() {
+    sortStrokesByTimestamp () {
       this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime))
     },
-    getHeightToWidthRatio() {
+    getHeightToWidthRatio () {
       return this.canvas.scrollHeight / this.canvas.scrollWidth
     },
     // useEraser() {
     //   this.color = 'rgb(192, 230, 253)'
     //   this.lineWidth = 15
     // },
-    startTimer() {
+    startTimer () {
       this.currentTime = 0 
       this.timer = setInterval(() => this.currentTime += 0.1, 100)
     },
-    stopTimer() {
+    stopTimer () {
       clearInterval(this.timer)
     },
-    async initReplayLogic() {
+    async initReplayLogic () {
       await this.quickplay()
     },
-    initClearBoardLogic() {
+    initClearBoardLogic () {
       this.deleteStrokesSubcollection()
       this.allStrokes = [] 
     },
-    initData() {
+    initData () {
       if (!this.whiteboardID) {
         return
       }
@@ -123,7 +122,7 @@ export default {
       }
       this.continuouslySyncBoardWithDB() 
     },
-    continuouslySyncBoardWithDB() {
+    continuouslySyncBoardWithDB () {
       this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
@@ -151,7 +150,7 @@ export default {
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
     },
-    removeTouchEvents() {
+    removeTouchEvents () {
       this.canvas.removeEventListener('touchstart', this.touchStart, false)
       this.canvas.removeEventListener('touchend', this.touchEnd, false)
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
@@ -161,13 +160,13 @@ export default {
         this.strokesRef.doc(`${i}`).delete()
       }
     },
-    convertAndSavePoint(x, y) {
+    convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
       const unitY = parseFloat(y / this.canvas.height).toFixed(4)
       this.currentStroke.push({ unitX, unitY })
       this.drawToPoint(this.touchX, this.touchY)
     },
-    touchStart(e) {
+    touchStart (e) {
       if (e.touches.length != 1) {
         return 
       }
@@ -182,7 +181,7 @@ export default {
         this.startTime = this.currentTime.toFixed(1)
       }
     },
-    touchMove(e) {
+    touchMove (e) {
       if (e.touches.length != 1) {
         return 
       }
@@ -194,7 +193,7 @@ export default {
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
     },
-    touchEnd(e) {
+    touchEnd (e) {
       if (this.currentStroke.length == 0) {
         // user is touching the screen despite that touch is disabled
         return 
@@ -216,12 +215,12 @@ export default {
       this.currentStroke = []
       this.lastX = -1
     },
-    getTouchPos(e) {
+    getTouchPos (e) {
       const finger1 = e.touches[0] 
       this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
       this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
     },
-    isFinger(e) {
+    isFinger (e) {
       if (e.touches.length == 1) {
         if (e.touches[0].touchType != 'stylus') {
           return true 

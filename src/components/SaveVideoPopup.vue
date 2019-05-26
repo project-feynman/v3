@@ -17,6 +17,7 @@
             </v-layout>
           </v-container>
         </template>
+        
         <template v-else>
           <p>Shareable Video Link</p>
           <p id="link_url">{{ shareableURL }}</p>
@@ -25,17 +26,15 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <template v-if="!shareableURL && !isSavingVideo">
-          <v-btn 
-            color="green darken-1"
-            flat="flat"
-            @click="handleClose()"
-          >
+          <v-btn @click="handleClose()"
+                 color="green darken-1"
+                 flat="flat">
             CANCEL
           </v-btn>
 
-          <v-btn color="green darken-1"
-                 flat="flat"
-                 @click="handleSave()">
+          <v-btn @click="handleSave()"
+                 color="green darken-1"
+                 flat="flat">
             SAVE
           </v-btn>
         </template>
@@ -56,32 +55,32 @@
 <script>
 export default {
   props: ['value'],
-  data() {
+  data () {
     return {
       isSavingVideo: false, 
       shareableURL:  null,
       videoTitle: ''
     }
   },
-  created() {
+  created () {
     this.$root.$on('audio-uploaded', videoDocId => {
       this.shareableURL = `explain.mit.edu/${this.$route.params.class_id}/${videoDocId}`
       this.isSavingVideo = false 
     }) 
   },
   methods: {
-    handleSave() {
+    handleSave () {
       if (!this.videoTitle) {
         return 
       }
       this.isSavingVideo = true 
       this.$emit('pre-save-explanation', this.videoTitle)
     },
-    handleClose() {
+    handleClose () {
       this.shareableURL = null 
       this.$emit('input', !this.value)
     },
-    returnLinkURL() {
+    returnLinkURL () {
       return this.shareableURL
     }
   }
