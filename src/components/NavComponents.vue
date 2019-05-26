@@ -58,13 +58,14 @@
       </v-btn>
 
       <!-- LOADING INDICATOR -->
-      <v-progress-linear
+      <!-- <v-progress-linear
         v-if="isLoading"
         slot="extension"
         :indeterminate="true"
         height="2"
         class="ma-0"
-      />
+      /> -->
+
     </v-toolbar>
     <v-navigation-drawer v-if="$route.path != '/'" v-model="drawerOpen" app stateless >
       <v-list class="pb-0">
@@ -138,7 +139,7 @@
             v-for="explanation in explanations"
             :key="explanation['.key']"
             router
-            :to="`/${teacherUid}/${explanation['.key']}`"
+            :to="`/${classID}/${explanation['.key']}`"
           >
             <v-list-tile-title>{{ explanation.title }}</v-list-tile-title>
           </v-list-tile>
@@ -161,12 +162,12 @@ export default {
   },
   computed: {
     ...mapState(['user']),
-    isLoading() {
-      return this.loadingAnimation
-    },
-    teacherUid() {
+    classID () {
       return this.$route.params.class_id
-    }
+    },
+    // isLoading () {
+    //   return this.loadingAnimation
+    // }
   },
   data() {
     return {
@@ -183,7 +184,7 @@ export default {
   },
   watch: {
     $route: {
-      handler: "updateNavComponents",
+      handler: 'updateNavComponents',
       immediate: true
     },
     clickedButtonStateName () {
@@ -202,9 +203,7 @@ export default {
     },
     createClass (courseNumber) {
       const ref = db.collection('classes').doc(courseNumber)
-      ref.set({
-        courseNumber
-      })
+      ref.set({ courseNumber })
     },
     signOut () {
       firebase.auth().signOut()

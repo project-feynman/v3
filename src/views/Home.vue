@@ -18,18 +18,22 @@
 
       <!-- LIST OF CLASSES -->
       <div v-else-if="!isFetchingUser && user" key="class-list" class="responsive-grid mt-5">
-        <v-layout v-for="subject in teachers" :key="subject.uid">
+        <v-layout v-for="subject in classes" :key="subject.uid">
           <v-flex>
-            <v-card flat @click="$router.push(`${subject.courseNumber}/ranking`)"
-                    color="white" 
-                    class="black--text cursor-pointer">
+            <v-card 
+              @click="$router.push(`${subject.courseNumber}/ranking`)"
+              flat color="white" class="black--text cursor-pointer"
+            >
               <v-card-title primary-title>
                 <div class="headline">
                   {{ subject.courseNumber }}
                 </div>
               </v-card-title>
               <v-card-actions>
-                <v-btn flat dark class="black--text" @click="$router.push(`${subject.courseNumber}/ranking`)">
+                <v-btn 
+                  @click="$router.push(`${subject.courseNumber}/ranking`)" 
+                  flat dark class="black--text" 
+                >
                   ENTER
                 </v-btn>
               </v-card-actions>
@@ -44,10 +48,16 @@
           A place where people talk and draw to help each other
         </p>
         <v-layout row justify-center class="mb-4">
-          <v-btn @click="createAccountPopup = true" dark color="grey" :depressed="true">
+          <v-btn 
+            @click="createAccountPopup = true" 
+            dark color="grey" :depressed="true"
+          >
             CREATE ACCOUNT
           </v-btn>
-          <v-btn @click="loginPopup = true" dark color="grey" :depressed="true">
+          <v-btn 
+            @click="loginPopup = true" 
+            dark color="grey" :depressed="true"
+          >
             LOG IN
           </v-btn>
         </v-layout>
@@ -97,11 +107,11 @@ export default {
   },
   data() {
     return {
-      newAccount: false,
-      teachers: null,
+      classes: [],
       transitionFinished: false,
       loginPopup: false,
       createAccountPopup: false,
+      newAccount: false,
       snackbar: false,
       snackbarMessage: '',
       demoDoodle: null,
@@ -140,7 +150,7 @@ export default {
     }
   },
   async created () {
-    this.$binding('teachers', db.collection('classes'))
+    this.$binding('classes', db.collection('classes'))
     // const demoRef = db.collection('whiteboards').where('isSaved', '==', true)
     // await this.$binding('demoDoodle', demoRef)
     // const randomNumber = Math.floor(Math.random() * this.demoDoodle.length)
