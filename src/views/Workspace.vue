@@ -4,46 +4,40 @@
       <div class="text-xs-center">
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
       </div>
-      <video-chat 
-        :hasAudioRoom="workspace.hasAudioRoom"
-        :workspaceID="workspace['.key']"
-        @open-room="updateHasAudioRoom()"
-      />
+      <video-chat :hasAudioRoom="workspace.hasAudioRoom"
+                  :workspaceID="workspace['.key']"
+                  @open-room="updateHasAudioRoom()"/>
 
       <!-- THIS IS THE WHITEBOARD THAT IS NOT FULLSCREEN -->
-      <whiteboard
-          v-if="loadCanvas"
-          ref="whiteboard"
-          :whiteboardID="workspace.whiteboardID"
-          :isRecording="isRecording"
-          :isAnswered="whiteboard.isAnswered"
-          :disableTouch="disableTouch"
-          :color="color"
-          :colors="colors"
-          :lineWidth="lineWidth"
-      ></whiteboard>
+      <whiteboard v-if="loadCanvas"
+                  ref="whiteboard"
+                  :whiteboardID="workspace.whiteboardID"
+                  :isRecording="isRecording"
+                  :isAnswered="whiteboard.isAnswered"
+                  :disableTouch="disableTouch"
+                  :color="color"
+                  :colors="colors"
+                  :lineWidth="lineWidth"/>
 
       <!-- THIS IS THE FULLSCREEN WHITEBOARD -->
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
         <v-card v-if="whiteboardPopup">
           <!-- SAVE VIDEO POPUP -->
-          <save-video-popup
-            v-model="saveVideoPopup"
-            @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-            fullscreen
-          />
+          <save-video-popup v-model="saveVideoPopup"
+                            @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+                            fullscreen/>
+
           <v-toolbar id="whiteboard-toolbar" color="grey">
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <template v-if="!whiteboard.isAnswered">
-                <swatches
-                  v-model="color"
-                  :colors="colors"
-                  inline
-                  background-color="rgba(0, 0, 0, 0)"
-                  swatch-size="55"
-                  :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-                ></swatches>
+                <swatches v-model="color"
+                          :colors="colors"
+                          inline
+                          background-color="rgba(0, 0, 0, 0)"
+                          swatch-size="55"
+                          :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"/>
+
                 <v-btn @click="useEraser()">
                   ERASER
                 </v-btn>
@@ -56,11 +50,7 @@
                 <v-btn @click="saveDoodle()">
                   SAVE DOODLE
                 </v-btn>
-                <v-btn
-                  v-if="!isRecording"
-                  @click="startRecording()"
-                  color="pink white--text"
-                >
+                <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
                   RECORD VIDEO
                 </v-btn>
                 <v-btn v-else @click="stopRecording()" color="pink white--text">
@@ -78,31 +68,29 @@
                   SAVE VIDEO
                 </v-btn>
               </template>
-              <v-btn dark flat @click="handleExit()">EXIT</v-btn>
+              <v-btn @click="handleExit()" dark flat>
+                EXIT
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
 
-          <whiteboard 
-            v-if="loadCanvas"
-            ref="whiteboard"
-            :whiteboardID="workspace.whiteboardID"
-            :workspace="workspace"
-            :isRecording="isRecording"
-            :isAnswered="whiteboard.isAnswered"
-            :disableTouch="disableTouch"
-            :color="color"
-            :colors="colors"
-            :lineWidth="lineWidth"
-          ></whiteboard>
+          <whiteboard v-if="loadCanvas"
+                      ref="whiteboard"
+                      :whiteboardID="workspace.whiteboardID"
+                      :workspace="workspace"
+                      :isRecording="isRecording"
+                      :isAnswered="whiteboard.isAnswered"
+                      :disableTouch="disableTouch"
+                      :color="color"
+                      :colors="colors"
+                      :lineWidth="lineWidth"/>
 
-          <audio-recorder
-            v-show="false"
-            ref="audio-recorder"
-            :audioURL="workspace.audioURL"
-            :audioPath="workspace.audioPath"
-            @start-recording="isRecording = true"
-            @file-uploaded="audio => saveFileReference(audio)"
-          />
+          <audio-recorder v-show="false"
+                          ref="audio-recorder"
+                          :audioURL="workspace.audioURL"
+                          :audioPath="workspace.audioPath"
+                          @start-recording="isRecording = true"
+                          @file-uploaded="audio => saveFileReference(audio)"/>
 
         </v-card>
       </v-dialog>
@@ -112,17 +100,16 @@
 
 <script>
 import firebase from 'firebase/app'
-import "firebase/firestore"
-import db from "@/database.js"
-import Whiteboard from "@/components/Whiteboard.vue"
-import SaveVideoPopup from "@/components/SaveVideoPopup.vue"
-import AudioRecorder from "@/components/AudioRecorder.vue"
-import VideoChat from "@/components/VideoChat.vue"
-import Swatches from "vue-swatches"
-import "vue-swatches/dist/vue-swatches.min.css"
-import slugify from "slugify"
-
-import { mapState } from "vuex"
+import 'firebase/firestore'
+import Swatches from 'vue-swatches'
+import 'vue-swatches/dist/vue-swatches.min.css'
+import slugify from 'slugify'
+import { mapState } from 'vuex'
+import db from '@/database.js'
+import Whiteboard from '@/components/Whiteboard.vue'
+import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
+import AudioRecorder from '@/components/AudioRecorder.vue'
+import VideoChat from '@/components/VideoChat.vue'
 
 export default {
   components: {
@@ -134,7 +121,7 @@ export default {
   },
   computed: {
     ...mapState(['user']),
-    simpleUser() {
+    simpleUser () {
       return {
         email: this.user.email,
         uid: this.user.uid
@@ -165,7 +152,7 @@ export default {
     },
     color () {
       // bad - high surface area for bugs
-      if (this.color != "rgb(62, 66, 66)") {
+      if (this.color != 'rgb(62, 66, 66)') {
         this.lineWidth = 2
       }
     }
@@ -173,7 +160,7 @@ export default {
   created () {
     // necessary for canvas to not be invisible during initial render
     setTimeout(() => (this.loadCanvas = true), 0)
-    this.$root.$on("open-whiteboard", () => this.whiteboardPopup = true)
+    this.$root.$on('open-whiteboard', () => this.whiteboardPopup = true)
   },
   async beforeDestroy () {
     // when the user switches to any other place besides another workspace
@@ -219,13 +206,13 @@ export default {
       return promise
     },
     setDisconnectHook () {
-      // have a firebase workspace as well to mirror the participants data
       const classID = this.$route.params.class_id 
       const workspaceID = this.$route.params.id
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(workspaceID)
       const firebaseClassID = classID.replace('.', '-')
       const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${workspaceID}`)
 
+      // mirror the Firebase workspace with the Firestore workspace
       firebase.database().ref('.info/connected').on('value', async snapshot => {
         if (snapshot.val() == false) { 
           // do nothing 
@@ -270,7 +257,7 @@ export default {
         hasAudioRoom: true
       })
     },
-    startRecording() {
+    startRecording () {
       const audioRecorder = this.$refs['audio-recorder']
       this.isRecording = true
       audioRecorder.startRecording()
@@ -302,7 +289,7 @@ export default {
         audioPath: path
       })
     },
-    async handleSaving(videoTitle) {
+    async handleSaving (videoTitle) {
       // mark the whiteboard as saved 
       const whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
       whiteboardRef.update({
