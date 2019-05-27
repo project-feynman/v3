@@ -11,10 +11,10 @@ export default new Router({
       path: '/',
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
-    {
-      path: '/:class_id',
-      component: () => import(/* webpackChunkName: "tutorial" */ './views/Tutorial.vue')
-    },
+    // {
+    //   path: '/:class_id',
+    //   component: () => import(/* webpackChunkName: "tutorial" */ './views/Tutorial.vue')
+    // },
     {
       path: '/:class_id/ranking',
       component: () => import(/* webpackChunkName: "ranking" */ './views/Ranking.vue')

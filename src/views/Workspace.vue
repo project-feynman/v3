@@ -150,8 +150,8 @@ export default {
       handler: 'bindVariables',
       immediate: true
     },
+    // bad - high surface area for bugs
     color () {
-      // bad - high surface area for bugs
       if (this.color != 'rgb(62, 66, 66)') {
         this.lineWidth = 2
       }
@@ -301,6 +301,8 @@ export default {
         replacement: '-',
         lower: true
       })
+
+      // I think this is an error - why are we awaiting a reference?
       const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
 
       const videoObj = {
@@ -316,7 +318,6 @@ export default {
           videoObj.audioPath = this.whiteboard.audioPath
         }
       }
- 
       docRef.set(videoObj)
 
       // initialize a new whiteboard for the workspace
