@@ -5,13 +5,10 @@
     </div>
 
     <v-layout row mt-5>
-
       <v-flex xs12 sm6 offset-sm3>
         <v-card>
           <v-toolbar color="cyan" dark>
-
             <v-toolbar-title>Classmates</v-toolbar-title>
-
             <v-spacer></v-spacer>
             
             <!-- <v-btn icon>
@@ -48,11 +45,12 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import db from '@/database.js'
+import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/database'
+
 
 export default {
   created () {

@@ -167,12 +167,7 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart (e) {
-      if (e.touches.length != 1) {
-        return 
-      }
-      if (this.disableTouch && this.isFinger(e)) {
-        return
-      }
+       if (this.isNotValidTouch(e)) { return }
       this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
@@ -182,12 +177,7 @@ export default {
       }
     },
     touchMove (e) {
-      if (e.touches.length != 1) {
-        return 
-      }
-      if (this.disableTouch && this.isFinger(e)) {
-        return
-      }
+      if (this.isNotValidTouch(e)) { return }
       e.preventDefault()
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
@@ -219,6 +209,17 @@ export default {
       const finger1 = e.touches[0] 
       this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
       this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
+    },
+    isNotValidTouch (e) {
+      // multiple fingers not allowed 
+      if (e.touches.length != 1) {
+        return true
+      }
+      // finger drawing disabled
+      if (this.disableTouch && this.isFinger(e)) {
+        return true
+      }
+      return false
     },
     isFinger (e) {
       if (e.touches.length == 1) {

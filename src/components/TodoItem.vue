@@ -1,11 +1,10 @@
 <template>
   <video v-show="true" 
-         controls 
-         autoplay 
-         playsinline 
          :srcObject.prop="todo.srcObject" 
          :muted="todo.muted" 
-         :id="todo.id">
+         :id="todo.id"
+         controls autoplay playsinline
+  >
   </video>
 </template>
 

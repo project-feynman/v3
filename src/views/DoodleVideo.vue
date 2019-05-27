@@ -48,9 +48,9 @@ export default {
     AudioRecorder
   },
   computed: {
-    ...mapState(["user"]),
-    resourcesLoaded() {
-      return this.recorderLoaded && this.animationLoaded;
+    ...mapState(['user']),
+    resourcesLoaded () {
+      return this.recorderLoaded && this.animationLoaded
     }
   },
   data () {
@@ -130,20 +130,17 @@ export default {
       const classID = this.$route.params.class_id
       const videoID = this.$route.params.video_id
       const videoRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)
-      videoRef.delete()
+      const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete')
       
-      // now call the cloud function
-      var deleteFn = firebase.functions().httpsCallable('recursiveDelete')
-      const path = `whiteboards/${this.video.whiteboardID}`
-
-      deleteFn({ path })
-
+      // delete video, whiteboard, strokes, and audio
+      recursiveDelete({ path: `whiteboards/${this.video.whiteboardID}` })
+      videoRef.delete()
       if (this.audioFileRef) {
         this.audioFileRef.delete()
       }
-      this.$router.push(`/${classID}/ranking`)
 
+      this.$router.push(`/${classID}/ranking`)
     }
   }
-};
+}
 </script>

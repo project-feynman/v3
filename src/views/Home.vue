@@ -3,9 +3,10 @@
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn @click="snackbar = false"
-             color="pink"
-             flat>
+      <v-btn 
+        @click="snackbar = false"
+        color="pink" flat
+      >
         CLOSE
       </v-btn>
     </v-snackbar>
