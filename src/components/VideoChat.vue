@@ -50,7 +50,10 @@
 import TodoItem from '@/components/TodoItem.vue'
 
 export default {
-  props: ['workspaceID', 'hasAudioRoom'],
+  props: {
+    workspaceID: String,
+    hasAudioRoom: Boolean
+  },
   components: {
     TodoItem
   },

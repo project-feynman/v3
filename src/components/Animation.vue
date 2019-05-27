@@ -15,19 +15,16 @@ import db from '@/database.js'
 
 export default {
   props: {
-    strokes: {
-      type: Array
-    },
-    autoplay: {
-      type: Boolean
-    }
+    strokes: Array,
+    autoplay: Boolean
   },
+  mixins: [DrawMethods],
   watch: {
     strokes: {
       handler: 'initData',
       immediate: true 
     },
-    allStrokes() {
+    allStrokes () {
       if (this.playProgress) {
         clearInterval(this.playProgress)
         this.playProgress = null 
@@ -35,17 +32,16 @@ export default {
       }
     }
   },
-  mixins: [DrawMethods],
   computed: {
     ...mapState(['user']),
-    author() {
+    author () {
       return {
         name: this.user.displayName,
         uid: this.user.uid
       }
     }
   },
-  data() {
+  data () {
     return {
       playProgress: null,
       isReplaying: false,
@@ -62,7 +58,7 @@ export default {
       interval: null 
     }
   },
-  mounted() {
+  mounted () {
     this.$root.$on('whiteboard-closed', () => {
       this.initData()
     })
@@ -76,14 +72,14 @@ export default {
     }
     window.addEventListener('resize', this.rescaleCanvas, false)
   },
-  beforeDestroy() {
+  beforeDestroy () {
     // clean up everything - needs testing
     if (this.playProgress) {
       clearInterval(this.playProgress)
     }
   },
   methods: {
-    async initData() {
+    async initData () {
       if (!this.strokes) {
         return 
       }

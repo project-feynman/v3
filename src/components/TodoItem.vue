@@ -4,13 +4,15 @@
          :muted="todo.muted" 
          :id="todo.id"
          controls autoplay playsinline
-  >
-  </video>
+  />
 </template>
 
 <script>
 export default {
-  props: ['todo']
+  // props: ['todo']
+  props: {
+    todo: Object
+  }
 }
 </script>
 

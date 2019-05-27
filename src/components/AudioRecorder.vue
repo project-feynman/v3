@@ -19,7 +19,11 @@ import RecorderService from '@/shared/RecorderService.js'
 import utils from '@/shared/Utils'
 
 export default {
-  props: ['audioURL', 'audioPath'],
+  // props: ['audioURL', 'audioPath'],
+  props: {
+    audioURL: String,
+    audioPath: String
+  },
   data () {
     return {
       recordingInProgress: false,

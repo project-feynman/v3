@@ -3,10 +3,7 @@
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn 
-        @click="snackbar = false"
-        color="pink" flat
-      >
+      <v-btn @click="snackbar = false" color="pink" flat>
         CLOSE
       </v-btn>
     </v-snackbar>
@@ -31,10 +28,7 @@
                 </div>
               </v-card-title>
               <v-card-actions>
-                <v-btn 
-                  @click="$router.push(`${subject.courseNumber}/ranking`)" 
-                  flat dark class="black--text" 
-                >
+                <v-btn @click="$router.push(`${subject.courseNumber}/ranking`)" flat dark class="black--text">
                   ENTER
                 </v-btn>
               </v-card-actions>
@@ -106,7 +100,7 @@ export default {
   computed: {
     ...mapState(['user', 'isFetchingUser'])
   },
-  data() {
+  data () {
     return {
       classes: [],
       transitionFinished: false,

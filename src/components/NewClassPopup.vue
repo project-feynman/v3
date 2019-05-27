@@ -26,7 +26,9 @@
 
 <script>
 export default {
-  props: ['value'],
+  props: {
+    value: Boolean
+  },
   data () {
     return {
       courseNumber: ''

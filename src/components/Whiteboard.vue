@@ -17,7 +17,15 @@ import Swatches from 'vue-swatches'
 import "vue-swatches/dist/vue-swatches.min.css"
 
 export default {
-  props: ['whiteboardID', 'isRecording', 'isAnswered', 'color', 'disableTouch', 'lineWidth'],
+  props: {
+    whiteboardID: String,
+    isRecording: Boolean,
+    isAnswered: Boolean,
+    color: String,
+    disableTouch: Boolean,
+    lineWidth: Number
+  },
+  // props: ['whiteboardID', 'isRecording', 'isAnswered', 'color', 'disableTouch', 'lineWidth'],
   components: {
     Swatches
   },
