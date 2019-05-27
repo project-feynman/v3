@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import TodoItem from '@/components/TodoItem.vue'
+import VideoFeed from '@/components/VideoFeed.vue'
 
 export default {
   props: {
@@ -55,7 +55,7 @@ export default {
     hasAudioRoom: Boolean
   },
   components: {
-    TodoItem
+    VideoFeed
   },
   data () {
     return {

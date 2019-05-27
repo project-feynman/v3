@@ -72,7 +72,7 @@ export default {
     }
   },
   methods: {
-    syncAnimation() {
+    syncAnimation () {
       if (this.syncedVisualAndAudio) {
         return
       } else if (this.resourcesLoaded) {
@@ -82,24 +82,23 @@ export default {
         this.syncedVisualAndAudio = true
       }
     },
-    quickplay() {
+    quickplay () {
       const animation = this.$refs['animation']
       if (animation) {
         animation.quickplay()
       }
     },
-    async bindVariables() {
+    async bindVariables () {
       // initialize/reset variables
       this.syncedVisualAndAudio = false
       this.recorderLoaded = false
       this.animationLoaded = false
       const classID = this.$route.params.class_id
 
-      // fetch video document
+      // fetch everything associated with the video
       const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
       const videoDoc = await ref.get()
       this.video = videoDoc.data()
-
       if (this.video.whiteboardID) {
         this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
         const whiteboardDoc = await this.whiteboardRef.get()
@@ -126,7 +125,7 @@ export default {
         this.audioFileRef = storageRef.child(`recordings/${this.video.audioPath}`)
       }
     },
-    async deleteVideo() {
+    async deleteVideo () {
       const classID = this.$route.params.class_id
       const videoID = this.$route.params.video_id
       const videoRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)

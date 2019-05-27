@@ -43,16 +43,10 @@
           A place where people talk and draw to help each other
         </p>
         <v-layout row justify-center class="mb-4">
-          <v-btn 
-            @click="createAccountPopup = true" 
-            dark color="grey" :depressed="true"
-          >
+          <v-btn @click="createAccountPopup = true" dark color="grey" :depressed="true">
             CREATE ACCOUNT
           </v-btn>
-          <v-btn 
-            @click="loginPopup = true" 
-            dark color="grey" :depressed="true"
-          >
+          <v-btn @click="loginPopup = true" dark color="grey" :depressed="true">
             LOG IN
           </v-btn>
         </v-layout>
@@ -70,10 +64,9 @@
         />
 
         <!-- CREATE ACCOUNT -->
-        <login-popup 
-          v-model="createAccountPopup" 
-          :newAccount="true"
-          @create-account="payload => createAccount(payload)"
+        <login-popup v-model="createAccountPopup" 
+                     :newAccount="true"
+                     @create-account="payload => createAccount(payload)"
         />
 
       </div>

@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import db from '@/database.js'
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/database'
+import db from '@/database.js'
 
 Vue.use(Vuex)
 
@@ -44,7 +44,7 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    async handleUserLogic(context, { uid, email }) {
+    async handleUserLogic (context, { uid, email }) {
       let simplifiedUser = { uid, email }
       context.commit('SET_USER', simplifiedUser) // commit the user to avoid blocking page load 
       // update its "isOnline" statement later
