@@ -1,29 +1,35 @@
 <template>
-  <!-- https://github.com/muaz-khan/RTCMultiConnection/blob/master/demos/vuejs-video-conferencing.html -->
   <div>
     <div class="text-xs-center">
       <!-- <div>My ID: {{ myID }}</div> -->
       <template v-if="connection">
+        <div>connection.peers = {{ connection.peers }}</div>
+        <input v-show="false" type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
         <!-- <div>connection.sessionid = {{ connection.sessionid }}</div> -->
         <!-- <div>connection.channel = {{ connection.channel }}</div>  -->
-        <div>connection.peers = {{ connection.peers }}</div>
         <!-- <div>Object.keys(connection.streamEvents).length = {{ Object.keys(connection.streamEvents) }}</div>
         <div>connection.streamEvents = {{ connection.streamEvents }}</div> -->
         <!-- <div>betaParticipants = {{ betaParticipants }}</div> -->
-        <input v-show="false" type="text" id="room-id" value="abcdef" autocorrect=off autocapitalize=off size=20>
       </template>
-      <div>{{ participants.length }} other people connected to voice chat: {{ participants }}</div>
+      <div>
+        {{ participants.length }} other people connected to voice chat: {{ participants }}
+      </div>
     </div>
 
     <div v-show="true" class="text-xs-center">
       <div v-show="!isStreamingLocally">
-        <v-btn v-show="!hasAudioRoom"><div id="open-room">OPEN AUDIO ROOM</div></v-btn>
-        <v-btn v-show="hasAudioRoom"><div id="join-room">JOIN AUDIO ROOM</div></v-btn>
+        <v-btn v-show="!hasAudioRoom">
+          <div id="open-room">
+            OPEN AUDIO ROOM
+          </div>
+        </v-btn>
+        <v-btn v-show="hasAudioRoom">
+          <div id="join-room">
+            JOIN AUDIO ROOM
+          </div>
+        </v-btn>
       </div>
-      <v-btn 
-        v-show="isStreamingLocally" 
-        @click="stopAllStreams()"
-      >
+      <v-btn v-show="isStreamingLocally" @click="stopAllStreams()">
         STOP STREAM
       </v-btn>
       <!-- <v-btn @click="getOtherParticipants()">UPDATE PARTICIPANTS</v-btn> -->
@@ -143,7 +149,6 @@ export default {
   },
   mounted () {
     document.getElementById('open-room').onclick = () => {
-      // this.disableInputButtons()
       console.log(`document.getElementById('room-id').value = ${document.getElementById('room-id').value}`)
       this.connection.open(document.getElementById('room-id').value, () => {
         this.$emit('open-room')
@@ -152,11 +157,9 @@ export default {
       })
     }
     document.getElementById('join-room').onclick = () => {
-      // this.disableInputButtons()
       this.connection.join(document.getElementById('room-id').value)
     }
     document.getElementById('open-or-join-room').onclick = () => {
-      // this.disableInputButtons()
       this.connection.openOrJoin(document.getElementById('room-id').value, (isRoomExist, roomid) => {
         if (isRoomExist === false && this.connection.isInitiator === true) {
           // if room doesn't exist, it means that current user will create the room
@@ -225,11 +228,12 @@ export default {
         this.participants.push(participantId)
       })
     },
-    leavePrevAndJoinNew() {
+    leavePrevAndJoinNew () {
       this.videoList = [] 
     },
     disconnectEachParticipant () {
       // for each OTHER person, disconnect the stream with them 
+      // is that really what this function does? Or is it something different. I have no idea. I don't really care
       this.participants.forEach(participantID => this.connection.disconnectWith(participantID))
       // this.connection.getAllParticipants().forEach(participantId => {
       //     console.log('disconnecting participant =', participantId)
@@ -245,14 +249,7 @@ export default {
           // this.showRoomURL(roomid)
         }
       })
-    },
-    // disableInputButtons () {
-    //   // document.getElementById('room-id').onkeyup();
-    //   document.getElementById('open-or-join-room').disabled = true
-    //   document.getElementById('open-room').disabled = true
-    //   document.getElementById('join-room').disabled = true
-    //   document.getElementById('room-id').disabled = true
-    // }
+    }
   }
 }
 </script>

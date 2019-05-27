@@ -18,10 +18,7 @@
       <div v-else-if="!isFetchingUser && user" key="class-list" class="responsive-grid mt-5">
         <v-layout v-for="subject in classes" :key="subject.uid">
           <v-flex>
-            <v-card 
-              @click="$router.push(`${subject.courseNumber}/ranking`)"
-              flat color="white" class="black--text cursor-pointer"
-            >
+            <v-card @click="$router.push(`${subject.courseNumber}/ranking`)" flat color="white" class="black--text cursor-pointer">
               <v-card-title primary-title>
                 <div class="headline">
                   {{ subject.courseNumber }}
@@ -51,17 +48,15 @@
           </v-btn>
         </v-layout>
         
-        <animation 
-          v-if="strokes"
-          :strokes="strokes"
-          :autoplay="true"
-        />
+        <!-- ANIMATED TUTORIAL -->
+        <animation v-if="strokes"
+                   :strokes="strokes"
+                   :autoplay="true"/>
 
-        <login-popup 
-          v-model="loginPopup" 
-          :newAccount="false"
-          @sign-in="payload => signIn(payload)"
-        />
+        <!-- LOGIN -->
+        <login-popup v-model="loginPopup" 
+                     :newAccount="false"
+                     @sign-in="payload => signIn(payload)"/>
 
         <!-- CREATE ACCOUNT -->
         <login-popup v-model="createAccountPopup" 

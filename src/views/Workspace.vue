@@ -152,11 +152,11 @@ export default {
       whiteboard: null,
       whiteboardRef: null,
       loadCanvas: false,
-      color: "#F64272",
+      color: '#F64272',
       lineWidth: 2,
-      colors: ["#F64272", "orange", "#0AF2F2"],
+      colors: ['#F64272', 'orange', '#0AF2F2'],
       prevWorkspaceRef: null
-    };
+    }
   },
   watch: {
     $route: {
@@ -189,17 +189,17 @@ export default {
       this.saveVideoPopup = true
     },
     async bindVariables () {
-      if (this.prevWorkspaceRef) {
-        await this.cleanUpPrevWorkspace()
-      }
       const userUID = this.$route.params.id
       const classID = this.$route.params.class_id
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
+      
+      if (this.prevWorkspaceRef) {
+        await this.cleanUpPrevWorkspace()
+      }
+
       await this.$binding('workspace', workspaceRef)
       this.whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
-     
       this.$binding('whiteboard', this.whiteboardRef)
-      // console.log('this.whiteboard =', this.whiteboard)
       this.setDisconnectHook()
       this.prevWorkspaceRef = workspaceRef
     },
@@ -232,8 +232,7 @@ export default {
         } else {
           // wait till server successfully processes the onDisconnectHook()
           await firebaseRef.onDisconnect().set(this.simpleUser) 
-          // then update the firestore directly (much faster)
-          workspaceRef.update({
+          workspaceRef.update({ // it's much faster to update Firestore directly
             members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
           })
           // reset it (otherwise setting the user is not actually triggering any changes)
@@ -246,7 +245,7 @@ export default {
     },
     handleExit () {
       this.whiteboardPopup = false
-      this.$root.$emit("whiteboard-closed")
+      this.$root.$emit('whiteboard-closed')
     },
     clearWhiteboard () {
       const whiteboard = this.$refs['whiteboard']
@@ -256,12 +255,12 @@ export default {
       this.disableTouch = !this.disableTouch
     },
     useEraser () {
-      this.color = "rgb(62, 66, 66)"
+      this.color = 'rgb(62, 66, 66)'
       this.lineWidth = 18
     },
     async retryAnswer () {
-      const whiteboard = this.$refs["whiteboard"]
-      whiteboard.currentTime = 0;
+      const whiteboard = this.$refs['whiteboard']
+      whiteboard.currentTime = 0
       await this.whiteboardRef.update({
         isAnswered: false
       })
@@ -272,14 +271,14 @@ export default {
       })
     },
     startRecording() {
-      const audioRecorder = this.$refs["audio-recorder"]
+      const audioRecorder = this.$refs['audio-recorder']
       this.isRecording = true
       audioRecorder.startRecording()
     },
     stopRecording () {
       this.isRecording = false
-      const whiteboard = this.$refs["whiteboard"]
-      const audioRecorder = this.$refs["audio-recorder"]
+      const whiteboard = this.$refs['whiteboard']
+      const audioRecorder = this.$refs['audio-recorder']
       whiteboard.removeTouchEvents()
       audioRecorder.stopRecording()
       this.whiteboardRef.update({
@@ -340,9 +339,8 @@ export default {
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       })
-
       this.$root.$emit('audio-uploaded', docRef.id)
     }
   }
-};
+}
 </script>
