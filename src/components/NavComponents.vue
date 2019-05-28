@@ -214,11 +214,11 @@ export default {
     },
     updateNavComponents () {
       const classID = this.$route.params.class_id
-      const classRef = db.collection('classes').doc(classID)
       // sidenav content should not reload everytime the user navigates between the workspaces, but should update
       // everytime the user visits a different TA page
       if (classID && classID != this.prevClassID) {
         // update sidenav content
+          const classRef = db.collection('classes').doc(classID)
         this.$binding('workspaces', classRef.collection('workspaces'))
         this.$binding('explanations', classRef.collection('videos'))
         this.prevClassID = classID
