@@ -130,6 +130,9 @@ export default {
   },
   data () {
     return {
+      color: '#F64272',
+      lineWidth: 2,
+      colors: ['#F64272', 'orange', '#0AF2F2'],
       saveVideoPopup: false,
       saveSilently: false,
       whiteboardPopup: false,
@@ -139,9 +142,6 @@ export default {
       whiteboard: null,
       whiteboardRef: null,
       loadCanvas: false,
-      color: '#F64272',
-      lineWidth: 2,
-      colors: ['#F64272', 'orange', '#0AF2F2'],
       prevWorkspaceRef: null
     }
   },
