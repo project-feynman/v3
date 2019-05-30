@@ -25,7 +25,7 @@
                 </div>
               </v-card-title>
               <v-card-actions>
-                <v-btn @click="$router.push(`${subject.courseNumber}/ranking`)" flat dark class="black--text">
+                <v-btn @click="redirectToClass(subject.courseNumber)" flat dark class="black--text">
                   ENTER
                 </v-btn>
               </v-card-actions>
@@ -102,7 +102,11 @@ export default {
     }
   },
   methods: {
-    createNewAccount() {
+    redirectToClass (courseNumber) {
+      event.stopPropagation()
+      this.$router.push(`${courseNumber}/ranking`)
+    },
+    createNewAccount () {
       this.newAccount = true 
       this.loginPopup = true
     },
