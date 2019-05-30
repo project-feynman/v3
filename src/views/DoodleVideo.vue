@@ -99,7 +99,6 @@ export default {
       const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
       const videoDoc = await ref.get()
       this.video = videoDoc.data()
-      console.log('this.video =', this.video)
       if (this.video.whiteboardID) {
         this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
         const whiteboardDoc = await this.whiteboardRef.get()
