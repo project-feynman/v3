@@ -2,8 +2,8 @@
   <div id="whiteboard">
     <!-- SAVING POPUP -->
     <whiteboard-save-popup v-model="saveVideoPopup"
-                      @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-                      fullscreen/>
+                           @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+                           fullscreen/>
 
     <!-- WHITEBOARD BUTTONS -->
     <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="grey">
@@ -12,10 +12,10 @@
         <template v-if="!whiteboardDoc.isAnswered">
           <swatches v-model="color"
                     :colors="colors"
+                    :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
                     inline
                     background-color="rgba(0, 0, 0, 0)"
-                    swatch-size="55"
-                    :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"/>
+                    swatch-size="55"/>
 
           <v-btn @click="useEraser()">
             ERASER
@@ -79,8 +79,8 @@ export default {
     hideToolbar: Boolean
   },
   components: {
-    Swatches,
-    WhiteboardSavePopup
+    WhiteboardSavePopup,
+    Swatches
   },
   mixins: [DrawMethods],
   computed: {
@@ -94,7 +94,6 @@ export default {
   },
   data() {
     return {
-      // experiment zone
       whiteboardDoc: null,
       color: '#F64272',
       lineWidth: 2,
@@ -102,7 +101,6 @@ export default {
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
-      // end of experiment zone 
       strokesRef: null,
       stylus: false, 
       allStrokes: [],
@@ -118,7 +116,7 @@ export default {
       lastX: -1,
       lastY: -1,
       unsubscribe: null,
-      redrawTimeout: null, // needed for mixins/DrawMethods.js
+      redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead 
       interval: null 
     }
   },
@@ -127,23 +125,22 @@ export default {
       handler: 'initData',
       immediate: true
     },
-
-    // experiment zone 
     // bad - high surface area for bugs
     color () {
-      if (this.color != 'rgb(62, 66, 66)') {
+      if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
         this.lineWidth = 2
       }
     },
     // this is how whiteboard knows that it's starting to record
     isRecording () {
       if (this.isRecording) {
-        console.log('whiteboard detects that isRecording is now true')
         this.startTimer()
       } else {
         this.stopTimer()
       }
     },
+    // the goal is to disable the touch events when the user finishes recording 
+    // but enable the touch events whenever it's not 
     isAnswered () {
       if (!this.isAnswered) {
         this.initTouchEvents()
@@ -176,8 +173,8 @@ export default {
     stopTimer () {
       clearInterval(this.timer)
     },
-    async initReplayLogic () {
-      await this.quickplay()
+    initReplayLogic () {
+      this.quickplay()
     },
     initClearBoardLogic () {
       this.deleteStrokesSubcollection()
@@ -247,7 +244,7 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart (e) {
-       if (this.isNotValidTouch(e)) { return }
+      if (this.isNotValidTouch(e)) { return }
       this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
@@ -269,16 +266,16 @@ export default {
         return 
       }
       const strokeNumber = this.allStrokes.length + 1
+      // save
       const stroke = {
         strokeNumber,
         author: this.author || 'anonymous',
         color: this.color,
-        lineWidth: this.lineWidth
+        lineWidth: this.lineWidth,
+        startTime: Number(this.startTime),
+        endTime: Number(this.currentTime.toFixed(1)),
+        points: this.currentStroke
       }
-      stroke.startTime = Number(this.startTime),
-      stroke.endTime = Number(this.currentTime.toFixed(1))
-      stroke.points = this.currentStroke
-      // save 
       this.allStrokes.push(stroke)
       this.strokesRef.doc(`${strokeNumber}`).set(stroke)
       // reset 
