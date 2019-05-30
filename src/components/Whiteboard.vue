@@ -52,6 +52,18 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
+    <h3>AUDIO RECORDER</h3>
+    <!-- "@start-recording" is necessary because the audio-recorder can't 
+    start recording instantaneously - and if we false believe it is, then getAudioTime will be 
+    null-->
+
+
+    <audio-recorder v-if="whiteboardDoc"
+                    ref="audio-recorder"
+                    :audioURL="whiteboardDoc.audioURL"
+                    :audioPath="whiteboardDoc.audioPath"
+                    @start-recording="isRecording = true"
+                    @file-uploaded="audio => saveFileReference(audio)"/>
 
     <!-- ACTUAL WHITEBOARD -->
     <canvas id="myCanvas" 
@@ -70,16 +82,16 @@ import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
 import WhiteboardSavePopup from '@/components/WhiteboardSavePopup.vue'
+import AudioRecorder from '@/components/AudioRecorder.vue'
 
 export default {
   props: {
     whiteboardID: String,
-    isRecording: Boolean,
-    isAnswered: Boolean,
     hideToolbar: Boolean
   },
   components: {
     WhiteboardSavePopup,
+    AudioRecorder,
     Swatches
   },
   mixins: [DrawMethods],
@@ -92,7 +104,7 @@ export default {
       }
     }
   },
-  data() {
+  data () {
     return {
       whiteboardDoc: null,
       color: '#F64272',
@@ -101,6 +113,7 @@ export default {
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
+      isRecording: false,
       strokesRef: null,
       stylus: false, 
       allStrokes: [],
@@ -108,6 +121,7 @@ export default {
       canvas: null,
       ctx: null,
       timer: null,
+      getCurrentTime: null,
       currentTime: 0,
       startTime: 0,
       endTime: null,
@@ -130,7 +144,6 @@ export default {
         this.lineWidth = 2
       }
     },
-    // this is how whiteboard knows that it's starting to record
     isRecording () {
       if (this.isRecording) {
         this.startTimer()
@@ -138,16 +151,21 @@ export default {
         this.stopTimer()
       }
     },
-    // the goal is to disable the touch events when the user finishes recording 
-    // but enable the touch events whenever it's not 
-    isAnswered () {
-      if (!this.isAnswered) {
-        this.initTouchEvents()
+    whiteboardDoc (newVal) {
+      // TODO: this gets triggered 2x more often than I expect, find out why
+      if (newVal) {
+        if (!newVal.isAnswered || this.canvas || this.ctx) {
+          console.log('about to initTouchEvents()')
+          this.initTouchEvents()
+        }
       }
-    }
+    },
   },
   mounted () {
+    console.log('mounted()')
+    console.log('this.whiteboardID =', this.whiteboardID)
     // the mounted() hook is never called for subsequent switches between whiteboards
+    const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
@@ -156,26 +174,6 @@ export default {
     this.continuouslySyncBoardWithDB()
   },
   methods: {
-    sortStrokesByTimestamp () {
-      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime))
-    },
-    getHeightToWidthRatio () {
-      return this.canvas.scrollHeight / this.canvas.scrollWidth
-    },
-    startTimer () {
-      this.currentTime = 0 
-      this.timer = setInterval(() => this.currentTime += 0.1, 100)
-    },
-    stopTimer () {
-      clearInterval(this.timer)
-    },
-    initReplayLogic () {
-      this.quickplay()
-    },
-    initClearBoardLogic () {
-      this.deleteStrokesSubcollection()
-      this.allStrokes = [] 
-    },
     initData () {
       if (!this.whiteboardID) {
         return
@@ -193,9 +191,11 @@ export default {
       if (this.unsubscribe) {
         this.unsubscribe() 
       }
+      console.log('whiteboardRef = ', whiteboardRef)
       this.continuouslySyncBoardWithDB() 
     },
     continuouslySyncBoardWithDB () {
+      console.log('continuouslySyncBoardWithDB')
       this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
@@ -217,6 +217,26 @@ export default {
     resetVariables () {
       this.allStrokes = []
       this.lastX = -1
+    },
+    sortStrokesByTimestamp () {
+      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime))
+    },
+    getHeightToWidthRatio () {
+      return this.canvas.scrollHeight / this.canvas.scrollWidth
+    },
+    startTimer () {
+      this.currentTime = 0 
+      this.timer = setInterval(() => this.currentTime += 0.1, 100)
+    },
+    stopTimer () {
+      clearInterval(this.timer)
+    },
+    initReplayLogic () {
+      this.quickplay()
+    },
+    initClearBoardLogic () {
+      this.deleteStrokesSubcollection()
+      this.allStrokes = [] 
     },
     initTouchEvents () {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
@@ -245,20 +265,18 @@ export default {
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
-      if (this.currentTime) {
+      if (this.isRecording) {
         this.startTime = this.currentTime.toFixed(1)
+        // this.startTime keeps track of current stroke's startTime
       }
-      // experiment
       event.preventDefault()
     },
     touchMove (e) {
       if (this.isNotValidTouch(e)) { return }
-      e.preventDefault()
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
-      // experiment 
-      event.preventDefault()
+      event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
     },
     touchEnd (e) {
       if (this.currentStroke.length == 0) {
@@ -284,9 +302,6 @@ export default {
     },
     getTouchPos (e) {
       const finger1 = e.touches[0] 
-      // an experiment below
-      // this.touchX = finger1.pageX - finger1.target.offsetLeft
-      // this.touchY = finger1.pageY - finger1.target.offsetTop
       this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
       this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
     },
@@ -322,10 +337,18 @@ export default {
       this.saveVideoPopup = true
     },
     startRecording () {
-      this.$emit('start-recording')
+      const audioRecorder = this.$refs['audio-recorder']
+      audioRecorder.startRecording()
     },
     stopRecording () {
-      this.$emit('stop-recording')
+      this.recording = false
+      this.removeTouchEvents()
+      const audioRecorder = this.$refs['audio-recorder']
+      audioRecorder.stopRecording()
+      const ID = this.whiteboardDoc['.key']
+      db.collection('whiteboards').doc(ID).update({
+        isAnswered: true 
+      })
     },
     async retryAnswer () {
       this.currentTime = 0 
@@ -339,11 +362,10 @@ export default {
       this.$emit('close-whiteboard')
     },
     async handleSaving (videoTitle) {
+      console.log('handleSaving()')
       // mark the whiteboard as saved 
       const whiteboardID = this.whiteboardDoc['.key']
-
-      const whiteboardRef = db.collection('whiteboards').doc(whiteboardID)
-      whiteboardRef.update({
+      db.collection('whiteboards').doc(whiteboardID).update({
         isSaved: true
       })
       // create a new video document that points to the whiteboard
@@ -352,17 +374,13 @@ export default {
         replacement: '-',
         lower: true
       })
-
-      // I think this is an error - why are we awaiting a reference?
-      const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
-
+      const docRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)
       const videoObj = {
         title: videoTitle,
         whiteboardID,
         authorUID: this.user.uid || 'Anonymous',
         authorName: this.user.name || 'Anonymous'
       }
-
       if (!this.saveSilently) {
         if (this.whiteboardDoc.audioURL && this.whiteboardDoc.audioPath) {
           videoObj.audioURL = this.whiteboardDoc.audioURL
@@ -379,6 +397,15 @@ export default {
         whiteboardID: newWhiteboardRef.id
       })
       this.$root.$emit('audio-uploaded', docRef.id)
+    },
+    saveFileReference({ url, path }) {
+      console.log('audio file successfully uploaded, now storing a reference')
+      const ID = this.whiteboardDoc['.key']
+      db.collection('whiteboards').doc(ID).update({
+        audioURL: url,
+        audioPath: path
+      })
+    
     }
   }
 }

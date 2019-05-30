@@ -1,6 +1,6 @@
 <template>
   <div id="workspace">
-    <v-container v-if="user && workspace && whiteboard" fluid class="pa-0">
+    <v-container v-if="user && workspace" fluid class="pa-0">
       <div class="text-xs-center">
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
       </div>
@@ -9,15 +9,11 @@
                   @open-room="updateHasAudioRoom()"/>
 
       <!-- THIS IS THE WHITEBOARD THAT IS NOT FULLSCREEN -->
-      <whiteboard v-if="loadCanvas"
+      <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
+      <whiteboard v-if="loadCanvas && workspace.whiteboardID"
                   ref="whiteboard"
                   :hideToolbar="true"
-                  :whiteboardID="workspace.whiteboardID"
-                  :isRecording="isRecording"
-                  :isAnswered="whiteboard.isAnswered"
-                  :disableTouch="disableTouch"
-                  @start-recording="startRecording()"
-                  @stop-recording="stopRecording()"/>
+                  :whiteboardID="workspace.whiteboardID"/>
 
       <!-- THIS IS THE FULLSCREEN WHITEBOARD -->
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
@@ -25,20 +21,7 @@
           <whiteboard v-if="loadCanvas"
                       ref="whiteboard"
                       :whiteboardID="workspace.whiteboardID"
-                      :workspace="workspace"
-                      :isRecording="isRecording"
-                      :isAnswered="whiteboard.isAnswered"
-                      :disableTouch="disableTouch"
-                      @close-whiteboard="whiteboardPopup = false"
-                      @start-recording="startRecording()"
-                      @stop-recording="stopRecording()"/>
-
-          <audio-recorder v-show="false"
-                          ref="audio-recorder"
-                          :audioURL="workspace.audioURL"
-                          :audioPath="workspace.audioPath"
-                          @start-recording="isRecording = true"
-                          @file-uploaded="audio => saveFileReference(audio)"/>
+                      @close-whiteboard="whiteboardPopup = false"/>
         </v-card>
       </v-dialog>
     </v-container>
@@ -52,14 +35,12 @@ import slugify from 'slugify'
 import { mapState } from 'vuex'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
-import AudioRecorder from '@/components/AudioRecorder.vue'
 import VideoChat from '@/components/VideoChat.vue'
 
 export default {
   components: {
     Whiteboard,
-    VideoChat,
-    AudioRecorder,
+    VideoChat
   },
   computed: {
     ...mapState(['user']),
@@ -72,14 +53,8 @@ export default {
   },
   data () {
     return {
-      saveVideoPopup: false,
-      saveSilently: false,
       whiteboardPopup: false,
-      isRecording: false,
-      disableTouch: true,
       workspace: null,
-      whiteboard: null,
-      whiteboardRef: null,
       loadCanvas: false,
       prevWorkspaceRef: null
     }
@@ -100,14 +75,6 @@ export default {
     this.cleanUpPrevWorkspace()
   },
   methods: {
-    saveDoodle () {
-      this.saveSilently = true 
-      this.saveVideoPopup = true
-    },
-    saveVideo () {
-      this.saveSilently = false
-      this.saveVideoPopup = true
-    },
     async bindVariables () {
       const userUID = this.$route.params.id
       const classID = this.$route.params.class_id
@@ -116,8 +83,6 @@ export default {
         await this.cleanUpPrevWorkspace()
       }
       await this.$binding('workspace', workspaceRef)
-      this.whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
-      this.$binding('whiteboard', this.whiteboardRef)
       this.setDisconnectHook()
       this.prevWorkspaceRef = workspaceRef
     },
@@ -142,7 +107,6 @@ export default {
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(workspaceID)
       const firebaseClassID = classID.replace('.', '-')
       const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${workspaceID}`)
-
       // mirror the Firebase workspace with the Firestore workspace
       firebase.database().ref('.info/connected').on('value', async snapshot => {
         if (snapshot.val() == false) { 
@@ -161,52 +125,9 @@ export default {
         }
       })
     },
-    handleExit () {
-      this.whiteboardPopup = false
-      this.$root.$emit('whiteboard-closed')
-    },
-    clearWhiteboard () {
-      const whiteboard = this.$refs['whiteboard']
-      whiteboard.deleteStrokesSubcollection()
-    },
-    toggleDisableTouch () {
-      this.disableTouch = !this.disableTouch
-    },
     updateHasAudioRoom () {
       this.prevWorkspaceRef.update({
         hasAudioRoom: true
-      })
-    },
-    startRecording () {
-      const audioRecorder = this.$refs['audio-recorder']
-      this.isRecording = true
-      audioRecorder.startRecording()
-    },
-    stopRecording () {
-      this.isRecording = false
-      const whiteboard = this.$refs['whiteboard']
-      const audioRecorder = this.$refs['audio-recorder']
-      whiteboard.removeTouchEvents()
-      audioRecorder.stopRecording()
-      this.whiteboardRef.update({
-        isAnswered: true
-      })
-    },
-    playVideo () {
-      const audioRecorder = this.$refs['audio-recorder']
-      const whiteboard = this.$refs['whiteboard']
-      whiteboard.sortStrokesByTimestamp()
-      whiteboard.playVisual(audioRecorder.getAudioTime)
-      audioRecorder.playAudio()
-    },
-    quickplay () {
-      const whiteboard = this.$refs['whiteboard']
-      whiteboard.quickplay()
-    },
-    async saveFileReference({ url, path }) {
-      await this.whiteboardRef.update({
-        audioURL: url,
-        audioPath: path
       })
     }
   }
