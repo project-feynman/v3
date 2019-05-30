@@ -47,14 +47,20 @@ export default new Vuex.Store({
     async handleUserLogic (context, { uid, email }) {
       let simplifiedUser = { uid, email }
       context.commit('SET_USER', simplifiedUser) // commit the user to avoid blocking page load 
-      // update its "isOnline" statement later
+      // update its "isOnline" property later
       const userRef = db.collection('users').doc(uid) 
       const mirrorUser = await userRef.get() 
+      // HOW TO REFACTOR: 
+      // 1) Basically, just set up the onSnapshot() 
+      // 2) Figure out if you have to create a new user 
+      // by checking if "state.user" is still null 
+      // after retrieving the initial snapshot 
+      // 3) Step 2 might not work
       if (mirrorUser.exists) {
         // now set up syncing with the user copy
         userRef.onSnapshot(user => {
           context.commit('SET_USER', user.data())
-          // delete previous onDisconnect() hook 
+          // TODO: delete previous onDisconnect() hook 
           setDisconnectHook({ uid })
         }) 
       } else {
@@ -63,7 +69,7 @@ export default new Vuex.Store({
         // now set up syncing with the user copy
         userRef.onSnapshot(user => {
           context.commit('SET_USER', user.data())
-          // delete previous onDisconnect() hook 
+          // TODO: delete previous onDisconnect() hook 
           setDisconnectHook({ uid })
         }) 
       }

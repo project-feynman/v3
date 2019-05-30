@@ -43,11 +43,11 @@
       <!-- <v-btn @click="disconnectEachParticipant()">DISCONNECT TO VOICE CHAT</v-btn> -->
     </div>
     <!-- VIDEOS -->
-    <todo-item
+    <video-feed
       v-for="item in videosList"
       :todo="item"
       :key="item.id">
-    </todo-item>
+    </video-feed>
     <div id="room-urls" style="text-align: center;display: none;background: #F1EDED;margin: 15px -10px;border: 1px solid rgb(189, 189, 189);border-left: 0;border-right: 0;"></div>
   </div>
 </template>
