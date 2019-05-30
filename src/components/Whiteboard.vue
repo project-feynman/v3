@@ -1,7 +1,7 @@
 <template>
   <div id="whiteboard">
     <!-- SAVING POPUP -->
-    <save-video-popup v-model="saveVideoPopup"
+    <whiteboard-save-popup v-model="saveVideoPopup"
                       @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
                       fullscreen/>
 
@@ -69,7 +69,7 @@ import db from '@/database.js'
 import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
-import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
+import WhiteboardSavePopup from '@/components/WhiteboardSavePopup.vue'
 
 export default {
   props: {
@@ -80,7 +80,7 @@ export default {
   },
   components: {
     Swatches,
-    SaveVideoPopup
+    WhiteboardSavePopup
   },
   mixins: [DrawMethods],
   computed: {
