@@ -48,23 +48,18 @@
 <script>
 import firebase from 'firebase/app'
 import 'firebase/firestore'
-import Swatches from 'vue-swatches'
-import 'vue-swatches/dist/vue-swatches.min.css'
 import slugify from 'slugify'
 import { mapState } from 'vuex'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
-import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import VideoChat from '@/components/VideoChat.vue'
 
 export default {
   components: {
     Whiteboard,
-    SaveVideoPopup,
     VideoChat,
     AudioRecorder,
-    Swatches,
   },
   computed: {
     ...mapState(['user']),
