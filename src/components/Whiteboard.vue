@@ -248,6 +248,8 @@ export default {
       if (this.currentTime) {
         this.startTime = this.currentTime.toFixed(1)
       }
+      // experiment
+      event.preventDefault()
     },
     touchMove (e) {
       if (this.isNotValidTouch(e)) { return }
@@ -255,6 +257,8 @@ export default {
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
+      // experiment 
+      event.preventDefault()
     },
     touchEnd (e) {
       if (this.currentStroke.length == 0) {
@@ -280,8 +284,11 @@ export default {
     },
     getTouchPos (e) {
       const finger1 = e.touches[0] 
-      this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
-      this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
+      // an experiment below
+      this.touchX = finger1.pageX - finger1.target.offsetLeft
+      this.touchY = finger1.pageY - finger1.target.offsetTop
+      // this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
+      // this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
     },
     isNotValidTouch (e) {
       // multiple fingers not allowed 
