@@ -52,13 +52,12 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <h3>AUDIO RECORDER</h3>
+
     <!-- "@start-recording" is necessary because the audio-recorder can't 
     start recording instantaneously - and if we false believe it is, then getAudioTime will be 
     null-->
-
-
     <audio-recorder v-if="whiteboardDoc"
+                    v-show="false"
                     ref="audio-recorder"
                     :audioURL="whiteboardDoc.audioURL"
                     :audioPath="whiteboardDoc.audioPath"
@@ -155,15 +154,12 @@ export default {
       // TODO: this gets triggered 2x more often than I expect, find out why
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
-          console.log('about to initTouchEvents()')
           this.initTouchEvents()
         }
       }
     },
   },
   mounted () {
-    console.log('mounted()')
-    console.log('this.whiteboardID =', this.whiteboardID)
     // the mounted() hook is never called for subsequent switches between whiteboards
     const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
     this.canvas = document.getElementById('myCanvas')
@@ -178,10 +174,8 @@ export default {
       if (!this.whiteboardID) {
         return
       }
-      // experimental line 
       const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
       this.$binding('whiteboardDoc', whiteboardRef)
-      // end of experimental line 
       this.strokesRef = whiteboardRef.collection('strokes')
       // visually wipe previous drawings
       if (this.ctx) {
@@ -191,11 +185,9 @@ export default {
       if (this.unsubscribe) {
         this.unsubscribe() 
       }
-      console.log('whiteboardRef = ', whiteboardRef)
       this.continuouslySyncBoardWithDB() 
     },
     continuouslySyncBoardWithDB () {
-      console.log('continuouslySyncBoardWithDB')
       this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(change => {
           if (change.type === 'added') {
@@ -362,12 +354,12 @@ export default {
       this.$emit('close-whiteboard')
     },
     async handleSaving (videoTitle) {
-      console.log('handleSaving()')
       // mark the whiteboard as saved 
       const whiteboardID = this.whiteboardDoc['.key']
       db.collection('whiteboards').doc(whiteboardID).update({
         isSaved: true
       })
+
       // create a new video document that points to the whiteboard
       const classID = this.$route.params.class_id
       const videoID = slugify(videoTitle, {
@@ -405,7 +397,6 @@ export default {
         audioURL: url,
         audioPath: path
       })
-    
     }
   }
 }
