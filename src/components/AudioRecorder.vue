@@ -19,10 +19,9 @@ import RecorderService from '@/shared/RecorderService.js'
 import utils from '@/shared/Utils'
 
 export default {
-  // props: ['audioURL', 'audioPath'],
   props: {
-    audioURL: String,
-    audioPath: String
+    audioURL: String, // for downloading the actual file 
+    audioPath: String // the location on Firebase storage 
   },
   data () {
     return {
@@ -73,7 +72,6 @@ export default {
     },
     downloadAudioFile () {
       this.$emit('recorder-loading')
-      // console.log('downloadAudioFile')
       if (this.audioURL) {
         let xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
@@ -109,7 +107,6 @@ export default {
     },
     // METHODS NEEDED FOR RECORDING
     saveAudio (docId) {
-      // duplicate audio file 
       const storageRef = firebase.storage().ref()
       // save to random path 
       const path = this.getRandomUID()
@@ -168,22 +165,19 @@ export default {
       this.recordingInProgress = false
     },
     async onNewRecording (evt) {
+      console.log('uploading new recording...')
       // replace existing recording 
       this.recordings = [] 
       this.recordings.push(evt.detail.recording)
       const storageRef = firebase.storage().ref()
       // reuse path if possible
-      let recordingRef = ''
       let path = ''
       if (this.audioPath) {
         path = this.audioPath
-        recordingRef = storageRef.child(`recordings/${path}`)
-        // console.log('new recording will replace existing recording on the Cloud')
       } else {
         path = this.getRandomUID()
-        console.log('there is no path, generating random UID')
-        recordingRef = storageRef.child(`recordings/${path}`)
       }
+      const recordingRef = storageRef.child(`recordings/${path}`)
       // upload blob 
       const audioFile = this.recordings[0].blob 
       const uploadTask = recordingRef.put(audioFile)
