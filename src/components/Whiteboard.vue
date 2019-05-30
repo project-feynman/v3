@@ -117,7 +117,6 @@ export default {
       lastY: -1,
       unsubscribe: null,
       redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead 
-      interval: null 
     }
   },
   watch: {
@@ -155,9 +154,6 @@ export default {
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
     this.continuouslySyncBoardWithDB()
-  },
-  beforeDestroy () {
-    clearInterval(this.interval)
   },
   methods: {
     sortStrokesByTimestamp () {
