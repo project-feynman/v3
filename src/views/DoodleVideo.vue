@@ -17,9 +17,9 @@
                  @animation-loaded="animationLoaded=true"
                  @animation-finished="handleEvent()"/>
 
-      <audio-recorder v-if="betaAudioURL"
+      <audio-recorder v-if="audioURL"
                       ref="audio-recorder"
-                      :audioURL="betaAudioURL"
+                      :audioURL="audioURL"
                       @recorder-loading="recorderLoaded=false"
                       @play="syncAnimation()"
                       @seeking="syncAnimation()"
@@ -30,18 +30,17 @@
 </template>
 
 <script>
-import db from "@/database.js"
-import Animation from "@/components/Animation.vue"
-import AudioRecorder from "@/components/AudioRecorder.vue"
-import { mapState } from "vuex"
+import db from '@/database.js'
+import Animation from '@/components/Animation.vue'
+import AudioRecorder from '@/components/AudioRecorder.vue'
+import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/storage'
 import 'firebase/functions'
 
 export default {
   props: {
-    strokes: Array,
-    audioURL: String,
+    strokes: Array
   },
   components: {
     Animation,
@@ -56,7 +55,7 @@ export default {
   data () {
     return {
       video: null,
-      betaAudioURL: '',
+      audioURL: '',
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
@@ -94,17 +93,19 @@ export default {
       this.recorderLoaded = false
       this.animationLoaded = false
       const classID = this.$route.params.class_id
+      this.audioURL = '' 
 
       // fetch everything associated with the video
       const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
       const videoDoc = await ref.get()
       this.video = videoDoc.data()
+      console.log('this.video =', this.video)
       if (this.video.whiteboardID) {
         this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
         const whiteboardDoc = await this.whiteboardRef.get()
       }  
       if (this.video.audioURL) {
-        this.betaAudioURL = this.video.audioURL
+        this.audioURL = this.video.audioURL
       }
     
       // bind strokes
