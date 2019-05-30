@@ -43,7 +43,7 @@
           <v-btn v-clipboard="returnLinkURL()">
             COPY TO CLIPBOARD
           </v-btn>
-          <v-btn @click="$emit('input', !value)">
+          <v-btn @click="handleClose()">
             OK
           </v-btn>
         </template>
@@ -60,7 +60,7 @@ export default {
   data () {
     return {
       isSavingVideo: false, 
-      shareableURL:  null,
+      shareableURL:  '',
       videoTitle: ''
     }
   },
@@ -79,7 +79,9 @@ export default {
       this.$emit('pre-save-explanation', this.videoTitle)
     },
     handleClose () {
-      this.shareableURL = null 
+      this.shareableURL = ''
+      this.isSavingVideo = false
+      this.videoTitle = ''
       this.$emit('input', !this.value)
     },
     returnLinkURL () {

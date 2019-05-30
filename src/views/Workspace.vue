@@ -117,11 +117,9 @@ export default {
       const userUID = this.$route.params.id
       const classID = this.$route.params.class_id
       const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(userUID)
-      
       if (this.prevWorkspaceRef) {
         await this.cleanUpPrevWorkspace()
       }
-
       await this.$binding('workspace', workspaceRef)
       this.whiteboardRef = db.collection('whiteboards').doc(this.workspace.whiteboardID)
       this.$binding('whiteboard', this.whiteboardRef)
