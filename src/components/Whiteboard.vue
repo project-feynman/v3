@@ -1,6 +1,62 @@
 <template>
   <div id="whiteboard">
-    <canvas id="myCanvas" style="height: 90vh; width: 100%; background-color: rgb(62, 66, 66)"/>
+    <!-- SAVING POPUP -->
+    <save-video-popup v-model="saveVideoPopup"
+                      @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+                      fullscreen/>
+
+    <!-- WHITEBOARD BUTTONS -->
+    <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="grey">
+      <v-spacer></v-spacer>
+      <v-toolbar-items v-if="whiteboardDoc">
+        <template v-if="!whiteboardDoc.isAnswered">
+          <swatches v-model="color"
+                    :colors="colors"
+                    inline
+                    background-color="rgba(0, 0, 0, 0)"
+                    swatch-size="55"
+                    :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"/>
+
+          <v-btn @click="useEraser()">
+            ERASER
+          </v-btn>
+          <v-btn @click="initClearBoardLogic()">
+            CLEAR BOARD
+          </v-btn>
+          <v-btn @click="disableTouch = !disableTouch">
+            {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
+          </v-btn>
+          <v-btn @click="saveDoodle()">
+            SAVE DOODLE
+          </v-btn>
+          <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
+            RECORD VIDEO
+          </v-btn>
+          <v-btn v-else @click="stopRecording()" color="pink white--text">
+            STOP VIDEO
+          </v-btn>
+        </template>
+        <template v-else>
+          <v-btn @click="initReplayLogic()">
+            PREVIEW
+          </v-btn>
+          <v-btn @click="retryAnswer()">
+            RETRY
+          </v-btn>
+          <v-btn @click="saveVideoPopup = true" class="pink white--text">
+            SAVE VIDEO
+          </v-btn>
+        </template>
+        <v-btn @click="handleExit()" dark flat>
+          EXIT
+        </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+
+    <!-- ACTUAL WHITEBOARD -->
+    <canvas id="myCanvas" 
+            style="height: 90vh; width: 100%; 
+                   background-color: rgb(62, 66, 66)"/>
   </div>
 </template>
 
@@ -8,23 +64,23 @@
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/functions'
+import slugify from 'slugify'
 import db from '@/database.js'
 import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
-import "vue-swatches/dist/vue-swatches.min.css"
+import 'vue-swatches/dist/vue-swatches.min.css'
+import SaveVideoPopup from '@/components/SaveVideoPopup.vue'
 
 export default {
   props: {
     whiteboardID: String,
     isRecording: Boolean,
     isAnswered: Boolean,
-    color: String,
-    disableTouch: Boolean,
-    lineWidth: Number
+    hideToolbar: Boolean
   },
-  // props: ['whiteboardID', 'isRecording', 'isAnswered', 'color', 'disableTouch', 'lineWidth'],
   components: {
-    Swatches
+    Swatches,
+    SaveVideoPopup
   },
   mixins: [DrawMethods],
   computed: {
@@ -38,6 +94,15 @@ export default {
   },
   data() {
     return {
+      // experiment zone
+      whiteboardDoc: null,
+      color: '#F64272',
+      lineWidth: 2,
+      colors: ['#F64272', 'orange', '#0AF2F2'],
+      disableTouch: false,
+      saveSilently: false,
+      saveVideoPopup: false,
+      // end of experiment zone 
       strokesRef: null,
       stylus: false, 
       allStrokes: [],
@@ -62,8 +127,18 @@ export default {
       handler: 'initData',
       immediate: true
     },
+
+    // experiment zone 
+    // bad - high surface area for bugs
+    color () {
+      if (this.color != 'rgb(62, 66, 66)') {
+        this.lineWidth = 2
+      }
+    },
+    // this is how whiteboard knows that it's starting to record
     isRecording () {
       if (this.isRecording) {
+        console.log('whiteboard detects that isRecording is now true')
         this.startTimer()
       } else {
         this.stopTimer()
@@ -84,7 +159,7 @@ export default {
     this.initTouchEvents()
     this.continuouslySyncBoardWithDB()
   },
-  beforeDestroy() {
+  beforeDestroy () {
     clearInterval(this.interval)
   },
   methods: {
@@ -94,10 +169,6 @@ export default {
     getHeightToWidthRatio () {
       return this.canvas.scrollHeight / this.canvas.scrollWidth
     },
-    // useEraser() {
-    //   this.color = 'rgb(192, 230, 253)'
-    //   this.lineWidth = 15
-    // },
     startTimer () {
       this.currentTime = 0 
       this.timer = setInterval(() => this.currentTime += 0.1, 100)
@@ -116,7 +187,11 @@ export default {
       if (!this.whiteboardID) {
         return
       }
-      this.strokesRef = db.collection('whiteboards').doc(this.whiteboardID).collection('strokes')
+      // experimental line 
+      const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
+      this.$binding('whiteboardDoc', whiteboardRef)
+      // end of experimental line 
+      this.strokesRef = whiteboardRef.collection('strokes')
       // visually wipe previous drawings
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -234,6 +309,77 @@ export default {
       }
       return false
     },
+    useEraser () {
+      this.color = 'rgb(62, 66, 66)'
+      this.lineWidth = 18
+    },
+    saveDoodle () {
+      this.saveSilently = true
+      this.saveVideoPopup = true 
+    },
+    saveVideo () {
+      this.saveSilently = false 
+      this.saveVideoPopup = true
+    },
+    startRecording () {
+      this.$emit('start-recording')
+    },
+    stopRecording () {
+      this.$emit('stop-recording')
+    },
+    async retryAnswer () {
+      this.currentTime = 0 
+      const ID = this.whiteboardDoc['.key']
+      const whiteboardRef = db.collection('whiteboards').doc(ID)
+      await whiteboardRef.update({
+        isAnswered: false
+      })
+    },
+    handleExit () {
+      this.$emit('close-whiteboard')
+    },
+    async handleSaving (videoTitle) {
+      // mark the whiteboard as saved 
+      const whiteboardID = this.whiteboardDoc['.key']
+
+      const whiteboardRef = db.collection('whiteboards').doc(whiteboardID)
+      whiteboardRef.update({
+        isSaved: true
+      })
+      // create a new video document that points to the whiteboard
+      const classID = this.$route.params.class_id
+      const videoID = slugify(videoTitle, {
+        replacement: '-',
+        lower: true
+      })
+
+      // I think this is an error - why are we awaiting a reference?
+      const docRef = await db.collection('classes').doc(classID).collection('videos').doc(videoID)
+
+      const videoObj = {
+        title: videoTitle,
+        whiteboardID,
+        authorUID: this.user.uid || 'Anonymous',
+        authorName: this.user.name || 'Anonymous'
+      }
+
+      if (!this.saveSilently) {
+        if (this.whiteboardDoc.audioURL && this.whiteboardDoc.audioPath) {
+          videoObj.audioURL = this.whiteboardDoc.audioURL
+          videoObj.audioPath = this.whiteboardDoc.audioPath
+        }
+      }
+      docRef.set(videoObj)
+
+      // initialize a new whiteboard for the workspace
+      const workspaceID = this.$route.params.id
+      const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
+      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(workspaceID)
+      workspaceRef.update({
+        whiteboardID: newWhiteboardRef.id
+      })
+      this.$root.$emit('audio-uploaded', docRef.id)
+    }
   }
 }
 </script>
