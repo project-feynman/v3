@@ -85,6 +85,7 @@ export default {
             mimeType: blob.type,
             size: blob.size,
           }
+          console.log("audio file size =", blob.size)
           if (this.recordings.length == 0) {
             // initial load or just empty local data
             this.recordings.push(newRecording)

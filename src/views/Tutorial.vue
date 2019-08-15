@@ -20,11 +20,11 @@ export default {
   },
   data() {
     return {
-      feedback: ''
+      feedback: ""
     }
   },
   methods: {
-    async initWorkspace() {
+    async initWorkspace () {
       if (!this.isFetchingUser && this.user) {
         const classID = this.$route.params.class_id 
         const ref = db.collection('classes').doc(classID).collection('workspaces').doc(this.user.uid)

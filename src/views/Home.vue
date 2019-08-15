@@ -15,31 +15,20 @@
       <div v-if="isFetchingUser" key="loading..."></div>
 
       <!-- LIST OF CLASSES -->
-      <div v-else-if="!isFetchingUser && user" key="class-list" class="responsive-grid mt-5">
-        <v-layout v-for="subject in classes" :key="subject.uid">
-          <v-flex>
-            <v-card @click="$router.push(`${subject.courseNumber}/ranking`)" flat color="white" class="black--text cursor-pointer">
-              <v-card-title primary-title>
-                <div class="headline">
-                  {{ subject.courseNumber }}
-                </div>
-              </v-card-title>
-              <v-card-actions>
-                <v-btn @click="redirectToClass(subject.courseNumber)" flat dark class="black--text">
-                  ENTER
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-flex>
-        </v-layout>
+      <!-- <div v-else-if="!isFetchingUser && user" key="class-list"> -->
+      <div v-else key="class-list">
+        <!-- <p class="display-1 text-xs-center mt-5 font-weight-thin">
+          A place where students help each other and share their favorite explanations
+        </p> -->
+        <playground/>
       </div>
 
       <!-- LOGIN BUTTON -->
-      <div v-else key="landing">
-        <p class="text-xs-center mt-4 headline font-weight-light">
-          A place where people talk and draw to help each other
-        </p>
-        <v-layout row justify-center class="mb-4">
+      <!-- <div v-else key="landing"> -->
+        <!-- <p class="text-xs-center mt-4 headline font-weight-light">
+          A place where students help each other and share their favorite explanations
+        </p> -->
+        <!-- <v-layout row justify-center class="mb-4">
           <v-btn @click="createAccountPopup = true" dark color="grey" :depressed="true">
             CREATE ACCOUNT
           </v-btn>
@@ -47,24 +36,14 @@
             LOG IN
           </v-btn>
         </v-layout>
-        
+         -->
+         
         <!-- ANIMATED TUTORIAL -->
-        <animation v-if="strokes"
+        <!-- <animation v-if="strokes"
                    :strokes="strokes"
-                   :autoplay="true"/>
+                   :autoplay="true"/> -->
 
-        <!-- LOGIN -->
-        <login-popup v-model="loginPopup" 
-                     :newAccount="false"
-                     @sign-in="payload => signIn(payload)"/>
-
-        <!-- CREATE ACCOUNT -->
-        <login-popup v-model="createAccountPopup" 
-                     :newAccount="true"
-                     @create-account="payload => createAccount(payload)"
-        />
-
-      </div>
+      <!-- </div> -->
     </transition>
 
   </div>
@@ -77,73 +56,23 @@ import 'firebase/auth'
 import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
 import LoginPopup from '@/components/LoginPopup.vue'
-import DoodleAnimation from '@/components/DoodleAnimation.vue'
+import Playground from '@/components/Playground.vue'
 
 export default {
   components: {
     Animation,
     LoginPopup,
-    DoodleAnimation
+    Playground
   },
   computed: {
     ...mapState(['user', 'isFetchingUser'])
   },
   data () {
     return {
-      classes: [],
       transitionFinished: false,
-      loginPopup: false,
-      createAccountPopup: false,
-      newAccount: false,
       snackbar: false,
-      snackbarMessage: '',
-      demoDoodle: null,
-      strokes: null
+      snackbarMessage: ''
     }
-  },
-  methods: {
-    redirectToClass (courseNumber) {
-      event.stopPropagation()
-      this.$router.push(`${courseNumber}/ranking`)
-    },
-    createNewAccount () {
-      this.newAccount = true 
-      this.loginPopup = true
-    },
-    signIn({ email, password }) {
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(user => {
-          this.$store.dispatch('handleUserLogic', user)
-          this.snackbarMessage = `Welcome to ExplainMIT!`
-          this.snackbar = true 
-          this.loginPopup = false 
-        })
-      .catch(error => {
-          this.snackbarMessage = error.message
-          this.snackbar = true 
-        })
-    },
-    createAccount({ email, password }) {
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(user => {
-          this.snackbarMessage = `Welcome to ExplainMIT!`
-          this.snackbar = true 
-          this.loginPopup = false
-        })
-        .catch(error => {
-          this.snackbarMessage = error.message
-          this.snackbar = true 
-        })
-    }
-  },
-  async created () {
-    this.$binding('classes', db.collection('classes'))
-    // const demoRef = db.collection('whiteboards').where('isSaved', '==', true)
-    // await this.$binding('demoDoodle', demoRef)
-    // const randomNumber = Math.floor(Math.random() * this.demoDoodle.length)
-    // const strokesRef = db.collection('whiteboards').doc(this.demoDoodle[randomNumber]['.key']).collection('strokes').orderBy('strokeNumber', 'asc')
-    const strokesRef = db.collection('whiteboards').doc('iUuhvPRiGwoDwxei1HtP').collection('strokes').orderBy('strokeNumber', 'asc')
-    this.$binding('strokes', strokesRef) 
   }
 }
 </script>

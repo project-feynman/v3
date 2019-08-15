@@ -1,10 +1,22 @@
 <template>
-  <div id="whiteboard">
-    <canvas id="myCanvas" 
+  <div id="whiteboard" style="height: 100%">
+    
+    <canvas v-if="isFullscreen"
+            :id="`myCanvas-${canvasID}`"  
             style="width: 100%;
                    height: 90vh;
                    background-color: rgb(62, 66, 66)">
     </canvas>
+    <template v-else>
+      <canvas 
+              :id="`myCanvas-${canvasID}`" 
+              style="width: 100%;
+                    height: 100%;
+                    background-color: rgb(62, 66, 66)">
+      </canvas>
+      <!-- <div class="blue-box">12</div> -->
+      <!-- <div class="yellow-square"></div> -->
+    </template>
   </div>
 </template>
 
@@ -16,7 +28,15 @@ import db from '@/database.js'
 export default {
   props: {
     strokes: Array,
-    autoplay: Boolean
+    autoplay: Boolean,
+    isFullscreen: {
+      type: Boolean,
+      default: true
+    },
+    canvasID: {
+      type: Number,
+      default: 1
+    }
   },
   mixins: [DrawMethods],
   watch: {
@@ -62,7 +82,7 @@ export default {
     this.$root.$on('whiteboard-closed', () => {
       this.initData()
     })
-    this.canvas = document.getElementById('myCanvas')
+    this.canvas = document.getElementById(`myCanvas-${this.canvasID}`)
     this.ctx = this.canvas.getContext('2d')
     if (this.autoplay) {
       this.rescaleCanvas(false)
@@ -95,5 +115,25 @@ export default {
   }
 }
 </script>
+
+<style>
+/* .yellow-square {
+  background-color: #FFDC00;
+  display: inline-block;
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto;
+}
+
+.cn {
+  display: table-cell;
+  width: 500px;
+  height: 500px;
+  vertical-align: middle;
+  text-align: center;
+} */
+</style>
+
 
 

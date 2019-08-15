@@ -47,7 +47,8 @@ export default {
     simpleUser () {
       return {
         email: this.user.email,
-        uid: this.user.uid
+        uid: this.user.uid,
+        color: this.user.color || "grey"
       }
     }
   },

@@ -170,6 +170,10 @@ export default {
     this.continuouslySyncBoardWithDB()
   },
   methods: {
+    takePicture () {
+      const dataURL = this.canvas.toDataURL()
+      // console.log("dataURL =", dataURL)
+    },
     initData () {
       if (!this.whiteboardID) {
         return
@@ -302,8 +306,7 @@ export default {
       if (e.touches.length != 1) {
         return true
       }
-      // finger drawing disabled
-      if (this.disableTouch && this.isFinger(e)) {
+      if (this.isFinger(e) && this.disableTouch) {
         return true
       }
       return false
@@ -347,7 +350,9 @@ export default {
       const ID = this.whiteboardDoc['.key']
       const whiteboardRef = db.collection('whiteboards').doc(ID)
       await whiteboardRef.update({
-        isAnswered: false
+        isAnswered: false,
+        audioURL: '',
+        audioPath: ''
       })
     },
     handleExit () {
@@ -356,30 +361,25 @@ export default {
     async handleSaving (videoTitle) {
       // mark the whiteboard as saved 
       const whiteboardID = this.whiteboardDoc['.key']
-      db.collection('whiteboards').doc(whiteboardID).update({
-        isSaved: true
-      })
-
-      // create a new video document that points to the whiteboard
       const classID = this.$route.params.class_id
-      const videoID = slugify(videoTitle, {
-        replacement: '-',
-        lower: true
-      })
-      const docRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)
-      const videoObj = {
-        title: videoTitle,
-        whiteboardID,
-        authorUID: this.user.uid || 'Anonymous',
-        authorName: this.user.name || 'Anonymous'
+
+      // take a screenshot of the whiteboard to be used as the "preview" of the video
+      // const dataURL = this.canvas.toDataURL()
+      // const videoThumbnail = this.canvas.toDataURL()
+
+      let metadata = {
+        title: videoTitle, 
+        authorUID: this.user.uid,
+        authorEmail: this.user.email,
+        fromClass: classID,
+        isSaved: true
+        // thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       }
-      if (!this.saveSilently) {
-        if (this.whiteboardDoc.audioURL && this.whiteboardDoc.audioPath) {
-          videoObj.audioURL = this.whiteboardDoc.audioURL
-          videoObj.audioPath = this.whiteboardDoc.audioPath
-        }
+      if (this.user.name) {
+        metadata.authorName = this.user.name
       }
-      docRef.set(videoObj)
+      db.collection('whiteboards').doc(whiteboardID).update(metadata)
+      console.log("this.user =", this.user)
 
       // initialize a new whiteboard for the workspace
       const workspaceID = this.$route.params.id
@@ -388,9 +388,12 @@ export default {
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       })
-      this.$root.$emit('audio-uploaded', docRef.id)
+      // bad design, but informs the whiteboard that saving logic has completed
+      // TODO: since WhiteboardSavePopup is just the child, communicate with it directly (through props)
+      this.$root.$emit('audio-uploaded', whiteboardID)
     },
     saveFileReference({ url, path }) {
+      // this is really bad, because the user may attempt to upload the video when the audio file has not yet been processed
       console.log('audio file successfully uploaded, now storing a reference')
       const ID = this.whiteboardDoc['.key']
       db.collection('whiteboards').doc(ID).update({

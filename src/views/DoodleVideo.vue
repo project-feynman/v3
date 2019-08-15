@@ -1,16 +1,7 @@
 <template>
   <div class="video">
+    <!-- <p v-if="video">{{ video }}</p> -->
     <v-container fluid class="pa-0">
-      <v-layout>
-        <div v-if="video && user" style="margin: auto;">
-          <div v-if="user.email == 'eltonlin1998@gmail.com'" class="text-xs-center">
-            <v-btn @click="deleteVideo()" class="red white--text">
-              DELETE VIDEO
-            </v-btn>
-          </div>
-        </div>
-      </v-layout>
-
       <animation v-if="allStrokes"
                  ref="animation"
                  :strokes="allStrokes"
@@ -18,12 +9,11 @@
                  @animation-finished="handleEvent()"/>
 
       <audio-recorder v-if="audioURL"
-                      ref="audio-recorder"
-                      :audioURL="audioURL"
-                      @recorder-loading="recorderLoaded=false"
-                      @play="syncAnimation()"
-                      @seeking="syncAnimation()"
-                      @recorder-loaded="recorderLoaded=true"/>
+                  ref="audio-recorder"
+                  :audioURL="audioURL"
+                  @recorder-loading="recorderLoaded=false"
+                  @play="syncAnimation()"
+                  @recorder-loaded="recorderLoaded=true"/>
 
     </v-container>
   </div>
@@ -40,7 +30,8 @@ import 'firebase/functions'
 
 export default {
   props: {
-    strokes: Array
+    strokes: Array,
+    videoID: String
   },
   components: {
     Animation,
@@ -59,14 +50,18 @@ export default {
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
-      whiteboardRef: null,
       audioFileRef: null,
-      allStrokes: null
+      allStrokes: null,
+      thumbnail: ''
     }
   },
   watch: {
     $route: {
-      handler: 'bindVariables',
+      handler: "bindVariables",
+      immediate: true
+    },
+    videoID: {
+      handler: "bindVariables", 
       immediate: true
     }
   },
@@ -88,28 +83,34 @@ export default {
       }
     },
     async bindVariables () {
+      // TODO: just keep track of this.video so that I don't need to keep track of this.audioURL, this.audioPath explictly
+
       // initialize/reset variables
       this.syncedVisualAndAudio = false
       this.recorderLoaded = false
       this.animationLoaded = false
-      const classID = this.$route.params.class_id
       this.audioURL = '' 
-
-      // fetch everything associated with the video
-      const ref = db.collection('classes').doc(classID).collection('videos').doc(this.$route.params.video_id)
-      const videoDoc = await ref.get()
-      this.video = videoDoc.data()
-      if (this.video.whiteboardID) {
-        this.whiteboardRef = db.collection('whiteboards').doc(this.video.whiteboardID)
-        const whiteboardDoc = await this.whiteboardRef.get()
-      }  
-      if (this.video.audioURL) {
-        this.audioURL = this.video.audioURL
+      
+      // retrieve video
+      const classID = this.$route.params.class_id
+      let videoRef = null
+      if (!this.videoID) {
+        const videoID = this.$route.params.video_id 
+        videoRef = db.collection('whiteboards').doc(videoID)
+      } else {
+        videoRef = db.collection("whiteboards").doc(this.videoID)
       }
-    
-      // bind strokes
-      const strokesRef = db.collection('whiteboards').doc(this.video.whiteboardID).collection('strokes')
-      if (this.video.audioPath) {
+      let video = await videoRef.get()
+      video = video.data()
+      // fix delete button logic
+      this.video = video
+      console.log("video =", video)
+      this.thumbnail = video.thumbnail
+      // audio 
+      this.audioURL = video.audioURL
+      // visual 
+      const strokesRef = videoRef.collection('strokes')
+      if (video.audioPath) {
         await this.$binding('allStrokes', strokesRef.orderBy('startTime', 'asc'))
       } else {
         await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'))
@@ -121,23 +122,22 @@ export default {
 
       // now bind references to make it easy to delete things
       const storageRef = firebase.storage().ref()
-      if (this.video.audioPath) {
-        this.audioFileRef = storageRef.child(`recordings/${this.video.audioPath}`)
+      if (video.audioPath) {
+        this.audioFileRef = storageRef.child(`recordings/${video.audioPath}`)
       }
     },
     async deleteVideo () {
       const classID = this.$route.params.class_id
       const videoID = this.$route.params.video_id
-      const videoRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)
+      // const videoRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)
       const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete')
-      
       // delete video, whiteboard, strokes, and audio
-      recursiveDelete({ path: `whiteboards/${this.video.whiteboardID}` })
-      videoRef.delete()
+      // recursiveDelete({ path: `whiteboards/${this.video.whiteboardID}` })
+      recursiveDelete({ path: `whiteboards/${videoID}` })
+      // videoRef.delete()
       if (this.audioFileRef) {
         this.audioFileRef.delete()
       }
-
       this.$router.push(`/${classID}/ranking`)
     }
   }

@@ -33,6 +33,7 @@ export default {
               this.indexOfNextStroke = i
               break 
             } else {
+              // this.drawStroke(stroke, null)
               this.drawStroke(stroke, this.getPointPeriod(stroke))
               if (this.indexOfNextStroke == n-1) {
                 this.indexOfNextStroke += 1 // edge case: without this, "this.allStrokes[this.indexOfNextStroke - 1] will no longer be the most recently drawn stroke 
@@ -121,7 +122,11 @@ export default {
     setStyle (color = 'yellow', lineWidth = 2) {
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
-      this.ctx.lineWidth = lineWidth
+      if (this.isFullScreen) {
+        this.ctx.lineWidth = lineWidth
+      } else {
+        this.ctx.lineWidth = 1.8
+      }
     },
     traceLineTo (x, y) {
       this.ctx.beginPath()

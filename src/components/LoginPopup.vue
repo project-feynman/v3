@@ -37,12 +37,13 @@
           <v-btn @click="$emit('input', !value)" color="blue darken-1" flat >
             CANCEL
           </v-btn>
-          <v-btn v-if="newAccount" @click="$emit('create-account', { email,  password })" color="blue darken-1" flat>
-            CREATE ACCOUNT
-          </v-btn>
-          <v-btn v-else @click="$emit('sign-in', { email,  password })" color="blue darken-1" flat>
+          <v-btn @click="$emit('sign-in', { email,  password })" color="blue darken-1" flat>
             LOG IN
           </v-btn>
+          <v-btn @click="$emit('create-account', { email,  password })" color="purple" flat>
+            CREATE ACCOUNT
+          </v-btn>
+         
         </v-card-actions>
       </v-card>
     </v-dialog>
