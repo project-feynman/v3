@@ -32,6 +32,15 @@ function setDisconnectHook(user) {
   })
 }
 
+function getRandomColor() {
+  var letters = '0123456789ABCDEF'
+  var color = '#'
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)]
+  }
+  return color
+}
+
 export default new Vuex.Store({
   state: {
     user: null,
@@ -46,9 +55,12 @@ export default new Vuex.Store({
   actions: {
     async handleUserLogic (context, { uid, email }) {
       let simplifiedUser = { uid, email }
+      if (!uid) {
+        return
+      }
       context.commit('SET_USER', simplifiedUser) // commit the user to avoid blocking page load 
       // update its "isOnline" property later
-      const userRef = db.collection('users').doc(uid) 
+      const userRef = db.collection('users').doc(uid)
       const mirrorUser = await userRef.get() 
       // HOW TO REFACTOR: 
       // 1) Basically, just set up the onSnapshot() 
@@ -61,16 +73,17 @@ export default new Vuex.Store({
         userRef.onSnapshot(user => {
           context.commit('SET_USER', user.data())
           // TODO: delete previous onDisconnect() hook 
-          setDisconnectHook({ uid })
+          setDisconnectHook(user.data())
         }) 
       } else {
         // create a new account
+        simplifiedUser.color = getRandomColor()
         userRef.set(simplifiedUser)
         // now set up syncing with the user copy
         userRef.onSnapshot(user => {
           context.commit('SET_USER', user.data())
           // TODO: delete previous onDisconnect() hook 
-          setDisconnectHook({ uid })
+          setDisconnectHook(user.data())
         }) 
       }
     }

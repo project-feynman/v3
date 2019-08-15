@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app :dark="useDarkMode">
     <nav-components/>
     <v-content id="background">
       <router-view/>
@@ -12,6 +12,18 @@ import NavComponents from './components/NavComponents.vue'
 
 export default {
   name: 'App',
+  computed: {
+    user () {
+      return this.$store.state.user
+    },
+    useDarkMode () {
+      if (!this.user) {
+        return false
+      } else {
+        return this.user.useDarkMode
+      }
+    }
+  },
   components: {
     NavComponents
   }
