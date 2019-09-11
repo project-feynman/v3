@@ -97,10 +97,18 @@ export default {
   computed: {
     ...mapState(['user']),
     author() {
-      return {
-        name: this.user.name || 'anonymous',
-        uid: this.user.uid
+      if (this.user) {
+        return {
+          name: this.user.name,
+          uid: this.user.uid
+        }
+      } else {
+        return {
+          name: 'Anonymous',
+          uid: 'Anonymous'
+        }
       }
+  
     }
   },
   data () {
