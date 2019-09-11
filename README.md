@@ -12,7 +12,7 @@ Help is a scarce resource. Office Hours can have long help queues. Piazza's resp
 **Solution**
 ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. 
 
-![A sample solution](docs/login_page.PNG)
+![Login Page](docs/login_page.PNG)
 
 ## Contributors
 * [Elton Lin](https://github.com/LingDingDong)
