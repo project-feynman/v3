@@ -1,16 +1,13 @@
 <template>
   <div>
-  <!-- voice chat -->
-  <!-- <voice-chat></voice-chat> -->
-
-  <!-- overlay experiment -->
-  <!-- <experiment/> -->
 
   <v-container grid-list-md fluid pt-5>
     <template v-for="(course, i) in courses">
-
-      <!-- HANDLE EDGE CASE -->
-      <v-layout v-if="i == (courses.length - 1) && i%2 != 1" :key="course['.key']" :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0>
+      <!-- HANDLE EDGE CASE (FIRST OR LAST?) -->
+      <v-layout v-if="i == (courses.length - 1) && i%2 != 1" 
+                :key="course['.key']" 
+                :class="`px-${getSideMargin()}`" 
+                row wrap mt-0 mx-0 mb-5 pa-0>
         <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
           <renderless-component :whiteboardID="courses[i].introVideoID">
             <template slot-scope="slotProps">
@@ -29,6 +26,7 @@
         </v-flex>
       </v-layout>
 
+      <!-- OTHERWISE RENDER PAIRS AT A TIME -->
       <v-layout v-else-if="i%2 == 1" 
                 :key="course['.key']" 
                 :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0>
@@ -70,8 +68,6 @@
       </v-layout>
 
       <!-- Edge case: last element -->
-    
-
       <!-- Add invisible element -->
 
     </template>
@@ -81,21 +77,16 @@
 </template>
 
 <script>
-import VoiceChat from "@/components/future/VoiceChat.vue"
 import VuetifyCard from "@/components/VuetifyCard.vue"
 import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
 import RenderlessComponent from "@/components/RenderlessComponent.vue"
-import Experiment from "@/components/future/Experiment.vue"
 import db from "@/database.js"
-import sizeof from "sizeof"
 
 export default {
   components: {
-    VoiceChat,
     VuetifyCard,
     BetaDoodleVideo,
     RenderlessComponent,
-    Experiment
   },
   data () {
     return {
