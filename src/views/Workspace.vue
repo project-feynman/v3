@@ -1,12 +1,13 @@
 <template>
   <div id="workspace">
-    <v-container v-if="user && workspace" fluid class="pa-0">
-      <div class="text-xs-center">
+    <v-container v-if="simpleUser && workspace" fluid class="pa-0">
+      <!-- AUDIO CHAT -->
+      <!-- <div class="text-xs-center">
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
-      </div>
-      <video-chat :hasAudioRoom="workspace.hasAudioRoom"
+      </div> -->
+      <!-- <video-chat :hasAudioRoom="workspace.hasAudioRoom"
                   :workspaceID="workspace['.key']"
-                  @open-room="updateHasAudioRoom()"/>
+                  @open-room="updateHasAudioRoom()"/> -->
 
       <!-- THIS IS THE WHITEBOARD THAT IS NOT FULLSCREEN -->
       <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
@@ -36,6 +37,7 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
 import VideoChat from '@/components/VideoChat.vue'
+import { toUnicode } from 'punycode';
 
 export default {
   components: {
@@ -45,10 +47,18 @@ export default {
   computed: {
     ...mapState(['user']),
     simpleUser () {
-      return {
-        email: this.user.email,
-        uid: this.user.uid,
-        color: this.user.color || "grey"
+      if (this.user) {
+        return {
+          email: this.user.email,
+          uid: this.user.uid,
+          color: this.user.color || "grey"
+        }
+      } else {
+        return {
+          email: "anonymous",
+          uid: "anonymous",
+          color: "grey"
+        }
       }
     }
   },

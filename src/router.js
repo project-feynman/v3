@@ -29,14 +29,14 @@ export default new Router({
     {
       path: '/:class_id/workspace/:id',
       component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue'),
-      beforeEnter: (to, from, next) => {
-        if (store.state.user) {
-          next()
-        } else {
-          next({ name: "Classmates" })
-        }
-        // console.log("to, from, next =", to, from, next)
-      }
+      // beforeEnter: (to, from, next) => {
+      //   if (store.state.user) {
+      //     next()
+      //   } else {
+      //     next({ name: "Classmates" })
+      //   }
+      //   // console.log("to, from, next =", to, from, next)
+      // }
     },
     {
       path: '/:class_id/:video_id',
