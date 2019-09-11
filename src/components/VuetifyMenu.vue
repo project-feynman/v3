@@ -64,12 +64,12 @@
             <v-list-tile-title>Enable notifications</v-list-tile-title>
           </v-list-tile>
 
-          <v-list-tile>
+          <!-- <v-list-tile>
             <v-list-tile-action>
               <v-switch :value="user.useDarkMode" @change="value => useDarkMode = value" color="purple"></v-switch>
             </v-list-tile-action>
             <v-list-tile-title>Enable dark mode</v-list-tile-title>
-          </v-list-tile>
+          </v-list-tile> -->
         </v-list>
 
         <v-card-actions>
