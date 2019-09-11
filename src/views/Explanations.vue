@@ -95,13 +95,11 @@ import VoiceChat from "@/components/future/VoiceChat.vue"
 import VuetifyCard from "@/components/VuetifyCard.vue"
 import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
 import RenderlessComponent from "@/components/RenderlessComponent.vue"
-import Experiment from "@/components/future/Experiment.vue"
 import DoodleVideo from "@/views/DoodleVideo.vue"
 import db from "@/database.js"
 import firebase from "firebase/app"
 import "firebase/functions"
 import "firebase/storage"
-import sizeof from "sizeof"
 
 export default {
   components: {
@@ -109,7 +107,6 @@ export default {
     VuetifyCard,
     BetaDoodleVideo,
     RenderlessComponent,
-    Experiment,
     DoodleVideo
   },
   data () {

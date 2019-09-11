@@ -70,16 +70,7 @@ export default {
     emitAction (event) {
       event.stopPropagation()
       this.$emit("action", event.target.innerText)
-    },
-    // loadImage (url) {
-    //   let image = new Image()
-    //   image.onload = function () {
-    //     const canvas = document.getElementById("myCanvas")
-    //     const ctx = canvas.getContext("2d")
-    //     ctx.drawImage(image, 0, 0)
-    //   }
-    //   image.src = url 
-    // }
+    }
   }
 }
 </script>

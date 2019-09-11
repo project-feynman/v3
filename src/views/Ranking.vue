@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="text-xs-center pt-5">
-      <p v-if="!user && !isFetchingUser">You need to sign in to be able to get and use workspaces</p>
-      <v-btn v-if="user" @click="becomeHelper()">Get a workspace</v-btn>
+      <!-- <p v-if="!user && !isFetchingUser">You need to sign in to be able to get and use workspaces</p>
+      <v-btn v-if="user" @click="becomeHelper()">Get a workspace</v-btn> -->
     </div>
 
     <v-layout row mt-5>
