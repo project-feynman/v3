@@ -1,6 +1,6 @@
 # ExplainMIT   [![Build Status](https://travis-ci.com/LingDingDong/feynman-mvp.svg?branch=master)](https://travis-ci.com/LingDingDong/feynman-mvp)
 
-ExplainMIT is a website where precious explanations are preserved to benefit future generations of students
+ExplainMIT is a website where visual explanations are preserved to help MIT students learn 
 
 ### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) | [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
 
