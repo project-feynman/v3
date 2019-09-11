@@ -1,24 +1,20 @@
-# Feynman Project   [![Build Status](https://travis-ci.com/LingDingDong/feynman-mvp.svg?branch=master)](https://travis-ci.com/LingDingDong/feynman-mvp)
+# ExplainMIT   [![Build Status](https://travis-ci.com/LingDingDong/feynman-mvp.svg?branch=master)](https://travis-ci.com/LingDingDong/feynman-mvp)
 
-Feynman is a website where students can draw and talk in real-time over a whiteboard, and save the resultant explanations for other classmates
+ExplainMIT is a website where visual explanations are preserved to help MIT students learn 
 
 ### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) | [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
 
 ## Intro
 
 **Problem**
-It's hard to get help from classmates. On Piazza, instructors answer 95% of the questions.
-
-**Observation**
-Nearly nobody deliberately makes explanation videos because the process is unrewarding and lacks human feedback. However, people like explaining things in person. 
+Help is a scarce resource. Office Hours can have long help queues. Piazza's response times can be unpredictable. Finding suitable study partners is not always possible. 
 
 **Solution**
-Feynman is a system where videos are created as by-products of people explaining things to each other.
+ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. 
 
 ![A sample solution](docs/login_page.PNG)
 
 ## Contributors
-
 * [Elton Lin](https://github.com/LingDingDong)
 * [huBlerTi2](https://github.com/huBIerTi2)
 * [John Lin](https://github.com/linjohnjohn)
