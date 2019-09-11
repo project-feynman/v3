@@ -43,7 +43,7 @@
           <v-btn @click="retryAnswer()">
             RETRY
           </v-btn>
-          <v-btn @click="saveVideoPopup = true" class="pink white--text">
+          <v-btn @click="saveVideoPopup = true" :disabled="!hasUploadedAudio" class="pink white--text">
             SAVE VIDEO
           </v-btn>
         </template>
@@ -129,7 +129,8 @@ export default {
       lastX: -1,
       lastY: -1,
       unsubscribe: null,
-      redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead 
+      redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
+      hasUploadedAudio: false
     }
   },
   watch: {
@@ -257,6 +258,9 @@ export default {
     },
     touchStart (e) {
       if (this.isNotValidTouch(e)) { return }
+      if (e.touches[0].touchType == 'stylus') {
+        this.disableTouch = true
+      } 
       this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
@@ -308,15 +312,16 @@ export default {
       }
       if (this.isFinger(e) && this.disableTouch) {
         return true
+      } else {
+        return false 
       }
-      return false
     },
     isFinger (e) {
-      if (e.touches.length == 1) {
+      // if (e.touches.length == 1) {
         if (e.touches[0].touchType != 'stylus') {
           return true 
         } 
-      }
+      // }
       return false
     },
     useEraser () {
@@ -395,6 +400,7 @@ export default {
     saveFileReference({ url, path }) {
       // this is really bad, because the user may attempt to upload the video when the audio file has not yet been processed
       console.log('audio file successfully uploaded, now storing a reference')
+      this.hasUploadedAudio = true
       const ID = this.whiteboardDoc['.key']
       db.collection('whiteboards').doc(ID).update({
         audioURL: url,
