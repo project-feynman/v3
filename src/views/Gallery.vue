@@ -3,9 +3,6 @@
   <!-- voice chat -->
   <!-- <voice-chat></voice-chat> -->
 
-  <!-- overlay experiment -->
-  <!-- <experiment/> -->
-
   <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
       <v-card v-if="whiteboardPopup">
         <div class="text-xs-center">
