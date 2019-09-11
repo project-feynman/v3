@@ -121,17 +121,17 @@
         <v-divider/>
 
         <!-- DOODLES -->
-        <v-list-tile router :to="`/${$route.params.class_id}/doodles`">
+        <v-list-tile router :to="`/${$route.params.class_id}/gallery`">
           <v-list-tile-action>
             <v-icon>video_library</v-icon>
           </v-list-tile-action>
-          <v-list-tile-title>Doodles</v-list-tile-title>
+          <v-list-tile-title>Gallery</v-list-tile-title>
         </v-list-tile>
    
       <v-divider/>
 
       <!-- CLASSMATES -->
-      <v-list-tile router :to="`/${$route.params.class_id}/ranking`">
+      <v-list-tile router :to="`/${$route.params.class_id}/classmates`">
         <v-list-tile-action>
           <v-icon>group</v-icon>
         </v-list-tile-action>

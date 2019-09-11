@@ -102,11 +102,10 @@ export default {
   },
   methods: {
     handleAction (buttonName, { courseNumber }, canvasID) {
-      // console.log("buttonName =", buttonName)
       if (buttonName == "COLLABORATE NOW") {
-        this.$router.push(`${courseNumber}/doodles`)
+        this.$router.push(`${courseNumber}/gallery`)
       } else if (buttonName == "FULL VIDEO") {
-        console.log("FULLVIDEO()")
+        
       } else if (buttonName == "REPLAY DOODLE") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()

@@ -19,12 +19,12 @@ export default new Router({
     },
     {
       name: "Classmates",
-      path: '/:class_id/ranking',
-      component: () => import(/* webpackChunkName: "ranking" */ './views/Ranking.vue')
+      path: '/:class_id/classmates',
+      component: () => import(/* webpackChunkName: "ranking" */ './views/Classmates.vue')
     },
     {
-      path: '/:class_id/doodles',
-      component: () => import(/* webpackChunkName: "ranking" */ './views/Explanations.vue')
+      path: '/:class_id/gallery',
+      component: () => import(/* webpackChunkName: "ranking" */ './views/Gallery.vue')
     },
     {
       path: '/:class_id/workspace/:id',
