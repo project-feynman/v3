@@ -1,6 +1,5 @@
 <template>
   <div>
-
   <v-container grid-list-md fluid pt-5>
     <template v-for="(course, i) in courses">
       <!-- HANDLE EDGE CASE (FIRST OR LAST?) -->
@@ -11,10 +10,13 @@
         <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
           <renderless-component :whiteboardID="courses[i].introVideoID">
             <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['COLLABORATE NOW', 'REPLAY DOODLE']"
-                            @action="buttonName => handleAction(buttonName, courses[i], i)" 
+              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
+                            @action="buttonName => handleAction(buttonName, courses[i], i)"
+                            @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
                             :title="courses[i].courseNumber"
-                            :description="courses[i].description">
+                            :description="courses[i].description"
+                            :paragraph="courses[i].paragraph"
+                            :hasPermission="hasPermission">
                 <beta-doodle-video v-if="slotProps.strokes"
                                    :ref="`doodle-video-${i}`"
                                    :strokes="slotProps.strokes"
@@ -34,27 +36,33 @@
         <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
           <renderless-component :whiteboardID="courses[i-1].introVideoID">
             <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['COLLABORATE NOW', 'REPLAY DOODLE']"
+              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
                             @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
+                            @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
                             :title="courses[i-1].courseNumber"
-                            :description="courses[i-1].description">
+                            :description="courses[i-1].description"
+                            :paragraph="courses[i-1].paragraph"
+                            :hasPermission="hasPermission">
                 <beta-doodle-video v-if="slotProps.strokes"
                                    :ref="`doodle-video-${i-1}`"
                                    :strokes="slotProps.strokes"
                                    :canvasID="i-1">
                 </beta-doodle-video>
               </vuetify-card>
-              </template>
+            </template>
           </renderless-component>
         </v-flex>
 
         <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2); margin-left: ${getGapWidth()}px`">
           <renderless-component :whiteboardID="courses[i].introVideoID">
             <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['COLLABORATE NOW', 'REPLAY DOODLE',]"
+              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE',]"
                             @action="buttonName => handleAction(buttonName, courses[i], i)" 
+                            @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
                             :title="courses[i].courseNumber" 
-                            :description="courses[i].description">
+                            :description="courses[i].description"
+                            :paragraph="courses[i].paragraph"
+                            :hasPermission="hasPermission">
                 <beta-doodle-video v-if="slotProps.strokes"
                                    :ref="`doodle-video-${i}`"
                                    :strokes="slotProps.strokes"
@@ -66,10 +74,7 @@
         </v-flex>
 
       </v-layout>
-
-      <!-- Edge case: last element -->
-      <!-- Add invisible element -->
-
+      <!-- Edge case: last element (considering adding an invisible element) -->
     </template>
 
   </v-container>
@@ -97,19 +102,39 @@ export default {
       courses: []
     }
   },
+  computed: {
+    user () {
+      return this.$store.state.user
+    },
+    hasPermission () {
+      if (!this.user) {
+        return false
+      } else if (this.user.email != 'eltonlin1998@gmail.com') {
+        return false 
+      } else {
+        return true
+      }
+    }
+  },
   async created () {
     await this.$binding("courses", db.collection("classes"))
   },
   methods: {
     handleAction (buttonName, { courseNumber }, canvasID) {
-      if (buttonName == "COLLABORATE NOW") {
+      if (buttonName == "ENTER COMMUNITY") {
         this.$router.push(`${courseNumber}/gallery`)
       } else if (buttonName == "FULL VIDEO") {
         
-      } else if (buttonName == "REPLAY DOODLE") {
+      } else if (buttonName == "PREVIEW DOODLE") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()
       }
+    },
+    saveParagraph (newValue, { courseNumber }) {
+      const ref = db.collection("classes").doc(courseNumber)
+      ref.update({
+        paragraph: newValue
+      })
     },
     getGapWidth () {
       if (this.$vuetify.breakpoint.smAndDown) {
