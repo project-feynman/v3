@@ -262,9 +262,9 @@ export default {
       this.clickedButtonStateName = null
     },
     user () {
-      if (!this.user) {
-        this.$router.push(`${this.$route.params.class_id}/ranking`)
-      }
+      // if (!this.user) {
+      //   this.$router.push(`${this.$route.params.class_id}/ranking`)
+      // }
     }
   },
   methods: {

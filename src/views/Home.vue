@@ -11,7 +11,6 @@
     <transition name="fade" mode="out-in" 
                 @after-leave="transitionFinished = true">
       <div v-if="isFetchingUser" key="loading..."></div>
-      <!-- LIST OF CLASSES -->
       <div v-else key="class-list">
         <communities/>
       </div>
