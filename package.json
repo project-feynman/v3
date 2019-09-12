@@ -40,8 +40,8 @@
     "babel-jest": "^23.6.0",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.1",
-    "stylus": "^0.54.5",
-    "stylus-loader": "^3.0.1",
+    "stylus": "^0.54.7",
+    "stylus-loader": "^3.0.2",
     "vue-cli-plugin-vuetify": "^0.4.6",
     "vue-template-compiler": "^2.6.10",
     "vuetify-loader": "^1.0.5"
