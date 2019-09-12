@@ -10,7 +10,7 @@
     </v-snackbar>
 
     <!-- LOGIN / SIGNUP -->
-    <login-popup v-model="loginPopup" 
+    <login-popup v-model="loginPopup"
                   :newAccount="false"
                   @sign-in="payload => signIn(payload)"
                   @create-account="payload => createAccount(payload)"/>
@@ -29,10 +29,10 @@
           @create-class="courseNumber => createClass(courseNumber)"
         />
 
-        <!-- <v-btn @click="newClassPopup = true" dark color="grey">
+        <v-btn @click="newClassPopup = true" dark color="grey">
           CREATE CLASS
-        </v-btn> -->
-        
+        </v-btn>
+
           <!-- <v-btn icon>
             <v-icon color="grey darken-2">notifications</v-icon>
           </v-btn> -->
@@ -44,17 +44,17 @@
          </v-btn> -->
 
       </template>
-    
-      <v-btn 
-        v-if="$route.params.video_id" 
-        @click="replaySilentAnimation()"    
+
+      <v-btn
+        v-if="$route.params.video_id"
+        @click="replaySilentAnimation()"
         icon
       >
         <v-icon medium>replay</v-icon>
       </v-btn>
 
-      <v-btn 
-        v-else-if="$route.params.id " 
+      <v-btn
+        v-else-if="$route.params.id "
         @click="toggleFullscreen()"
         icon
       >
@@ -62,13 +62,13 @@
       </v-btn>
 
       <template v-if="!isFetchingUser">
-        
+
         <vuetify-menu v-if="user"
                       :user="user"
                       @save="payload => updateUser(payload)"
                       @sign-out="signOut()">
-          <template v-slot:default="{ on }"> 
-            <v-btn 
+          <template v-slot:default="{ on }">
+            <v-btn
               v-on="on"
               icon class="ml-4"
             >
@@ -78,10 +78,10 @@
             </v-btn>
           </template>
         </vuetify-menu>
-<!-- 
-        <v-btn 
-          v-if="user"  
-          @click="signOut()" 
+<!--
+        <v-btn
+          v-if="user"
+          @click="signOut()"
           icon class="ml-4"
         >
           <v-icon large color="pink">
@@ -89,9 +89,9 @@
           </v-icon>
         </v-btn> -->
 
-        <v-btn 
-          v-else-if="!user"  
-          @click="handleSignIn()" 
+        <v-btn
+          v-else-if="!user"
+          @click="handleSignIn()"
           class="grey--text text--darken-2"
           flat
         >
@@ -127,7 +127,7 @@
           </v-list-tile-action>
           <v-list-tile-title>Gallery</v-list-tile-title>
         </v-list-tile>
-   
+
       <v-divider/>
 
       <!-- CLASSMATES -->
@@ -163,8 +163,8 @@
               <v-list-tile-title>
                 Workspace {{ idx }}
               </v-list-tile-title>
-              <!-- <v-icon 
-                v-for="idx in workspace.members.length" 
+              <!-- <v-icon
+                v-for="idx in workspace.members.length"
                 :key="idx"
                 color="pink"
               >
@@ -175,7 +175,7 @@
               <!-- SUBTITLE  -->
               <v-list-tile-sub-title>
                 <template v-if="workspace.members">
-                  <v-icon v-for="member in workspace.members" :key="member.email" 
+                  <v-icon v-for="member in workspace.members" :key="member.email"
                           :color="member.color" class="ml-3">
                     person
                   </v-icon>
@@ -187,7 +187,7 @@
 
             </v-list-tile-content>
           </v-list-tile>
-          
+
         </v-list-group>
 
         <!-- <v-list-group prepend-icon="file_copy" value="true">
@@ -280,24 +280,24 @@ export default {
         .then(user => {
           this.$store.dispatch('handleUserLogic', user)
           this.snackbarMessage = `Welcome to ExplainMIT!`
-          this.snackbar = true 
-          this.loginPopup = false 
+          this.snackbar = true
+          this.loginPopup = false
         })
       .catch(error => {
           this.snackbarMessage = error.message
-          this.snackbar = true 
+          this.snackbar = true
         })
     },
     createAccount({ email, password }) {
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then(user => {
           this.snackbarMessage = `Welcome to ExplainMIT!`
-          this.snackbar = true 
+          this.snackbar = true
           this.loginPopup = false
         })
         .catch(error => {
           this.snackbarMessage = error.message
-          this.snackbar = true 
+          this.snackbar = true
         })
     },
     handleSignIn () {
@@ -335,7 +335,7 @@ export default {
       }
 
       // CODE BELOW IS FOR DISPLAYING LOADING STATUS WHEN FETCHING WHITEBOARDS
-      
+
       // const path = this.$route.path
       // const pathParts = path.split('/')
 
@@ -355,5 +355,3 @@ export default {
   }
 };
 </script>
-
-
