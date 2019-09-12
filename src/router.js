@@ -14,10 +14,6 @@ export default new Router({
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
     {
-      path: '/playground',
-      component: () => import(/* webpackChunkName: "tutorial" */ './components/VuetifyMenu.vue')
-    },
-    {
       name: "Classmates",
       path: '/:class_id/classmates',
       component: () => import(/* webpackChunkName: "ranking" */ './views/Classmates.vue')
@@ -29,14 +25,6 @@ export default new Router({
     {
       path: '/:class_id/workspace/:id',
       component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue'),
-      // beforeEnter: (to, from, next) => {
-      //   if (store.state.user) {
-      //     next()
-      //   } else {
-      //     next({ name: "Classmates" })
-      //   }
-      //   // console.log("to, from, next =", to, from, next)
-      // }
     },
     {
       path: '/:class_id/:video_id',
