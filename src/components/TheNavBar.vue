@@ -1,6 +1,5 @@
 <template>
   <nav>
-
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -90,8 +89,8 @@
         </v-btn>
       </template>
 
-      <!-- <div v-if="showTabs"> -->
-        <template v-slot:extension>
+     
+        <!-- <template v-slot:extension>
 
           <v-tabs
             v-if="showTabs"
@@ -109,7 +108,7 @@
             </v-tab>
           </v-tabs>
         </template>
-      <!-- </div> -->
+    -->
 
     </v-app-bar>
   </nav>
@@ -141,24 +140,6 @@ export default {
       const path = this.$route.path
       const pathParts = path.split('/')
       return pathParts[2] == "gallery"
-      // if (pathParts[2])
-      // CODE BELOW IS FOR DISPLAYING LOADING STATUS WHEN FETCHING WHITEBOARDS
-      
-      // const path = this.$route.path
-      // const pathParts = path.split('/')
-
-
-      // if (pathParts[2] == "answer") {
-      //   this.loadingAnimation = true;
-      //   this.$root.$on(
-      //     "finish-loading-animation",
-      //     () => (this.loadingAnimation = false)
-      //   );
-      // } else if (pathParts[2] == "workspace") {
-      //   this.loadingAnimation = false;
-      // } else {
-      //   this.loadingAnimation = false;
-      // }
     }
   },
   data () {
@@ -258,10 +239,8 @@ export default {
       const path = this.$route.path
       const pathParts = path.split('/')
       if (pathParts[2] == "gallery") {
-        console.log("showTabs =", true)
         this.showTabs = true
       } else {
-        console.log("showTAbs =", false)
         this.showTabs = false 
       }
     }

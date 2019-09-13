@@ -1,20 +1,23 @@
 <template>
   <div class="video" style="height: 100%; width: 100%;">
-    <animation v-if="strokes"
-                ref="animation"
-                :strokes="strokes"
-                :isFullscreen="false"
-                :canvasID="canvasID"
-                @animation-loaded="animationLoaded=true"
-                @animation-finished="handleEvent()"/>
+    <animation 
+      v-if="strokes"
+      ref="animation"
+      :strokes="strokes"
+      :isFullscreen="false"
+      :canvasID="canvasID"
+      @animation-loaded="animationLoaded=true"
+      @animation-finished="handleEvent()"
+    />
 
-    <audio-recorder v-if="audioURL"
-                ref="audio-recorder"
-                :audioURL="audioURL"
-                @recorder-loading="recorderLoaded=false"
-                @play="syncAnimation()"
-                @recorder-loaded="recorderLoaded=true"/>
-      
+    <audio-recorder 
+      v-if="audioURL"
+      ref="audio-recorder"
+      :audioURL="audioURL"
+      @recorder-loading="recorderLoaded=false"
+      @play="syncAnimation()"
+      @recorder-loaded="recorderLoaded=true"
+    />
   </div>
 </template>
 
@@ -36,20 +39,17 @@ export default {
     Animation,
     AudioRecorder
   },
-  computed: {
-    ...mapState(["user"]),
-    resourcesLoaded() {
-      return this.recorderLoaded && this.animationLoaded;
-    }
-  },
-  created () {
-    // console.log("strokes =", strokes)
-  },
   data () {
     return {
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
+    }
+  },
+  computed: {
+    ...mapState(["user"]),
+    resourcesLoaded() {
+      return this.recorderLoaded && this.animationLoaded;
     }
   },
   methods: {
@@ -61,7 +61,6 @@ export default {
         const animation = this.$refs['animation']
         animation.startSync(audioRecorder.getAudioTime)
         this.syncedVisualAndAudio = true
-        
       }
     },
     quickplay () {

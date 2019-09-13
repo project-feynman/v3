@@ -16,15 +16,16 @@
           <v-list-item-content>Home</v-list-item-content>
         </v-list-item>
 
-           <v-list-item link :to="`/${this.$route.params.class_id}/classmates`">
-          <v-list-item-icon><v-icon>mdi-account</v-icon></v-list-item-icon>
-          <v-list-item-content>Classmates</v-list-item-content>
-        </v-list-item>   
-        
         <v-list-item link :to="`/${this.$route.params.class_id}/gallery`">
           <v-list-item-icon><v-icon>mdi-account-group-outline</v-icon></v-list-item-icon>
           <v-list-item-content>Gallery</v-list-item-content>
         </v-list-item>
+
+        <v-list-item link :to="`/${this.$route.params.class_id}/classmates`">
+          <v-list-item-icon><v-icon>mdi-account</v-icon></v-list-item-icon>
+          <v-list-item-content>Classmates</v-list-item-content>
+        </v-list-item>   
+        
 
         <v-divider></v-divider>
         <!-- WORKSPACES -->
@@ -33,7 +34,7 @@
             v-for="(workspace, i) in workspaces" :key="workspace['.key']"
             :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
           >
-            workspace {{ i }}
+            Workspace {{ i }}
             <template v-if="workspace.members">
               <v-list-item-content>
                 <v-icon 

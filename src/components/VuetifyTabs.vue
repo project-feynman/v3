@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card color="rgb(225, 233, 247)">
     <v-tabs
       v-model="tab"
       background-color="red lighten-2"
@@ -12,56 +12,39 @@
             :value="tab"
             @input="newValue => updateTabName(newValue, i)"
           ></v-text-field>
-        </v-flex>
+        </v-flex>   
       </template>
-
       <template v-else>
-        <v-tab key="lastTab">
-        New Content
-      </v-tab>
-
-        <v-tab
-          v-for="(tab, i) in tabs"
-          :key="i"
-        >
+        <v-tab key="firstTab">
+          NEW
+        </v-tab>
+        <v-tab v-for="(tab, i) in tabs" :key="i">
           {{ tab }}
         </v-tab>
+        <v-spacer></v-spacer>
       </template>
-
- 
     </v-tabs>
+
     <v-card-text class="text-center">
-      <v-btn 
-        v-if="isEditting"
-        @click="handleSave()"
-        text 
-      >
-        SAVE CHANGES
-      </v-btn>
-      <v-btn text v-else @click="isEditting = true">EDIT TABS</v-btn>
       <template v-if="isEditting">
-        <v-btn text @click="addTab()">Add Tab</v-btn>
-        <v-btn text @click="removeTab()">Remove Tab</v-btn>
+        <v-btn @click="handleSave()">SAVE CHANGES</v-btn>
+        <v-btn @click="addTab()">ADD TAB</v-btn>
+        <v-btn @click="removeTab()">REMOVE TAB</v-btn>
       </template>
-      <!-- <v-divider class="mx-4" vertical></v-divider> -->
+      <v-btn v-else @click="isEditting = true">EDIT TABS</v-btn>
     </v-card-text>
 
     <v-tabs-items v-model="tab">
-          <!-- EVERYTHING -->
       <v-tab-item>
-        <beta-gallery :tabNumber="0"></beta-gallery>
+        <beta-gallery :tabNumber="0" :tabs="tabs"></beta-gallery>
       </v-tab-item>
 
-      <v-tab-item
-        v-for="(tab, i) in tabs"
-        :key="`tab-item--${i}`"
-      > 
-        <!-- <slot> -->
-          <h1>{{ i }}</h1>
-          <beta-gallery v-if="tab == i" :tabNumber="i+1"></beta-gallery>
+      <v-tab-item v-for="(tab, i) in tabs" :key="`tab-item--${i}`"> 
+        <beta-gallery :tabNumber="i+1" :tabs="tabs"></beta-gallery>
         <!-- </slot> -->
       </v-tab-item>
     </v-tabs-items>
+
   </v-card>
 </template>
 
@@ -69,12 +52,7 @@
 import BetaGallery from "@/components/BetaGallery.vue"
   export default {
     props: {
-      tabs: {
-        type: Array,
-        // default () {
-        //   return ["tab1", "tab2", "tab3"]
-        // }
-      }
+      tabs: Array
     },
     components: {
       BetaGallery
@@ -90,7 +68,8 @@ import BetaGallery from "@/components/BetaGallery.vue"
     methods: {
       handleSave () {
         this.isEditting = false
-        if (this.localTabs != this.tabs) {
+        if (this.localTabs !== this.tabs) {
+          console.log("updating tabs")
           this.$emit('tabs-rename', this.localTabs)
         }
       },

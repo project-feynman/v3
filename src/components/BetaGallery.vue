@@ -24,11 +24,13 @@
                               @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                               @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
                               @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
+                              @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
                               :title="whiteboards[i].title"
                               :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
                               :paragraph="whiteboards[i].paragraph"
                               :hasPermission="checkPermission(whiteboards[i])"
-                              :hasDeleteButton="checkPermission(whiteboards[i])">
+                              :tabs="tabs"
+                              :tabNumber="tabNumber">
                   <beta-doodle-video v-if="slotProps.strokes"
                                     :ref="`doodle-video-${i}`"
                                     :strokes="slotProps.strokes"
@@ -46,20 +48,25 @@
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
             <renderless-component :whiteboardID="whiteboards[i-1]['.key']">
               <template slot-scope="slotProps">
-                <vuetify-card :actionButtons="['PREVIEW', 'FULL VIDEO']"
-                              @action="buttonName => handleAction(buttonName, whiteboards[i-1], i-1)" 
-                              @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i-1])"
-                              @tab-change="newValue => handleTabChange(newValue, whiteboards[i-1])"
-                              :title="whiteboards[i-1].title"
-                              :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
-                              :paragraph="whiteboards[i-1].paragraph"
-                              :hasPermission="checkPermission(whiteboards[i])"
-                              :hasDeleteButton="checkPermission(whiteboards[i])">
-                  <beta-doodle-video v-if="slotProps.strokes"
-                                    :ref="`doodle-video-${i-1}`"
-                                    :strokes="slotProps.strokes"
-                                    :canvasID="i-1">
-                  </beta-doodle-video>
+                <vuetify-card 
+                  :actionButtons="['PREVIEW', 'FULL VIDEO']"
+                  @action="buttonName => handleAction(buttonName, whiteboards[i-1], i-1)" 
+                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i-1])"
+                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i-1])"
+                 
+                  :title="whiteboards[i-1].title"
+                  :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
+                  :paragraph="whiteboards[i-1].paragraph"
+                  :hasPermission="checkPermission(whiteboards[i])"
+                  :tabs="tabs"
+                  :tabNumber="tabNumber"
+                >
+                  <beta-doodle-video 
+                    v-if="slotProps.strokes"
+                    :ref="`doodle-video-${i-1}`"
+                    :strokes="slotProps.strokes"
+                    :canvasID="i-1"
+                  />
                 </vuetify-card>
                 </template>
             </renderless-component>
@@ -72,12 +79,14 @@
                 <vuetify-card :actionButtons="['PREVIEW', 'FULL VIDEO']"
                               @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                               @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
-                              @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
+                      
+                              @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
                               :title="whiteboards[i].title" 
                               :description="`By ${whiteboards[i].authorName || 'Anonymous' }`"
                               :paragraph="whiteboards[i].paragraph"
                               :hasPermission="checkPermission(whiteboards[i])"
-                              :hasDeleteButton="checkPermission(whiteboards[i])">
+                              :tabs="tabs"
+                              :tabNumber="tabNumber">
                   <beta-doodle-video v-if="slotProps.strokes"
                                     :ref="`doodle-video-${i}`"
                                     :strokes="slotProps.strokes"
@@ -108,10 +117,8 @@ import "firebase/storage"
 
 export default {
   props: {
-    tabNumber: {
-      type: Number,
-      // default () { return 0 }
-    }
+    tabNumber: Number,
+    tabs: Array
   },
   components: {
     VoiceChat,
@@ -149,6 +156,9 @@ export default {
     await this.$binding("whiteboards", ref)
   },
   methods: {
+    saveTabNumber (newValue, { ".key": videoID }) {
+      console.log("newValue =", newValue)
+    },
     handleTabChange (newValue, { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
       ref.update({
