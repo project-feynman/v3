@@ -385,7 +385,8 @@ export default {
         authorUID: this.user.uid,
         authorEmail: this.user.email,
         fromClass: classID,
-        isSaved: true
+        isSaved: true,
+        tabNumber: 0
         // thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       }
       if (this.user.name) {

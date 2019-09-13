@@ -13,19 +13,9 @@
       </v-card>
     </v-dialog>
 
-    <!-- VUETIFY TABS -->
-    <template v-if="classDoc != {}">
-      <vuetify-tabs 
-        v-if="classDoc.tabs"
-        :tabs="classDoc.tabs"
-        @tabs-rename="newValues => renameTabs(newValues)"
-      >
-      </vuetify-tabs>
-    </template>
-
-    <!-- <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
+    <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
       <template v-for="(course, i) in whiteboards">
-
+        <!-- HANDLE EDGE CASE -->
         <v-layout v-if="i == (whiteboards.length - 1) && i%2 != 1" :key="whiteboards[i]['.key']" :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0>
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
             <renderless-component :whiteboardID="whiteboards[i]['.key']">
@@ -33,6 +23,7 @@
                 <vuetify-card :actionButtons="['PREVIEW', 'FULL VIDEO']"
                               @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                               @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
+                              @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
                               :title="whiteboards[i].title"
                               :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
                               :paragraph="whiteboards[i].paragraph"
@@ -58,6 +49,7 @@
                 <vuetify-card :actionButtons="['PREVIEW', 'FULL VIDEO']"
                               @action="buttonName => handleAction(buttonName, whiteboards[i-1], i-1)" 
                               @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i-1])"
+                              @tab-change="newValue => handleTabChange(newValue, whiteboards[i-1])"
                               :title="whiteboards[i-1].title"
                               :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
                               :paragraph="whiteboards[i-1].paragraph"
@@ -80,6 +72,7 @@
                 <vuetify-card :actionButtons="['PREVIEW', 'FULL VIDEO']"
                               @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                               @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
+                              @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
                               :title="whiteboards[i].title" 
                               :description="`By ${whiteboards[i].authorName || 'Anonymous' }`"
                               :paragraph="whiteboards[i].paragraph"
@@ -97,11 +90,7 @@
 
         </v-layout>
       </template>
-    </v-container>  -->
-
-
-
-
+    </v-container>
   </div>
 </template>
 
@@ -118,6 +107,12 @@ import "firebase/functions"
 import "firebase/storage"
 
 export default {
+  props: {
+    tabNumber: {
+      type: Number,
+      // default () { return 0 }
+    }
+  },
   components: {
     VoiceChat,
     VuetifyCard,
@@ -131,7 +126,6 @@ export default {
       video: null,
       audioURL: "",
       whiteboards: [],
-      classDoc: {},
       whiteboardPopup: false,
       currentVideoID: ""
     }
@@ -141,33 +135,36 @@ export default {
       return this.$store.state.user
     }
   },
-  created () {
+  async created () {
     // get all whiteboards associated with a course 
     const classID = this.$route.params.class_id
-    const ref = db.collection("whiteboards").where("fromClass", "==", classID)
-                                            .where("title", "==", "Sun, Lake and Mountain")
-    const classRef = db.collection("classes").doc(classID)
-    this.$binding("whiteboards", ref)
-    this.$binding("classDoc", classRef)
+    let ref; 
+    if (this.tabNumber != null) {
+      console.log("this.tabNumber =", this.tabNumber)
+      ref = db.collection("whiteboards").where("fromClass", "==", classID).where("tabNumber", "==", this.tabNumber)
+    } else {
+      console.log("retrieving all uncategorized whiteboards")
+      ref = db.collection("whiteboards").where("fromClass", "==", classID).where("tabNumber", "==", null)
+    }
+    await this.$binding("whiteboards", ref)
   },
   methods: {
-    handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID) {
+    handleTabChange (newValue, { ".key": videoID }) {
+      const ref = db.collection("whiteboards").doc(videoID)
+      ref.update({
+        tabNumber: newValue
+      })
+    },
+    async handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID) {
       if (buttonName == "FULL VIDEO") {
         this.currentVideoID = videoID 
         this.whiteboardPopup = true
       } else if (buttonName == "PREVIEW") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()
-      } else if (buttonName == "delete") {
+      } else if (buttonName == "DELETE") {
         this.deleteVideo(videoID, audioPath)
       }
-    },
-    renameTabs (newValues) {
-      const ref = db.collection("classes").doc(this.$route.params.class_id)
-      console.log("newValues =", newValues)
-      ref.update({
-        tabs: newValues
-      })
     },
     async saveParagraph (newValue, { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
@@ -177,12 +174,12 @@ export default {
     },
     async deleteVideo (ID, audioPath) {
       const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete')
-      recursiveDelete({ path: `whiteboards/${ID}` })
+      await recursiveDelete({ path: `whiteboards/${ID}` })
       // delete audio 
       if (audioPath) {
         const storageRef = firebase.storage().ref()
         const audioFileRef = storageRef.child(`recordings/${audioPath}`)
-        audioFileRef.delete()
+        await audioFileRef.delete()
       }      
     },
     checkPermission (video) {

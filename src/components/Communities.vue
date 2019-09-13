@@ -23,7 +23,7 @@
                                    :canvasID="i">
                 </beta-doodle-video>
               </vuetify-card>
-              </template>
+            </template>
           </renderless-component>
         </v-flex>
       </v-layout>
@@ -56,7 +56,7 @@
         <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2); margin-left: ${getGapWidth()}px`">
           <renderless-component :whiteboardID="courses[i].introVideoID">
             <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE',]"
+              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
                             @action="buttonName => handleAction(buttonName, courses[i], i)" 
                             @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
                             :title="courses[i].courseNumber" 

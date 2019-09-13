@@ -15,38 +15,64 @@
         </v-img>
         <v-card-title primary-title>
           <div>
-            <div class="display-1">{{ title }}</div>
-            <span class="subheading grey--text">{{ description }}</span>
+            <div 
+              v-if="!isEditting" 
+              class="display-1"
+            >
+              {{ title }}
+            </div>
+            <v-text-field 
+              v-else 
+              v-model="localTitle" 
+              label="Title"
+            >
+            </v-text-field>
+            <!-- DESCRIPTION -->
+            <span class="subtitle-1 grey--text">
+              {{ description }}
+            </span>
           </div>
         </v-card-title>
 
         <v-card-actions>
-          <v-btn v-for="button in actionButtons" :key="button" @click="e => emitAction(e)" flat color="secondary">
+          <v-btn v-for="button in actionButtons" :key="button" 
+                 @click="e => emitAction(e)" 
+                 text color="secondary" small class="subtitle-2"
+          >
             {{ button }}
           </v-btn>
           <!-- EDITTING -->
           <template v-if="hasPermission">
-            <v-btn v-if="!isEditting" @click="startEdit()" flat>EDIT</v-btn>
-            <v-btn v-else-if="isEditting" @click="event => handleSave(event)" flat>SAVE</v-btn>
-            <v-btn @click="e => emitAction(e)" flat color="red">delete</v-btn>
+            <v-btn v-if="!isEditting" @click="startEdit()" 
+                   text small class="subtitle-2"
+            >
+              EDIT
+            </v-btn>
+            <v-btn v-else-if="isEditting" 
+                   @click="event => handleSave(event)" 
+                   text small class="subtitle-2"
+            >
+              SAVE CHANGES
+            </v-btn>
+            <v-btn @click="e => emitAction(e)" 
+                   text color="red" small class="subtitle-2"
+            >
+              DELETE
+            </v-btn>
           </template>
           
-          <!--  OLD IMPLEMENTATION -->
           <v-spacer></v-spacer>
-
           <!-- <v-btn v-if="hasDeleteButton" color="red" icon @click="show = !show">
             <v-icon class="white--text" @click="e => emitAction(e)">delete</v-icon>
           </v-btn> -->
 
-
           <div class="flex-grow-1"></div>
-          <v-btn
+          <!-- <v-btn
             icon
             @click="show = !show"
-    
           >
             <v-icon color="black">{{ show ? 'expand_less' : 'expand_more' }}</v-icon>
-          </v-btn>
+          </v-btn> -->
         </v-card-actions>
 
          <v-slide-y-transition>
@@ -58,11 +84,26 @@
               </template>
               <template v-else>
                 <v-textarea
+                  class="px-3"
                   name="input-7-1"
+                  label="Paragraph"
                   :value="paragraph"
                   @change="newValue => localParagraph = newValue"
                   ref="paragraph"
                 ></v-textarea>
+
+                  <div v-if="numberOfTabs">
+                    <v-radio-group v-model="radioGroup"
+                                   @change="newValue => $emit('tab-change', newValue)">
+                    <v-radio
+                      v-for="n in numberOfTabs"
+                      class="pl-3"
+                      :key="n"
+                      :label="`Tab ${n}`"
+                      :value="n"
+                    ></v-radio>
+                  </v-radio-group>
+              </div>
               
               </template>
             </div>
@@ -74,6 +115,18 @@
 <script>
 export default {
   props: {
+    numberOfTabs: {
+      type: Number,
+      default () {
+        return 3 
+      }
+    },
+    editMode: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
     title: String,
     imageURL: String,
     description: {
@@ -106,11 +159,14 @@ export default {
     }
   },
   data: () => ({
-    show: false,
+    show: true,
+    localTitle: '',
     localParagraph: '',
-    isEditting: false
+    isEditting: false,
+    radioGroup: 1
   }),
   created () {
+    this.localTitle = this.title
     this.localParagraph = this.paragraph
   },
   methods: {

@@ -26,7 +26,6 @@ import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
 import LoginPopup from '@/components/LoginPopup.vue'
 import Communities from '@/components/Communities.vue'
-
 export default {
   components: {
     Animation,
@@ -53,7 +52,6 @@ export default {
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
 }
-
 .cursor-pointer {
   cursor: pointer;
 }

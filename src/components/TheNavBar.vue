@@ -14,8 +14,9 @@
                   :newAccount="false"
                   @sign-in="payload => signIn(payload)"
                   @create-account="payload => createAccount(payload)"/>
+                  
     <!-- NAVBAR  -->
-    <v-app-bar v-if="showNavbar" app color="white" extended extension-height="2" id="navbar">
+    <v-app-bar v-if="showNavbar" app color="white" id="navbar">
       <img src="favicon.ico">
       <v-toolbar-title class="headline font-weight-regular ml-2">
         {{ $route.params.class_id ? $route.params.class_id : "ExplainMIT" }}
@@ -89,58 +90,28 @@
         </v-btn>
       </template>
 
-    </v-app-bar>
+      <!-- <div v-if="showTabs"> -->
+        <template v-slot:extension>
 
-
-
-    <v-navigation-drawer v-if="$route.path != '/'" v-model="drawerOpen" app stateless >
-      <v-list class="pb-0">
-        
-      </v-list>
-
-      <v-list three-line subheader>
-
-        <!-- WORKSPACES -->
-        <v-list-group prepend-icon="phone_in_talk" value="true">
-          <v-list-tile slot="activator">
-          <!-- <v-list-tile> -->
-            <v-list-tile-title>Workspaces ({{ workspaces.length }})</v-list-tile-title>
-          </v-list-tile>
-
-          <v-list-tile
-            v-for="(workspace, idx) in workspaces"
-            :key="workspace['.key']"
-            router
-            :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
+          <v-tabs
+            v-if="showTabs"
+            centered
+            slider-color="yellow"
+            background-color="transparent"
           >
-            <v-list-tile-content>
-            <!-- TITLE -->
-            <template v-if="workspace.members">
-              <v-list-tile-title>
-                Workspace {{ idx }}
-              </v-list-tile-title>
-          
-            </template>
-            <div v-else class="text-xs-center">Workspace {{ idx }}</div>
-              <!-- SUBTITLE  -->
-              <v-list-tile-sub-title>
-                <template v-if="workspace.members">
-                  <v-icon v-for="member in workspace.members" :key="member.email" 
-                          :color="member.color" class="ml-3">
-                    person
-                  </v-icon>
-                  <!-- <div v-for="member in workspace.members" :key="member.email" class="ml-3">
-                    {{ member.email }}
-                  </div> -->
-                </template>
-              </v-list-tile-sub-title>
+    
+            <v-tab
+              v-for="i in 3"
+              :key="i"
+              :href="`#tab-${i}`"
+            >
+              Item {{ i }}
+            </v-tab>
+          </v-tabs>
+        </template>
+      <!-- </div> -->
 
-            </v-list-tile-content>
-          </v-list-tile>
-          
-        </v-list-group>
-      </v-list>
-    </v-navigation-drawer>
+    </v-app-bar>
   </nav>
 </template>
 
@@ -152,6 +123,7 @@ import 'firebase/auth'
 import NewClassPopup from '@/components/NewClassPopup.vue'
 import LoginPopup from "@/components/LoginPopup.vue"
 import VuetifyMenu from "@/components/VuetifyMenu.vue"
+import { truncate } from 'fs';
 
 
 export default {
@@ -161,9 +133,32 @@ export default {
     VuetifyMenu
   },
   computed: {
-    ...mapState(['user', "isFetchingUser"]),
+    ...mapState(["user", "isFetchingUser"]),
     classID () {
       return this.$route.params.class_id
+    },
+     isGallery () {
+      const path = this.$route.path
+      const pathParts = path.split('/')
+      return pathParts[2] == "gallery"
+      // if (pathParts[2])
+      // CODE BELOW IS FOR DISPLAYING LOADING STATUS WHEN FETCHING WHITEBOARDS
+      
+      // const path = this.$route.path
+      // const pathParts = path.split('/')
+
+
+      // if (pathParts[2] == "answer") {
+      //   this.loadingAnimation = true;
+      //   this.$root.$on(
+      //     "finish-loading-animation",
+      //     () => (this.loadingAnimation = false)
+      //   );
+      // } else if (pathParts[2] == "workspace") {
+      //   this.loadingAnimation = false;
+      // } else {
+      //   this.loadingAnimation = false;
+      // }
     }
   },
   data () {
@@ -180,7 +175,8 @@ export default {
       loadingAnimation: true,
       snackbar: false,
       snackbarMessage: '',
-      menu: false
+      menu: false,
+      showTabs: false
     }
   },
   watch: {
@@ -193,11 +189,6 @@ export default {
       this[buttonState] = !this[buttonState]
       this.$root.$on('delete-whiteboard-strokes-success', () => (this[buttonState] = false))
       this.clickedButtonStateName = null
-    },
-    user () {
-      // if (!this.user) {
-      //   this.$router.push(`${this.$route.params.class_id}/ranking`)
-      // }
     }
   },
   methods: {
@@ -256,34 +247,23 @@ export default {
     updateNavComponents () {
       const classID = this.$route.params.class_id
       // sidenav content should not reload everytime the user navigates between the workspaces, but should update
-      // everytime the user visits a different TA page
+      // everytime the user visits a different commmunity
       if (classID && classID != this.prevClassID) {
         // update sidenav content
         const classRef = db.collection('classes').doc(classID)
         this.$binding('workspaces', classRef.collection('workspaces'))
-        // this.$binding('explanations', classRef.collection('videos'))
         this.$binding('explanations', db.collection("whiteboards").where("fromClass", "==", classID))
-        this.prevClassID = classID
-        setTimeout(() => (this.drawerOpen = true), 0) // quick-fix for whiteboard touch detection offset bug
+        this.prevClassID = classID 
       }
-
-      // CODE BELOW IS FOR DISPLAYING LOADING STATUS WHEN FETCHING WHITEBOARDS
-      
-      // const path = this.$route.path
-      // const pathParts = path.split('/')
-
-
-      // if (pathParts[2] == "answer") {
-      //   this.loadingAnimation = true;
-      //   this.$root.$on(
-      //     "finish-loading-animation",
-      //     () => (this.loadingAnimation = false)
-      //   );
-      // } else if (pathParts[2] == "workspace") {
-      //   this.loadingAnimation = false;
-      // } else {
-      //   this.loadingAnimation = false;
-      // }
+      const path = this.$route.path
+      const pathParts = path.split('/')
+      if (pathParts[2] == "gallery") {
+        console.log("showTabs =", true)
+        this.showTabs = true
+      } else {
+        console.log("showTAbs =", false)
+        this.showTabs = false 
+      }
     }
   }
 };
