@@ -6,10 +6,6 @@
           <v-btn @click="whiteboardPopup = false">EXIT</v-btn>
         </div>
         <doodle-video :videoID="currentVideoID"/>
-        <!-- <whiteboard v-if="loadCanvas"
-                    ref="whiteboard"
-                    :whiteboardID="workspace.whiteboardID"
-                    @close-whiteboard="whiteboardPopup = false"/> -->
       </v-card>
     </v-dialog>
 
@@ -20,24 +16,28 @@
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
             <renderless-component :whiteboardID="whiteboards[i]['.key']">
               <template slot-scope="slotProps">
-                <vuetify-card :actionButtons="['PREVIEW', 'FULL VIDEO']"
-                              @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
-                              @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
-                              @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
-                              @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
-                              :title="whiteboards[i].title"
-                              :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
-                              :paragraph="whiteboards[i].paragraph"
-                              :hasPermission="checkPermission(whiteboards[i])"
-                              :tabs="tabs"
-                              :tabNumber="tabNumber">
-                  <beta-doodle-video v-if="slotProps.strokes"
-                                    :ref="`doodle-video-${i}`"
-                                    :strokes="slotProps.strokes"
-                                    :canvasID="i">
+                <vuetify-card 
+                  :actionButtons="['PREVIEW', 'FULL VIDEO']"
+                  @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
+                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
+                  @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
+                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
+                  :title="whiteboards[i].title"
+                  :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
+                  :paragraph="whiteboards[i].paragraph"
+                  :hasPermission="checkPermission(whiteboards[i])"
+                  :tabs="tabs"
+                  :tabNumber="tabNumber"
+                >
+                  <!-- not sure if ref is actually used -->
+                  <beta-doodle-video 
+                    v-if="slotProps.strokes"
+                    :ref="`doodle-video-${i}`"
+                    :strokes="slotProps.strokes"
+                    :canvasID="`${tabNumber}-${i}`">
                   </beta-doodle-video>
                 </vuetify-card>
-                </template>
+              </template>
             </renderless-component>
           </v-flex>
         </v-layout>
@@ -53,7 +53,6 @@
                   @action="buttonName => handleAction(buttonName, whiteboards[i-1], i-1)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i-1])"
                   @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i-1])"
-                 
                   :title="whiteboards[i-1].title"
                   :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
                   :paragraph="whiteboards[i-1].paragraph"
@@ -65,7 +64,7 @@
                     v-if="slotProps.strokes"
                     :ref="`doodle-video-${i-1}`"
                     :strokes="slotProps.strokes"
-                    :canvasID="i-1"
+                    :canvasID="`${tabNumber}-${i-1}`"
                   />
                 </vuetify-card>
                 </template>
@@ -76,21 +75,24 @@
             <renderless-component :whiteboardID="whiteboards[i]['.key']">
               <template slot-scope="slotProps">
                 <h1>{{ whiteboards[i].ownerName }}</h1>
-                <vuetify-card :actionButtons="['PREVIEW', 'FULL VIDEO']"
-                              @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
-                              @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
-                      
-                              @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
-                              :title="whiteboards[i].title" 
-                              :description="`By ${whiteboards[i].authorName || 'Anonymous' }`"
-                              :paragraph="whiteboards[i].paragraph"
-                              :hasPermission="checkPermission(whiteboards[i])"
-                              :tabs="tabs"
-                              :tabNumber="tabNumber">
-                  <beta-doodle-video v-if="slotProps.strokes"
-                                    :ref="`doodle-video-${i}`"
-                                    :strokes="slotProps.strokes"
-                                    :canvasID="i">
+                <vuetify-card 
+                  :actionButtons="['PREVIEW', 'FULL VIDEO']"
+                  @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
+                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
+                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
+                  :title="whiteboards[i].title" 
+                  :description="`By ${whiteboards[i].authorName || 'Anonymous' }`"
+                  :paragraph="whiteboards[i].paragraph"
+                  :hasPermission="checkPermission(whiteboards[i])"
+                  :tabs="tabs"
+                  :tabNumber="tabNumber"
+                >
+                  <beta-doodle-video 
+                    v-if="slotProps.strokes"
+                    :ref="`doodle-video-${i}`"
+                    :strokes="slotProps.strokes"
+                    :canvasID="`${tabNumber}-${i}`"
+                  >
                   </beta-doodle-video>
                 </vuetify-card>
               </template>
@@ -147,10 +149,8 @@ export default {
     const classID = this.$route.params.class_id
     let ref; 
     if (this.tabNumber != null) {
-      console.log("this.tabNumber =", this.tabNumber)
       ref = db.collection("whiteboards").where("fromClass", "==", classID).where("tabNumber", "==", this.tabNumber)
     } else {
-      console.log("retrieving all uncategorized whiteboards")
       ref = db.collection("whiteboards").where("fromClass", "==", classID).where("tabNumber", "==", null)
     }
     await this.$binding("whiteboards", ref)

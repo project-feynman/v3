@@ -33,7 +33,7 @@ export default {
   props: {
     strokes: Array,
     audioURL: String,
-    canvasID: Number
+    canvasID: String
   },
   components: {
     Animation,
