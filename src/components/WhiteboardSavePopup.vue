@@ -26,15 +26,10 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <template v-if="!shareableURL && !isSavingVideo">
-          <v-btn @click="handleClose()"
-                 color="green darken-1"
-                 flat="flat">
+          <v-btn @click="handleClose()" color="green darken-1" text>
             CANCEL
           </v-btn>
-
-          <v-btn @click="handleSave()"
-                 color="green darken-1"
-                 flat="flat">
+          <v-btn @click="handleSave()" color="green darken-1" text>
             SAVE
           </v-btn>
         </template>
