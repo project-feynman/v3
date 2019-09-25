@@ -3,7 +3,7 @@
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" flat>
+      <v-btn @click="snackbar = false" color="pink" text>
         CLOSE
       </v-btn>
     </v-snackbar>
@@ -83,7 +83,7 @@
           v-else-if="!user"  
           @click="handleSignIn()" 
           class="grey--text text--darken-2"
-          flat
+          text
         >
           SIGN IN
         </v-btn>

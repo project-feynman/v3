@@ -17,7 +17,7 @@
             </div>
             <v-text-field v-else v-model="localTitle" label="Title"></v-text-field>
             <!-- DESCRIPTION -->
-            <span class="subtitle-1 grey--text">
+            <span class="title font-weight-regular">
               {{ description }}
             </span>
           </div>
