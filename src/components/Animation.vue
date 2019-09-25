@@ -14,8 +14,6 @@
                     height: 100%;
                     background-color: rgb(62, 66, 66)">
       </canvas>
-      <!-- <div class="blue-box">12</div> -->
-      <!-- <div class="yellow-square"></div> -->
     </template>
   </div>
 </template>
@@ -34,8 +32,8 @@ export default {
       default: true
     },
     canvasID: {
-      type: Number,
-      default: 1
+      type: String,
+      default: "1"
     }
   },
   mixins: [DrawMethods],
@@ -100,6 +98,7 @@ export default {
   },
   methods: {
     async initData () {
+      console.log("initData()")
       if (!this.strokes) {
         return 
       }
@@ -107,6 +106,7 @@ export default {
       this.allStrokes = this.strokes
       this.$emit('animation-loaded')
       if (this.ctx) {
+        console.log("this.ctx exists, about to draw")
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.rescaleCanvas()
