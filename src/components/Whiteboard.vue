@@ -379,7 +379,6 @@ export default {
       // take a screenshot of the whiteboard to be used as the "preview" of the video
       // const dataURL = this.canvas.toDataURL()
       // const videoThumbnail = this.canvas.toDataURL()
-
       let metadata = {
         title: videoTitle, 
         authorUID: this.user.uid,

@@ -29,9 +29,9 @@
           @create-class="courseNumber => createClass(courseNumber)"
         />
 
-        <!-- <v-btn @click="newClassPopup = true" dark color="grey">
+        <v-btn @click="newClassPopup = true" dark color="grey">
           CREATE CLASS
-        </v-btn> -->
+        </v-btn>
         
           <!-- <v-btn icon>
             <v-icon color="grey darken-2">notifications</v-icon>
@@ -63,10 +63,12 @@
 
       <template v-if="!isFetchingUser">
         
-        <vuetify-menu v-if="user"
-                      :user="user"
-                      @save="payload => updateUser(payload)"
-                      @sign-out="signOut()">
+        <vuetify-menu 
+          v-if="user"
+          :user="user"
+          @save="payload => updateUser(payload)"
+          @sign-out="signOut()"
+        >
           <template v-slot:default="{ on }"> 
             <v-btn 
               v-on="on"
@@ -216,7 +218,13 @@ export default {
     },
     createClass (courseNumber) {
       const ref = db.collection('classes').doc(courseNumber)
-      ref.set({ courseNumber })
+      ref.set({ 
+        courseNumber,
+        description: "description",
+        introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
+        paragraph: "paragraph",
+        tabs: ["Concepts"]
+      })
     },
     signOut () {
       firebase.auth().signOut()

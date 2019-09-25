@@ -16,8 +16,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn @click="$emit('input', !value)" color="blue darken-1" flat >Cancel</v-btn>
-          <v-btn @click="createClass()" color="blue darken-1" flat>Create</v-btn>
+          <v-btn @click="$emit('input', !value)" color="blue darken-1" text >Cancel</v-btn>
+          <v-btn @click="createClass()" color="blue darken-1" text>Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

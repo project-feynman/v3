@@ -1,6 +1,5 @@
 <template>
   <v-app :dark="useDarkMode">
-    <!-- <nav-components/> -->
     <the-nav-bar/>
     <the-side-nav/>
     <v-content id="background">
@@ -10,7 +9,6 @@
 </template>
 
 <script>
-import NavComponents from './components/NavComponents.vue'
 import TheNavBar from "./components/TheNavBar.vue"
 import TheSideNav from "./components/TheSideNav.vue"
 
@@ -18,7 +16,6 @@ export default {
   name: 'App',
   components: {
     TheNavBar,
-    NavComponents,
     TheSideNav
   },
   computed: {
