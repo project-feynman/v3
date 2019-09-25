@@ -34,16 +34,15 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn @click="$emit('input', !value)" color="blue darken-1" flat >
+          <v-btn @click="$emit('input', !value)" color="blue darken-1" text>
             CANCEL
           </v-btn>
-          <v-btn @click="$emit('sign-in', { email,  password })" color="blue darken-1" flat>
+          <v-btn @click="$emit('sign-in', { email,  password })" color="blue darken-1" text>
             LOG IN
           </v-btn>
-          <v-btn @click="$emit('create-account', { email,  password })" color="purple" flat>
+          <v-btn @click="$emit('create-account', { email,  password })" color="purple" text>
             CREATE ACCOUNT
           </v-btn>
-         
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -10,25 +10,20 @@
       <v-spacer></v-spacer>
       <v-toolbar-items v-if="whiteboardDoc">
         <template v-if="!whiteboardDoc.isAnswered">
-          <swatches v-model="color"
-                    :colors="colors"
-                    :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-                    inline
-                    background-color="rgba(0, 0, 0, 0)"
-                    swatch-size="55"/>
-
-          <v-btn @click="useEraser()">
-            ERASER
-          </v-btn>
-          <v-btn @click="initClearBoardLogic()">
-            CLEAR BOARD
-          </v-btn>
+          <swatches 
+            v-model="color"
+            :colors="colors"
+            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
+            inline
+            background-color="rgba(0, 0, 0, 0)"
+            swatch-size="55"
+          />
+          <v-btn @click="useEraser()">ERASER</v-btn>
+          <v-btn @click="initClearBoardLogic()">CLEAR BOARD</v-btn>
           <v-btn @click="disableTouch = !disableTouch">
             {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
           </v-btn>
-          <v-btn @click="saveDoodle()">
-            SAVE DOODLE
-          </v-btn>
+          <v-btn @click="saveDoodle()">SAVE DOODLE</v-btn>
           <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
             RECORD VIDEO
           </v-btn>
@@ -37,24 +32,18 @@
           </v-btn>
         </template>
         <template v-else>
-          <v-btn @click="initReplayLogic()">
-            PREVIEW
-          </v-btn>
-          <v-btn @click="retryAnswer()">
-            RETRY
-          </v-btn>
+          <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
+          <v-btn @click="retryAnswer()">RETRY</v-btn>
           <v-btn @click="saveVideoPopup = true" :disabled="!hasUploadedAudio" class="pink white--text">
             SAVE VIDEO
           </v-btn>
         </template>
-        <v-btn @click="handleExit()" dark flat>
-          EXIT
-        </v-btn>
+        <v-btn @click="handleExit()" dark text>EXIT</v-btn>
       </v-toolbar-items>
     </v-toolbar>
 
     <!-- "@start-recording" is necessary because the audio-recorder can't 
-    start recording instantaneously - and if we false believe it is, then getAudioTime will be 
+    start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
     null-->
     <audio-recorder v-if="whiteboardDoc"
                     v-show="false"
@@ -108,7 +97,6 @@ export default {
           uid: 'Anonymous'
         }
       }
-  
     }
   },
   data () {
@@ -181,7 +169,6 @@ export default {
   methods: {
     takePicture () {
       const dataURL = this.canvas.toDataURL()
-      // console.log("dataURL =", dataURL)
     },
     initData () {
       if (!this.whiteboardID) {
@@ -325,11 +312,9 @@ export default {
       }
     },
     isFinger (e) {
-      // if (e.touches.length == 1) {
-        if (e.touches[0].touchType != 'stylus') {
-          return true 
-        } 
-      // }
+      if (e.touches[0].touchType != 'stylus') {
+        return true 
+      } 
       return false
     },
     useEraser () {
@@ -349,7 +334,7 @@ export default {
       audioRecorder.startRecording()
     },
     stopRecording () {
-      this.recording = false
+      this.isRecording = false
       this.removeTouchEvents()
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.stopRecording()
@@ -392,7 +377,6 @@ export default {
         metadata.authorName = this.user.name
       }
       db.collection('whiteboards').doc(whiteboardID).update(metadata)
-      console.log("this.user =", this.user)
 
       // initialize a new whiteboard for the workspace
       const workspaceID = this.$route.params.id
