@@ -10,17 +10,20 @@
         <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
           <renderless-component :whiteboardID="courses[i].introVideoID">
             <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
-                            @action="buttonName => handleAction(buttonName, courses[i], i)"
-                            @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
-                            :title="courses[i].courseNumber"
-                            :description="courses[i].description"
-                            :paragraph="courses[i].paragraph"
-                            :hasPermission="hasPermission">
-                <beta-doodle-video v-if="slotProps.strokes"
-                                   :ref="`doodle-video-${i}`"
-                                   :strokes="slotProps.strokes"
-                                   :canvasID="i">
+              <vuetify-card 
+                :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
+                @action="buttonName => handleAction(buttonName, courses[i], i)"
+                @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
+                :title="courses[i].courseNumber"
+                :description="courses[i].description"
+                :paragraph="courses[i].paragraph"
+                :hasPermission="hasPermission"
+              >
+                <beta-doodle-video 
+                  v-if="slotProps.strokes"
+                  :ref="`doodle-video-${i}`"
+                  :strokes="slotProps.strokes"
+                  :canvasID="`${i}`">
                 </beta-doodle-video>
               </vuetify-card>
             </template>
@@ -36,17 +39,21 @@
         <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
           <renderless-component :whiteboardID="courses[i-1].introVideoID">
             <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
-                            @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
-                            @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
-                            :title="courses[i-1].courseNumber"
-                            :description="courses[i-1].description"
-                            :paragraph="courses[i-1].paragraph"
-                            :hasPermission="hasPermission">
-                <beta-doodle-video v-if="slotProps.strokes"
-                                   :ref="`doodle-video-${i-1}`"
-                                   :strokes="slotProps.strokes"
-                                   :canvasID="i-1">
+              <vuetify-card 
+                :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
+                @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
+                @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
+                :title="courses[i-1].courseNumber"
+                :description="courses[i-1].description"
+                :paragraph="courses[i-1].paragraph"
+                :hasPermission="hasPermission"
+              >
+                <beta-doodle-video 
+                  v-if="slotProps.strokes"
+                  :ref="`doodle-video-${i-1}`"
+                  :strokes="slotProps.strokes"
+                  :canvasID="`${i-1}`"
+                >
                 </beta-doodle-video>
               </vuetify-card>
             </template>
@@ -66,7 +73,7 @@
                 <beta-doodle-video v-if="slotProps.strokes"
                                    :ref="`doodle-video-${i}`"
                                    :strokes="slotProps.strokes"
-                                   :canvasID="i">
+                                   :canvasID="`${i}`">
                 </beta-doodle-video>
               </vuetify-card>
             </template>

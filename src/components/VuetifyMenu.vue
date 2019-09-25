@@ -76,9 +76,9 @@
           <!-- <v-spacer></v-spacer> -->
 
           <!-- <v-btn flat @click="menu = false">Cancel</v-btn> -->
-          <v-btn color="primary" flat @click="handleSave()">Save</v-btn>
+          <v-btn color="primary" text @click="handleSave()">Save</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="grey" flat @click="$emit('sign-out')">Sign Out</v-btn>
+          <v-btn color="grey" text @click="$emit('sign-out')">Sign Out</v-btn>
         </v-card-actions>
       </v-card>
     </v-menu>
