@@ -25,7 +25,7 @@
         <v-spacer></v-spacer>
       </template>
     </v-tabs>
-    
+      
     <!-- EDIT OPTIONS -->
     <v-card-text class="text-center">
       <template v-if="isEditting">
@@ -33,7 +33,7 @@
         <v-btn @click="addTab()">ADD TAB</v-btn>
         <v-btn @click="removeTab()">REMOVE TAB</v-btn>
       </template>
-      <v-btn v-else @click="isEditting = true">EDIT TABS</v-btn>
+      <v-btn v-else-if="user" @click="isEditting = true">EDIT TABS</v-btn>
     </v-card-text>
 
     <v-tabs-items v-model="tab">
@@ -45,11 +45,13 @@
         <beta-gallery :tabNumber="i+1" :tabs="tabs"></beta-gallery>
       </v-tab-item>
     </v-tabs-items>
+
   </v-card>
 </template>
 
 <script>
 import BetaGallery from "@/components/BetaGallery.vue"
+
 export default {
   props: {
     tabs: Array
@@ -62,6 +64,11 @@ export default {
     isEditting: false,
     localTabs: []
   }),
+  computed: {
+    user () {
+      return this.$store.state.user
+    }
+  },
   created () {
     this.localTabs = [...this.tabs]
   },
@@ -69,7 +76,6 @@ export default {
     handleSave () {
       this.isEditting = false
       if (this.localTabs !== this.tabs) {
-        console.log("updating tabs")
         this.$emit('tabs-rename', this.localTabs)
       }
     },
@@ -85,7 +91,3 @@ export default {
   }
 }
 </script>
-
-<style>
-
-</style>

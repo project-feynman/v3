@@ -9,10 +9,12 @@
     </v-snackbar>
 
     <!-- LOGIN / SIGNUP -->
-    <login-popup v-model="loginPopup" 
-                  :newAccount="false"
-                  @sign-in="payload => signIn(payload)"
-                  @create-account="payload => createAccount(payload)"/>
+    <login-popup 
+      v-model="loginPopup" 
+      :newAccount="false"
+      @sign-in="payload => signIn(payload)"
+      @create-account="payload => createAccount(payload)"
+    />
                   
     <!-- NAVBAR  -->
     <v-app-bar v-if="showNavbar" app color="white" id="navbar">
@@ -32,7 +34,6 @@
         <v-btn @click="newClassPopup = true" dark color="grey">
           CREATE CLASS
         </v-btn>
-        
           <!-- <v-btn icon>
             <v-icon color="grey darken-2">notifications</v-icon>
           </v-btn> -->
@@ -42,7 +43,6 @@
             library_add
           </v-icon>
          </v-btn> -->
-
       </template>
     
       <v-btn 

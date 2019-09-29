@@ -9,20 +9,22 @@
                   :workspaceID="workspace['.key']"
                   @open-room="updateHasAudioRoom()"/> -->
 
-      <!-- THIS IS THE WHITEBOARD THAT IS NOT FULLSCREEN -->
+      <!-- THIS IS WORKSPACE WHITEBOARD-->
       <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
-      <whiteboard v-if="loadCanvas && workspace.whiteboardID"
-                  ref="whiteboard"
-                  :hideToolbar="true"
-                  :whiteboardID="workspace.whiteboardID"/>
+      <whiteboard 
+        v-if="loadCanvas && workspace.whiteboardID"
+        ref="whiteboard"
+        :hideToolbar="true"
+        :whiteboardID="workspace.whiteboardID"/>
 
       <!-- THIS IS THE FULLSCREEN WHITEBOARD -->
       <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
         <v-card v-if="whiteboardPopup">
-          <whiteboard v-if="loadCanvas"
-                      ref="whiteboard"
-                      :whiteboardID="workspace.whiteboardID"
-                      @close-whiteboard="whiteboardPopup = false"/>
+          <whiteboard 
+            v-if="loadCanvas"
+            ref="whiteboard"
+            :whiteboardID="workspace.whiteboardID"
+            @close-whiteboard="whiteboardPopup = false"/>
         </v-card>
       </v-dialog>
     </v-container>
@@ -37,7 +39,6 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
 import VideoChat from '@/components/VideoChat.vue'
-import { toUnicode } from 'punycode';
 
 export default {
   components: {
@@ -49,8 +50,8 @@ export default {
     simpleUser () {
       if (this.user) {
         return {
-          email: this.user.email,
-          uid: this.user.uid,
+          email: this.user.email || "anonymous@gmail.com",
+          uid: this.user.uid || "anonymous",
           color: this.user.color || "grey"
         }
       } else {

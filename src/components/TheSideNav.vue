@@ -26,8 +26,15 @@
           <v-list-item-content>Classmates</v-list-item-content>
         </v-list-item>   
         
-
         <v-divider></v-divider>
+
+        <v-list-item>
+          <!-- <v-list-item-icon><v-icon>add</v-icon></v-list-item-icon> -->
+          <v-list-item-content>
+            <v-btn @click="addWorkspace()">Add workspace</v-btn>
+          </v-list-item-content>
+        </v-list-item>   
+
         <!-- WORKSPACES -->
         <v-list-item-group>
           <v-list-item 
@@ -78,6 +85,19 @@ export default {
     },
   },
   methods: {
+    async addWorkspace () {
+      const ref = db.collection("classes").doc(this.prevClassID).collection("workspaces")
+      // create a whiteboard 
+      const whiteboardRef = await db.collection("whiteboards").add({
+
+      })
+      console.log("whiteboardRef.id =", whiteboardRef.id)
+      await ref.add({
+        ownerUID: "123",
+        whiteboardID: whiteboardRef.id
+      })
+      console.log("added a new workspace")
+    },
     clickedButtonStateName () {
       const buttonState = this.clickedButtonStateName
       this[buttonState] = !this[buttonState]
