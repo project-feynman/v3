@@ -13,6 +13,7 @@
     "firebase-admin": "^6.4.0",
     "firebase-functions": "^2.1.0",
     "moment": "^2.24.0",
+    "peerjs": "^1.1.0",
     "register-service-worker": "^1.5.2",
     "simple-peer": "^9.2.1",
     "sizeof": "^1.0.0",

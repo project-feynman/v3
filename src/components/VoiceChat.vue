@@ -5,7 +5,7 @@
 </template>
 
 <script>
-  import Peer from "simple-peer";
+  import Peer from "peerjs";
   import firebase from "firebase/app";
   import "firebase/firestore";
 
@@ -36,91 +36,42 @@
         if (newVal !== undefined) {
           await this.connect(newVal);
         }
+      },
+
+      user: async function (newVal, oldVal) {
+        if (newVal.uid !== 'anonymous' && newVal.uid !== oldVal.uid) {
+          this.createPeer(newVal);
+        }
       }
     },
 
     methods: {
-      async getOrCreatePeer(peerID, initiator) {
-        // Alias this component so callbacks can access it.
+      async createPeer(user) {
+        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
         const component = this;
 
-        // Get permission for audio.
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-
-        // If already connected, do nothing.
-        const connectedPeer = this.connectedPeers.find(peer => peer.uid === peerID);
-        if (connectedPeer !== undefined) {
-          return connectedPeer;
+        if (this.user.uid === 'anonymous') {
+          console.log('Anonymous user, disabling audio chat.');
+        } else {
+          console.log(`Creating peer for ${user.uid}.`);
         }
 
-        // If already pending, do nothing.
-        const pendingPeer = this.pendingPeers.find(peer => peer.uid === peerID);
-        if (pendingPeer !== undefined) {
-          return pendingPeer;
-        }
-
-        // Create a new peer using the stream.
-        const peer = new Peer({
-          initiator: initiator,
-          stream: stream,
-        });
-
-        this.pendingPeers.push(peer);
-
-        peer.on('signal', async signal => {
-          const queueItemRef = firebase.database().ref(`/queues/${peerID}/${component.user.uid}`);
-          await queueItemRef.set({
-            initiator: initiator,
-            signal: JSON.stringify(signal),
+        this.myPeer = new Peer(user.uid);
+        this.myPeer.on('call', call => {
+          console.log(`Received call from ${call.peer}.`);
+          call.answer(stream);
+          call.on('stream', remoteStream => {
+            console.log(`Streaming call from ${call.peer}.`);
+            console.log(remoteStream);
           });
         });
-
-        peer.on('close', () => {
-          component.pendingPeers = component.pendingPeers.filter(peer => peer.uid !== peerID);
-          component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== peerID);
-        });
-
-        peer.on('stream', stream => {
-          component.pendingPeers = component.pendingPeers.filter(peer => peer.uid !== peerID);
-          component.connectedPeers.push({
-            uid: peer.uid,
-            peerObject: peer,
-          });
-
-          const video = document.getElementById(`video-${peerID}`);
-
-          if ('srcObject' in video) {
-            video.srcObject = stream;
-          } else {
-            video.src = window.URL.createObjectURL(stream);
-          }
-
-          video.play();
-        });
-
-        return peer;
       },
 
       async connect(workspaceID) {
-        console.log('connect');
+        console.log('Connect.');
 
         // Alias this component so callbacks can access it.
         const component = this;
-
-        // Register listener for own queue.
-        this.queueRef = firebase.database().ref(`/queues/${this.user.uid}`);
-        this.queueRef.on('child_added', async data => {
-          // Find or create the peer connection.
-          const peer = await component.getOrCreatePeer(data.key, !data.val().initiator);
-
-          // Signal the peer, which must occur whether or not this client initiated.
-          peer.signal(JSON.parse(data.val().signal));
-
-          // Remove item from own queue.
-          await data.ref.remove();
-        });
 
         // Extract the current list of members in the group.
         // TODO(bobbyluig): Rethink whether this is the best place to keep this data. There is a race condition here.
@@ -137,7 +88,14 @@
           }
 
           // Create a peer connection.
-          this.getOrCreatePeer(member.uid, true);
+          const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+
+          console.log(`Calling ${member.uid}.`);
+          const call = this.myPeer.call(member.uid, stream);
+          call.on('stream', remoteStream => {
+            console.log(`Streaming call to ${call.peer}.`);
+            console.log(remoteStream);
+          });
         }
       },
 
