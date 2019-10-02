@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h3>Audio Connections</h3>
     <ul>
       <li v-for="peer in connectedPeers">
         {{ peer.uid }}
@@ -60,43 +61,45 @@
         const component = this;
 
         // Register listener for own queue.
-        this.callRef = firebase.database().ref(`/calls/${this.user.uid}`);
-        this.callRef.on('child_added', data => {
-          // Create a new peer to make the call.
-          const peer = new Peer();
+        if (this.callRef === null) {
+          this.callRef = firebase.database().ref(`/calls/${this.user.uid}`);
+          this.callRef.on('child_added', data => {
+            // Create a new peer to make the call.
+            const peer = new Peer();
 
-          // Fetch values.
-          const peerID = data.val().peerID;
-          const userID = data.val().userID;
+            // Fetch values.
+            const peerID = data.val().peerID;
+            const userID = data.val().userID;
 
-          // Already in a call with the peer. Close the old connection.
-          const oldPeer = component.connectedPeers.find(peer => peer.uid === userID);
-          if (oldPeer !== undefined){
-            oldPeer.call.close();
-            oldPeer.peer.destroy();
-            component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== userID);
-          }
+            // Already in a call with the peer. Close the old connection.
+            const oldPeer = component.connectedPeers.find(peer => peer.uid === userID);
+            if (oldPeer !== undefined){
+              oldPeer.call.close();
+              oldPeer.peer.destroy();
+              component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== userID);
+            }
 
-          // Call the peer.
-          console.log(`Calling ${peerID}.`);
-          const call = peer.call(peerID, stream);
-          call.on('stream', remoteStream => {
-            console.log(`Streaming call to ${userID}.`);
-            component.connectedPeers.push({
-              uid: data.val().userID,
-              call: call,
-              peer: peer,
+            // Call the peer.
+            console.log(`Calling ${peerID}.`);
+            const call = peer.call(peerID, stream);
+            call.on('stream', remoteStream => {
+              console.log(`Streaming call to ${userID}.`);
+              component.connectedPeers.push({
+                uid: data.val().userID,
+                call: call,
+                peer: peer,
+              });
+              document.getElementById('video-')
             });
-            document.getElementById('video-')
-          });
-          call.on('close', () => {
-            console.log(`Closing call to ${userID}.`);
-            component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== userID);
-          });
+            call.on('close', () => {
+              console.log(`Closing call to ${userID}.`);
+              component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== userID);
+            });
 
-          // Remove item from own queue.
-          data.ref.remove();
-        });
+            // Remove item from own queue.
+            data.ref.remove();
+          });
+        }
 
         // Extract the current list of members in the group.
         // TODO(bobbyluig): Rethink whether this is the best place to keep this data. There is a race condition here.
@@ -142,8 +145,7 @@
         }
       },
 
-      disconnect(workspaceID) {
-        this.callRef.off();
+      async disconnect(workspaceID) {
         this.connectedPeers.forEach(peer => {
           peer.call.close();
           peer.peer.destroy();
