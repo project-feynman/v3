@@ -18,8 +18,6 @@
     data() {
       return {
         myPeer: null,
-        queueRef: null,
-        pendingPeers: [],
         connectedPeers: [],
       };
     },
@@ -39,39 +37,42 @@
       },
 
       user: async function (newVal, oldVal) {
-        if (newVal.uid !== 'anonymous' && newVal.uid !== oldVal.uid) {
-          this.createPeer(newVal);
+        if (newVal.uid !== 'anonymous' && newVal.uid !== oldVal.uid && this.workspaceID !== undefined) {
+          await this.connect(this.workspaceID);
         }
       }
     },
 
     methods: {
-      async createPeer(user) {
-        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
-        const component = this;
-
-        if (this.user.uid === 'anonymous') {
-          console.log('Anonymous user, disabling audio chat.');
-        } else {
-          console.log(`Creating peer for ${user.uid}.`);
-        }
-
-        this.myPeer = new Peer(user.uid);
-        this.myPeer.on('call', call => {
-          console.log(`Received call from ${call.peer}.`);
-          call.answer(stream);
-          call.on('stream', remoteStream => {
-            console.log(`Streaming call from ${call.peer}.`);
-            console.log(remoteStream);
-          });
-        });
-      },
-
       async connect(workspaceID) {
         console.log('Connect.');
 
+        // Create a stream.
+        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+
         // Alias this component so callbacks can access it.
         const component = this;
+
+        // Register listener for own queue.
+        const callRef = firebase.database().ref(`/calls/${this.user.uid}`);
+        callRef.on('child_added', data => {
+          // Create a new peer to make the call.
+          const peer = new Peer(component.uuid_v4());
+
+          // Call the peer.
+          console.log(`Calling ${data.val().peerID}.`);
+          const call = peer.call(data.val().peerID, stream);
+          call.on('stream', remoteStream => {
+            console.log(`Streaming call to ${call.peer}.`);
+            console.log(remoteStream);
+          });
+          call.on('close', () => {
+            console.log(`Closing call to ${call.peer}.`);
+          });
+
+          // Remove item from own queue.
+          data.remove();
+        });
 
         // Extract the current list of members in the group.
         // TODO(bobbyluig): Rethink whether this is the best place to keep this data. There is a race condition here.
@@ -87,16 +88,35 @@
             continue;
           }
 
-          // Create a peer connection.
-          const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+          // Create a new peer to receive the call.
+          const peer = new Peer(this.uuid_v4());
+          console.log(`Created peer ${peer.id} to receive calls.`);
+          peer.on('call', call => {
+            console.log(`Received call from ${call.peer}.`);
+            call.answer(stream);
+            call.on('stream', remoteStream => {
+              console.log(`Streaming call from ${call.peer}.`);
+              console.log(remoteStream);
+            });
+            call.on('close', () => {
+              console.log(`Closing call from ${call.peer}.`);
+            });
+          });
 
-          console.log(`Calling ${member.uid}.`);
-          const call = this.myPeer.call(member.uid, stream);
-          call.on('stream', remoteStream => {
-            console.log(`Streaming call to ${call.peer}.`);
-            console.log(remoteStream);
+          // Indicate to the member that it should call this peer.
+          const callRef = firebase.database().ref(`/calls/${member.uid}`);
+          const callItemRef = callRef.push();
+          await callItemRef.set({
+            userID: this.user.uid,
+            peerID: peer.id
           });
         }
+      },
+
+      uuid_v4() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
       },
 
       disconnect(workspaceID) {
