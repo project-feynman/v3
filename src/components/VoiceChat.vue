@@ -1,6 +1,12 @@
 <template>
   <div>
-    <video v-for="peer in connectedPeers" v-bind:key="peer.uid" :id="`video-${peer.uid}`"></video>
+    <ul>
+      <li v-for="peer in connectedPeers">
+        {{ peer.uid }}
+      </li>
+    </ul>
+
+    <video v-for="peer in connectedPeers" v-bind:key="peer.uid" :id="`video-${peer.uid}`" style="display: none;"></video>
   </div>
 </template>
 
@@ -17,7 +23,7 @@
 
     data() {
       return {
-        myPeer: null,
+        callRef: null,
         connectedPeers: [],
       };
     },
@@ -45,7 +51,7 @@
 
     methods: {
       async connect(workspaceID) {
-        console.log('Connect.');
+        console.log(`Connect to workspace ${workspaceID} with voice.`);
 
         // Create a stream.
         const stream = await navigator.mediaDevices.getUserMedia({audio: true});
@@ -54,20 +60,38 @@
         const component = this;
 
         // Register listener for own queue.
-        const callRef = firebase.database().ref(`/calls/${this.user.uid}`);
-        callRef.on('child_added', data => {
+        this.callRef = firebase.database().ref(`/calls/${this.user.uid}`);
+        this.callRef.on('child_added', data => {
           // Create a new peer to make the call.
           const peer = new Peer();
 
+          // Fetch values.
+          const peerID = data.val().peerID;
+          const userID = data.val().userID;
+
+          // Already in a call with the peer. Close the old connection.
+          const oldPeer = component.connectedPeers.find(peer => peer.uid === userID);
+          if (oldPeer !== undefined){
+            oldPeer.call.close();
+            oldPeer.peer.destroy();
+            component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== userID);
+          }
+
           // Call the peer.
-          console.log(`Calling ${data.val().peerID}.`);
-          const call = peer.call(data.val().peerID, stream);
+          console.log(`Calling ${peerID}.`);
+          const call = peer.call(peerID, stream);
           call.on('stream', remoteStream => {
-            console.log(`Streaming call to ${call.peer}.`);
-            console.log(remoteStream);
+            console.log(`Streaming call to ${userID}.`);
+            component.connectedPeers.push({
+              uid: data.val().userID,
+              call: call,
+              peer: peer,
+            });
+            document.getElementById('video-')
           });
           call.on('close', () => {
-            console.log(`Closing call to ${call.peer}.`);
+            console.log(`Closing call to ${userID}.`);
+            component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== userID);
           });
 
           // Remove item from own queue.
@@ -100,21 +124,31 @@
             });
           });
           peer.on('call', call => {
-            console.log(`Received call from ${call.peer}.`);
+            console.log(`Received call from ${member.uid}.`);
             call.answer(stream);
             call.on('stream', remoteStream => {
-              console.log(`Streaming call from ${call.peer}.`);
-              console.log(remoteStream);
+              console.log(`Streaming call from ${member.uid}.`);
+              component.connectedPeers.push({
+                uid: member.uid,
+                call: call,
+                peer: peer,
+              });
             });
             call.on('close', () => {
-              console.log(`Closing call from ${call.peer}.`);
+              console.log(`Closing call from ${member.uid}.`);
+              component.connectedPeers = component.connectedPeers.filter(peer => peer.uid !== member.uid);
             });
           });
         }
       },
 
       disconnect(workspaceID) {
-
+        this.callRef.off();
+        this.connectedPeers.forEach(peer => {
+          peer.call.close();
+          peer.peer.destroy();
+        });
+        this.connectedPeers = [];
       },
     },
   }
