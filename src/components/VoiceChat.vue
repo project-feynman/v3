@@ -57,7 +57,7 @@
         const callRef = firebase.database().ref(`/calls/${this.user.uid}`);
         callRef.on('child_added', data => {
           // Create a new peer to make the call.
-          const peer = new Peer(component.uuid_v4());
+          const peer = new Peer();
 
           // Call the peer.
           console.log(`Calling ${data.val().peerID}.`);
@@ -71,7 +71,7 @@
           });
 
           // Remove item from own queue.
-          data.remove();
+          data.ref.remove();
         });
 
         // Extract the current list of members in the group.
@@ -89,8 +89,16 @@
           }
 
           // Create a new peer to receive the call.
-          const peer = new Peer(this.uuid_v4());
-          console.log(`Created peer ${peer.id} to receive calls.`);
+          const peer = new Peer();
+          peer.on('open', async id => {
+            console.log(`Created peer ${id} to receive calls.`);
+            const callRef = firebase.database().ref(`/calls/${member.uid}`);
+            const callItemRef = callRef.push();
+            await callItemRef.set({
+              userID: this.user.uid,
+              peerID: peer.id
+            });
+          });
           peer.on('call', call => {
             console.log(`Received call from ${call.peer}.`);
             call.answer(stream);
@@ -102,21 +110,7 @@
               console.log(`Closing call from ${call.peer}.`);
             });
           });
-
-          // Indicate to the member that it should call this peer.
-          const callRef = firebase.database().ref(`/calls/${member.uid}`);
-          const callItemRef = callRef.push();
-          await callItemRef.set({
-            userID: this.user.uid,
-            peerID: peer.id
-          });
         }
-      },
-
-      uuid_v4() {
-        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
       },
 
       disconnect(workspaceID) {
