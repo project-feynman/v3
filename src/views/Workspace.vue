@@ -1,6 +1,7 @@
 <template>
   <div id="workspace">
     <v-container v-if="simpleUser && workspace" fluid class="pa-0">
+      <VoiceChat :workspaceID="workspace['.key']" :user="simpleUser"/>
       <!-- AUDIO CHAT -->
       <!-- <div class="text-xs-center">
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
@@ -38,12 +39,12 @@ import slugify from 'slugify'
 import { mapState } from 'vuex'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
-import VideoChat from '@/components/VideoChat.vue'
+import VoiceChat from '@/components/VoiceChat.vue'
 
 export default {
   components: {
     Whiteboard,
-    VideoChat
+    VoiceChat
   },
   computed: {
     ...mapState(['user']),
@@ -52,13 +53,13 @@ export default {
         return {
           email: this.user.email || "anonymous@gmail.com",
           uid: this.user.uid || "anonymous",
-          color: this.user.color || "grey"
+          color: this.user.color || "grey",
         }
       } else {
         return {
           email: "anonymous",
           uid: "anonymous",
-          color: "grey"
+          color: "grey",
         }
       }
     }
