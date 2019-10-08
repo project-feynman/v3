@@ -5,6 +5,8 @@
         <div class="text-xs-center">
           <v-btn @click="whiteboardPopup = false">EXIT</v-btn>
         </div>
+        <!-- DOODLE VIDEO IS THE REAL VIDEO -->
+        <!-- FAKE VIDEO IS NOT THE FAKE VIDEO -->
         <doodle-video :videoID="currentVideoID"/>
       </v-card>
     </v-dialog>
@@ -17,7 +19,7 @@
             <renderless-component :whiteboardID="whiteboards[i]['.key']">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['PREVIEW', 'FULL VIDEO']"
+                  :actionButtons="['FULL VIDEO']"
                   @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
                   @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
@@ -42,14 +44,16 @@
           </v-flex>
         </v-layout>
 
-        <v-layout v-else-if="i%2 == 1" 
-                  :key="whiteboards[i]['.key']" 
-                  :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0>
+        <v-layout 
+          v-else-if="i%2 == 1" 
+          :key="whiteboards[i]['.key']" 
+          :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0
+        >
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
             <renderless-component :whiteboardID="whiteboards[i-1]['.key']">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['PREVIEW', 'FULL VIDEO']"
+                  :actionButtons="['FULL VIDEO']"
                   @action="buttonName => handleAction(buttonName, whiteboards[i-1], i-1)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i-1])"
                   @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i-1])"
@@ -76,7 +80,7 @@
               <template slot-scope="slotProps">
                 <h1>{{ whiteboards[i].ownerName }}</h1>
                 <vuetify-card 
-                  :actionButtons="['PREVIEW', 'FULL VIDEO']"
+                  :actionButtons="['FULL VIDEO']"
                   @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
                   @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"

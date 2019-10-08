@@ -1,22 +1,18 @@
 <template>
   <div id="whiteboard" style="height: 100%">
-    <!-- <vuetify-overlay v-if="isFullscreen" :overlay="overlay" @play-video="playVideo()"> -->
+    <canvas 
+      v-if="isFullscreen"
+      :id="`myCanvas-${canvasID}`"  
+      style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
+    >
+    </canvas>
+    <vuetify-overlay v-else :overlay="overlay" @play-video="playVideo()">
       <canvas 
-        v-if="isFullscreen"
-        :id="`myCanvas-${canvasID}`"  
-        style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
+        :id="`myCanvas-${canvasID}`" 
+        style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
       >
       </canvas>
-      <vuetify-overlay v-else :overlay="overlay" @play-video="playVideo()">
- 
-        <canvas 
-          :id="`myCanvas-${canvasID}`" 
-          style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
-        >
-        </canvas>
-
-      </vuetify-overlay>
-
+    </vuetify-overlay>
   </div>
 </template>
 
