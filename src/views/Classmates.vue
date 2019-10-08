@@ -1,59 +1,44 @@
 <template>
   <div>
-    <div class="text-xs-center pt-5">
-      <!-- <p v-if="!user && !isFetchingUser">You need to sign in to be able to get and use workspaces</p>
-      <v-btn v-if="user" @click="becomeHelper()">Get a workspace</v-btn> -->
-    </div>
+    <!-- <group-chat :classID="$route.params.class_id"></group-chat> -->
+      <!-- <v-layout row mt-5>
 
-    <v-layout row mt-5>
-      <v-flex xs12 sm6 offset-sm3>
+ 
+       <v-flex xs12 sm6 offset-sm3>
         <v-card>
           <v-toolbar color="cyan" dark>
             <v-toolbar-title>Classmates</v-toolbar-title>
             <v-spacer></v-spacer>
             
-            <!-- <v-btn icon>
-              <v-icon>search</v-icon>
-            </v-btn> -->
           </v-toolbar>
-
           <v-list three-line>
-      
             <template v-for="(item, index) in users">
-          
               <v-subheader v-if="item.email" :key="index">
                 #{{ index + 1 }} {{ item.email }}
               </v-subheader>
 
-                <!-- <v-list-tile-avatar>
-                  <img :src="item.avatar">
-                </v-list-tile-avatar> -->
-
-                <!-- <v-list-tile-content>
-                  <v-list-tile-title v-html="item.title"></v-list-tile-title>
-                  <v-list-tile-sub-title v-html="item.subtitle"></v-list-tile-sub-title>
-                </v-list-tile-content> -->
-    
-              <!-- <v-divider :key="index"></v-divider> -->
-              
             </template>
 
           </v-list>
         </v-card>
-      </v-flex>
-    </v-layout>
+      </v-flex> 
+
+    </v-layout> -->
   </div>
 </template>
 
 <script>
+import GroupChat from "@/components/GroupChat.vue"
 import db from '@/database.js'
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/firestore'
 import 'firebase/database'
 
-
 export default {
+  components: {
+    GroupChat
+  },
   created () {
     this.$binding('users', db.collection('users'))
   },
@@ -63,7 +48,10 @@ export default {
     }
   },
   computed: {
-    ...mapState(['user', "isFetchingUser"])
+    ...mapState(['user', "isFetchingUser"]),
+    classID () {
+      return this.$route.class_id
+    }
   },
   methods: {
     async becomeHelper () {

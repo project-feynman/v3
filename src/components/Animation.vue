@@ -1,24 +1,27 @@
 <template>
   <div id="whiteboard" style="height: 100%">
-    
-    <canvas v-if="isFullscreen"
-            :id="`myCanvas-${canvasID}`"  
-            style="width: 100%;
-                   height: 90vh;
-                   background-color: rgb(62, 66, 66)">
-    </canvas>
-    <template v-else>
+    <!-- <vuetify-overlay v-if="isFullscreen" :overlay="overlay" @play-video="playVideo()"> -->
       <canvas 
-              :id="`myCanvas-${canvasID}`" 
-              style="width: 100%;
-                    height: 100%;
-                    background-color: rgb(62, 66, 66)">
+        v-if="isFullscreen"
+        :id="`myCanvas-${canvasID}`"  
+        style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
+      >
       </canvas>
-    </template>
+      <vuetify-overlay v-else :overlay="overlay" @play-video="playVideo()">
+ 
+        <canvas 
+          :id="`myCanvas-${canvasID}`" 
+          style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
+        >
+        </canvas>
+
+      </vuetify-overlay>
+
   </div>
 </template>
 
 <script>
+import VuetifyOverlay from "@/components/VuetifyOverlay.vue"
 import { mapState } from 'vuex'
 import DrawMethods from '@/mixins/DrawMethods'
 import db from '@/database.js'
@@ -35,6 +38,9 @@ export default {
       type: String,
       default: "1"
     }
+  },
+  components: {
+    VuetifyOverlay
   },
   mixins: [DrawMethods],
   watch: {
@@ -61,6 +67,7 @@ export default {
   },
   data () {
     return {
+      overlay: true,
       playProgress: null,
       isReplaying: false,
       allStrokes: [],
@@ -97,6 +104,11 @@ export default {
     }
   },
   methods: {
+    async playVideo () {
+      this.overlay = false 
+      await this.quickplay()
+      this.overlay = true 
+    },
     async initData () {
       if (!this.strokes) {
         return 

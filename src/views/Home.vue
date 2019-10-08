@@ -8,8 +8,11 @@
       </v-btn>
     </v-snackbar>
 
-    <transition name="fade" mode="out-in" 
-                @after-leave="transitionFinished = true">
+    <transition 
+      name="fade" 
+      mode="out-in" 
+      @after-leave="transitionFinished = true"
+    >
       <div v-if="isFetchingUser" key="loading..."></div>
       <div v-else key="class-list">
         <communities/>

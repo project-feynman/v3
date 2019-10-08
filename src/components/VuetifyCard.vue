@@ -12,40 +12,22 @@
       </v-img>
       <v-card-title primary-title>
         <div>
-          <div v-if="!isEditting" class="display-1">
-            {{ title }}
+          <!-- display-1 -->
+          <div v-if="!isEditting" class="title font-weight-bold">
+            {{ title }}: 
+            <span class="title font-weight-regular">
+              {{ description }}
+            </span>
           </div>
           <v-text-field v-else v-model="localTitle" label="Title"></v-text-field>
           <!-- DESCRIPTION -->
-          <span class="title font-weight-regular">
+          <!-- <span class="title font-weight-regular">
             {{ description }}
-          </span>
+          </span> -->
         </div>
       </v-card-title>
 
-      <v-card-actions>
-        <v-btn 
-          v-for="button in actionButtons" :key="button" 
-          @click="e => emitAction(e)" 
-          text small color="secondary" class="subtitle-2"
-        >
-          {{ button }}
-        </v-btn>
-        <!-- EDITTING -->
-        <template v-if="hasPermission">
-          <v-btn v-if="!isEditting" @click="startEdit()" text small class="subtitle-2">
-            EDIT
-          </v-btn>
-          <v-btn v-else-if="isEditting" @click="event => handleSave(event)" text small class="subtitle-2">
-            SAVE CHANGES
-          </v-btn>
-          <v-btn @click="e => emitAction(e)" text color="red" small class="subtitle-2">
-            DELETE
-          </v-btn>
-        </template>
-        <v-spacer></v-spacer>
-        <div class="flex-grow-1"></div>
-      </v-card-actions>
+    
 
         <v-slide-y-transition>
           <div v-show="show">
@@ -73,6 +55,32 @@
             </template>
           </div>
       </v-slide-y-transition>
+      
+        <v-card-actions>
+        <v-btn 
+          v-for="button in actionButtons" :key="button" 
+          @click="e => emitAction(e)" 
+          text small color="secondary" class="subtitle-2"
+        >
+          {{ button }}
+        </v-btn>
+        <!-- EDITTING -->
+        <template v-if="hasPermission">
+          <v-btn v-if="!isEditting" @click="startEdit()" text small class="subtitle-2">
+            EDIT
+          </v-btn>
+          <v-btn v-else-if="isEditting" @click="event => handleSave(event)" text small class="subtitle-2">
+            SAVE CHANGES
+          </v-btn>
+          <v-btn @click="e => emitAction(e)" text color="red" small class="subtitle-2">
+            DELETE
+          </v-btn>
+        </template>
+        <v-spacer></v-spacer>
+        <div class="flex-grow-1"></div>
+      </v-card-actions>
+
+
     </v-card>
   </div>
 </template>

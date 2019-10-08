@@ -21,10 +21,10 @@
           <v-list-item-content>Gallery</v-list-item-content>
         </v-list-item>
 
-        <v-list-item link :to="`/${this.$route.params.class_id}/classmates`">
+        <!-- <v-list-item link :to="`/${this.$route.params.class_id}/classmates`">
           <v-list-item-icon><v-icon>mdi-account</v-icon></v-list-item-icon>
           <v-list-item-content>Classmates</v-list-item-content>
-        </v-list-item>   
+        </v-list-item>    -->
         
         <v-divider></v-divider>
 
