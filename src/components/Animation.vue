@@ -122,24 +122,4 @@ export default {
 }
 </script>
 
-<style>
-/* .yellow-square {
-  background-color: #FFDC00;
-  display: inline-block;
-  z-index: 1000;
-  width: 50px;
-  height: 50px;
-  margin: 0 auto;
-}
-
-.cn {
-  display: table-cell;
-  width: 500px;
-  height: 500px;
-  vertical-align: middle;
-  text-align: center;
-} */
-</style>
-
-
 

@@ -2,7 +2,7 @@
   <v-card color="rgb(225, 233, 247)">
     <v-tabs
       v-model="tab"
-      background-color="red lighten-2"
+      background-color="blue-grey darken-2"
       dark
     >
       <!-- TABS DURING EDIT MODE -->
