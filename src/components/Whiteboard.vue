@@ -171,7 +171,6 @@ export default {
     const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
-    this.setStyle(this.color, this.lineWidth)
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
@@ -241,6 +240,7 @@ export default {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
+      this.setStyle(this.color, this.lineWidth)
     },
     removeTouchEvents () {
       this.canvas.removeEventListener('touchstart', this.touchStart, false)
