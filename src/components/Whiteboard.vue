@@ -185,7 +185,6 @@ export default {
       if (!this.whiteboardID) {
         return
       }
-      console.log("whiteboardID =", this.whiteboardID)
       const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
       this.$binding('whiteboardDoc', whiteboardRef)
       this.strokesRef = whiteboardRef.collection('strokes')
@@ -268,7 +267,6 @@ export default {
       if (e.touches[0].touchType == 'stylus') {
         this.disableTouch = true
       } 
-      console.log("in touchStart, this.lineWidth =", this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -379,17 +377,20 @@ export default {
       // take a screenshot of the whiteboard to be used as the "preview" of the video
       // const dataURL = this.canvas.toDataURL()
       // const videoThumbnail = this.canvas.toDataURL()
+
       let metadata = {
         title: videoTitle, 
-        authorUID: this.user.uid,
-        authorEmail: this.user.email,
         fromClass: classID,
         isSaved: true,
         tabNumber: 0
         // thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       }
-      if (this.user.name) {
-        metadata.authorName = this.user.name
+      if (this.user) {
+        metadata.authorUID = this.user.uid
+        metadata.authorEmail = this.user.email
+        if (this.user.name) {
+          metadata.authorName = this.user.name
+        }
       }
       db.collection('whiteboards').doc(whiteboardID).update(metadata)
 
