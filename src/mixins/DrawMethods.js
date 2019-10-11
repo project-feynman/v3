@@ -122,11 +122,7 @@ export default {
     setStyle (color = 'yellow', lineWidth = 2) {
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
-      if (this.isFullScreen) {
-        this.ctx.lineWidth = lineWidth
-      } else {
-        this.ctx.lineWidth = 1.8
-      }
+      this.ctx.lineWidth = lineWidth
     },
     traceLineTo (x, y) {
       this.ctx.beginPath()

@@ -1,9 +1,11 @@
 <template>
   <div id="whiteboard">
     <!-- SAVING POPUP -->
-    <whiteboard-save-popup v-model="saveVideoPopup"
-                           @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-                           fullscreen/>
+    <whiteboard-save-popup 
+      v-model="saveVideoPopup"
+      @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+      fullscreen
+    />
 
     <!-- WHITEBOARD BUTTONS -->
     <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="grey">
@@ -19,7 +21,7 @@
             swatch-size="55"
           />
           <v-btn @click="useEraser()">ERASER</v-btn>
-          <v-btn @click="initClearBoardLogic()">CLEAR BOARD</v-btn>
+          <v-btn @click="deleteStrokesSubcollection()">CLEAR BOARD</v-btn>
           <v-btn @click="disableTouch = !disableTouch">
             {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
           </v-btn>
@@ -45,18 +47,18 @@
     <!-- "@start-recording" is necessary because the audio-recorder can't 
     start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
     null-->
-    <audio-recorder v-if="whiteboardDoc"
-                    v-show="false"
-                    ref="audio-recorder"
-                    :audioURL="whiteboardDoc.audioURL"
-                    :audioPath="whiteboardDoc.audioPath"
-                    @start-recording="isRecording = true"
-                    @file-uploaded="audio => saveFileReference(audio)"/>
+    <audio-recorder 
+      v-if="whiteboardDoc"
+      v-show="false"
+      ref="audio-recorder"
+      :audioURL="whiteboardDoc.audioURL"
+      :audioPath="whiteboardDoc.audioPath"
+      @start-recording="isRecording = true"
+      @file-uploaded="audio => saveFileReference(audio)"
+    />
 
     <!-- ACTUAL WHITEBOARD -->
-    <canvas id="myCanvas" 
-            style="height: 90vh; width: 100%; 
-                   background-color: rgb(62, 66, 66)"/>
+    <canvas id="myCanvas" style="height: 90vh; width: 100%; background-color: rgb(62, 66, 66)"/>
   </div>
 </template>
 
@@ -85,11 +87,18 @@ export default {
   mixins: [DrawMethods],
   computed: {
     ...mapState(['user']),
-    author() {
+    author () {
       if (this.user) {
-        return {
-          name: this.user.name,
-          uid: this.user.uid
+        if (this.user.name) {
+          return {
+            name: this.user.name,
+            uid: this.user.uid
+          }
+        } else {
+          return {
+            email: this.user.email,
+            uid: this.user.uid
+          }
         }
       } else {
         return {
@@ -134,10 +143,11 @@ export default {
       handler: 'initData',
       immediate: true
     },
-    // bad - high surface area for bugs
+    // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
       if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
         this.lineWidth = 2
+        this.setStyle(this.color, this.lineWidth)
       }
     },
     isRecording () {
@@ -161,6 +171,7 @@ export default {
     const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
+    this.setStyle(this.color, this.lineWidth)
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
@@ -174,6 +185,7 @@ export default {
       if (!this.whiteboardID) {
         return
       }
+      console.log("whiteboardID =", this.whiteboardID)
       const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
       this.$binding('whiteboardDoc', whiteboardRef)
       this.strokesRef = whiteboardRef.collection('strokes')
@@ -226,10 +238,6 @@ export default {
     initReplayLogic () {
       this.quickplay()
     },
-    initClearBoardLogic () {
-      this.deleteStrokesSubcollection()
-      this.allStrokes = [] 
-    },
     initTouchEvents () {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
@@ -241,9 +249,11 @@ export default {
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
+      console.log("deleteStrokesSubcollection")
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         this.strokesRef.doc(`${i}`).delete()
       }
+      this.allStrokes = [] 
     },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
@@ -252,11 +262,13 @@ export default {
       this.drawToPoint(this.touchX, this.touchY)
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) { return }
+      if (this.isNotValidTouch(e)) { 
+        return 
+      }
       if (e.touches[0].touchType == 'stylus') {
         this.disableTouch = true
       } 
-      this.setStyle(this.color, this.lineWidth)
+      console.log("in touchStart, this.lineWidth =", this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -267,7 +279,9 @@ export default {
       event.preventDefault()
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) { return }
+      if (this.isNotValidTouch(e)) { 
+        return 
+      }
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -320,6 +334,7 @@ export default {
     useEraser () {
       this.color = 'rgb(62, 66, 66)'
       this.lineWidth = 18
+      this.setStyle(this.color, this.lineWidth)
     },
     saveDoodle () {
       this.saveSilently = true
