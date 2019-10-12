@@ -12,7 +12,11 @@ const config = {
 
 const firebaseApp = firebase.initializeApp(config)
 
-export default firebaseApp.firestore()
+const firestore = firebaseApp.firestore()
+const settings = {/* your settings... */ timestampsInSnapshots: true};
+firestore.settings(settings);
+
+export default firestore
 
 // TO PREVENT CORS ISSUES, RUN:
 // gsutil cors set cors.json gs://feynman-mvp.appspot.com
