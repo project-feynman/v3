@@ -70,8 +70,9 @@
       @file-uploaded="audio => saveFileReference(audio)"
     />
 
-    <!-- ACTUAL WHITEBOARD -->
-    <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/>
+    <!-- WHITEBOARD -->
+    <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)"/>
+    <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
   </div>
 </template>
 
@@ -189,12 +190,22 @@ export default {
     const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
+    // new redraw code
+    this.canvas.width = document.documentElement.clientWidth 
+    this.canvas.height = 0.9 * document.documentElement.clientHeight
     this.rescaleCanvas()
-    window.addEventListener('resize', this.rescaleCanvas, false)
+    window.addEventListener('resize', () => { 
+      this.canvas.width = document.documentElement.clientWidth 
+      this.rescaleCanvas()
+    }, false)
     this.initTouchEvents()
     this.continuouslySyncBoardWithDB()
     this.$root.$on("side-nav-toggled", sideNavOpened => {
-      this.canvas.width = document.documentElement.clientWidth
+      if (sideNavOpened) {
+        this.canvas.width = document.documentElement.clientWidth
+      } else {
+        this.canvas.width = document.documentElement.clientWidth
+      }
       this.rescaleCanvas()
     })
   },
