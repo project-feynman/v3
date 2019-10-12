@@ -7,7 +7,7 @@
     >
     </canvas>
     <!-- <vuetify-overlay v-else :overlay="overlay" @play-video="playVideo()"> -->
-      <canvas 
+      <canvas v-else
         :id="`myCanvas-${canvasID}`" 
         style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
       >
