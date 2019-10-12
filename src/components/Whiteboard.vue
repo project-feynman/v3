@@ -165,7 +165,7 @@ export default {
         this.lineWidth = 2
         this.setStyle(this.color, this.lineWidth)
       } else {
-        this.lineWidth = 18
+        this.lineWidth = 30
         this.setStyle(this.color, this.lineWidth)
       }
     },

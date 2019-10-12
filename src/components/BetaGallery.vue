@@ -23,7 +23,7 @@
             <renderless-component :whiteboardID="whiteboards[i]['.key']">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['FULL VIDEO']"
+                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
                   @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
@@ -57,7 +57,7 @@
             <renderless-component :whiteboardID="whiteboards[i-1]['.key']">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['FULL VIDEO']"
+                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, whiteboards[i-1], i-1)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i-1])"
                   @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i-1])"
@@ -84,7 +84,7 @@
               <template slot-scope="slotProps">
                 <h1>{{ whiteboards[i].ownerName }}</h1>
                 <vuetify-card 
-                  :actionButtons="['FULL VIDEO']"
+                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
                   @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
@@ -177,7 +177,7 @@ export default {
       if (buttonName == "FULL VIDEO") {
         this.currentVideoID = videoID 
         this.whiteboardPopup = true
-      } else if (buttonName == "PREVIEW") {
+      } else if (buttonName == "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()
       } else if (buttonName == "DELETE") {
