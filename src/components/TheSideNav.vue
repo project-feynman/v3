@@ -55,10 +55,12 @@
             Blackboards
           </v-list-item-title>
           <v-list-item-subtitle>
-            Where you talk and draw
+            Below is where you talk and draw
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
+
+      <v-divider></v-divider>
 
         <!-- BLACKBOARDS -->
         <v-list-item 
