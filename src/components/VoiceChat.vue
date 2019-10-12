@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>Audio Connections</h3>
+    <!-- <h3>Audio Connections</h3> -->
     <ul>
       <li v-for="peer in connectedPeers">
         {{ peer.uid }}
