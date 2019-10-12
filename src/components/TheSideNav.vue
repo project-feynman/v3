@@ -9,16 +9,13 @@
     >
       <v-list>
         <v-list-item link to="/">
-          <v-list-item-icon>
-              <v-icon>mdi-home-city</v-icon>
-
-          </v-list-item-icon>
+          <v-list-item-icon><v-icon>home</v-icon></v-list-item-icon>
           <v-list-item-content>Home</v-list-item-content>
         </v-list-item>
 
         <v-list-item link :to="`/${this.$route.params.class_id}/gallery`">
-          <v-list-item-icon><v-icon>mdi-account-group-outline</v-icon></v-list-item-icon>
-          <v-list-item-content>Gallery</v-list-item-content>
+          <v-list-item-icon><v-icon>video_library</v-icon></v-list-item-icon>
+          <v-list-item-content>Videos</v-list-item-content>
         </v-list-item>
 
         <!-- <v-list-item link :to="`/${this.$route.params.class_id}/classmates`">
@@ -31,7 +28,7 @@
         <v-list-item>
           <!-- <v-list-item-icon><v-icon>add</v-icon></v-list-item-icon> -->
           <v-list-item-content>
-            <v-btn @click="addWorkspace()">Add workspace</v-btn>
+            <v-btn @click="addWorkspace()">Add blackboard</v-btn>
           </v-list-item-content>
         </v-list-item>   
 
@@ -41,7 +38,7 @@
             v-for="(workspace, i) in workspaces" :key="workspace['.key']"
             :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
           >
-            Workspace {{ i }}
+            Blackboard {{ i }}
             <template v-if="workspace.members">
               <v-list-item-content>
                 <v-icon 
