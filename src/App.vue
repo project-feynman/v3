@@ -1,7 +1,6 @@
 <template>
-  <v-app :dark="useDarkMode">
-    <the-nav-bar/>
-    <the-side-nav/>
+  <v-app>
+    <the-nav-components/>
     <v-content id="background">
       <router-view/>
     </v-content>
@@ -9,25 +8,16 @@
 </template>
 
 <script>
-import TheNavBar from "./components/TheNavBar.vue"
-import TheSideNav from "./components/TheSideNav.vue"
+import TheNavComponents from "@/components/TheNavComponents.vue"
 
 export default {
   name: 'App',
   components: {
-    TheNavBar,
-    TheSideNav
+    TheNavComponents
   },
   computed: {
     user () {
       return this.$store.state.user
-    },
-    useDarkMode () {
-      if (!this.user) {
-        return false
-      } else {
-        return this.user.useDarkMode
-      }
     }
   }
 }

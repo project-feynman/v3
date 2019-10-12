@@ -8,7 +8,8 @@
     />
 
     <!-- WHITEBOARD BUTTONS -->
-    <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="grey">
+    <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="white">
+      <v-app-bar-nav-icon @click="toggleSideNav()"></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
       <v-toolbar-items v-if="whiteboardDoc">
         <template v-if="!whiteboardDoc.isAnswered">
@@ -18,7 +19,7 @@
             :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
             inline
             background-color="rgba(0, 0, 0, 0)"
-            swatch-size="55"
+            swatch-size="50"
           />
           <v-btn @click="useEraser()">ERASER</v-btn>
           <v-btn @click="deleteStrokesSubcollection()">CLEAR BOARD</v-btn>
@@ -40,7 +41,7 @@
             SAVE VIDEO
           </v-btn>
         </template>
-        <v-btn @click="handleExit()" dark text>EXIT</v-btn>
+        <!-- <v-btn @click="handleExit()" dark text>EXIT</v-btn> -->
       </v-toolbar-items>
     </v-toolbar>
 
@@ -177,6 +178,9 @@ export default {
     this.continuouslySyncBoardWithDB()
   },
   methods: {
+    toggleSideNav () {
+      this.$root.$emit("toggle-side-nav")
+    },
     takePicture () {
       const dataURL = this.canvas.toDataURL()
     },

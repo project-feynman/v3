@@ -28,13 +28,13 @@
         <v-list-item link to="/">
           <v-list-item-icon><v-icon>home</v-icon></v-list-item-icon>
           <v-list-item-content>Home</v-list-item-content>
-
+<!-- 
           <v-btn
             icon
             @click.prevent="mini = !mini"
           >
-          <v-icon>mdi-chevron-left</v-icon>
-        </v-btn>
+            <v-icon>mdi-chevron-left</v-icon>
+          </v-btn> -->
         </v-list-item>
 
         <v-list-item link :to="`/${this.$route.params.class_id}/gallery`">
@@ -71,7 +71,7 @@
           <template v-if="workspace.members">
           
             <v-list-item-content>
-              {{ i }}
+              Board {{ i }}
               <template v-for="(member, i) in workspace.members">
                 <div style="display: flex;" :key="i">
                   <v-icon color="pink">

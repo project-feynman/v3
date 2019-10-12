@@ -1,5 +1,5 @@
 <template>
-  <nav>
+  <div>
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -15,9 +15,10 @@
       @sign-in="payload => signIn(payload)"
       @create-account="payload => createAccount(payload)"
     />
-                  
+           
     <!-- NAVBAR  -->
-    <v-app-bar v-if="showNavbar" app color="white" id="navbar">
+    <v-app-bar app color="white">
+      <v-app-bar-nav-icon v-if="$route.path != '/'" @click="$emit('toggle-side-nav')"></v-app-bar-nav-icon>
       <img src="favicon.ico">
       <v-toolbar-title class="headline font-weight-regular ml-2">
         {{ $route.params.class_id ? $route.params.class_id : "ExplainMIT" }}
@@ -37,21 +38,15 @@
           <!-- <v-btn icon>
             <v-icon color="grey darken-2">notifications</v-icon>
           </v-btn> -->
-
-         <!-- <v-btn icon @click="newClassPopup = true">
-          <v-icon color="grey darken-2">
-            library_add
-          </v-icon>
-         </v-btn> -->
       </template>
     
-      <v-btn 
+      <!-- <v-btn 
         v-if="$route.params.video_id" 
         @click="replaySilentAnimation()"    
         icon
       >
         <v-icon medium>replay</v-icon>
-      </v-btn>
+      </v-btn> -->
 
       <v-btn 
         v-else-if="$route.params.id " 
@@ -113,7 +108,7 @@
     -->
 
     </v-app-bar>
-  </nav>
+  </div>
 </template>
 
 <script>

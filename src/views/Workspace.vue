@@ -15,7 +15,6 @@
       <whiteboard 
         v-if="loadCanvas && workspace.whiteboardID"
         ref="whiteboard"
-        :hideToolbar="true"
         :whiteboardID="workspace.whiteboardID"/>
 
       <!-- THIS IS THE FULLSCREEN WHITEBOARD -->
