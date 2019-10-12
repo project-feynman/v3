@@ -94,7 +94,7 @@ export default {
           const curPoint = points[i]
           const curX = curPoint.unitX * this.canvas.width
           const curY = curPoint.unitY * this.canvas.height
-          
+
           this.ctx.beginPath()
           this.ctx.moveTo(prevX, prevY)
           this.ctx.lineTo(curX, curY)
@@ -120,7 +120,6 @@ export default {
       this.lastY = y
     },
     setStyle (color = 'yellow', lineWidth = 2) {
-      console.log("setStyle()")
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
       this.ctx.lineWidth = lineWidth
