@@ -10,23 +10,12 @@
                   :workspaceID="workspace['.key']"
                   @open-room="updateHasAudioRoom()"/> -->
 
-      <!-- THIS IS WORKSPACE WHITEBOARD-->
       <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
       <whiteboard 
         v-if="loadCanvas && workspace.whiteboardID"
         ref="whiteboard"
         :whiteboardID="workspace.whiteboardID"/>
 
-      <!-- THIS IS THE FULLSCREEN WHITEBOARD -->
-      <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
-        <v-card v-if="whiteboardPopup">
-          <whiteboard 
-            v-if="loadCanvas"
-            ref="whiteboard"
-            :whiteboardID="workspace.whiteboardID"
-            @close-whiteboard="whiteboardPopup = false"/>
-        </v-card>
-      </v-dialog>
     </v-container>
   </div>
 </template>
@@ -80,7 +69,6 @@ export default {
   created () {
     // necessary for canvas to not be invisible during initial render
     setTimeout(() => (this.loadCanvas = true), 0)
-    this.$root.$on('open-whiteboard', () => this.whiteboardPopup = true)
   },
   async beforeDestroy () {
     // when the user switches to any other place besides another workspace
