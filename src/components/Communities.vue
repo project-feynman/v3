@@ -13,7 +13,7 @@
             <renderless-component :whiteboardID="courses[i].introVideoID">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['ENTER CLASS']"
+                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, courses[i], i)"
                   @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
                   :title="courses[i].courseNumber"
@@ -43,7 +43,7 @@
             <renderless-component :whiteboardID="courses[i-1].introVideoID">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['ENTER CLASS']"
+                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
                   @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
                   :title="courses[i-1].courseNumber"
@@ -67,7 +67,7 @@
             <renderless-component :whiteboardID="courses[i].introVideoID">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['ENTER CLASS']"
+                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, courses[i], i)" 
                   @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
                   :title="courses[i].courseNumber" 
@@ -137,7 +137,7 @@ export default {
         this.$router.push(`${courseNumber}/gallery`)
       } else if (buttonName == "FULL VIDEO") {
         
-      } else if (buttonName == "PREVIEW DOODLE") {
+      } else if (buttonName == "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()
       }
