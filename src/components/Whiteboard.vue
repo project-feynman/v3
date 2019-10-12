@@ -22,7 +22,9 @@
             swatch-size="50"
           />
           <v-btn @click="useEraser()">ERASER</v-btn>
-          <v-btn @click="deleteStrokesSubcollection()">CLEAR BOARD</v-btn>
+          <v-btn 
+            v-if="!isRecording"
+            @click="deleteStrokesSubcollection()">CLEAR BOARD</v-btn>
           <v-btn @click="disableTouch = !disableTouch">
             {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
           </v-btn>
