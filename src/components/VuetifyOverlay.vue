@@ -4,7 +4,7 @@
         <slot>
 
         </slot>
-        <v-row justify="center" @click="playVideo()">
+        <v-row justify="center">
           <v-overlay
             :absolute="absolute"
             :value="overlay"
