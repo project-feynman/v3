@@ -85,6 +85,7 @@ export default {
     // null is instant, 0 is quickplay, otherwise it's a realtime replay
     drawStroke ({ points, color, lineWidth }, pointPeriod = 0) {
       return new Promise(async resolve => {
+        this.setStyle(color, lineWidth)
         for (let i = 1; i < points.length; i++) {
           const prevPoint = points[i - 1]
           const prevX = prevPoint.unitX * this.canvas.width
@@ -93,8 +94,7 @@ export default {
           const curPoint = points[i]
           const curX = curPoint.unitX * this.canvas.width
           const curY = curPoint.unitY * this.canvas.height
-
-          this.setStyle(color, lineWidth)
+          
           this.ctx.beginPath()
           this.ctx.moveTo(prevX, prevY)
           this.ctx.lineTo(curX, curY)
@@ -120,6 +120,7 @@ export default {
       this.lastY = y
     },
     setStyle (color = 'yellow', lineWidth = 2) {
+      console.log("setStyle()")
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
       this.ctx.lineWidth = lineWidth
