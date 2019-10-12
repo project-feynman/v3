@@ -9,6 +9,7 @@ export default {
       // then, make the drawing coordinate system 1:1 with the actual size of the canvas
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
+      this.setStyle(this.color, this.lineWidth) // turns out the above code resets color and lineWidth
       // only redraw when the user has finished resizing the window
       if (redraw) {
         clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
@@ -120,6 +121,7 @@ export default {
       this.lastY = y
     },
     setStyle (color = 'yellow', lineWidth = 2) {
+      console.log("setStyle()")
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
       this.ctx.lineWidth = lineWidth

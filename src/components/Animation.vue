@@ -80,9 +80,6 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('whiteboard-closed', () => {
-      this.initData()
-    })
     this.canvas = document.getElementById(`myCanvas-${this.canvasID}`)
     this.ctx = this.canvas.getContext('2d')
     if (this.autoplay) {

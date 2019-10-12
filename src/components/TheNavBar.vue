@@ -39,22 +39,6 @@
             <v-icon color="grey darken-2">notifications</v-icon>
           </v-btn> -->
       </template>
-    
-      <!-- <v-btn 
-        v-if="$route.params.video_id" 
-        @click="replaySilentAnimation()"    
-        icon
-      >
-        <v-icon medium>replay</v-icon>
-      </v-btn> -->
-
-      <v-btn 
-        v-else-if="$route.params.id " 
-        @click="toggleFullscreen()"
-        icon
-      >
-        <v-icon medium>fullscreen</v-icon>
-      </v-btn>
 
       <template v-if="!isFetchingUser">
         
@@ -207,9 +191,6 @@ export default {
     },
     replaySilentAnimation () {
       this.$root.$emit('replay-silent-animation')
-    },
-    toggleFullscreen () {
-      this.$root.$emit('open-whiteboard')
     },
     createClass (courseNumber) {
       const ref = db.collection('classes').doc(courseNumber)

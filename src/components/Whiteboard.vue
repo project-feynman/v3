@@ -21,17 +21,27 @@
             background-color="rgba(0, 0, 0, 0)"
             swatch-size="50"
           />
-          <v-btn @click="useEraser()">ERASER</v-btn>
+          <!-- <v-btn @click="disableTouch = !disableTouch">
+            {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
+          </v-btn> -->
           <v-btn 
             v-if="!isRecording"
-            @click="deleteStrokesSubcollection()">CLEAR BOARD</v-btn>
-          <v-btn @click="disableTouch = !disableTouch">
-            {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
+            @click="deleteStrokesSubcollection()"
+            color="red darken-2 white--text"
+          >
+            CLEAR
+            <v-icon dark right>clear</v-icon>
           </v-btn>
-          <v-btn @click="saveDoodle()">SAVE DOODLE</v-btn>
-          <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
-            RECORD VIDEO
-          </v-btn>
+          <template v-if="!isRecording">
+            <v-btn @click="saveDoodle()">
+              SAVE 
+              <v-icon dark right>save</v-icon>
+            </v-btn>
+            <v-btn @click="startRecording()" color="pink white--text" dark>
+              RECORD
+              <v-icon dark right>fiber_manual_record</v-icon>
+            </v-btn>
+          </template>
           <v-btn v-else @click="stopRecording()" color="pink white--text">
             STOP VIDEO
           </v-btn>
@@ -61,7 +71,7 @@
     />
 
     <!-- ACTUAL WHITEBOARD -->
-    <canvas id="myCanvas" style="height: 90vh; width: 100%; background-color: rgb(62, 66, 66)"/>
+    <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/>
   </div>
 </template>
 
@@ -114,9 +124,9 @@ export default {
   data () {
     return {
       whiteboardDoc: null,
-      color: '#F64272',
+      color: '#0AF2F2',
       lineWidth: 2,
-      colors: ['#F64272', 'orange', '#0AF2F2'],
+      colors: ['#F64272', 'orange', '#0AF2F2', 'rgb(62, 66, 66)'],
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
@@ -138,7 +148,8 @@ export default {
       lastY: -1,
       unsubscribe: null,
       redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
-      hasUploadedAudio: false
+      hasUploadedAudio: false,
+      clearRectTimeout: null
     }
   },
   watch: {
@@ -148,8 +159,12 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
+      console.log("color changed to =", this.color)
       if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
         this.lineWidth = 2
+        this.setStyle(this.color, this.lineWidth)
+      } else {
+        this.lineWidth = 18
         this.setStyle(this.color, this.lineWidth)
       }
     },
@@ -178,6 +193,10 @@ export default {
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
     this.continuouslySyncBoardWithDB()
+    this.$root.$on("side-nav-toggled", sideNavOpened => {
+      this.canvas.width = document.documentElement.clientWidth
+      this.rescaleCanvas()
+    })
   },
   methods: {
     toggleSideNav () {
@@ -216,7 +235,8 @@ export default {
           } 
           else if (change.type === 'removed') {
             // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+            clearTimeout(this.clearRectTimeout)
+            this.clearRectTimeout = setTimeout(() => this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height), 400)
             this.resetVariables()
           }
         })
@@ -254,7 +274,6 @@ export default {
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
     async deleteStrokesSubcollection () {
-      console.log("deleteStrokesSubcollection")
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         this.strokesRef.doc(`${i}`).delete()
       }
@@ -334,11 +353,6 @@ export default {
         return true 
       } 
       return false
-    },
-    useEraser () {
-      this.color = 'rgb(62, 66, 66)'
-      this.lineWidth = 18
-      this.setStyle(this.color, this.lineWidth)
     },
     saveDoodle () {
       this.saveSilently = true

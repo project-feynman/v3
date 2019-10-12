@@ -14,7 +14,11 @@
     <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
       <template v-for="(course, i) in whiteboards">
         <!-- HANDLE EDGE CASE -->
-        <v-layout v-if="i == (whiteboards.length - 1) && i%2 != 1" :key="whiteboards[i]['.key']" :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0>
+        <v-layout 
+          v-if="i == (whiteboards.length - 1) && i%2 != 1" 
+          :key="whiteboards[i]['.key']" :class="`px-${getSideMargin()}`" 
+          row wrap mt-0 mx-0 mb-5 pa-0
+        >
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
             <renderless-component :whiteboardID="whiteboards[i]['.key']">
               <template slot-scope="slotProps">

@@ -32,7 +32,10 @@ export default {
     }
   },
   created () {
-    this.$root.$on("toggle-side-nav", () => this.sideNavOpen = !this.sideNavOpen)
+    this.$root.$on("toggle-side-nav", () => { 
+      this.sideNavOpen = !this.sideNavOpen
+      this.$root.$emit("side-nav-toggled", this.sideNavOpen)
+    })
   }
 }
 </script>
