@@ -39,7 +39,6 @@
           :key="course['.key']" 
           :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0
         >
-
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
             <renderless-component :whiteboardID="courses[i-1].introVideoID">
               <template slot-scope="slotProps">
@@ -86,7 +85,6 @@
               </template>
             </renderless-component>
           </v-flex>
-
         </v-layout>
         <!-- Edge case: last element (considering adding an invisible element) -->
       </template>
