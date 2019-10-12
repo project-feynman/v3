@@ -135,7 +135,7 @@ export default {
   },
   methods: {
     handleAction (buttonName, { courseNumber }, canvasID) {
-      if (buttonName == "ENTER COMMUNITY") {
+      if (buttonName == "ENTER CLASS") {
         this.$router.push(`${courseNumber}/gallery`)
       } else if (buttonName == "FULL VIDEO") {
         
