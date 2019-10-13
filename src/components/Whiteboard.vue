@@ -138,7 +138,10 @@ export default {
       lastY: -1,
       unsubscribe: null,
       redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
-      hasUploadedAudio: false
+      hasUploadedAudio: false,
+      mouseX : 0,
+      mouseY : 0,
+      mousedown : 0,
     }
   },
   watch: {
@@ -163,7 +166,8 @@ export default {
       // TODO: this gets triggered 2x more often than I expect, find out why
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
-          this.initTouchEvents()
+          this.initTouchEvents();
+          this.initMouseEvents();
         }
       }
     },
@@ -175,7 +179,8 @@ export default {
     this.ctx = this.canvas.getContext('2d')
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
-    this.initTouchEvents()
+    this.initTouchEvents();
+    this.initMouseEvents();
     this.continuouslySyncBoardWithDB()
   },
   methods: {
@@ -252,6 +257,17 @@ export default {
       this.canvas.removeEventListener('touchstart', this.touchStart, false)
       this.canvas.removeEventListener('touchend', this.touchEnd, false)
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
+    },
+    initMouseEvents() {
+      // TODO: implement mouseUp, mouseDown, mouseMove
+      window.addEventListener('mouseup', this.mouseUp, false);
+      this.canvas.addEventListener('mousedown', this.mouseDown, false);
+      this.canvas.addEventListener('mousemove', this.mouseMove, false);
+    },
+    removeMouseEvents() {
+      window.removeEventListener('mouseup', this.mouseUp, false);
+      this.canvas.removeEventListener('mousedown', this.mouseDown, false);
+      this.canvas.removeEventListener('mousemove', this.mouseMove, false);
     },
     async deleteStrokesSubcollection () {
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
@@ -332,6 +348,69 @@ export default {
       // }
       return false
     },
+    // --- Mouse Drawing --- // 
+    mouseDown() {
+      mousedown=1;
+
+      // drawDot(ctx,mouseX,mouseY);
+
+      // referenced from touchStart
+      this.setStyle(this.color, this.lineWidth);
+      this.getMousePos(e);
+      this.convertAndSavePoint(this.mouseX, this.mouseY);
+      this.drawToPoint(this.mouseX, this.mouseY);
+      if (this.isRecording) {
+        this.startTime = this.currentTime.toFixed(1)
+      }
+      event.preventDefault();
+    },
+    mouseUp() {
+      mousedown=0;
+
+      // referenced from touchEnd
+      const strokeNumber = this.allStrokes.length + 1
+      // save
+      const stroke = {
+        strokeNumber,
+        author: this.author || 'anonymous',
+        color: this.color,
+        lineWidth: this.lineWidth,
+        startTime: Number(this.startTime),
+        endTime: Number(this.currentTime.toFixed(1)),
+        points: this.currentStroke
+      }
+      this.allStrokes.push(stroke);
+      this.strokesRef.doc(`${strokeNumber}`).set(stroke);
+      // reset 
+      this.currentStroke = []
+      this.lastX = -1
+
+    },
+    mouseMove(e) { 
+      // Update the mouse co-ordinates when moved
+      getMousePos(e); // TODO
+
+      // Draw a pixel if the mouse button is currently being pressed 
+      if (mousedown == 1) { 
+        drawDot(ctx,mouseX,mouseY);  // TODO
+      }
+    },
+    getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
+    // TODO: different from getTouchPos? 
+      if (!e)
+        var e = event;
+
+      if (e.offsetX) {
+          mouseX = e.offsetX;
+          mouseY = e.offsetY;
+      }
+      else if (e.layerX) {
+          mouseX = e.layerX;
+          mouseY = e.layerY;
+      }
+    },
+    // --- END Mouse Drawing --- // 
+
     useEraser () {
       this.color = 'rgb(62, 66, 66)'
       this.lineWidth = 18
@@ -351,6 +430,7 @@ export default {
     stopRecording () {
       this.recording = false
       this.removeTouchEvents()
+      this.removeMouseEvents();
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.stopRecording()
       const ID = this.whiteboardDoc['.key']
