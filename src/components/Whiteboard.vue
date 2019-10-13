@@ -348,11 +348,10 @@ export default {
       // }
       return false
     },
+
     // --- Mouse Drawing --- // 
     mouseDown() {
-      mousedown=1;
-
-      // drawDot(ctx,mouseX,mouseY);
+      this.mousedown=1;
 
       // referenced from touchStart
       this.setStyle(this.color, this.lineWidth);
@@ -364,8 +363,9 @@ export default {
       }
       event.preventDefault();
     },
+
     mouseUp() {
-      mousedown=0;
+      this.mousedown=0;
 
       // referenced from touchEnd
       const strokeNumber = this.allStrokes.length + 1
@@ -384,29 +384,33 @@ export default {
       // reset 
       this.currentStroke = []
       this.lastX = -1
-
     },
-    mouseMove(e) { 
-      // Update the mouse co-ordinates when moved
-      getMousePos(e); // TODO
+
+    mouseMove(e) { // Update the mouse co-ordinates when moved
+      this.getMousePos(e);
 
       // Draw a pixel if the mouse button is currently being pressed 
-      if (mousedown == 1) { 
-        drawDot(ctx,mouseX,mouseY);  // TODO
+      if (this.mousedown == 1) { 
+        // referenced from touchMove
+        this.getMousePos(e);
+        this.convertAndSavePoint(this.mouseX, this.mouseY);
+        this.drawToPoint(this.mouseX, this.mouseY);
+        event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
       }
     },
+
     getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
     // TODO: different from getTouchPos? 
       if (!e)
         var e = event;
 
       if (e.offsetX) {
-          mouseX = e.offsetX;
-          mouseY = e.offsetY;
+          this.mouseX = e.offsetX;
+          this.mouseY = e.offsetY;
       }
       else if (e.layerX) {
-          mouseX = e.layerX;
-          mouseY = e.layerY;
+          this.mouseX = e.layerX;
+          this.mouseY = e.layerY;
       }
     },
     // --- END Mouse Drawing --- // 
