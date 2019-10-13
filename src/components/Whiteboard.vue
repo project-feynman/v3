@@ -278,7 +278,8 @@ export default {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
       const unitY = parseFloat(y / this.canvas.height).toFixed(4)
       this.currentStroke.push({ unitX, unitY })
-      this.drawToPoint(this.touchX, this.touchY)
+      // this.drawToPoint(this.touchX, this.touchY)
+      this.drawToPoint(x, y);
     },
     touchStart (e) {
       if (this.isNotValidTouch(e)) { return }
@@ -350,7 +351,7 @@ export default {
     },
 
     // --- Mouse Drawing --- // 
-    mouseDown() {
+    mouseDown(e) {
       this.mousedown=1;
 
       // referenced from touchStart
@@ -364,7 +365,7 @@ export default {
       event.preventDefault();
     },
 
-    mouseUp() {
+    mouseUp(e) {
       this.mousedown=0;
 
       // referenced from touchEnd
@@ -382,8 +383,8 @@ export default {
       this.allStrokes.push(stroke);
       this.strokesRef.doc(`${strokeNumber}`).set(stroke);
       // reset 
-      this.currentStroke = []
-      this.lastX = -1
+      this.currentStroke = [];
+      this.lastX = -1;
     },
 
     mouseMove(e) { // Update the mouse co-ordinates when moved
@@ -400,17 +401,16 @@ export default {
     },
 
     getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
-    // TODO: different from getTouchPos? 
       if (!e)
         var e = event;
 
       if (e.offsetX) {
-          this.mouseX = e.offsetX;
-          this.mouseY = e.offsetY;
+        this.mouseX = e.offsetX - this.canvas.getBoundingClientRect().left - window.scrollX;
+        this.mouseY = e.offsetY - this.canvas.getBoundingClientRect().top - window.scrollY;
       }
       else if (e.layerX) {
-          this.mouseX = e.layerX;
-          this.mouseY = e.layerY;
+        this.mouseX = e.layerX - this.canvas.getBoundingClientRect().left - window.scrollX;
+        this.mouseY = e.layerY - this.canvas.getBoundingClientRect().top - window.scrollY;
       }
     },
     // --- END Mouse Drawing --- // 
