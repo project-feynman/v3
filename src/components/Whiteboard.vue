@@ -1,73 +1,78 @@
 <template>
   <div id="whiteboard">
     <!-- SAVING POPUP -->
-    <whiteboard-save-popup v-model="saveVideoPopup"
-                           @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-                           fullscreen/>
+    <whiteboard-save-popup 
+      v-model="saveVideoPopup"
+      @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
+      fullscreen
+    />
 
     <!-- WHITEBOARD BUTTONS -->
-    <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="grey">
+    <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="white">
+      <v-app-bar-nav-icon @click="toggleSideNav()"></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
       <v-toolbar-items v-if="whiteboardDoc">
         <template v-if="!whiteboardDoc.isAnswered">
-          <swatches v-model="color"
-                    :colors="colors"
-                    :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-                    inline
-                    background-color="rgba(0, 0, 0, 0)"
-                    swatch-size="55"/>
-
-          <v-btn @click="useEraser()">
-            ERASER
-          </v-btn>
-          <v-btn @click="initClearBoardLogic()">
-            CLEAR BOARD
-          </v-btn>
-          <v-btn @click="disableTouch = !disableTouch">
+          <swatches 
+            v-model="color"
+            :colors="colors"
+            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
+            inline
+            background-color="rgba(0, 0, 0, 0)"
+            swatch-size="50"
+          />
+          <!-- <v-btn @click="disableTouch = !disableTouch">
             {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
+          </v-btn> -->
+          <v-btn 
+            v-if="!isRecording"
+            @click="deleteStrokesSubcollection()"
+            color="red darken-2 white--text"
+          >
+            CLEAR
+            <v-icon dark right>clear</v-icon>
           </v-btn>
-          <v-btn @click="saveDoodle()">
-            SAVE DOODLE
-          </v-btn>
-          <v-btn v-if="!isRecording" @click="startRecording()" color="pink white--text">
-            RECORD VIDEO
-          </v-btn>
+          <template v-if="!isRecording">
+            <v-btn @click="saveDoodle()">
+              SAVE 
+              <v-icon dark right>save</v-icon>
+            </v-btn>
+            <v-btn @click="startRecording()" color="pink white--text" dark>
+              RECORD
+              <v-icon dark right>fiber_manual_record</v-icon>
+            </v-btn>
+          </template>
           <v-btn v-else @click="stopRecording()" color="pink white--text">
             STOP VIDEO
           </v-btn>
         </template>
         <template v-else>
-          <v-btn @click="initReplayLogic()">
-            PREVIEW
-          </v-btn>
-          <v-btn @click="retryAnswer()">
-            RETRY
-          </v-btn>
+          <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
+          <v-btn @click="retryAnswer()">RETRY</v-btn>
           <v-btn @click="saveVideoPopup = true" :disabled="!hasUploadedAudio" class="pink white--text">
             SAVE VIDEO
           </v-btn>
         </template>
-        <v-btn @click="handleExit()" dark flat>
-          EXIT
-        </v-btn>
+        <!-- <v-btn @click="handleExit()" dark text>EXIT</v-btn> -->
       </v-toolbar-items>
     </v-toolbar>
 
     <!-- "@start-recording" is necessary because the audio-recorder can't 
-    start recording instantaneously - and if we false believe it is, then getAudioTime will be 
+    start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
     null-->
-    <audio-recorder v-if="whiteboardDoc"
-                    v-show="false"
-                    ref="audio-recorder"
-                    :audioURL="whiteboardDoc.audioURL"
-                    :audioPath="whiteboardDoc.audioPath"
-                    @start-recording="isRecording = true"
-                    @file-uploaded="audio => saveFileReference(audio)"/>
+    <audio-recorder 
+      v-if="whiteboardDoc"
+      v-show="false"
+      ref="audio-recorder"
+      :audioURL="whiteboardDoc.audioURL"
+      :audioPath="whiteboardDoc.audioPath"
+      @start-recording="isRecording = true"
+      @file-uploaded="audio => saveFileReference(audio)"
+    />
 
-    <!-- ACTUAL WHITEBOARD -->
-    <canvas id="myCanvas" 
-            style="height: 90vh; width: 100%; 
-                   background-color: rgb(62, 66, 66)"/>
+    <!-- WHITEBOARD -->
+    <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)"/>
+    <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
   </div>
 </template>
 
@@ -96,11 +101,18 @@ export default {
   mixins: [DrawMethods],
   computed: {
     ...mapState(['user']),
-    author() {
+    author () {
       if (this.user) {
-        return {
-          name: this.user.name,
-          uid: this.user.uid
+        if (this.user.name) {
+          return {
+            name: this.user.name,
+            uid: this.user.uid
+          }
+        } else {
+          return {
+            email: this.user.email,
+            uid: this.user.uid
+          }
         }
       } else {
         return {
@@ -108,15 +120,14 @@ export default {
           uid: 'Anonymous'
         }
       }
-  
     }
   },
   data () {
     return {
       whiteboardDoc: null,
-      color: '#F64272',
+      color: '#0AF2F2',
       lineWidth: 2,
-      colors: ['#F64272', 'orange', '#0AF2F2'],
+      colors: ['#F64272', 'orange', '#0AF2F2', 'rgb(62, 66, 66)'],
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
@@ -142,6 +153,7 @@ export default {
       mouseX : 0,
       mouseY : 0,
       mousedown : 0,
+      clearRectTimeout: null
     }
   },
   watch: {
@@ -149,10 +161,15 @@ export default {
       handler: 'initData',
       immediate: true
     },
-    // bad - high surface area for bugs
+    // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
+      console.log("color changed to =", this.color)
       if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
         this.lineWidth = 2
+        this.setStyle(this.color, this.lineWidth)
+      } else {
+        this.lineWidth = 30
+        this.setStyle(this.color, this.lineWidth)
       }
     },
     isRecording () {
@@ -177,16 +194,32 @@ export default {
     const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
+    // new redraw code
+    this.canvas.width = document.documentElement.clientWidth 
+    this.canvas.height = 0.9 * document.documentElement.clientHeight
     this.rescaleCanvas()
-    window.addEventListener('resize', this.rescaleCanvas, false)
-    this.initTouchEvents();
-    this.initMouseEvents();
+    window.addEventListener('resize', () => { 
+      this.canvas.width = document.documentElement.clientWidth 
+      this.rescaleCanvas()
+    }, false)
+    this.initTouchEvents()
+    this.initMouseEvents()
     this.continuouslySyncBoardWithDB()
+    this.$root.$on("side-nav-toggled", sideNavOpened => {
+      if (sideNavOpened) {
+        this.canvas.width = document.documentElement.clientWidth
+      } else {
+        this.canvas.width = document.documentElement.clientWidth
+      }
+      this.rescaleCanvas()
+    })
   },
   methods: {
+    toggleSideNav () {
+      this.$root.$emit("toggle-side-nav")
+    },
     takePicture () {
       const dataURL = this.canvas.toDataURL()
-      // console.log("dataURL =", dataURL)
     },
     initData () {
       if (!this.whiteboardID) {
@@ -218,7 +251,8 @@ export default {
           } 
           else if (change.type === 'removed') {
             // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+            clearTimeout(this.clearRectTimeout)
+            this.clearRectTimeout = setTimeout(() => this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height), 400)
             this.resetVariables()
           }
         })
@@ -244,14 +278,11 @@ export default {
     initReplayLogic () {
       this.quickplay()
     },
-    initClearBoardLogic () {
-      this.deleteStrokesSubcollection()
-      this.allStrokes = [] 
-    },
     initTouchEvents () {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
+      this.setStyle(this.color, this.lineWidth)
     },
     removeTouchEvents () {
       this.canvas.removeEventListener('touchstart', this.touchStart, false)
@@ -273,6 +304,7 @@ export default {
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         this.strokesRef.doc(`${i}`).delete()
       }
+      this.allStrokes = [] 
     },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
@@ -282,11 +314,12 @@ export default {
       this.drawToPoint(x, y);
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) { return }
+      if (this.isNotValidTouch(e)) { 
+        return 
+      }
       if (e.touches[0].touchType == 'stylus') {
         this.disableTouch = true
       } 
-      this.setStyle(this.color, this.lineWidth)
       this.getTouchPos(e) 
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -297,7 +330,9 @@ export default {
       event.preventDefault()
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) { return }
+      if (this.isNotValidTouch(e)) { 
+        return 
+      }
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -342,11 +377,9 @@ export default {
       }
     },
     isFinger (e) {
-      // if (e.touches.length == 1) {
-        if (e.touches[0].touchType != 'stylus') {
-          return true 
-        } 
-      // }
+      if (e.touches[0].touchType != 'stylus') {
+        return true 
+      } 
       return false
     },
 
@@ -432,7 +465,7 @@ export default {
       audioRecorder.startRecording()
     },
     stopRecording () {
-      this.recording = false
+      this.isRecording = false
       this.removeTouchEvents()
       this.removeMouseEvents();
       const audioRecorder = this.$refs['audio-recorder']
@@ -466,17 +499,19 @@ export default {
 
       let metadata = {
         title: videoTitle, 
-        authorUID: this.user.uid,
-        authorEmail: this.user.email,
         fromClass: classID,
-        isSaved: true
+        isSaved: true,
+        tabNumber: 0
         // thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       }
-      if (this.user.name) {
-        metadata.authorName = this.user.name
+      if (this.user) {
+        metadata.authorUID = this.user.uid
+        metadata.authorEmail = this.user.email
+        if (this.user.name) {
+          metadata.authorName = this.user.name
+        }
       }
       db.collection('whiteboards').doc(whiteboardID).update(metadata)
-      console.log("this.user =", this.user)
 
       // initialize a new whiteboard for the workspace
       const workspaceID = this.$route.params.id

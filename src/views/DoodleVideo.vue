@@ -2,18 +2,22 @@
   <div class="video">
     <!-- <p v-if="video">{{ video }}</p> -->
     <v-container fluid class="pa-0">
-      <animation v-if="allStrokes"
-                 ref="animation"
-                 :strokes="allStrokes"
-                 @animation-loaded="animationLoaded=true"
-                 @animation-finished="handleEvent()"/>
+      <animation 
+        v-if="allStrokes"
+        ref="animation"
+        :strokes="allStrokes"
+        @animation-loaded="animationLoaded=true"
+        @animation-finished="handleEvent()"
+      />
 
-      <audio-recorder v-if="audioURL"
-                  ref="audio-recorder"
-                  :audioURL="audioURL"
-                  @recorder-loading="recorderLoaded=false"
-                  @play="syncAnimation()"
-                  @recorder-loaded="recorderLoaded=true"/>
+      <audio-recorder 
+        v-if="audioURL"
+        ref="audio-recorder"
+        :audioURL="audioURL"
+        @recorder-loading="recorderLoaded=false"
+        @play="syncAnimation()"
+        @recorder-loaded="recorderLoaded=true"
+      />
 
     </v-container>
   </div>

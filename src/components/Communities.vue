@@ -1,83 +1,95 @@
 <template>
   <div>
-  <v-container grid-list-md fluid pt-5>
-    <template v-for="(course, i) in courses">
-      <!-- HANDLE EDGE CASE (FIRST OR LAST?) -->
-      <v-layout v-if="i == (courses.length - 1) && i%2 != 1" 
-                :key="course['.key']" 
-                :class="`px-${getSideMargin()}`" 
-                row wrap mt-0 mx-0 mb-5 pa-0>
-        <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-          <renderless-component :whiteboardID="courses[i].introVideoID">
-            <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
-                            @action="buttonName => handleAction(buttonName, courses[i], i)"
-                            @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
-                            :title="courses[i].courseNumber"
-                            :description="courses[i].description"
-                            :paragraph="courses[i].paragraph"
-                            :hasPermission="hasPermission">
-                <beta-doodle-video v-if="slotProps.strokes"
-                                   :ref="`doodle-video-${i}`"
-                                   :strokes="slotProps.strokes"
-                                   :canvasID="i">
-                </beta-doodle-video>
-              </vuetify-card>
+    <v-container grid-list-md fluid pt-5>
+      <template v-for="(course, i) in courses">
+        <!-- HANDLE EDGE CASE (FIRST OR LAST?) -->
+        <v-layout 
+          v-if="i == (courses.length - 1) && i%2 != 1" 
+          :key="course['.key']" 
+          :class="`px-${getSideMargin()}`" 
+          row wrap mt-0 mx-0 mb-5 pa-0
+        >
+          <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
+            <renderless-component :whiteboardID="courses[i].introVideoID">
+              <template slot-scope="slotProps">
+                <vuetify-card 
+                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
+                  @action="buttonName => handleAction(buttonName, courses[i], i)"
+                  @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
+                  :title="courses[i].courseNumber"
+                  :description="courses[i].description"
+                  :paragraph="courses[i].paragraph"
+                  :hasPermission="hasPermission"
+                >
+                  <beta-doodle-video 
+                    v-if="slotProps.strokes"
+                    :ref="`doodle-video-${i}`"
+                    :strokes="slotProps.strokes"
+                    :canvasID="`${i}`">
+                  </beta-doodle-video>
+                </vuetify-card>
               </template>
-          </renderless-component>
-        </v-flex>
-      </v-layout>
+            </renderless-component>
+          </v-flex>
+        </v-layout>
 
-      <!-- OTHERWISE RENDER PAIRS AT A TIME -->
-      <v-layout v-else-if="i%2 == 1" 
-                :key="course['.key']" 
-                :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0>
+        <!-- OTHERWISE RENDER PAIRS AT A TIME -->
+        <v-layout 
+          v-else-if="i%2 == 1" 
+          :key="course['.key']" 
+          :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0
+        >
+          <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
+            <renderless-component :whiteboardID="courses[i-1].introVideoID">
+              <template slot-scope="slotProps">
+                <vuetify-card 
+                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
+                  @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
+                  @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
+                  :title="courses[i-1].courseNumber"
+                  :description="courses[i-1].description"
+                  :paragraph="courses[i-1].paragraph"
+                  :hasPermission="hasPermission"
+                >
+                  <beta-doodle-video 
+                    v-if="slotProps.strokes"
+                    :ref="`doodle-video-${i-1}`"
+                    :strokes="slotProps.strokes"
+                    :canvasID="`${i-1}`"
+                  >
+                  </beta-doodle-video>
+                </vuetify-card>
+              </template>
+            </renderless-component>
+          </v-flex>
 
-        <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-          <renderless-component :whiteboardID="courses[i-1].introVideoID">
-            <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE']"
-                            @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
-                            @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
-                            :title="courses[i-1].courseNumber"
-                            :description="courses[i-1].description"
-                            :paragraph="courses[i-1].paragraph"
-                            :hasPermission="hasPermission">
-                <beta-doodle-video v-if="slotProps.strokes"
-                                   :ref="`doodle-video-${i-1}`"
-                                   :strokes="slotProps.strokes"
-                                   :canvasID="i-1">
-                </beta-doodle-video>
-              </vuetify-card>
-            </template>
-          </renderless-component>
-        </v-flex>
+          <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2); margin-left: ${getGapWidth()}px`">
+            <renderless-component :whiteboardID="courses[i].introVideoID">
+              <template slot-scope="slotProps">
+                <vuetify-card 
+                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
+                  @action="buttonName => handleAction(buttonName, courses[i], i)" 
+                  @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
+                  :title="courses[i].courseNumber" 
+                  :description="courses[i].description"
+                  :paragraph="courses[i].paragraph"
+                  :hasPermission="hasPermission"
+                >
+                  <beta-doodle-video
+                    v-if="slotProps.strokes"
+                    :ref="`doodle-video-${i}`"
+                    :strokes="slotProps.strokes"
+                    :canvasID="`${i}`"
+                  />
+                </vuetify-card>
+              </template>
+            </renderless-component>
+          </v-flex>
+        </v-layout>
+        <!-- Edge case: last element (considering adding an invisible element) -->
+      </template>
 
-        <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2); margin-left: ${getGapWidth()}px`">
-          <renderless-component :whiteboardID="courses[i].introVideoID">
-            <template slot-scope="slotProps">
-              <vuetify-card :actionButtons="['ENTER COMMUNITY', 'PREVIEW DOODLE',]"
-                            @action="buttonName => handleAction(buttonName, courses[i], i)" 
-                            @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
-                            :title="courses[i].courseNumber" 
-                            :description="courses[i].description"
-                            :paragraph="courses[i].paragraph"
-                            :hasPermission="hasPermission">
-                <beta-doodle-video v-if="slotProps.strokes"
-                                   :ref="`doodle-video-${i}`"
-                                   :strokes="slotProps.strokes"
-                                   :canvasID="i">
-                </beta-doodle-video>
-              </vuetify-card>
-            </template>
-          </renderless-component>
-        </v-flex>
-
-      </v-layout>
-      <!-- Edge case: last element (considering adding an invisible element) -->
-    </template>
-
-  </v-container>
+    </v-container>
   </div>
 </template>
 
@@ -121,11 +133,11 @@ export default {
   },
   methods: {
     handleAction (buttonName, { courseNumber }, canvasID) {
-      if (buttonName == "ENTER COMMUNITY") {
+      if (buttonName == "ENTER CLASS") {
         this.$router.push(`${courseNumber}/gallery`)
       } else if (buttonName == "FULL VIDEO") {
         
-      } else if (buttonName == "PREVIEW DOODLE") {
+      } else if (buttonName == "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()
       }

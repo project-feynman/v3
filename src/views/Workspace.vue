@@ -1,6 +1,7 @@
 <template>
   <div id="workspace">
     <v-container v-if="simpleUser && workspace" fluid class="pa-0">
+      <VoiceChat :workspaceID="workspace['.key']" :user="simpleUser"/>
       <!-- AUDIO CHAT -->
       <!-- <div class="text-xs-center">
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
@@ -9,22 +10,12 @@
                   :workspaceID="workspace['.key']"
                   @open-room="updateHasAudioRoom()"/> -->
 
-      <!-- THIS IS THE WHITEBOARD THAT IS NOT FULLSCREEN -->
       <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
-      <whiteboard v-if="loadCanvas && workspace.whiteboardID"
-                  ref="whiteboard"
-                  :hideToolbar="true"
-                  :whiteboardID="workspace.whiteboardID"/>
+      <whiteboard 
+        v-if="loadCanvas && workspace.whiteboardID"
+        ref="whiteboard"
+        :whiteboardID="workspace.whiteboardID"/>
 
-      <!-- THIS IS THE FULLSCREEN WHITEBOARD -->
-      <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
-        <v-card v-if="whiteboardPopup">
-          <whiteboard v-if="loadCanvas"
-                      ref="whiteboard"
-                      :whiteboardID="workspace.whiteboardID"
-                      @close-whiteboard="whiteboardPopup = false"/>
-        </v-card>
-      </v-dialog>
     </v-container>
   </div>
 </template>
@@ -36,28 +27,27 @@ import slugify from 'slugify'
 import { mapState } from 'vuex'
 import db from '@/database.js'
 import Whiteboard from '@/components/Whiteboard.vue'
-import VideoChat from '@/components/VideoChat.vue'
-import { toUnicode } from 'punycode';
+import VoiceChat from '@/components/VoiceChat.vue'
 
 export default {
   components: {
     Whiteboard,
-    VideoChat
+    VoiceChat
   },
   computed: {
     ...mapState(['user']),
     simpleUser () {
       if (this.user) {
         return {
-          email: this.user.email,
-          uid: this.user.uid,
-          color: this.user.color || "grey"
+          email: this.user.email || "anonymous@gmail.com",
+          uid: this.user.uid || "anonymous",
+          color: this.user.color || "grey",
         }
       } else {
         return {
           email: "anonymous",
           uid: "anonymous",
-          color: "grey"
+          color: "grey",
         }
       }
     }
@@ -79,7 +69,6 @@ export default {
   created () {
     // necessary for canvas to not be invisible during initial render
     setTimeout(() => (this.loadCanvas = true), 0)
-    this.$root.$on('open-whiteboard', () => this.whiteboardPopup = true)
   },
   async beforeDestroy () {
     // when the user switches to any other place besides another workspace

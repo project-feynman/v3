@@ -1,26 +1,23 @@
 <template>
   <div id="whiteboard" style="height: 100%">
-    
-    <canvas v-if="isFullscreen"
-            :id="`myCanvas-${canvasID}`"  
-            style="width: 100%;
-                   height: 90vh;
-                   background-color: rgb(62, 66, 66)">
+    <canvas 
+      v-if="isFullscreen"
+      :id="`myCanvas-${canvasID}`"  
+      style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
+    >
     </canvas>
-    <template v-else>
-      <canvas 
-              :id="`myCanvas-${canvasID}`" 
-              style="width: 100%;
-                    height: 100%;
-                    background-color: rgb(62, 66, 66)">
+    <!-- <vuetify-overlay v-else :overlay="overlay" @play-video="playVideo()"> -->
+      <canvas v-else
+        :id="`myCanvas-${canvasID}`" 
+        style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
+      >
       </canvas>
-      <!-- <div class="blue-box">12</div> -->
-      <!-- <div class="yellow-square"></div> -->
-    </template>
+    <!-- </vuetify-overlay> -->
   </div>
 </template>
 
 <script>
+import VuetifyOverlay from "@/components/VuetifyOverlay.vue"
 import { mapState } from 'vuex'
 import DrawMethods from '@/mixins/DrawMethods'
 import db from '@/database.js'
@@ -34,9 +31,12 @@ export default {
       default: true
     },
     canvasID: {
-      type: Number,
-      default: 1
+      type: String,
+      default: "1"
     }
+  },
+  components: {
+    VuetifyOverlay
   },
   mixins: [DrawMethods],
   watch: {
@@ -63,6 +63,7 @@ export default {
   },
   data () {
     return {
+      overlay: true,
       playProgress: null,
       isReplaying: false,
       allStrokes: [],
@@ -79,9 +80,6 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('whiteboard-closed', () => {
-      this.initData()
-    })
     this.canvas = document.getElementById(`myCanvas-${this.canvasID}`)
     this.ctx = this.canvas.getContext('2d')
     if (this.autoplay) {
@@ -99,6 +97,11 @@ export default {
     }
   },
   methods: {
+    async playVideo () {
+      this.overlay = false 
+      await this.quickplay()
+      this.overlay = true 
+    },
     async initData () {
       if (!this.strokes) {
         return 
@@ -115,25 +118,5 @@ export default {
   }
 }
 </script>
-
-<style>
-/* .yellow-square {
-  background-color: #FFDC00;
-  display: inline-block;
-  z-index: 1000;
-  width: 50px;
-  height: 50px;
-  margin: 0 auto;
-}
-
-.cn {
-  display: table-cell;
-  width: 500px;
-  height: 500px;
-  vertical-align: middle;
-  text-align: center;
-} */
-</style>
-
 
 

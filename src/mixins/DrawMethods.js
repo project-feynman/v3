@@ -9,10 +9,11 @@ export default {
       // then, make the drawing coordinate system 1:1 with the actual size of the canvas
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
+      this.setStyle(this.color, this.lineWidth) // turns out the above code resets color and lineWidth
       // only redraw when the user has finished resizing the window
       if (redraw) {
         clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
-        this.redrawTimeout = setTimeout(this.drawStrokesInstantly, 400) // resizing the canvas causes all drawings to be lost 
+        this.redrawTimeout = setTimeout(this.drawStrokesInstantly, 200) // resizing the canvas causes all drawings to be lost 
       }
     },
     async startSync (getTimeInSeconds) {
@@ -85,6 +86,7 @@ export default {
     // null is instant, 0 is quickplay, otherwise it's a realtime replay
     drawStroke ({ points, color, lineWidth }, pointPeriod = 0) {
       return new Promise(async resolve => {
+        this.setStyle(color, lineWidth)
         for (let i = 1; i < points.length; i++) {
           const prevPoint = points[i - 1]
           const prevX = prevPoint.unitX * this.canvas.width
@@ -94,7 +96,6 @@ export default {
           const curX = curPoint.unitX * this.canvas.width
           const curY = curPoint.unitY * this.canvas.height
 
-          this.setStyle(color, lineWidth)
           this.ctx.beginPath()
           this.ctx.moveTo(prevX, prevY)
           this.ctx.lineTo(curX, curY)
@@ -122,11 +123,7 @@ export default {
     setStyle (color = 'yellow', lineWidth = 2) {
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
-      if (this.isFullScreen) {
-        this.ctx.lineWidth = lineWidth
-      } else {
-        this.ctx.lineWidth = 1.8
-      }
+      this.ctx.lineWidth = lineWidth
     },
     traceLineTo (x, y) {
       this.ctx.beginPath()

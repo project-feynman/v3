@@ -11,6 +11,7 @@ import VueChatScroll from 'vue-chat-scroll'
 import VuePlyr from 'vue-plyr'
 import 'vue-plyr/dist/vue-plyr.css'
 import Clipboard from 'v-clipboard'
+import vuetify from './plugins/vuetify'
 
 // plugins 
 Vue.use(VueChatScroll)
@@ -32,5 +33,6 @@ firebase.auth().onAuthStateChanged(user => {
 new Vue({
   router,
   store,
+  vuetify,
   render: h => h(App)
 }).$mount('#app')

@@ -13,6 +13,7 @@
     "firebase-admin": "^6.4.0",
     "firebase-functions": "^2.1.0",
     "moment": "^2.24.0",
+    "peerjs": "^1.1.0",
     "register-service-worker": "^1.5.2",
     "simple-peer": "^9.2.1",
     "sizeof": "^1.0.0",
@@ -27,7 +28,7 @@
     "vue-plyr": "^5.1.0",
     "vue-router": "^3.0.1",
     "vue-swatches": "^1.0.2",
-    "vuetify": "^1.5.16",
+    "vuetify": "^2.0.19",
     "vuex": "^3.0.1"
   },
   "devDependencies": {
@@ -38,12 +39,12 @@
     "@vue/test-utils": "^1.0.0-beta.20",
     "babel-core": "7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
-    "node-sass": "^4.9.0",
-    "sass-loader": "^7.0.1",
+    "sass": "^1.22.12",
+    "sass-loader": "^7.1.0",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
-    "vue-cli-plugin-vuetify": "^0.4.6",
+    "vue-cli-plugin-vuetify": "^0.6.3",
     "vue-template-compiler": "^2.6.10",
-    "vuetify-loader": "^1.0.5"
+    "vuetify-loader": "^1.2.2"
   }
 }

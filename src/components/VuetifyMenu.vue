@@ -14,26 +14,26 @@
 
       <v-card>
         <v-list>
-          <v-list-tile avatar>
-            <v-list-tile-avatar>
+          <v-list-item>
+            <v-list-item-avatar>
               <v-icon large :color="color">
                 account_circle
               </v-icon>
               <!-- <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="John"> -->
-            </v-list-tile-avatar>
+            </v-list-item-avatar>
             
    
-            <v-list-tile-content>
+            <v-list-item-content>
                <v-text-field
-                    placeholder="Enter your name here"
-                    :value="user.name"
-                    @input="value => name = value"
-                    single-line
+                  placeholder="Enter your name here"
+                  :value="user.name"
+                  @input="value => name = value"
+                  single-line
               ></v-text-field>
-              <!-- <v-list-tile-sub-title>Founder of Vuetify.js</v-list-tile-sub-title> -->
-            </v-list-tile-content>
 
-            <v-list-tile-action>
+            </v-list-item-content>
+
+            <v-list-item-action>
               <v-btn
                 :class="fav ? 'red--text' : ''"
                 icon
@@ -41,44 +41,29 @@
               >
                 <!-- <v-icon>favorite</v-icon> -->
               </v-btn>
-            </v-list-tile-action>
-          </v-list-tile>
+            </v-list-item-action>
+          </v-list-item>
         </v-list>
 
         <v-divider></v-divider>
 
         <v-list>
-            <!-- <swatches 
-                    :color="user.color"
-                    @input="value => color = value"
-                    :colors="colors"
-                    :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', marginLeft: '0px', height: '30px' }"
-                    inline
-                    background-color="rgba(0, 0, 0, 0)"
-                    swatch-size="30"/> -->
-
-          <v-list-tile>
-            <v-list-tile-action>
+          <v-list-item>
+            <v-list-item-action>
               <v-switch v-model="message" color="purple"></v-switch>
-            </v-list-tile-action>
-            <v-list-tile-title>Enable notifications</v-list-tile-title>
-          </v-list-tile>
+            </v-list-item-action>
+            <v-list-item-title>Enable notifications</v-list-item-title>
+          </v-list-item>
 
-          <!-- <v-list-tile>
-            <v-list-tile-action>
-              <v-switch :value="user.useDarkMode" @change="value => useDarkMode = value" color="purple"></v-switch>
-            </v-list-tile-action>
-            <v-list-tile-title>Enable dark mode</v-list-tile-title>
-          </v-list-tile> -->
         </v-list>
 
         <v-card-actions>
           <!-- <v-spacer></v-spacer> -->
 
           <!-- <v-btn flat @click="menu = false">Cancel</v-btn> -->
-          <v-btn color="primary" flat @click="handleSave()">Save</v-btn>
+          <v-btn color="primary" text @click="handleSave()">Save</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="grey" flat @click="$emit('sign-out')">Sign Out</v-btn>
+          <v-btn color="grey" text @click="$emit('sign-out')">Sign Out</v-btn>
         </v-card-actions>
       </v-card>
     </v-menu>
