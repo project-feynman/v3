@@ -150,6 +150,9 @@ export default {
       unsubscribe: null,
       redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
       hasUploadedAudio: false,
+      mouseX : 0,
+      mouseY : 0,
+      mousedown : 0,
       clearRectTimeout: null
     }
   },
@@ -180,7 +183,8 @@ export default {
       // TODO: this gets triggered 2x more often than I expect, find out why
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
-          this.initTouchEvents()
+          this.initTouchEvents();
+          this.initMouseEvents();
         }
       }
     },
@@ -199,6 +203,7 @@ export default {
       this.rescaleCanvas()
     }, false)
     this.initTouchEvents()
+    this.initMouseEvents()
     this.continuouslySyncBoardWithDB()
     this.$root.$on("side-nav-toggled", sideNavOpened => {
       if (sideNavOpened) {
@@ -284,6 +289,17 @@ export default {
       this.canvas.removeEventListener('touchend', this.touchEnd, false)
       this.canvas.removeEventListener('touchmove', this.touchMove, false)
     },
+    initMouseEvents() {
+      // TODO: implement mouseUp, mouseDown, mouseMove
+      window.addEventListener('mouseup', this.mouseUp, false);
+      this.canvas.addEventListener('mousedown', this.mouseDown, false);
+      this.canvas.addEventListener('mousemove', this.mouseMove, false);
+    },
+    removeMouseEvents() {
+      window.removeEventListener('mouseup', this.mouseUp, false);
+      this.canvas.removeEventListener('mousedown', this.mouseDown, false);
+      this.canvas.removeEventListener('mousemove', this.mouseMove, false);
+    },
     async deleteStrokesSubcollection () {
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         this.strokesRef.doc(`${i}`).delete()
@@ -294,7 +310,8 @@ export default {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
       const unitY = parseFloat(y / this.canvas.height).toFixed(4)
       this.currentStroke.push({ unitX, unitY })
-      this.drawToPoint(this.touchX, this.touchY)
+      // this.drawToPoint(this.touchX, this.touchY)
+      this.drawToPoint(x, y);
     },
     touchStart (e) {
       if (this.isNotValidTouch(e)) { 
@@ -365,6 +382,76 @@ export default {
       } 
       return false
     },
+
+    // --- Mouse Drawing --- // 
+    mouseDown(e) {
+      this.mousedown=1;
+
+      // referenced from touchStart
+      this.setStyle(this.color, this.lineWidth);
+      this.getMousePos(e);
+      this.convertAndSavePoint(this.mouseX, this.mouseY);
+      this.drawToPoint(this.mouseX, this.mouseY);
+      if (this.isRecording) {
+        this.startTime = this.currentTime.toFixed(1)
+      }
+      event.preventDefault();
+    },
+
+    mouseUp(e) {
+      this.mousedown=0;
+
+      // referenced from touchEnd
+      const strokeNumber = this.allStrokes.length + 1
+      // save
+      const stroke = {
+        strokeNumber,
+        author: this.author || 'anonymous',
+        color: this.color,
+        lineWidth: this.lineWidth,
+        startTime: Number(this.startTime),
+        endTime: Number(this.currentTime.toFixed(1)),
+        points: this.currentStroke
+      }
+      this.allStrokes.push(stroke);
+      this.strokesRef.doc(`${strokeNumber}`).set(stroke);
+      // reset 
+      this.currentStroke = [];
+      this.lastX = -1;
+    },
+
+    mouseMove(e) { // Update the mouse co-ordinates when moved
+      this.getMousePos(e);
+
+      // Draw a pixel if the mouse button is currently being pressed 
+      if (this.mousedown == 1) { 
+        // referenced from touchMove
+        this.getMousePos(e);
+        this.convertAndSavePoint(this.mouseX, this.mouseY);
+        this.drawToPoint(this.mouseX, this.mouseY);
+        event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
+      }
+    },
+
+    getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
+      if (!e)
+        var e = event;
+
+      if (e.offsetX) {
+        this.mouseX = e.offsetX - this.canvas.getBoundingClientRect().left - window.scrollX;
+        this.mouseY = e.offsetY - this.canvas.getBoundingClientRect().top - window.scrollY;
+      }
+      else if (e.layerX) {
+        this.mouseX = e.layerX - this.canvas.getBoundingClientRect().left - window.scrollX;
+        this.mouseY = e.layerY - this.canvas.getBoundingClientRect().top - window.scrollY;
+      }
+    },
+    // --- END Mouse Drawing --- // 
+
+    useEraser () {
+      this.color = 'rgb(62, 66, 66)'
+      this.lineWidth = 18
+    },
     saveDoodle () {
       this.saveSilently = true
       this.saveVideoPopup = true 
@@ -380,6 +467,7 @@ export default {
     stopRecording () {
       this.isRecording = false
       this.removeTouchEvents()
+      this.removeMouseEvents();
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.stopRecording()
       const ID = this.whiteboardDoc['.key']
