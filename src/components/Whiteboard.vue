@@ -3,6 +3,7 @@
     <!-- SAVING POPUP -->
     <whiteboard-save-popup 
       v-model="saveVideoPopup"
+      ref="popup-save"
       @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
       fullscreen
     />
@@ -16,6 +17,7 @@
           <swatches 
             v-model="color"
             :colors="colors"
+            :show-border="true"
             :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
             inline
             background-color="rgba(0, 0, 0, 0)"
@@ -49,11 +51,10 @@
         <template v-else>
           <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
           <v-btn @click="retryAnswer()">RETRY</v-btn>
-          <v-btn @click="saveVideoPopup = true" :disabled="!hasUploadedAudio" class="pink white--text">
+          <v-btn @click="saveVideo()" :disabled="!hasUploadedAudio" class="pink white--text">
             SAVE VIDEO
           </v-btn>
         </template>
-        <!-- <v-btn @click="handleExit()" dark text>EXIT</v-btn> -->
       </v-toolbar-items>
     </v-toolbar>
 
@@ -125,9 +126,9 @@ export default {
   data () {
     return {
       whiteboardDoc: null,
-      color: '#0AF2F2',
+      color: 'white',
       lineWidth: 2,
-      colors: ['#F64272', 'orange', '#0AF2F2', 'rgb(62, 66, 66)'],
+      colors: ['white', 'orange', '#0AF2F2', 'rgb(62, 66, 66)'],
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
@@ -215,6 +216,9 @@ export default {
     })
   },
   methods: {
+    saveVideo () {
+      saveVideoPopup = true
+    },
     toggleSideNav () {
       this.$root.$emit("toggle-side-nav")
     },
@@ -475,18 +479,15 @@ export default {
         isAnswered: true 
       })
     },
-    async retryAnswer () {
+    retryAnswer () {
       this.currentTime = 0 
       const ID = this.whiteboardDoc['.key']
       const whiteboardRef = db.collection('whiteboards').doc(ID)
-      await whiteboardRef.update({
+      whiteboardRef.update({
         isAnswered: false,
         audioURL: '',
         audioPath: ''
       })
-    },
-    handleExit () {
-      this.$emit('close-whiteboard')
     },
     async handleSaving (videoTitle) {
       // mark the whiteboard as saved 
@@ -502,6 +503,7 @@ export default {
         fromClass: classID,
         isSaved: true,
         tabNumber: 0
+        // duration: 130
         // thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       }
       if (this.user) {
@@ -520,9 +522,11 @@ export default {
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       })
-      // bad design, but informs the whiteboard that saving logic has completed
-      // TODO: since WhiteboardSavePopup is just the child, communicate with it directly (through props)
-      this.$root.$emit('audio-uploaded', whiteboardID)
+      // let popup show the success state and the shareable URL
+      this.$refs["popup-save"].showSuccessMessage(whiteboardID)
+
+      // reset the whiteboard 
+      this.hasUploadAudio = false
     },
     saveFileReference({ url, path }) {
       // this is really bad, because the user may attempt to upload the video when the audio file has not yet been processed

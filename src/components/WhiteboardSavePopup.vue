@@ -12,7 +12,6 @@
                   autofocus
                   placeholder="e.g. Djikstra's Algorithm"
                 />
-                <!-- </v-text-field> -->
               </v-flex>
             </v-layout>
           </v-container>
@@ -59,13 +58,17 @@ export default {
       videoTitle: ''
     }
   },
-  created () {
-    this.$root.$on('audio-uploaded', videoDocId => {
-      this.shareableURL = `explain.mit.edu/${this.$route.params.class_id}/${videoDocId}`
-      this.isSavingVideo = false 
-    }) 
-  },
+  // created () {
+  //   this.$root.$on('audio-uploaded', videoDocId => {
+  //     this.shareableURL = `explain.mit.edu/${this.$route.params.class_id}/${videoDocId}`
+  //     this.isSavingVideo = false 
+  //   }) 
+  // },
   methods: {
+    showSuccessMessage (videoDocID) {
+      this.shareableURL = `explain.mit.edu/${this.$route.params.class_id}/${videoDocID}`
+      this.isSavingVideo = false 
+    },
     handleSave () {
       if (!this.videoTitle) {
         return 
