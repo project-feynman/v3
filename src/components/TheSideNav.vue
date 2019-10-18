@@ -17,7 +17,7 @@
 
         <v-list-item link :to="`/${this.$route.params.class_id}/gallery`">
           <v-list-item-icon><v-icon>video_library</v-icon></v-list-item-icon>
-          <v-list-item-content>Videos</v-list-item-content>
+          <v-list-item-content>Explanations</v-list-item-content>
         </v-list-item>
 
         <!-- <v-list-item link :to="`/${this.$route.params.class_id}/classmates`">

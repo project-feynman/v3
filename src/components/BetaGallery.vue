@@ -5,16 +5,42 @@
         <div class="text-xs-center">
           <v-btn @click="whiteboardPopup = false">EXIT</v-btn>
         </div>
-        <!-- DOODLE VIDEO IS THE REAL VIDEO -->
-        <!-- FAKE VIDEO IS NOT THE FAKE VIDEO -->
+ 
         <doodle-video :videoID="currentVideoID"/>
       </v-card>
     </v-dialog>
 
     <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
       <template v-for="(course, i) in whiteboards">
-        <!-- HANDLE EDGE CASE -->
-        <v-layout 
+         <renderless-component :key="course['.key']" :whiteboardID="course['.key']">
+              <template slot-scope="slotProps">
+                <vuetify-card 
+                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
+                  @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
+                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
+                  @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
+                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
+                  :title="whiteboards[i].title"
+                  :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
+                  :paragraph="whiteboards[i].paragraph"
+                  :hasPermission="checkPermission(whiteboards[i])"
+                  :tabs="tabs"
+                  :tabNumber="tabNumber"
+                  class="mb-5"
+                >
+              
+                  <beta-doodle-video 
+                    v-if="slotProps.strokes"
+                    :ref="`doodle-video-${i}`"
+                    :strokes="slotProps.strokes"
+                    :canvasID="`${tabNumber}-${i}`">
+                  </beta-doodle-video>
+                </vuetify-card>
+              </template>
+            </renderless-component>
+
+  
+        <!-- <v-layout 
           v-if="i == (whiteboards.length - 1) && i%2 != 1" 
           :key="whiteboards[i]['.key']" :class="`px-${getSideMargin()}`" 
           row wrap mt-0 mx-0 mb-5 pa-0
@@ -35,7 +61,7 @@
                   :tabs="tabs"
                   :tabNumber="tabNumber"
                 >
-                  <!-- not sure if ref is actually used -->
+             
                   <beta-doodle-video 
                     v-if="slotProps.strokes"
                     :ref="`doodle-video-${i}`"
@@ -107,9 +133,10 @@
             </renderless-component>
           </v-flex>
 
-        </v-layout>
+        </v-layout> -->
       </template>
     </v-container>
+    
   </div>
 </template>
 

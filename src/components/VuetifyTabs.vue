@@ -27,13 +27,13 @@
     </v-tabs>
       
     <!-- EDIT OPTIONS -->
-    <v-card-text class="text-center">
+    <v-card-text v-if="user" class="text-center">
       <template v-if="isEditting">
         <v-btn @click="handleSave()">SAVE CHANGES</v-btn>
         <v-btn @click="addTab()">ADD TAB</v-btn>
         <v-btn @click="removeTab()">REMOVE TAB</v-btn>
       </template>
-      <v-btn v-else-if="user" @click="isEditting = true">EDIT TABS</v-btn>
+      <v-btn v-else @click="isEditting = true">EDIT TABS</v-btn>
     </v-card-text>
 
     <v-tabs-items v-model="tab">

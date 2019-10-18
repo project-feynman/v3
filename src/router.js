@@ -19,7 +19,7 @@ export default new Router({
     },
     {
       path: '/:class_id/gallery',
-      component: () => import(/* webpackChunkName: "ranking" */ './views/Gallery.vue')
+      component: () => import(/* webpackChunkName: "ranking" */ './views/Explanations.vue')
     },
     {
       path: '/:class_id/workspace/:id',
