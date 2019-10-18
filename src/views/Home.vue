@@ -17,21 +17,21 @@
         explain.mit.edu
       </p>
       <!-- <p>adjective</p> -->
-      <div class="text--primary">
-        Here students, TAs and professors share blackboard explanations for<br>
-        fundamental concepts, example problems and pset solutions.<br>
+      <div class="headline text--primary">
+        A place where people share blackboard explanations for<br>
+        fundamental concepts and difficult problems<br>
       </div>
     </v-card-text>
-    <v-card-actions>
+    <!-- <v-card-actions>
         <v-btn
           text
           class="mx-auto"
           color="deep-purple accent-4"
           href="https://medium.com/@eltonlin1998/why-explainmit-c0cab5617d4d"
         >
-          Learn More
+          LEARN MORE
         </v-btn>
-    </v-card-actions>
+    </v-card-actions> -->
   </v-card>
 
     <transition 
