@@ -23,7 +23,7 @@ export default new Router({
     },
     {
       path: '/:class_id/workspace/:id',
-      component: () => import(/* webpackChunkName: "workspace" */ './views/Workspace.vue'),
+      component: () => import(/* webpackChunkName: "workspace" */ './views/Blackboard.vue'),
     },
     {
       path: '/:class_id/:video_id',
