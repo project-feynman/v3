@@ -1,7 +1,7 @@
 <template>
   <div id="workspace">
     <v-container v-if="simpleUser && workspace" fluid class="pa-0">
-      <VoiceChat :workspaceID="workspace['.key']" :user="simpleUser"/>
+      <!-- <VoiceChat :workspaceID="workspace['.key']" :user="simpleUser"/> -->
       <!-- AUDIO CHAT -->
       <!-- <div class="text-xs-center">
         <div>workspace.hasAudioRoom = {{ workspace.hasAudioRoom }}</div>
