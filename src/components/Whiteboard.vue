@@ -502,8 +502,7 @@ export default {
         title: videoTitle, 
         fromClass: classID,
         isSaved: true,
-        tabNumber: 0
-        // duration: 130
+        tabNumber: 0,
         // thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       }
       if (this.user) {
@@ -512,6 +511,9 @@ export default {
         if (this.user.name) {
           metadata.authorName = this.user.name
         }
+      }
+      if (this.currentTime) {
+        metadata.duration = this.currentTime
       }
       db.collection('whiteboards').doc(whiteboardID).update(metadata)
 
