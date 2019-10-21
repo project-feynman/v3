@@ -11,11 +11,11 @@
     </v-dialog>
 
     <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
-      <template v-for="(course, i) in whiteboards">
-         <renderless-component :key="course['.key']" :whiteboardID="course['.key']">
+      <template v-for="(explanation, i) in whiteboards">
+         <renderless-component :key="explanation['.key']" :whiteboardID="explanation['.key']">
               <template slot-scope="slotProps">
                 <vuetify-card 
-                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
+                  :actionButtons="['FULL VIDEO', 'QUICKPLAY', `HELPFUL (${explanation.likes || 0})`]"
                   @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
                   @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
                   @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
