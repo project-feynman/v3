@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import './plugins/vuetify'
 import App from './App.vue'
+import BetaApp from "./BetaApp.vue"
 import router from './router'
 import store from './store'
 // import './notifications'
@@ -30,9 +31,16 @@ firebase.auth().onAuthStateChanged(user => {
   }
 })
 
+// new Vue({
+//   router,
+//   store,
+//   vuetify,
+//   render: h => h(App)
+// }).$mount('#app')
+
 new Vue({
   router,
   store,
   vuetify,
-  render: h => h(App)
+  render: h => h(BetaApp)
 }).$mount('#app')

@@ -13,17 +13,12 @@ export default new Router({
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
     {
-      name: "Classmates",
-      path: '/:class_id/classmates',
-      component: () => import(/* webpackChunkName: "ranking" */ './views/Classmates.vue')
-    },
-    {
-      path: '/:class_id/gallery',
-      component: () => import(/* webpackChunkName: "ranking" */ './views/Explanations.vue')
+      path: '/:class_id/videos',
+      component: () => import(/* webpackChunkName: "videos" */ './views/Videos.vue')
     },
     {
       path: '/:class_id/workspace/:id',
-      component: () => import(/* webpackChunkName: "workspace" */ './views/Blackboard.vue'),
+      component: () => import(/* webpackChunkName: "blackboard" */ './views/Blackboard.vue'),
     },
     {
       path: '/:class_id/:video_id',

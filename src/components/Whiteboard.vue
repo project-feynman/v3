@@ -9,8 +9,16 @@
     />
 
     <!-- WHITEBOARD BUTTONS -->
-    <v-toolbar v-if="!hideToolbar" id="whiteboard-toolbar" color="white">
-      <v-app-bar-nav-icon @click="toggleSideNav()"></v-app-bar-nav-icon>
+    <v-app-bar 
+      app 
+      clipped-left
+      color="white"
+      dense
+    >
+      <v-app-bar-nav-icon @click.stop="toggleDrawer()"></v-app-bar-nav-icon>
+      <v-toolbar-title class="mr-12 align-center">
+        <span class="title">{{ $route.params.class_id }}</span>
+      </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items v-if="whiteboardDoc">
         <template v-if="!whiteboardDoc.isAnswered">
@@ -21,7 +29,7 @@
             :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
             inline
             background-color="rgba(0, 0, 0, 0)"
-            swatch-size="50"
+            swatch-size="40"
           />
           <!-- <v-btn @click="disableTouch = !disableTouch">
             {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
@@ -56,24 +64,29 @@
           </v-btn>
         </template>
       </v-toolbar-items>
-    </v-toolbar>
+    </v-app-bar>
 
-    <!-- "@start-recording" is necessary because the audio-recorder can't 
-    start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
-    null-->
-    <audio-recorder 
-      v-if="whiteboardDoc"
-      v-show="false"
-      ref="audio-recorder"
-      :audioURL="whiteboardDoc.audioURL"
-      :audioPath="whiteboardDoc.audioPath"
-      @start-recording="isRecording = true"
-      @file-uploaded="audio => saveFileReference(audio)"
-    />
+    <v-content>
 
-    <!-- WHITEBOARD -->
-    <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)"/>
-    <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
+      <!-- "@start-recording" is necessary because the audio-recorder can't 
+      start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
+      null-->
+      <audio-recorder 
+        v-if="whiteboardDoc"
+        v-show="false"
+        ref="audio-recorder"
+        :audioURL="whiteboardDoc.audioURL"
+        :audioPath="whiteboardDoc.audioPath"
+        @start-recording="isRecording = true"
+        @file-uploaded="audio => saveFileReference(audio)"
+      />
+
+      <!-- WHITEBOARD -->
+      <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)"/>
+      <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
+
+    </v-content>
+
   </div>
 </template>
 
@@ -128,7 +141,7 @@ export default {
       whiteboardDoc: null,
       color: 'white',
       lineWidth: 2,
-      colors: ['white', 'orange', '#0AF2F2', 'rgb(62, 66, 66)'],
+      colors: ['white', 'orange', '#0AF2F2', 'deeppink', 'rgb(62, 66, 66)'],
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
@@ -216,6 +229,9 @@ export default {
     })
   },
   methods: {
+    toggleDrawer () {
+      this.$root.$emit("toggle-drawer")
+    },
     saveVideo () {
       saveVideoPopup = true
     },

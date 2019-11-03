@@ -38,11 +38,11 @@
 
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <beta-gallery :tabNumber="0" :tabs="tabs"></beta-gallery>
+        <videos :tabNumber="0" :tabs="tabs"></videos>
       </v-tab-item>
 
       <v-tab-item v-for="(tab, i) in tabs" :key="`tab-item--${i}`"> 
-        <beta-gallery :tabNumber="i+1" :tabs="tabs"></beta-gallery>
+        <videos :tabNumber="i+1" :tabs="tabs"></videos>
       </v-tab-item>
     </v-tabs-items>
 
@@ -50,14 +50,14 @@
 </template>
 
 <script>
-import BetaGallery from "@/components/BetaGallery.vue"
+import Videos from "@/components/Videos.vue"
 
 export default {
   props: {
     tabs: Array
   },
   components: {
-    BetaGallery
+    Videos
   },
   data: () => ({
     tab: null,

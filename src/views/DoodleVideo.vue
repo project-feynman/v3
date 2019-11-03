@@ -1,6 +1,5 @@
 <template>
   <div class="video">
-    <!-- <p v-if="video">{{ video }}</p> -->
     <v-container fluid class="pa-0">
       <animation 
         v-if="allStrokes"
@@ -18,7 +17,6 @@
         @play="syncAnimation()"
         @recorder-loaded="recorderLoaded=true"
       />
-
     </v-container>
   </div>
 </template>
