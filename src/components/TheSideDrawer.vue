@@ -2,7 +2,8 @@
   <v-card>
     <v-navigation-drawer 
       app
-      v-model="value"
+      :value="value"
+      @input="newValue => $emit('input', newValue)"
       clipped
     >
       <v-divider/>
@@ -69,8 +70,6 @@
           </v-list-item-content>
         </v-list-item>    -->
 
-        
-
       </v-list>
     </v-navigation-drawer>
   </v-card>
@@ -109,6 +108,7 @@ export default {
   },
   methods: {
     handleInput () {
+      this.$emit("input", !this.drawer)
       console.log("handleInput()")
     },
     async addWorkspace () {
@@ -131,6 +131,7 @@ export default {
       // sidenav content should not reload everytime the user navigates between the workspaces, but should update
       // everytime the user visits a different TA page
       if (classID && classID != this.prevClassID) {
+        console.log("updating side-nav content because classID and this.prevClassID =", classID, this.prevClassID)
         // update sidenav content
         const classRef = db.collection('classes').doc(classID)
         await this.$binding('workspaces', classRef.collection('workspaces'))

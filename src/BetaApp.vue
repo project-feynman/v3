@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <template v-if="$route.path != '/'">
-      <TheSideDrawer :value="drawer"/>
+      <TheSideDrawer v-model="drawer"/>
     </template>
     <!-- RouterView "becomes" different components depending on the URL, and is specified in main.js -->
     <RouterView/>
@@ -36,7 +36,9 @@ export default {
     ],
   }),
   created () {
-    this.$root.$on("toggle-drawer", () => this.drawer = !this.drawer)
+    this.$root.$on("toggle-drawer", () => {
+      this.drawer = !this.drawer
+    })
   },
 }
 </script>
