@@ -20,7 +20,7 @@
     <v-app-bar app color="white">
       <img src="favicon.ico">
       <v-toolbar-title class="headline font-weight-regular ml-2">
-        {{ $route.params.class_id ? $route.params.class_id : "ExplainMIT" }}
+        ExplainMIT
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -130,24 +130,11 @@ export default {
       explanations: [],
       isExplanationPage: false,
       drawerOpen: false,
-      clickedButtonStateName: null,
       loadingAnimation: true,
       snackbar: false,
       snackbarMessage: '',
       menu: false,
       showTabs: false
-    }
-  },
-  watch: {
-    $route: {
-      handler: 'updateNavComponents',
-      immediate: true
-    },
-    clickedButtonStateName () {
-      const buttonState = this.clickedButtonStateName
-      this[buttonState] = !this[buttonState]
-      this.$root.$on('delete-whiteboard-strokes-success', () => (this[buttonState] = false))
-      this.clickedButtonStateName = null
     }
   },
   methods: {

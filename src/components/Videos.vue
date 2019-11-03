@@ -11,40 +11,40 @@
 
     <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
       <template v-for="(video, i) in whiteboards">
-         <fetch-strokes :key="video['.key']" :whiteboardID="video['.key']">
-              <template slot-scope="slotProps">
-                <vuetify-card 
-                  :actionButtons="['FULL VIDEO', 'QUICKPLAY', `HELPFUL (${video.likes || 0})`]"
-                  @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
-                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
-                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
-                  :title="whiteboards[i].title"
-                  :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
-                  :paragraph="whiteboards[i].paragraph"
-                  :hasPermission="checkPermission(whiteboards[i])"
-                  :tabs="tabs"
-                  :tabNumber="tabNumber"
-                  class="mb-5"
-                >
-                  <template v-slot:card-actions>
-                    <v-btn @click="loadAudio(video)">LOAD AUDIO</v-btn>
-                    <!-- <template v-if="true"> -->
-                      <h1>WHY</h1>
-                      <template v-if="blob">
-                        <h1>BLOB = {{ blob }}</h1>
-                        <audio-recorder :audioBlob="blob"></audio-recorder>
-                      </template>
-                    <!-- </template> -->
-                  </template>
-                  <beta-doodle-video 
-                    v-if="slotProps.strokes"
-                    :ref="`doodle-video-${i}`"
-                    :strokes="slotProps.strokes"
-                    :canvasID="`${tabNumber}-${i}`">
-                  </beta-doodle-video>
-                </vuetify-card>
+        <fetch-strokes :key="video['.key']" :whiteboardID="video['.key']">
+          <template slot-scope="{ strokes }">
+            <vuetify-card 
+              :actionButtons="['FULL VIDEO', 'QUICKPLAY', `HELPFUL (${video.likes || 0})`]"
+              @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
+              @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
+              @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
+              :title="whiteboards[i].title"
+              :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
+              :paragraph="whiteboards[i].paragraph"
+              :hasPermission="checkPermission(whiteboards[i])"
+              :tabs="tabs"
+              :tabNumber="tabNumber"
+              class="mb-5"
+            >
+              <template v-slot:card-actions>
+                <!-- <v-btn @click="loadAudio(video)">LOAD AUDIO</v-btn> -->
+           
+                  <!-- <h1>WHY</h1>
+                  <template v-if="blob">
+                    <h1>BLOB = {{ blob }}</h1>
+                    <audio-recorder :audioBlob="blob"></audio-recorder>
+                  </template> -->
+          
               </template>
-            </fetch-strokes>
+              <beta-doodle-video 
+                v-if="strokes"
+                :ref="`doodle-video-${i}`"
+                :strokes="strokes"
+                :canvasID="`${tabNumber}-${i}`">
+              </beta-doodle-video>
+            </vuetify-card>
+          </template>
+        </fetch-strokes>
 
 
   

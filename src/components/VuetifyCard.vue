@@ -27,8 +27,6 @@
         </div>
       </v-card-title>
 
-    
-
         <v-slide-y-transition>
           <div v-show="show">
             <template v-if="!isEditting">
@@ -46,7 +44,6 @@
                 ref="paragraph"
               ></v-textarea>
                 <div v-if="tabs">
-                  <!-- <v-radio-group v-model="radioGroup" @change="newValue => $emit('tab-change', newValue)"> -->
                   <v-radio-group v-model="radioGroup" @change="newValue => updateLocalTabValue(newValue)">
                   <v-radio v-for="(tab, i) in tabs" :key="i" :label="tab" :value="i+1" class="pl-3"></v-radio>
                 </v-radio-group>
@@ -56,7 +53,7 @@
           </div>
       </v-slide-y-transition>
       
-        <v-card-actions>
+      <v-card-actions>
         <v-btn 
           v-for="button in actionButtons" :key="button" 
           @click="e => emitAction(e)" 
@@ -64,6 +61,9 @@
         >
           {{ button }}
         </v-btn>
+        <slot name="card-actions">
+          
+        </slot>
         <!-- EDITTING -->
         <template v-if="hasPermission">
           <v-btn v-if="!isEditting" @click="startEdit()" text small class="subtitle-2">
