@@ -1,13 +1,11 @@
 <template>
   <v-card>
     <v-navigation-drawer 
-      v-if="$route.path != '/'"
-      v-model="drawer"
-      :mini-variant.sync="mini"
-      permanent
       app
+      v-model="value"
+      clipped
     >
-      <v-divider></v-divider>
+      <v-divider/>
 
       <v-list>
         <v-list-item link to="/">
@@ -15,46 +13,37 @@
           <v-list-item-content>Home</v-list-item-content>
         </v-list-item>
 
-        <v-list-item link :to="`/${this.$route.params.class_id}/gallery`">
+        <v-list-item link :to="`/${this.$route.params.class_id}/videos`">
           <v-list-item-icon><v-icon>video_library</v-icon></v-list-item-icon>
-          <v-list-item-content>Explanations</v-list-item-content>
+          <v-list-item-content>Videos</v-list-item-content>
         </v-list-item>
-
-        <!-- <v-list-item link :to="`/${this.$route.params.class_id}/classmates`">
-          <v-list-item-icon><v-icon>mdi-account</v-icon></v-list-item-icon>
-          <v-list-item-content>Classmates</v-list-item-content>
-        </v-list-item>    -->
         
-        <v-divider></v-divider>
+        <v-divider/>
 
         <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="title">
-            Blackboards
-          </v-list-item-title>
-          <v-list-item-subtitle>
-            Below is where you talk and draw
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
+          <v-list-item-content>
+            <v-list-item-title class="title">
+              Blackboards
+            </v-list-item-title>
+            <!-- <v-list-item-subtitle>
+              Below is where you talk and draw
+            </v-list-item-subtitle> -->
+          </v-list-item-content>
+        </v-list-item>
 
-      <v-divider></v-divider>
+        <v-divider/>
 
         <!-- BLACKBOARDS -->
         <v-list-item 
           v-for="(workspace, i) in workspaces" :key="workspace['.key']"
           :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
         >
-          <!-- <v-list-item-icon><v-icon>record_voice_over</v-icon></v-list-item-icon> -->
           <template v-if="workspace.members">
-          
             <v-list-item-content>
               Board {{ i }}
               <template v-for="(member, i) in workspace.members">
                 <div style="display: flex;" :key="i">
-                  <v-icon color="pink">
-                    person
-                  </v-icon>
+                  <v-icon color="pink">person</v-icon>
                   <p class="pl-4 pt-4">{{ workspace.members[i].email }}</p>
                 </div>
               </template>
@@ -62,13 +51,25 @@
           </template>
         </v-list-item>
 
-        <v-list-item @click="addWorkspace()">
+         <v-list-item
+            class="mt-4"
+            link
+            @click="addWorkspace()"
+          >
+            <v-list-item-action>
+              <v-icon color="grey darken-1">add</v-icon>
+            </v-list-item-action>
+            <v-list-item-title class="grey--text text--darken-1">NEW BLACKBOARD</v-list-item-title>
+          </v-list-item>
+
+        <!-- <v-list-item @click="addWorkspace()">
           <v-list-item-icon><v-icon>add</v-icon></v-list-item-icon>
           <v-list-item-content color="purple">
-              NEW BLACKBOARD
-            <!-- <v-btn @click="addWorkspace()">Add blackboard</v-btn> -->
+            NEW BLACKBOARD
           </v-list-item-content>
-        </v-list-item>   
+        </v-list-item>    -->
+
+        
 
       </v-list>
     </v-navigation-drawer>
@@ -85,6 +86,13 @@ import LoginPopup from "@/components/LoginPopup.vue"
 import VuetifyMenu from "@/components/VuetifyMenu.vue"
 
 export default {
+  // model: {
+  //   prop: 'drawer',
+  //   event: 'change'
+  // },
+  props: {
+    value: Boolean
+  },
   data () {
     return {
       drawer: true,
@@ -100,16 +108,17 @@ export default {
     },
   },
   methods: {
+    handleInput () {
+      console.log("handleInput()")
+    },
     async addWorkspace () {
       const ref = db.collection("classes").doc(this.prevClassID).collection("workspaces")
-      // create an empty blackboard 
+      // create an empty whiteboard
       const whiteboardRef = await db.collection("whiteboards").add({})
-      console.log("whiteboardRef.id =", whiteboardRef.id)
-      await ref.add({
+      ref.add({
         ownerUID: "123",
         whiteboardID: whiteboardRef.id
       })
-      console.log("added a new workspace")
     },
     clickedButtonStateName () {
       const buttonState = this.clickedButtonStateName

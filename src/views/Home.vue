@@ -1,49 +1,54 @@
 <template>
-  <div style="height: 90%;">
+  <div>
+    <the-app-bar></the-app-bar>
+
+    <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" 
-             color="pink" flat>
+      <v-btn @click="snackbar = false" color="pink" flat>
         CLOSE
       </v-btn>
     </v-snackbar>
-  <v-card
-    class="mx-auto text-center"
-    fluid
-  >
-    <v-card-text>
-      <!-- <div text-center>Word of the Day</div> -->
-      <p class="display-2 text--primary">
-        explain.mit.edu
-      </p>
-      <!-- <p>adjective</p> -->
-      <div class="headline text--primary">
-        A place where people share blackboard explanations for<br>
-        fundamental concepts and difficult problems<br>
-      </div>
-    </v-card-text>
-    <!-- <v-card-actions>
-        <v-btn
-          text
-          class="mx-auto"
-          color="deep-purple accent-4"
-          href="https://medium.com/@eltonlin1998/why-explainmit-c0cab5617d4d"
-        >
-          LEARN MORE
-        </v-btn>
-    </v-card-actions> -->
-  </v-card>
 
-    <transition 
-      name="fade" 
-      mode="out-in" 
-      @after-leave="transitionFinished = true"
-    >
-      <div v-if="isFetchingUser" key="loading..."></div>
-      <div v-else key="class-list">
-        <communities/>
-      </div>
-    </transition>
+    <v-content>
+
+      <v-card
+        class="mx-auto text-center"
+        fluid
+      >
+        <v-card-text>
+          <p class="display-2 text--primary">
+            explain.mit.edu
+          </p>
+          <div class="headline text--primary">
+            A place where people share blackboard explanations
+          </div>
+        </v-card-text>
+        <!-- <v-card-actions>
+            <v-btn
+              text
+              class="mx-auto"
+              color="deep-purple accent-4"
+              href="https://medium.com/@eltonlin1998/why-explainmit-c0cab5617d4d"
+            >
+              LEARN MORE
+            </v-btn>
+        </v-card-actions> -->
+      </v-card>
+
+      <transition 
+        name="fade" 
+        mode="out-in" 
+        @after-leave="transitionFinished = true"
+      >
+        <div v-if="isFetchingUser" key="loading..."></div>
+        <div v-else key="class-list">
+          <CollegeClasses/>
+        </div>
+      </transition>
+
+    </v-content>
+
   </div>
 </template>
 
@@ -54,12 +59,16 @@ import 'firebase/auth'
 import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
 import LoginPopup from '@/components/LoginPopup.vue'
-import Communities from '@/components/Communities.vue'
+import CollegeClasses from '@/components/CollegeClasses.vue'
+import TheAppBar from "@/components/TheAppBar.vue"
+
+
 export default {
   components: {
     Animation,
     LoginPopup,
-    Communities
+    CollegeClasses,
+    TheAppBar
   },
   computed: {
     ...mapState(['user', 'isFetchingUser'])

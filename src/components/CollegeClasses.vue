@@ -10,8 +10,8 @@
           row wrap mt-0 mx-0 mb-5 pa-0
         >
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-            <renderless-component :whiteboardID="courses[i].introVideoID">
-              <template slot-scope="slotProps">
+            <fetch-strokes :whiteboardID="courses[i].introVideoID">
+              <template slot-scope="{ strokes }">
                 <vuetify-card 
                   :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, courses[i], i)"
@@ -22,14 +22,14 @@
                   :hasPermission="hasPermission"
                 >
                   <beta-doodle-video 
-                    v-if="slotProps.strokes"
+                    v-if="strokes"
                     :ref="`doodle-video-${i}`"
-                    :strokes="slotProps.strokes"
+                    :strokes="strokes"
                     :canvasID="`${i}`">
                   </beta-doodle-video>
                 </vuetify-card>
               </template>
-            </renderless-component>
+            </fetch-strokes>
           </v-flex>
         </v-layout>
 
@@ -40,8 +40,8 @@
           :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0
         >
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-            <renderless-component :whiteboardID="courses[i-1].introVideoID">
-              <template slot-scope="slotProps">
+            <fetch-strokes :whiteboardID="courses[i-1].introVideoID">
+              <template slot-scope="{ strokes }">
                 <vuetify-card 
                   :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
@@ -52,20 +52,20 @@
                   :hasPermission="hasPermission"
                 >
                   <beta-doodle-video 
-                    v-if="slotProps.strokes"
+                    v-if="strokes"
                     :ref="`doodle-video-${i-1}`"
-                    :strokes="slotProps.strokes"
+                    :strokes="strokes"
                     :canvasID="`${i-1}`"
                   >
                   </beta-doodle-video>
                 </vuetify-card>
               </template>
-            </renderless-component>
+            </fetch-strokes>
           </v-flex>
 
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2); margin-left: ${getGapWidth()}px`">
-            <renderless-component :whiteboardID="courses[i].introVideoID">
-              <template slot-scope="slotProps">
+            <fetch-strokes :whiteboardID="courses[i].introVideoID">
+              <template slot-scope="{ strokes }">
                 <vuetify-card 
                   :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
                   @action="buttonName => handleAction(buttonName, courses[i], i)" 
@@ -76,14 +76,14 @@
                   :hasPermission="hasPermission"
                 >
                   <beta-doodle-video
-                    v-if="slotProps.strokes"
+                    v-if="strokes"
                     :ref="`doodle-video-${i}`"
-                    :strokes="slotProps.strokes"
+                    :strokes="strokes"
                     :canvasID="`${i}`"
                   />
                 </vuetify-card>
               </template>
-            </renderless-component>
+            </fetch-strokes>
           </v-flex>
         </v-layout>
         <!-- Edge case: last element (considering adding an invisible element) -->
@@ -96,14 +96,14 @@
 <script>
 import VuetifyCard from "@/components/VuetifyCard.vue"
 import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
-import RenderlessComponent from "@/components/RenderlessComponent.vue"
+import FetchStrokes from "@/components/FetchStrokes.vue"
 import db from "@/database.js"
 
 export default {
   components: {
     VuetifyCard,
     BetaDoodleVideo,
-    RenderlessComponent,
+    FetchStrokes
   },
   data () {
     return {
@@ -134,7 +134,7 @@ export default {
   methods: {
     handleAction (buttonName, { courseNumber }, canvasID) {
       if (buttonName == "ENTER CLASS") {
-        this.$router.push(`${courseNumber}/gallery`)
+        this.$router.push(`${courseNumber}/videos`)
       } else if (buttonName == "FULL VIDEO") {
         
       } else if (buttonName == "QUICKPLAY") {

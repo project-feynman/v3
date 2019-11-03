@@ -1,5 +1,5 @@
 <template>
-  <div v-if="strokes">
+  <div v-if="strokes != []">
     <slot :strokes="strokes">
       {{ strokes }}
     </slot>
@@ -15,7 +15,7 @@ export default {
   },
   data () {
     return {
-      strokes: null
+      strokes: []
     }
   },
   async created () {
@@ -23,7 +23,9 @@ export default {
       return 
     }
     const strokesRef = db.collection("whiteboards").doc(this.whiteboardID).collection("strokes")
-    await this.$binding("strokes", strokesRef.orderBy("strokeNumber", "asc"))
+    // TODO: fetch just once instead of binding 
+    // excess event listeners might be responsible for performance issues
+    this.$binding("strokes", strokesRef.orderBy("strokeNumber", "asc"))
   }
 }
 
