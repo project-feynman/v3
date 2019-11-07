@@ -25,12 +25,7 @@
           </div>
         </v-card-text>
         <!-- <v-card-actions>
-            <v-btn
-              text
-              class="mx-auto"
-              color="deep-purple accent-4"
-              href="https://medium.com/@eltonlin1998/why-explainmit-c0cab5617d4d"
-            >
+            <v-btn href="https://medium.com/@eltonlin1998/why-explainmit-c0cab5617d4d" text class="mx-auto" color="deep-purple accent-4">
               LEARN MORE
             </v-btn>
         </v-card-actions> -->
