@@ -228,6 +228,9 @@ export default {
       this.rescaleCanvas()
     })
   },
+  beforeDestroy () {
+    this.unsubscribe()
+  },
   methods: {
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
