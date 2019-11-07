@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- whiteboard popup -->
     <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
       <v-card v-if="whiteboardPopup">
         <div class="text-xs-center">
@@ -198,17 +199,21 @@ export default {
   async created () {
     // get all whiteboards associated with a course 
     const classID = this.$route.params.class_id
-    let ref; 
+    const baseRef = db.collection("whiteboards").where("fromClass", "==", classID)
+    let videosRef = {} 
     if (this.tabNumber != null) {
-      ref = db.collection("whiteboards").where("fromClass", "==", classID).where("tabNumber", "==", this.tabNumber)
+      videosRef = baseRef.where("tabNumber", "==", this.tabNumber)
     } else {
-      ref = db.collection("whiteboards").where("fromClass", "==", classID).where("tabNumber", "==", null)
+      videosRef = baseRef.where("tabNumber", "==", null)
     }
-    await this.$binding("whiteboards", ref)
+    videosRef.get().then(snapshotQuery => {
+      snapshotQuery.forEach(doc => {
+        this.whiteboards.push({".key": doc.id, ...doc.data()})
+      })
+    })
   },
   methods: {
     async loadAudio (video) {
-      console.log("video.audioURL =", video.audioURL)
       var storage = firebase.storage()
       const ref = storage.ref("recordings/05656c87-5fa4-6dcb-093c-a789a6dc7fcc")
       const URL = await ref.getDownloadURL()

@@ -22,10 +22,12 @@ export default {
     if (!this.whiteboardID) {
       return 
     }
-    const strokesRef = db.collection("whiteboards").doc(this.whiteboardID).collection("strokes")
-    // TODO: fetch just once instead of binding 
-    // excess event listeners might be responsible for performance issues
-    this.$binding("strokes", strokesRef.orderBy("strokeNumber", "asc"))
+    const strokesRef = db.collection("whiteboards").doc(this.whiteboardID).collection("strokes").orderBy("strokeNumber", "asc")
+    strokesRef.get().then(querySnapshot => {
+      querySnapshot.forEach(doc => {
+        this.strokes.push({".key": doc.id, ...doc.data()})
+      })
+    })
   }
 }
 
