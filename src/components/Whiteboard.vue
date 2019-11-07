@@ -1,12 +1,19 @@
 <template>
   <div id="whiteboard">
     <!-- SAVING POPUP -->
-    <whiteboard-save-popup 
+    <!-- <whiteboard-save-popup 
       v-model="saveVideoPopup"
       ref="popup-save"
       @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
       fullscreen
-    />
+    /> -->
+    <v-snackbar v-model="snackbar">
+      {{ snackbarMessage }}
+      <v-btn @click="snackbar = false" color="pink" text>
+        CLOSE
+      </v-btn>
+    </v-snackbar>
+
 
     <!-- WHITEBOARD BUTTONS -->
     <v-app-bar 
@@ -167,7 +174,9 @@ export default {
       mouseX : 0,
       mouseY : 0,
       mousedown : 0,
-      clearRectTimeout: null
+      clearRectTimeout: null,
+      snackbar: false,
+      snackbarMessage: ""
     }
   },
   watch: {
@@ -236,7 +245,8 @@ export default {
       this.$root.$emit("toggle-drawer")
     },
     saveVideo () {
-      saveVideoPopup = true
+      this.handleSaving("No title yet")
+      // saveVideoPopup = true
     },
     toggleSideNav () {
       this.$root.$emit("toggle-side-nav")
@@ -476,8 +486,9 @@ export default {
       this.lineWidth = 18
     },
     saveDoodle () {
-      this.saveSilently = true
-      this.saveVideoPopup = true 
+      // this.saveSilently = true
+      // this.saveVideoPopup = true 
+      this.handleSaving("No title yet")
     },
     saveVideo () {
       this.saveSilently = false 
@@ -544,10 +555,12 @@ export default {
         whiteboardID: newWhiteboardRef.id
       })
       // let popup show the success state and the shareable URL
-      this.$refs["popup-save"].showSuccessMessage(whiteboardID)
+      // this.$refs["popup-save"].showSuccessMessage(whiteboardID)
 
       // reset the whiteboard 
       this.hasUploadAudio = false
+      this.snackbar = true 
+      this.snackbarMessage = 'Successfully saved to the "Videos" section'
     },
     saveFileReference({ url, path }) {
       // this is really bad, because the user may attempt to upload the video when the audio file has not yet been processed
