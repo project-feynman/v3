@@ -58,14 +58,14 @@ export default {
     }
   },
   created () {
-    // get all whiteboards associated with a course 
+    // get all videos associated with a course 
     const classID = this.$route.params.class_id
-    // TODO: just fetch once - it's unnecessary to be two-way binded
-    const ref = db.collection("whiteboards").where("fromClass", "==", classID)
-                                            .where("title", "==", "Sun, Lake and Mountain")
+    // const videosRef = db.collection("whiteboards").where("fromClass", "==", classID)
+    //                                         .where("title", "==", "Sun, Lake and Mountain")
     const classRef = db.collection("classes").doc(classID)
-    this.$binding("whiteboards", ref)
-    this.$binding("classDoc", classRef)
+    classRef.get().then(doc => {
+      this.classDoc = doc.data()
+    })
   },
   methods: {
     toggleDrawer () {
