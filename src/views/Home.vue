@@ -21,7 +21,7 @@
             explain.mit.edu
           </p>
           <div class="headline text--primary">
-            Watch simple explanations for hard things
+            A place where everyone helps each other by sharing simple explanations
           </div>
         </v-card-text>
         <!-- <v-card-actions>
