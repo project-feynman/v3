@@ -24,11 +24,16 @@
             A place where everyone helps each other by sharing simple explanations
           </div>
         </v-card-text>
-        <!-- <v-card-actions>
-            <v-btn href="https://medium.com/@eltonlin1998/why-explainmit-c0cab5617d4d" text class="mx-auto" color="deep-purple accent-4">
-              LEARN MORE
-            </v-btn>
-        </v-card-actions> -->
+        <v-card-actions>
+            <div style="margin: auto">
+              <v-btn href="https://medium.com/@eltonlin1998/the-goal-of-explainmit-afd9df574c60" text class="mx-auto" color="deep-purple accent-4">
+                Learn more 
+              </v-btn>
+              <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="deep-purple accent-4">
+                Github repo
+              </v-btn>
+            </div>
+        </v-card-actions>
       </v-card>
 
       <transition 
