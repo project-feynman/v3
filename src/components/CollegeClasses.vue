@@ -159,11 +159,7 @@ export default {
       if (this.$vuetify.breakpoint.xs) {
         return 0
       }
-      if (this.$vuetify.breakpoint.sm) {
-        return 2
-      } else {
-        return 5
-      }
+      return this.$vuetify.breakpoint.sm ? 2 : 5
     }
   }
 }
