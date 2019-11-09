@@ -89,7 +89,7 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import db from '@/database.js'
 import PopupLogin from '@/components/PopupLogin.vue'
-import LayoutResponsiveGrid from "@/components/LayoutResponsiveGrid.vue"
+import BaseGrid from "@/components/BaseGrid.vue"
 import TheAppBar from "@/components/TheAppBar.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
@@ -98,7 +98,7 @@ export default {
   components: {
     PopupLogin,
     TheAppBar,
-    LayoutResponsiveGrid,
+    BaseGrid,
     RenderlessFetchStrokes,
     DoodleVideo
   },

@@ -18,6 +18,7 @@
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
+              <!-- TODO: make videos more explicit -->
               <videos :tabNumber="i" :tabs="tabs"/>
             </v-tab-item>
           </template>

@@ -11,7 +11,7 @@
                   @open-room="updateHasAudioRoom()"/> -->
 
       <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
-      <whiteboard 
+      <Blackboard
         v-if="loadCanvas && workspace.whiteboardID"
         ref="whiteboard"
         :whiteboardID="workspace.whiteboardID"/>
@@ -26,8 +26,8 @@ import 'firebase/firestore'
 import slugify from 'slugify'
 import { mapState } from 'vuex'
 import db from '@/database.js'
-import Whiteboard from '@/components/Whiteboard.vue'
-import VoiceChat from '@/components/VoiceChat.vue'
+import Blackboard from '@/components/Blackboard.vue'
+import VoiceChat from '@/components/BlackboardVoiceChat.vue'
 
 export default {
   components: {
@@ -109,7 +109,7 @@ export default {
       const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${workspaceID}`)
       // mirror the Firebase workspace with the Firestore workspace
       firebase.database().ref('.info/connected').on('value', async snapshot => {
-        if (snapshot.val() == false) { 
+        if (snapshot.val() === false) { 
           // do nothing 
         } else {
           // wait till server successfully processes the onDisconnectHook()

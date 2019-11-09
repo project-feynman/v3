@@ -117,7 +117,6 @@ export default {
       } else {
         await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'))
       }
-
       // other setup 
       // TODO: stop using root listeners and instead use a navcomponent directly here
       this.$root.$on('replay-silent-animation', this.quickplay) // when pressing the replay icon, the whiteboard will replay

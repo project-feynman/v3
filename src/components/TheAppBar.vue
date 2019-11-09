@@ -101,7 +101,7 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import PopupNewClass from '@/components/PopupNewClass.vue'
 import PopupLogin from "@/components/PopupLogin.vue"
-import VuetifyMenu from "@/components/VuetifyMenu.vue"
+import BaseMenu from "@/components/BaseMenu.vue"
 
 export default {
   components: {
@@ -138,11 +138,10 @@ export default {
     }
   },
   methods: {
-    async updateUser({ name, useDarkMode, color }) {
+    async updateUser({ name, color }) {
       const ref = db.collection("users").doc(this.user.uid)
-      await ref.update({
-        name,
-        useDarkMode
+      ref.update({
+        name
       })
     },
     signIn({ email, password }) {

@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import VuetifyOverlay from "@/components/VuetifyOverlay.vue"
+import BaseOverlay from "@/components/BaseOverlay.vue"
 import { mapState } from 'vuex'
 import DrawMethods from '@/mixins/DrawMethods'
 import db from '@/database.js'
@@ -36,7 +36,7 @@ export default {
     }
   },
   components: {
-    VuetifyOverlay
+    BaseOverlay
   },
   mixins: [DrawMethods],
   watch: {

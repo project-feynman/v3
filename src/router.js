@@ -18,7 +18,7 @@ export default new Router({
     },
     {
       path: '/:class_id/workspace/:id',
-      component: () => import(/* webpackChunkName: "blackboard" */ './views/Blackboard.vue'),
+      component: () => import(/* webpackChunkName: "blackboard" */ './views/BlackboardRoom.vue'),
     },
     {
       path: '/:class_id/:video_id',
