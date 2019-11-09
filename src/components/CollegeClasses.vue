@@ -10,26 +10,26 @@
           row wrap mt-0 mx-0 mb-5 pa-0
         >
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-            <fetch-strokes :whiteboardID="courses[i].introVideoID">
-              <template slot-scope="{ strokes }">
-                <vuetify-card 
-                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
-                  @action="buttonName => handleAction(buttonName, courses[i], i)"
-                  @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
-                  :title="courses[i].courseNumber"
-                  :description="courses[i].description"
-                  :paragraph="courses[i].paragraph"
-                  :hasPermission="hasPermission"
-                >
+            <vuetify-card 
+              :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
+              @action="buttonName => handleAction(buttonName, courses[i], i)"
+              @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
+              :title="courses[i].courseNumber"
+              :description="courses[i].description"
+              :paragraph="courses[i].paragraph"
+              :hasPermission="hasPermission"
+            >
+              <fetch-strokes :whiteboardID="courses[i].introVideoID">
+                <template slot-scope="{ strokes }">
                   <beta-doodle-video 
                     v-if="strokes"
                     :ref="`doodle-video-${i}`"
                     :strokes="strokes"
                     :canvasID="`${i}`">
                   </beta-doodle-video>
-                </vuetify-card>
-              </template>
-            </fetch-strokes>
+                </template>
+              </fetch-strokes>
+            </vuetify-card>
           </v-flex>
         </v-layout>
 
@@ -40,50 +40,50 @@
           :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0
         >
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-            <fetch-strokes :whiteboardID="courses[i-1].introVideoID">
-              <template slot-scope="{ strokes }">
-                <vuetify-card 
-                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
-                  @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
-                  @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
-                  :title="courses[i-1].courseNumber"
-                  :description="courses[i-1].description"
-                  :paragraph="courses[i-1].paragraph"
-                  :hasPermission="hasPermission"
-                >
+            <vuetify-card 
+              :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
+              @action="buttonName => handleAction(buttonName, courses[i-1], i-1)" 
+              @save-paragraph="newValue => saveParagraph(newValue, courses[i-1])"
+              :title="courses[i-1].courseNumber"
+              :description="courses[i-1].description"
+              :paragraph="courses[i-1].paragraph"
+              :hasPermission="hasPermission"
+            >
+              <fetch-strokes :whiteboardID="courses[i-1].introVideoID">
+                <template slot-scope="{ strokes }">
                   <beta-doodle-video 
                     v-if="strokes"
                     :ref="`doodle-video-${i-1}`"
                     :strokes="strokes"
                     :canvasID="`${i-1}`"
-                  >
-                  </beta-doodle-video>
-                </vuetify-card>
-              </template>
-            </fetch-strokes>
+                  />
+                </template>
+              </fetch-strokes>
+            </vuetify-card>
           </v-flex>
 
           <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2); margin-left: ${getGapWidth()}px`">
-            <fetch-strokes :whiteboardID="courses[i].introVideoID">
-              <template slot-scope="{ strokes }">
-                <vuetify-card 
-                  :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
-                  @action="buttonName => handleAction(buttonName, courses[i], i)" 
-                  @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
-                  :title="courses[i].courseNumber" 
-                  :description="courses[i].description"
-                  :paragraph="courses[i].paragraph"
-                  :hasPermission="hasPermission"
-                >
+            <vuetify-card 
+              :actionButtons="['ENTER CLASS', 'QUICKPLAY']"
+              @action="buttonName => handleAction(buttonName, courses[i], i)" 
+              @save-paragraph="newValue => saveParagraph(newValue, courses[i])"
+              :title="courses[i].courseNumber" 
+              :description="courses[i].description"
+              :paragraph="courses[i].paragraph"
+              :hasPermission="hasPermission"
+            >
+              <fetch-strokes :whiteboardID="courses[i].introVideoID">
+                <template slot-scope="{ strokes }">
                   <beta-doodle-video
                     v-if="strokes"
                     :ref="`doodle-video-${i}`"
                     :strokes="strokes"
                     :canvasID="`${i}`"
                   />
-                </vuetify-card>
-              </template>
-            </fetch-strokes>
+                </template>
+              </fetch-strokes>
+            </vuetify-card>
+          
           </v-flex>
         </v-layout>
         <!-- Edge case: last element (considering adding an invisible element) -->
@@ -148,18 +148,15 @@ export default {
         paragraph: newValue
       })
     },
+    // should go into a layout component
     getGapWidth () {
-      if (this.$vuetify.breakpoint.smAndDown) {
-        return 0
-      } else {
-        return 40 
-      }
+      return this.$vuetify.breakpoint.smAndDown? 0 : 40
     },
     getSideMargin () {
       if (this.$vuetify.breakpoint.xs) {
         return 0
       }
-      return this.$vuetify.breakpoint.sm ? 2 : 5
+      return this.$vuetify.breakpoint.sm? 2 : 5
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="strokes != []">
+  <div style="height: 100%">
     <slot :strokes="strokes">
       {{ strokes }}
     </slot>

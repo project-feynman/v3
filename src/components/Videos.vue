@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- whiteboard popup -->
+    <!-- video popup -->
     <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
       <v-card v-if="whiteboardPopup">
         <div class="text-xs-center">
@@ -12,41 +12,40 @@
 
     <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
       <template v-for="(video, i) in whiteboards">
-        <fetch-strokes :key="video['.key']" :whiteboardID="video['.key']">
-          <template slot-scope="{ strokes }">
-            <vuetify-card 
-              :actionButtons="['FULL VIDEO', 'QUICKPLAY', `HELPFUL (${video.likes || 0})`]"
-              @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
-              @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
-              @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
-              :title="whiteboards[i].title"
-              :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
-              :paragraph="whiteboards[i].paragraph"
-              :hasPermission="checkPermission(whiteboards[i])"
-              :tabs="tabs"
-              :tabNumber="tabNumber"
-              class="mb-5"
-            >
-              <template v-slot:card-actions>
-                <!-- <v-btn @click="loadAudio(video)">LOAD AUDIO</v-btn> -->
-           
-                  <!-- <h1>WHY</h1>
-                  <template v-if="blob">
-                    <h1>BLOB = {{ blob }}</h1>
-                    <audio-recorder :audioBlob="blob"></audio-recorder>
-                  </template> -->
-          
-              </template>
+        <vuetify-card 
+          :actionButtons="['FULL VIDEO', 'QUICKPLAY', `HELPFUL (${video.likes || 0})`]"
+          @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
+          @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
+          @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
+          :title="whiteboards[i].title"
+          :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
+          :paragraph="whiteboards[i].paragraph"
+          :hasPermission="checkPermission(whiteboards[i])"
+          :tabs="tabs"
+          :tabNumber="tabNumber"
+          class="mb-5"
+          :key="video['.key']"
+        >
+          <fetch-strokes :whiteboardID="video['.key']">
+            <template slot-scope="{ strokes }">
               <beta-doodle-video 
                 v-if="strokes"
                 :ref="`doodle-video-${i}`"
                 :strokes="strokes"
                 :canvasID="`${tabNumber}-${i}`"
               />
-              
-            </vuetify-card>
+            </template>
+          </fetch-strokes>
+          <template v-slot:card-actions>
+            <!-- <v-btn @click="loadAudio(video)">LOAD AUDIO</v-btn> -->
+              <!-- <h1>WHY</h1>
+              <template v-if="blob">
+                <h1>BLOB = {{ blob }}</h1>
+                <audio-recorder :audioBlob="blob"></audio-recorder>
+              </template> -->
           </template>
-        </fetch-strokes>
+        </vuetify-card>
+       
         <!-- <v-layout 
           v-if="i == (whiteboards.length - 1) && i%2 != 1" 
           :key="whiteboards[i]['.key']" :class="`px-${getSideMargin()}`" 
@@ -194,23 +193,10 @@ export default {
     }
   },
   async created () {
-    // get all whiteboards associated with a course 
     this.fetchVideos()
-    // const classID = this.$route.params.class_id
-    // const baseRef = db.collection("whiteboards").where("fromClass", "==", classID)
-    // let videosRef = {} 
-    // if (this.tabNumber != null) {
-    //   videosRef = baseRef.where("tabNumber", "==", this.tabNumber)
-    // } else {
-    //   videosRef = baseRef.where("tabNumber", "==", null)
-    // }
-    // videosRef.get().then(snapshotQuery => {
-    //   snapshotQuery.forEach(doc => {
-    //     this.whiteboards.push({".key": doc.id, ...doc.data()})
-    //   })
-    // })
   },
   methods: {
+    // the below belongs to a renderless component
     fetchVideos () {
       this.whiteboards = []
       const classID = this.$route.params.class_id
@@ -227,34 +213,7 @@ export default {
         })
       })
     },
-    async loadAudio (video) {
-      var storage = firebase.storage()
-      const ref = storage.ref("recordings/05656c87-5fa4-6dcb-093c-a789a6dc7fcc")
-      const URL = await ref.getDownloadURL()
-      const response = await axios.get(URL)
-      console.log("audio response =", response)
-      this.blob = response.data
-      // ref.getDownloadURL().then(URL => {
-      //   axios
-      //     .get(URL)
-      //     .then(response => {
-      //       // console.log('response =', response)
-      //       this.blob = response
-      //     })
-        // var xhr = new XMLHttpRequest();
-        // xhr.responseType = 'blob';
-        // xhr.onload = (event) => {
-        //   var blob = xhr.response;
-        //   console.log("xhr.response =", xhr.response)
-        //   this.blob = blob 
-        // };
-        // xhr.open('GET', URL);
-        // xhr.send();
-    
-      // var storage = firebase.storage();
-      // var pathReference = storage.ref('recordings/978b6e8b-5f53-f809-f10e-e6d')
-      // now what do you do? 
-    },
+
     async handleTabChange (newValue, { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
       await ref.update({
@@ -289,6 +248,7 @@ export default {
         await audioFileRef.delete()
       }      
     },
+    // these belong to the video component potentially
     checkPermission (video) {
       if (!this.user) {
         return false
@@ -298,6 +258,35 @@ export default {
       } 
       return false 
     },
+    async loadAudio (video) {
+      var storage = firebase.storage()
+      const ref = storage.ref("recordings/05656c87-5fa4-6dcb-093c-a789a6dc7fcc")
+      const URL = await ref.getDownloadURL()
+      const response = await axios.get(URL)
+      console.log("audio response =", response)
+      this.blob = response.data
+      // ref.getDownloadURL().then(URL => {
+      //   axios
+      //     .get(URL)
+      //     .then(response => {
+      //       // console.log('response =', response)
+      //       this.blob = response
+      //     })
+        // var xhr = new XMLHttpRequest();
+        // xhr.responseType = 'blob';
+        // xhr.onload = (event) => {
+        //   var blob = xhr.response;
+        //   console.log("xhr.response =", xhr.response)
+        //   this.blob = blob 
+        // };
+        // xhr.open('GET', URL);
+        // xhr.send();
+    
+      // var storage = firebase.storage();
+      // var pathReference = storage.ref('recordings/978b6e8b-5f53-f809-f10e-e6d')
+      // now what do you do? 
+    },
+    // these belong to the layout component
     getGapWidth () {
       return this.$vuetify.breakpoint.smAndDown ? 0 : 30
     },
