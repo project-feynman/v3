@@ -121,23 +121,27 @@ export default {
     hasPermission () {
       if (!this.user) {
         return false
-      } else if (this.user.email != 'eltonlin1998@gmail.com') {
-        return false 
-      } else {
-        return true
-      }
+      } 
+      return this.user.email === "eltonlin1998@gmail.com"
     }
   },
   async created () {
-    await this.$binding("courses", db.collection("classes"))
+    this.fetchClasses()
   },
   methods: {
+    fetchClasses () {
+      db.collection("classes").get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          this.courses.push({ ".key": doc.id, ...doc.data()})
+        })
+      })
+    },
     handleAction (buttonName, { courseNumber }, canvasID) {
-      if (buttonName == "ENTER CLASS") {
+      if (buttonName === "ENTER CLASS") {
         this.$router.push(`${courseNumber}/videos`)
-      } else if (buttonName == "FULL VIDEO") {
+      } else if (buttonName === "FULL VIDEO") {
         
-      } else if (buttonName == "QUICKPLAY") {
+      } else if (buttonName === "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()
       }
