@@ -1,7 +1,5 @@
 <template>
   <div>
-    <the-app-bar/>
-
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -10,8 +8,9 @@
       </v-btn>
     </v-snackbar>
 
-    <v-content>
+    <the-app-bar/>
 
+    <v-content>
       <v-card class="mx-auto text-center" fluid>
         <v-card-text>
           <p class="display-2 text--primary">
@@ -43,9 +42,7 @@
           <CollegeClasses/>
         </div>
       </transition>
-
     </v-content>
-
   </div>
 </template>
 
