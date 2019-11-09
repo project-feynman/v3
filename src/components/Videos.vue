@@ -28,7 +28,7 @@
         >
           <RenderlessFetchStrokes :whiteboardID="video['.key']">
             <template slot-scope="{ strokes }">
-              <beta-doodle-video 
+              <DoodleVideo 
                 v-if="strokes"
                 :ref="`doodle-video-${i}`"
                 :strokes="strokes"
@@ -45,107 +45,6 @@
               </template> -->
           </template>
         </BaseCard>
-       
-        <!-- <v-layout 
-          v-if="i == (whiteboards.length - 1) && i%2 != 1" 
-          :key="whiteboards[i]['.key']" :class="`px-${getSideMargin()}`" 
-          row wrap mt-0 mx-0 mb-5 pa-0
-        >
-          <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-            <get-strokes-from-id
- :whiteboardID="whiteboards[i]['.key']">
-              <template slot-scope="slotProps">
-                <vuetify-card 
-                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
-                  @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
-                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
-                  @tab-change="newValue => handleTabChange(newValue, whiteboards[i])"
-                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
-                  :title="whiteboards[i].title"
-                  :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
-                  :paragraph="whiteboards[i].paragraph"
-                  :hasPermission="checkPermission(whiteboards[i])"
-                  :tabs="tabs"
-                  :tabNumber="tabNumber"
-                >
-             
-                  <beta-doodle-video 
-                    v-if="slotProps.strokes"
-                    :ref="`doodle-video-${i}`"
-                    :strokes="slotProps.strokes"
-                    :canvasID="`${tabNumber}-${i}`">
-                  </beta-doodle-video>
-                </vuetify-card>
-              </template>
-            </get-strokes-from-id
->
-          </v-flex>
-        </v-layout>
-
-        <v-layout 
-          v-else-if="i%2 == 1" 
-          :key="whiteboards[i]['.key']" 
-          :class="`px-${getSideMargin()}`" row wrap mt-0 mx-0 mb-5 pa-0
-        >
-          <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2)`">
-            <get-strokes-from-id
- :whiteboardID="whiteboards[i-1]['.key']">
-              <template slot-scope="slotProps">
-                <vuetify-card 
-                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
-                  @action="buttonName => handleAction(buttonName, whiteboards[i-1], i-1)" 
-                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i-1])"
-                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i-1])"
-                  :title="whiteboards[i-1].title"
-                  :description="`By ${whiteboards[i].authorName || 'Anonymous'}`"
-                  :paragraph="whiteboards[i-1].paragraph"
-                  :hasPermission="checkPermission(whiteboards[i])"
-                  :tabs="tabs"
-                  :tabNumber="tabNumber"
-                >
-                  <beta-doodle-video 
-                    v-if="slotProps.strokes"
-                    :ref="`doodle-video-${i-1}`"
-                    :strokes="slotProps.strokes"
-                    :canvasID="`${tabNumber}-${i-1}`"
-                  />
-                </vuetify-card>
-                </template>
-            </get-strokes-from-id
->
-          </v-flex>
-
-          <v-flex :style="`flex-basis: calc((100% - ${getGapWidth()}px)/2); margin-left: ${getGapWidth()}px`">
-            <get-strokes-from-id
- :whiteboardID="whiteboards[i]['.key']">
-              <template slot-scope="slotProps">
-                <h1>{{ whiteboards[i].ownerName }}</h1>
-                <vuetify-card 
-                  :actionButtons="['FULL VIDEO', 'QUICKPLAY']"
-                  @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
-                  @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
-                  @save-tab-number="newValue => handleTabChange(newValue, whiteboards[i])"
-                  :title="whiteboards[i].title" 
-                  :description="`By ${whiteboards[i].authorName || 'Anonymous' }`"
-                  :paragraph="whiteboards[i].paragraph"
-                  :hasPermission="checkPermission(whiteboards[i])"
-                  :tabs="tabs"
-                  :tabNumber="tabNumber"
-                >
-                  <beta-doodle-video 
-                    v-if="slotProps.strokes"
-                    :ref="`doodle-video-${i}`"
-                    :strokes="slotProps.strokes"
-                    :canvasID="`${tabNumber}-${i}`"
-                  >
-                  </beta-doodle-video>
-                </vuetify-card>
-              </template>
-            </get-strokes-from-id
->
-          </v-flex>
-
-        </v-layout> -->
       </template>
     </v-container>
   </div>
@@ -153,10 +52,9 @@
 
 <script>
 import BaseCard from "@/components/BaseCard.vue"
-import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
+import DoodleVideo from "@/components/DoodleVideo.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import AudioRecorder from "@/components/AudioRecorder.vue"
-import DoodleVideo from "@/views/DoodleVideo.vue"
 import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
 import db from "@/database.js"
 import firebase from "firebase/app"
@@ -172,7 +70,6 @@ export default {
   components: {
     BaseCard,
     VideoGalleryTabs,
-    BetaDoodleVideo,
     RenderlessFetchStrokes,
     DoodleVideo,
     AudioRecorder

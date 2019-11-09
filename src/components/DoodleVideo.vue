@@ -1,6 +1,6 @@
 <template>
   <div style="height: 100%; width: 100%;">
-    <animation 
+    <DoodleVideoAnimation
       v-if="strokes"
       ref="animation"
       :strokes="strokes"
@@ -22,12 +22,12 @@
 </template>
 
 <script>
-import db from "@/database.js";
-import Animation from "@/components/Animation.vue";
-import AudioRecorder from "@/components/AudioRecorder.vue";
-import { mapState } from "vuex";
-import firebase from "firebase/app";
-import "firebase/storage";
+import db from "@/database.js"
+import DoodleVideoAnimation from "@/components/DoodleVideoAnimation.vue"
+import AudioRecorder from "@/components/AudioRecorder.vue"
+import { mapState } from "vuex"
+import firebase from "firebase/app"
+import "firebase/storage"
 
 export default {
   props: {
@@ -36,20 +36,20 @@ export default {
     canvasID: String
   },
   components: {
-    Animation,
+    DoodleVideoAnimation,
     AudioRecorder
   },
   data () {
     return {
       recorderLoaded: false,
       animationLoaded: false,
-      syncedVisualAndAudio: false,
+      syncedVisualAndAudio: false
     }
   },
   computed: {
     ...mapState(["user"]),
     resourcesLoaded() {
-      return this.recorderLoaded && this.animationLoaded;
+      return this.recorderLoaded && this.animationLoaded
     }
   },
   methods: {

@@ -1,7 +1,7 @@
 <template>
   <div class="video">
     <v-container fluid class="pa-0">
-      <animation 
+      <DoodleVideoAnimation 
         v-if="allStrokes"
         ref="animation"
         :strokes="allStrokes"
@@ -23,7 +23,7 @@
 
 <script>
 import db from '@/database.js'
-import Animation from '@/components/Animation.vue'
+import DoodleVideoAnimation from '@/components/DoodleVideoAnimation.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'

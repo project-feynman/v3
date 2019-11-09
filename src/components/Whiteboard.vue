@@ -179,14 +179,12 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      console.log("color changed to =", this.color)
       if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
         this.lineWidth = 2
-        this.setStyle(this.color, this.lineWidth)
       } else {
         this.lineWidth = 30
-        this.setStyle(this.color, this.lineWidth)
       }
+      this.setStyle(this.color, this.lineWidth)
     },
     isRecording () {
       if (this.isRecording) {

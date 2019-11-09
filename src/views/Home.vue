@@ -43,7 +43,7 @@
                 <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes :whiteboardID="c.introVideoID">
                     <template slot-scope="{ strokes }">
-                      <BetaDoodleVideo 
+                      <DoodleVideo 
                         v-if="strokes"
                         :strokes="strokes"
                         :canvasID="`${i}`"
@@ -88,21 +88,19 @@ import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import db from '@/database.js'
-import Animation from '@/components/Animation.vue'
 import PopupLogin from '@/components/PopupLogin.vue'
 import LayoutResponsiveGrid from "@/components/LayoutResponsiveGrid.vue"
 import TheAppBar from "@/components/TheAppBar.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
-import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
+import DoodleVideo from "@/components/DoodleVideo.vue"
 
 export default {
   components: {
-    Animation,
     PopupLogin,
     TheAppBar,
     LayoutResponsiveGrid,
     RenderlessFetchStrokes,
-    BetaDoodleVideo
+    DoodleVideo
   },
   computed: {
     ...mapState(['user', 'isFetchingUser']),

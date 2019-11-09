@@ -29,8 +29,7 @@
 
 <script>
 import BaseCard from "@/components/BaseCard.vue"
-import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
-import DoodleVideo from "@/views/DoodleVideo.vue"
+import DoodleVideo from "@/components/DoodleVideo.vue"
 import Videos from "@/components/Videos.vue"
 import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
 import db from "@/database.js"
@@ -42,7 +41,6 @@ export default {
   components: {
     BaseCard,
     VideoGalleryTabs,
-    BetaDoodleVideo,
     DoodleVideo,
     Videos
   },
