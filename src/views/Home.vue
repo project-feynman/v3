@@ -37,7 +37,7 @@
         <div v-if="isFetchingUser" key="loading..."></div>
         <div v-else key="class-list">
           <LayoutResponsiveGrid>
-            <v-col v-for="(c, i) in classes" :key="c['.key']" cols="6">
+            <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
               <v-card>
                 <!-- CARD IMAGE -->
                 <v-img :aspect-ratio="16/9">
@@ -134,6 +134,9 @@ export default {
       ref.update({
         paragraph: newValue
       })
+    },
+    computeCardSize () {
+      return this.$vuetify.breakpoint.smAndDown? 12 : 6
     }
   } 
 }
