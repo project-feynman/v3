@@ -101,7 +101,6 @@ import db from '@/database.js'
 import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
-import WhiteboardSavePopup from '@/components/WhiteboardSavePopup.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 
 export default {
@@ -110,7 +109,6 @@ export default {
     hideToolbar: Boolean
   },
   components: {
-    WhiteboardSavePopup,
     AudioRecorder,
     Swatches
   },

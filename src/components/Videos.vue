@@ -12,7 +12,7 @@
 
     <v-container grid-list-md fluid pt-5 style="background-color: rgb(225, 233, 247)">
       <template v-for="(video, i) in whiteboards">
-        <vuetify-card 
+        <BaseCard
           :actionButtons="['FULL VIDEO', 'QUICKPLAY', `HELPFUL (${video.likes || 0})`]"
           @action="buttonName => handleAction(buttonName, whiteboards[i], i)" 
           @save-paragraph="newValue => saveParagraph(newValue, whiteboards[i])"
@@ -26,7 +26,7 @@
           class="mb-5"
           :key="video['.key']"
         >
-          <fetch-strokes :whiteboardID="video['.key']">
+          <RenderlessFetchStrokes :whiteboardID="video['.key']">
             <template slot-scope="{ strokes }">
               <beta-doodle-video 
                 v-if="strokes"
@@ -35,7 +35,7 @@
                 :canvasID="`${tabNumber}-${i}`"
               />
             </template>
-          </fetch-strokes>
+          </RenderlessFetchStrokes>
           <template v-slot:card-actions>
             <!-- <v-btn @click="loadAudio(video)">LOAD AUDIO</v-btn> -->
               <!-- <h1>WHY</h1>
@@ -44,7 +44,7 @@
                 <audio-recorder :audioBlob="blob"></audio-recorder>
               </template> -->
           </template>
-        </vuetify-card>
+        </BaseCard>
        
         <!-- <v-layout 
           v-if="i == (whiteboards.length - 1) && i%2 != 1" 
@@ -152,12 +152,12 @@
 </template>
 
 <script>
-import VuetifyCard from "@/components/VuetifyCard.vue"
+import BaseCard from "@/components/BaseCard.vue"
 import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
-import FetchStrokes from "@/components/FetchStrokes.vue"
+import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import AudioRecorder from "@/components/AudioRecorder.vue"
 import DoodleVideo from "@/views/DoodleVideo.vue"
-import VuetifyTabs from "@/components/VuetifyTabs.vue"
+import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
 import db from "@/database.js"
 import firebase from "firebase/app"
 import "firebase/functions"
@@ -170,10 +170,10 @@ export default {
     tabs: Array
   },
   components: {
-    VuetifyCard,
-    VuetifyTabs,
+    BaseCard,
+    VideoGalleryTabs,
     BetaDoodleVideo,
-    FetchStrokes,
+    RenderlessFetchStrokes,
     DoodleVideo,
     AudioRecorder
   },

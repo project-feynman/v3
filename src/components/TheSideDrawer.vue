@@ -80,8 +80,6 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 import firebase from 'firebase/app'
 import "firebase/auth"
-import NewClassPopup from '@/components/NewClassPopup.vue'
-import LoginPopup from "@/components/LoginPopup.vue"
 import VuetifyMenu from "@/components/VuetifyMenu.vue"
 
 export default {

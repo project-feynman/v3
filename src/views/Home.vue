@@ -8,8 +8,8 @@
       </v-btn>
     </v-snackbar>
 
-    <!-- APP BAR -->
-    <the-app-bar/>
+    <!-- TODO: Remove the "The" prefix as there are now multiple app bars -->
+    <TheAppBar/>
 
     <v-content>
       <v-card class="mx-auto text-center" fluid>
@@ -33,14 +33,50 @@
         </v-card-actions>
       </v-card>
 
-      <transition 
-        name="fade" 
-        mode="out-in" 
-        @after-leave="transitionFinished = true"
-      >
+      <transition name="fade" mode="out-in">
         <div v-if="isFetchingUser" key="loading..."></div>
         <div v-else key="class-list">
-          <CollegeClasses/>
+          <LayoutResponsiveGrid>
+            <v-col v-for="(c, i) in classes" :key="c['.key']" cols="6">
+              <v-card>
+                <!-- CARD IMAGE -->
+                <v-img :aspect-ratio="16/9">
+                  <RenderlessFetchStrokes :whiteboardID="c.introVideoID">
+                    <template slot-scope="{ strokes }">
+                      <BetaDoodleVideo 
+                        v-if="strokes"
+                        :strokes="strokes"
+                        :canvasID="`${i}`"
+                        :ref="`doodle-video-${i}`"
+                      />
+                    </template>
+                  </RenderlessFetchStrokes>
+                </v-img>
+
+                <!-- CARD TITLE -->
+                <v-card-title>
+                  <div class="title font-weight-bold">
+                    {{ c.description }} ({{ c.courseNumber }})  
+                  </div>
+                </v-card-title>
+
+                <!-- CARD TEXT -->
+                <v-card-text class="black--text">
+                  {{ c.paragraph }}
+                </v-card-text>
+                
+                <!-- CARD ACTIONS -->
+                <v-card-actions>
+                  <v-btn @click="$router.push(`${c.courseNumber}/videos`)" text color="deep-purple accent-4">
+                    ENTER CLASS
+                  </v-btn>
+                  <v-btn @click="quickplayVideo(i)" text color="deep-purple accent-4">
+                    QUICKPLAY
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-col>
+          </LayoutResponsiveGrid>
         </div>
       </transition>
     </v-content>
@@ -53,28 +89,53 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import db from '@/database.js'
 import Animation from '@/components/Animation.vue'
-import LoginPopup from '@/components/LoginPopup.vue'
-import CollegeClasses from '@/components/CollegeClasses.vue'
+import PopupLogin from '@/components/PopupLogin.vue'
+import LayoutResponsiveGrid from "@/components/LayoutResponsiveGrid.vue"
 import TheAppBar from "@/components/TheAppBar.vue"
-
+import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
+import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
 
 export default {
   components: {
     Animation,
-    LoginPopup,
-    CollegeClasses,
-    TheAppBar
+    PopupLogin,
+    TheAppBar,
+    LayoutResponsiveGrid,
+    RenderlessFetchStrokes,
+    BetaDoodleVideo
   },
   computed: {
-    ...mapState(['user', 'isFetchingUser'])
+    ...mapState(['user', 'isFetchingUser']),
   },
   data () {
     return {
-      transitionFinished: false,
+      classes: [],
       snackbar: false,
-      snackbarMessage: ''
+      snackbarMessage: '',
     }
-  }
+  },
+  created () {
+    this.fetchClasses()
+  },
+  methods: {
+    fetchClasses () {
+      db.collection("classes").get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          this.classes.push({ ".key": doc.id, ...doc.data()})
+        })
+      })
+    },
+    quickplayVideo (i) {
+      const videoElem = this.$refs[`doodle-video-${i}`][0]
+      videoElem.quickplay()
+    },
+    saveParagraph (newValue, courseNumber) {
+      const ref = db.collection("classes").doc(courseNumber)
+      ref.update({
+        paragraph: newValue
+      })
+    }
+  } 
 }
 </script>
 

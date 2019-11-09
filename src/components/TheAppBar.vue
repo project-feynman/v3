@@ -9,7 +9,7 @@
     </v-snackbar>
 
     <!-- LOGIN / SIGNUP -->
-    <login-popup 
+    <PopupLogin 
       v-model="loginPopup" 
       :newAccount="false"
       @sign-in="payload => signIn(payload)"
@@ -26,7 +26,7 @@
       <v-spacer></v-spacer>
 
       <template v-if="user && $route.path == '/'">
-        <new-class-popup
+        <PopupNewClass
           v-model="newClassPopup"
           @create-class="courseNumber => createClass(courseNumber)"
         />
@@ -99,14 +99,14 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 import firebase from 'firebase/app'
 import 'firebase/auth'
-import NewClassPopup from '@/components/NewClassPopup.vue'
-import LoginPopup from "@/components/LoginPopup.vue"
+import PopupNewClass from '@/components/PopupNewClass.vue'
+import PopupLogin from "@/components/PopupLogin.vue"
 import VuetifyMenu from "@/components/VuetifyMenu.vue"
 
 export default {
   components: {
-    NewClassPopup,
-    LoginPopup,
+    PopupNewClass,
+    PopupLogin,
     VuetifyMenu
   },
   computed: {
@@ -177,6 +177,7 @@ export default {
       this.$root.$emit('replay-silent-animation')
     },
     createClass (courseNumber) {
+      // this should be delegated to the parent
       const ref = db.collection('classes').doc(courseNumber)
       ref.set({ 
         courseNumber,

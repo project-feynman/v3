@@ -11,7 +11,7 @@
     <!-- CONTENT -->
     <v-content>
       <template v-if="classDoc != {}">
-        <vuetify-tabs 
+        <VideoGalleryTabs 
           v-if="classDoc.tabs"
           :tabs="classDoc.tabs"
           @tabs-rename="newValues => renameTabs(newValues)"
@@ -21,18 +21,18 @@
               <videos :tabNumber="i" :tabs="tabs"/>
             </v-tab-item>
           </template>
-        </vuetify-tabs>
+        </VideoGalleryTabs>
       </template>
     </v-content>
   </div>
 </template>
 
 <script>
-import VuetifyCard from "@/components/VuetifyCard.vue"
+import BaseCard from "@/components/BaseCard.vue"
 import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue"
 import DoodleVideo from "@/views/DoodleVideo.vue"
 import Videos from "@/components/Videos.vue"
-import VuetifyTabs from "@/components/VuetifyTabs.vue"
+import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
 import db from "@/database.js"
 import firebase from "firebase/app"
 import "firebase/functions"
@@ -40,8 +40,8 @@ import "firebase/storage"
 
 export default {
   components: {
-    VuetifyCard,
-    VuetifyTabs,
+    BaseCard,
+    VideoGalleryTabs,
     BetaDoodleVideo,
     DoodleVideo,
     Videos
