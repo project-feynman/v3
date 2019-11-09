@@ -1,6 +1,6 @@
 <template>
   <div>
-    <the-app-bar></the-app-bar>
+    <the-app-bar/>
 
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
@@ -12,10 +12,7 @@
 
     <v-content>
 
-      <v-card
-        class="mx-auto text-center"
-        fluid
-      >
+      <v-card class="mx-auto text-center" fluid>
         <v-card-text>
           <p class="display-2 text--primary">
             explain.mit.edu
