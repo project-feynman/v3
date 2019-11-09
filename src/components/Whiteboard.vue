@@ -16,12 +16,7 @@
 
 
     <!-- WHITEBOARD BUTTONS -->
-    <v-app-bar 
-      app 
-      clipped-left
-      color="white"
-      dense
-    >
+    <v-app-bar app clipped-left color="white" dense>
       <v-app-bar-nav-icon @click.stop="toggleDrawer()"></v-app-bar-nav-icon>
       <v-toolbar-title class="mr-12 align-center">
         <span class="title">{{ $route.params.class_id }}</span>
