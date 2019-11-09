@@ -41,14 +41,12 @@
                 v-if="strokes"
                 :ref="`doodle-video-${i}`"
                 :strokes="strokes"
-                :canvasID="`${tabNumber}-${i}`">
-              </beta-doodle-video>
+                :canvasID="`${tabNumber}-${i}`"
+              />
+              
             </vuetify-card>
           </template>
         </fetch-strokes>
-
-
-  
         <!-- <v-layout 
           v-if="i == (whiteboards.length - 1) && i%2 != 1" 
           :key="whiteboards[i]['.key']" :class="`px-${getSideMargin()}`" 
@@ -151,7 +149,6 @@
         </v-layout> -->
       </template>
     </v-container>
-    
   </div>
 </template>
 
@@ -198,27 +195,44 @@ export default {
   },
   async created () {
     // get all whiteboards associated with a course 
-    const classID = this.$route.params.class_id
-    const baseRef = db.collection("whiteboards").where("fromClass", "==", classID)
-    let videosRef = {} 
-    if (this.tabNumber != null) {
-      videosRef = baseRef.where("tabNumber", "==", this.tabNumber)
-    } else {
-      videosRef = baseRef.where("tabNumber", "==", null)
-    }
-    videosRef.get().then(snapshotQuery => {
-      snapshotQuery.forEach(doc => {
-        this.whiteboards.push({".key": doc.id, ...doc.data()})
-      })
-    })
+    this.fetchVideos()
+    // const classID = this.$route.params.class_id
+    // const baseRef = db.collection("whiteboards").where("fromClass", "==", classID)
+    // let videosRef = {} 
+    // if (this.tabNumber != null) {
+    //   videosRef = baseRef.where("tabNumber", "==", this.tabNumber)
+    // } else {
+    //   videosRef = baseRef.where("tabNumber", "==", null)
+    // }
+    // videosRef.get().then(snapshotQuery => {
+    //   snapshotQuery.forEach(doc => {
+    //     this.whiteboards.push({".key": doc.id, ...doc.data()})
+    //   })
+    // })
   },
   methods: {
+    fetchVideos () {
+      this.whiteboards = []
+      const classID = this.$route.params.class_id
+      const baseRef = db.collection("whiteboards").where("fromClass", "==", classID)
+      let videosRef = {} 
+      if (this.tabNumber != null) {
+        videosRef = baseRef.where("tabNumber", "==", this.tabNumber)
+      } else {
+        videosRef = baseRef.where("tabNumber", "==", null)
+      }
+      videosRef.get().then(snapshotQuery => {
+        snapshotQuery.forEach(doc => {
+          this.whiteboards.push({".key": doc.id, ...doc.data()})
+        })
+      })
+    },
     async loadAudio (video) {
       var storage = firebase.storage()
       const ref = storage.ref("recordings/05656c87-5fa4-6dcb-093c-a789a6dc7fcc")
       const URL = await ref.getDownloadURL()
       const response = await axios.get(URL)
-      console.log("response =", response)
+      console.log("audio response =", response)
       this.blob = response.data
       // ref.getDownloadURL().then(URL => {
       //   axios
@@ -240,16 +254,13 @@ export default {
       // var storage = firebase.storage();
       // var pathReference = storage.ref('recordings/978b6e8b-5f53-f809-f10e-e6d')
       // now what do you do? 
-
     },
-    // saveTabNumber (newValue, { ".key": videoID }) {
-    //   console.log("newValue =", newValue)
-    // },
-    handleTabChange (newValue, { ".key": videoID }) {
+    async handleTabChange (newValue, { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
-      ref.update({
+      await ref.update({
         tabNumber: newValue
       })
+      this.fetchVideos()
     },
     async handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID) {
       if (buttonName == "FULL VIDEO") {
@@ -288,21 +299,13 @@ export default {
       return false 
     },
     getGapWidth () {
-      if (this.$vuetify.breakpoint.smAndDown) {
-        return 0
-      } else {
-        return 30
-      }
+      return this.$vuetify.breakpoint.smAndDown ? 0 : 30
     },
     getSideMargin () {
       if (this.$vuetify.breakpoint.xs) {
         return 0
       }
-      if (this.$vuetify.breakpoint.sm) {
-        return 2
-      } else {
-        return 5
-      }
+      return this.$vuetify.breakpoint.sm ? 2 : 5 
     }
   }
 }

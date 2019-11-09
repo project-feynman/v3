@@ -14,7 +14,7 @@ export default new Router({
     },
     {
       path: '/:class_id/videos',
-      component: () => import(/* webpackChunkName: "videos" */ './views/Videos.vue')
+      component: () => import(/* webpackChunkName: "videos" */ './views/VideoGallery.vue')
     },
     {
       path: '/:class_id/workspace/:id',

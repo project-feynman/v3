@@ -1,51 +1,44 @@
 <template>
   <v-card color="rgb(225, 233, 247)">
-    <v-tabs
-      v-model="tab"
-      background-color="blue-grey darken-2"
-      dark
-    >
-      <!-- TABS DURING EDIT MODE -->
-      <template v-if="isEditting">
-        <v-flex xs6 sm4 md2 v-for="(tab, i) in localTabs" :key="`v-flex-${i}`">
-          <v-text-field
-            :label="`Tab ${i}`"
-            :value="tab"
-            @input="newValue => updateTabName(newValue, i)"
-          ></v-text-field>
-        </v-flex>   
-      </template>
-      <template v-else>
-        <v-tab key="firstTab">
-          NEW
-        </v-tab>
-        <v-tab v-for="(tab, i) in tabs" :key="i">
-          {{ tab }}
-        </v-tab>
-        <v-spacer></v-spacer>
-      </template>
-    </v-tabs>
-      
-    <!-- EDIT OPTIONS -->
-    <v-card-text v-if="user" class="text-center">
-      <template v-if="isEditting">
+    <!-- EDIT MODE -->
+    <template v-if="user && isEditting">
+      <v-tabs v-model="tab" background-color="blue-grey darken-2" dark>
+          <v-flex xs6 sm4 md2 v-for="(tab, i) in localTabs" :key="`v-flex-${i}`">
+            <v-text-field
+              :label="`Tab ${i}`"
+              :value="tab"
+              @input="newValue => updateTabName(newValue, i)"
+            ></v-text-field>
+          </v-flex>   
+      </v-tabs>
+      <v-card-text class="text-center">
         <v-btn @click="handleSave()">SAVE CHANGES</v-btn>
         <v-btn @click="addTab()">ADD TAB</v-btn>
         <v-btn @click="removeTab()">REMOVE TAB</v-btn>
-      </template>
-      <v-btn v-else @click="isEditting = true">EDIT TABS</v-btn>
-    </v-card-text>
+      </v-card-text>
+    </template>
 
+    <!-- NORMAL MODE -->
+    <template v-else>
+      <v-tabs v-model="tab" background-color="blue-grey darken-2" dark>
+        <v-tab v-for="(tab, i) in tabs" :key="i">
+          {{ tab }}
+        </v-tab>
+        <v-spacer/>
+      </v-tabs>
+      <v-card-text class="text-center">
+        <v-btn @click="isEditting = true">
+          EDIT TABS
+        </v-btn>
+      </v-card-text>
+    </template>
+
+    <!-- TAB ITEMS -->
     <v-tabs-items v-model="tab">
-      <v-tab-item>
-        <videos :tabNumber="0" :tabs="tabs"></videos>
-      </v-tab-item>
-
-      <v-tab-item v-for="(tab, i) in tabs" :key="`tab-item--${i}`"> 
-        <videos :tabNumber="i+1" :tabs="tabs"></videos>
-      </v-tab-item>
+      <slot v-bind:tabs="tabs"> 
+        <!-- SLOT -->
+      </slot>
     </v-tabs-items>
-
   </v-card>
 </template>
 

@@ -45,7 +45,12 @@
               ></v-textarea>
                 <div v-if="tabs">
                   <v-radio-group v-model="radioGroup" @change="newValue => updateLocalTabValue(newValue)">
-                  <v-radio v-for="(tab, i) in tabs" :key="i" :label="tab" :value="i+1" class="pl-3"></v-radio>
+                  <v-radio 
+                    v-for="(tab, i) in tabs" 
+                    :key="i" :label="tab" 
+                    :value="i" 
+                    class="pl-3">
+                  </v-radio>
                 </v-radio-group>
               </div>
             
@@ -79,8 +84,6 @@
         <v-spacer></v-spacer>
         <div class="flex-grow-1"></div>
       </v-card-actions>
-
-
     </v-card>
   </div>
 </template>
@@ -132,6 +135,7 @@ export default {
     this.localTitle = this.title
     this.localParagraph = this.paragraph
     this.localTabNumber = this.tabNumber
+    this.radioGroup = this.tabNumber
   },
   methods: {
     updateLocalTabValue (newValue) {

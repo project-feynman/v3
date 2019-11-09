@@ -1,5 +1,5 @@
 <template>
-  <div class="video" style="height: 100%; width: 100%;">
+  <div style="height: 100%; width: 100%;">
     <animation 
       v-if="strokes"
       ref="animation"
