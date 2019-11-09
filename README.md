@@ -17,11 +17,3 @@ ExplainMIT is a website where helping one person is no different than helping ev
 ## Contributors
 Current Team: 
 Adil Yusuf, Susanna Chen, Meryl Wang, Lujing Cen, Kristen Surrao and Elton Lin
-
-Past contributors: 
-* [Elton Lin](https://github.com/LingDingDong)
-* [huBlerTi2](https://github.com/huBIerTi2)
-* [John Lin](https://github.com/linjohnjohn)
-* [hubierti3](https://github.com/hubierti3)
-* [Yang Yan](https://github.com/GilgameshxZero)
-* [Kirill Zabrodin](https://github.com/kirillzabrodin)
