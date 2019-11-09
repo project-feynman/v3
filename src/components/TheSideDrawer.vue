@@ -44,7 +44,7 @@
               Board {{ i }}
               <template v-for="(member, i) in workspace.members">
                 <div style="display: flex;" :key="i">
-                  <v-icon color="pink">person</v-icon>
+                  <v-icon :color="getUserColor()">person</v-icon>
                   <p class="pl-4 pt-4">{{ workspace.members[i].email }}</p>
                 </div>
               </template>
@@ -80,13 +80,8 @@ import { mapState } from 'vuex'
 import db from '@/database.js'
 import firebase from 'firebase/app'
 import "firebase/auth"
-import VuetifyMenu from "@/components/VuetifyMenu.vue"
 
 export default {
-  // model: {
-  //   prop: 'drawer',
-  //   event: 'change'
-  // },
   props: {
     value: Boolean
   },
@@ -96,6 +91,11 @@ export default {
       mini: false,
       prevClassID: "",
       workspaces: []
+    }
+  },
+  computed: {
+    user () {
+      return this.$store.state.user
     }
   },
   watch: {
@@ -134,6 +134,13 @@ export default {
         const classRef = db.collection('classes').doc(classID)
         await this.$binding('workspaces', classRef.collection('workspaces'))
         this.prevClassID = classID
+      }
+    },
+    getUserColor () {
+      if (this.user) {
+        return this.user.color
+      } else {
+        return "pink"
       }
     }
   },
