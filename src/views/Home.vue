@@ -8,6 +8,7 @@
       </v-btn>
     </v-snackbar>
 
+    <!-- APP BAR -->
     <the-app-bar/>
 
     <v-content>
