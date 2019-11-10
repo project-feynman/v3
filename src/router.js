@@ -22,7 +22,7 @@ export default new Router({
     },
     {
       path: '/:class_id/:video_id',
-      component: () => import(/* webpackChunkName: "video" */ './views/DoodleVideo.vue')
+      component: () => import(/* webpackChunkName: "video" */ './views/FullVideo.vue')
     }
   ]
 })

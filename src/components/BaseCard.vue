@@ -59,28 +59,13 @@
       </v-slide-y-transition>
       
       <v-card-actions>
-        <v-btn 
-          v-for="button in actionButtons" :key="button" 
-          @click="e => emitAction(e)" 
-          text small color="secondary" class="subtitle-2"
-        >
-          {{ button }}
-        </v-btn>
         <slot name="card-actions">
           
         </slot>
         <!-- EDITTING -->
-        <template v-if="hasPermission">
-          <v-btn v-if="!isEditting" @click="startEdit()" text small class="subtitle-2">
-            EDIT
-          </v-btn>
-          <v-btn v-else-if="isEditting" @click="event => handleSave(event)" text small class="subtitle-2">
-            SAVE CHANGES
-          </v-btn>
-          <v-btn @click="e => emitAction(e)" text color="red" small class="subtitle-2">
-            DELETE
-          </v-btn>
-        </template>
+        <v-btn v-if="isEditting" @click="event => handleSave(event)" text small class="subtitle-2">
+          SAVE CHANGES
+        </v-btn>
         <v-spacer></v-spacer>
         <div class="flex-grow-1"></div>
       </v-card-actions>
@@ -91,6 +76,7 @@
 <script>
 export default {
   props: {
+    isEditting: Boolean,
     tabs: Array,
     tabNumber: Number,
     numberOfTabs: Number,
@@ -106,7 +92,7 @@ export default {
     actionButtons: {
       type: Array,
       default () {
-        return ["EXPLORE COURSE", "QUICKPLAY", "FULLSCREEN"]
+        return []
       }
     },
     hasDeleteButton: {
@@ -120,15 +106,14 @@ export default {
       default () {
         return "(No description written yet)"
       }
-    },
-    hasPermission: Boolean
+    }
   },
   data: () => ({
     show: true,
     localTitle: '',
     localParagraph: '',
     localTabNumber: 0,
-    isEditting: false,
+    // isEditting: false,
     radioGroup: 1
   }),
   created () {
@@ -151,7 +136,6 @@ export default {
     },
     handleSave (event) {
       event.stopPropagation()
-      this.isEditting = false
       // handle local title as well
       this.$emit("save-tab-number", this.localTabNumber)
       this.$emit("save-paragraph", this.localParagraph)

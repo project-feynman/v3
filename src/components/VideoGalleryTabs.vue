@@ -43,14 +43,9 @@
 </template>
 
 <script>
-import Videos from "@/components/Videos.vue"
-
 export default {
   props: {
     tabs: Array
-  },
-  components: {
-    Videos
   },
   data: () => ({
     tab: null,

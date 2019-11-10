@@ -15,7 +15,6 @@
         v-if="loadCanvas && workspace.whiteboardID"
         ref="whiteboard"
         :whiteboardID="workspace.whiteboardID"/>
-
     </v-container>
   </div>
 </template>
@@ -31,7 +30,7 @@ import VoiceChat from '@/components/BlackboardVoiceChat.vue'
 
 export default {
   components: {
-    Whiteboard,
+    Blackboard,
     VoiceChat
   },
   computed: {

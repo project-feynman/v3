@@ -36,7 +36,7 @@ export default {
     videoID: String
   },
   components: {
-    Animation,
+    DoodleVideoAnimation,
     AudioRecorder
   },
   computed: {

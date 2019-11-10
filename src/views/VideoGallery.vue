@@ -1,5 +1,16 @@
 <template>
   <div>
+    <!-- FULLSCREEN VIDEO POPUP -->
+    <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
+      <v-card v-if="whiteboardPopup">
+        <div class="text-xs-center">
+          <v-btn @click="whiteboardPopup = false">EXIT</v-btn>
+        </div>
+        <FullVideo :videoID="currentVideoID"/>
+      </v-card>
+    </v-dialog>
+
+
     <!-- APP BAR -->
     <v-app-bar app clipped-left color="white" dense>
       <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
@@ -18,8 +29,55 @@
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
-              <!-- TODO: make videos more explicit -->
-              <videos :tabNumber="i" :tabs="tabs"/>
+              <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber">
+                <template slot-scope="{ videos }">
+                  <BaseGrid>
+                    <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
+                      <BaseCard
+                        @save-tab-number="newValue => handleTabChange(newValue, video)"
+                        @save-paragraph="newValue => saveParagraph(newValue, video)"
+                        :isEditting="isEditting"
+                        :title="video.title"
+                        :description="`By ${video.authorName || 'Anonymous'}`"
+                        :paragraph="video.paragraph"
+                        :tabs="classDoc.tabs"
+                        :tabNumber="i"
+                        class="mb-5"
+                        :key="video['.key']"
+                      >
+                        <!-- IMAGE SLOT -->
+                        <RenderlessFetchStrokes :whiteboardID="video['.key']">
+                          <template slot-scope="{ strokes }">
+                            <DoodleVideo 
+                              v-if="strokes"
+                              :ref="`doodle-video-${i}-${j}`"
+                              :strokes="strokes"
+                              :canvasID="`${i}-${j}`"
+                            />
+                          </template>
+                        </RenderlessFetchStrokes>
+                        <!-- BUTTONS SLOT -->
+                        <template v-slot:card-actions>
+                          <template v-if="isEditting === false">
+                            <v-btn @click="handleAction('FULL VIDEO', video, j)" text color="secondary">
+                              FULL VIDEO
+                            </v-btn>
+                            <v-btn @click="handleAction('QUICKPLAY', video, `${i}-${j}`)" text color="secondary">
+                              QUICKPLAY
+                            </v-btn>
+                            <v-btn v-if="hasPermission(video)" @click="isEditting = true" text class="subtitle-2">
+                              EDIT
+                            </v-btn>
+                          </template>
+                          <v-btn v-else @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
+                            DELETE
+                          </v-btn>
+                        </template>
+                      </BaseCard>
+                    </v-col>
+                  </BaseGrid>
+                </template>
+              </RenderlessFetchVideos>
             </v-tab-item>
           </template>
         </VideoGalleryTabs>
@@ -30,8 +88,11 @@
 
 <script>
 import BaseCard from "@/components/BaseCard.vue"
+import BaseGrid from "@/components/BaseGrid.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
-import Videos from "@/components/Videos.vue"
+import FullVideo from "@/views/FullVideo.vue"
+import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue'
+import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
 import db from "@/database.js"
 import firebase from "firebase/app"
@@ -40,10 +101,13 @@ import "firebase/storage"
 
 export default {
   components: {
-    BaseCard,
     VideoGalleryTabs,
     DoodleVideo,
-    Videos
+    FullVideo,
+    BaseCard,
+    BaseGrid,
+    RenderlessFetchVideos,
+    RenderlessFetchStrokes
   },
   data () {
     return {
@@ -52,7 +116,8 @@ export default {
       whiteboards: [],
       classDoc: {},
       whiteboardPopup: false,
-      currentVideoID: ""
+      currentVideoID: "",
+      isEditting: false
     }
   },
   computed: {
@@ -72,15 +137,22 @@ export default {
       this.$root.$emit("toggle-drawer")
     },
     handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID) {
-      if (buttonName == "FULL VIDEO") {
+      if (buttonName === "FULL VIDEO") {
         this.currentVideoID = videoID 
         this.whiteboardPopup = true
-      } else if (buttonName == "PREVIEW") {
+      } else if (buttonName === "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()
-      } else if (buttonName == "delete") {
+      } else if (buttonName === "DELETE") {
         this.deleteVideo(videoID, audioPath)
       }
+    },
+    async handleTabChange (newValue, { ".key": videoID }) {
+      const ref = db.collection("whiteboards").doc(videoID)
+      ref.update({
+        tabNumber: newValue
+      })
+      this.isEditting = false 
     },
     async renameTabs (newValues) {
       const ref = db.collection("classes").doc(this.$route.params.class_id)
@@ -90,40 +162,34 @@ export default {
       const classDoc = await ref.get()
       this.classDoc = classDoc.data()
     },
-    async saveParagraph (newValue, { ".key": videoID }) {
+    saveParagraph (newValue, { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
-      await ref.update({
+      ref.update({
         paragraph: newValue
       })
+      this.isEditting = false
     },
     async deleteVideo (ID, audioPath) {
       const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete')
       recursiveDelete({ path: `whiteboards/${ID}` })
-      // delete audio 
       if (audioPath) {
+         // TODO: audio file fails to delete 
         const storageRef = firebase.storage().ref()
-        // TODO: audio file fails to delete 
         const audioFileRef = storageRef.child(`recordings/${audioPath}`)
         audioFileRef.delete()
       }      
     },
-    checkPermission (video) {
+    hasPermission (video) {
       if (!this.user) {
         return false
       } 
-      if (video.authorUID == this.user.uid || this.user.email == "eltonlin1998@gmail.com") {
+      if (video.authorUID === this.user.uid || this.user.email === "eltonlin1998@gmail.com") {
         return true 
       } 
       return false 
     },
-    getGapWidth () {
-      return this.$vuetify.breakpoint.smAndDown ? 0 : 30
-    },
-    getSideMargin () {
-      if (this.$vuetify.breakpoint.xs) {
-        return 0
-      } 
-      return this.$vuetify.breakpoint.sm ? 2 : 5
+    computeCardSize () {
+      return this.$vuetify.breakpoint.smAndDown? 12 : 6
     }
   }
 }
