@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import './plugins/vuetify'
 import App from './App.vue'
-import BetaApp from "./BetaApp.vue"
 import router from './router'
 import store from './store'
 // import './notifications'
@@ -35,5 +34,5 @@ new Vue({
   router,
   store,
   vuetify,
-  render: h => h(BetaApp)
+  render: h => h(App)
 }).$mount('#app')

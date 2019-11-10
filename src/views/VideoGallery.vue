@@ -20,7 +20,7 @@
     </v-app-bar>
 
     <!-- CONTENT -->
-    <v-content>
+    <v-content id="background">
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
           v-if="classDoc.tabs"

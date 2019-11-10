@@ -68,7 +68,7 @@
       </v-toolbar-items>
     </v-app-bar>
 
-    <v-content>
+    <v-content id="background">
 
       <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
