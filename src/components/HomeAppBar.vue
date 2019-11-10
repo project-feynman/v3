@@ -41,7 +41,7 @@
 
       <template v-if="!isFetchingUser">
         
-        <vuetify-menu 
+        <BaseMenu 
           v-if="user"
           :user="user"
           @save="payload => updateUser(payload)"
@@ -57,7 +57,7 @@
               </v-icon>
             </v-btn>
           </template>
-        </vuetify-menu>
+        </BaseMenu>
 
         <v-btn 
           v-else-if="!user"  
@@ -107,7 +107,7 @@ export default {
   components: {
     PopupNewClass,
     PopupLogin,
-    VuetifyMenu
+    BaseMenu
   },
   computed: {
     ...mapState(["user", "isFetchingUser"]),
@@ -171,9 +171,6 @@ export default {
     },
     handleSignIn () {
       this.loginPopup = true
-    },
-    replaySilentAnimation () {
-      this.$root.$emit('replay-silent-animation')
     },
     createClass (courseNumber) {
       // this should be delegated to the parent

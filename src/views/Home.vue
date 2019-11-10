@@ -9,7 +9,7 @@
     </v-snackbar>
 
     <!-- TODO: Remove the "The" prefix as there are now multiple app bars -->
-    <TheAppBar/>
+    <HomeAppBar/>
 
     <v-content>
       <v-card class="mx-auto text-center" fluid>
@@ -36,7 +36,7 @@
       <transition name="fade" mode="out-in">
         <div v-if="isFetchingUser" key="loading..."></div>
         <div v-else key="class-list">
-          <LayoutResponsiveGrid>
+          <BaseGrid>
             <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
               <v-card>
                 <!-- CARD IMAGE -->
@@ -76,7 +76,7 @@
                 </v-card-actions>
               </v-card>
             </v-col>
-          </LayoutResponsiveGrid>
+          </BaseGrid>
         </div>
       </transition>
     </v-content>
@@ -90,14 +90,14 @@ import 'firebase/auth'
 import db from '@/database.js'
 import PopupLogin from '@/components/PopupLogin.vue'
 import BaseGrid from "@/components/BaseGrid.vue"
-import TheAppBar from "@/components/TheAppBar.vue"
+import HomeAppBar from "@/components/HomeAppBar.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 
 export default {
   components: {
     PopupLogin,
-    TheAppBar,
+    HomeAppBar,
     BaseGrid,
     RenderlessFetchStrokes,
     DoodleVideo
