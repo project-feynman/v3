@@ -11,7 +11,7 @@
     <!-- TODO: Remove the "The" prefix as there are now multiple app bars -->
     <HomeAppBar/>
 
-    <v-content id="background"> 
+    <v-content> 
       <v-card class="mx-auto text-center" fluid>
         <v-card-text>
           <p class="display-2 text--primary">

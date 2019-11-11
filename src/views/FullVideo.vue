@@ -1,23 +1,27 @@
 <template>
   <div class="video">
-    <v-container fluid class="pa-0">
-      <DoodleVideoAnimation 
-        v-if="allStrokes"
-        ref="animation"
-        :strokes="allStrokes"
-        @animation-loaded="animationLoaded=true"
-        @animation-finished="handleEvent()"
-      />
+    
+    <BaseAppBar/>
+    <v-content>
+      <v-container fluid class="pa-0">
+        <DoodleVideoAnimation 
+          v-if="allStrokes"
+          ref="animation"
+          :strokes="allStrokes"
+          @animation-loaded="animationLoaded=true"
+          @animation-finished="handleEvent()"
+        />
 
-      <audio-recorder 
-        v-if="audioURL"
-        ref="audio-recorder"
-        :audioURL="audioURL"
-        @recorder-loading="recorderLoaded=false"
-        @play="syncAnimation()"
-        @recorder-loaded="recorderLoaded=true"
-      />
-    </v-container>
+        <audio-recorder 
+          v-if="audioURL"
+          ref="audio-recorder"
+          :audioURL="audioURL"
+          @recorder-loading="recorderLoaded=false"
+          @play="syncAnimation()"
+          @recorder-loaded="recorderLoaded=true"
+        />
+      </v-container>
+    </v-content>
   </div>
 </template>
 
@@ -25,6 +29,7 @@
 import db from '@/database.js'
 import DoodleVideoAnimation from '@/components/DoodleVideoAnimation.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
+import BaseAppBar from "@/components/BaseAppBar.vue"
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/storage'
@@ -37,7 +42,8 @@ export default {
   },
   components: {
     DoodleVideoAnimation,
-    AudioRecorder
+    AudioRecorder,
+    BaseAppBar
   },
   computed: {
     ...mapState(['user']),

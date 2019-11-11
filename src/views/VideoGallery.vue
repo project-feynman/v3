@@ -10,17 +10,11 @@
       </v-card>
     </v-dialog>
 
-
     <!-- APP BAR -->
-    <v-app-bar app clipped-left color="white" dense>
-      <v-app-bar-nav-icon @click.stop="toggleDrawer()" />
-      <v-toolbar-title class="mr-12 align-center">
-        <span class="title">{{ $route.params.class_id }}</span>
-      </v-toolbar-title>
-    </v-app-bar>
+    <BaseAppBar/>
 
     <!-- CONTENT -->
-    <v-content id="background">
+    <v-content>
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
           v-if="classDoc.tabs"
@@ -89,6 +83,7 @@
 <script>
 import BaseCard from "@/components/BaseCard.vue"
 import BaseGrid from "@/components/BaseGrid.vue"
+import BaseAppBar from "@/components/BaseAppBar.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import FullVideo from "@/views/FullVideo.vue"
 import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue'
@@ -106,6 +101,7 @@ export default {
     FullVideo,
     BaseCard,
     BaseGrid,
+    BaseAppBar,
     RenderlessFetchVideos,
     RenderlessFetchStrokes
   },
@@ -138,8 +134,8 @@ export default {
     },
     handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID) {
       if (buttonName === "FULL VIDEO") {
-        this.currentVideoID = videoID 
-        this.whiteboardPopup = true
+        const classID = this.$route.params.class_id
+        this.$router.push(`/${classID}/${videoID}`)
       } else if (buttonName === "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
         videoElem.quickplay()

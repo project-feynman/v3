@@ -14,7 +14,6 @@
       </v-btn>
     </v-snackbar>
 
-
     <!-- WHITEBOARD BUTTONS -->
     <v-app-bar app clipped-left color="white" dense>
       <v-app-bar-nav-icon @click.stop="toggleDrawer()"></v-app-bar-nav-icon>
@@ -61,15 +60,14 @@
         <template v-else>
           <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
           <v-btn @click="retryAnswer()">RETRY</v-btn>
-          <v-btn @click="saveVideo()" :disabled="!hasUploadedAudio" class="pink white--text">
+          <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
             SAVE VIDEO
           </v-btn>
         </template>
       </v-toolbar-items>
     </v-app-bar>
 
-    <v-content id="background">
-
+    <v-content>
       <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
       null-->
@@ -86,7 +84,6 @@
       <!-- WHITEBOARD -->
       <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)"/>
       <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
-
     </v-content>
 
   </div>
@@ -179,6 +176,7 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
+      console.log("color was changed to =", this.color)
       if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
         this.lineWidth = 2
       } else {
@@ -235,16 +233,9 @@ export default {
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
     },
-    saveVideo () {
-      this.handleSaving("No title yet")
-      // saveVideoPopup = true
-    },
-    toggleSideNav () {
-      this.$root.$emit("toggle-side-nav")
-    },
-    takePicture () {
-      const dataURL = this.canvas.toDataURL()
-    },
+    // takePicture () {
+    //   const dataURL = this.canvas.toDataURL()
+    // },
     initData () {
       if (!this.whiteboardID) {
         return
@@ -344,9 +335,9 @@ export default {
       if (e.touches[0].touchType == 'stylus') {
         this.disableTouch = true
       } 
-      this.getTouchPos(e) 
-      this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawToPoint(this.touchX, this.touchY)
+      // this.getTouchPos(e) 
+      // this.convertAndSavePoint(this.touchX, this.touchY)
+      // this.drawToPoint(this.touchX, this.touchY)
       if (this.isRecording) {
         this.startTime = this.currentTime.toFixed(1)
         // this.startTime keeps track of current stroke's startTime
@@ -424,7 +415,6 @@ export default {
 
     mouseUp(e) {
       this.mousedown=0;
-
       // referenced from touchEnd
       const strokeNumber = this.allStrokes.length + 1
       // save
@@ -481,10 +471,6 @@ export default {
       // this.saveVideoPopup = true 
       this.handleSaving("No title yet")
     },
-    saveVideo () {
-      this.saveSilently = false 
-      this.saveVideoPopup = true
-    },
     startRecording () {
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.startRecording()
@@ -508,6 +494,14 @@ export default {
         isAnswered: false,
         audioURL: '',
         audioPath: ''
+      })
+    },
+    saveFileReference({ url, path }) {
+      this.hasUploadedAudio = true
+      const ID = this.whiteboardDoc['.key']
+      db.collection('whiteboards').doc(ID).update({
+        audioURL: url,
+        audioPath: path
       })
     },
     async handleSaving (videoTitle) {
@@ -547,21 +541,10 @@ export default {
       })
       // let popup show the success state and the shareable URL
       // this.$refs["popup-save"].showSuccessMessage(whiteboardID)
-
-      // reset the whiteboard 
+ 
       this.hasUploadAudio = false
       this.snackbar = true 
       this.snackbarMessage = 'Successfully saved to the "Videos" section'
-    },
-    saveFileReference({ url, path }) {
-      // this is really bad, because the user may attempt to upload the video when the audio file has not yet been processed
-      console.log('audio file successfully uploaded, now storing a reference')
-      this.hasUploadedAudio = true
-      const ID = this.whiteboardDoc['.key']
-      db.collection('whiteboards').doc(ID).update({
-        audioURL: url,
-        audioPath: path
-      })
     }
   }
 }

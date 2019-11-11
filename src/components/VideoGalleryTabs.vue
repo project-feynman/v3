@@ -1,5 +1,5 @@
 <template>
-  <v-card color="rgb(225, 233, 247)">
+  <v-card>
     <!-- EDIT MODE -->
     <template v-if="user && isEditting">
       <v-tabs v-model="tab" background-color="blue-grey darken-2" dark>

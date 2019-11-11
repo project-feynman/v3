@@ -30,7 +30,7 @@ export default {
 </script>
 
 <style>
-#background {
+/* #background {
   background-color: rgb(225, 233, 247)
-}
+} */
 </style>

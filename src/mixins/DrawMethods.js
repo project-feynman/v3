@@ -23,6 +23,7 @@ export default {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) // clear the initial preview
       this.playProgress = setInterval(() => this.syncVisualWithAudio(getTimeInSeconds), 100)
     },
+    // TODO: optimize the drawing
     syncVisualWithAudio (getTimeInSeconds) {
         const n = this.allStrokes.length
         const currentTime = getTimeInSeconds()
@@ -34,8 +35,7 @@ export default {
               this.indexOfNextStroke = i
               break 
             } else {
-              // this.drawStroke(stroke, null)
-              this.drawStroke(stroke, this.getPointPeriod(stroke))
+              this.renderStroke(stroke, this.getPointPeriod(stroke))
               if (this.indexOfNextStroke == n-1) {
                 this.indexOfNextStroke += 1 // edge case: without this, "this.allStrokes[this.indexOfNextStroke - 1] will no longer be the most recently drawn stroke 
               }
@@ -51,7 +51,7 @@ export default {
           this.indexOfNextStroke = 0 
           this.allStrokes.forEach(stroke => {
             if (stroke.startTime <= currentTime) {
-              this.drawStroke(stroke, null)
+              this.renderStroke(stroke, null)
               this.indexOfNextStroke += 1
             }
           })
@@ -95,6 +95,34 @@ export default {
           const curPoint = points[i]
           const curX = curPoint.unitX * this.canvas.width
           const curY = curPoint.unitY * this.canvas.height
+
+          this.ctx.beginPath()
+          this.ctx.moveTo(prevX, prevY)
+          this.ctx.lineTo(curX, curY)
+          this.ctx.stroke()
+
+          if (pointPeriod != null) {
+            await new Promise(resolve => setTimeout(resolve, pointPeriod)) 
+          }
+        }
+        resolve()
+      })
+    },
+    // "render" are for videos vs "draw" are for blackboards:
+    renderStroke ({ points, color, lineWidth }, pointPeriod = 0) {
+      return new Promise(async resolve => {
+        for (let i = 1; i < points.length; i++) {
+          const prevPoint = points[i - 1]
+          const prevX = prevPoint.unitX * this.canvas.width
+          const prevY = prevPoint.unitY * this.canvas.height
+
+          const curPoint = points[i]
+          const curX = curPoint.unitX * this.canvas.width
+          const curY = curPoint.unitY * this.canvas.height
+          
+          // for rendering videos, it's necessary to reset style for every segment between points
+          // because of simultaneous drawing / video seeking
+          this.setStyle(color, lineWidth) 
 
           this.ctx.beginPath()
           this.ctx.moveTo(prevX, prevY)
