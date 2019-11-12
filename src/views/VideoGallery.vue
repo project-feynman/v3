@@ -19,6 +19,8 @@
         <VideoGalleryTabs 
           v-if="classDoc.tabs"
           :tabs="classDoc.tabs"
+          :tab="tab"
+          @tab-change="newValue => tab = newValue"
           @tabs-rename="newValues => renameTabs(newValues)"
         >
           <template v-slot:default="{ tabs }">
@@ -108,12 +110,12 @@ export default {
   data () {
     return {
       video: null,
-      audioURL: "",
+      tab: 0,
       whiteboards: [],
       classDoc: {},
+      isEditting: false,
       whiteboardPopup: false,
       currentVideoID: "",
-      isEditting: false
     }
   },
   computed: {
@@ -122,13 +124,17 @@ export default {
     }
   },
   created () {
-    const classID = this.$route.params.class_id
-    const classRef = db.collection("classes").doc(classID)
-    classRef.get().then(doc => {
-      this.classDoc = doc.data()
-    })
+    this.fetchClassDoc()
   },
   methods: {
+    fetchClassDoc () {
+      this.classDoc = {} 
+      const classID = this.$route.params.class_id
+      const classRef = db.collection("classes").doc(classID)
+      classRef.get().then(doc => {
+        this.classDoc = doc.data()
+      })
+    },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
     },
@@ -166,14 +172,15 @@ export default {
       this.isEditting = false
     },
     async deleteVideo (ID, audioPath) {
-      const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete')
-      recursiveDelete({ path: `whiteboards/${ID}` })
       if (audioPath) {
          // TODO: audio file fails to delete 
         const storageRef = firebase.storage().ref()
         const audioFileRef = storageRef.child(`recordings/${audioPath}`)
         audioFileRef.delete()
-      }      
+      }    
+      const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete')
+      await recursiveDelete({ path: `whiteboards/${ID}` })
+      this.fetchClassDoc()
     },
     hasPermission (video) {
       if (!this.user) {

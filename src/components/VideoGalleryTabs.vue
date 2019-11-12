@@ -20,7 +20,7 @@
 
     <!-- NORMAL MODE -->
     <template v-else>
-      <v-tabs v-model="tab" background-color="blue-grey darken-2" dark>
+      <v-tabs :value="tab" @change="newValue => $emit('tab-change', newValue)" background-color="blue-grey darken-2" dark>
         <v-tab v-for="(tab, i) in tabs" :key="i">
           {{ tab }}
         </v-tab>
@@ -45,10 +45,10 @@
 <script>
 export default {
   props: {
+    tab: Number,
     tabs: Array
   },
   data: () => ({
-    tab: null,
     isEditting: false,
     localTabs: []
   }),
