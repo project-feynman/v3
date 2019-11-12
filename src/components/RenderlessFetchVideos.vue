@@ -24,7 +24,7 @@ export default {
       return 
     }
     const ref = db.collection("whiteboards").where("fromClass", "==", this.classID).where("tabNumber", "==", this.tabNumber)
-    ref.onSnapshot(querySnapshot => {
+    ref.get().then(querySnapshot => {
       this.videos = []
       querySnapshot.forEach(doc => {
         this.videos.push({".key": doc.id, ...doc.data()})
