@@ -9,7 +9,7 @@
     </v-snackbar>
 
     <!-- TODO: Remove the "The" prefix as there are now multiple app bars -->
-    <HomeAppBar/>
+    <HomeAppBar @create-class="courseNumber => createClass(courseNumber)"/>
 
     <v-content> 
       <v-card class="mx-auto text-center" fluid>
@@ -119,11 +119,26 @@ export default {
   },
   methods: {
     fetchClasses () {
+      console.log("fetch classes")
+      this.classes = [] 
       db.collection("classes").get().then(querySnapshot => {
         querySnapshot.forEach(doc => {
           this.classes.push({ ".key": doc.id, ...doc.data()})
         })
       })
+    },
+    async createClass (courseNumber) {
+      console.log("create class")
+      // this should be delegated to the parent
+      const ref = db.collection('classes').doc(courseNumber)
+      await ref.set({ 
+        courseNumber,
+        description: "description",
+        introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
+        paragraph: "paragraph",
+        tabs: ["New"]
+      })
+      this.fetchClasses()
     },
     quickplayVideo (i) {
       const videoElem = this.$refs[`doodle-video-${i}`][0]

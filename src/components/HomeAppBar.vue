@@ -28,7 +28,7 @@
       <template v-if="user && $route.path == '/'">
         <PopupNewClass
           v-model="newClassPopup"
-          @create-class="courseNumber => createClass(courseNumber)"
+          @create-class="courseNumber => $emit('create-class', courseNumber)"
         />
 
         <v-btn @click="newClassPopup = true" dark color="grey">
@@ -48,10 +48,7 @@
           @sign-out="signOut()"
         >
           <template v-slot:default="{ on }"> 
-            <v-btn 
-              v-on="on"
-              icon class="ml-4"
-            >
+            <v-btn v-on="on" icon class="ml-4">
               <v-icon large :color="user.color">
                 account_circle
               </v-icon>
@@ -68,27 +65,6 @@
           SIGN IN
         </v-btn>
       </template>
-
-     
-        <!-- <template v-slot:extension>
-
-          <v-tabs
-            v-if="showTabs"
-            centered
-            slider-color="yellow"
-            background-color="transparent"
-          >
-    
-            <v-tab
-              v-for="i in 3"
-              :key="i"
-              :href="`#tab-${i}`"
-            >
-              Item {{ i }}
-            </v-tab>
-          </v-tabs>
-        </template>
-    -->
 
     </v-app-bar>
   </div>
@@ -171,17 +147,6 @@ export default {
     },
     handleSignIn () {
       this.loginPopup = true
-    },
-    createClass (courseNumber) {
-      // this should be delegated to the parent
-      const ref = db.collection('classes').doc(courseNumber)
-      ref.set({ 
-        courseNumber,
-        description: "description",
-        introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
-        paragraph: "paragraph",
-        tabs: ["New"]
-      })
     },
     signOut () {
       firebase.auth().signOut()
