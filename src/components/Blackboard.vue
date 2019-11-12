@@ -325,35 +325,32 @@ export default {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
       const unitY = parseFloat(y / this.canvas.height).toFixed(4)
       this.currentStroke.push({ unitX, unitY })
-      // this.drawToPoint(this.touchX, this.touchY)
       this.drawToPoint(x, y);
     },
     touchStart (e) {
+      e.preventDefault()
       if (this.isNotValidTouch(e)) { 
         return 
       }
       if (e.touches[0].touchType == 'stylus') {
         this.disableTouch = true
       } 
-      // this.getTouchPos(e) 
-      // this.convertAndSavePoint(this.touchX, this.touchY)
-      // this.drawToPoint(this.touchX, this.touchY)
+      this.drawToPointAndSave(e)
       if (this.isRecording) {
-        this.startTime = this.currentTime.toFixed(1)
-        // this.startTime keeps track of current stroke's startTime
+        this.startTime = this.currentTime.toFixed(1) // this.startTime keeps track of current stroke's startTime
       }
-      event.preventDefault()
+   
     },
     touchMove (e) {
+      e.preventDefault()
       if (this.isNotValidTouch(e)) { 
         return 
       }
-      this.getTouchPos(e)
-      this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawToPoint(this.touchX, this.touchY)
+      this.drawToPointAndSave(e)
       event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
     },
     touchEnd (e) {
+      e.preventDefault()
       if (this.currentStroke.length == 0) {
         // user is touching the screen despite that touch is disabled
         return 
@@ -374,6 +371,11 @@ export default {
       // reset 
       this.currentStroke = []
       this.lastX = -1
+    },
+    drawToPointAndSave (e) {
+      this.getTouchPos(e)
+      this.convertAndSavePoint(this.touchX, this.touchY)
+      this.drawToPoint(this.touchX, this.touchY)
     },
     getTouchPos (e) {
       const finger1 = e.touches[0] 
