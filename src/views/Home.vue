@@ -23,10 +23,11 @@
         </v-card-text>
         <v-card-actions>
             <div style="margin: auto">
-              <v-btn href="https://medium.com/@eltonlin1998/the-goal-of-explainmit-afd9df574c60" text class="mx-auto" color="deep-purple accent-4">
+              <!-- previous button color was deep-purple accent-4 -->
+              <v-btn href="https://medium.com/@eltonlin1998/the-goal-of-explainmit-afd9df574c60" text class="mx-auto" color="secondary">
                 Learn more 
               </v-btn>
-              <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="deep-purple accent-4">
+              <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="secondary">
                 Github repo
               </v-btn>
             </div>
@@ -40,7 +41,7 @@
             <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
               <v-card>
                 <!-- CARD IMAGE -->
-                <v-img :aspect-ratio="16/9">
+                <!-- <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes :whiteboardID="c.introVideoID">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
@@ -51,28 +52,29 @@
                       />
                     </template>
                   </RenderlessFetchStrokes>
-                </v-img>
+                </v-img> -->
 
                 <!-- CARD TITLE -->
                 <v-card-title>
                   <div class="title font-weight-bold">
-                    {{ c.description }} ({{ c.courseNumber }})  
+                    <!-- {{ c.description }} ({{ c.courseNumber }})   -->
+                    {{ c.courseNumber }}
                   </div>
                 </v-card-title>
 
                 <!-- CARD TEXT -->
-                <v-card-text class="black--text">
+                <!-- <v-card-text class="black--text">
                   {{ c.paragraph }}
-                </v-card-text>
+                </v-card-text> -->
                 
                 <!-- CARD ACTIONS -->
                 <v-card-actions>
-                  <v-btn @click="$router.push(`${c.courseNumber}/videos`)" text color="deep-purple accent-4">
+                  <v-btn @click="$router.push(`${c.courseNumber}/videos`)" text color="secondary">
                     ENTER CLASS
                   </v-btn>
-                  <v-btn @click="quickplayVideo(i)" text color="deep-purple accent-4">
+                  <!-- <v-btn @click="quickplayVideo(i)" text color="deep-purple accent-4">
                     QUICKPLAY
-                  </v-btn>
+                  </v-btn> -->
                 </v-card-actions>
               </v-card>
             </v-col>
@@ -134,7 +136,7 @@ export default {
       })
     },
     computeCardSize () {
-      return this.$vuetify.breakpoint.smAndDown? 12 : 6
+      return this.$vuetify.breakpoint.smAndDown? 6 : 3
     }
   } 
 }
