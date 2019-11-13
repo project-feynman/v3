@@ -39,7 +39,7 @@
         <div v-else key="class-list">
           <BaseGrid>
             <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
-              <v-card>
+              <v-card @click="$router.push(`${c.courseNumber}/videos`)">
                 <!-- CARD IMAGE -->
                 <!-- <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes :whiteboardID="c.introVideoID">
@@ -69,9 +69,9 @@
                 
                 <!-- CARD ACTIONS -->
                 <v-card-actions>
-                  <v-btn @click="$router.push(`${c.courseNumber}/videos`)" text color="secondary">
+                  <!-- <v-btn @click="$router.push(`${c.courseNumber}/videos`)" text color="secondary">
                     ENTER CLASS
-                  </v-btn>
+                  </v-btn> -->
                   <!-- <v-btn @click="quickplayVideo(i)" text color="deep-purple accent-4">
                     QUICKPLAY
                   </v-btn> -->
@@ -151,7 +151,7 @@ export default {
       })
     },
     computeCardSize () {
-      return this.$vuetify.breakpoint.smAndDown? 6 : 3
+      return this.$vuetify.breakpoint.smAndDown? 6 : 2
     }
   } 
 }
