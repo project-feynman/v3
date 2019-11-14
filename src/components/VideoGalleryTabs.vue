@@ -27,7 +27,7 @@
         <v-spacer/>
       </v-tabs>
       <v-card-text class="text-center">
-        <v-btn @click="isEditting = true">
+        <v-btn v-if="user" @click="isEditting = true">
           EDIT TABS
         </v-btn>
       </v-card-text>
