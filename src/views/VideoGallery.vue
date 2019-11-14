@@ -1,17 +1,17 @@
 <template>
   <div>
     <!-- FULLSCREEN VIDEO POPUP -->
-    <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
+    <!-- <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
       <v-card v-if="whiteboardPopup">
         <div class="text-xs-center">
           <v-btn @click="whiteboardPopup = false">EXIT</v-btn>
         </div>
         <FullVideo :videoID="currentVideoID"/>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <!-- APP BAR -->
-    <BaseAppBar/>
+    <BaseAppBar :loading="!hasFetchedVideos"/>
 
     <!-- CONTENT -->
     <v-content>
@@ -49,6 +49,7 @@
                               :ref="`doodle-video-${i}-${j}`"
                               :strokes="strokes"
                               :canvasID="`${i}-${j}`"
+                              @animation-loaded="hasFetchedVideos = true"
                             />
                           </template>
                         </RenderlessFetchStrokes>
@@ -109,7 +110,7 @@ export default {
   },
   data () {
     return {
-      video: null,
+      hasFetchedVideos: false,
       tab: 0,
       whiteboards: [],
       classDoc: {},

@@ -29,6 +29,7 @@ export default {
       querySnapshot.forEach(doc => {
         this.videos.push({".key": doc.id, ...doc.data()})
       })
+      this.$emit('videos-fetched')
     })
   }
 }

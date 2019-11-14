@@ -6,7 +6,7 @@
       :strokes="strokes"
       :isFullscreen="false"
       :canvasID="canvasID"
-      @animation-loaded="animationLoaded=true"
+      @animation-loaded="handleAnimationLoaded()"
       @animation-finished="handleEvent()"
     />
 
@@ -62,6 +62,10 @@ export default {
         animation.startSync(audioRecorder.getAudioTime)
         this.syncedVisualAndAudio = true
       }
+    },
+    handleAnimationLoaded () {
+      this.animationLoaded = true 
+      this.$emit("animation-loaded")
     },
     quickplay () {
       const animation = this.$refs["animation"]

@@ -15,12 +15,7 @@
     </v-snackbar>
 
     <!-- WHITEBOARD BUTTONS -->
-    <v-app-bar app clipped-left color="white" dense>
-      <v-app-bar-nav-icon @click.stop="toggleDrawer()"></v-app-bar-nav-icon>
-      <v-toolbar-title class="mr-12 align-center">
-        <span class="title">{{ $route.params.class_id }}</span>
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
+    <BaseAppBar :loading="loading">
       <v-toolbar-items v-if="whiteboardDoc">
         <template v-if="!whiteboardDoc.isAnswered">
           <swatches 
@@ -65,7 +60,7 @@
           </v-btn>
         </template>
       </v-toolbar-items>
-    </v-app-bar>
+    </BaseAppBar>
 
     <v-content>
       <!-- "@start-recording" is necessary because the audio-recorder can't 
@@ -99,6 +94,7 @@ import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
 import AudioRecorder from '@/components/AudioRecorder.vue'
+import BaseAppBar from "@/components/BaseAppBar.vue"
 
 export default {
   props: {
@@ -107,7 +103,8 @@ export default {
   },
   components: {
     AudioRecorder,
-    Swatches
+    Swatches,
+    BaseAppBar
   },
   mixins: [DrawMethods],
   computed: {
@@ -135,6 +132,7 @@ export default {
   },
   data () {
     return {
+      loading: true,
       whiteboardDoc: null,
       color: 'white',
       lineWidth: 2,
@@ -236,13 +234,15 @@ export default {
     // takePicture () {
     //   const dataURL = this.canvas.toDataURL()
     // },
-    initData () {
+    async initData () {
+      this.loading = true
       if (!this.whiteboardID) {
         return
       }
       const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
-      this.$binding('whiteboardDoc', whiteboardRef)
       this.strokesRef = whiteboardRef.collection('strokes')
+      // TODO: remove this whiteboard listener 
+      await this.$binding('whiteboardDoc', whiteboardRef)
       // visually wipe previous drawings
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -271,6 +271,7 @@ export default {
             this.resetVariables()
           }
         })
+        this.loading = false
       })
     },
     resetVariables () {

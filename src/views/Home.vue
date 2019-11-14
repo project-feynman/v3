@@ -119,7 +119,6 @@ export default {
   },
   methods: {
     fetchClasses () {
-      console.log("fetch classes")
       this.classes = [] 
       db.collection("classes").get().then(querySnapshot => {
         querySnapshot.forEach(doc => {

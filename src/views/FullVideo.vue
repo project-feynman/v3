@@ -1,7 +1,12 @@
 <template>
   <div class="video">
     
-    <BaseAppBar/>
+    <BaseAppBar :loading="!resourcesLoaded">
+      <v-btn v-if="animationLoaded" @click="quickplay()">
+        QUICKPLAY
+      </v-btn>
+    </BaseAppBar>
+
     <v-content>
       <v-container fluid class="pa-0">
         <DoodleVideoAnimation 
