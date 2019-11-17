@@ -14,9 +14,18 @@
           <v-list-item-content>Home</v-list-item-content>
         </v-list-item>
 
+        <!-- VIDEOS -->
         <v-list-item link :to="`/${this.$route.params.class_id}/videos`">
           <v-list-item-icon><v-icon>video_library</v-icon></v-list-item-icon>
           <v-list-item-content>Videos</v-list-item-content>
+        </v-list-item>
+        
+        <v-divider/>
+
+        <!-- QUESTIONS -->
+        <v-list-item link :to="`/${this.$route.params.class_id}/questions`">
+          <v-list-item-icon><v-icon>priority_high</v-icon></v-list-item-icon>
+          <v-list-item-content>Questions</v-list-item-content>
         </v-list-item>
         
         <v-divider/>
@@ -26,9 +35,6 @@
             <v-list-item-title class="title">
               Blackboards
             </v-list-item-title>
-            <!-- <v-list-item-subtitle>
-              Below is where you talk and draw
-            </v-list-item-subtitle> -->
           </v-list-item-content>
         </v-list-item>
 
