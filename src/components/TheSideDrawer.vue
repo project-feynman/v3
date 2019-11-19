@@ -58,23 +58,12 @@
           </template>
         </v-list-item>
 
-         <v-list-item
-            class="mt-4"
-            link
-            @click="addWorkspace()"
-          >
-            <v-list-item-action>
-              <v-icon color="grey darken-1">add</v-icon>
-            </v-list-item-action>
-            <v-list-item-title class="grey--text text--darken-1">NEW BLACKBOARD</v-list-item-title>
-          </v-list-item>
-
-        <!-- <v-list-item @click="addWorkspace()">
-          <v-list-item-icon><v-icon>add</v-icon></v-list-item-icon>
-          <v-list-item-content color="purple">
-            NEW BLACKBOARD
-          </v-list-item-content>
-        </v-list-item>    -->
+         <v-list-item @click="addWorkspace()" class="mt-4" link>
+          <v-list-item-action>
+            <v-icon color="grey darken-1">add</v-icon>
+          </v-list-item-action>
+          <v-list-item-title class="grey--text text--darken-1">NEW BLACKBOARD</v-list-item-title>
+        </v-list-item>
 
       </v-list>
     </v-navigation-drawer>
