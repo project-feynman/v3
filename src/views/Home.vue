@@ -8,7 +8,6 @@
       </v-btn>
     </v-snackbar>
 
-    <!-- TODO: Remove the "The" prefix as there are now multiple app bars -->
     <HomeAppBar @create-class="courseNumber => createClass(courseNumber)"/>
 
     <v-content> 
@@ -20,7 +19,13 @@
           <div class="headline text--primary">
             A place where everyone helps each other by sharing simple explanations
           </div>
+       
+          <p class="text-left">Ask a question on a general concept or a pset problem</p>
+           <p class="text-center">Record a video on the "blackboard" and share it instantly</p>
+          <p class="text-right">Watch the videos with 2x speed and instantly seek to any parts without buffering</p>
+
         </v-card-text>
+
         <v-card-actions>
             <div style="margin: auto">
               <!-- previous button color was deep-purple accent-4 -->
@@ -57,7 +62,6 @@
                 <!-- CARD TITLE -->
                 <v-card-title>
                   <div class="title font-weight-bold">
-                    <!-- {{ c.description }} ({{ c.courseNumber }})   -->
                     {{ c.courseNumber }}
                   </div>
                 </v-card-title>
