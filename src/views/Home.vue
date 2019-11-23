@@ -18,8 +18,17 @@
             explain.mit.edu
           </p>
           <div class="headline text--primary mb-10">
-            A place where everyone helps each other by sharing simple explanations
+            A place where everyone helps each other with maximal efficiency
           </div>
+
+          <ul>
+            The websites has only 3 sections. 
+            <li>The "Questions" section is where you ask questions like: "I still don't understand recursion"</li>
+            <li>The "Blackboards" section is where you draw and talk with anyone, and/or record KhanAcademy-like videos</li>
+            <li>The "Videos" section is where you watch videos created by students and staff</li>
+          </ul>
+
+          <div>Below are 3 common use-cases</div>
   
           <v-divider/>
           <v-flex xs12>
@@ -31,22 +40,25 @@
                       <v-icon x-large class="blue--text text--lighten-2">mdi-palette</v-icon>
                     </v-card-text> -->
                     <v-card-title primary-title class="layout justify-center">
-                      <div class="headline text-center">Ask questions</div>
+                      <div class="headline text-center">Get back on track</div>
                     </v-card-title>
                     <v-card-text>
-                      Here you can ask for conceptual explanations (e.g. "How does Djikstra's algorithm work?") 
-                      and video solutions (e.g. How did you solve question 3?)
+                      Hillary had a difficult week and missed several lectures. 
+                      Office Hours seem too crowded, and Piazza answers seem too vague.   
+                      She visits ExplainMIT and posts "I am totally lost with Dynamic Programming”. 
+                      Within 10 minutes, another classmate responds with a short video that explains everything she needs to know to get back on track. 
                     </v-card-text>
                   </v-card>
                 </v-flex>
                 <v-flex xs12 md4>
                   <v-card flat class="transparent">
                     <v-card-title primary-title class="layout justify-center">
-                      <div class="headline">Watch videos</div>
+                      <div class="headline">Collaborate with classmates</div>
                     </v-card-title>
                     <v-card-text>
-                      The videos are ultra-lightweight (1000x lighter than Youtube videos*), so you can freely navigate to any part of each video 
-                      without any buffering.
+                      Obama and his friends have busy schedules that rarely overlap, so he mostly studies by himself. 
+                      That’s why whenever he works, he opens explain.mit.edu to see if anyone else is also working on the homework - 
+                      if so, he joins the blackboard room and collaborates with them. 
                     </v-card-text>
                   </v-card>
                 </v-flex>
@@ -56,11 +68,11 @@
                       <v-icon x-large class="blue--text text--lighten-2">mdi-wrench</v-icon>
                     </v-card-text> -->
                     <v-card-title primary-title class="layout justify-center">
-                      <div class="headline text-center">Create videos</div>
+                      <div class="headline text-center">Explaining important things</div>
                     </v-card-title>
                     <v-card-text>
-                      Unlike Youtube, where it's necessary to record a video, save the file, upload it and share the link, 
-                      here you can save videos instantly to a centralized repository for each class.  
+                      Bob and Marley are researchers who like explaining things. Realizing that it's frictionless to explain things on ExplainMIT, they adopt the Feynman technique of learning - learning by teaching.
+                      They become prolific creators of algorithmic and probability-related explanations, and have to constantly decline interview invitations from Jane Street and Google. 
                     </v-card-text>
                   </v-card>
                 </v-flex>
