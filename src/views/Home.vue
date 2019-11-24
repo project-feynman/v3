@@ -20,72 +20,19 @@
           <div class="headline text--primary mb-10">
             A place where everyone helps each other with maximal efficiency
           </div>
-
-          <ul>
             The websites has only 3 sections. 
-            <li>The "Questions" section is where you ask questions like: "I still don't understand recursion"</li>
-            <li>The "Blackboards" section is where you draw and talk with anyone, and/or record KhanAcademy-like videos</li>
-            <li>The "Videos" section is where you watch videos created by students and staff</li>
-          </ul>
-
-          <div>Below are 3 common use-cases</div>
-  
-          <v-divider/>
-          <v-flex xs12>
-            <v-container grid-list-xl>
-              <v-layout row wrap align-center>
-                <v-flex xs12 md4>
-                  <v-card flat class="transparent">
-                    <!-- <v-card-text class="text-center">
-                      <v-icon x-large class="blue--text text--lighten-2">mdi-palette</v-icon>
-                    </v-card-text> -->
-                    <v-card-title primary-title class="layout justify-center">
-                      <div class="headline text-center">Get back on track</div>
-                    </v-card-title>
-                    <v-card-text>
-                      Hillary had a difficult week and missed several lectures. 
-                      Office Hours seem too crowded, and Piazza answers seem too vague.   
-                      She visits ExplainMIT and posts "I am totally lost with Dynamic Programming”. 
-                      Within 10 minutes, another classmate responds with a short video that explains everything she needs to know to get back on track. 
-                    </v-card-text>
-                  </v-card>
-                </v-flex>
-                <v-flex xs12 md4>
-                  <v-card flat class="transparent">
-                    <v-card-title primary-title class="layout justify-center">
-                      <div class="headline">Collaborate with classmates</div>
-                    </v-card-title>
-                    <v-card-text>
-                      Obama and his friends have busy schedules that rarely overlap, so he mostly studies by himself. 
-                      That’s why whenever he works, he opens explain.mit.edu to see if anyone else is also working on the homework - 
-                      if so, he joins the blackboard room and collaborates with them. 
-                    </v-card-text>
-                  </v-card>
-                </v-flex>
-                <v-flex xs12 md4>
-                  <v-card flat class="transparent">
-                    <!-- <v-card-text class="text-center">
-                      <v-icon x-large class="blue--text text--lighten-2">mdi-wrench</v-icon>
-                    </v-card-text> -->
-                    <v-card-title primary-title class="layout justify-center">
-                      <div class="headline text-center">Explaining important things</div>
-                    </v-card-title>
-                    <v-card-text>
-                      Bob and Marley are researchers who like explaining things. Realizing that it's frictionless to explain things on ExplainMIT, they adopt the Feynman technique of learning - learning by teaching.
-                      They become prolific creators of algorithmic and probability-related explanations, and have to constantly decline interview invitations from Jane Street and Google. 
-                    </v-card-text>
-                  </v-card>
-                </v-flex>
-              </v-layout>
-            </v-container>
-          </v-flex>
-
+            <br>
+            The "Questions" section is where you ask questions like: "I still don't understand recursion"
+            <br>
+            The "Blackboards" section is where you draw and talk with anyone, and/or record KhanAcademy-like videos
+            <br>
+            The "Videos" section is where you watch videos created by students and staff
         </v-card-text>
 
-                <v-card-actions>
+          <v-card-actions>
             <div style="margin: auto">
               <!-- previous button color was deep-purple accent-4 -->
-              <v-btn href="https://medium.com/@eltonlin1998/the-goal-of-explainmit-afd9df574c60" text class="mx-auto" color="secondary">
+              <v-btn href="https://medium.com/@eltonlin1998/learning-is-like-fighting-dragons-d7450dd3aa23" text class="mx-auto" color="secondary">
                 Learn more 
               </v-btn>
               <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="secondary">
