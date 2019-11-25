@@ -12,8 +12,6 @@ Help is a scarce resource. Office Hours can have long help queues. Piazza's resp
 **Solution**
 ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. 
 
-![Login Page](docs/home-screen.PNG)
-
 ## Contributors
 Current Team: 
 Adil Yusuf, Susanna Chen, Meryl Wang, Lujing Cen, Kristen Surrao and Elton Lin
