@@ -2,8 +2,6 @@
 
 ExplainMIT is a website where MIT students, TAs and professors share visual explanations
 
-### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) | [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
-
 ## Intro
 
 **Problem**
