@@ -138,7 +138,7 @@ export default {
       event.stopPropagation()
       // handle local title as well
       this.$emit("save-tab-number", this.localTabNumber)
-      this.$emit("save-paragraph", this.localParagraph)
+      this.$emit("save-paragraph", { title: this.localTitle, paragraph: this.localParagraph})
     }
   }
 }

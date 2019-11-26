@@ -36,7 +36,7 @@
                 Learn more 
               </v-btn>
               <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="secondary">
-                Github repo
+                Source code 
               </v-btn>
             </div>
         </v-card-actions>

@@ -165,10 +165,11 @@ export default {
       const classDoc = await ref.get()
       this.classDoc = classDoc.data()
     },
-    saveParagraph (newValue, { ".key": videoID }) {
+    saveParagraph ({ paragraph, title } , { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
       ref.update({
-        paragraph: newValue
+        paragraph,
+        title
       })
       this.isEditting = false
     },
