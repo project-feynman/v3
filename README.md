@@ -2,8 +2,6 @@
 
 ExplainMIT is a website where MIT students, TAs and professors share visual explanations
 
-### [Intro](https://github.com/LingDingDong/feynman-mvp#intro) | [Team](https://github.com/LingDingDong/feynman-mvp#team) | [Getting started](https://github.com/LingDingDong/feynman-mvp#getting-started) | [Contributing](https://github.com/LingDingDong/feynman-mvp#contributing)
-
 ## Intro
 
 **Problem**
@@ -11,8 +9,6 @@ Help is a scarce resource. Office Hours can have long help queues. Piazza's resp
 
 **Solution**
 ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. 
-
-![Login Page](docs/home-screen.PNG)
 
 ## Contributors
 Current Team: 
