@@ -47,15 +47,19 @@
           <BaseGrid>
             <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
               <v-card @click="$router.push(`${c.courseNumber}/videos`)">
+                <v-card-title>{{ c.courseNumber }}</v-card-title>
+                <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos</v-card-subtitle>
+              </v-card>
+              <!-- <v-card @click="$router.push(`${c.courseNumber}/videos`)">
                 <v-card-title>
                   <div class="title font-weight-bold">
                     {{ c.courseNumber }}
                   </div>
-                  <p v-if="c.numberOfVideos">
-                    {{ c.numberOfVideos }} videos
+                  <p v-if="c.numOfVideos">
+                    {{ c.numOfVideos }} videos
                   </p>
                 </v-card-title>
-              </v-card>
+              </v-card> -->
             </v-col>
           </BaseGrid>
         </div>
