@@ -17,6 +17,7 @@
           <p class="display-2 text--primary">
             explain.mit.edu
           </p>
+          <!-- EXPLAIN THE WEBSITE WITH OVERLAYS -->
           <div class="headline text--primary mb-10">
             A place where everyone helps each other with maximal efficiency
           </div>
@@ -50,16 +51,6 @@
                 <v-card-title>{{ c.courseNumber }}</v-card-title>
                 <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos</v-card-subtitle>
               </v-card>
-              <!-- <v-card @click="$router.push(`${c.courseNumber}/videos`)">
-                <v-card-title>
-                  <div class="title font-weight-bold">
-                    {{ c.courseNumber }}
-                  </div>
-                  <p v-if="c.numOfVideos">
-                    {{ c.numOfVideos }} videos
-                  </p>
-                </v-card-title>
-              </v-card> -->
             </v-col>
           </BaseGrid>
         </div>

@@ -33,7 +33,6 @@
                         @save-tab-number="newValue => handleTabChange(newValue, video)"
                         @save-paragraph="newValue => saveParagraph(newValue, video)"
                         :isEditting="isEditting"
-                        :title="video.title"
                         :description="`By ${video.authorName || 'Anonymous'}`"
                         :paragraph="video.paragraph"
                         :tabs="classDoc.tabs"
@@ -41,18 +40,25 @@
                         class="mb-5"
                         :key="video['.key']"
                       >
+                        <template v-slot:card-title>
+                          {{ video.title }}
+                        </template>
+
                         <!-- IMAGE SLOT -->
-                        <RenderlessFetchStrokes :whiteboardID="video['.key']">
-                          <template slot-scope="{ strokes }">
-                            <DoodleVideo 
-                              v-if="strokes"
-                              :ref="`doodle-video-${i}-${j}`"
-                              :strokes="strokes"
-                              :canvasID="`${i}-${j}`"
-                              @animation-loaded="hasFetchedVideos = true"
-                            />
-                          </template>
-                        </RenderlessFetchStrokes>
+                        <template v-slot:card-image>
+                          <RenderlessFetchStrokes :whiteboardID="video['.key']">
+                            <template slot-scope="{ strokes }">
+                              <DoodleVideo 
+                                v-if="strokes"
+                                :ref="`doodle-video-${i}-${j}`"
+                                :strokes="strokes"
+                                :canvasID="`${i}-${j}`"
+                                @animation-loaded="hasFetchedVideos = true"
+                              />
+                            </template>
+                          </RenderlessFetchStrokes>
+                        </template>
+
                         <!-- BUTTONS SLOT -->
                         <template v-slot:card-actions>
                           <template v-if="isEditting === false">
@@ -194,6 +200,9 @@ export default {
       return false 
     },
     computeCardSize () {
+      if (this.$vuetify.breakpoint.lgAndUp) {
+        return 4
+      }
       return this.$vuetify.breakpoint.smAndDown? 12 : 6
     }
   }

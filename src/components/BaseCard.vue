@@ -1,63 +1,71 @@
 <template>
   <div>
     <v-card> 
+      <!-- TITLE -->
+      <v-card-title primary-title>
+        <!-- SLOT -->
+        <slot name="card-title">
+          <div>
+            <!-- display-1 -->
+            <div v-if="!isEditting" class="title font-weight-bold">
+              {{ title }}: 
+              <span class="title font-weight-regular">
+                {{ description }}
+              </span>
+            </div>
+            <v-text-field v-else v-model="localTitle" label="Title"></v-text-field>
+            <!-- DESCRIPTION -->
+            <!-- <span class="title font-weight-regular">
+              {{ description }}
+            </span> -->
+          </div>
+        </slot>
+      </v-card-title>
+
+      <v-card-subtitle>By anonymous</v-card-subtitle>
+
       <v-img :aspect-ratio="16/9">
       <!-- <v-img
         :src="imageURL"
         :aspect-ratio="16/9"
       > -->
-        <slot>
+        <slot name="card-image">
           <canvas id="myCanvas"></canvas>
         </slot> 
       </v-img>
-      <v-card-title primary-title>
-        <div>
-          <!-- display-1 -->
-          <div v-if="!isEditting" class="title font-weight-bold">
-            {{ title }}: 
-            <span class="title font-weight-regular">
-              {{ description }}
-            </span>
-          </div>
-          <v-text-field v-else v-model="localTitle" label="Title"></v-text-field>
-          <!-- DESCRIPTION -->
-          <!-- <span class="title font-weight-regular">
-            {{ description }}
-          </span> -->
-        </div>
-      </v-card-title>
 
-        <v-slide-y-transition>
-          <div v-show="show">
-            <template v-if="!isEditting">
-              <v-card-text class="subheading">
-                {{ paragraph }}
-              </v-card-text>
-            </template>
-            <template v-else>
-              <v-textarea
-                class="px-3"
-                name="input-7-1"
-                label="Paragraph"
-                :value="paragraph"
-                @change="newValue => localParagraph = newValue"
-                ref="paragraph"
-              ></v-textarea>
-                <div v-if="tabs">
-                  <v-radio-group v-model="radioGroup" @change="newValue => updateLocalTabValue(newValue)">
-                  <v-radio 
-                    v-for="(tab, i) in tabs" 
-                    :key="i" :label="tab" 
-                    :value="i" 
-                    class="pl-3">
-                  </v-radio>
-                </v-radio-group>
-              </div>
-            
-            </template>
-          </div>
+        <!-- PARAGRAPH DESCRIPTION -->
+      <v-slide-y-transition>
+        <div v-show="show">
+          <template v-if="!isEditting">
+            <v-card-text class="subheading">
+              {{ paragraph }}
+            </v-card-text>
+          </template>
+          <template v-else>
+            <v-textarea
+              class="px-3"
+              name="input-7-1"
+              label="Paragraph"
+              :value="paragraph"
+              @change="newValue => localParagraph = newValue"
+              ref="paragraph"
+            ></v-textarea>
+              <div v-if="tabs">
+                <v-radio-group v-model="radioGroup" @change="newValue => updateLocalTabValue(newValue)">
+                <v-radio 
+                  v-for="(tab, i) in tabs" 
+                  :key="i" :label="tab" 
+                  :value="i" 
+                  class="pl-3">
+                </v-radio>
+              </v-radio-group>
+            </div>
+          
+          </template>
+        </div>
       </v-slide-y-transition>
-      
+
       <v-card-actions>
         <slot name="card-actions">
           
@@ -69,6 +77,8 @@
         <v-spacer></v-spacer>
         <div class="flex-grow-1"></div>
       </v-card-actions>
+
+
     </v-card>
   </div>
 </template>

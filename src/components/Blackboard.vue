@@ -1,12 +1,6 @@
 <template>
   <div id="whiteboard">
-    <!-- SAVING POPUP -->
-    <!-- <whiteboard-save-popup 
-      v-model="saveVideoPopup"
-      ref="popup-save"
-      @pre-save-explanation="videoTitle => handleSaving(videoTitle)"
-      fullscreen
-    /> -->
+    <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
       <v-btn @click="snackbar = false" color="pink" text>
