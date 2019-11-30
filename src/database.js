@@ -10,13 +10,8 @@ const config = {
   messagingSenderId: "148720897081"
 }
 
-const firebaseApp = firebase.initializeApp(config)
-
-const firestore = firebaseApp.firestore()
-const settings = {/* your settings... */ timestampsInSnapshots: true};
-firestore.settings(settings);
-
-export default firestore
+firebase.initializeApp(config)
+export default firebase.firestore()
 
 // TO PREVENT CORS ISSUES, RUN:
 // gsutil cors set cors.json gs://feynman-mvp.appspot.com
