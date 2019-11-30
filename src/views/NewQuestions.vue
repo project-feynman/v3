@@ -65,21 +65,7 @@ export default {
   },
   data: () => ({
     questions: [],
-    newQuestion: "",
-    items: [
-      {
-        color: '#1F7087',
-        src: 'https://cdn.vuetifyjs.com/images/cards/foster.jpg',
-        title: 'Supermodel',
-        artist: 'Foster the People',
-      },
-      {
-        color: '#952175',
-        src: 'https://cdn.vuetifyjs.com/images/cards/halcyon.png',
-        title: 'Halcyon Days',
-        artist: 'Ellie Goulding',
-      },
-    ],
+    newQuestion: ""
   }),
   computed: {
     user () {
@@ -126,7 +112,7 @@ export default {
       ref.update({
         usersWhoUpvoted: firebase.firestore.FieldValue.arrayUnion(this.user.email)
       })
-      this.fetchQuestions ()
+      this.fetchQuestions()
     }
   }
 }
