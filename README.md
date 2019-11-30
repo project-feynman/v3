@@ -12,4 +12,4 @@ ExplainMIT is a website where helping one person is no different than helping ev
 
 ## Contributors
 Current Team: 
-Adil Yusuf, Susanna Chen, Meryl Wang, Lujing Cen, Kristen Surrao and Elton Lin
+Meryl Wang, Kristen Surrao and Elton Lin
