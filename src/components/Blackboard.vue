@@ -174,7 +174,6 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      console.log("color was changed to =", this.color)
       if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
         this.lineWidth = 2
       } else {
@@ -534,6 +533,12 @@ export default {
         metadata.duration = this.currentTime
       }
       db.collection('whiteboards').doc(whiteboardID).update(metadata)
+
+      // KEEP TRACK OF HOW MANY VIDEOS A CLASS HAS ACCUMULATED 
+      const classRef = db.collection("classes").doc(classID)
+      classRef.update({
+        numOfVideos: firebase.firestore.FieldValue.increment(1)
+      })
 
       // initialize a new whiteboard for the workspace
       const workspaceID = this.$route.params.id

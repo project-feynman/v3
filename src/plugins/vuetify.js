@@ -1,14 +1,15 @@
-import Vue from 'vue';
+import Vue from 'vue'
 import Vuetify from 'vuetify/lib';
 import colors from 'vuetify/lib/util/colors'
 
-Vue.use(Vuetify);
+Vue.use(Vuetify)
 
 export default new Vuetify({
   icons: {
     iconfont: 'mdi',
   },
   theme: {
+    // CONFIGURE COLOR THEME OF THE WEBSITE HERE
     themes: {
       light: {
         primary: colors.blue, // #E53935
@@ -17,4 +18,4 @@ export default new Vuetify({
       },
     },
   }
-});
+})

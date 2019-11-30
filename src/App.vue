@@ -12,9 +12,6 @@
 import TheSideDrawer from "@/components/TheSideDrawer.vue"
 
 export default {
-  props: {
-    source: String,
-  },
   components: {
     TheSideDrawer
   },
@@ -28,9 +25,3 @@ export default {
   }
 }
 </script>
-
-<style>
-/* #background {
-  background-color: rgb(225, 233, 247)
-} */
-</style>
