@@ -1,6 +1,5 @@
 <template>
   <div class="video">
-    
     <BaseAppBar :loading="!resourcesLoaded">
       <v-btn v-if="animationLoaded" @click="quickplay()">
         QUICKPLAY

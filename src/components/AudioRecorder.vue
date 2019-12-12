@@ -166,13 +166,12 @@ export default {
       this.recordingInProgress = false
     },
     async onNewRecording (evt) {
-      console.log('uploading new recording...')
       // replace existing recording 
       this.recordings = [] 
       this.recordings.push(evt.detail.recording)
       const storageRef = firebase.storage().ref()
       // reuse path if possible
-      let path = ''
+      let path = ""
       if (this.audioPath) {
         path = this.audioPath
       } else {
