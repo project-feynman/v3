@@ -32,7 +32,7 @@
         <v-card-actions>
           <div style="margin: auto">
             <!-- previous button color was deep-purple accent-4 -->
-            <v-btn href="https://medium.com/@eltonlin1998/learning-is-like-fighting-dragons-d7450dd3aa23" text class="mx-auto" color="secondary">
+            <v-btn href="https://medium.com/@eltonlin1998/the-grand-plan-538e57bbeffc" text class="mx-auto" color="secondary">
               Learn more 
             </v-btn>
             <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="secondary">
