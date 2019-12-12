@@ -2,14 +2,14 @@
   <v-card>
     <!-- EDIT MODE -->
     <template v-if="user && isEditting">
-      <v-tabs v-model="tab" background-color="blue-grey darken-2" dark>
-          <v-flex xs6 sm4 md2 v-for="(tab, i) in localTabs" :key="`v-flex-${i}`">
-            <v-text-field
-              :label="`Tab ${i}`"
-              :value="tab"
-              @input="newValue => updateTabName(newValue, i)"
-            ></v-text-field>
-          </v-flex>   
+      <v-tabs v-model="tab" background-color="red lighten-1" dark>
+        <v-flex xs6 sm4 md2 v-for="(tab, i) in localTabs" :key="`v-flex-${i}`">
+          <v-text-field
+            :label="`Tab ${i}`"
+            :value="tab"
+            @input="newValue => updateTabName(newValue, i)"
+          ></v-text-field>
+        </v-flex>   
       </v-tabs>
       <v-card-text class="text-center">
         <v-btn @click="handleSave()">SAVE CHANGES</v-btn>
@@ -20,7 +20,7 @@
 
     <!-- NORMAL MODE -->
     <template v-else>
-      <v-tabs :value="tab" @change="newValue => $emit('tab-change', newValue)" background-color="blue-grey darken-2" dark>
+      <v-tabs :value="tab" @change="newValue => $emit('tab-change', newValue)" background-color="red lighten-1" dark>
         <v-tab v-for="(tab, i) in tabs" :key="i">
           {{ tab }}
         </v-tab>
