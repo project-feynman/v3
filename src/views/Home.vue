@@ -19,7 +19,7 @@
           </p>
           <!-- EXPLAIN THE WEBSITE WITH OVERLAYS -->
           <div class="headline text--primary mb-10">
-            A place where everyone helps each other with maximal efficiency
+            An efficient visual explanation platform
           </div>
             The websites has only 3 sections. 
             <br>
@@ -49,7 +49,7 @@
             <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
               <v-card @click="$router.push(`${c.courseNumber}/videos`)">
                 <v-card-title>{{ c.courseNumber }}</v-card-title>
-                <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos</v-card-subtitle>
+                <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos, 0 enrolled</v-card-subtitle>
               </v-card>
             </v-col>
           </BaseGrid>
