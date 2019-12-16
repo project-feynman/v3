@@ -19,7 +19,7 @@
           </p>
           <!-- EXPLAIN THE WEBSITE WITH OVERLAYS -->
           <div class="headline text--primary mb-10">
-            An efficient visual explanation platform
+            An efficient platform for visual explanations
           </div>
             The websites has only 3 sections. 
             <br>
