@@ -1,58 +1,62 @@
 <template>
   <div>
     <v-card> 
-      <!-- TITLE -->
       <v-card-title primary-title>
-        <!-- SLOT -->
-        <slot name="card-title">
-          <div>
-            <!-- display-1 -->
-            <div v-if="!isEditting" class="title font-weight-bold">
-              {{ title }}: 
-              <span class="title font-weight-regular">
-                {{ description }}
-              </span>
-            </div>
-            <v-text-field v-else v-model="localTitle" label="Title"></v-text-field>
-            <!-- DESCRIPTION -->
-            <!-- <span class="title font-weight-regular">
-              {{ description }}
-            </span> -->
-          </div>
-        </slot>
+        <v-text-field 
+          v-if="isEditing" 
+          v-model="localTitle" label="Title"
+        />
+        <div v-else class="title font-weight-bold">
+          {{ title }}
+        </div>
       </v-card-title>
 
-      <v-card-subtitle>By anonymous</v-card-subtitle>
+      <v-card-subtitle>
+        {{ subtitle }}
+      </v-card-subtitle>
 
       <v-img :aspect-ratio="16/9">
-      <!-- <v-img
-        :src="imageURL"
-        :aspect-ratio="16/9"
-      > -->
         <slot name="card-image">
           <canvas id="myCanvas"></canvas>
         </slot> 
       </v-img>
 
-        <!-- PARAGRAPH DESCRIPTION -->
-      <v-slide-y-transition>
+      <v-card-actions>
+        <template v-if="isEditing">
+          <v-btn @click="event => handleSave(event)" text color="secondary" class="subtitle-2">
+            SAVE CHANGES
+          </v-btn>
+          <slot name="card-actions-editting">
+      
+          </slot>
+        </template>
+        <template v-else>
+          <slot name="card-actions">
+            
+          </slot>
+          <v-spacer/>
+          <v-btn icon @click="show = !show">
+            <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+          </v-btn>
+        </template> 
+        <v-spacer></v-spacer>
+        <div class="flex-grow-1"></div>
+      </v-card-actions>
+
+      <v-expand-transition>
         <div v-show="show">
-          <template v-if="!isEditting">
-            <v-card-text class="subheading">
-              {{ paragraph }}
-            </v-card-text>
-          </template>
-          <template v-else>
+          <v-divider></v-divider>
+          <!-- IF EDITTING -->
+          <template v-if="isEditing">
             <v-textarea
               class="px-3"
               name="input-7-1"
-              label="Paragraph"
-              :value="paragraph"
-              @change="newValue => localParagraph = newValue"
-              ref="paragraph"
-            ></v-textarea>
-              <div v-if="tabs">
-                <v-radio-group v-model="radioGroup" @change="newValue => updateLocalTabValue(newValue)">
+              label="Description"
+              :value="description"
+              @change="newValue => localDescription = newValue"
+            />
+            <div v-if="tabs">
+              <v-radio-group v-model="radioGroup" @change="newValue => updateLocalTabValue(newValue)">
                 <v-radio 
                   v-for="(tab, i) in tabs" 
                   :key="i" :label="tab" 
@@ -61,24 +65,14 @@
                 </v-radio>
               </v-radio-group>
             </div>
-          
+          </template>
+
+          <!-- ELSE -->
+          <template v-else>
+            <v-card-text>{{ description }}</v-card-text>
           </template>
         </div>
-      </v-slide-y-transition>
-
-      <v-card-actions>
-        <slot name="card-actions">
-          
-        </slot>
-        <!-- EDITTING -->
-        <v-btn v-if="isEditting" @click="event => handleSave(event)" text small class="subtitle-2">
-          SAVE CHANGES
-        </v-btn>
-        <v-spacer></v-spacer>
-        <div class="flex-grow-1"></div>
-      </v-card-actions>
-
-
+      </v-expand-transition>
     </v-card>
   </div>
 </template>
@@ -86,49 +80,25 @@
 <script>
 export default {
   props: {
-    isEditting: Boolean,
     tabs: Array,
     tabNumber: Number,
     numberOfTabs: Number,
-    editMode: Boolean,
     title: String,
+    subtitle: String,
     imageURL: String,
-    description: {
-      type: String,
-      default () {
-        return "Edit your description"
-      }
-    },
-    actionButtons: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    hasDeleteButton: {
-      type: Boolean,
-      default () {
-        return false
-      }
-    },
-    paragraph: {
-      type: String,
-      default () {
-        return "(No description written yet)"
-      }
-    }
+    description: String,
   },
   data: () => ({
-    show: true,
-    localTitle: '',
-    localParagraph: '',
+    isEditing: false,
+    show: false,
+    localTitle: "",
+    localDescription: "",
     localTabNumber: 0,
-    // isEditting: false,
     radioGroup: 1
   }),
   created () {
     this.localTitle = this.title
-    this.localParagraph = this.paragraph
+    this.localDescription = this.description
     this.localTabNumber = this.tabNumber
     this.radioGroup = this.tabNumber
   },
@@ -141,14 +111,14 @@ export default {
       this.$emit("action", event.target.innerText)
     },
     startEdit () {
-      this.isEditting = true
+      this.isEditing = true
       this.show = true
     },
     handleSave (event) {
       event.stopPropagation()
-      // handle local title as well
+      this.isEditing = false 
       this.$emit("save-tab-number", this.localTabNumber)
-      this.$emit("save-paragraph", { title: this.localTitle, paragraph: this.localParagraph})
+      this.$emit("save-paragraph", { title: this.localTitle, paragraph: this.localDescription})
     }
   }
 }

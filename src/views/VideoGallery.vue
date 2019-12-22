@@ -1,15 +1,5 @@
 <template>
   <div>
-    <!-- FULLSCREEN VIDEO POPUP -->
-    <!-- <v-dialog v-model="whiteboardPopup" fullscreen hide-overlay>
-      <v-card v-if="whiteboardPopup">
-        <div class="text-xs-center">
-          <v-btn @click="whiteboardPopup = false">EXIT</v-btn>
-        </div>
-        <FullVideo :videoID="currentVideoID"/>
-      </v-card>
-    </v-dialog> -->
-
     <!-- APP BAR -->
     <BaseAppBar :loading="!hasFetchedVideos"/>
 
@@ -33,17 +23,15 @@
                         @save-tab-number="newValue => handleTabChange(newValue, video)"
                         @save-paragraph="newValue => saveParagraph(newValue, video)"
                         :isEditting="isEditting"
-                        :description="`By ${video.authorName || 'Anonymous'}`"
-                        :paragraph="video.paragraph"
+                        :title="video.title"
+                        :subtitle="`By ${video.authorName || 'Anonymous'}`"
+                        :description="video.paragraph"
                         :tabs="classDoc.tabs"
                         :tabNumber="i"
-                        class="mb-5"
                         :key="video['.key']"
+                        class="mb-5"
+                        :ref="`card--${j}`"
                       >
-                        <template v-slot:card-title>
-                          {{ video.title }}
-                        </template>
-
                         <!-- IMAGE SLOT -->
                         <template v-slot:card-image>
                           <RenderlessFetchStrokes :whiteboardID="video['.key']">
@@ -61,21 +49,22 @@
 
                         <!-- BUTTONS SLOT -->
                         <template v-slot:card-actions>
-                          <template v-if="isEditting === false">
-                            <v-btn @click="handleAction('FULL VIDEO', video, j)" text color="secondary">
-                              FULL VIDEO
-                            </v-btn>
-                            <v-btn @click="handleAction('QUICKPLAY', video, `${i}-${j}`)" text color="secondary">
-                              QUICKPLAY
-                            </v-btn>
-                            <v-btn v-if="hasPermission(video)" @click="isEditting = true" text class="subtitle-2">
-                              EDIT
-                            </v-btn>
-                          </template>
-                          <v-btn v-else @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
+                          <v-btn @click="handleAction('FULL VIDEO', video, j)" text color="secondary">
+                            FULL VIDEO
+                          </v-btn>
+                          <v-btn @click="handleAction('QUICKPLAY', video, `${i}-${j}`)" text color="secondary">
+                            QUICKPLAY
+                          </v-btn>
+                          <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text class="subtitle-2">
+                            EDIT
+                          </v-btn>
+                       
+                        </template>
+                        <template v-slot:card-actions-editing>
+                          <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
                             DELETE
                           </v-btn>
-                        </template>
+                        </template> 
                       </BaseCard>
                     </v-col>
                   </BaseGrid>
@@ -94,7 +83,6 @@ import BaseCard from "@/components/BaseCard.vue"
 import BaseGrid from "@/components/BaseGrid.vue"
 import BaseAppBar from "@/components/BaseAppBar.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
-import FullVideo from "@/views/FullVideo.vue"
 import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue'
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
@@ -107,7 +95,6 @@ export default {
   components: {
     VideoGalleryTabs,
     DoodleVideo,
-    FullVideo,
     BaseCard,
     BaseGrid,
     BaseAppBar,
@@ -134,13 +121,12 @@ export default {
     this.fetchClassDoc()
   },
   methods: {
-    fetchClassDoc () {
+    async fetchClassDoc () {
       this.classDoc = {} 
       const classID = this.$route.params.class_id
-      const classRef = db.collection("classes").doc(classID)
-      classRef.get().then(doc => {
-        this.classDoc = doc.data()
-      })
+      const ref = db.collection("classes").doc(classID)
+      const doc = await ref.get()
+      this.classDoc = doc.data()
     },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
@@ -156,28 +142,38 @@ export default {
         this.deleteVideo(videoID, audioPath)
       }
     },
+    initEditForCard (j) {
+      const card = this.$refs[`card--${j}`][0]
+      card.isEditing = true
+      card.show = true
+    },
+    expandCardDescription (j) {
+      const card = this.$refs[`card--${j}`][0]
+      card.show = true
+    },
     async handleTabChange (newValue, { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
-      ref.update({
+      this.isEditting = false 
+      await ref.update({
         tabNumber: newValue
       })
-      this.isEditting = false 
+      this.fetchClassDoc()
     },
     async renameTabs (newValues) {
       const ref = db.collection("classes").doc(this.$route.params.class_id)
       await ref.update({
         tabs: newValues
       })
-      const classDoc = await ref.get()
-      this.classDoc = classDoc.data()
+      this.fetchClassDoc()
     },
-    saveParagraph ({ paragraph, title } , { ".key": videoID }) {
+    async saveParagraph ({ paragraph, title } , { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
-      ref.update({
+      this.isEditting = false
+      await ref.update({
         paragraph,
         title
       })
-      this.isEditting = false
+      this.fetchClassDoc()
     },
     async deleteVideo (ID, audioPath) {
       if (audioPath) {
@@ -186,7 +182,7 @@ export default {
         const audioFileRef = storageRef.child(`recordings/${audioPath}`)
         audioFileRef.delete()
       }    
-      const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete')
+      const recursiveDelete = firebase.functions().httpsCallable("recursiveDelete")
       await recursiveDelete({ path: `whiteboards/${ID}` })
       this.fetchClassDoc()
     },
