@@ -55,7 +55,7 @@
                           <v-btn @click="handleAction('QUICKPLAY', video, `${i}-${j}`)" text color="secondary">
                             QUICKPLAY
                           </v-btn>
-                          <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text class="subtitle-2">
+                          <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text color="secondary" class="subtitle-2">
                             EDIT
                           </v-btn>
                        

@@ -39,8 +39,8 @@
             <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
           </v-btn>
         </template> 
-        <v-spacer></v-spacer>
-        <div class="flex-grow-1"></div>
+        <!-- <v-spacer></v-spacer> -->
+        <!-- <div class="flex-grow-1"></div> -->
       </v-card-actions>
 
       <v-expand-transition>
