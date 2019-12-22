@@ -86,7 +86,8 @@ export default {
     // null is instant, 0 is quickplay, otherwise it's a realtime replay
     drawStroke ({ points, color, lineWidth }, pointPeriod = 0) {
       return new Promise(async resolve => {
-        this.setStyle(color, lineWidth)
+        let newLineWidth = lineWidth * (this.canvas.width / 1000)
+        this.setStyle(color, newLineWidth)
         for (let i = 1; i < points.length; i++) {
           const prevPoint = points[i - 1]
           const prevX = prevPoint.unitX * this.canvas.width
