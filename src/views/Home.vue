@@ -13,7 +13,6 @@
 
     <v-content> 
       <v-card class="mx-auto text-center" fluid>
-        
         <!-- <v-card-text> -->
         <div class="pt-5">
           <p class="display-2 text--primary">
@@ -37,10 +36,11 @@
 
 
           <!-- <BaseGrid> -->
-          <v-row justify="center">
-            <v-col @cols="computeCardSize()" class="py-0">
+        <v-container fluid class="py-0">
+          <v-row justify="center" class="py-0">
+            <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-title>Do Q&A with narrated videos</v-card-title>
+                <v-card-subtitle class="black--text">Do Q&A with narrated videos</v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes whiteboardID="gsMCENW7JuEm0wbhvDQs">
                     <template slot-scope="{ strokes }">
@@ -55,9 +55,9 @@
                 </v-img>
               </v-card>
             </v-col>
-            <v-col @cols="computeCardSize()" class="py-0">
+            <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-title>Discuss with the voice chat over a board</v-card-title>
+                <v-card-subtitle class="black--text">Discuss with voice chat over a board</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes whiteboardID="3u9102vnYb01zaOTYYbB">
                     <template slot-scope="{ strokes }">
@@ -74,9 +74,9 @@
             
               </v-card>
             </v-col>
-            <v-col @cols="computeCardSize()" class="py-0">
+            <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                 <v-card-title>Use a stylus, mouse or touchpad to draw</v-card-title>
+                 <v-card-subtitle class="black--text">Use a stylus, mouse or touchpad to draw</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes whiteboardID="VJC1Tq6ORJiFCAz8CG7o">
                     <template slot-scope="{ strokes }">
@@ -94,6 +94,7 @@
               </v-card>
             </v-col>
           </v-row>
+        </v-container>
       </v-card>
 
       <transition name="fade" mode="out-in">
@@ -174,6 +175,9 @@ export default {
       ref.update({
         paragraph: newValue
       })
+    },
+    computeVideoSize () {
+      return this.$vuetify.breakpoint.smAndDown? 12 : 4
     },
     computeCardSize () {
       return this.$vuetify.breakpoint.smAndDown? 6 : 2
