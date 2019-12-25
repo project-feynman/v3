@@ -17,7 +17,7 @@
 
       <v-img :aspect-ratio="16/9">
         <slot name="card-image">
-          <canvas id="myCanvas"></canvas>
+          
         </slot> 
       </v-img>
 
@@ -123,10 +123,3 @@ export default {
   }
 }
 </script>
-
-<style>
-.myCanvas {
-  width: 100%;
-  height: 100%;
-}
-</style>

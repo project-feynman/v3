@@ -13,33 +13,87 @@
 
     <v-content> 
       <v-card class="mx-auto text-center" fluid>
-        <v-card-text>
+        
+        <!-- <v-card-text> -->
+        <div class="pt-5">
           <p class="display-2 text--primary">
             explain.mit.edu
           </p>
           <!-- EXPLAIN THE WEBSITE WITH OVERLAYS -->
-          <div class="headline text--primary mb-10">
+          <p class="headline text--primary">
             An efficient platform for visual explanations
-          </div>
-            The websites has only 3 sections. 
-            <br>
-            The "Questions" section is where you ask questions like: "I still don't understand recursion"
-            <br>
-            The "Blackboards" section is where you draw and talk with anyone, and/or record KhanAcademy-like videos
-            <br>
-            The "Videos" section is where you watch videos created by students and staff
-        </v-card-text>
-        <v-card-actions>
-          <div style="margin: auto">
-            <!-- previous button color was deep-purple accent-4 -->
-            <v-btn href="https://medium.com/@eltonlin1998/the-grand-plan-538e57bbeffc" text class="mx-auto" color="secondary">
-              LEARN MORE
-            </v-btn>
-            <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="secondary">
-              SOURCE CODE
-            </v-btn>
-          </div>
-        </v-card-actions>
+          </p>
+        </div>
+        <div style="margin: auto" class="mb-5">
+          <!-- previous button color was deep-purple accent-4 -->
+          <v-btn href="https://medium.com/@eltonlin1998/the-grand-plan-538e57bbeffc" text class="mx-auto" color="secondary">
+            LEARN MORE
+          </v-btn>
+          <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="secondary">
+            SOURCE CODE
+          </v-btn>
+        </div>
+        <v-divider></v-divider>
+
+
+          <!-- <BaseGrid> -->
+          <v-row justify="center">
+            <v-col @cols="computeCardSize()" class="py-0">
+              <v-card>
+                <v-card-title>Do Q&A with narrated videos</v-card-title>
+                <v-img :aspect-ratio="16/9">
+                  <RenderlessFetchStrokes whiteboardID="D6GZoyNo102O4OzkVm49">
+                    <template slot-scope="{ strokes }">
+                      <DoodleVideo 
+                        v-if="strokes"
+                        :strokes="strokes"
+                        canvasID="1"
+                        @animation-loaded="hasFetchedVideos = true"
+                      />
+                    </template>
+                  </RenderlessFetchStrokes>
+                </v-img>
+              </v-card>
+            </v-col>
+            <v-col @cols="computeCardSize()" class="py-0">
+              <v-card>
+                <v-card-title>Communicate with the voice chat and blackboard</v-card-title>
+                 <v-img :aspect-ratio="16/9">
+                  <RenderlessFetchStrokes whiteboardID="Ninldh5euJdoqGF03jzU">
+                    <template slot-scope="{ strokes }">
+                      <DoodleVideo 
+                        v-if="strokes"
+                        :strokes="strokes"
+                        canvasID="2"
+                        @animation-loaded="hasFetchedVideos = true"
+                      />
+                    </template>
+                  </RenderlessFetchStrokes>
+                </v-img>
+             
+            
+              </v-card>
+            </v-col>
+            <v-col @cols="computeCardSize()" class="py-0">
+              <v-card>
+                 <v-card-title>Use a stylus, mouse or touchpad to draw</v-card-title>
+                 <v-img :aspect-ratio="16/9">
+                  <RenderlessFetchStrokes whiteboardID="bCTYwrqHjNwiREwqJ0rF">
+                    <template slot-scope="{ strokes }">
+                      <DoodleVideo 
+                        v-if="strokes"
+                        :strokes="strokes"
+                        canvasID="3"
+                        @animation-loaded="hasFetchedVideos = true"
+                      />
+                    </template>
+                  </RenderlessFetchStrokes>
+                </v-img>
+              
+            
+              </v-card>
+            </v-col>
+          </v-row>
       </v-card>
 
       <transition name="fade" mode="out-in">
@@ -49,7 +103,7 @@
             <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
               <v-card @click="$router.push(`${c.courseNumber}/videos`)">
                 <v-card-title>{{ c.courseNumber }}</v-card-title>
-                <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos, 0 enrolled</v-card-subtitle>
+                <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos, 0 members</v-card-subtitle>
               </v-card>
             </v-col>
           </BaseGrid>
@@ -65,12 +119,18 @@ import firebase from 'firebase/app'
 import 'firebase/auth'
 import db from '@/database.js'
 import BaseGrid from "@/components/BaseGrid.vue"
+import BaseCard from "@/components/BaseCard.vue"
 import HomeAppBar from "@/components/HomeAppBar.vue"
+import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
+import DoodleVideo from "@/components/DoodleVideo.vue"
 
 export default {
   components: {
     HomeAppBar,
-    BaseGrid
+    BaseGrid,
+    BaseCard,
+    RenderlessFetchStrokes,
+    DoodleVideo
   },
   computed: {
     ...mapState(['user', 'isFetchingUser']),

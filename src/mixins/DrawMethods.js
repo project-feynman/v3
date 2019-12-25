@@ -6,7 +6,7 @@ export default {
   },
   methods: {
     rescaleCanvas (redraw = true) {
-      // then, make the drawing coordinate system 1:1 with the actual size of the canvas
+      // make the drawing coordinate system 1:1 with the actual size of the canvas ("scrollWidth" is the actual width of the canvas)
       this.canvas.width = this.canvas.scrollWidth
       this.canvas.height = this.canvas.scrollHeight
       this.setStyle(this.color, this.lineWidth) // turns out the above code resets color and lineWidth

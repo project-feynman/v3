@@ -1,4 +1,5 @@
 <template>
+   <!-- necessary or else the canvas contained within will be squished--> 
   <div style="height: 100%">
     <slot :strokes="strokes">
       {{ strokes }}

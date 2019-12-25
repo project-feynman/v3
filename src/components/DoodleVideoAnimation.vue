@@ -6,13 +6,13 @@
       style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
     >
     </canvas>
-    <!-- <vuetify-overlay v-else :overlay="overlay" @play-video="playVideo()"> -->
-      <canvas v-else
+    <BaseOverlay v-else :overlay="overlay" @play-video="playVideo()">
+      <canvas 
         :id="`myCanvas-${canvasID}`" 
         style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
       >
       </canvas>
-    <!-- </vuetify-overlay> -->
+    </BaseOverlay>
   </div>
 </template>
 
