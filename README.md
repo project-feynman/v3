@@ -13,3 +13,8 @@ ExplainMIT is a website where helping one person is no different than helping ev
 ## Contributors
 Current Team: 
 Meryl Wang, Kristen Surrao and Elton Lin
+
+## Pivotal contributions
+Tony Wang made the video slider 
+Hubert implemented the email notifications 
+Kirill implemented DevOps and copy-to-clipboard
