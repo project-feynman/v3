@@ -42,7 +42,7 @@
               <v-card>
                 <v-card-title>Do Q&A with narrated videos</v-card-title>
                 <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="D6GZoyNo102O4OzkVm49">
+                  <RenderlessFetchStrokes whiteboardID="gsMCENW7JuEm0wbhvDQs">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -57,9 +57,9 @@
             </v-col>
             <v-col @cols="computeCardSize()" class="py-0">
               <v-card>
-                <v-card-title>Communicate with the voice chat and blackboard</v-card-title>
+                <v-card-title>Discuss with the voice chat over a board</v-card-title>
                  <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="Ninldh5euJdoqGF03jzU">
+                  <RenderlessFetchStrokes whiteboardID="3u9102vnYb01zaOTYYbB">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -78,7 +78,7 @@
               <v-card>
                  <v-card-title>Use a stylus, mouse or touchpad to draw</v-card-title>
                  <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="bCTYwrqHjNwiREwqJ0rF">
+                  <RenderlessFetchStrokes whiteboardID="VJC1Tq6ORJiFCAz8CG7o">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
