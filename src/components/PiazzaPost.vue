@@ -1,0 +1,3 @@
+<template>
+    <!-- THIS IS JUST THE TEXT, IMAGE AND VIDEO EXCEPT IN NON-EDIT MODE i.e. VIEWING MODE -->
+</template>
