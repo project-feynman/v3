@@ -102,7 +102,7 @@
         <div v-else key="class-list">
           <BaseGrid>
             <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
-              <v-card @click="$router.push(`${c.courseNumber}/videos`)">
+              <v-card @click="$router.push(`${c.courseNumber}/questions`)">
                 <v-card-title>{{ c.courseNumber }}</v-card-title>
                 <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos, 0 members</v-card-subtitle>
               </v-card>
