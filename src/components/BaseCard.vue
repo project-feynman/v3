@@ -21,28 +21,6 @@
         </slot> 
       </v-img>
 
-      <v-card-actions>
-        <template v-if="isEditing">
-          <v-btn @click="event => handleSave(event)" text color="secondary" class="subtitle-2">
-            SAVE CHANGES
-          </v-btn>
-          <slot name="card-actions-editting">
-      
-          </slot>
-        </template>
-        <template v-else>
-          <slot name="card-actions">
-            
-          </slot>
-          <v-spacer/>
-          <v-btn icon @click="show = !show">
-            <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-          </v-btn>
-        </template> 
-        <!-- <v-spacer></v-spacer> -->
-        <!-- <div class="flex-grow-1"></div> -->
-      </v-card-actions>
-
       <v-expand-transition>
         <div v-show="show">
           <v-divider></v-divider>
@@ -73,6 +51,29 @@
           </template>
         </div>
       </v-expand-transition>
+
+      <v-card-actions>
+        <template v-if="isEditing">
+          <v-btn @click="event => handleSave(event)" text color="secondary" class="subtitle-2">
+            SAVE CHANGES
+          </v-btn>
+          <slot name="card-actions-editting">
+      
+          </slot>
+        </template>
+        <template v-else>
+          <slot name="card-actions">
+            
+          </slot>
+          <v-spacer/>
+          <v-btn icon @click="show = !show">
+            <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+          </v-btn>
+        </template> 
+        <!-- <v-spacer></v-spacer> -->
+        <!-- <div class="flex-grow-1"></div> -->
+      </v-card-actions>
+
     </v-card>
   </div>
 </template>
