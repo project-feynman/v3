@@ -72,5 +72,5 @@ export default {
       animation.quickplay()
     }
   }
-};
+}
 </script>
