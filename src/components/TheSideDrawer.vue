@@ -5,14 +5,16 @@
       :value="value"
       @input="newValue => $emit('input', newValue)"
       clipped
+      width="200"
     >
-      <v-divider/>
-
       <v-list>
-        <v-list-item link to="/">
-          <v-list-item-icon><v-icon>home</v-icon></v-list-item-icon>
-          <v-list-item-content>Home</v-list-item-content>
+        <!-- QUESTIONS -->
+        <v-list-item link :to="`/${this.$route.params.class_id}/questions`">
+          <v-list-item-icon><v-icon>priority_high</v-icon></v-list-item-icon>
+          <v-list-item-content>Piazza</v-list-item-content>
         </v-list-item>
+        
+        <v-divider/>
 
         <!-- VIDEOS -->
         <v-list-item link :to="`/${this.$route.params.class_id}/videos`">
@@ -22,18 +24,10 @@
         
         <v-divider/>
 
-        <!-- QUESTIONS -->
-        <v-list-item link :to="`/${this.$route.params.class_id}/questions`">
-          <v-list-item-icon><v-icon>priority_high</v-icon></v-list-item-icon>
-          <v-list-item-content>Questions</v-list-item-content>
-        </v-list-item>
-        
-        <v-divider/>
-
         <v-list-item>
           <v-list-item-content>
             <v-list-item-title class="title">
-              Blackboards
+              Realtime boards
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
@@ -58,11 +52,11 @@
           </template>
         </v-list-item>
 
-         <v-list-item @click="addWorkspace()" class="mt-4" link>
-          <v-list-item-action>
+         <v-list-item @click="addWorkspace()" link>
+          <v-list-item-icon>
             <v-icon color="grey darken-1">add</v-icon>
-          </v-list-item-action>
-          <v-list-item-title class="grey--text text--darken-1">NEW BLACKBOARD</v-list-item-title>
+          </v-list-item-icon>
+          <v-list-item-content class="grey--text text--darken-1">NEW BOARD</v-list-item-content>
         </v-list-item>
 
       </v-list>
