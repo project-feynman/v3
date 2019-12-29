@@ -38,6 +38,11 @@ export default {
     // this is the key thing - this will trigger onNewRecording - always remember this line!
     this.recorderSrvc.em.addEventListener('recording', evt => this.onNewRecording(evt))
   },
+  computed: {
+    player () {
+      return this.$refs.plyr.player
+    }
+  },
   watch: {
     audioURL: {
       handler: 'downloadAudioFile',
@@ -56,12 +61,10 @@ export default {
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
     }
   },
-  computed: {
-    player () {
-      return this.$refs.plyr.player
-    }
-  },
   methods: {
+    playAudio () {
+      this.player.play()
+    },
     // METHODS NEEDED FOR PLAYBACK
     getAudioTime() {
       const audioElement = document.getElementById('audio-element')

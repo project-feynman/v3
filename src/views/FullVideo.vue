@@ -12,8 +12,10 @@
           v-if="allStrokes"
           ref="animation"
           :strokes="allStrokes"
+          :overlay="overlay"
           @animation-loaded="animationLoaded=true"
           @animation-finished="handleEvent()"
+          @play-video="startVideo()"
         />
 
         <audio-recorder 
@@ -21,7 +23,7 @@
           ref="audio-recorder"
           :audioURL="audioURL"
           @recorder-loading="recorderLoaded=false"
-          @play="syncAnimation()"
+          @play="handlePlay()"
           @recorder-loaded="recorderLoaded=true"
         />
       </v-container>
@@ -34,6 +36,7 @@ import db from '@/database.js'
 import DoodleVideoAnimation from '@/components/DoodleVideoAnimation.vue'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import BaseAppBar from "@/components/BaseAppBar.vue"
+import BaseOverlay from "@/components/BaseOverlay.vue"
 import { mapState } from 'vuex'
 import firebase from 'firebase/app'
 import 'firebase/storage'
@@ -47,7 +50,8 @@ export default {
   components: {
     DoodleVideoAnimation,
     AudioRecorder,
-    BaseAppBar
+    BaseAppBar,
+    BaseOverlay
   },
   computed: {
     ...mapState(['user']),
@@ -64,7 +68,8 @@ export default {
       syncedVisualAndAudio: false,
       audioFileRef: null,
       allStrokes: null,
-      thumbnail: ''
+      thumbnail: '',
+      overlay: true
     }
   },
   watch: {
@@ -78,6 +83,15 @@ export default {
     }
   },
   methods: {
+    handlePlay () {
+      const animation = this.$refs['animation']
+      animation.overlay = false
+      this.syncAnimation()
+    },
+    startVideo () {
+      const audioRecorder = this.$refs['audio-recorder']
+      audioRecorder.playAudio()
+    },
     syncAnimation () {
       if (this.syncedVisualAndAudio) {
         return

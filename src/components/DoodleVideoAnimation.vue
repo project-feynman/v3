@@ -1,11 +1,13 @@
 <template>
   <div id="whiteboard" style="height: 100%">
-    <canvas 
-      v-if="isFullscreen"
-      :id="`myCanvas-${canvasID}`"  
-      style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
-    >
-    </canvas>
+    <BaseOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
+      <canvas 
+        v-if="isFullscreen"
+        :id="`myCanvas-${canvasID}`"  
+        style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
+      >
+      </canvas>
+    </BaseOverlay>
     <BaseOverlay v-else :overlay="overlay" @play-video="playVideo()">
       <canvas 
         :id="`myCanvas-${canvasID}`" 
@@ -97,6 +99,10 @@ export default {
     }
   },
   methods: {
+    startVideo () {
+      this.$emit('play-video')
+      this.overlay = false
+    },
     async playVideo () {
       this.overlay = false 
       await this.quickplay()
