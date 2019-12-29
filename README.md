@@ -11,10 +11,10 @@ Help is a scarce resource. Office Hours can have long help queues. Piazza's resp
 ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. 
 
 ## Contributors
-Current Team: 
-Meryl Wang, Kristen Surrao and Elton Lin
+Current Team:
+Samir Droubi, Elton Lin, Prabhakar Kafle, Lujing Cen, Winston Fey, Kirill Zabrodin
 
 ## Pivotal contributions
-Tony Wang made the video slider 
-Hubert implemented the email notifications 
-Kirill implemented DevOps and copy-to-clipboard
+- Tony Wang implemented the slider for traversing any video freely 
+- Hubert implemented the email notifications 
+- Kirill implemented DevOps and copy-to-clipboard
