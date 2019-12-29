@@ -39,7 +39,22 @@
 </template>
 
 <script>
+import DoodleVideo from "@/components/DoodleVideo.vue"
+import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
+
 export default {
-    
+  components: {
+    DoodleVideo,
+    RenderlessFetchStrokes
+  },
+  data: () => ({
+    newQuestion: "Type question here"
+  }),
+  methods: {
+    getFullWidth () {
+      // sidenav's width = 200, BaseList's width = 300 
+      return window.innerWidth - 500 
+    }
+  }
 }
 </script>

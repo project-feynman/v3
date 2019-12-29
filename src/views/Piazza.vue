@@ -4,43 +4,11 @@
     <v-content>
       <div class="d-flex">
         <!-- THE BASELIST UPDATES THE CURRENT QUESTION BEING VIEWED (e.g. by emitting the questionID when a question is clicked) -->
-        <BaseList @question-click="questionID => this.currentQuestionID = questionID"/>
+        <BaseList v-if="questions" @question-click="questionID => this.currentQuestionID = questionID" :questions="questions"/>
         <h1>{{ currentQuestionID }}</h1>
-        <v-card :width="getFullWidth()">
-          <v-col cols="12" class="pb-0">
-            <v-textarea
-              outlined
-              name="input-7-4"
-              label="Question"
-              v-model="newQuestion"
-            ></v-textarea>
-          </v-col>
-          <v-row>
-            <v-col cols="6" class="pt-0">
-              <v-img
-                src="https://picsum.photos/id/11/500/300"
-                lazy-src="https://picsum.photos/id/11/10/6"
-                aspect-ratio="1"
-                class="grey lighten-2"
-                max-width="500"
-                max-height="300"
-              ></v-img>
-            </v-col>
-            <v-col cols="6" class="pt-0">
-              <RenderlessFetchStrokes whiteboardID="3u9102vnYb01zaOTYYbB">
-                <template slot-scope="{ strokes }">
-                  <DoodleVideo 
-                    v-if="strokes"
-                    :strokes="strokes"
-                    canvasID="2"
-                    @animation-loaded="hasFetchedVideos = true"
-                  />
-                </template>
-              </RenderlessFetchStrokes>
-            </v-col>
-          </v-row>
-          <v-btn @click="submitQuestion()" block color="secondary" dark>Submit question</v-btn>
-        </v-card>
+        <PiazzaNewPost />
+        
+
       </div>
     </v-content>
   </div>
@@ -52,6 +20,7 @@ import BaseAppBar from "@/components/BaseAppBar.vue"
 import BaseList from "@/components/BaseList.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
+import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
 import firebase from "firebase/app"
 
 import "firebase/firestore"
@@ -61,7 +30,8 @@ export default {
     BaseAppBar,
     BaseList,
     DoodleVideo,
-    RenderlessFetchStrokes
+    RenderlessFetchStrokes,
+    PiazzaNewPost
   },
   data: () => ({
     currentQuestionID: "",
@@ -87,6 +57,7 @@ export default {
       questionDocs.forEach(doc => {
         this.questions.push({".key": doc.id, ...doc.data()})
       })
+      console.log(this.questions)
     },
     async submitQuestion () {
       const newQuestion = this.newQuestion
