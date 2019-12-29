@@ -58,7 +58,7 @@
 
     <v-content>
       <!-- "@start-recording" is necessary because the audio-recorder can't 
-      start recording instantaneously - and if we false believe it is, then `getAudioTime` will be 
+      start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
       null-->
       <audio-recorder 
         v-if="whiteboardDoc"
@@ -484,6 +484,7 @@ export default {
     },
     retryAnswer () {
       this.currentTime = 0 
+      this.hasUploadedAudio = false
       const ID = this.whiteboardDoc['.key']
       const whiteboardRef = db.collection('whiteboards').doc(ID)
       whiteboardRef.update({
