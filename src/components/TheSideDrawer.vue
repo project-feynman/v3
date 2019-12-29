@@ -11,7 +11,7 @@
         <!-- QUESTIONS -->
         <v-list-item link :to="`/${this.$route.params.class_id}/questions`">
           <v-list-item-icon><v-icon>priority_high</v-icon></v-list-item-icon>
-          <v-list-item-content>Piazza</v-list-item-content>
+          <v-list-item-content>Q&A</v-list-item-content>
         </v-list-item>
         
         <v-divider/>
@@ -19,7 +19,7 @@
         <!-- VIDEOS -->
         <v-list-item link :to="`/${this.$route.params.class_id}/videos`">
           <v-list-item-icon><v-icon>video_library</v-icon></v-list-item-icon>
-          <v-list-item-content>Videos</v-list-item-content>
+          <v-list-item-content>Saved Videos</v-list-item-content>
         </v-list-item>
         
         <v-divider/>
