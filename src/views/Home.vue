@@ -13,7 +13,6 @@
 
     <v-content> 
       <v-card class="mx-auto text-center" fluid>
-        <!-- <v-card-text> -->
         <div class="pt-5">
           <p class="display-2 text--primary">
             explain.mit.edu
@@ -40,9 +39,9 @@
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle class="black--text">Do Q&A with narrated videos</v-card-subtitle>
+                <v-card-subtitle class="black--text">Ask and answer questions, just like on Piazza</v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="gsMCENW7JuEm0wbhvDQs">
+                  <RenderlessFetchStrokes whiteboardID="BlEjXn7RP7q8YwxG8FLO">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -57,9 +56,9 @@
             </v-col>
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle class="black--text">Discuss with voice chat over a board</v-card-subtitle>
+                <v-card-subtitle class="black--text">Except you can draw & talk to explain hard ideas (live or recorded)</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="3u9102vnYb01zaOTYYbB">
+                  <RenderlessFetchStrokes whiteboardID="8hcybKON8Br67bNUA9TJ">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -70,15 +69,13 @@
                     </template>
                   </RenderlessFetchStrokes>
                 </v-img>
-             
-            
               </v-card>
             </v-col>
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                 <v-card-subtitle class="black--text">Use a stylus, mouse or touchpad to draw</v-card-subtitle>
+                 <v-card-subtitle class="black--text">As people help each other, elegant explanations accumulate</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="VJC1Tq6ORJiFCAz8CG7o">
+                  <RenderlessFetchStrokes whiteboardID="vgPkZWvsqvt9pImHiMbe">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -101,7 +98,7 @@
         <div v-if="isFetchingUser" key="loading..."></div>
         <div v-else key="class-list">
           <BaseGrid>
-            <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize()">
+            <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize(c)">
               <v-card @click="$router.push(`${c.courseNumber}/questions`)">
                 <v-card-title>{{ c.courseNumber }}</v-card-title>
                 <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos, 0 members</v-card-subtitle>
@@ -179,7 +176,14 @@ export default {
     computeVideoSize () {
       return this.$vuetify.breakpoint.smAndDown? 12 : 4
     },
-    computeCardSize () {
+    computeCardSize ({ courseNumber }) {
+      if (courseNumber.length > 13) {
+        if (this.$vuetify.breakpoint.md) {
+          return 4
+        } else if (this.$vuetify.breakpoint.smAndDown) {
+          return 12
+        } 
+      }
       return this.$vuetify.breakpoint.smAndDown? 6 : 2
     }
   } 
@@ -192,8 +196,5 @@ export default {
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
-}
-.cursor-pointer {
-  cursor: pointer;
 }
 </style>
