@@ -22,7 +22,6 @@
             <v-list-item @click="$emit('question-click', index)" :key="item.title">
                 <template v-slot:default="{ active, toggle }">
                 <v-list-item-content>
-                    <!-- <p>{{ item }}</p> -->
                     <v-list-item-title v-if="item.title" v-text="item.title"></v-list-item-title>
                     <v-list-item-subtitle class="text--primary" v-text="item.text || item.description"></v-list-item-subtitle>
                     <v-list-item-subtitle v-text="'January 6th'"></v-list-item-subtitle>
