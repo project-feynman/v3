@@ -12,7 +12,7 @@ ExplainMIT is a website where helping one person is no different than helping ev
 
 ## Contributors
 Current Team:
-Samir Droubi, Elton Lin, Prabhakar Kafle, Lujing Cen, Winston Fey, Kirill Zabrodin
+Harry Liu, Samir Droubi, Elton Lin, Prabhakar Kafle, Lujing Cen, Winston Fey, Kirill Zabrodin
 
 ## Pivotal contributions
 - Tony Wang implemented the slider for traversing any video freely 
