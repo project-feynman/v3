@@ -3,7 +3,6 @@
     <!-- APP BAR -->
     <BaseAppBar :loading="!hasFetchedVideos"/>
 
-    <!-- CONTENT -->
     <v-content>
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
@@ -24,8 +23,8 @@
                         @save-paragraph="newValue => saveParagraph(newValue, video)"
                         :isEditting="isEditting"
                         :title="video.title"
-                        :subtitle="`By ${video.authorName || 'Anonymous'}`"
-                        :description="video.paragraph"
+                        :subtitle="getSubtitle(video)"
+                        :description="video.paragraph || ''"
                         :tabs="classDoc.tabs"
                         :tabNumber="i"
                         :key="video['.key']"
@@ -128,9 +127,6 @@ export default {
       const doc = await ref.get()
       this.classDoc = doc.data()
     },
-    toggleDrawer () {
-      this.$root.$emit("toggle-drawer")
-    },
     handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID) {
       if (buttonName === "FULL VIDEO") {
         const classID = this.$route.params.class_id
@@ -140,6 +136,13 @@ export default {
         videoElem.quickplay()
       } else if (buttonName === "DELETE") {
         this.deleteVideo(videoID, audioPath)
+      }
+    },
+    getSubtitle ({ authorName, duration }) {
+      if (duration) {
+        return `By ${authorName || 'Anonymous'}, ${Number.parseFloat(duration / 60).toPrecision(2)} minutes`
+      } else {
+        return `By ${authorName || 'Anonymous'}, silent animation`
       }
     },
     initEditForCard (j) {

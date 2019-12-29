@@ -47,7 +47,7 @@
 
           <!-- ELSE -->
           <template v-else>
-            <v-card-text>{{ description }}</v-card-text>
+            <v-card-text>{{ description || "No description." }}</v-card-text>
           </template>
         </div>
       </v-expand-transition>
@@ -57,8 +57,8 @@
           <v-btn @click="event => handleSave(event)" text color="secondary" class="subtitle-2">
             SAVE CHANGES
           </v-btn>
-          <slot name="card-actions-editting">
-      
+          <slot name="card-actions-editing">
+            
           </slot>
         </template>
         <template v-else>
@@ -70,8 +70,6 @@
             <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
           </v-btn>
         </template> 
-        <!-- <v-spacer></v-spacer> -->
-        <!-- <div class="flex-grow-1"></div> -->
       </v-card-actions>
 
     </v-card>
