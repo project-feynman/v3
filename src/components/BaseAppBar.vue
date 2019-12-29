@@ -3,15 +3,12 @@
     <v-app-bar-nav-icon 
       @click.stop="$root.$emit('toggle-drawer')"
     />
-  
-      <img src="favicon.ico" @click="$router.push('/')">
-      <v-toolbar-title class="headline font-weight-regular ml-2" @click="$router.push('/')">
-        ExplainMIT / {{ $route.params.class_id }}
-      </v-toolbar-title>
-   
-    <!-- <v-toolbar-title class="mr-12 align-center">
-      <span class="title">{{ $route.params.class_id }}</span>
-    </v-toolbar-title> -->
+
+    <img class="home-logo" src="favicon.ico" @click="$router.push('/')">
+    <v-toolbar-title class="home-logo headline font-weight-regular ml-2" @click="$router.push('/')">
+      ExplainMIT / {{ $route.params.class_id }}
+    </v-toolbar-title>
+
     <v-progress-linear
       :active="loading"
       :indeterminate="loading"
@@ -36,5 +33,11 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.home-logo:hover {
+  cursor: pointer;
+}
+</style>
 
 

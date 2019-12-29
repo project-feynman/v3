@@ -18,8 +18,8 @@
            
     <!-- NAVBAR  -->
     <v-app-bar app color="white">
-      <img src="favicon.ico">
-      <v-toolbar-title class="headline font-weight-regular ml-2">
+      <img class="home-logo" src="favicon.ico">
+      <v-toolbar-title class="home-logo headline font-weight-regular ml-2">
         ExplainMIT
       </v-toolbar-title>
 
@@ -58,7 +58,7 @@
 
         <v-btn 
           v-else-if="!user"  
-          @click="handleSignIn()" 
+          @click="loginPopup = true" 
           class="grey--text text--darken-2"
           text
         >
@@ -155,4 +155,9 @@ export default {
 };
 </script>
 
+<style>
+.home-logo:hover {
+  cursor: pointer;
+}
+</style>
 
