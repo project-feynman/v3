@@ -19,7 +19,7 @@
         <!-- VIDEOS -->
         <v-list-item link :to="`/${this.$route.params.class_id}/videos`">
           <v-list-item-icon><v-icon>video_library</v-icon></v-list-item-icon>
-          <v-list-item-content>Saved Videos</v-list-item-content>
+          <v-list-item-content>Saved videos</v-list-item-content>
         </v-list-item>
         
         <v-divider/>
@@ -94,10 +94,6 @@ export default {
     },
   },
   methods: {
-    handleInput () {
-      this.$emit("input", !this.drawer)
-      console.log("handleInput()")
-    },
     async addWorkspace () {
       const ref = db.collection("classes").doc(this.prevClassID).collection("workspaces")
       // create an empty whiteboard
@@ -117,9 +113,7 @@ export default {
       const classID = this.$route.params.class_id
       // sidenav content should not reload everytime the user navigates between the workspaces, but should update
       // everytime the user visits a different TA page
-      if (classID && classID != this.prevClassID) {
-        console.log("updating side-nav content because classID and this.prevClassID =", classID, this.prevClassID)
-        // update sidenav content
+      if (classID && classID != this.prevClassID) { // update sidenav content
         const classRef = db.collection('classes').doc(classID)
         await this.$binding('workspaces', classRef.collection('workspaces'))
         this.prevClassID = classID
