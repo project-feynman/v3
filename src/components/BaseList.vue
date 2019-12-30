@@ -9,7 +9,7 @@
         multiple
         active-class="pink--text"
       >
-        <v-list-item>
+        <v-list-item @click="$emit('question-click', -1)">
             <v-list-item-content>
                 <v-list-item-title v-text="'New question'"/>
                 <v-list-item-subtitle class="text--primary" v-text="'Click here to add a new question'"></v-list-item-subtitle>

@@ -5,9 +5,8 @@
       <div class="d-flex">
         <!-- THE BASELIST UPDATES THE CURRENT QUESTION BEING VIEWED (e.g. by emitting the questionID when a question is clicked) -->
         <BaseList v-if="questions" @question-click="questionID => this.currentQuestionID = questionID" :questions="questions"/>
-        <h1>{{ currentQuestionID }}</h1>
-        <PiazzaNewPost />
-        
+        <PiazzaNewPost v-if="currentQuestionID == -1" />
+        <PiazzaViewPost v-if="currentQuestionID != -1" :questions="questions" :currentQuestionID="currentQuestionID"/>
 
       </div>
     </v-content>
@@ -21,6 +20,7 @@ import BaseList from "@/components/BaseList.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
+import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import firebase from "firebase/app"
 
 import "firebase/firestore"
@@ -31,10 +31,11 @@ export default {
     BaseList,
     DoodleVideo,
     RenderlessFetchStrokes,
-    PiazzaNewPost
+    PiazzaNewPost,
+    PiazzaViewPost
   },
   data: () => ({
-    currentQuestionID: "",
+    currentQuestionID: -1,
     questions: [],
     newQuestion: "In the fundamental equation for quantum computation, it states that X = Y, yet I have reasons to think that X = Z (see below image and video). Where did I go wrong?"
   }),
@@ -57,7 +58,6 @@ export default {
       questionDocs.forEach(doc => {
         this.questions.push({".key": doc.id, ...doc.data()})
       })
-      console.log(this.questions)
     },
     async submitQuestion () {
       const newQuestion = this.newQuestion
