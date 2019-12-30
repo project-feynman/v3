@@ -1,56 +1,59 @@
 <template>
-    <!-- THIS IS JUST THE TEXT, IMAGE AND VIDEO IN EDIT MODE -->
-    <!-- IT'S NAMED POST SINCE IT CAN BE RE-USED FOR QUESTIONS AND ANSWERS -->
-   <v-card :width="getFullWidth()">
-          <v-col cols="12" class="pb-0">
-            <v-textarea
-              outlined
-              name="input-7-4"
-              label="Question"
-              v-model="newQuestion"
-            ></v-textarea>
-          </v-col>
-          <v-row>
-            <v-col cols="6" class="pt-0">
-              <v-img
-                src="https://picsum.photos/id/11/500/300"
-                lazy-src="https://picsum.photos/id/11/10/6"
-                aspect-ratio="1"
-                class="grey lighten-2"
-                max-width="500"
-                max-height="300"
-              ></v-img>
-            </v-col>
-            <v-col cols="6" class="pt-0">
-              <RenderlessFetchStrokes whiteboardID="3u9102vnYb01zaOTYYbB">
-                <template slot-scope="{ strokes }">
-                  <DoodleVideo 
-                    v-if="strokes"
-                    :strokes="strokes"
-                    canvasID="2"
-                    @animation-loaded="hasFetchedVideos = true"
-                  />
-                </template>
-              </RenderlessFetchStrokes>
-            </v-col>
-          </v-row>
-          <v-btn @click="submitQuestion()" block color="secondary" dark>Submit question</v-btn>
-        </v-card>
+  <v-card :width="getFullWidth()">
+    <v-textarea
+      outlined
+      name="input-7-4"
+      label="Question"
+      placeholder="Type question here..."
+      v-model="newQuestion"
+      class="mt-2"
+    />
+    <div :style="`height: ${getFullWidth() * 9/16}px; position: relative`" >
+      <BlackboardMini :allStrokes="boardStrokes" 
+                      @new-stroke="stroke => $emit('new-stroke', stroke)"
+                      :width="`${getFullWidth()}`" 
+                      :height="`${getFullWidth() * 9/16}`"/>
+      <!-- <RenderlessFetchStrokes whiteboardID="3u9102vnYb01zaOTYYbB">
+        <template slot-scope="{ strokes }">
+          <DoodleVideo 
+            v-if="strokes"
+            :strokes="strokes"
+            canvasID="2"
+            @animation-loaded="hasFetchedVideos = true"
+          />
+        </template>
+      </RenderlessFetchStrokes> -->
+    </div>
+    <v-btn @click="submitQuestion()" block color="secondary" dark>Submit question</v-btn>
+  </v-card>
 </template>
 
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue"
+import BlackboardMini from "@/components/BlackboardMini.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 
 export default {
+  props: {
+    boardStrokes: Array
+  },
   components: {
     DoodleVideo,
-    RenderlessFetchStrokes
+    RenderlessFetchStrokes,
+    BlackboardMini
   },
   data: () => ({
-    newQuestion: "Type question here"
+    newQuestion: ""
   }),
   methods: {
+    submitQuestion () {
+      const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const questionObj = { title: "No title yet", 
+                            description: this.newQuestion, 
+                            blackboardID }
+      this.$emit('question-submit', questionObj)
+      this.newQuestion = ""
+    },
     getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 

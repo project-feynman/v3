@@ -1,6 +1,6 @@
 <template>
   <div id="whiteboard">
-
+    <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
       <v-btn @click="snackbar = false" color="pink" text>
@@ -8,9 +8,9 @@
       </v-btn>
     </v-snackbar>
 
-    <!-- <BaseAppBar :loading="loading">
-      <v-toolbar-items v-if="whiteboardDoc">
-        <template v-if="!whiteboardDoc.isAnswered">
+      <!-- APP BAR -->
+      <v-app-bar dense>
+        <template v-if="currentState != recordingStateEnum.POST_RECORDING">
           <swatches 
             v-model="color"
             :colors="colors"
@@ -22,17 +22,17 @@
           />
           <v-btn 
             v-if="!isRecording"
-            @click="deleteStrokesSubcollection()"
+            @click="wipeBoard()"
             color="red darken-2 white--text"
           >
             CLEAR
             <v-icon dark right>clear</v-icon>
           </v-btn>
           <template v-if="!isRecording">
-            <v-btn @click="saveDoodle()">
+            <!-- <v-btn @click="handleSaving('No title yet')">
               SAVE 
               <v-icon dark right>save</v-icon>
-            </v-btn>
+            </v-btn> -->
             <v-btn @click="startRecording()" color="pink white--text" dark>
               RECORD
               <v-icon dark right>fiber_manual_record</v-icon>
@@ -44,18 +44,22 @@
         </template>
         <template v-else>
           <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
-          <v-btn @click="retryAnswer()">RETRY</v-btn>
-          <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
+          <v-btn @click="recordAgain()">RETRY</v-btn>
+          <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
             SAVE VIDEO
-          </v-btn>
+          </v-btn> -->
         </template>
-      </v-toolbar-items>
-    </BaseAppBar> -->
+      </v-app-bar>
+
+      <!-- WHITEBOARD -->
+      <canvas id="myCanvas"  style="background-repeat: no-repeat; background-size: 100% 100%; background-color: rgb(62, 66, 66); background: url('https://i.imgur.com/8B7L7BR.jpg')">
+      </canvas>
 
       <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
       null-->
-      <audio-recorder 
+
+      <audio-recorder d
         v-if="whiteboardDoc"
         v-show="false"
         ref="audio-recorder"
@@ -64,10 +68,6 @@
         @start-recording="isRecording = true"
         @file-uploaded="audio => saveFileReference(audio)"
       />
-
-      <!-- WHITEBOARD -->
-      <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)"/>
-      <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
 
   </div>
 </template>
@@ -86,8 +86,10 @@ import BaseAppBar from "@/components/BaseAppBar.vue"
 
 export default {
   props: {
-    whiteboardID: String,
-    hideToolbar: Boolean
+    allStrokes: Array,
+    hideToolbar: Boolean,
+    width: String,
+    height: String 
   },
   components: {
     AudioRecorder,
@@ -120,7 +122,12 @@ export default {
   },
   data () {
     return {
-      loading: true,
+      currentState: "",
+      recordingStateEnum: {
+        PRE_RECORDING: "pre-recording",
+        MID_RECORDING: "mid-recording",
+        POST_RECORDING: "post-recording"
+      },
       whiteboardDoc: null,
       color: 'white',
       lineWidth: 2,
@@ -131,7 +138,6 @@ export default {
       isRecording: false,
       strokesRef: null,
       stylus: false, 
-      allStrokes: [],
       currentStroke: [],
       canvas: null,
       ctx: null,
@@ -180,41 +186,34 @@ export default {
       // TODO: this gets triggered 2x more often than I expect, find out why
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
-          this.initTouchEvents();
-          this.initMouseEvents();
+          this.initTouchEvents()
+          this.initMouseEvents()
         }
       }
     },
   },
-  mounted () {
-    // the mounted() hook is never called for subsequent switches between whiteboards
-    const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
+  mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
-    // new redraw code
-    this.canvas.width = document.documentElement.clientWidth 
-    this.canvas.height = 0.9 * document.documentElement.clientHeight
+    this.canvas.height = this.height - 48 // the app-bar height is 48px 
     this.rescaleCanvas()
-    window.addEventListener('resize', () => { 
-      this.canvas.width = document.documentElement.clientWidth 
-      this.rescaleCanvas()
-    }, false)
+    window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
     this.initMouseEvents()
-    this.continuouslySyncBoardWithDB()
-    this.$root.$on("side-nav-toggled", sideNavOpened => {
-      if (sideNavOpened) {
-        this.canvas.width = document.documentElement.clientWidth
-      } else {
-        this.canvas.width = document.documentElement.clientWidth
-      }
-      this.rescaleCanvas()
-    })
-  },
-  beforeDestroy () {
-    this.unsubscribe()
+    // USE THIS TO ENSURE THE BLACKBOARD SCALES CORRECTLY
+    // this.$root.$on("side-nav-toggled", sideNavOpened => {
+    //   if (sideNavOpened) {
+    //     this.canvas.width = document.documentElement.clientWidth
+    //   } else {
+    //     this.canvas.width = document.documentElement.clientWidth
+    //   }
+    //   this.rescaleCanvas()
+    // })
   },
   methods: {
+    wipeBoard () {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
     },
@@ -222,51 +221,10 @@ export default {
     //   const dataURL = this.canvas.toDataURL()
     // },
     async initData () {
-      this.loading = true
-      if (!this.whiteboardID) {
-        return
-      }
-      const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
-      this.strokesRef = whiteboardRef.collection('strokes')
-      // TODO: remove this whiteboard listener 
-      await this.$binding('whiteboardDoc', whiteboardRef)
-      // visually wipe previous drawings
-      if (this.ctx) {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      }
-      this.allStrokes = [] 
-      if (this.unsubscribe) {
-        this.unsubscribe() 
-      }
-      this.continuouslySyncBoardWithDB() 
-    },
-    continuouslySyncBoardWithDB () {
-      this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-          if (change.type === 'added') {
-            const stroke = change.doc.data()
-            // check if local strokes and db strokes are in sync 
-            if (this.allStrokes.length < stroke.strokeNumber) {
-              this.drawStroke(stroke, null)
-              this.allStrokes.push(stroke)
-            }
-          } 
-          else if (change.type === 'removed') {
-            // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
-            clearTimeout(this.clearRectTimeout)
-            this.clearRectTimeout = setTimeout(() => this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height), 400)
-            this.resetVariables()
-          }
-        })
-        this.loading = false
-      })
+      this.currentState = this.recordingStateEnum.PRE_RECORDING 
     },
     resetVariables () {
-      this.allStrokes = []
       this.lastX = -1
-    },
-    sortStrokesByTimestamp () {
-      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime))
     },
     getHeightToWidthRatio () {
       return this.canvas.scrollHeight / this.canvas.scrollWidth
@@ -303,12 +261,6 @@ export default {
       this.canvas.removeEventListener('mousedown', this.mouseDown, false);
       this.canvas.removeEventListener('mousemove', this.mouseMove, false);
     },
-    async deleteStrokesSubcollection () {
-      for (let i = 1; i < this.allStrokes.length + 1; i++) {
-        this.strokesRef.doc(`${i}`).delete()
-      }
-      this.allStrokes = [] 
-    },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4)
       const unitY = parseFloat(y / this.canvas.height).toFixed(4)
@@ -327,7 +279,6 @@ export default {
       if (this.isRecording) {
         this.startTime = this.currentTime.toFixed(1) // this.startTime keeps track of current stroke's startTime
       }
-   
     },
     touchMove (e) {
       e.preventDefault()
@@ -335,16 +286,13 @@ export default {
         return 
       }
       this.drawToPointAndSave(e)
-      event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
     },
     touchEnd (e) {
       e.preventDefault()
       if (this.currentStroke.length == 0) {
-        // user is touching the screen despite that touch is disabled
-        return 
+        return // user is touching the screen despite that touch is disabled
       }
       const strokeNumber = this.allStrokes.length + 1
-      // save
       const stroke = {
         strokeNumber,
         author: this.author || 'anonymous',
@@ -354,8 +302,7 @@ export default {
         endTime: Number(this.currentTime.toFixed(1)),
         points: this.currentStroke
       }
-      this.allStrokes.push(stroke)
-      this.strokesRef.doc(`${strokeNumber}`).set(stroke)
+      this.$emit("new-stroke", stroke)
       // reset 
       this.currentStroke = []
       this.lastX = -1
@@ -418,7 +365,6 @@ export default {
         points: this.currentStroke
       }
       this.allStrokes.push(stroke);
-      this.strokesRef.doc(`${strokeNumber}`).set(stroke);
       // reset 
       this.currentStroke = [];
       this.lastX = -1;
@@ -456,36 +402,23 @@ export default {
       this.color = 'rgb(62, 66, 66)'
       this.lineWidth = 18
     },
-    saveDoodle () {
-      // this.saveSilently = true
-      // this.saveVideoPopup = true 
-      this.handleSaving("No title yet")
-    },
     startRecording () {
+      this.currentState = this.recordingStateEnum.MID_RECORDING
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.startRecording()
     },
     stopRecording () {
+      this.currentState = this.recordingStateEnum.POST_RECORDING
       this.isRecording = false
       this.removeTouchEvents()
-      this.removeMouseEvents();
+      this.removeMouseEvents()
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.stopRecording()
-      const ID = this.whiteboardDoc['.key']
-      db.collection('whiteboards').doc(ID).update({
-        isAnswered: true 
-      })
     },
-    retryAnswer () {
+    recordAgain () {
       this.currentTime = 0 
       this.hasUploadedAudio = false
-      const ID = this.whiteboardDoc['.key']
-      const whiteboardRef = db.collection('whiteboards').doc(ID)
-      whiteboardRef.update({
-        isAnswered: false,
-        audioURL: '',
-        audioPath: ''
-      })
+      this.currentState = this.recordingStateEnum.PRE_RECORDING
     },
     saveFileReference({ url, path }) {
       this.hasUploadedAudio = true
@@ -494,55 +427,14 @@ export default {
         audioURL: url,
         audioPath: path
       })
-    },
-    async handleSaving (videoTitle) {
-      // mark the whiteboard as saved 
-      const whiteboardID = this.whiteboardDoc['.key']
-      const classID = this.$route.params.class_id
-
-      // take a screenshot of the whiteboard to be used as the "preview" of the video
-      // const dataURL = this.canvas.toDataURL()
-      // const videoThumbnail = this.canvas.toDataURL()
-
-      let metadata = {
-        title: videoTitle, 
-        fromClass: classID,
-        isSaved: true,
-        tabNumber: 0,
-        // thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
-      }
-      if (this.user) {
-        metadata.authorUID = this.user.uid
-        metadata.authorEmail = this.user.email
-        if (this.user.name) {
-          metadata.authorName = this.user.name
-        }
-      }
-      if (this.currentTime) {
-        metadata.duration = this.currentTime
-      }
-      db.collection('whiteboards').doc(whiteboardID).update(metadata)
-
-      // KEEP TRACK OF HOW MANY VIDEOS A CLASS HAS ACCUMULATED 
-      const classRef = db.collection("classes").doc(classID)
-      classRef.update({
-        numOfVideos: firebase.firestore.FieldValue.increment(1)
-      })
-
-      // initialize a new whiteboard for the workspace
-      const workspaceID = this.$route.params.id
-      const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
-      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(workspaceID)
-      workspaceRef.update({
-        whiteboardID: newWhiteboardRef.id
-      })
-      // let popup show the success state and the shareable URL
-      // this.$refs["popup-save"].showSuccessMessage(whiteboardID)
- 
-      this.hasUploadAudio = false
-      this.snackbar = true 
-      this.snackbarMessage = 'Successfully saved to the "Videos" section'
     }
   }
 }
 </script>
+
+<style scoped>
+#myCanvas {
+  width: 100%;
+  height: 100%;
+}
+</style>

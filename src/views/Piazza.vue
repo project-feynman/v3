@@ -3,11 +3,23 @@
     <BaseAppBar/>
     <v-content>
       <div class="d-flex">
-        <!-- THE BASELIST UPDATES THE CURRENT QUESTION BEING VIEWED (e.g. by emitting the questionID when a question is clicked) -->
-        <BaseList v-if="questions" @question-click="questionID => this.currentQuestionID = questionID" :questions="questions"/>
-        <PiazzaNewPost v-if="currentQuestionID == -1" />
-        <PiazzaViewPost v-if="currentQuestionID != -1" :questions="questions" :currentQuestionID="currentQuestionID"/>
-
+        <PiazzaQuestionList
+          :question="currentQuestion"
+          :questions="questions"
+          @question-create="handleQuestionCreate()"
+          @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)" 
+        />
+        <PiazzaNewPost 
+          v-if="isAddingNewQuestion" 
+          :question="currentQuestion"
+          :boardStrokes="boardStrokes"
+          @question-submit="questionObj => submitQuestion(questionObj)"
+          @new-stroke="stroke => handleNewStroke(stroke)"
+        />
+        <PiazzaViewPost 
+          v-else
+          :question="currentQuestion"
+        />
       </div>
     </v-content>
   </div>
@@ -16,28 +28,28 @@
 <script>
 import db from "@/database.js"
 import BaseAppBar from "@/components/BaseAppBar.vue"
-import BaseList from "@/components/BaseList.vue"
+import PiazzaQuestionList from "@/components/PiazzaQuestionList.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
 import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import firebase from "firebase/app"
-
 import "firebase/firestore"
 
 export default {
   components: {
     BaseAppBar,
-    BaseList,
+    PiazzaQuestionList,
     DoodleVideo,
     RenderlessFetchStrokes,
     PiazzaNewPost,
     PiazzaViewPost
   },
   data: () => ({
-    currentQuestionID: -1,
+    isAddingNewQuestion: true,
+    currentQuestion: {},
     questions: [],
-    newQuestion: "In the fundamental equation for quantum computation, it states that X = Y, yet I have reasons to think that X = Z (see below image and video). Where did I go wrong?"
+    boardStrokes: []
   }),
   computed: {
     user () {
@@ -59,13 +71,27 @@ export default {
         this.questions.push({".key": doc.id, ...doc.data()})
       })
     },
-    async submitQuestion () {
-      const newQuestion = this.newQuestion
-      this.newQuestion = "" 
+    handleQuestionClick (clickedQuestion) {
+      this.currentQuestion = clickedQuestion
+      this.isAddingNewQuestion = false 
+    },
+    handleQuestionCreate () {
+      this.isAddingNewQuestion = true  
+      this.currentQuestion = {}
+    },
+    handleNewStroke (stroke) {
+      this.boardStrokes.push(stroke)
+    },
+    async submitQuestion ({ title, description, blackboardID }) {
+      // save the drawing/video as a new whiteboard doc
+      await db.collection("whiteboards").doc(blackboardID).set({
+        strokes: this.boardStrokes
+      })
+      // create a Question doc that points to the blackboard
       await this.questionsRef.add({
-        text: newQuestion,
-        image: "",
-        videoID: "3u9102vnYb01zaOTYYbB",
+        title,
+        description,
+        blackboardID,
         usersWhoUpvoted: []
       })
       this.fetchQuestions()
@@ -92,7 +118,6 @@ export default {
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 
     }
-    
   }
 }
 </script>

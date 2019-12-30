@@ -1,5 +1,5 @@
 <template>
-  <v-row align="center" justify="center" style="height: 100%">
+  <div align="center" justify="center" style="height: 100%">
     <v-card style="height: 100%; width: 100%">
         <slot>
 
@@ -18,7 +18,7 @@
           </v-overlay>
         </v-row>
     </v-card>
-  </v-row>
+  </div>
 </template>
 
 <script>
