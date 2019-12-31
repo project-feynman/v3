@@ -19,6 +19,8 @@
         <PiazzaViewPost 
           v-else
           :question="currentQuestion"
+          :answers="answers"
+          @answer-submit="answerObj => submitAnswer(answerObj)"
         />
       </div>
     </v-content>
@@ -49,6 +51,7 @@ export default {
     isAddingNewQuestion: true,
     currentQuestion: {},
     questions: [],
+    answers: [],
     boardStrokes: []
   }),
   computed: {
@@ -58,6 +61,11 @@ export default {
     questionsRef () {
       const classID = this.$route.params.class_id 
       return db.collection("classes").doc(classID).collection("questions")
+    },
+    answersRef () {
+      const classID = this.$route.params.class_id
+      const questionID = this.currentQuestion['.key']
+      return db.collection("classes").doc(classID).collection("questions").doc(questionID).collection("answers")
     }
   },
   async created () {
@@ -66,14 +74,24 @@ export default {
   methods: {
     async fetchQuestions () {
       this.questions = [] 
+      console.log(this.questions)
       let questionDocs = await this.questionsRef.get() 
       questionDocs.forEach(doc => {
         this.questions.push({".key": doc.id, ...doc.data()})
       })
     },
+    async fetchAnswers () {
+      this.answers = [] 
+      console.log(this.answers)
+      let answersDocs = await this.answersRef.get() 
+      answersDocs.forEach(doc => {
+        this.answers.push({".key": doc.id, ...doc.data()})
+      })
+    },
     handleQuestionClick (clickedQuestion) {
       this.currentQuestion = clickedQuestion
       this.isAddingNewQuestion = false 
+      this.fetchAnswers()
     },
     handleQuestionCreate () {
       this.isAddingNewQuestion = true  
@@ -95,6 +113,19 @@ export default {
         usersWhoUpvoted: []
       })
       this.fetchQuestions()
+    },
+    async submitAnswer ({ description, blackboardID }) {
+      // save the drawing/video as a new whiteboard doc
+      await db.collection("whiteboards").doc(blackboardID).set({
+        strokes: this.boardStrokes
+      })
+      // create a Question doc that points to the blackboard
+      await this.answersRef.add({
+        description,
+        blackboardID,
+        usersWhoUpvoted: []
+      })
+      this.fetchAnswers()
     },
     async deleteQuestion ({ ".key": questionID }) {
       const ref = this.questionsRef.doc(questionID) 
