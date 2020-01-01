@@ -28,6 +28,7 @@ export default {
   props: {
     strokes: Array,
     autoplay: Boolean,
+    height: String,
     isFullscreen: {
       type: Boolean,
       default: true
@@ -84,6 +85,7 @@ export default {
   mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.canvasID}`)
     this.ctx = this.canvas.getContext('2d')
+    this.canvas.height = this.height
     if (this.autoplay) {
       this.rescaleCanvas(false)
       setTimeout(this.quickplay, 1000)

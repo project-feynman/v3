@@ -6,6 +6,7 @@
       :strokes="strokes"
       :isFullscreen="false"
       :canvasID="canvasID"
+      :height="height"
       @animation-loaded="handleAnimationLoaded()"
       @animation-finished="handleEvent()"
     />
@@ -33,7 +34,8 @@ export default {
   props: {
     strokes: Array,
     audioURL: String,
-    canvasID: String
+    canvasID: String,
+    height: String
   },
   components: {
     DoodleVideoAnimation,

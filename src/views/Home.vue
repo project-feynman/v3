@@ -39,7 +39,7 @@
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle class="black--text">Ask and answer questions, just like on Piazza</v-card-subtitle>
+                <v-card-subtitle class="black--text">Ask & answer questions, just like on Piazza</v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes whiteboardID="BlEjXn7RP7q8YwxG8FLO">
                     <template slot-scope="{ strokes }">
@@ -56,7 +56,7 @@
             </v-col>
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle class="black--text">Except you can draw & talk to explain hard ideas (live or recorded)</v-card-subtitle>
+                <v-card-subtitle class="black--text">Draw & talk to explain harder ideas (live or recorded)</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
                   <RenderlessFetchStrokes whiteboardID="8hcybKON8Br67bNUA9TJ">
                     <template slot-scope="{ strokes }">

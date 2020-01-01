@@ -18,7 +18,7 @@ export default new Router({
     },
     {
       path: '/:class_id/questions',
-      component: () => import(/* webpackChunkName: "piazza" */ './views/Piazza.vue')
+      component: () => import(/* webpackChunkName: "piazza" */ './components/BetaPiazza.vue')
     },
     {
       path: '/:class_id/workspace/:id',

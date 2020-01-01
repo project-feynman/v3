@@ -29,10 +29,6 @@
             <v-icon dark right>clear</v-icon>
           </v-btn>
           <template v-if="!isRecording">
-            <!-- <v-btn @click="handleSaving('No title yet')">
-              SAVE 
-              <v-icon dark right>save</v-icon>
-            </v-btn> -->
             <v-btn @click="startRecording()" color="pink white--text" dark>
               RECORD
               <v-icon dark right>fiber_manual_record</v-icon>
@@ -52,13 +48,14 @@
       </v-app-bar>
 
       <!-- WHITEBOARD -->
-      <canvas id="myCanvas"  style="background-repeat: no-repeat; background-size: 100% 100%; background-color: rgb(62, 66, 66); background: url('https://i.imgur.com/8B7L7BR.jpg')">
+      <canvas 
+        id="myCanvas"  
+        style="background-repeat: no-repeat; background-size: 100% 100%; background-color: rgb(62, 66, 66); background: url('https://i.imgur.com/8B7L7BR.jpg')">
       </canvas>
 
       <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
       null-->
-
       <audio-recorder d
         v-if="whiteboardDoc"
         v-show="false"
@@ -88,7 +85,6 @@ export default {
   props: {
     allStrokes: Array,
     hideToolbar: Boolean,
-    width: String,
     height: String 
   },
   components: {
@@ -187,7 +183,7 @@ export default {
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
           this.initTouchEvents()
-          this.initMouseEvents()
+          // this.initMouseEvents()
         }
       }
     },
@@ -199,7 +195,7 @@ export default {
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
-    this.initMouseEvents()
+    // this.initMouseEvents()
     // USE THIS TO ENSURE THE BLACKBOARD SCALES CORRECTLY
     // this.$root.$on("side-nav-toggled", sideNavOpened => {
     //   if (sideNavOpened) {

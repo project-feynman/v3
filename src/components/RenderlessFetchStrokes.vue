@@ -26,20 +26,30 @@ export default {
     }
   },
   async created () {
-    if (!this.whiteboardID) {
-      return 
+    this.fetchStrokes()
+  },
+  watch: {
+    whiteboardID () {
+      this.fetchStrokes()
     }
-    const baseRef = db.collection("whiteboards").doc(this.whiteboardID)
-    if (this.hasSubcollection === false) {
-      const doc = await baseRef.get()
-      this.strokes = doc.data().strokes
-    } else {
-      const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc")
-      strokesRef.get().then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          this.strokes.push({".key": doc.id, ...doc.data()})
+  },
+  methods: {
+    async fetchStrokes () {
+      if (!this.whiteboardID) {
+        return 
+      }
+      const baseRef = db.collection("whiteboards").doc(this.whiteboardID)
+      if (this.hasSubcollection === false) {
+        const doc = await baseRef.get()
+        this.strokes = doc.data().strokes
+      } else {
+        const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc")
+        strokesRef.get().then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            this.strokes.push({".key": doc.id, ...doc.data()})
+          })
         })
-      })
+      }
     }
   }
 }
