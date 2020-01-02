@@ -14,6 +14,7 @@
         :allStrokes="boardStrokes" 
         :height="`${getFullWidth() * 9/16}`"
         @new-stroke="stroke => $emit('new-stroke', stroke)"
+        @board-wipe="$emit('board-wipe')"
       />
       <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
     </div>

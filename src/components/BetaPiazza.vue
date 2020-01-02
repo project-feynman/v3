@@ -14,20 +14,22 @@
               postType="question" 
               :boardStrokes="boardStrokes"
               @new-stroke="stroke => addNewStroke(stroke)"
+              @board-wipe="boardStrokes = []"
               @post-submit="question => submitQuestion(question)"
             />
           </template>
           <template v-else>
             <BetaViewPost :post="currentQuestion"/>
-              <BetaViewPost 
-                v-for="(answer, i) in answers" 
-                :key="answer['.key']"
-                :post="answer" 
-                :postNumber="i"
-              />
+            <BetaViewPost 
+              v-for="(answer, i) in answers" 
+              :key="answer['.key']"
+              :post="answer" 
+              :postNumber="i"
+            />
             <BetaNewPost
               postType="answer"
               :boardStrokes="boardStrokes"
+              @board-wipe="boardStrokes = []"
               @post-submit="answer => submitAnswer(answer)"
               @new-stroke="stroke => addNewStroke(stroke)"
             />

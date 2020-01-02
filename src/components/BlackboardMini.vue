@@ -209,6 +209,7 @@ export default {
   methods: {
     wipeBoard () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.$emit("board-wipe")
     },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
