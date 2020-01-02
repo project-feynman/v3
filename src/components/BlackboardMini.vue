@@ -37,6 +37,19 @@
           <v-btn v-else @click="stopRecording()" color="pink white--text">
             STOP VIDEO
           </v-btn>
+          <v-btn 
+            @click="setImage()"
+            color="green white--text"
+          >
+            BACKGROUND
+          <input
+            @change="handleImage"
+            id="whiteboard-bg-input"
+            name="whiteboard-bg"
+            type="file"
+            style="display: none;"
+          />
+          </v-btn>
         </template>
         <template v-else>
           <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
@@ -115,6 +128,9 @@ export default {
         }
       }
     }
+  },
+  created () {
+    this.setImageUpload()
   },
   data () {
     return {
@@ -210,6 +226,22 @@ export default {
     wipeBoard () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       this.$emit("board-wipe")
+    },
+    setImage () {
+      document.getElementById('whiteboard-bg-input').click()
+    },
+    handleImage (e) {
+      var canvas = document.getElementById('myCanvas');
+      var ctx = canvas.getContext('2d');
+      var reader = new FileReader();
+      reader.onload = function(event){
+          var img = new Image();
+          img.onload = function(){
+              ctx.drawImage(img,0,0);
+          }
+          img.src = event.target.result;
+      }
+      reader.readAsDataURL(e.target.files[0]);
     },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
