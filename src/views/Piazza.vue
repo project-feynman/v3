@@ -6,7 +6,7 @@
         <PiazzaQuestionsList
           :questions="questions"
           @question-create="handleQuestionCreate()"
-          @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)" 
+          @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
         />
         <v-card :width="getFullWidth()">
           <template v-if="isAddingNewQuestion">
@@ -53,6 +53,7 @@ import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import AsyncRenderless from "@/components/AsyncRenderless.vue"
 import firebase from "firebase/app"
 import "firebase/firestore"
+import {initQuestionService} from "../dep";
 import { mapState } from 'vuex'
 
 export default {
@@ -66,6 +67,7 @@ export default {
     AsyncRenderless
   },
   data: () => ({
+    questionService: initQuestionService(),
     isAddingNewQuestion: true,
     currentQuestion: {},
     questions: [],
@@ -76,7 +78,7 @@ export default {
   computed: {
     user: () => this.$store.state.user,
     questionsRef () {
-      const classID = this.$route.params.class_id 
+      const classID = this.$route.params.class_id
       return db.collection("classes").doc(classID).collection("questions")
     },
     answersRef () {
@@ -90,8 +92,8 @@ export default {
   },
   methods: {
     async fetchQuestions () {
-      this.questions = [] 
-      let questionDocs = await this.questionsRef.get() 
+      this.questions = []
+      let questionDocs = await this.questionsRef.get()
       questionDocs.forEach(doc => {
         this.questions.push({".key": doc.id, ...doc.data()})
       })
@@ -104,7 +106,7 @@ export default {
       })
     },
     handleQuestionCreate () {
-      this.isAddingNewQuestion = true  
+      this.isAddingNewQuestion = true
       this.currentQuestion = {}
     },
     handleQuestionClick (clickedQuestion) {
@@ -130,18 +132,36 @@ export default {
         date,
         usersWhoUpvoted: []
       })
+      // trigger email notification
+      let inquisitorID = this.user ? this.user.uid : "";
+      let classID = this.$route.params.class_id;
+
+      let question;
+      try {
+         question = await this.questionService.askQuestion({
+          inquisitorID: inquisitorID,
+          classID: classID,
+          questionDescription: description,
+          videoID: blackboardID,
+        });
+      } catch (error) {
+        console.log(error)
+      }
+      console.log(question);
+      
+      // reset/update variables
       this.boardStrokes = [] 
       // TODO: clear canvas 
       this.fetchQuestions()
     },
     async deleteQuestion ({ ".key": questionID }) {
-      const ref = this.questionsRef.doc(questionID) 
+      const ref = this.questionsRef.doc(questionID)
       await ref.delete()
       this.fetchQuestions()
     },
     getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300 
-      return window.innerWidth - 500 
+      // sidenav's width = 200, BaseList's width = 300
+      return window.innerWidth - 500
     }
     // allowedToUpvote ({ usersWhoUpvoted }) {
     //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
