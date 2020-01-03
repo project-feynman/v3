@@ -7,16 +7,16 @@
           :question="currentQuestion"
           :questions="questions"
           @question-create="handleQuestionCreate()"
-          @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)" 
+          @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
         />
-        <PiazzaNewPost 
-          v-if="isAddingNewQuestion" 
+        <PiazzaNewPost
+          v-if="isAddingNewQuestion"
           :question="currentQuestion"
           :boardStrokes="boardStrokes"
           @question-submit="questionObj => submitQuestion(questionObj)"
           @new-stroke="stroke => handleNewStroke(stroke)"
         />
-        <PiazzaViewPost 
+        <PiazzaViewPost
           v-else
           :question="currentQuestion"
         />
@@ -35,6 +35,7 @@ import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
 import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import firebase from "firebase/app"
 import "firebase/firestore"
+import {initQuestionService} from "../dep";
 
 export default {
   components: {
@@ -46,6 +47,7 @@ export default {
     PiazzaViewPost
   },
   data: () => ({
+    questionService: initQuestionService(),
     isAddingNewQuestion: true,
     currentQuestion: {},
     questions: [],
@@ -56,7 +58,7 @@ export default {
       return this.$store.state.user
     },
     questionsRef () {
-      const classID = this.$route.params.class_id 
+      const classID = this.$route.params.class_id
       return db.collection("classes").doc(classID).collection("questions")
     }
   },
@@ -65,18 +67,18 @@ export default {
   },
   methods: {
     async fetchQuestions () {
-      this.questions = [] 
-      let questionDocs = await this.questionsRef.get() 
+      this.questions = []
+      let questionDocs = await this.questionsRef.get()
       questionDocs.forEach(doc => {
         this.questions.push({".key": doc.id, ...doc.data()})
       })
     },
     handleQuestionClick (clickedQuestion) {
       this.currentQuestion = clickedQuestion
-      this.isAddingNewQuestion = false 
+      this.isAddingNewQuestion = false
     },
     handleQuestionCreate () {
-      this.isAddingNewQuestion = true  
+      this.isAddingNewQuestion = true
       this.currentQuestion = {}
     },
     handleNewStroke (stroke) {
@@ -86,27 +88,36 @@ export default {
       // save the drawing/video as a new whiteboard doc
       await db.collection("whiteboards").doc(blackboardID).set({
         strokes: this.boardStrokes
-      })
-      // create a Question doc that points to the blackboard
-      await this.questionsRef.add({
-        title,
-        description,
-        blackboardID,
-        usersWhoUpvoted: []
-      })
-      this.fetchQuestions()
+      });
+
+      let inquisitorID = this.user.uid;
+      let classID = this.$route.params.class_id;
+
+      let question;
+      try {
+         question = await this.questionService.askQuestion({
+          inquisitorID: inquisitorID,
+          classID: classID,
+          questionDescription: description,
+          videoID: blackboardID,
+        });
+      } catch (error) {
+        console.log(error)
+      }
+
+      console.log(question);
     },
     async deleteQuestion ({ ".key": questionID }) {
-      const ref = this.questionsRef.doc(questionID) 
+      const ref = this.questionsRef.doc(questionID)
       await ref.delete()
       this.fetchQuestions()
     },
     allowedToUpvote ({ usersWhoUpvoted }) {
-      return this.user && usersWhoUpvoted.includes(this.user.email) === false 
+      return this.user && usersWhoUpvoted.includes(this.user.email) === false
     },
     async upvoteQuestion ({ ".key": questionID, usersWhoUpvoted }) {
-      if (!this.user) { 
-        return 
+      if (!this.user) {
+        return
       }
       const ref = this.questionsRef.doc(questionID)
       ref.update({
@@ -115,8 +126,8 @@ export default {
       this.fetchQuestions()
     },
     getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300 
-      return window.innerWidth - 500 
+      // sidenav's width = 200, BaseList's width = 300
+      return window.innerWidth - 500
     }
   }
 }
