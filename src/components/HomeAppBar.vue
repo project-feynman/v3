@@ -18,7 +18,7 @@
            
     <!-- NAVBAR  -->
     <v-app-bar app color="white">
-      <img class="home-logo" src="favicon.ico">
+      <img class="home-logo" src="/favicon.ico">
       <v-toolbar-title class="home-logo headline font-weight-regular ml-2">
         ExplainMIT
       </v-toolbar-title>
