@@ -1,9 +1,9 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <slot>
+    <v-container fluid>
+        <v-row>
+            <slot>
 
-      </slot>
-    </v-row>
-  </v-container>
+            </slot>
+        </v-row>
+    </v-container>
 </template>

@@ -1,109 +1,109 @@
 <template>
-  <div class="text-xs-center">
-    <v-menu
-      v-model="menu"
-      :close-on-content-click="false"
-      :nudge-width="200"
-      offset-x
-    >
-      <template v-slot:activator="{ on }">
-        <slot :on="on">
-        
-        </slot>
-      </template>
+    <div class="text-xs-center">
+        <v-menu
+                :close-on-content-click="false"
+                :nudge-width="200"
+                offset-x
+                v-model="menu"
+        >
+            <template v-slot:activator="{ on }">
+                <slot :on="on">
 
-      <v-card>
-        <v-list>
-          <v-list-item>
-            <v-list-item-avatar>
-              <v-icon large :color="color">
-                account_circle
-              </v-icon>
-              <!-- <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="John"> -->
-            </v-list-item-avatar>
-            
-   
-            <v-list-item-content>
-               <v-text-field
-                  placeholder="Enter your name here"
-                  :value="user.name"
-                  @input="value => name = value"
-                  single-line
-              ></v-text-field>
+                </slot>
+            </template>
 
-            </v-list-item-content>
+            <v-card>
+                <v-list>
+                    <v-list-item>
+                        <v-list-item-avatar>
+                            <v-icon :color="color" large>
+                                account_circle
+                            </v-icon>
+                            <!-- <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="John"> -->
+                        </v-list-item-avatar>
 
-            <v-list-item-action>
-              <v-btn
-                :class="fav ? 'red--text' : ''"
-                icon
-                @click="fav = !fav"
-              >
-                <!-- <v-icon>favorite</v-icon> -->
-              </v-btn>
-            </v-list-item-action>
-          </v-list-item>
-        </v-list>
 
-        <v-divider></v-divider>
+                        <v-list-item-content>
+                            <v-text-field
+                                    :value="user.name"
+                                    @input="value => name = value"
+                                    placeholder="Enter your name here"
+                                    single-line
+                            ></v-text-field>
 
-        <v-list>
-          <v-list-item>
-            <v-list-item-action>
-              <v-switch v-model="message" color="purple"></v-switch>
-            </v-list-item-action>
-            <v-list-item-title>Enable notifications</v-list-item-title>
-          </v-list-item>
+                        </v-list-item-content>
 
-        </v-list>
+                        <v-list-item-action>
+                            <v-btn
+                                    :class="fav ? 'red--text' : ''"
+                                    @click="fav = !fav"
+                                    icon
+                            >
+                                <!-- <v-icon>favorite</v-icon> -->
+                            </v-btn>
+                        </v-list-item-action>
+                    </v-list-item>
+                </v-list>
 
-        <v-card-actions>
-          <!-- <v-spacer></v-spacer> -->
+                <v-divider></v-divider>
 
-          <!-- <v-btn flat @click="menu = false">Cancel</v-btn> -->
-          <v-btn color="primary" text @click="handleSave()">Save</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn color="grey" text @click="$emit('sign-out')">Sign Out</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-menu>
-  </div>
+                <v-list>
+                    <v-list-item>
+                        <v-list-item-action>
+                            <v-switch color="purple" v-model="message"></v-switch>
+                        </v-list-item-action>
+                        <v-list-item-title>Enable notifications</v-list-item-title>
+                    </v-list-item>
+
+                </v-list>
+
+                <v-card-actions>
+                    <!-- <v-spacer></v-spacer> -->
+
+                    <!-- <v-btn flat @click="menu = false">Cancel</v-btn> -->
+                    <v-btn @click="handleSave()" color="primary" text>Save</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="$emit('sign-out')" color="grey" text>Sign Out</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-menu>
+    </div>
 </template>
 
 <script>
-import Swatches from 'vue-swatches'
-import 'vue-swatches/dist/vue-swatches.min.css'
+    import Swatches from 'vue-swatches'
+    import 'vue-swatches/dist/vue-swatches.min.css'
 
-  export default {
-    props: {
-      user: Object
-    },
-    components: {
-      Swatches
-    },
-    data: () => ({
-      fav: true,
-      menu: false,
-      message: false,
-      name: "",
-      useDarkMode: false,
-      color: "",
-      colors: ["black", "grey", "red", "orange", "yellow", "green", "blue", "purple"]
-    }),
-    methods: {
-      handleSave () {
-        this.menu = false 
-        const updatedUser = {
-          useDarkMode: this.useDarkMode,
-          // color: this.color
+    export default {
+        props: {
+            user: Object
+        },
+        components: {
+            Swatches
+        },
+        data: () => ({
+            fav: true,
+            menu: false,
+            message: false,
+            name: "",
+            useDarkMode: false,
+            color: "",
+            colors: ["black", "grey", "red", "orange", "yellow", "green", "blue", "purple"]
+        }),
+        methods: {
+            handleSave() {
+                this.menu = false;
+                const updatedUser = {
+                    useDarkMode: this.useDarkMode,
+                    // color: this.color
+                };
+                if (this.name) {
+                    updatedUser.name = this.name
+                } else {
+                    updatedUser.name = this.user.name
+                }
+                this.$emit("save", updatedUser)
+            }
         }
-        if (this.name) {
-          updatedUser.name = this.name
-        } else {
-          updatedUser.name = this.user.name
-        }
-        this.$emit("save", updatedUser)
-      }
     }
-  }
 </script>
