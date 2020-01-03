@@ -5,20 +5,21 @@
         <!-- NEW QUESTION -->
         <v-list-item @click="$emit('question-create')">
           <v-list-item-content>
-            <v-list-item-title v-text="'New question'"/>
-            <v-list-item-subtitle class="text--primary" v-text="'Click here to add a new question'"></v-list-item-subtitle>
-            <v-list-item-subtitle v-text="'Use text, image and drawings'"></v-list-item-subtitle>
+            <v-list-item-title v-text="'New question'" color="secondary" class="purple--text"/>
+            <v-list-item-subtitle class="purple--text" v-text="'Click here to add a new question'"></v-list-item-subtitle>
+            <!-- <v-list-item-subtitle v-text="'Use text, image and drawings'"></v-list-item-subtitle> -->
           </v-list-item-content>
         </v-list-item>
+        <v-divider/>
 
         <!-- EXISTING QUESTIONS -->
         <div v-if="questions">
           <template v-for="(question, index) in questions">
             <v-list-item @click="$emit('question-click', question)" :key="question['.key']">
               <v-list-item-content>
-                <v-list-item-title v-if="question.title" v-text="question.title"/>
+                <!-- <v-list-item-title v-if="question.title" v-text="question.title"/> -->
                 <v-list-item-subtitle class="text--primary" v-text="question.description"/>
-                <v-list-item-subtitle v-text="'January 6th'"/>
+                <v-list-item-subtitle v-text="question.date"/>
               </v-list-item-content>
             </v-list-item>
             <v-divider v-if="index + 1 < questions.length" :key="index"></v-divider>
