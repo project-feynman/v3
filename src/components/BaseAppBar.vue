@@ -5,8 +5,9 @@
     />
 
     <img class="home-logo" src="favicon.ico" @click="$router.push('/')">
+
     <v-toolbar-title class="home-logo headline font-weight-regular ml-2" @click="$router.push('/')">
-      ExplainMIT / {{ $route.params.class_id }}
+      ExplainMIT/{{ $route.params.class_id }}
     </v-toolbar-title>
 
     <v-progress-linear
@@ -16,7 +17,9 @@
       bottom
       color="deep-purple accent-4"
     />
+
     <v-spacer/>
+    
     <slot>
 
     </slot>

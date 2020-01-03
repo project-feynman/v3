@@ -2,7 +2,7 @@
    <!-- "height: 100%" is necessary or else the canvas contained within will be squished--> 
   <div style="height: 100%">
     <slot :strokes="strokes">
-      {{ strokes }}
+
     </slot>
   </div>
 </template>
@@ -25,21 +25,29 @@ export default {
       strokes: []
     }
   },
-  async created () {
-    if (!this.whiteboardID) {
-      return 
+  watch: {
+    whiteboardID: {
+      handler: "fetchStrokes",
+      immediate: true
     }
-    const baseRef = db.collection("whiteboards").doc(this.whiteboardID)
-    if (this.hasSubcollection === false) {
-      const doc = await baseRef.get()
-      this.strokes = doc.data().strokes
-    } else {
-      const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc")
-      strokesRef.get().then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          this.strokes.push({".key": doc.id, ...doc.data()})
+  },
+  methods: {
+    async fetchStrokes () {
+      if (!this.whiteboardID) {
+        return 
+      }
+      const baseRef = db.collection("whiteboards").doc(this.whiteboardID)
+      if (this.hasSubcollection === false) {
+        const doc = await baseRef.get()
+        this.strokes = doc.data().strokes
+      } else {
+        const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc")
+        strokesRef.get().then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            this.strokes.push({".key": doc.id, ...doc.data()})
+          })
         })
-      })
+      }
     }
   }
 }
