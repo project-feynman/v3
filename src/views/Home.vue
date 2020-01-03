@@ -31,10 +31,9 @@
             SOURCE CODE
           </v-btn>
         </div>
+
         <v-divider></v-divider>
-
-
-          <!-- <BaseGrid> -->
+        
         <v-container fluid class="py-0">
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
@@ -86,8 +85,6 @@
                     </template>
                   </RenderlessFetchStrokes>
                 </v-img>
-              
-            
               </v-card>
             </v-col>
           </v-row>
