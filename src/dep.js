@@ -1,9 +1,9 @@
 import {HttpClient} from "./httpClient";
 import {GraphQLClient} from "./graphqlClient";
-import {QuestionService} from "./services/question.service";
+import {Question} from "./services/question";
 
 export function initQuestionService() {
     let httpClient = new HttpClient();
     let graphQLClient = new GraphQLClient(httpClient);
-    return new QuestionService(graphQLClient);
+    return new Question(graphQLClient);
 }

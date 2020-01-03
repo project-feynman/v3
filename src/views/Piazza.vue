@@ -106,6 +106,7 @@ export default {
       }
 
       console.log(question);
+      // this.fetchQuestions();
     },
     async deleteQuestion ({ ".key": questionID }) {
       const ref = this.questionsRef.doc(questionID)

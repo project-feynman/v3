@@ -1,5 +1,6 @@
 const GRAPHQL_ENDPOINT = 'https://us-central1-feynman-mvp.cloudfunctions.net/GraphQLAPI';
-export class QuestionService {
+
+export class Question {
     constructor(graphQLClient) {
         this.graphQLClient = graphQLClient;
     }
