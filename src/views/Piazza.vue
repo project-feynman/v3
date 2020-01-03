@@ -90,7 +90,7 @@ export default {
         strokes: this.boardStrokes
       });
 
-      let inquisitorID = this.user.uid;
+      let inquisitorID = this.user ? this.user.uid : "";
       let classID = this.$route.params.class_id;
 
       let question;

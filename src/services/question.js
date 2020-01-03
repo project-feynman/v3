@@ -1,12 +1,11 @@
-const GRAPHQL_ENDPOINT = 'https://us-central1-feynman-mvp.cloudfunctions.net/GraphQLAPI';
-
 export class Question {
-    constructor(graphQLClient) {
+    constructor(graphQLEndpoint, graphQLClient) {
+        this.graphQLEndpoint = graphQLEndpoint;
         this.graphQLClient = graphQLClient;
     }
 
     askQuestion({inquisitorID, classID, questionDescription, videoID}) {
-       return this.graphQLClient.query(GRAPHQL_ENDPOINT, {
+       return this.graphQLClient.query(this.graphQLEndpoint, {
             query: `
 mutation createQuestion($inquisitorID: ID!, $classID: ID!, $questionInput: QuestionInput!) {
   createQuestion(inquisitorID: $inquisitorID, classID: $classID, questionInput: $questionInput) {
@@ -29,7 +28,7 @@ mutation createQuestion($inquisitorID: ID!, $classID: ID!, $questionInput: Quest
     }
 
     answerQuestion({replierID, classID, questionID, answerBody, videoID}) {
-        return this.graphQLClient.query(GRAPHQL_ENDPOINT, {
+        return this.graphQLClient.query(this.graphQLEndpoint, {
             query: `
 mutation createAnswer($replierID: ID!, $classID: ID!, $questionID: ID!, $answerInput: AnswerInput!) {
   createAnswer(replierID: $replierID, classID: $classID, questionID: $questionID, answerInput: $answerInput) {
