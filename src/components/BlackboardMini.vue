@@ -29,10 +29,6 @@
             <v-icon dark right>clear</v-icon>
           </v-btn>
           <template v-if="!isRecording">
-            <!-- <v-btn @click="handleSaving('No title yet')">
-              SAVE 
-              <v-icon dark right>save</v-icon>
-            </v-btn> -->
             <v-btn @click="startRecording()" color="pink white--text" dark>
               RECORD
               <v-icon dark right>fiber_manual_record</v-icon>
@@ -40,6 +36,19 @@
           </template>
           <v-btn v-else @click="stopRecording()" color="pink white--text">
             STOP VIDEO
+          </v-btn>
+          <v-btn 
+            @click="setImage()"
+            color="green white--text"
+          >
+            BACKGROUND
+          <input
+            @change="handleImage"
+            id="whiteboard-bg-input"
+            name="whiteboard-bg"
+            type="file"
+            style="display: none;"
+          />
           </v-btn>
         </template>
         <template v-else>
@@ -52,13 +61,14 @@
       </v-app-bar>
 
       <!-- WHITEBOARD -->
-      <canvas id="myCanvas"  style="background-repeat: no-repeat; background-size: 100% 100%; background-color: rgb(62, 66, 66); background: url('https://i.imgur.com/8B7L7BR.jpg')">
+      <canvas 
+        id="myCanvas"  
+        style="background-repeat: no-repeat; background-size: 100% 100%; background-color: rgb(62, 66, 66); background: url('https://i.imgur.com/8B7L7BR.jpg')">
       </canvas>
 
       <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
       null-->
-
       <audio-recorder d
         v-if="whiteboardDoc"
         v-show="false"
@@ -88,8 +98,7 @@ export default {
   props: {
     allStrokes: Array,
     hideToolbar: Boolean,
-    width: String,
-    height: String 
+    height: String
   },
   components: {
     AudioRecorder,
@@ -119,6 +128,9 @@ export default {
         }
       }
     }
+  },
+  created () {
+    this.setImageUpload()
   },
   data () {
     return {
@@ -187,7 +199,7 @@ export default {
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
           this.initTouchEvents()
-          this.initMouseEvents()
+          // this.initMouseEvents()
         }
       }
     },
@@ -199,7 +211,7 @@ export default {
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
-    this.initMouseEvents()
+    // this.initMouseEvents()
     // USE THIS TO ENSURE THE BLACKBOARD SCALES CORRECTLY
     // this.$root.$on("side-nav-toggled", sideNavOpened => {
     //   if (sideNavOpened) {
@@ -213,6 +225,27 @@ export default {
   methods: {
     wipeBoard () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.$emit("board-wipe")
+    },
+    setImage () {
+      document.getElementById('whiteboard-bg-input').click()
+    },
+    handleImage (e) {
+      var canvas = document.getElementById('myCanvas');
+      var ctx = canvas.getContext('2d');
+      var reader = new FileReader();
+      var vue = this
+      reader.onload = function(event){
+          var img = new Image();
+          img.onload = function(){
+              ctx.drawImage(img,0,0);
+          }
+          img.src = event.target.result;
+          var uri = canvas.toDataURL('image/png'),
+          boardImage = uri.replace(/^data:image.+;base64,/, '');
+          vue.$emit('board-image', boardImage);
+      }
+      reader.readAsDataURL(e.target.files[0]);
     },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
