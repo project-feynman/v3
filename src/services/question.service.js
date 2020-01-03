@@ -1,4 +1,4 @@
-const GRAPHQL_ENDPOINT = 'http://localhost:9000';
+const GRAPHQL_ENDPOINT = 'https://us-central1-feynman-mvp.cloudfunctions.net/GraphQLAPI';
 export class QuestionService {
     constructor(graphQLClient) {
         this.graphQLClient = graphQLClient;
