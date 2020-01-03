@@ -10,7 +10,6 @@
       @animation-loaded="handleAnimationLoaded()"
       @animation-finished="handleEvent()"
     />
-
     <audio-recorder 
       v-if="audioURL"
       ref="audio-recorder"
@@ -56,9 +55,8 @@ export default {
   },
   methods: {
     syncAnimation () {
-      if (this.syncedVisualAndAudio) {
-        return
-      } else if (this.resourcesLoaded) {
+      if (this.syncedVisualAndAudio) { return } 
+      if (this.resourcesLoaded) {
         const audioRecorder = this.$refs['audio-recorder']
         const animation = this.$refs['animation']
         animation.startSync(audioRecorder.getAudioTime)
