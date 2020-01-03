@@ -2,7 +2,7 @@
    <!-- "height: 100%" is necessary or else the canvas contained within will be squished--> 
   <div style="height: 100%">
     <slot :strokes="strokes">
-      {{ strokes }}
+
     </slot>
   </div>
 </template>
@@ -25,12 +25,10 @@ export default {
       strokes: []
     }
   },
-  async created () {
-    this.fetchStrokes()
-  },
   watch: {
-    whiteboardID () {
-      this.fetchStrokes()
+    whiteboardID: {
+      handler: "fetchStrokes",
+      immediate: true
     }
   },
   methods: {
