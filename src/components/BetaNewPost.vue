@@ -13,6 +13,7 @@
       <BlackboardMini 
         :allStrokes="boardStrokes" 
         :height="`${getFullWidth() * 9/16}`"
+        @board-image="addBoardImage"
         @new-stroke="stroke => $emit('new-stroke', stroke)"
         @board-wipe="$emit('board-wipe')"
       />
@@ -29,7 +30,7 @@ import BlackboardMini from "@/components/BlackboardMini.vue"
 export default {
   props: {
     boardStrokes: Array,
-    postType: String // either "question" or "answer"
+    postType: String, // either "question" or "answer"
   },
   components: {
     BlackboardMini
@@ -46,6 +47,9 @@ export default {
                      blackboardID }
       this.$emit('post-submit', post)
       this.newPost = ""
+    },
+    addBoardImage (boardImage) {
+      this.$emit('board-image', boardImage)
     },
     getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300 

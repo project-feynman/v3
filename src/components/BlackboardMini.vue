@@ -98,7 +98,7 @@ export default {
   props: {
     allStrokes: Array,
     hideToolbar: Boolean,
-    height: String 
+    height: String
   },
   components: {
     AudioRecorder,
@@ -234,12 +234,16 @@ export default {
       var canvas = document.getElementById('myCanvas');
       var ctx = canvas.getContext('2d');
       var reader = new FileReader();
+      var vue = this
       reader.onload = function(event){
           var img = new Image();
           img.onload = function(){
               ctx.drawImage(img,0,0);
           }
           img.src = event.target.result;
+          var uri = canvas.toDataURL('image/png'),
+          boardImage = uri.replace(/^data:image.+;base64,/, '');
+          vue.$emit('board-image', boardImage);
       }
       reader.readAsDataURL(e.target.files[0]);
     },

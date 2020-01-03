@@ -13,6 +13,7 @@
             <BetaNewPost 
               postType="question" 
               :boardStrokes="boardStrokes"
+              @board-image="boardImage => addBoardImage(boardImage)"
               @new-stroke="stroke => addNewStroke(stroke)"
               @board-wipe="boardStrokes = []"
               @post-submit="question => submitQuestion(question)"
@@ -31,6 +32,7 @@
               :boardStrokes="boardStrokes"
               @board-wipe="boardStrokes = []"
               @post-submit="answer => submitAnswer(answer)"
+              @board-image="boardImage => addBoardImage(boardImage)"
               @new-stroke="stroke => addNewStroke(stroke)"
             />
           </template>
@@ -72,7 +74,8 @@ export default {
     currentQuestion: {},
     questions: [],
     answers: [],
-    boardStrokes: []
+    boardStrokes: [],
+    whiteBoardImage: ""
   }),
   computed: {
     user () {
@@ -119,10 +122,16 @@ export default {
     addNewStroke (stroke) {
       this.boardStrokes.push(stroke)
     },
+    addBoardImage (boardImage) {
+      alert(boardImage)
+      this.whiteBoardImage = boardImage
+    },
     async submitQuestion ({ title, description, blackboardID }) {
+      alert(this.whiteBoardImage)
       // save the drawing/video as a new whiteboard doc
       await db.collection("whiteboards").doc(blackboardID).set({
-        strokes: this.boardStrokes
+        strokes: this.boardStrokes, 
+        image: this.whiteBoardImage
       })
       // create a Question doc that points to the blackboard
       await this.questionsRef.add({
@@ -138,7 +147,8 @@ export default {
     async submitAnswer ({ description, blackboardID }) {
       // save the drawing/video as a new whiteboard doc
       await db.collection("whiteboards").doc(blackboardID).set({
-        strokes: this.boardStrokes
+        strokes: this.boardStrokes,
+        image: this.whiteBoardImage
       })
       // create an answer doc that points to the blackboard
       await this.answersRef.add({
