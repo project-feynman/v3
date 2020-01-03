@@ -1,58 +1,62 @@
+<!-- Offer the user a text area + blackboard to create a Q or A -->
 <template>
-  <v-card :width="getFullWidth()">
+  <div>
     <v-textarea
       outlined
-      name="input-7-4"
-      label="Question"
-      placeholder="Type question here..."
-      v-model="newQuestion"
+      :label="postType"
+      :placeholder="`Type ${postType} here...`"
+      v-model="newPost"
       class="mt-2"
     />
     <div :style="`height: ${getFullWidth() * 9/16}px; position: relative`" >
-      <BlackboardMini :allStrokes="boardStrokes" 
-                      @new-stroke="stroke => $emit('new-stroke', stroke)"
-                      :width="`${getFullWidth()}`" 
-                      :height="`${getFullWidth() * 9/16}`"/>
-      <!-- <RenderlessFetchStrokes whiteboardID="3u9102vnYb01zaOTYYbB">
-        <template slot-scope="{ strokes }">
-          <DoodleVideo 
-            v-if="strokes"
-            :strokes="strokes"
-            canvasID="2"
-            @animation-loaded="hasFetchedVideos = true"
-          />
-        </template>
-      </RenderlessFetchStrokes> -->
+      <BlackboardMini 
+        :allStrokes="boardStrokes" 
+        :height="`${getFullWidth() * 9/16}`"
+        @board-image="addBoardImage"
+        @new-stroke="stroke => $emit('new-stroke', stroke)"
+        @board-wipe="$emit('board-wipe')"
+      />
+      <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
     </div>
-    <v-btn @click="submitQuestion()" block color="secondary" dark>Submit question</v-btn>
-  </v-card>
+    <v-btn @click="submitPost()" block color="secondary" dark>Submit {{ postType }}</v-btn>
+  </div>
 </template>
 
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import BlackboardMini from "@/components/BlackboardMini.vue"
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 
 export default {
   props: {
-    boardStrokes: Array
+    boardStrokes: Array,
+    postType: String, // either "question" or "answer"
   },
   components: {
-    DoodleVideo,
-    RenderlessFetchStrokes,
     BlackboardMini
   },
   data: () => ({
-    newQuestion: ""
+    newPost: ""
   }),
   methods: {
-    submitQuestion () {
+    submitPost () {
+      event.preventDefault()
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      const questionObj = { title: "No title yet", 
-                            description: this.newQuestion, 
-                            blackboardID }
-      this.$emit('question-submit', questionObj)
-      this.newQuestion = ""
+      const post = { title: "No title yet", 
+                     description: this.newPost, 
+                     blackboardID,
+                     date: this.getDate() }
+      this.$emit('post-submit', post)
+      this.newPost = ""
+    },
+    getDate () {
+      var today = new Date();
+      var dd = String(today.getDate()).padStart(2, '0');
+      var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+      var yyyy = today.getFullYear()
+      return today = mm + '/' + dd + '/' + yyyy
+    },
+    addBoardImage (boardImage) {
+      this.$emit('board-image', boardImage)
     },
     getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300 
