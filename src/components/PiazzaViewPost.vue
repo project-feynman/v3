@@ -1,29 +1,25 @@
+<!-- Given a post, display its text and its blackboard -->
 <template>
-   <v-card :width="getFullWidth()">
-    <v-col cols="12" class="pb-0">
-      <v-textarea
-        readonly
-        disabled
-        name="input-7-4"
-        label="Question"
-        :value="question.description"
-      />
-    </v-col>
-    <v-row>
-      <v-col cols="12" class="pt-0">
-        <RenderlessFetchStrokes :whiteboardID="question.blackboardID" :hasSubcollection="false">
-          <template slot-scope="{ strokes }">
-            <DoodleVideo 
-              v-if="strokes"
-              :strokes="strokes"
-              canvasID="2"
-              @animation-loaded="hasFetchedVideos = true"
-            />
-          </template>
-        </RenderlessFetchStrokes>
-      </v-col>
-    </v-row>
-  </v-card>
+  <div>
+    <v-textarea
+      class="pa-2"
+      readonly
+      name="input-7-4"
+      :value="post.description"
+    />
+    <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
+      <template slot-scope="{ strokes }">
+        <!-- length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) -->
+        <DoodleVideo 
+          v-if="strokes.length !== 0"
+          :strokes="strokes"
+          :canvasID="`${postNumber}`"
+          :height="`${getFullWidth() * 9/16}`"
+          @animation-loaded="hasFetchedVideos = true"
+        />
+      </template>
+    </RenderlessFetchStrokes>
+  </div>
 </template>
 
 <script>
@@ -32,7 +28,8 @@ import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 
 export default {
   props: {
-    question: Object
+    post: Object,
+    postNumber: Number
   },
   components: {
     DoodleVideo,
