@@ -13,7 +13,7 @@ ExplainMIT is a website where helping one person is no different than helping ev
 ## How to contribute
 1. Choose a task on [Trello](https://trello.com/b/2VdWvqBJ/explainmit) such as "Fix bug X" 
 2. Create a new branch called X 
-3. Use the [documentation](/documentation) folder on this repository and collaborate with us on [Discord](https://discord.gg/dypDkaq) and [ExplainMIT] (https://explain.mit.edu/ExplainMIT%20Team/questions)
+3. Use the [documentation](/documentation) folder on this repository and collaborate with us on [Discord](https://discord.gg/dypDkaq) and [ExplainMIT](https://explain.mit.edu/ExplainMIT%20Team/questions)
 3. When you finish coding, create a Pull Request and await a code review
 4. Voila!
 
