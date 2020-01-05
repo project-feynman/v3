@@ -1,5 +1,5 @@
 <template>
-   <v-card :width="getFullWidth()">
+  <div id="view-post">
     <v-col cols="12" class="pb-0">
       <v-textarea
         readonly
@@ -13,7 +13,7 @@
       <v-col cols="12" class="pt-0">
         <RenderlessFetchStrokes :whiteboardID="question.blackboardID" :hasSubcollection="false">
           <template slot-scope="{ strokes }">
-            <DoodleVideo 
+            <DoodleVideo
               v-if="strokes"
               :strokes="strokes"
               canvasID="2"
@@ -23,12 +23,12 @@
         </RenderlessFetchStrokes>
       </v-col>
     </v-row>
-  </v-card>
+  </div>
 </template>
 
 <script>
-import DoodleVideo from "@/components/DoodleVideo.vue"
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
+import DoodleVideo from "@/components/DoodleVideo.vue";
+import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue";
 
 export default {
   props: {
@@ -39,10 +39,10 @@ export default {
     RenderlessFetchStrokes
   },
   methods: {
-    getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300 
-      return window.innerWidth - 500 
+    getFullWidth() {
+      // sidenav's width = 200, BaseList's width = 300
+      return window.innerWidth - 500;
     }
   }
-}
+};
 </script>
