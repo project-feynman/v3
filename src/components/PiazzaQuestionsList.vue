@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import db from "@/database.js";
+import db from "@/database.js"
 
 export default {
   props: {
@@ -41,10 +41,10 @@ export default {
     index: 0 // gets filled up with Numbers e.g. [1, 2]
   }),
   methods: {
-    getFullHeight() {
+    getFullHeight () {
       // 48 is the height of the  navbar
-      return window.innerHeight - 48;
+      return window.innerHeight - 48 
     }
   }
-};
+}
 </script>

@@ -1,15 +1,15 @@
 <template>
   <v-app>
     <template v-if="$route.path != '/'">
-      <TheSideDrawer v-model="drawer" />
+      <TheSideDrawer v-model="drawer"/>
     </template>
     <!-- RouterView "becomes" different components depending on the URL, and is specified in main.js -->
-    <RouterView />
+    <RouterView/>
   </v-app>
 </template>
 
 <script>
-import TheSideDrawer from "@/components/TheSideDrawer.vue";
+import TheSideDrawer from "@/components/TheSideDrawer.vue"
 
 export default {
   components: {
@@ -18,10 +18,10 @@ export default {
   data: () => ({
     drawer: true
   }),
-  created() {
+  created () {
     this.$root.$on("toggle-drawer", () => {
-      this.drawer = !this.drawer;
-    });
+      this.drawer = !this.drawer
+    })
   }
-};
+}
 </script>
