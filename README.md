@@ -10,11 +10,18 @@ Help is a scarce resource. Office Hours can have long help queues. Piazza's resp
 **Solution**
 ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. 
 
-## Current contributors
-Current Team (photos incoming):
-Harry Liu, Prabhakar Kafle, Lujing Cen, Samir Droubi, Winston Fey, Elton Lin,
+## Contributions
+For those interested to contribute, please read [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 
-## Past contributors
+**Current contributors** (photos incoming)
+- Harry Liu 
+- Prabhakar Kafle
+- Lujing Cen
+- Samir Droubi
+- Winston Fey
+- Elton Lin
+
+**Past contributors**
 - Hubert Wasilewski was the backend engineer back in the early days 
 - Tony Wang built the slider for traversing any video freely 
 - Yang Yang worked on email notifications
