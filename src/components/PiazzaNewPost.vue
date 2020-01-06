@@ -1,6 +1,6 @@
 <!-- Offer the user a text area + blackboard to create a Q or A -->
 <template>
-  <div>
+  <div class="new-post">
     <v-textarea
       outlined
       :label="postType"
@@ -58,10 +58,10 @@ export default {
     addBoardImage (boardImage) {
       this.$emit('board-image', boardImage)
     },
-    getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300 
-      return window.innerWidth - 500 
+    getFullWidth() {
+      // sidenav's width = 200, BaseList's width = 300
+      return window.innerWidth - 500;
     }
   }
-}
+};
 </script>

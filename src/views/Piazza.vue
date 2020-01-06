@@ -1,14 +1,17 @@
 <template>
   <div>
-    <BaseAppBar/>
+    <BaseAppBar :icon="viewingPost && isMobile ? 'back' : undefined" @icon-click="backToList()" />
     <v-content>
-      <div class="d-flex">
-        <PiazzaQuestionsList
-          :questions="questions"
-          @question-create="handleQuestionCreate()"
-          @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
-        />
-        <v-card :width="getFullWidth()">
+      <v-container fluid class="py-0" ref="main">
+        <v-col id="piazza-question-list" cols="12" sm="auto" ref="questions" :class="(viewingPost?'d-none':'d-block')+' d-sm-block'">
+          <PiazzaQuestionsList
+            :questions="questions"
+            @question-create="handleQuestionCreate()"
+            @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
+          />
+        </v-col>
+        <v-col id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(viewingPost?'d-block':'d-none')+' d-sm-block'">
+          <v-card class="py-3 px-3 mx-auto" style="max-width:1000px;">
           <template v-if="isAddingNewQuestion">
             <PiazzaNewPost 
               postType="question" 
@@ -37,7 +40,7 @@
             />
           </template>
         </v-card>
-      </div>
+      </v-container>
     </v-content>
   </div>
 </template>
@@ -73,7 +76,10 @@ export default {
     questions: [],
     answers: [],
     boardStrokes: [],
-    whiteBoardImage: ""
+    whiteBoardImage: "",
+    boardStrokes: [],
+    viewingPost: false,
+    isMobile: window.innerWidth < 600
   }),
   computed: {
     user: () => this.$store.state.user,
@@ -87,16 +93,21 @@ export default {
       return db.collection("classes").doc(classID).collection("questions").doc(questionID).collection("answers")
     }
   },
-  async created () {
-    this.fetchQuestions()
+  async created() {
+    this.fetchQuestions();
+  },
+  mounted() {
+    this.setQuestionsHeight();
+    window.addEventListener("resize", this.setQuestionsHeight);
+    window.addEventListener("orientationchange", this.setQuestionsHeight);
   },
   methods: {
     async fetchQuestions () {
       this.questions = []
       let questionDocs = await this.questionsRef.get()
       questionDocs.forEach(doc => {
-        this.questions.push({".key": doc.id, ...doc.data()})
-      })
+        this.questions.push({ ".key": doc.id, ...doc.data() });
+      });
     },
     async fetchAnswers () {
       this.answers = [] 
@@ -108,12 +119,14 @@ export default {
     handleQuestionCreate () {
       this.isAddingNewQuestion = true
       this.currentQuestion = {}
+      this.viewingPost = true
     },
     handleQuestionClick (clickedQuestion) {
       this.currentQuestion = clickedQuestion
       this.isAddingNewQuestion = false 
       this.fetchAnswers()
       this.boardStrokes = [] 
+      this.viewingPost = true
     },
     addBoardImage (boardImage) {
       alert(boardImage)
@@ -162,7 +175,15 @@ export default {
     getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300
       return window.innerWidth - 500
-    }
+    },
+    setQuestionsHeight() {
+      var topOffset = this.$refs.main.getBoundingClientRect();
+      this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
+      this.isMobile = window.innerWidth < 600;
+    },	 
+    backToList() {
+       this.viewingPost = false;
+    }	    
     // allowedToUpvote ({ usersWhoUpvoted }) {
     //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
     // },
@@ -177,5 +198,21 @@ export default {
     //   this.fetchQuestions()
     // },
   }
-}
+};
 </script>
+<style>
+#piazza-question-list {
+  padding: 0;
+}
+@media (min-width: 600px) {
+  #piazza-question-list {
+    position: sticky;
+    top: 48px;
+    left: 0;
+    height: 100%;
+    overflow: auto;
+    width: 30%;
+    max-width: 300px;
+  }
+}
+</style>
