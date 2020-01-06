@@ -1,22 +1,24 @@
+<!-- Given a post, display its text and its blackboard -->
 <template>
-  <div id="view-post">
+  <div>
     <v-col cols="12" class="pb-0">
       <v-textarea
+        class="pa-2"
         readonly
-        disabled
         name="input-7-4"
-        label="Question"
-        :value="question.description"
+        :value="post.description"
       />
     </v-col>
     <v-row>
-      <v-col cols="12" class="pt-0">
-        <RenderlessFetchStrokes :whiteboardID="question.blackboardID" :hasSubcollection="false">
+      <v-col cols="12" class="pb-0">
+        <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
           <template slot-scope="{ strokes }">
-            <DoodleVideo
-              v-if="strokes"
+            <!-- length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) -->
+            <DoodleVideo 
+              v-if="strokes.length !== 0"
               :strokes="strokes"
-              canvasID="2"
+              :canvasID="`${postNumber}`"
+              :height="`${getFullWidth() * 9/16}`"
               @animation-loaded="hasFetchedVideos = true"
             />
           </template>
@@ -32,7 +34,8 @@ import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue";
 
 export default {
   props: {
-    question: Object
+    post: Object,
+    postNumber: Number
   },
   components: {
     DoodleVideo,

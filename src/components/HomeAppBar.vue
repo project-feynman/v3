@@ -16,8 +16,10 @@
 
     <!-- NAVBAR  -->
     <v-app-bar app color="white" elevate-on-scroll>
-      <img class="home-logo" src="favicon.ico" />
-      <v-toolbar-title class="home-logo headline font-weight-regular ml-2">ExplainMIT</v-toolbar-title>
+      <img class="home-logo" src="/favicon.ico">
+      <v-toolbar-title class="home-logo headline font-weight-regular ml-2">
+        ExplainMIT
+      </v-toolbar-title>
 
       <v-spacer></v-spacer>
 

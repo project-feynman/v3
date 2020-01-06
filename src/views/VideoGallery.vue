@@ -1,8 +1,6 @@
 <template>
   <div>
-    <!-- APP BAR -->
     <BaseAppBar :loading="!hasFetchedVideos"/>
-
     <v-content>
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
@@ -57,8 +55,8 @@
                           <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text color="secondary" class="subtitle-2">
                             EDIT
                           </v-btn>
-                       
                         </template>
+
                         <template v-slot:card-actions-editing>
                           <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
                             DELETE
