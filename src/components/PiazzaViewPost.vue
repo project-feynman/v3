@@ -1,6 +1,6 @@
 <!-- Given a post, display its text and its blackboard -->
 <template>
-  <div>
+  <div id="view-post">
     <v-textarea
       class="pa-2"
       readonly

@@ -1,10 +1,9 @@
 <template>
   <v-app-bar app clipped-left color="white" dense>
-    <v-app-bar-nav-icon 
-      @click.stop="$root.$emit('toggle-drawer')"
-    />
+    <v-app-bar-nav-icon v-if="!this.icon" @click.stop="$root.$emit('toggle-drawer')" />
+    <v-icon v-else-if="this.icon==='back'" @click="$emit('icon-click')" x-large>mdi-chevron-left</v-icon>
 
-    <img class="home-logo" src="favicon.ico" @click="$router.push('/')">
+    <img class="home-logo" src="/favicon.ico" @click="$router.push('/')">
 
     <v-toolbar-title class="home-logo headline font-weight-regular ml-2" @click="$router.push('/')">
       ExplainMIT/{{ $route.params.class_id }}
@@ -30,6 +29,7 @@
 export default {
   props: {
     loading: Boolean,
+    icon: String,
     default () {
       return false 
     }

@@ -1,43 +1,49 @@
 <template>
   <div>
-    <BaseAppBar/>
+    <BaseAppBar :icon="viewingPost && isMobile ? 'back' : undefined" @icon-click="backToList()" />
     <v-content>
-      <div class="d-flex">
-        <PiazzaQuestionsList
-          :questions="questions"
-          @question-create="handleQuestionCreate()"
-          @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
-        />
-        <v-card :width="getFullWidth()">
-          <template v-if="isAddingNewQuestion">
-            <PiazzaNewPost 
-              postType="question" 
-              :boardStrokes="boardStrokes"
-              @board-image="boardImage => addBoardImage(boardImage)"
-              @new-stroke="stroke => boardStrokes.push(stroke)"
-              @board-wipe="boardStrokes = []"
-              @post-submit="question => submitPost(question, questionsRef)"
+      <v-container fluid class="py-0" ref="main">
+        <v-row>
+          <v-col id="piazza-question-list" cols="12" sm="auto" ref="questions" :class="(viewingPost?'d-none':'d-block')+' d-sm-block'">
+            <PiazzaQuestionsList
+              :questions="questions"
+              @question-create="handleQuestionCreate()"
+              @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
             />
-          </template>
-          <template v-else>
-            <PiazzaViewPost :post="currentQuestion"/>
-            <PiazzaViewPost 
-              v-for="(answer, i) in answers" 
-              :key="answer['.key']"
-              :post="answer" 
-              :postNumber="i"
-            />
-            <PiazzaNewPost
-              postType="answer"
-              :boardStrokes="boardStrokes"
-              @board-wipe="boardStrokes = []"
-              @post-submit="answer => submitPost(answer, answersRef)"
-              @board-image="boardImage => addBoardImage(boardImage)"
-              @new-stroke="stroke => boardStrokes.push(stroke)"
-            />
-          </template>
-        </v-card>
-      </div>
+          </v-col>
+          <v-col id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(viewingPost?'d-block':'d-none')+' d-sm-block'">
+            <v-card class="py-3 px-3 mx-auto" style="max-width:1000px;">
+              <template v-if="isAddingNewQuestion">
+                <PiazzaNewPost 
+                  postType="question" 
+                  :boardStrokes="boardStrokes"
+                  @board-image="boardImage => addBoardImage(boardImage)"
+                  @new-stroke="stroke => boardStrokes.push(stroke)"
+                  @board-wipe="boardStrokes = []"
+                  @post-submit="question => submitPost(question, questionsRef)"
+                />
+              </template>
+              <template v-else>
+                <PiazzaViewPost :post="currentQuestion"/>
+                <PiazzaViewPost 
+                  v-for="(answer, i) in answers" 
+                  :key="answer['.key']"
+                  :post="answer" 
+                  :postNumber="i"
+                />
+                <PiazzaNewPost
+                  postType="answer"
+                  :boardStrokes="boardStrokes"
+                  @board-wipe="boardStrokes = []"
+                  @post-submit="answer => submitPost(answer, answersRef)"
+                  @board-image="boardImage => addBoardImage(boardImage)"
+                  @new-stroke="stroke => boardStrokes.push(stroke)"
+                />
+              </template>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
     </v-content>
   </div>
 </template>
@@ -73,7 +79,9 @@ export default {
     questions: [],
     answers: [],
     boardStrokes: [],
-    whiteBoardImage: ""
+    whiteBoardImage: "",
+    viewingPost: false,
+    isMobile: window.innerWidth < 600
   }),
   computed: {
     user: () => this.$store.state.user,
@@ -89,6 +97,11 @@ export default {
   },
   async created () {
     this.fetchQuestions()
+  },
+  mounted() {
+    this.setQuestionsHeight();
+    window.addEventListener("resize", this.setQuestionsHeight);
+    window.addEventListener("orientationchange", this.setQuestionsHeight);
   },
   methods: {
     async fetchQuestions () {
@@ -108,12 +121,14 @@ export default {
     handleQuestionCreate () {
       this.isAddingNewQuestion = true
       this.currentQuestion = {}
+      this.viewingPost = true
     },
     handleQuestionClick (clickedQuestion) {
       this.currentQuestion = clickedQuestion
       this.isAddingNewQuestion = false 
       this.fetchAnswers()
-      this.boardStrokes = [] 
+      this.boardStrokes = []
+      this.viewingPost = true
     },
     addBoardImage (boardImage) {
       alert(boardImage)
@@ -160,9 +175,16 @@ export default {
       this.fetchQuestions()
     },
     getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300
-      return window.innerWidth - 500
-    }
+      return window.innerWidth
+    },
+    backToList() {
+      this.viewingPost = false;
+    },
+    setQuestionsHeight() {
+      var topOffset = this.$refs.main.getBoundingClientRect();
+      this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
+      this.isMobile = window.innerWidth < 600;
+    },
     // allowedToUpvote ({ usersWhoUpvoted }) {
     //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
     // },
@@ -179,3 +201,20 @@ export default {
   }
 }
 </script>
+
+<style>
+#piazza-question-list {
+  padding: 0;
+}
+@media (min-width: 600px) {
+  #piazza-question-list {
+    position: sticky;
+    top: 48px;
+    left: 0;
+    height: 100%;
+    overflow: auto;
+    width: 30%;
+    max-width: 300px;
+  }
+}
+</style> 

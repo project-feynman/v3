@@ -1,6 +1,6 @@
 <template>
-  <v-card max-width="250" class="ml-0">
-    <v-list two-line class="overflow-y-auto" :style="`max-height: ${getFullHeight()}px`">
+  <v-card class="ml-0">
+    <v-list two-line>
       <v-list-item-group v-model="index" active-class="pink--text">
         <!-- NEW QUESTION -->
         <v-list-item @click="$emit('question-create')">

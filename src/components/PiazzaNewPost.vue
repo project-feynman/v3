@@ -1,6 +1,6 @@
 <!-- Offer the user a text area + blackboard to create a Q or A -->
 <template>
-  <div>
+  <div class="new-post">
     <v-textarea
       outlined
       :label="postType"
