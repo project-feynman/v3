@@ -181,8 +181,10 @@ export default {
       this.viewingPost = false;
     },
     setQuestionsHeight() {
-      var topOffset = this.$refs.main.getBoundingClientRect();
-      this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
+      if (this.$refs.main) {
+        var topOffset = this.$refs.main.getBoundingClientRect();
+        this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
+      }
       this.isMobile = window.innerWidth < 600;
     },
     // allowedToUpvote ({ usersWhoUpvoted }) {

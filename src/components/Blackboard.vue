@@ -448,12 +448,12 @@ export default {
         var e = event;
 
       if (e.offsetX) {
-        this.mouseX = e.offsetX - this.canvas.getBoundingClientRect().left - window.scrollX;
-        this.mouseY = e.offsetY - this.canvas.getBoundingClientRect().top - window.scrollY;
+        this.mouseX = e.offsetX - window.scrollX;
+        this.mouseY = e.offsetY - window.scrollY;
       }
       else if (e.layerX) {
-        this.mouseX = e.layerX - this.canvas.getBoundingClientRect().left - window.scrollX;
-        this.mouseY = e.layerY - this.canvas.getBoundingClientRect().top - window.scrollY;
+        this.mouseX = e.layerX - window.scrollX;
+        this.mouseY = e.layerY - window.scrollY;
       }
     },
     // --- END Mouse Drawing --- // 
