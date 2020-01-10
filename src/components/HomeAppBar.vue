@@ -89,28 +89,15 @@ export default {
     ...mapState(["user", "isFetchingUser"]),
     classID () {
       return this.$route.params.class_id
-    },
-     isGallery () {
-      const path = this.$route.path
-      const pathParts = path.split('/')
-      return pathParts[2] == "gallery"
     }
   },
   data () {
     return {
       loginPopup: false,
       newClassPopup: false,
-      showNavbar: true,
-      prevClassID: '',
-      workspaces: [],
-      explanations: [],
-      isExplanationPage: false,
-      drawerOpen: false,
-      loadingAnimation: true,
       snackbar: false,
       snackbarMessage: '',
       menu: false,
-      showTabs: false
     }
   },
   methods: {
@@ -144,9 +131,6 @@ export default {
           this.snackbarMessage = error.message
           this.snackbar = true 
         })
-    },
-    handleSignIn () {
-      this.loginPopup = true
     },
     signOut () {
       firebase.auth().signOut()

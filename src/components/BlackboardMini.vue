@@ -130,7 +130,7 @@ export default {
     }
   },
   created () {
-    this.setImageUpload()
+    // this.setImageUpload()
   },
   data () {
     return {
