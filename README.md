@@ -14,6 +14,7 @@ ExplainMIT is a website where helping one person is no different than helping ev
 For those interested to contribute, please read [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 
 **Current contributors** (photos incoming)
+We're a student organization. Our primary goal is to help make learning fun and efficient at MIT. If we succeed, we will consider expanding to other universities as a startup. 
 - Harry Liu 
 - Prabhakar Kafle
 - Lujing Cen
