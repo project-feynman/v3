@@ -11,7 +11,7 @@ Help is a scarce resource. Office Hours can have long help queues. Piazza's resp
 ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. 
 
 ## Contributions
-For those interested to contribute, please read [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
+Our stack is Vue, Vuetify and Firebase. For those interested to contribute, please read [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 
 **Current contributors** (photos incoming)
 We're a student organization. Our primary goal is to help make learning fun and efficient at MIT. If we succeed, we will consider expanding to other universities as a startup. 
