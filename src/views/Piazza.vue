@@ -1,6 +1,9 @@
 <template>
   <div>
-    <BaseAppBar :icon="viewingPost && isMobile ? 'back' : undefined" @icon-click="backToList()" />
+    <BaseAppBar :icon="viewingPost && isMobile ? 'back' : undefined" @icon-click="backToList()">
+      <!-- <v-btn v-if="user" @click="joinClass()">JOIN CLASS</v-btn>
+      <v-btn v-else>SIGN IN</v-btn> -->
+    </BaseAppBar>
     <v-content>
       <v-container fluid class="py-0" ref="main">
         <v-row>
@@ -84,7 +87,9 @@ export default {
     isMobile: window.innerWidth < 600
   }),
   computed: {
-    user: () => this.$store.state.user,
+    user () {
+      return this.$store.state.user
+    },
     questionsRef () {
       const classID = this.$route.params.class_id
       return db.collection("classes").doc(classID).collection("questions")
@@ -187,6 +192,14 @@ export default {
       }
       this.isMobile = window.innerWidth < 600;
     },
+    // async joinClass () {
+    //   const classID = this.$route.params.class_id
+    //   const ref = db.collection("users").doc(this.user.uid) 
+    //   await ref.update({
+    //     enrolledClasses: firebase.firestore.FieldValue.arrayUnion({classID: "notify_always"})
+    //   })
+    //   settimeout(() => console.log("this.user =", this.user), 2000)
+    // },
     // allowedToUpvote ({ usersWhoUpvoted }) {
     //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
     // },
