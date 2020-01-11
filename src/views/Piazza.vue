@@ -1,9 +1,9 @@
 <template>
   <div>
-    <BaseAppBar :icon="viewingPost && isMobile ? 'back' : undefined" @icon-click="backToList()">
-      <!-- <v-btn v-if="user" @click="joinClass()">JOIN CLASS</v-btn>
-      <v-btn v-else>SIGN IN</v-btn> -->
-    </BaseAppBar>
+    <BaseAppBar 
+      :icon="viewingPost && isMobile ? 'back' : undefined" 
+      @icon-click="backToList()" 
+    />
     <v-content>
       <v-container fluid class="py-0" ref="main">
         <v-row>
@@ -19,28 +19,19 @@
               <template v-if="isAddingNewQuestion">
                 <PiazzaNewPost 
                   postType="question" 
-                  :boardStrokes="boardStrokes"
-                  @board-image="boardImage => addBoardImage(boardImage)"
-                  @new-stroke="stroke => boardStrokes.push(stroke)"
-                  @board-wipe="boardStrokes = []"
                   @post-submit="question => submitPost(question, questionsRef)"
                 />
               </template>
               <template v-else>
                 <PiazzaViewPost :post="currentQuestion"/>
                 <PiazzaViewPost 
-                  v-for="(answer, i) in answers" 
-                  :key="answer['.key']"
+                  v-for="(answer, i) in answers" :key="answer['.key']"
                   :post="answer" 
                   :postNumber="i"
                 />
                 <PiazzaNewPost
                   postType="answer"
-                  :boardStrokes="boardStrokes"
-                  @board-wipe="boardStrokes = []"
                   @post-submit="answer => submitPost(answer, answersRef)"
-                  @board-image="boardImage => addBoardImage(boardImage)"
-                  @new-stroke="stroke => boardStrokes.push(stroke)"
                 />
               </template>
             </v-card>
@@ -130,28 +121,29 @@ export default {
     },
     handleQuestionClick (clickedQuestion) {
       this.currentQuestion = clickedQuestion
-      this.isAddingNewQuestion = false 
       this.fetchAnswers()
-      this.boardStrokes = []
+      this.isAddingNewQuestion = false 
       this.viewingPost = true
     },
-    addBoardImage (boardImage) {
-      alert(boardImage)
-      this.whiteBoardImage = boardImage
-    },
-    async submitPost ({ title, description, blackboardID, date }, ref) {
-      alert(this.whiteBoardImage)
-      await db.collection("whiteboards").doc(blackboardID).set({
-        strokes: this.boardStrokes, 
-        image: this.whiteBoardImage
+    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioObj }, ref) {
+      db.collection("whiteboards").doc(blackboardID).set({
+        strokes: boardStrokes,
+        // image: this.whiteBoardImage
       })
-      await ref.add({
+      const postObj = {
         title,
         description,
         blackboardID,
         date,
         usersWhoUpvoted: []
-      })
+      }
+      if (audioObj) {
+        postObj.audioPath = audioObj.path
+        postObj.audioURL = audioObj.url
+      }
+      console.log("postObj =", postObj)
+      await ref.add(postObj)
+      this.fetchQuestions()
       // trigger email notification
       let inquisitorID = this.user ? this.user.uid : "";
       let classID = this.$route.params.class_id;
@@ -159,20 +151,18 @@ export default {
       let question;
       try {
          question = await this.questionService.askQuestion({
-          inquisitorID: inquisitorID,
-          classID: classID,
+          title,
           questionDescription: description,
           videoID: blackboardID,
+          date,
+          usersWhoUpvoted: [],
+          inquisitorID: inquisitorID,
+          classID,
         });
       } catch (error) {
         console.log(error)
       }
-      console.log(question);
-      
-      // reset/update variables
-      this.boardStrokes = [] 
-      // TODO: clear canvas 
-      this.fetchQuestions()
+      // TODO: reset/update variables
     },
     async deleteQuestion ({ ".key": questionID }) {
       const ref = this.questionsRef.doc(questionID)
