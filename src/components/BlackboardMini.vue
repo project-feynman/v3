@@ -61,14 +61,11 @@
     <!-- "@start-recording" is necessary because the audio-recorder can't 
     start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
     null-->
-    <audio-recorder
-      v-if="whiteboardDoc"
+    <AudioRecorderMini
       v-show="false"
       ref="audio-recorder"
-      :audioURL="whiteboardDoc.audioURL"
-      :audioPath="whiteboardDoc.audioPath"
       @start-recording="isRecording = true"
-      @file-uploaded="audio => $emit('new-audio', audio)"
+      @file-uploaded="audioObj => this.audioObj = audioObj"
     />
   </div>
 </template>
@@ -83,6 +80,7 @@ import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
 import AudioRecorder from '@/components/AudioRecorder.vue'
+import AudioRecorderMini from "@/components/AudioRecorderMini.vue"
 import BaseAppBar from "@/components/BaseAppBar.vue"
 
 export default {
@@ -90,7 +88,7 @@ export default {
     hideToolbar: Boolean
   },
   components: {
-    AudioRecorder,
+    AudioRecorderMini,
     Swatches,
     BaseAppBar
   },
@@ -118,13 +116,11 @@ export default {
       }
     }
   },
-  created () {
-    // this.setImageUpload()
-  },
   data () {
     return {
       allStrokes: [],
       currentState: "",
+      audioObj: {},
       recordingStateEnum: {
         PRE_RECORDING: "pre-recording",
         MID_RECORDING: "mid-recording",

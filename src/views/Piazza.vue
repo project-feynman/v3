@@ -125,19 +125,24 @@ export default {
       this.isAddingNewQuestion = false 
       this.viewingPost = true
     },
-    async submitPost ({ title, description, blackboardID, boardStrokes, date }, ref) {
-      console.log("boardStrokes =", boardStrokes)
+    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioObj }, ref) {
       db.collection("whiteboards").doc(blackboardID).set({
         strokes: boardStrokes,
         // image: this.whiteBoardImage
       })
-      await ref.add({
+      const postObj = {
         title,
         description,
         blackboardID,
         date,
         usersWhoUpvoted: []
-      })
+      }
+      if (audioObj) {
+        postObj.audioPath = audioObj.path
+        postObj.audioURL = audioObj.url
+      }
+      console.log("postObj =", postObj)
+      await ref.add(postObj)
       this.fetchQuestions()
       // trigger email notification
       let inquisitorID = this.user ? this.user.uid : "";
@@ -146,15 +151,17 @@ export default {
       let question;
       try {
          question = await this.questionService.askQuestion({
-          inquisitorID: inquisitorID,
-          classID: classID,
+          title,
           questionDescription: description,
           videoID: blackboardID,
+          date,
+          usersWhoUpvoted: [],
+          inquisitorID: inquisitorID,
+          classID,
         });
       } catch (error) {
         console.log(error)
       }
-      console.log(question);
       // TODO: reset/update variables
     },
     async deleteQuestion ({ ".key": questionID }) {

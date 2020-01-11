@@ -26,7 +26,6 @@ import BlackboardMini from "@/components/BlackboardMini.vue"
 export default {
   props: {
     postType: String, // either "question" or "answer"
-    audioObj: Object
   },
   components: {
     BlackboardMini
@@ -39,12 +38,17 @@ export default {
       const BlackboardMini = this.$refs["blackboard-mini"]
       event.preventDefault()
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      console.log("audio =", BlackboardMini.audioObj)
+
       // blackboard object 
       const post = { title: "No title yet", 
                      description: this.postDescription, 
                      blackboardID,
                      boardStrokes: BlackboardMini.allStrokes,
                      date: this.getDate() }
+      if (BlackboardMini.audioObj != {}) {
+        post.audioObj = BlackboardMini.audioObj
+      }
       this.$emit('post-submit', post)
       // reset 
       this.postDescription = ""
