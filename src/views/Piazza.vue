@@ -182,6 +182,14 @@ export default {
       }
       this.isMobile = window.innerWidth < 600;
     },
+    // async joinClass () {
+    //   const classID = this.$route.params.class_id
+    //   const ref = db.collection("users").doc(this.user.uid) 
+    //   await ref.update({
+    //     enrolledClasses: firebase.firestore.FieldValue.arrayUnion({classID: "notify_always"})
+    //   })
+    //   settimeout(() => console.log("this.user =", this.user), 2000)
+    // },
     // allowedToUpvote ({ usersWhoUpvoted }) {
     //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
     // },
