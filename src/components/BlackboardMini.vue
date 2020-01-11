@@ -1,5 +1,5 @@
 <template>
-  <div id="whiteboard">
+  <v-card id="whiteboard" outlined>
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -9,47 +9,68 @@
     </v-snackbar>
 
       <!-- APP BAR -->
-      <v-app-bar dense>
+      <v-app-bar dense color="#eee" elevation="1">
         <template v-if="currentState != recordingStateEnum.POST_RECORDING">
-          <swatches 
-            v-model="color"
-            :colors="colors"
-            :show-border="true"
-            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-            inline
-            background-color="rgba(0, 0, 0, 0)"
-            swatch-size="40"
-          />
-          <v-btn 
-            v-if="!isRecording"
-            @click="wipeBoard()"
-            color="red darken-2 white--text"
-          >
-            CLEAR
-            <v-icon dark right>clear</v-icon>
-          </v-btn>
-          <template v-if="!isRecording">
-            <v-btn @click="startRecording()" color="pink white--text" dark>
-              RECORD
-              <v-icon dark right>fiber_manual_record</v-icon>
-            </v-btn>
-          </template>
-          <v-btn v-else @click="stopRecording()" color="pink white--text">
-            STOP VIDEO
-          </v-btn>
-          <v-btn 
-            @click="setImage()"
-            color="green white--text"
-          >
-            BACKGROUND
-          <input
-            @change="handleImage"
-            id="whiteboard-bg-input"
-            name="whiteboard-bg"
-            type="file"
-            style="display: none;"
-          />
-          </v-btn>
+          <v-container class="py-1 px-0">
+            <v-row align="center" justify="space-between">
+              <v-col class="py-0">
+                <v-row justify="start" align="center">
+                  <v-col class="py-0" cols="auto">
+                    <swatches 
+                      v-model="color"
+                      :colors="colors"
+                      :show-border="true"
+                      :wrapper-style="{ padding:'0px' }"
+                      :swatch-style="{margin:'4px 5px 0', borderRadius:'50%'}"
+                      inline
+                      background-color="rgba(0, 0, 0, 0)"
+                      swatch-size="32"
+                    />
+                  </v-col>
+                  <v-col class="py-0 px-0" cols="auto">
+                    <v-btn 
+                      @click="setImage()"
+                      outlined
+                      color="accent"
+                      class="mx-2"
+                    >
+                      BACKGROUND
+                    <input
+                      @change="handleImage"
+                      id="whiteboard-bg-input"
+                      name="whiteboard-bg"
+                      type="file"
+                      style="display: none;"
+                    />
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-col>
+              <v-col cols="auto" class="py-0 px-0">
+                <template v-if="!isRecording">
+                  <v-btn @click="startRecording()" 
+                  color="accent lighten-1"
+                  class="mx-2">
+                    RECORD
+                    <v-icon dark right>fiber_manual_record</v-icon>
+                  </v-btn>
+                </template>
+                <v-btn v-else @click="stopRecording()" color="pink white--text">
+                  STOP VIDEO
+                </v-btn>
+                <v-btn 
+                  v-if="!isRecording"
+                  @click="wipeBoard()"
+                  outlined
+                  color="red"
+                  class="mx-2"
+                >
+                  CLEAR
+                  <v-icon dark right>clear</v-icon>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-container>
         </template>
         <template v-else>
           <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
@@ -79,7 +100,7 @@
         @file-uploaded="audio => saveFileReference(audio)"
       />
 
-  </div>
+  </v-card>
 </template>
 
 <script>
@@ -199,7 +220,7 @@ export default {
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
           this.initTouchEvents()
-          // this.initMouseEvents()
+          this.initMouseEvents()
         }
       }
     },
@@ -211,7 +232,7 @@ export default {
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
-    // this.initMouseEvents()
+    this.initMouseEvents()
     // USE THIS TO ENSURE THE BLACKBOARD SCALES CORRECTLY
     // this.$root.$on("side-nav-toggled", sideNavOpened => {
     //   if (sideNavOpened) {
@@ -412,7 +433,7 @@ export default {
         this.getMousePos(e);
         this.convertAndSavePoint(this.mouseX, this.mouseY);
         this.drawToPoint(this.mouseX, this.mouseY);
-        event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
+        e.preventDefault() // this line improves drawing performance for Microsoft Surfaces
       }
     },
 
@@ -421,13 +442,16 @@ export default {
         var e = event;
 
       if (e.offsetX) {
-        this.mouseX = e.offsetX - this.canvas.getBoundingClientRect().left - window.scrollX;
-        this.mouseY = e.offsetY - this.canvas.getBoundingClientRect().top - window.scrollY;
+        this.mouseX = e.offsetX;
+        this.mouseY = e.offsetY;
       }
       else if (e.layerX) {
-        this.mouseX = e.layerX - this.canvas.getBoundingClientRect().left - window.scrollX;
-        this.mouseY = e.layerY - this.canvas.getBoundingClientRect().top - window.scrollY;
+        this.mouseX = e.layerX;
+        this.mouseY = e.layerY;
       }
+      var c = document.getElementById('myCanvas');
+      var pixelData = this.canvas.getContext('2d').getImageData(e.offsetX, e.offsetY, 1, 1).data;
+      console.log(pixelData)
     },
     // --- END Mouse Drawing --- // 
 

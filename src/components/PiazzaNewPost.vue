@@ -1,24 +1,30 @@
 <!-- Offer the user a text area + blackboard to create a Q or A -->
 <template>
-  <div class="new-post">
-    <v-textarea
-      outlined
-      :label="postType"
-      :placeholder="`Type ${postType} here...`"
-      v-model="newPost"
-      class="mt-2"
-    />
-    <div :style="`height: ${getFullWidth() * 9/16}px; position: relative`" >
-      <BlackboardMini 
-        :allStrokes="boardStrokes" 
-        :height="`${getFullWidth() * 9/16}`"
-        @board-image="addBoardImage"
-        @new-stroke="stroke => $emit('new-stroke', stroke)"
-        @board-wipe="$emit('board-wipe')"
+  <div id="new-post">
+    <v-banner single-line sticky class="post-header container py-0" tag="header">
+      <h3>New Question</h3>
+      <template v-slot:actions>
+        <v-btn @click="submitPost()" color="accent">Post <v-icon small class="pl-2">send</v-icon></v-btn>
+      </template>
+    </v-banner>
+    <v-container tag="section" class="py-5">
+      <v-textarea
+        filled
+        :label="postType"
+        :placeholder="`Type ${postType} here...`"
+        v-model="newPost"
       />
-      <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
-    </div>
-    <v-btn @click="submitPost()" block color="secondary" dark>Submit {{ postType }}</v-btn>
+      <div :style="`height: ${getFullWidth() * 9/16}px; position: relative`" >
+        <BlackboardMini 
+          :allStrokes="boardStrokes" 
+          :height="`${getFullWidth() * 9/16}`"
+          @board-image="addBoardImage"
+          @new-stroke="stroke => $emit('new-stroke', stroke)"
+          @board-wipe="$emit('board-wipe')"
+        />
+        <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
+      </div>
+    </v-container>
   </div>
 </template>
 
@@ -65,3 +71,9 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .post-header {
+    background: linear-gradient(#eee,#fff);
+    box-shadow: 0 5px 5px rgba(0,0,0,0.15);
+  }
+</style>

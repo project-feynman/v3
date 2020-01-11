@@ -15,10 +15,10 @@
             />
           </v-col>
           <v-col id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(viewingPost?'d-block':'d-none')+' d-sm-block'">
-            <v-card class="py-3 px-3 mx-auto" style="max-width:1000px;">
+            <v-card class="mx-auto elevation-6" style="max-width:1000px;">
               <template v-if="isAddingNewQuestion">
                 <PiazzaNewPost 
-                  postType="question" 
+                  postType="Question" 
                   :boardStrokes="boardStrokes"
                   @board-image="boardImage => addBoardImage(boardImage)"
                   @new-stroke="stroke => boardStrokes.push(stroke)"
