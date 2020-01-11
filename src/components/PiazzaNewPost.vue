@@ -5,20 +5,17 @@
       outlined
       :label="postType"
       :placeholder="`Type ${postType} here...`"
-      v-model="newPost"
+      v-model="postDescription"
       class="mt-2"
     />
+    <!-- for some reason the below div is necessary to deal with resizing edge cases -->
     <div :style="`height: ${getFullWidth() * 9/16}px; position: relative`" >
-      <BlackboardMini 
-        :allStrokes="boardStrokes" 
-        :height="`${getFullWidth() * 9/16}`"
-        @board-image="addBoardImage"
-        @new-stroke="stroke => $emit('new-stroke', stroke)"
-        @board-wipe="$emit('board-wipe')"
-      />
+      <BlackboardMini ref="blackboard-mini"/>
       <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
     </div>
-    <v-btn @click="submitPost()" block color="secondary" dark>Submit {{ postType }}</v-btn>
+    <v-btn @click.prevent="submitPost()" block color="secondary" dark class="mt-5">
+      Submit {{ postType }}
+    </v-btn>
   </div>
 </template>
 
@@ -28,25 +25,30 @@ import BlackboardMini from "@/components/BlackboardMini.vue"
 
 export default {
   props: {
-    boardStrokes: Array,
     postType: String, // either "question" or "answer"
+    audioObj: Object
   },
   components: {
     BlackboardMini
   },
   data: () => ({
-    newPost: ""
+    postDescription: ""
   }),
   methods: {
     submitPost () {
+      const BlackboardMini = this.$refs["blackboard-mini"]
       event.preventDefault()
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      // blackboard object 
       const post = { title: "No title yet", 
-                     description: this.newPost, 
+                     description: this.postDescription, 
                      blackboardID,
+                     boardStrokes: BlackboardMini.allStrokes,
                      date: this.getDate() }
       this.$emit('post-submit', post)
-      this.newPost = ""
+      // reset 
+      this.postDescription = ""
+      BlackboardMini.wipeBoard()
     },
     getDate () {
       var today = new Date();

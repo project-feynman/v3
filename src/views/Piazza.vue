@@ -1,6 +1,9 @@
 <template>
   <div>
-    <BaseAppBar :icon="viewingPost && isMobile ? 'back' : undefined" @icon-click="backToList()" />
+    <BaseAppBar 
+      :icon="viewingPost && isMobile ? 'back' : undefined" 
+      @icon-click="backToList()" 
+    />
     <v-content>
       <v-container fluid class="py-0" ref="main">
         <v-row>
@@ -16,28 +19,19 @@
               <template v-if="isAddingNewQuestion">
                 <PiazzaNewPost 
                   postType="question" 
-                  :boardStrokes="boardStrokes"
-                  @board-image="boardImage => addBoardImage(boardImage)"
-                  @new-stroke="stroke => boardStrokes.push(stroke)"
-                  @board-wipe="boardStrokes = []"
                   @post-submit="question => submitPost(question, questionsRef)"
                 />
               </template>
               <template v-else>
                 <PiazzaViewPost :post="currentQuestion"/>
                 <PiazzaViewPost 
-                  v-for="(answer, i) in answers" 
-                  :key="answer['.key']"
+                  v-for="(answer, i) in answers" :key="answer['.key']"
                   :post="answer" 
                   :postNumber="i"
                 />
                 <PiazzaNewPost
                   postType="answer"
-                  :boardStrokes="boardStrokes"
-                  @board-wipe="boardStrokes = []"
                   @post-submit="answer => submitPost(answer, answersRef)"
-                  @board-image="boardImage => addBoardImage(boardImage)"
-                  @new-stroke="stroke => boardStrokes.push(stroke)"
                 />
               </template>
             </v-card>
@@ -84,7 +78,9 @@ export default {
     isMobile: window.innerWidth < 600
   }),
   computed: {
-    user: () => this.$store.state.user,
+    user () {
+      return this.$store.state.user
+    },
     questionsRef () {
       const classID = this.$route.params.class_id
       return db.collection("classes").doc(classID).collection("questions")
@@ -125,20 +121,15 @@ export default {
     },
     handleQuestionClick (clickedQuestion) {
       this.currentQuestion = clickedQuestion
-      this.isAddingNewQuestion = false 
       this.fetchAnswers()
-      this.boardStrokes = []
+      this.isAddingNewQuestion = false 
       this.viewingPost = true
     },
-    addBoardImage (boardImage) {
-      alert(boardImage)
-      this.whiteBoardImage = boardImage
-    },
-    async submitPost ({ title, description, blackboardID, date }, ref) {
-      alert(this.whiteBoardImage)
-      await db.collection("whiteboards").doc(blackboardID).set({
-        strokes: this.boardStrokes, 
-        image: this.whiteBoardImage
+    async submitPost ({ title, description, blackboardID, boardStrokes, date }, ref) {
+      console.log("boardStrokes =", boardStrokes)
+      db.collection("whiteboards").doc(blackboardID).set({
+        strokes: boardStrokes,
+        // image: this.whiteBoardImage
       })
       await ref.add({
         title,
@@ -147,6 +138,7 @@ export default {
         date,
         usersWhoUpvoted: []
       })
+      this.fetchQuestions()
       // trigger email notification
       let inquisitorID = this.user ? this.user.uid : "";
       let classID = this.$route.params.class_id;
@@ -163,11 +155,7 @@ export default {
         console.log(error)
       }
       console.log(question);
-      
-      // reset/update variables
-      this.boardStrokes = [] 
-      // TODO: clear canvas 
-      this.fetchQuestions()
+      // TODO: reset/update variables
     },
     async deleteQuestion ({ ".key": questionID }) {
       const ref = this.questionsRef.doc(questionID)

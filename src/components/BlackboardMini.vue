@@ -1,84 +1,75 @@
 <template>
   <div id="whiteboard">
-    <!-- SNACKBAR -->
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>
-        CLOSE
-      </v-btn>
-    </v-snackbar>
-
-      <!-- APP BAR -->
-      <v-app-bar dense>
-        <template v-if="currentState != recordingStateEnum.POST_RECORDING">
-          <swatches 
-            v-model="color"
-            :colors="colors"
-            :show-border="true"
-            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-            inline
-            background-color="rgba(0, 0, 0, 0)"
-            swatch-size="40"
-          />
-          <v-btn 
-            v-if="!isRecording"
-            @click="wipeBoard()"
-            color="red darken-2 white--text"
-          >
-            CLEAR
-            <v-icon dark right>clear</v-icon>
-          </v-btn>
-          <template v-if="!isRecording">
-            <v-btn @click="startRecording()" color="pink white--text" dark>
-              RECORD
-              <v-icon dark right>fiber_manual_record</v-icon>
-            </v-btn>
-          </template>
-          <v-btn v-else @click="stopRecording()" color="pink white--text">
-            STOP VIDEO
-          </v-btn>
-          <v-btn 
-            @click="setImage()"
-            color="green white--text"
-          >
-            BACKGROUND
-          <input
-            @change="handleImage"
-            id="whiteboard-bg-input"
-            name="whiteboard-bg"
-            type="file"
-            style="display: none;"
-          />
+    <!-- APP BAR -->
+    <v-app-bar dense>
+      <template v-if="currentState != recordingStateEnum.POST_RECORDING">
+        <swatches 
+          v-model="color"
+          :colors="colors"
+          :show-border="true"
+          :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
+          inline
+          background-color="rgba(0, 0, 0, 0)"
+          swatch-size="40"
+        />
+        <v-btn 
+          v-if="!isRecording"
+          @click="wipeBoard()"
+          color="red darken-2 white--text"
+        >
+          CLEAR
+          <v-icon dark right>clear</v-icon>
+        </v-btn>
+        <template v-if="!isRecording">
+          <v-btn @click="startRecording()" color="pink white--text" dark>
+            RECORD
+            <v-icon dark right>fiber_manual_record</v-icon>
           </v-btn>
         </template>
-        <template v-else>
-          <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
-          <v-btn @click="recordAgain()">RETRY</v-btn>
-          <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
-            SAVE VIDEO
-          </v-btn> -->
-        </template>
-      </v-app-bar>
+        <v-btn v-else @click="stopRecording()" color="pink white--text">
+          STOP VIDEO
+        </v-btn>
+        <v-btn 
+          @click="setImage()"
+          color="green white--text"
+        >
+          SET BACKGROUND
+        <input
+          @change="handleImage"
+          id="whiteboard-bg-input"
+          name="whiteboard-bg"
+          type="file"
+          style="display: none;"
+        />
+        </v-btn>
+      </template>
+      <template v-else>
+        <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
+        <v-btn @click="recordAgain()">RETRY</v-btn>
+      </template>
+    </v-app-bar>
 
-      <!-- WHITEBOARD -->
-      <canvas 
-        id="myCanvas"  
-        style="background-repeat: no-repeat; background-size: 100% 100%; background-color: rgb(62, 66, 66); background: url('https://i.imgur.com/8B7L7BR.jpg')">
-      </canvas>
-
-      <!-- "@start-recording" is necessary because the audio-recorder can't 
-      start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
-      null-->
-      <audio-recorder d
-        v-if="whiteboardDoc"
-        v-show="false"
-        ref="audio-recorder"
-        :audioURL="whiteboardDoc.audioURL"
-        :audioPath="whiteboardDoc.audioPath"
-        @start-recording="isRecording = true"
-        @file-uploaded="audio => saveFileReference(audio)"
-      />
-
+    <!-- WHITEBOARD -->
+    <!-- <canvas 
+      id="myCanvas"  
+      style="background-repeat: no-repeat; background-size: 100% 100%; background-color: rgb(62, 66, 66); background: url('https://i.imgur.com/8B7L7BR.jpg')">
+    </canvas> -->
+    <canvas 
+      id="myCanvas"  
+      style="background-color: rgb(62, 66, 66)"
+    ></canvas>
+    <!-- "@start-recording" is necessary because the audio-recorder can't 
+    start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
+    null-->
+    <audio-recorder
+      v-if="whiteboardDoc"
+      v-show="false"
+      ref="audio-recorder"
+      :audioURL="whiteboardDoc.audioURL"
+      :audioPath="whiteboardDoc.audioPath"
+      @start-recording="isRecording = true"
+      @file-uploaded="audio => $emit('new-audio', audio)"
+    />
   </div>
 </template>
 
@@ -96,9 +87,7 @@ import BaseAppBar from "@/components/BaseAppBar.vue"
 
 export default {
   props: {
-    allStrokes: Array,
-    hideToolbar: Boolean,
-    height: String
+    hideToolbar: Boolean
   },
   components: {
     AudioRecorder,
@@ -130,10 +119,11 @@ export default {
     }
   },
   created () {
-    this.setImageUpload()
+    // this.setImageUpload()
   },
   data () {
     return {
+      allStrokes: [],
       currentState: "",
       recordingStateEnum: {
         PRE_RECORDING: "pre-recording",
@@ -145,10 +135,7 @@ export default {
       lineWidth: 2,
       colors: ['white', 'orange', '#0AF2F2', 'deeppink', 'rgb(62, 66, 66)'],
       disableTouch: false,
-      saveSilently: false,
-      saveVideoPopup: false,
       isRecording: false,
-      strokesRef: null,
       stylus: false, 
       currentStroke: [],
       canvas: null,
@@ -162,15 +149,12 @@ export default {
       touchY: null,
       lastX: -1,
       lastY: -1,
-      unsubscribe: null,
       redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
       hasUploadedAudio: false,
       mouseX : 0,
       mouseY : 0,
       mousedown : 0,
       clearRectTimeout: null,
-      snackbar: false,
-      snackbarMessage: ""
     }
   },
   watch: {
@@ -199,7 +183,7 @@ export default {
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
           this.initTouchEvents()
-          // this.initMouseEvents()
+          this.initMouseEvents()
         }
       }
     },
@@ -207,12 +191,15 @@ export default {
   mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
-    this.canvas.height = this.height - 48 // the app-bar height is 48px 
+    // calculate appropriate height for blackboard given the width available
+    // note that sidenav width = 200, BaseList width = 300
+    const height = 9/16 * (window.innerWidth - 500)
+    this.canvas.height = height - 48 // the blackboard's top-app-bar is 48px high
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
-    // this.initMouseEvents()
-    // USE THIS TO ENSURE THE BLACKBOARD SCALES CORRECTLY
+    this.initMouseEvents()
+    // TODO: scale blackboard correctly across all edge cases
     // this.$root.$on("side-nav-toggled", sideNavOpened => {
     //   if (sideNavOpened) {
     //     this.canvas.width = document.documentElement.clientWidth
@@ -224,8 +211,10 @@ export default {
   },
   methods: {
     wipeBoard () {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      this.$emit("board-wipe")
+      if (this.ctx) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      }
+      this.allStrokes = []
     },
     setImage () {
       document.getElementById('whiteboard-bg-input').click()
@@ -254,14 +243,16 @@ export default {
     //   const dataURL = this.canvas.toDataURL()
     // },
     async initData () {
+      this.wipeBoard()
       this.currentState = this.recordingStateEnum.PRE_RECORDING 
     },
     resetVariables () {
       this.lastX = -1
     },
-    getHeightToWidthRatio () {
-      return this.canvas.scrollHeight / this.canvas.scrollWidth
-    },
+    // TODO: keep track of aspect ratio to ensure a high quality viewing experience
+    // getAspectRatio () {
+    //   return this.canvas.scrollHeight / this.canvas.scrollWidth
+    // },
     startTimer () {
       this.currentTime = 0 
       this.timer = setInterval(() => this.currentTime += 0.1, 100)
@@ -285,12 +276,12 @@ export default {
     },
     initMouseEvents() {
       // TODO: implement mouseUp, mouseDown, mouseMove
-      window.addEventListener('mouseup', this.mouseUp, false);
+      this.canvas.addEventListener('mouseup', this.mouseUp, false);
       this.canvas.addEventListener('mousedown', this.mouseDown, false);
       this.canvas.addEventListener('mousemove', this.mouseMove, false);
     },
     removeMouseEvents() {
-      window.removeEventListener('mouseup', this.mouseUp, false);
+      this.canvas.removeEventListener('mouseup', this.mouseUp, false);
       this.canvas.removeEventListener('mousedown', this.mouseDown, false);
       this.canvas.removeEventListener('mousemove', this.mouseMove, false);
     },
@@ -335,7 +326,7 @@ export default {
         endTime: Number(this.currentTime.toFixed(1)),
         points: this.currentStroke
       }
-      this.$emit("new-stroke", stroke)
+      this.allStrokes.push(stroke)
       // reset 
       this.currentStroke = []
       this.lastX = -1
@@ -397,7 +388,7 @@ export default {
         endTime: Number(this.currentTime.toFixed(1)),
         points: this.currentStroke
       }
-      this.allStrokes.push(stroke);
+      this.allStrokes.push(stroke)
       // reset 
       this.currentStroke = [];
       this.lastX = -1;
@@ -418,19 +409,17 @@ export default {
 
     getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
       if (!e)
-        var e = event;
-
+        var e = event
       if (e.offsetX) {
-        this.mouseX = e.offsetX - this.canvas.getBoundingClientRect().left - window.scrollX;
-        this.mouseY = e.offsetY - this.canvas.getBoundingClientRect().top - window.scrollY;
+        this.mouseX = e.offsetX - window.scrollX
+        this.mouseY = e.offsetY - window.scrollY
       }
       else if (e.layerX) {
-        this.mouseX = e.layerX - this.canvas.getBoundingClientRect().left - window.scrollX;
-        this.mouseY = e.layerY - this.canvas.getBoundingClientRect().top - window.scrollY;
+        this.mouseX = e.layerX - window.scrollX
+        this.mouseY = e.layerY - window.scrollY
       }
     },
     // --- END Mouse Drawing --- // 
-
     useEraser () {
       this.color = 'rgb(62, 66, 66)'
       this.lineWidth = 18
@@ -453,14 +442,14 @@ export default {
       this.hasUploadedAudio = false
       this.currentState = this.recordingStateEnum.PRE_RECORDING
     },
-    saveFileReference({ url, path }) {
-      this.hasUploadedAudio = true
-      const ID = this.whiteboardDoc['.key']
-      db.collection('whiteboards').doc(ID).update({
-        audioURL: url,
-        audioPath: path
-      })
-    }
+    // saveFileReference({ url, path }) {
+    //   this.hasUploadedAudio = true
+    //   const ID = this.whiteboardDoc['.key']
+    //   db.collection('whiteboards').doc(ID).update({
+    //     audioURL: url,
+    //     audioPath: path
+    //   })
+    // }
   }
 }
 </script>
