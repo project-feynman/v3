@@ -20,6 +20,7 @@ We're a student organization. Our primary goal is to help make learning fun and 
 - Lujing Cen
 - Samir Droubi
 - Winston Fey
+- Kyle Xiao
 - Elton Lin
 
 **Past contributors**
