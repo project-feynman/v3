@@ -143,11 +143,14 @@ export default {
         inquisitorID: this.user ? this.user.uid : "",
         classID: this.$route.params.class_id,
       }
-      if (audioObj) {
-        postObj.audioPath = audioObj.path
-        postObj.audioURL = audioObj.url
+      console.log("audioObj =", audioObj)
+      if (audioObj !== {}) {
+        if (audioObj.audioPath && audioObj.url) {
+          postObj.audioPath = audioObj.path
+          postObj.audioURL = audioObj.url
+        }
       }
-      // console.log("postObj =", postObj)
+      console.log("postObj =", postObj)
       await ref.add(postObj)
       this.fetchQuestions()
       // trigger email notification
