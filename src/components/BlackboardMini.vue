@@ -408,7 +408,8 @@ export default {
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
-        points: this.currentStroke
+        points: this.currentStroke,
+        isErasing: this.eraserActive
       }
       this.$emit("new-stroke", stroke)
       // reset 
@@ -471,7 +472,8 @@ export default {
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
-        points: this.currentStroke
+        points: this.currentStroke,
+        isErasing: this.eraserActive
       }
       this.allStrokes.push(stroke);
       // reset 
