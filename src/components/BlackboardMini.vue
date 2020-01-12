@@ -500,8 +500,8 @@ export default {
       if (!e)
         var e = event
       if (e.offsetX) {
-        this.mouseX = e.offsetX; # - window.scrollX
-        this.mouseY = e.offsetY; # - window.scrollY (in case these don't work)
+        this.mouseX = e.offsetX; //- window.scrollX
+        this.mouseY = e.offsetY; // - window.scrollY (in case these don't work)
       }
       else if (e.layerX) {
         this.mouseX = e.layerX; 
