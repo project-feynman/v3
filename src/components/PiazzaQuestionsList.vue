@@ -1,5 +1,5 @@
 <template>
-  <v-card class="ml-0">
+  <v-card style="height:100%;">
     <v-list two-line>
       <v-list-item-group v-model="index" active-class="pink--text">
         <!-- NEW QUESTION -->

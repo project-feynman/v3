@@ -1,21 +1,27 @@
 <!-- Offer the user a text area + blackboard to create a Q or A -->
 <template>
-  <div class="new-post">
-    <v-textarea
-      outlined
-      :label="postType"
-      :placeholder="`Type ${postType} here...`"
-      v-model="postDescription"
-      class="mt-2"
-    />
-    <!-- for some reason the below div is necessary to deal with resizing edge cases -->
-    <div :style="`height: ${getFullWidth() * 9/16}px; position: relative`" >
-      <BlackboardMini ref="blackboard-mini"/>
-      <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
-    </div>
-    <v-btn @click.prevent="submitPost()" block color="secondary" dark class="mt-5">
-      Submit {{ postType }}
-    </v-btn>
+  <div id="new-post">
+    <v-banner single-line sticky class="post-header container py-0" tag="header">
+      <h3>New Question</h3>
+      <template v-slot:actions>
+        <v-btn @click="submitPost()" color="accent">Post <v-icon small class="pl-2">send</v-icon></v-btn>
+      </template>
+    </v-banner>
+    <v-container tag="section" class="py-5">
+      <v-textarea
+        filled
+        :label="postType"
+        :placeholder="`Type ${postType} here...`"
+        v-model="newPost"
+      />
+      <div class="blackboard-container">
+        <BlackboardMini 
+          ref="blackboard-mini"
+          :visible="visible"
+        />
+        <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
+      </div>
+    </v-container>
   </div>
 </template>
 
@@ -26,6 +32,7 @@ import BlackboardMini from "@/components/BlackboardMini.vue"
 export default {
   props: {
     postType: String, // either "question" or "answer"
+    visible: Boolean
   },
   components: {
     BlackboardMini
@@ -71,3 +78,9 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .post-header {
+    background: linear-gradient(#eee,#fff);
+    box-shadow: 0 5px 5px rgba(0,0,0,0.15);
+  }
+</style>
