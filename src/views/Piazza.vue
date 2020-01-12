@@ -136,33 +136,37 @@ export default {
         description,
         blackboardID,
         date,
-        usersWhoUpvoted: []
+        usersWhoUpvoted: [],
+        inquisitorID: this.user ? this.user.uid : "",
+        classID: this.$route.params.class_id
       }
       if (audioObj) {
         postObj.audioPath = audioObj.path
         postObj.audioURL = audioObj.url
       }
-      console.log("postObj =", postObj)
-      await ref.add(postObj)
-      this.fetchQuestions()
+      // console.log("postObj =", postObj)
+      // await ref.add(postObj)
       // trigger email notification
-      let inquisitorID = this.user ? this.user.uid : "";
-      let classID = this.$route.params.class_id;
+      // let inquisitorID = this.user ? this.user.uid : "";
+      // let classID = this.$route.params.class_id;
 
+      // trigger email notification
       let question;
       try {
-         question = await this.questionService.askQuestion({
-          title,
-          questionDescription: description,
-          videoID: blackboardID,
-          date,
-          usersWhoUpvoted: [],
-          inquisitorID: inquisitorID,
-          classID,
-        });
+         question = await this.questionService.askQuestion(postObj)
+        //   {
+        //   title,
+        //   questionDescription: description,
+        //   videoID: blackboardID,
+        //   date,
+        //   usersWhoUpvoted: [],
+        //   inquisitorID: inquisitorID,
+        //   classID,
+        // }
       } catch (error) {
         console.log(error)
       }
+      this.fetchQuestions()
       // TODO: reset/update variables
     },
     async deleteQuestion ({ ".key": questionID }) {
