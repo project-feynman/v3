@@ -112,6 +112,7 @@
       <div id="blackboard-wrapper" v-resize="blackboardSize">
         <canvas id="myCanvas">
         </canvas>
+        <canvas id="background-canvas"></canvas>
       </div>
 
       <!-- "@start-recording" is necessary because the audio-recorder can't 
@@ -257,13 +258,15 @@ export default {
     },
     eraserActive() {
       this.customCursor()
+      this.canvas.getContext("2d").globalCompositeOperation=this.eraserActive?'destination-out':'source-over'
+      this.lineWidth=this.eraserActive?10:2
     },
     color(){
       this.customCursor()
     },
     visible() {
       this.blackboardSize()
-    }
+    },
   },
   mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById('myCanvas')
@@ -302,7 +305,7 @@ export default {
       document.getElementById('whiteboard-bg-input').click()
     },
     handleImage (e) {
-      var canvas = document.getElementById('myCanvas');
+      var canvas = document.getElementById('background-canvas');
       var ctx = canvas.getContext('2d');
       var reader = new FileReader();
       var vue = this
@@ -583,13 +586,28 @@ export default {
 </script>
 
 <style scoped>
+#blackboard-wrapper {
+  position: relative;
+  z-index: 10;
+}
 #myCanvas {
   width: 100%;
   height: 100%;
   background-repeat: no-repeat;
   background-size: 100% 100%;
-  background-color: rgb(62, 66, 66);
+  background-color: transparent;
   box-shadow: 0 0 10px rgba(0,0,0,0.25) inset;
+}
+#background-canvas {
+  position: absolute;
+  top:0;
+  left:0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-color: rgb(62, 66, 66);
+  background-size: 100% 100%;
+  z-index:-1;
 }
 @media (max-width:350px), (min-width:600px) and (max-width:670px), (min-width:1264px) and (max-width:1300px) {
   .blackboard-toolbar {
