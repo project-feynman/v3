@@ -143,7 +143,6 @@ import BaseAppBar from "@/components/BaseAppBar.vue"
 
 export default {
   props: {
-    allStrokes: Array,
     hideToolbar: Boolean,
     height: String,
     visible: Boolean
@@ -347,8 +346,7 @@ export default {
     initReplayLogic () {
       this.quickplay()
     },
-    
-    Events () {
+    initTouchEvents () {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
@@ -500,12 +498,12 @@ export default {
       if (!e)
         var e = event
       if (e.offsetX) {
-        this.mouseX = e.offsetX; //- window.scrollX
-        this.mouseY = e.offsetY; // - window.scrollY (in case these don't work)
+        this.mouseX = e.offsetX - window.scrollX //- window.scrollX
+        this.mouseY = e.offsetY - window.scrollY // - window.scrollY (in case these don't work)
       }
       else if (e.layerX) {
-        this.mouseX = e.layerX; 
-        this.mouseY = e.layerY;
+        this.mouseX = e.layerX - window.scrollX
+        this.mouseY = e.layerY - window.scrollY
       }
       // To get the pixel data of the canvas
       // var c = document.getElementById('myCanvas');

@@ -12,7 +12,7 @@
         filled
         :label="postType"
         :placeholder="`Type ${postType} here...`"
-        v-model="newPost"
+        v-model="postDescription"
       />
       <div class="blackboard-container">
         <BlackboardMini 
