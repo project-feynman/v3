@@ -15,14 +15,17 @@
         <!-- EXISTING QUESTIONS -->
         <div v-if="questions">
           <template v-for="(question, index) in questions">
-            <v-list-item @click="$emit('question-click', question)" :key="question['.key']">
-              <v-list-item-content>
-                <!-- <v-list-item-title v-if="question.title" v-text="question.title"/> -->
-                <v-list-item-subtitle class="text--primary" v-text="question.description"/>
-                <v-list-item-subtitle v-text="question.date"/>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider v-if="index + 1 < questions.length" :key="index"></v-divider>
+            <!-- QUICKFIX FOR INCOMPATIBLE API to not display duplicate questions -->
+            <template v-if="question.description"> 
+              <v-list-item @click="$emit('question-click', question)" :key="question['.key']">
+                <v-list-item-content>
+                  <!-- <v-list-item-title v-if="question.title" v-text="question.title"/> -->
+                  <v-list-item-subtitle class="text--primary" v-text="question.description"/>
+                  <v-list-item-subtitle v-text="question.date"/>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider v-if="index + 1 < questions.length" :key="index"></v-divider>
+            </template>
           </template>
         </div>
       </v-list-item-group>

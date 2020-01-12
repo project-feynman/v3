@@ -134,18 +134,22 @@ export default {
       const postObj = {
         title,
         description,
+        // to get graphQL to not complain
+        questionDescription: description,
         blackboardID,
+        videoID: blackboardID,
         date,
         usersWhoUpvoted: [],
         inquisitorID: this.user ? this.user.uid : "",
-        classID: this.$route.params.class_id
+        classID: this.$route.params.class_id,
       }
       if (audioObj) {
         postObj.audioPath = audioObj.path
         postObj.audioURL = audioObj.url
       }
       // console.log("postObj =", postObj)
-      // await ref.add(postObj)
+      await ref.add(postObj)
+      this.fetchQuestions()
       // trigger email notification
       // let inquisitorID = this.user ? this.user.uid : "";
       // let classID = this.$route.params.class_id;
@@ -153,7 +157,7 @@ export default {
       // trigger email notification
       let question;
       try {
-         question = await this.questionService.askQuestion(postObj)
+        question = await this.questionService.askQuestion(postObj)
         //   {
         //   title,
         //   questionDescription: description,
@@ -166,7 +170,6 @@ export default {
       } catch (error) {
         console.log(error)
       }
-      this.fetchQuestions()
       // TODO: reset/update variables
     },
     async deleteQuestion ({ ".key": questionID }) {
