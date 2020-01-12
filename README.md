@@ -16,7 +16,7 @@ ExplainMIT is a website where MIT students, TAs and professors share visual expl
 
 2nd option can be addressed (it's possible to create videos efficiently with little overhead)
 - Answering questions take far less time if the user can draw and talk at the same time like in real life
-- What if people can talk while drawing with iPads, mouse? 
+- Instead of sharing polished videos with animation (take weeks), what if we popularize sharing of quick-and-dirty hand-drawn videos where people can talk while drawing with iPads, mouse (takes minutes)
 - Instead of throwing the explanations away after each in-person interaction, what if we can preserve what's there already?
 
 ![Insight](documentation/FundamentalInsight.png "FundamentalInsight")
@@ -39,12 +39,21 @@ Our stack is Vue, Vuetify and Firebase. For those interested to contribute, plea
 
 **Current contributors** (photos incoming)
 We're a student organization. Our primary goal is to help make learning fun and efficient at MIT. If we succeed, we will consider expanding to other universities as a startup. 
+
+Tech team: 
 - Harry Liu 
 - Prabhakar Kafle
 - Lujing Cen
 - Samir Droubi
 - Winston Fey
 - Elton Lin
+
+Sales team: 
+- Stephanie Yuen 
+- Anders Khaykin
+- Kristen Surrao
+- Ajay Arora
+- Elton Lin 
 
 **Past contributors**
 - Hubert Wasilewski was the backend engineer back in the early days 
