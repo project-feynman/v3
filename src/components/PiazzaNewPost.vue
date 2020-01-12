@@ -2,7 +2,7 @@
 <template>
   <div id="new-post">
     <v-banner single-line sticky class="post-header container py-0" tag="header">
-      <h3>New Question</h3>
+      <h3>New {{ postType }}</h3>
       <template v-slot:actions>
         <v-btn @click="submitPost()" color="accent">Post <v-icon small class="pl-2">send</v-icon></v-btn>
       </template>
