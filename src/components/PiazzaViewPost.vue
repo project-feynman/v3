@@ -14,6 +14,7 @@
           v-if="strokes.length !== 0"
           :strokes="strokes"
           :canvasID="`${postNumber}`"
+          :audioURL="post.audioURL"
           :height="`${getFullWidth() * 9/16}`"
           @animation-loaded="hasFetchedVideos = true"
         />

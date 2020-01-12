@@ -118,14 +118,11 @@
       <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
       null-->
-      <audio-recorder d
-        v-if="whiteboardDoc"
+      <AudioRecorderMini
         v-show="false"
         ref="audio-recorder"
-        :audioURL="whiteboardDoc.audioURL"
-        :audioPath="whiteboardDoc.audioPath"
         @start-recording="isRecording = true"
-        @file-uploaded="audio => saveFileReference(audio)"
+        @file-uploaded="audioObj => this.audioObj = audioObj"
       />
 
   </v-card>
@@ -141,6 +138,7 @@ import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
 import AudioRecorder from '@/components/AudioRecorder.vue'
+import AudioRecorderMini from "@/components/AudioRecorderMini.vue"
 import BaseAppBar from "@/components/BaseAppBar.vue"
 
 export default {
@@ -151,7 +149,7 @@ export default {
     visible: Boolean
   },
   components: {
-    AudioRecorder,
+    AudioRecorderMini,
     Swatches,
     BaseAppBar
   },
@@ -179,12 +177,11 @@ export default {
       }
     },
   },
-  created () {
-    // this.setImageUpload()
-  },
   data () {
     return {
+      allStrokes: [],
       currentState: "",
+      audioObj: {},
       recordingStateEnum: {
         PRE_RECORDING: "pre-recording",
         MID_RECORDING: "mid-recording",
@@ -195,10 +192,7 @@ export default {
       lineWidth: 2,
       colors: ['white', 'orange', '#0AF2F2', 'deeppink', 'rgb(62, 66, 66)'],
       disableTouch: false,
-      saveSilently: false,
-      saveVideoPopup: false,
       isRecording: false,
-      strokesRef: null,
       stylus: false, 
       currentStroke: [],
       canvas: null,
@@ -212,7 +206,6 @@ export default {
       touchY: null,
       lastX: -1,
       lastY: -1,
-      unsubscribe: null,
       redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
       hasUploadedAudio: false,
       mouseX : 0,
@@ -271,6 +264,10 @@ export default {
   mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
+    // calculate appropriate height for blackboard given the width available
+    // note that sidenav width = 200, BaseList width = 300
+    const height = 9/16 * (window.innerWidth - 500)
+    this.canvas.height = height - 48 // the blackboard's top-app-bar is 48px high
     this.rescaleCanvas()
     window.addEventListener('resize', this.rescaleCanvas, false)
     this.initTouchEvents()
@@ -298,8 +295,10 @@ export default {
   },
   methods: {
     wipeBoard () {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      this.$emit("board-wipe")
+      if (this.ctx) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      }
+      this.allStrokes = []
     },
     setImage () {
       document.getElementById('whiteboard-bg-input').click()
@@ -328,14 +327,16 @@ export default {
     //   const dataURL = this.canvas.toDataURL()
     // },
     async initData () {
+      this.wipeBoard()
       this.currentState = this.recordingStateEnum.PRE_RECORDING 
     },
     resetVariables () {
       this.lastX = -1
     },
-    getHeightToWidthRatio () {
-      return this.canvas.scrollHeight / this.canvas.scrollWidth
-    },
+    // TODO: keep track of aspect ratio to ensure a high quality viewing experience
+    // getAspectRatio () {
+    //   return this.canvas.scrollHeight / this.canvas.scrollWidth
+    // },
     startTimer () {
       this.currentTime = 0 
       this.timer = setInterval(() => this.currentTime += 0.1, 100)
@@ -346,7 +347,8 @@ export default {
     initReplayLogic () {
       this.quickplay()
     },
-    initTouchEvents () {
+    
+    Events () {
       this.canvas.addEventListener('touchstart', this.touchStart, false)
       this.canvas.addEventListener('touchend',this.touchEnd, false)
       this.canvas.addEventListener('touchmove', this.touchMove, false)
@@ -359,12 +361,12 @@ export default {
     },
     initMouseEvents() {
       // TODO: implement mouseUp, mouseDown, mouseMove
-      window.addEventListener('mouseup', this.mouseUp, false);
+      this.canvas.addEventListener('mouseup', this.mouseUp, false);
       this.canvas.addEventListener('mousedown', this.mouseDown, false);
       this.canvas.addEventListener('mousemove', this.mouseMove, false);
     },
     removeMouseEvents() {
-      window.removeEventListener('mouseup', this.mouseUp, false);
+      this.canvas.removeEventListener('mouseup', this.mouseUp, false);
       this.canvas.removeEventListener('mousedown', this.mouseDown, false);
       this.canvas.removeEventListener('mousemove', this.mouseMove, false);
     },
@@ -411,7 +413,7 @@ export default {
         points: this.currentStroke,
         isErasing: this.eraserActive
       }
-      this.$emit("new-stroke", stroke)
+      this.allStrokes.push(stroke)
       // reset 
       this.currentStroke = []
       this.lastX = -1
@@ -475,7 +477,7 @@ export default {
         points: this.currentStroke,
         isErasing: this.eraserActive
       }
-      this.allStrokes.push(stroke);
+      this.allStrokes.push(stroke)
       // reset 
       this.currentStroke = [];
       this.lastX = -1;
@@ -496,14 +498,13 @@ export default {
 
     getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
       if (!e)
-        var e = event;
-
+        var e = event
       if (e.offsetX) {
-        this.mouseX = e.offsetX;
-        this.mouseY = e.offsetY;
+        this.mouseX = e.offsetX; # - window.scrollX
+        this.mouseY = e.offsetY; # - window.scrollY (in case these don't work)
       }
       else if (e.layerX) {
-        this.mouseX = e.layerX;
+        this.mouseX = e.layerX; 
         this.mouseY = e.layerY;
       }
       // To get the pixel data of the canvas
@@ -512,7 +513,6 @@ export default {
       // console.log(pixelData)
     },
     // --- END Mouse Drawing --- // 
-
     useEraser () {
       this.color = 'rgb(62, 66, 66)'
       this.lineWidth = 18
@@ -534,14 +534,6 @@ export default {
       this.currentTime = 0 
       this.hasUploadedAudio = false
       this.currentState = this.recordingStateEnum.PRE_RECORDING
-    },
-    saveFileReference({ url, path }) {
-      this.hasUploadedAudio = true
-      const ID = this.whiteboardDoc['.key']
-      db.collection('whiteboards').doc(ID).update({
-        audioURL: url,
-        audioPath: path
-      })
     },
     blackboardToolbar() {
       this.smallScreen= window.innerWidth<960;
@@ -583,6 +575,14 @@ export default {
       var board=document.getElementById('myCanvas');
       board.style.height=document.getElementById('blackboard-wrapper').offsetWidth*9/16+'px'
     }
+    // saveFileReference({ url, path }) {
+    //   this.hasUploadedAudio = true
+    //   const ID = this.whiteboardDoc['.key']
+    //   db.collection('whiteboards').doc(ID).update({
+    //     audioURL: url,
+    //     audioPath: path
+    //   })
+    // }
   }
 }
 </script>

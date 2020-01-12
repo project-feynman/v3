@@ -16,11 +16,8 @@
       />
       <div class="blackboard-container">
         <BlackboardMini 
-          :allStrokes="boardStrokes"
+          ref="blackboard-mini"
           :visible="visible"
-          @board-image="addBoardImage"
-          @new-stroke="stroke => $emit('new-stroke', stroke)"
-          @board-wipe="$emit('board-wipe')"
         />
         <!-- FUTURE FEATURE: allow user to preview the video he/she made -->
       </div>
@@ -34,7 +31,6 @@ import BlackboardMini from "@/components/BlackboardMini.vue"
 
 export default {
   props: {
-    boardStrokes: Array,
     postType: String, // either "question" or "answer"
     visible: Boolean
   },
@@ -42,18 +38,28 @@ export default {
     BlackboardMini
   },
   data: () => ({
-    newPost: ""
+    postDescription: ""
   }),
   methods: {
     submitPost () {
+      const BlackboardMini = this.$refs["blackboard-mini"]
       event.preventDefault()
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      console.log("audio =", BlackboardMini.audioObj)
+
+      // blackboard object 
       const post = { title: "No title yet", 
-                     description: this.newPost, 
+                     description: this.postDescription, 
                      blackboardID,
+                     boardStrokes: BlackboardMini.allStrokes,
                      date: this.getDate() }
+      if (BlackboardMini.audioObj != {}) {
+        post.audioObj = BlackboardMini.audioObj
+      }
       this.$emit('post-submit', post)
-      this.newPost = ""
+      // reset 
+      this.postDescription = ""
+      BlackboardMini.wipeBoard()
     },
     getDate () {
       var today = new Date();
