@@ -14,11 +14,12 @@
               @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
             />
           </v-col>
-          <v-col id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(viewingPost?'d-block':'d-none')+' d-sm-block'">
+          <v-col v-if="(viewingPost && isMobile) || (!isMobile)" id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(viewingPost?'d-block':'d-none')+' d-sm-block'">
             <v-card class="mx-auto elevation-6" style="max-width:1000px;">
               <template v-if="isAddingNewQuestion">
                 <PiazzaNewPost 
-                  postType="Question" 
+                  postType="Question"
+                  :visible="this.viewingPost"
                   :boardStrokes="boardStrokes"
                   @board-image="boardImage => addBoardImage(boardImage)"
                   @new-stroke="stroke => boardStrokes.push(stroke)"

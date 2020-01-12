@@ -14,10 +14,10 @@
         :placeholder="`Type ${postType} here...`"
         v-model="newPost"
       />
-      <div :style="`height: ${getFullWidth() * 9/16}px; position: relative`" >
+      <div class="blackboard-container">
         <BlackboardMini 
-          :allStrokes="boardStrokes" 
-          :height="`${getFullWidth() * 9/16}`"
+          :allStrokes="boardStrokes"
+          :visible="visible"
           @board-image="addBoardImage"
           @new-stroke="stroke => $emit('new-stroke', stroke)"
           @board-wipe="$emit('board-wipe')"
@@ -36,6 +36,7 @@ export default {
   props: {
     boardStrokes: Array,
     postType: String, // either "question" or "answer"
+    visible: Boolean
   },
   components: {
     BlackboardMini
