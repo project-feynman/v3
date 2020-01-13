@@ -52,10 +52,8 @@ export default {
                      description: this.postDescription, 
                      blackboardID,
                      boardStrokes: BlackboardMini.allStrokes,
+                     audioURL: BlackboardMini.audioURL,
                      date: this.getDate() }
-      if (BlackboardMini.audioObj != {}) {
-        post.audioObj = BlackboardMini.audioObj
-      }
       this.$emit('post-submit', post)
       // reset 
       this.postDescription = ""

@@ -96,7 +96,6 @@ export default {
           const curPoint = points[i]
           const curX = curPoint.unitX * this.canvas.width
           const curY = curPoint.unitY * this.canvas.height
-
           this.ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over'
           this.ctx.beginPath()
           this.ctx.moveTo(prevX, prevY)
@@ -111,7 +110,7 @@ export default {
       })
     },
     // "render" are for videos vs "draw" are for blackboards:
-    renderStroke({ points, color, lineWidth }, pointPeriod = 0) {
+    renderStroke({ points, color, lineWidth, isErasing }, pointPeriod = 0) {
       return new Promise(async resolve => {
         for (let i = 1; i < points.length; i++) {
           const prevPoint = points[i - 1]

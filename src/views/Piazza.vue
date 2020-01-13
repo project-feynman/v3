@@ -116,6 +116,8 @@ export default {
       })
     },
     handleQuestionCreate () {
+      // destroy and create a new one
+      this.isAddingNewQuestion = false
       this.isAddingNewQuestion = true
       this.currentQuestion = {}
       this.viewingPost = true
@@ -126,7 +128,7 @@ export default {
       this.isAddingNewQuestion = false 
       this.viewingPost = true
     },
-    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioObj }, ref) {
+    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioURL }, ref) {
       db.collection("whiteboards").doc(blackboardID).set({
         strokes: boardStrokes,
         // image: this.whiteBoardImage
@@ -139,20 +141,15 @@ export default {
         blackboardID,
         videoID: blackboardID,
         date,
+        audioURL,
         usersWhoUpvoted: [],
         inquisitorID: this.user ? this.user.uid : "",
         classID: this.$route.params.class_id,
       }
-      console.log("audioObj =", audioObj)
-      if (audioObj !== {}) {
-        if (audioObj.audioPath && audioObj.url) {
-          postObj.audioPath = audioObj.path
-          postObj.audioURL = audioObj.url
-        }
-      }
       console.log("postObj =", postObj)
       await ref.add(postObj)
       this.fetchQuestions()
+      this.fetchAnswers()
       // trigger email notification
       // let inquisitorID = this.user ? this.user.uid : "";
       // let classID = this.$route.params.class_id;

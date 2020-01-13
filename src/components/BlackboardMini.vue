@@ -122,7 +122,7 @@
         v-show="false"
         ref="audio-recorder"
         @start-recording="isRecording = true"
-        @file-uploaded="audioObj => this.audioObj = audioObj"
+        @file-uploaded="audioObj => handleNewAudio(audioObj)"
       />
 
   </v-card>
@@ -181,6 +181,8 @@ export default {
       allStrokes: [],
       currentState: "",
       audioObj: {},
+      audioPath: "",
+      audioURL: "",
       recordingStateEnum: {
         PRE_RECORDING: "pre-recording",
         MID_RECORDING: "mid-recording",
@@ -293,6 +295,9 @@ export default {
     window.removeEventListener("click", e=>this.palleteClose(e));
   },
   methods: {
+    handleNewAudio ({ url }) {
+      this.audioURL = url
+    },
     wipeBoard () {
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
