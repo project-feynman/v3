@@ -180,11 +180,6 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
-        this.lineWidth = 2
-      } else {
-        this.lineWidth = 30
-      }
       this.setStyle(this.color, this.lineWidth)
     },
     isRecording () {
@@ -202,6 +197,17 @@ export default {
           // this.initMouseEvents()
         }
       }
+    },
+    eraserActive() {
+      this.customCursor()
+      this.canvas.getContext("2d").globalCompositeOperation=this.eraserActive?'destination-out':'source-over'
+      this.lineWidth=this.eraserActive?20:2
+    },
+    color(){
+      this.customCursor()
+    },
+    visible() {
+      this.blackboardSize()
     },
   },
   mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
@@ -238,7 +244,17 @@ export default {
       reader.onload = function(event){
           var img = new Image();
           img.onload = function(){
-              ctx.drawImage(img,0,0);
+            var w=img.width
+            var h=img.height
+            var img_aspect_ratio=w/h
+            if (img_aspect_ratio<canvas.width/canvas.height) {
+              w=canvas.width
+              h=w/img_aspect_ratio
+            } else {
+              h=canvas.height
+              w=h*img_aspect_ratio
+            }
+            ctx.drawImage(img,0,0,w,h);
           }
           img.src = event.target.result;
           var uri = canvas.toDataURL('image/png'),
@@ -341,6 +357,7 @@ export default {
       this.lastX = -1
     },
     drawToPointAndSave (e) {
+      this.setStyle(this.color, this.lineWidth);
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -430,11 +447,6 @@ export default {
       }
     },
     // --- END Mouse Drawing --- // 
-
-    useEraser () {
-      this.color = 'rgb(62, 66, 66)'
-      this.lineWidth = 18
-    },
     startRecording () {
       this.currentState = this.recordingStateEnum.MID_RECORDING
       const audioRecorder = this.$refs['audio-recorder']
@@ -466,6 +478,15 @@ export default {
 </script>
 
 <style scoped>
+<<<<<<< Updated upstream
+=======
+#whiteboard {
+  z-index: 5;
+}
+#blackboard-wrapper {
+  position: relative;
+}
+>>>>>>> Stashed changes
 #myCanvas {
   width: 100%;
   height: 100%;
