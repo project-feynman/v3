@@ -1,3 +1,8 @@
+## Tips to understand the codebase
+1. Refer to the ExplainMIT videos (TODO: add links)
+2. Always read the View components first, then read children components recursively as needed. 
+3. All database logic reside in View components i.e. those that reside in src/views/... Other components are stateful but will always emit an event to the parent if a CRUD (Create Read Update Delete) operation has to be performed. 
+
 ## How to contribute
 1. Choose a task on [Trello](https://trello.com/b/2VdWvqBJ/explainmit) such as "Fix bug X" 
 2. Create a new branch called X 
