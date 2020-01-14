@@ -33,6 +33,9 @@
         </div>
 
         <v-divider></v-divider>
+        <ClassesSearchBar @classAdded="fetchClasses"></ClassesSearchBar>
+
+        <v-divider></v-divider>
         
         <v-container fluid class="py-0">
           <v-row justify="center" class="py-0">
@@ -118,6 +121,7 @@ import BaseCard from "@/components/BaseCard.vue"
 import HomeAppBar from "@/components/HomeAppBar.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
+import ClassesSearchBar from "@/components/ClassesSearchBar.vue"
 
 export default {
   components: {
@@ -125,7 +129,8 @@ export default {
     BaseGrid,
     BaseCard,
     RenderlessFetchStrokes,
-    DoodleVideo
+    DoodleVideo,
+    ClassesSearchBar
   },
   computed: {
     ...mapState(['user', 'isFetchingUser']),
@@ -142,12 +147,35 @@ export default {
   },
   methods: {
     fetchClasses () {
-      this.classes = [] 
-      db.collection("classes").get().then(querySnapshot => {
+        this.classes = []
+        if(this.user == null){
+            console.log('no user')
+            return
+        }
+        console.log(this.isFetchingUser)
+      /*
+        Displaying all classes
+        db.collection("classes").get().then(querySnapshot => {
         querySnapshot.forEach(doc => {
           this.classes.push({ ".key": doc.id, ...doc.data()})
         })
-      })
+      })*/
+        console.log('start')
+        let userDoc = db.collection("users").doc(this.user.uid)
+        userDoc.get().then(doc => {
+            let A = {...doc.data()}.enrolledClasses;
+            
+            db.collection("classes").get().then(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                for(let x of A){
+                    if(doc.id == x.classID){
+                        this.classes.push({ ".key": doc.id, ...doc.data()})
+                        break
+                    }
+                }
+                })
+            })
+        })  
     },
     async createClass (courseNumber) {
       const ref = db.collection('classes').doc(courseNumber)
@@ -158,6 +186,7 @@ export default {
         paragraph: "paragraph",
         tabs: ["New"]
       })
+      //add to enrolled classes
       this.fetchClasses()
     },
     quickplayVideo (i) {
