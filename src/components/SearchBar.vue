@@ -4,8 +4,8 @@
       :label="label"
       :items="items"
       placeholder="Start Typing to Search"
-      v-model="searchText"
       @change="submit"
+      v-model="searchText"
       ></v-autocomplete>
   </div>
 </template>
@@ -23,8 +23,11 @@ export default {
   props: ['label', 'items'],
   methods: {
     submit() {
-        //this.$emit('submit', this.searchText)
-        this.searchText = null
+        let text = this.searchText
+        this.$nextTick(() => {
+            this.searchText = null
+        })
+        this.$emit('submit', text)
     },
   }
 }
