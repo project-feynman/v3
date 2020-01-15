@@ -33,10 +33,21 @@
         </div>
 
         <v-divider></v-divider>
-        <ClassesSearchBar @classAdded="fetchClasses"></ClassesSearchBar>
+        <SearchBar 
+            label="Enter Class Number"
+            :items="classesIDs"
+            @submit="classChosen">
+        </SearchBar>
+        
+        <KaryDialog v-if="searchBarDialog"
+            title="Do you want to add the following class?"
+            :text="chosenClass"
+            :options="searchBarDialogOptions"
+            @submit="searchBarDialogSubmitted"
+        >
+        </KaryDialog>
 
         <v-divider></v-divider>
-        
         <v-container fluid class="py-0">
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
@@ -93,16 +104,14 @@
           </v-row>
         </v-container>
       </v-card>
-
       <transition name="fade" mode="out-in">
-        <div v-if="isFetchingUser" key="loading..."></div>
+        <div v-if="isFetchingUser | user==null" key="loading..."></div>
         <div v-else key="class-list">
           <BaseGrid>
-            <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize(c)">
-              <v-card @click="$router.push(`${c.courseNumber}/questions`)">
-                <v-card-title>{{ c.courseNumber }}</v-card-title>
-                <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos, 0 members</v-card-subtitle>
-              </v-card>
+            <v-col v-for="(c, i) in this.user.enrolledClasses" :key="i">
+                <v-card @click="$router.push(`${c.classID}/questions`)">
+                    <v-card-title>{{c.classID}}</v-card-title>
+                </v-card>
             </v-col>
           </BaseGrid>
         </div>
@@ -121,7 +130,8 @@ import BaseCard from "@/components/BaseCard.vue"
 import HomeAppBar from "@/components/HomeAppBar.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
-import ClassesSearchBar from "@/components/ClassesSearchBar.vue"
+import SearchBar from "@/components/SearchBar.vue"
+import KaryDialog from "@/components/KaryDialog.vue"
 
 export default {
   components: {
@@ -130,7 +140,8 @@ export default {
     BaseCard,
     RenderlessFetchStrokes,
     DoodleVideo,
-    ClassesSearchBar
+    SearchBar,
+    KaryDialog,
   },
   computed: {
     ...mapState(['user', 'isFetchingUser']),
@@ -138,8 +149,13 @@ export default {
   data () {
     return {
       classes: [],
+      classesIDs: [],
       snackbar: false,
       snackbarMessage: '',
+
+      chosenClass: '',
+      searchBarDialog: false,
+      searchBarDialogOptions: ['No', 'Yes']
     }
   },
   created () {
@@ -148,35 +164,53 @@ export default {
   methods: {
     fetchClasses () {
         this.classes = []
-        if(this.user == null){
-            console.log('no user')
-            return
-        }
-        console.log(this.isFetchingUser)
-      /*
-        Displaying all classes
         db.collection("classes").get().then(querySnapshot => {
         querySnapshot.forEach(doc => {
           this.classes.push({ ".key": doc.id, ...doc.data()})
+          this.classesIDs.push(doc.id)
         })
-      })*/
-        console.log('start')
+      })  
+    },
+    
+    classChosen(answer) {
+        this.searchBarDialog = true
+        this.chosenClass = answer
+    },
+    searchBarDialogSubmitted(answer) {
+        if(answer == 'No'){
+            this.chosenClass = ''
+            this.searchBarDialog = false
+            return
+        }
+
         let userDoc = db.collection("users").doc(this.user.uid)
+
         userDoc.get().then(doc => {
             let A = {...doc.data()}.enrolledClasses;
-            
-            db.collection("classes").get().then(querySnapshot => {
-            querySnapshot.forEach(doc => {
-                for(let x of A){
-                    if(doc.id == x.classID){
-                        this.classes.push({ ".key": doc.id, ...doc.data()})
-                        break
-                    }
+            for(let x of A){
+                if(x.classID == this.chosenClass){
+                    this.chosenClass = null
+                    this.searchBarDialog = false
+                    return
                 }
-                })
+            }
+
+            var enrolledClassObj = {
+                classID: this.chosenClass,
+                settings: {
+                notification: {
+                    newQuestion: "always",
+                    },
+                }
+            }
+            userDoc.update({
+                enrolledClasses: firebase.firestore.FieldValue.arrayUnion(enrolledClassObj)
             })
-        })  
+            this.chosenClass = ''
+            this.searchBarDialog = false
+        })
     },
+
     async createClass (courseNumber) {
       const ref = db.collection('classes').doc(courseNumber)
       await ref.set({ 
