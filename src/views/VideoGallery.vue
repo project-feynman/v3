@@ -30,8 +30,14 @@
                         :ref="`card--${j}`"
                       >
                         <!-- IMAGE SLOT -->
-                        <template v-slot:card-image>
-                          <RenderlessFetchStrokes :whiteboardID="video['.key']">
+                        <template v-slot:card-image @click="clickedSet[j] = true">
+
+                          <img v-if="!clickedSet[j]"
+                          :src="video.thumbnail ? video.thumbnail : '' " />
+
+                          <RenderlessFetchStrokes 
+                          v-else
+                            :whiteboardID="video['.key']">
                             <template slot-scope="{ strokes }">
                               <DoodleVideo 
                                 v-if="strokes"
@@ -107,6 +113,7 @@ export default {
       isEditting: false,
       whiteboardPopup: false,
       currentVideoID: "",
+      clickedSet: {}
     }
   },
   computed: {
@@ -118,6 +125,9 @@ export default {
     this.fetchClassDoc()
   },
   methods: {
+    addToCLicked(j){
+      clickedSet[j] = true
+    },
     async fetchClassDoc () {
       this.classDoc = {} 
       const classID = this.$route.params.class_id
