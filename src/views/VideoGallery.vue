@@ -15,7 +15,7 @@
               <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber">
                 <template slot-scope="{ videos }">
                   <BaseGrid>
-                    <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
+                    <v-col v-for="(video, j) in videos" @click="addToCLicked(j, videos)" :key="video['.key']" :cols="computeCardSize()">
                       <BaseCard
                         @save-tab-number="newValue => handleTabChange(newValue, video)"
                         @save-paragraph="newValue => saveParagraph(newValue, video)"
@@ -30,14 +30,16 @@
                         :ref="`card--${j}`"
                       >
                         <!-- IMAGE SLOT -->
-                        <template v-slot:card-image @click="clickedSet[j] = true">
+                        <template v-slot:card-image>
 
-                          <img v-if="!clickedSet[j]"
-                          :src="video.thumbnail ? video.thumbnail : '' " />
+                          <template v-if="!clickedSet[j]">
+                            <img 
+                            :src="video.thumbnail ? video.thumbnail : '' " >
+                          </template>
 
-                          <RenderlessFetchStrokes 
-                          v-else
-                            :whiteboardID="video['.key']">
+                          <template v-else>
+                            <RenderlessFetchStrokes 
+                            :whiteboardID="video['.key']" key="video">
                             <template slot-scope="{ strokes }">
                               <DoodleVideo 
                                 v-if="strokes"
@@ -47,7 +49,8 @@
                                 @animation-loaded="hasFetchedVideos = true"
                               />
                             </template>
-                          </RenderlessFetchStrokes>
+                            </RenderlessFetchStrokes>
+                          </template>
                         </template>
 
                         <!-- BUTTONS SLOT -->
@@ -125,8 +128,17 @@ export default {
     this.fetchClassDoc()
   },
   methods: {
-    addToCLicked(j){
-      clickedSet[j] = true
+    addToCLicked(j, videos){
+      this.clickedSet[j] = true
+      videos.push({})
+      videos.pop()
+      console.log(videos)
+      console.log("clickedSet", this.clickedSet)
+      console.log(j in this.clickedSet)
+    },
+    wasClicked(j){
+      console.log(j, " : clickedSet", this.clickedSet, " : ", j in this.clickedSet )
+      return j in this.clickedSet
     },
     async fetchClassDoc () {
       this.classDoc = {} 
