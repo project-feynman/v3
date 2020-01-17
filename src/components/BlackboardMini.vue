@@ -10,9 +10,9 @@
 
       <!-- APP BAR -->
       <v-app-bar dense color="#eee" elevation="1" class="blackboard-toolbar">
-        <template v-if="currentState != recordingStateEnum.POST_RECORDING">
-          <v-container class="py-1 px-0">
-            <v-row align="center" justify="space-between">
+        <v-container class="py-1 px-0">
+          <v-row align="center" justify="space-between">
+            <template v-if="currentState != recordingStateEnum.POST_RECORDING">
               <v-col class="py-0">
                 <v-row justify="start" align="center">
                   <v-col class="px-1 py-0" cols="auto">
@@ -74,38 +74,64 @@
                 </v-row>
               </v-col>
               <v-col cols="auto" class="py-0 px-0">
-                <template v-if="!isRecording">
-                  <v-btn 
-                    v-if="!isRecording"
-                    @click="wipeBoard()"
-                    outlined
-                    color="red"
-                    class="board-action-btn normal-text"
-                  >
-                    <span class="d-none d-lg-block mr-2">Clear</span>
-                    <v-icon>clear</v-icon>
-                  </v-btn>
-                  <v-btn @click="startRecording()" 
+                <v-btn
+                  @click="wipeBoard()"
+                  outlined
+                  color="red"
+                  class="board-action-btn normal-text"
+                >
+                  <span class="d-none d-lg-block mr-2">Clear</span>
+                  <v-icon>clear</v-icon>
+                </v-btn>
+                <v-btn
+                  v-if="!isRecording"
+                  @click="startRecording()" 
                   color="accent lighten-1"
-                  class="board-action-btn">
-                    <span class="d-none d-sm-block mr-2">Record</span>
-                    <v-icon>adjust</v-icon>
-                  </v-btn>
-                </template>
-                <v-btn v-else @click="stopRecording()" color="pink white--text">
-                  STOP VIDEO
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Record</span>
+                  <v-icon>adjust</v-icon>
+                </v-btn>
+                <v-btn
+                  v-else
+                  @click="stopRecording()"
+                  color="accent lighten-1"
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Stop</span>
+                  <v-icon>stop</v-icon>
                 </v-btn>
               </v-col>
-            </v-row>
-          </v-container>
-        </template>
-        <template v-else>
-          <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
-          <v-btn @click="recordAgain()">RETRY</v-btn>
-          <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
-            SAVE VIDEO
-          </v-btn> -->
-        </template>
+            </template>
+            <template v-else>
+              <v-col cols="auto" class="py-0">
+                <v-btn
+                  @click="initReplayLogic()"
+                  outlined
+                  color="accent lighten-1"
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Preview</span>
+                  <v-icon>mdi-eye</v-icon>
+                </v-btn>
+              </v-col>
+              <v-col cols="auto" class="py-0">
+                <v-btn
+                  @click="recordAgain()"
+                  outlined
+                  color="accent lighten-1"
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Retry</span>
+                  <v-icon>mdi-undo-variant</v-icon>
+                </v-btn>
+              </v-col>
+              <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
+                SAVE VIDEO
+              </v-btn> -->
+            </template>
+          </v-row>
+        </v-container>
       </v-app-bar>
 
       <!-- WHITEBOARD -->
@@ -122,7 +148,7 @@
         v-show="false"
         ref="audio-recorder"
         @start-recording="isRecording = true"
-        @file-uploaded="audioObj => this.audioObj = audioObj"
+        @file-uploaded="audioObj => handleNewAudio(audioObj)"
       />
 
   </v-card>
@@ -181,6 +207,8 @@ export default {
       allStrokes: [],
       currentState: "",
       audioObj: {},
+      audioPath: "",
+      audioURL: "",
       recordingStateEnum: {
         PRE_RECORDING: "pre-recording",
         MID_RECORDING: "mid-recording",
@@ -225,11 +253,6 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
-        this.lineWidth = 2
-      } else {
-        this.lineWidth = 30
-      }
       this.setStyle(this.color, this.lineWidth)
     },
     isRecording () {
@@ -293,6 +316,9 @@ export default {
     window.removeEventListener("click", e=>this.palleteClose(e));
   },
   methods: {
+    handleNewAudio ({ url }) {
+      this.audioURL = url
+    },
     wipeBoard () {
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -310,7 +336,17 @@ export default {
       reader.onload = function(event){
           var img = new Image();
           img.onload = function(){
-              ctx.drawImage(img,0,0);
+            var w=img.width
+            var h=img.height
+            var img_aspect_ratio=w/h
+            if (img_aspect_ratio<canvas.width/canvas.height) {
+              w=canvas.width
+              h=w/img_aspect_ratio
+            } else {
+              h=canvas.height
+              w=h*img_aspect_ratio
+            }
+            ctx.drawImage(img,0,0,w,h);
           }
           img.src = event.target.result;
           var uri = canvas.toDataURL('image/png'),
@@ -417,6 +453,7 @@ export default {
       this.lastX = -1
     },
     drawToPointAndSave (e) {
+      this.setStyle(this.color, this.lineWidth);
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -498,23 +535,15 @@ export default {
       if (!e)
         var e = event
       if (e.offsetX) {
-        this.mouseX = e.offsetX - window.scrollX //- window.scrollX
-        this.mouseY = e.offsetY - window.scrollY // - window.scrollY (in case these don't work)
+        this.mouseX = e.offsetX //- window.scrollX
+        this.mouseY = e.offsetY //- window.scrollY (in case these don't work)
       }
       else if (e.layerX) {
-        this.mouseX = e.layerX - window.scrollX
-        this.mouseY = e.layerY - window.scrollY
+        this.mouseX = e.layerX //- window.scrollX
+        this.mouseY = e.layerY //- window.scrollY
       }
-      // To get the pixel data of the canvas
-      // var c = document.getElementById('myCanvas');
-      // var pixelData = this.canvas.getContext('2d').getImageData(e.offsetX, e.offsetY, 1, 1).data;
-      // console.log(pixelData)
     },
     // --- END Mouse Drawing --- // 
-    useEraser () {
-      this.color = 'rgb(62, 66, 66)'
-      this.lineWidth = 18
-    },
     startRecording () {
       this.currentState = this.recordingStateEnum.MID_RECORDING
       const audioRecorder = this.$refs['audio-recorder']
@@ -552,7 +581,7 @@ export default {
     },
     palleteClose(e) {
       var pallete = document.getElementById('swatches-wrapper');
-      if (!pallete.contains(e.target)) {
+      if (pallete && !pallete.contains(e.target)) {
         this.palleteVisibility=false
       }
     },
@@ -586,9 +615,11 @@ export default {
 </script>
 
 <style scoped>
+#whiteboard {
+  z-index: 5;
+}
 #blackboard-wrapper {
   position: relative;
-  z-index: 10;
 }
 #myCanvas {
   width: 100%;
