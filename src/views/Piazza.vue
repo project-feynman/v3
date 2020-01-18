@@ -146,10 +146,8 @@ export default {
         inquisitorID: this.user ? this.user.uid : "",
         classID: this.$route.params.class_id,
       }
-      console.log("postObj =", postObj)
       await ref.add(postObj).then(doc => {
           this.currentQuestion = doc
-          console.log(this.currentQuestion)
       })
       this.fetchQuestions()
       this.fetchAnswers()
