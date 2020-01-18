@@ -14,6 +14,23 @@
         :placeholder="`Type ${postType} here...`"
         v-model="postDescription"
       />
+
+        <v-container v-if="withTags">
+            <div id="Tags">
+                <SearchBar
+                label="Enter a Tag"
+                :items="tagsPool"
+                @submit="addTag"
+                />
+                
+                <Tags
+                :items="postTags"
+                :removable="true"
+                @delete="deleteTag"
+                />
+            </div>
+        </v-container>
+
       <div class="blackboard-container">
         <BlackboardMini 
           ref="blackboard-mini"
@@ -26,19 +43,28 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import BlackboardMini from "@/components/BlackboardMini.vue"
+import SearchBar from '@/components/SearchBar.vue'
+import Tags from "@/components/Tags.vue"
 
 export default {
   props: {
     postType: String, // either "question" or "answer"
-    visible: Boolean
+    visible: Boolean,
+    tagsPool: Array,
+    withTags: Boolean
   },
   components: {
-    BlackboardMini
+    BlackboardMini,
+    Tags,
+    SearchBar
   },
   data: () => ({
-    postDescription: ""
+    postDescription: "",
+    postTags: [],
+    reRenderTags: 0
   }),
   methods: {
     submitPost () {
@@ -51,13 +77,16 @@ export default {
       const post = { title: "No title yet", 
                      description: this.postDescription, 
                      blackboardID,
+                     postTags : this.postTags,
                      boardStrokes: BlackboardMini.allStrokes,
                      audioURL: BlackboardMini.audioURL,
                      date: this.getDate() }
       this.$emit('post-submit', post)
+    
       // reset 
-      this.postDescription = ""
       BlackboardMini.wipeBoard()
+      this.postDescription=""
+      this.postTags = []
     },
     getDate () {
       var today = new Date();
@@ -72,7 +101,18 @@ export default {
     getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 
+    },
+    //Start of Tags functions
+    addTag(tag) {
+        for(let t of this.postTags){
+            if(t == tag)return
+        }
+        this.postTags.push(tag)
+    },
+    deleteTag(tag) {
+        this.postTags = this.postTags.filter(x => {return x != tag})
     }
+    //End of Tags functions
   }
 }
 </script>

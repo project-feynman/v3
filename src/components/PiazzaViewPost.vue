@@ -7,6 +7,13 @@
       name="input-7-4"
       :value="post.description"
     />
+    <v-container>
+        <Tags
+            :items="post.postTags"
+            :removable="false" 
+        >
+        </Tags>
+    </v-container>
     <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
       <template slot-scope="{ strokes }">
         <!-- length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) -->
@@ -26,15 +33,17 @@
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
+import Tags from '@/components/Tags.vue'
 
 export default {
   props: {
     post: Object,
-    postNumber: Number
+    postNumber: Number,
   },
   components: {
     DoodleVideo,
-    RenderlessFetchStrokes
+    RenderlessFetchStrokes,
+    Tags
   },
   methods: {
     getFullWidth () {

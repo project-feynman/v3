@@ -218,6 +218,7 @@ export default {
         description: "description",
         introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
         paragraph: "paragraph",
+        tagsPool: [],
         tabs: ["New"]
       })
       //add to enrolled classes

@@ -20,6 +20,8 @@
                 <PiazzaNewPost 
                   postType="Question"
                   :visible="this.viewingPost"
+                  :tagsPool="tagsPool"
+                  :withTags="true"
                   @post-submit="question => submitPost(question, questionsRef)"
                 />
               </template>
@@ -32,6 +34,7 @@
                 />
                 <PiazzaNewPost
                   postType="answer"
+                  :withTags="false"
                   @post-submit="answer => submitPost(answer, answersRef)"
                 />
               </template>
@@ -76,7 +79,8 @@ export default {
     boardStrokes: [],
     whiteBoardImage: "",
     viewingPost: false,
-    isMobile: window.innerWidth < 600
+    isMobile: window.innerWidth < 600,
+    tagsPool: []
   }),
   computed: {
     user () {
@@ -88,12 +92,13 @@ export default {
     },
     answersRef () {
       const classID = this.$route.params.class_id
-      const questionID = this.currentQuestion.id
+      const questionID = this.currentQuestion['.key']
       return db.collection("classes").doc(classID).collection("questions").doc(questionID).collection("answers")
     }
   },
   async created () {
     this.fetchQuestions()
+    this.fetchTagsPool()
   },
   mounted() {
     this.setQuestionsHeight();
@@ -115,6 +120,13 @@ export default {
         this.answers.push({".key": doc.id, ...doc.data()})
       })
     },
+    async fetchTagsPool() {
+        this.tagsPool = []
+        const classID = this.$route.params.class_id
+        db.collection('classes').doc(classID).get().then(doc => {
+            this.tagsPool = doc.data().tagsPool
+        })
+    },
     handleQuestionCreate () {
       // destroy and create a new one
       this.isAddingNewQuestion = false
@@ -128,7 +140,7 @@ export default {
       this.isAddingNewQuestion = false 
       this.viewingPost = true
     },
-    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioURL }, ref) {
+    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioURL, postTags }, ref) {
       db.collection("whiteboards").doc(blackboardID).set({
             strokes: boardStrokes,
             // image: this.whiteBoardImage
@@ -140,17 +152,17 @@ export default {
         questionDescription: description,
         blackboardID,
         videoID: blackboardID,
+        postTags,
         date,
         audioURL,
         usersWhoUpvoted: [],
         inquisitorID: this.user ? this.user.uid : "",
         classID: this.$route.params.class_id,
       }
-      await ref.add(postObj).then(doc => {
-          this.currentQuestion = doc
-      })
+      await ref.add(postObj)
+
       this.fetchQuestions()
-      this.fetchAnswers()
+      //this.fetchAnswers()
       // trigger email notification
       // let inquisitorID = this.user ? this.user.uid : "";
       // let classID = this.$route.params.class_id;
