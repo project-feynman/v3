@@ -88,7 +88,7 @@ export default {
     },
     answersRef () {
       const classID = this.$route.params.class_id
-      const questionID = this.currentQuestion['.key']
+      const questionID = this.currentQuestion.id
       return db.collection("classes").doc(classID).collection("questions").doc(questionID).collection("answers")
     }
   },
@@ -130,8 +130,8 @@ export default {
     },
     async submitPost ({ title, description, blackboardID, boardStrokes, date, audioURL }, ref) {
       db.collection("whiteboards").doc(blackboardID).set({
-        strokes: boardStrokes,
-        // image: this.whiteBoardImage
+            strokes: boardStrokes,
+            // image: this.whiteBoardImage
       })
       const postObj = {
         title,
@@ -146,8 +146,9 @@ export default {
         inquisitorID: this.user ? this.user.uid : "",
         classID: this.$route.params.class_id,
       }
-      console.log("postObj =", postObj)
-      await ref.add(postObj)
+      await ref.add(postObj).then(doc => {
+          this.currentQuestion = doc
+      })
       this.fetchQuestions()
       this.fetchAnswers()
       // trigger email notification
