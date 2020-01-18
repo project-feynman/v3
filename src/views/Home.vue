@@ -40,7 +40,14 @@
               <v-card>
                 <v-card-subtitle class="black--text">Ask & answer questions, just like on Piazza</v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="BlEjXn7RP7q8YwxG8FLO">
+
+                  <DoodleVideo 
+                        whiteboardID="BlEjXn7RP7q8YwxG8FLO"
+                        canvasID="1"
+                        @animation-loaded="hasFetchedVideos = true"
+                      />
+
+                  <!-- <RenderlessFetchStrokes whiteboardID="BlEjXn7RP7q8YwxG8FLO">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -49,7 +56,7 @@
                         @animation-loaded="hasFetchedVideos = true"
                       />
                     </template>
-                  </RenderlessFetchStrokes>
+                  </RenderlessFetchStrokes> -->
                 </v-img>
               </v-card>
             </v-col>
@@ -57,7 +64,13 @@
               <v-card>
                 <v-card-subtitle class="black--text">Draw & talk to explain harder ideas (live or recorded)</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="8hcybKON8Br67bNUA9TJ">
+
+                 <DoodleVideo 
+                        whiteboardID="8hcybKON8Br67bNUA9TJ"
+                        canvasID="2"
+                        @animation-loaded="hasFetchedVideos = true"
+                      />
+                  <!-- <RenderlessFetchStrokes whiteboardID="8hcybKON8Br67bNUA9TJ">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -66,7 +79,7 @@
                         @animation-loaded="hasFetchedVideos = true"
                       />
                     </template>
-                  </RenderlessFetchStrokes>
+                  </RenderlessFetchStrokes> -->
                 </v-img>
               </v-card>
             </v-col>
@@ -74,7 +87,14 @@
               <v-card>
                  <v-card-subtitle class="black--text">As people help each other, elegant explanations accumulate</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="vgPkZWvsqvt9pImHiMbe">
+
+                  <DoodleVideo 
+                        whiteboardID="vgPkZWvsqvt9pImHiMbe"
+                        canvasID="3"
+                        @animation-loaded="hasFetchedVideos = true"
+                      />
+
+                  <!-- <RenderlessFetchStrokes whiteboardID="vgPkZWvsqvt9pImHiMbe">
                     <template slot-scope="{ strokes }">
                       <DoodleVideo 
                         v-if="strokes"
@@ -83,7 +103,7 @@
                         @animation-loaded="hasFetchedVideos = true"
                       />
                     </template>
-                  </RenderlessFetchStrokes>
+                  </RenderlessFetchStrokes> -->
                 </v-img>
               </v-card>
             </v-col>

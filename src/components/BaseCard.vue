@@ -85,7 +85,7 @@ export default {
     title: String,
     subtitle: String,
     imageURL: String,
-    description: String,
+    description: String
   },
   data: () => ({
     isEditing: false,

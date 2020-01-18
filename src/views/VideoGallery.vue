@@ -12,10 +12,10 @@
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
-              <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber">
+              <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber" @videos-fetched="hasFetchedVideos=true">
                 <template slot-scope="{ videos }">
-                  <BaseGrid>
-                    <v-col v-for="(video, j) in videos" @click="addToCLicked(j, videos)" :key="video['.key']" :cols="computeCardSize()">
+                  <BaseGrid >
+                    <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
                       <BaseCard
                         @save-tab-number="newValue => handleTabChange(newValue, video)"
                         @save-paragraph="newValue => saveParagraph(newValue, video)"
@@ -25,16 +25,23 @@
                         :description="video.paragraph || ''"
                         :tabs="classDoc.tabs"
                         :tabNumber="i"
-                        :key="video['.key']"
                         class="mb-5"
                         :ref="`card--${j}`"
                       >
                         <!-- IMAGE SLOT -->
                         <template v-slot:card-image>
 
-                          <template v-if="!clickedSet[j]">
-                            <img 
-                            :src="video.thumbnail ? video.thumbnail : '' " >
+                          <DoodleVideo
+                            :whiteboardID="video['.key']" 
+                            :ref="`doodle-video-${i}-${j}`"
+                            :canvasID="`${i}-${j}`"
+                            :video="video"
+                            >
+
+                          </DoodleVideo>
+<!--
+                         <template v-if="!clickedSet[video['.key']] && (hasFetchedVideos=true)">  this is jank
+                            <img :src="video.thumbnail" >
                           </template>
 
                           <template v-else>
@@ -46,11 +53,14 @@
                                 :ref="`doodle-video-${i}-${j}`"
                                 :strokes="strokes"
                                 :canvasID="`${i}-${j}`"
-                                @animation-loaded="hasFetchedVideos = true"
+                                @animation-loaded="true"
                               />
                             </template>
                             </RenderlessFetchStrokes>
-                          </template>
+                          </template>  
+-->
+
+
                         </template>
 
                         <!-- BUTTONS SLOT -->
@@ -116,7 +126,8 @@ export default {
       isEditting: false,
       whiteboardPopup: false,
       currentVideoID: "",
-      clickedSet: {}
+      // clickedSet: {},
+      // x: 0
     }
   },
   computed: {
@@ -128,18 +139,21 @@ export default {
     this.fetchClassDoc()
   },
   methods: {
-    addToCLicked(j, videos){
-      this.clickedSet[j] = true
-      videos.push({})
-      videos.pop()
-      console.log(videos)
-      console.log("clickedSet", this.clickedSet)
-      console.log(j in this.clickedSet)
-    },
-    wasClicked(j){
-      console.log(j, " : clickedSet", this.clickedSet, " : ", j in this.clickedSet )
-      return j in this.clickedSet
-    },
+    // addToClicked(key, videos){
+    //   Vue.set(clickedSet, key, true)
+    //   // this.clickedSet[key] = key
+    //   // videos.push({})
+    //   // videos.pop()
+    //   // video.push["clicked"] = true
+    //   this.x+=1
+    //   console.log(videos)
+    //   console.log("clickedSet", this.clickedSet)
+    //   console.log(key in this.clickedSet)
+    // },
+    // wasClicked(j){
+    //   console.log(j, " : clickedSet", this.clickedSet, " : ", j in this.clickedSet )
+    //   return j in this.clickedSet
+    // },
     async fetchClassDoc () {
       this.classDoc = {} 
       const classID = this.$route.params.class_id
