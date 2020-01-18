@@ -150,7 +150,7 @@ export default {
       this.lastX = x
       this.lastY = y
     },
-    setStyle(color = 'yellow', lineWidth = 2) {
+    setStyle(color = 'white', lineWidth = 2) {
       this.ctx.strokeStyle = color
       this.ctx.lineCap = 'round' // lines at different angles can join into each other
       this.ctx.lineWidth = lineWidth
