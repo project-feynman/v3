@@ -88,7 +88,7 @@ export default {
     },
     answersRef () {
       const classID = this.$route.params.class_id
-      const questionID = this.currentQuestion.id
+      const questionID = this.currentQuestion['.key']
       return db.collection("classes").doc(classID).collection("questions").doc(questionID).collection("answers")
     }
   },
@@ -146,11 +146,9 @@ export default {
         inquisitorID: this.user ? this.user.uid : "",
         classID: this.$route.params.class_id,
       }
-      await ref.add(postObj).then(doc => {
-          this.currentQuestion = doc
-      })
+      await ref.add(postObj)
       this.fetchQuestions()
-      this.fetchAnswers()
+      //this.fetchAnswers()
       // trigger email notification
       // let inquisitorID = this.user ? this.user.uid : "";
       // let classID = this.$route.params.class_id;
