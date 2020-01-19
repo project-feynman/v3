@@ -51,9 +51,10 @@ export default {
     recordings () {
       if (this.recordings) {
         this.$nextTick(() => {
-			    this.player.on('play', () => this.$emit('play'))
-          this.player.on('seeking', () => this.$emit('seeking'))
-		    })
+          this.player.on('play', () => this.$emit('play'));
+          this.player.on('pause', () => this.$emit('pause'));
+          this.player.on('seeking', () => this.$emit('seeking'));
+        });
       }
     },
     cleanupWhenFinished (val) {

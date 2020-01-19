@@ -112,7 +112,7 @@ export default {
     },
     async initData () {
       if (!this.strokes) {
-        return 
+        return
       }
       this.indexOfNextStroke = 0
       this.allStrokes = this.strokes
