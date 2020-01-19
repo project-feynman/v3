@@ -19,20 +19,6 @@ export default {
       }
     },
 
-    createSyncCancel() {
-      let cancelFlag = false;
-
-      // This method cancels synchronization.
-      this.syncCancel = () => {
-        cancelFlag = true;
-      };
-
-      // This method checks if synchronization has been canceled.
-      this.syncIsCancelled = () => {
-        return cancelFlag;
-      }
-    },
-
     async startSync(getTimeInSeconds) {
       // Don't sync on empty strokes.
       if (!this.allStrokes || this.allStrokes.length === 0) {
@@ -60,20 +46,15 @@ export default {
 
       // Set frame index.
       this.indexOfNextFrame = 0;
-
-      // Initialize playback synchronization.
-      this.syncVisualWithAudio();
     },
 
     // Synchronize drawings with the audio on a point-by-point basis.
-    async syncVisualWithAudio() {
+    syncVisualWithAudio(once = false) {
       // The number of frames.
       const n = this.allFrames.length;
 
       // Get the current time in seconds.
       const currentTime = this.getTimeInSeconds();
-
-      console.log(this.indexOfNextFrame, this.nextFrameStartTime());
 
       // Determine if we need to sync.
       if (this.nextFrameStartTime() <= currentTime) {
@@ -115,15 +96,19 @@ export default {
         }
       }
       
-      // If we are not done rendering, we need to call this method again after a timeout.
-      if (this.indexOfNextFrame !== n) {
+      // If we are not done rendering, we need to call this method again after a timeout. If only synchronizing once,
+      // don't repeat call.
+      if (this.indexOfNextFrame !== n && !once) {
         // Determine how long to wait. The event loop takes some time, so we will always be a bit behind. Recompute the
         // current time here. Generally speaking, the timeout guarantees a wait of at least the specified amount, so we
         // should not waste too many calls to the method by doing this.
-        let timeout = 1000 * (this.getTimeInSeconds() - this.nextFrameStartTime());
+        let timeout = 1000 * (this.nextFrameStartTime() - this.getTimeInSeconds());
+        if (timeout < 0) {
+          timeout = 0;
+        }
 
         // Recursively call on self. We do not use `setInterval` to prevent overlapping calls to this method.
-        setTimeout(this.syncVisualWithAudio, timeout);
+        this.sync = setTimeout(this.syncVisualWithAudio, timeout);
       }
     },
 

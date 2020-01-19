@@ -548,7 +548,7 @@ export default {
       this.hasUploadAudio = false
       this.snackbar = true 
       this.snackbarMessage = 'Successfully saved to the "Videos" section'
-    }
+    },
   }
 }
 </script>
