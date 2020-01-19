@@ -104,6 +104,9 @@
       },
 
       handleSeeking() {
+        // Stop first.
+        this.handleStop();
+
         // Call once.
         const animation = this.$refs['animation'];
         animation.syncVisualWithAudio(true);
