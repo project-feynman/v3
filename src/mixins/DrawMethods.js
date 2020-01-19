@@ -7,15 +7,16 @@ export default {
   },
 
   methods: {
-    rescaleCanvas(redraw = true) {
-      // make the drawing coordinate system 1:1 with the actual size of the canvas ("scrollWidth" is the actual width of the canvas)
+    rescaleCanvas(redraw) {
+      // Make the drawing coordinate system 1:1 with the actual size of the canvas (`scrollWidth` is the actual width
+      // of the canvas).
       this.canvas.width = this.canvas.scrollWidth;
       this.canvas.height = this.canvas.scrollHeight;
-      this.setStyle(this.color, this.lineWidth); // turns out the above code resets color and lineWidth
-      // only redraw when the user has finished resizing the window
+      this.setStyle(this.color, this.lineWidth);
+
+      // If redraw, draw all strokes instantly.
       if (redraw) {
-        clearTimeout(this.redrawTimeout); // rescaleCanvas() called again during the 400 milliseconds, so cancel
-        this.redrawTimeout = setTimeout(this.drawStrokesInstantly, 200); // resizing the canvas causes all drawings to be lost
+        this.drawStrokesInstantly();
       }
     },
 
