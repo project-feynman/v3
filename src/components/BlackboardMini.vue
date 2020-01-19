@@ -290,8 +290,8 @@ export default {
     // note that sidenav width = 200, BaseList width = 300
     const height = 9/16 * (window.innerWidth - 500)
     this.canvas.height = height - 48 // the blackboard's top-app-bar is 48px high
-    this.rescaleCanvas()
-    window.addEventListener('resize', this.rescaleCanvas, false)
+    this.rescaleCanvas(true)
+    window.addEventListener('resize', () => this.rescaleCanvas(true), false)
     this.initTouchEvents()
     this.initMouseEvents()
     document.fonts.ready.then(()=>this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
@@ -312,7 +312,7 @@ export default {
   destroyed() {
     window.removeEventListener("resize", this.blackboardToolbar);
     window.removeEventListener("orientationchange", this.blackboardToolbar);
-    window.removeEventListener('resize', this.rescaleCanvas);
+    window.removeEventListener('resize', () => this.rescaleCanvas(true));
     window.removeEventListener("click", e=>this.palleteClose(e));
   },
   methods: {

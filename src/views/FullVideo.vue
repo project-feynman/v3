@@ -75,6 +75,7 @@
         overlay: true
       }
     },
+
     watch: {
       $route: {
         handler: "bindVariables",
@@ -85,6 +86,15 @@
         immediate: true
       }
     },
+
+    mounted() {
+      window.addEventListener('resize', this.resizeVideo);
+    },
+
+    destroyed() {
+      window.removeEventListener('resize', this.resizeVideo);
+    },
+
     methods: {
       handlePlay() {
         const animation = this.$refs['animation'];
@@ -101,6 +111,7 @@
         // Stop sync.
         const animation = this.$refs['animation'];
         clearTimeout(animation.sync);
+        animation.sync = undefined;
       },
 
       handleSeeking() {
@@ -112,17 +123,30 @@
         animation.syncVisualWithAudio(true);
       },
 
+      resizeVideo() {
+        // Rescale canvas.
+        const animation = this.$refs['animation'];
+        animation.rescaleCanvas(false);
+
+        // If we are in playback, just resize, stop, reset, and play. This will re-render. Otherwise, redraw everything.
+        if (animation.sync) {
+          this.handleStop();
+          animation.indexOfNextFrame = 0;
+          this.handlePlay();
+        } else {
+          animation.drawStrokesInstantly();
+        }
+      },
+
       startVideo() {
         const audioRecorder = this.$refs['audio-recorder'];
         audioRecorder.playAudio();
       },
 
       initializeAnimation() {
-        if (this.syncInitialized) {
-          return;
-        } else if (this.resourcesLoaded) {
-          const audioRecorder = this.$refs['audio-recorder'];;
-          const animation = this.$refs['animation']
+        if (!this.syncInitialized && this.resourcesLoaded) {
+          const audioRecorder = this.$refs['audio-recorder'];
+          const animation = this.$refs['animation'];
           animation.startSync(audioRecorder.getAudioTime);
           this.syncInitialized = true;
         }

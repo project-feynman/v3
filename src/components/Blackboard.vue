@@ -200,10 +200,10 @@ export default {
     // new redraw code
     this.canvas.width = document.documentElement.clientWidth 
     this.canvas.height = 0.9 * document.documentElement.clientHeight
-    this.rescaleCanvas()
+    this.rescaleCanvas(true)
     window.addEventListener('resize', () => { 
       this.canvas.width = document.documentElement.clientWidth 
-      this.rescaleCanvas()
+      this.rescaleCanvas(true)
     }, false)
     this.initTouchEvents()
     this.initMouseEvents()
@@ -214,7 +214,7 @@ export default {
       } else {
         this.canvas.width = document.documentElement.clientWidth
       }
-      this.rescaleCanvas()
+      this.rescaleCanvas(true)
     })
   },
   beforeDestroy () {
