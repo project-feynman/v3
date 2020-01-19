@@ -83,16 +83,18 @@ export default {
     }
   },
   mounted () {
-    this.canvas = document.getElementById(`myCanvas-${this.canvasID}`)
-    this.ctx = this.canvas.getContext('2d')
-    this.canvas.height = this.height
+    this.canvas = document.getElementById(`myCanvas-${this.canvasID}`);
+
+    this.ctx = this.canvas.getContext('2d');
+    this.canvas.height = this.height;
+
     if (this.autoplay) {
-      this.rescaleCanvas(false)
-      setTimeout(this.quickplay, 1000)
+      this.rescaleCanvas(false);
+      setTimeout(this.quickplay, 1000);
     } else {
-      this.rescaleCanvas() // should rename to rescale and redraw
+      this.rescaleCanvas(false);
+      this.drawStrokesInstantly();
     }
-    window.addEventListener('resize', this.rescaleCanvas, false)
   },
   beforeDestroy () {
     // clean up everything - needs testing
@@ -120,7 +122,7 @@ export default {
       if (this.ctx) {
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.rescaleCanvas()
+        this.rescaleCanvas(true)
       }
     }
   }
