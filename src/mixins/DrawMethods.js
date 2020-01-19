@@ -1,164 +1,253 @@
 export default {
   data() {
     return {
-      indexOfNextStroke: 0
+      indexOfNextStroke: 0,
+      indexOfNextPoint: 0,
     }
   },
+
   methods: {
     rescaleCanvas(redraw = true) {
       // make the drawing coordinate system 1:1 with the actual size of the canvas ("scrollWidth" is the actual width of the canvas)
-      this.canvas.width = this.canvas.scrollWidth
-      this.canvas.height = this.canvas.scrollHeight
-      this.setStyle(this.color, this.lineWidth) // turns out the above code resets color and lineWidth
+      this.canvas.width = this.canvas.scrollWidth;
+      this.canvas.height = this.canvas.scrollHeight;
+      this.setStyle(this.color, this.lineWidth); // turns out the above code resets color and lineWidth
       // only redraw when the user has finished resizing the window
       if (redraw) {
-        clearTimeout(this.redrawTimeout) // rescaleCanvas() called again during the 400 milliseconds, so cancel 
-        this.redrawTimeout = setTimeout(this.drawStrokesInstantly, 200) // resizing the canvas causes all drawings to be lost 
+        clearTimeout(this.redrawTimeout); // rescaleCanvas() called again during the 400 milliseconds, so cancel
+        this.redrawTimeout = setTimeout(this.drawStrokesInstantly, 200); // resizing the canvas causes all drawings to be lost
       }
     },
+
+    createSyncCancel() {
+      let cancelFlag = false;
+
+      // This method cancels synchronization.
+      this.syncCancel = () => {
+        cancelFlag = true;
+      };
+
+      // This method checks if synchronization has been canceled.
+      this.syncIsCancelled = () => {
+        return cancelFlag;
+      }
+    },
+
     async startSync(getTimeInSeconds) {
-      if (!this.allStrokes || this.allStrokes.length == 0) {
-        return
+      // Don't sync on empty strokes.
+      if (!this.allStrokes || this.allStrokes.length === 0) {
+        return;
       }
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height) // clear the initial preview
-      this.playProgress = setInterval(() => this.syncVisualWithAudio(getTimeInSeconds), 100)
-    },
-    // TODO: optimize the drawing
-    syncVisualWithAudio(getTimeInSeconds) {
-      const n = this.allStrokes.length
-      const currentTime = getTimeInSeconds()
-      if (this.nextStrokeStartTime() <= currentTime) {
-        // catch up the visual to the audio 
-        for (let i = this.indexOfNextStroke; i < n; i++) {
-          const stroke = this.allStrokes[i]
-          if (stroke.startTime > currentTime) {
-            this.indexOfNextStroke = i
-            break
-          } else {
-            this.renderStroke(stroke, this.getPointPeriod(stroke))
-            if (this.indexOfNextStroke == n - 1) {
-              this.indexOfNextStroke += 1 // edge case: without this, "this.allStrokes[this.indexOfNextStroke - 1] will no longer be the most recently drawn stroke 
-            }
-          }
+
+      // Create ordering of frames in `[[strokeIndex, pointIndex], ...]` format.
+      this.allFrames = [];
+      for (let i = 0; i < this.allStrokes.length; i++) {
+        for (let j = 1; j < this.allStrokes[i].points.length; j++) {
+          this.allFrames.push([i, j]);
         }
-      } else if (this.indexOfNextStroke == 0) {
-        // do nothing
-      } else if (this.allStrokes[this.indexOfNextStroke - 1].startTime > currentTime) {
-        // it's indexOfNextStroke - 1 because that is the index of current stroke!
-        // most recent i.e. current stroke on canvas no longer belongs
-        // however doesn't apply if there are no strokes at all on the page
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.indexOfNextStroke = 0
-        this.allStrokes.forEach(stroke => {
-          if (stroke.startTime <= currentTime) {
-            this.renderStroke(stroke, null)
-            this.indexOfNextStroke += 1
+      }
+
+      // Sort frames.
+      this.allFrames.sort((a, b) => {
+        return this.frameStartTime(a) - this.frameStartTime(b);
+      });
+
+      // Clear the initial preview or completed video.
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      // Update the shared time method.
+      this.getTimeInSeconds = getTimeInSeconds;
+
+      // Set frame index.
+      this.indexOfNextFrame = 0;
+
+      // Initialize playback synchronization.
+      this.syncVisualWithAudio();
+    },
+
+    // Synchronize drawings with the audio on a point-by-point basis.
+    async syncVisualWithAudio() {
+      // The number of frames.
+      const n = this.allFrames.length;
+
+      // Get the current time in seconds.
+      const currentTime = this.getTimeInSeconds();
+
+      console.log(this.indexOfNextFrame, this.nextFrameStartTime());
+
+      // Determine if we need to sync.
+      if (this.nextFrameStartTime() <= currentTime) {
+        // The next frame should already have been rendered. Therefore, the visual needs to catch up. Draw until the we
+        // reach a frame that should not be visible yet.
+        for (let i = this.indexOfNextFrame; i < n; i++) {
+          // Figure out when this frame starts.
+          const frameStart = this.nextFrameStartTime();
+
+          // Determine if we are done.
+          if (frameStart > currentTime) {
+            break;
           }
-        })
-      } else {
-        // do nothing 
+
+          // Render the frame.
+          this.renderFrame(this.allFrames[i]);
+
+          // We rendered a frame.
+          this.indexOfNextFrame++;
+        }
+      } else if (this.indexOfNextFrame > 0
+        && this.frameStartTime(this.allFrames[this.indexOfNextFrame - 1]) > currentTime) {
+        // It's `indexOfNextFrame - 1` because that is the index of current frame! Most recent i.e. current stroke on
+        // canvas no longer belongs. However, this doesn't apply if there are no frames rendered at all. Reset canvas
+        // and frames.
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.indexOfNextFrame = 0;
+
+        // De-draw all frames to the current time.
+        for (const frame of this.allFrames) {
+          // Exit when we reach a frame that should not be visible.
+          if (this.frameStartTime(frame) > currentTime) {
+            break;
+          }
+
+          // Render frame.
+          this.renderFrame(frame);
+          this.indexOfNextFrame++;
+        }
+      }
+      
+      // If we are not done rendering, we need to call this method again after a timeout.
+      if (this.indexOfNextFrame !== n) {
+        // Determine how long to wait. The event loop takes some time, so we will always be a bit behind. Recompute the
+        // current time here. Generally speaking, the timeout guarantees a wait of at least the specified amount, so we
+        // should not waste too many calls to the method by doing this.
+        let timeout = 1000 * (this.getTimeInSeconds() - this.nextFrameStartTime());
+
+        // Recursively call on self. We do not use `setInterval` to prevent overlapping calls to this method.
+        setTimeout(this.syncVisualWithAudio, timeout);
       }
     },
-    nextStrokeStartTime() {
-      if (this.indexOfNextStroke == this.allStrokes.length) {
-        // handle edge case of last index
-        return 999999999999
+
+    frameStartTime(frame) {
+      const strokeIndex = frame[0];
+      const pointIndex = frame[1];
+      const stroke = this.allStrokes[strokeIndex];
+      return stroke.startTime + (pointIndex - 1) * this.getPointPeriod(stroke);
+    },
+
+    nextFrameStartTime() {
+      if (this.indexOfNextFrame === this.allFrames.length) {
+        // We finished the last frame. The next frame should never start.
+        return Infinity;
       } else {
-        // gracefully handles first index
-        return this.allStrokes[this.indexOfNextStroke].startTime
+        // Compute the start time.
+        return this.frameStartTime(this.allFrames[this.indexOfNextFrame]);
       }
     },
+
+    // The the period of a point in a stroke in seconds.
     getPointPeriod(stroke) {
-      const strokePeriod = (stroke.endTime - stroke.startTime) * 1000
-      return strokePeriod / stroke.points.length
+      const strokePeriod = (stroke.endTime - stroke.startTime);
+      return strokePeriod / stroke.points.length;
     },
+
     async quickplay() {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       for (const stroke of this.allStrokes) {
-        await this.drawStroke(stroke)
+        await this.drawStroke(stroke, 0);
       }
     },
+
     drawStrokesInstantly() {
       for (const stroke of this.allStrokes) {
-        this.drawStroke(stroke, null)
+        this.drawStroke(stroke);
       }
     },
-    // null is instant, 0 is quickplay, otherwise it's a realtime replay
-    drawStroke({ points, color, lineWidth, isErasing }, pointPeriod = 0) {
+
+    // Internal stroke method for drawing a line between two points. The color and line width should be set before
+    // calling this method.
+    _stroke(points, i, isErasing) {
+      // Get the previous point.
+      const prevPoint = points[i - 1];
+      const prevX = prevPoint.unitX * this.canvas.width;
+      const prevY = prevPoint.unitY * this.canvas.height;
+
+      // Get the current point.
+      const curPoint = points[i];
+      const curX = curPoint.unitX * this.canvas.width;
+      const curY = curPoint.unitY * this.canvas.height;
+
+      // Perform drawing.
+      this.ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
+      this.ctx.beginPath();
+      this.ctx.moveTo(prevX, prevY);
+      this.ctx.lineTo(curX, curY);
+      this.ctx.stroke();
+    },
+
+    // Used for blackboards.
+    drawStroke({points, color, lineWidth, isErasing}, pointPeriod = null) {
       return new Promise(async resolve => {
-        let newLineWidth = lineWidth * (this.canvas.width / 1000)
-        this.setStyle(color, newLineWidth)
+        // Scale line width to canvas width and set style.
+        let newLineWidth = lineWidth * (this.canvas.width / 1000);
+        this.setStyle(color, newLineWidth);
+
+        // Go through all points.
         for (let i = 1; i < points.length; i++) {
-          const prevPoint = points[i - 1]
-          const prevX = prevPoint.unitX * this.canvas.width
-          const prevY = prevPoint.unitY * this.canvas.height
+          // Draw a line.
+          this._stroke(points, i, isErasing);
 
-          const curPoint = points[i]
-          const curX = curPoint.unitX * this.canvas.width
-          const curY = curPoint.unitY * this.canvas.height
-          this.ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over'
-          this.ctx.beginPath()
-          this.ctx.moveTo(prevX, prevY)
-          this.ctx.lineTo(curX, curY)
-          this.ctx.stroke()
-
-          if (pointPeriod != null) {
-            await new Promise(resolve => setTimeout(resolve, pointPeriod))
+          // Wait if necessary.
+          if (pointPeriod !== null) {
+            await new Promise(resolve => setTimeout(resolve, pointPeriod));
           }
         }
-        resolve()
-      })
+
+        // Resolve the promise after drawing all lines.
+        resolve();
+      });
     },
-    // "render" are for videos vs "draw" are for blackboards:
-    renderStroke({ points, color, lineWidth, isErasing }, pointPeriod = 0) {
-      return new Promise(async resolve => {
-        for (let i = 1; i < points.length; i++) {
-          const prevPoint = points[i - 1]
-          const prevX = prevPoint.unitX * this.canvas.width
-          const prevY = prevPoint.unitY * this.canvas.height
 
-          const curPoint = points[i]
-          const curX = curPoint.unitX * this.canvas.width
-          const curY = curPoint.unitY * this.canvas.height
+    // Used for recorded videos.
+    renderFrame(frame) {
+      // Extract index.
+      const strokeIndex = frame[0];
+      const pointIndex = frame[1];
 
-          // for rendering videos, it's necessary to reset style for every segment between points
-          // because of simultaneous drawing / video seeking
-          this.setStyle(color, lineWidth)
-          this.ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over'
+      // Get the stroke.
+      const stroke = this.allStrokes[strokeIndex];
 
-          this.ctx.beginPath()
-          this.ctx.moveTo(prevX, prevY)
-          this.ctx.lineTo(curX, curY)
-          this.ctx.stroke()
+      // Set line style, since multiple strokes can be drawn simultaneously.
+      this.setStyle(stroke.color, stroke.lineWidth);
 
-          if (pointPeriod != null) {
-            await new Promise(resolve => setTimeout(resolve, pointPeriod))
-          }
-        }
-        resolve()
-      })
+      // Draw a stroke. This constitutes a frame.
+      this._stroke(stroke.points, pointIndex, stroke.isErasing);
     },
+
     drawToPoint(x, y) {
-      if (this.lastX == -1) {
-        this.lastX = x
-        this.lastY = y
+      if (this.lastX === -1) {
+        this.lastX = x;
+        this.lastY = y;
         return
       }
-      this.traceLineTo(x, y)
-      this.ctx.stroke()
-      // update position
-      this.lastX = x
-      this.lastY = y
+
+      this.traceLineTo(x, y);
+      this.ctx.stroke();
+
+      // Update position.
+      this.lastX = x;
+      this.lastY = y;
     },
+
     setStyle(color = 'white', lineWidth = 2) {
-      this.ctx.strokeStyle = color
-      this.ctx.lineCap = 'round' // lines at different angles can join into each other
-      this.ctx.lineWidth = lineWidth
+      this.ctx.strokeStyle = color;
+      this.ctx.lineCap = 'round'; // lines at different angles can join into each other
+      this.ctx.lineWidth = lineWidth;
     },
+
     traceLineTo(x, y) {
-      this.ctx.beginPath()
-      this.ctx.moveTo(this.lastX, this.lastY)
-      this.ctx.lineTo(x, y)
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.lastX, this.lastY);
+      this.ctx.lineTo(x, y);
     }
   }
 }
