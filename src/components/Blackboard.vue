@@ -508,7 +508,7 @@ export default {
 
       // take a screenshot of the whiteboard to be used as the "preview" of the video
       // const dataURL = this.canvas.toDataURL()
-      const videoThumbnail = this.canvas.toDataURL()
+      const videoThumbnail = this.createThumbnail()
 
       let metadata = {
         title: videoTitle, 
@@ -548,6 +548,12 @@ export default {
       this.hasUploadAudio = false
       this.snackbar = true 
       this.snackbarMessage = 'Successfully saved to the "Videos" section'
+    },
+    createThumbnail(){
+        this.ctx.fillStyle = "rgb(62, 66, 66)";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.drawStrokesInstantly()
+        return this.canvas.toDataURL()
     }
   }
 }

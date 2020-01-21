@@ -46,17 +46,6 @@
                         canvasID="1"
                         @animation-loaded="hasFetchedVideos = true"
                       />
-
-                  <!-- <RenderlessFetchStrokes whiteboardID="BlEjXn7RP7q8YwxG8FLO">
-                    <template slot-scope="{ strokes }">
-                      <DoodleVideo 
-                        v-if="strokes"
-                        :strokes="strokes"
-                        canvasID="1"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
-                    </template>
-                  </RenderlessFetchStrokes> -->
                 </v-img>
               </v-card>
             </v-col>
@@ -70,16 +59,6 @@
                         canvasID="2"
                         @animation-loaded="hasFetchedVideos = true"
                       />
-                  <!-- <RenderlessFetchStrokes whiteboardID="8hcybKON8Br67bNUA9TJ">
-                    <template slot-scope="{ strokes }">
-                      <DoodleVideo 
-                        v-if="strokes"
-                        :strokes="strokes"
-                        canvasID="2"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
-                    </template>
-                  </RenderlessFetchStrokes> -->
                 </v-img>
               </v-card>
             </v-col>
@@ -93,17 +72,6 @@
                         canvasID="3"
                         @animation-loaded="hasFetchedVideos = true"
                       />
-
-                  <!-- <RenderlessFetchStrokes whiteboardID="vgPkZWvsqvt9pImHiMbe">
-                    <template slot-scope="{ strokes }">
-                      <DoodleVideo 
-                        v-if="strokes"
-                        :strokes="strokes"
-                        canvasID="3"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
-                    </template>
-                  </RenderlessFetchStrokes> -->
                 </v-img>
               </v-card>
             </v-col>

@@ -1,6 +1,6 @@
 <template >
-  <div @click="onVideoClicked()" style="height: 100%; width: 100%;">
-    <template v-if="videoClicked">
+  <div @click="videoClicked = true" style="height: 100%; width: 100%;">
+    <template v-if="loadStrokes">
       <DoodleVideoAnimation
         
         ref="animation"
@@ -22,17 +22,21 @@
     </template>
 
     <template v-else>
-      <!-- <BaseOverlay  :overlay="true"> -->
-      <!-- <canvas 
-        :id="`myCanvas-${canvasID}`" 
-        style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
-        
-      > -->
-      <img style="backround-color: grey" :src="video.thumbnail" >
-      <!-- </canvas> -->
-    <!-- </BaseOverlay> -->
+      
+      <v-img  :src="video.thumbnail"  >
+        <v-container fill-height fluid>
+          <v-row align="center" justify="center">
+              <div>
+              <v-btn fab large dark>
+                <v-icon>play_arrow</v-icon>
+              </v-btn>
+              </div>
+          </v-row>
+        </v-container>  
+      </v-img>  
       
     </template>
+
   </div>
 </template>
 
@@ -54,11 +58,15 @@ export default {
         return true
       }
     },
-    // strokes: Array,
     audioURL: String,
     canvasID: String,
     height: String,
-    video: {}
+    video: {
+      type: Object,
+      default () {
+        return null
+      }
+    }
   },
   components: {
     DoodleVideoAnimation,
@@ -78,16 +86,18 @@ export default {
     ...mapState(["user"]),
     resourcesLoaded() {
       return this.recorderLoaded && this.animationLoaded
+    },
+    loadStrokes() {
+      return (!this.video || !this.video.thumbnail || this.videoClicked)
+    }
+  },
+  watch: {
+    loadStrokes: {
+      handler: "fetchStrokes",
+      immediate: true
     }
   },
   methods: {
-    onVideoClicked() {
-      if (this.videoClicked && this.strokes.length > 0){
-        return
-      }
-      this.videoClicked = true
-      this.fetchStrokes()
-    },
     syncAnimation () {
       if (this.syncedVisualAndAudio) { return } 
       if (this.resourcesLoaded) {
