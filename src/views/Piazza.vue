@@ -121,11 +121,11 @@ export default {
       })
     },
     async fetchTagsPool() {
-        this.tagsPool = []
+        /*this.tagsPool = []
         const classID = this.$route.params.class_id
         db.collection('classes').doc(classID).get().then(doc => {
             this.tagsPool = doc.data().tagsPool
-        })
+        })*/
     },
     handleQuestionCreate () {
       // destroy and create a new one
