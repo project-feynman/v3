@@ -7,6 +7,7 @@
       name="input-7-4"
       :value="post.description"
     />
+    <!--
     <v-container>
         <Tags
             :items="post.postTags"
@@ -14,6 +15,7 @@
         >
         </Tags>
     </v-container>
+    -->
     <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
       <template slot-scope="{ strokes }">
         <!-- length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) -->

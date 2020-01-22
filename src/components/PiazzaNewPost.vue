@@ -14,7 +14,7 @@
         :placeholder="`Type ${postType} here...`"
         v-model="postDescription"
       />
-
+        <!--
         <v-container v-if="withTags">
             <div id="Tags">
                 <SearchBar
@@ -30,6 +30,7 @@
                 />
             </div>
         </v-container>
+        -->
 
       <div class="blackboard-container">
         <BlackboardMini 

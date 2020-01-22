@@ -105,12 +105,12 @@
         </v-container>
       </v-card>
       <transition name="fade" mode="out-in">
-        <div v-if="isFetchingUser | user==null" key="loading..."></div>
+        <div v-if="isFetchingUser || user==null" key="loading..."></div>
         <div v-else key="class-list">
           <BaseGrid>
-            <v-col v-for="(c, i) in this.user.enrolledClasses" :key="i">
-                <v-card @click="$router.push(`${c.classID}/questions`)">
-                    <v-card-title>{{c.classID}}</v-card-title>
+            <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
+                <v-card @click="$router.push(`${i}/questions`)">
+                    <v-card-title>{{s.name}}</v-card-title>
                 </v-card>
             </v-col>
           </BaseGrid>
@@ -132,6 +132,8 @@ import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import SearchBar from "@/components/SearchBar.vue"
 import KaryDialog from "@/components/KaryDialog.vue"
+import {initEnrollementService} from '../dep'
+import {encodeKey} from '../dep'
 
 export default {
   components: {
@@ -153,9 +155,10 @@ export default {
       snackbar: false,
       snackbarMessage: '',
 
+      enrollementService: initEnrollementService(),
       chosenClass: '',
       searchBarDialog: false,
-      searchBarDialogOptions: ['No', 'Yes']
+      searchBarDialogOptions: ['No', 'Yes'],
     }
   },
   created () {
@@ -166,8 +169,9 @@ export default {
         this.classes = []
         db.collection("classes").get().then(querySnapshot => {
         querySnapshot.forEach(doc => {
-          this.classes.push({ ".key": doc.id, ...doc.data()})
-          this.classesIDs.push(doc.id)
+          let docObj = { ".key": doc.id, ...doc.data()}
+          this.classes.push(docObj)
+          this.classesIDs.push(docObj.name)
         })
       })  
     },
@@ -182,39 +186,17 @@ export default {
             this.searchBarDialog = false
             return
         }
+        this.enrollementService.addClass(this.user, this.chosenClass)
 
-        let userDoc = db.collection("users").doc(this.user.uid)
-
-        userDoc.get().then(doc => {
-            let A = {...doc.data()}.enrolledClasses;
-            for(let x of A){
-                if(x.classID == this.chosenClass){
-                    this.chosenClass = null
-                    this.searchBarDialog = false
-                    return
-                }
-            }
-
-            var enrolledClassObj = {
-                classID: this.chosenClass,
-                settings: {
-                notification: {
-                    newQuestion: "always",
-                    },
-                }
-            }
-            userDoc.update({
-                enrolledClasses: firebase.firestore.FieldValue.arrayUnion(enrolledClassObj)
-            })
-            this.chosenClass = ''
-            this.searchBarDialog = false
-        })
+        this.chosenClass = ''
+        this.searchBarDialog = false
     },
 
-    async createClass (courseNumber) {
-      const ref = db.collection('classes').doc(courseNumber)
+    async createClass (name) {
+      let classID = encodeKey(name)
+      const ref = db.collection('classes').doc(classID)
       await ref.set({ 
-        courseNumber,
+        name,
         description: "description",
         introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
         paragraph: "paragraph",

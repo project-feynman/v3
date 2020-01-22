@@ -2,7 +2,7 @@
   <div>
     <BaseAppBar 
       :icon="viewingPost && isMobile ? 'back' : undefined" 
-      @icon-click="backToList()" 
+      @icon-click="backToList()"
     />
     <v-content>
       <v-container fluid class="py-0" ref="main">
