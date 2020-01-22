@@ -128,7 +128,7 @@ export default {
       this.isAddingNewQuestion = false 
       this.viewingPost = true
     },
-    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioURL }, ref) {
+    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioURL, background }, ref) {
       db.collection("whiteboards").doc(blackboardID).set({
         strokes: boardStrokes,
         // image: this.whiteBoardImage
@@ -145,6 +145,7 @@ export default {
         usersWhoUpvoted: [],
         inquisitorID: this.user ? this.user.uid : "",
         classID: this.$route.params.class_id,
+        background: background
       }
       console.log("postObj =", postObj)
       await ref.add(postObj)

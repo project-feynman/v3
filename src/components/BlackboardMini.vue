@@ -171,7 +171,9 @@ export default {
   props: {
     hideToolbar: Boolean,
     height: String,
-    visible: Boolean
+    visible: Boolean,
+    changeBackground: Boolean,
+    background: String
   },
   components: {
     AudioRecorderMini,
@@ -282,6 +284,11 @@ export default {
     visible() {
       this.blackboardSize()
     },
+    changeBackground() {
+      if (this.changeBackground) {
+        document.getElementById('whiteboard-bg-input').click()
+      }
+    }
   },
   mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById('myCanvas')
@@ -299,15 +306,10 @@ export default {
     window.addEventListener("resize", this.blackboardToolbar);
     window.addEventListener("orientationchange", this.blackboardToolbar);
     window.addEventListener("click", e=>this.palleteClose(e));
-    // USE THIS TO ENSURE THE BLACKBOARD SCALES CORRECTLY
-    // this.$root.$on("side-nav-toggled", sideNavOpened => {
-    //   if (sideNavOpened) {
-    //     this.canvas.width = document.documentElement.clientWidth
-    //   } else {
-    //     this.canvas.width = document.documentElement.clientWidth
-    //   }
-    //   this.rescaleCanvas()
-    // })
+
+    if (this.background!='') {
+      this.drawBackground(this.background);
+    }
   },
   destroyed() {
     window.removeEventListener("resize", this.blackboardToolbar);
@@ -329,31 +331,41 @@ export default {
       document.getElementById('whiteboard-bg-input').click()
     },
     handleImage (e) {
-      var canvas = document.getElementById('background-canvas');
-      var ctx = canvas.getContext('2d');
+      var file = e.target.files[0]
       var reader = new FileReader();
       var vue = this
       reader.onload = function(event){
-          var img = new Image();
-          img.onload = function(){
-            var w=img.width
-            var h=img.height
-            var img_aspect_ratio=w/h
-            if (img_aspect_ratio<canvas.width/canvas.height) {
-              w=canvas.width
-              h=w/img_aspect_ratio
-            } else {
-              h=canvas.height
-              w=h*img_aspect_ratio
-            }
-            ctx.drawImage(img,0,0,w,h);
-          }
-          img.src = event.target.result;
-          var uri = canvas.toDataURL('image/png'),
-          boardImage = uri.replace(/^data:image.+;base64,/, '');
-          vue.$emit('board-image', boardImage);
+          var img = event.target.result;
+          vue.drawBackground(img)
+          vue.$emit('boardImage', img);
       }
-      reader.readAsDataURL(e.target.files[0]);
+      
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    },
+    drawBackground(image) {
+      var canvas = document.getElementById('background-canvas');
+      var ctx = canvas.getContext('2d');
+      var img = new Image();
+      img.onload = function(){
+        var w=img.width
+        var h=img.height
+        var img_aspect_ratio=w/h
+        var x,y=0
+        if (img_aspect_ratio<canvas.width/canvas.height) {
+          h=canvas.height
+          w=h*img_aspect_ratio
+          x=(canvas.width-w)/2
+        } else {
+          w=canvas.width
+          h=w/img_aspect_ratio
+          y=(canvas.height-h)/2
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img,x,y,w,h);
+      }
+      img.src=image
     },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
@@ -620,6 +632,7 @@ export default {
 }
 #blackboard-wrapper {
   position: relative;
+  z-index:-1
 }
 #myCanvas {
   width: 100%;
