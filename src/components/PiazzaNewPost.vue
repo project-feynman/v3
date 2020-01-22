@@ -69,12 +69,10 @@ export default {
   }),
   methods: {
     submitPost () {
+      // take a snapshot of the text, images, drawings and audio that the user has created
+      // event.preventDefault()
       const BlackboardMini = this.$refs["blackboard-mini"]
-      event.preventDefault()
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      console.log("audio =", BlackboardMini.audioObj)
-
-      // blackboard object 
       const post = { title: "No title yet", 
                      description: this.postDescription, 
                      blackboardID,
