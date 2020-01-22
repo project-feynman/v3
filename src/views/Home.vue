@@ -33,7 +33,21 @@
         </div>
 
         <v-divider></v-divider>
+        <SearchBar 
+            label="Enter Class Number"
+            :items="classesIDs"
+            @submit="classChosen">
+        </SearchBar>
         
+        <KaryDialog v-if="searchBarDialog"
+            title="Do you want to add the following class?"
+            :text="chosenClass"
+            :options="searchBarDialogOptions"
+            @submit="searchBarDialogSubmitted"
+        >
+        </KaryDialog>
+
+        <v-divider></v-divider>
         <v-container fluid class="py-0">
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
@@ -90,16 +104,14 @@
           </v-row>
         </v-container>
       </v-card>
-
       <transition name="fade" mode="out-in">
-        <div v-if="isFetchingUser" key="loading..."></div>
+        <div v-if="isFetchingUser || user==null" key="loading..."></div>
         <div v-else key="class-list">
           <BaseGrid>
-            <v-col v-for="(c, i) in classes" :key="c['.key']" :cols="computeCardSize(c)">
-              <v-card @click="$router.push(`${c.courseNumber}/questions`)">
-                <v-card-title>{{ c.courseNumber }}</v-card-title>
-                <v-card-subtitle>{{ c.numOfVideos ? c.numOfVideos : 0}} videos, 0 members</v-card-subtitle>
-              </v-card>
+            <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
+                <v-card @click="$router.push(`${i}/questions`)">
+                    <v-card-title>{{s.name}}</v-card-title>
+                </v-card>
             </v-col>
           </BaseGrid>
         </div>
@@ -118,6 +130,10 @@ import BaseCard from "@/components/BaseCard.vue"
 import HomeAppBar from "@/components/HomeAppBar.vue"
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
+import SearchBar from "@/components/SearchBar.vue"
+import KaryDialog from "@/components/KaryDialog.vue"
+import {initEnrollementService} from '../dep'
+import {encodeKey} from '../dep'
 
 export default {
   components: {
@@ -125,7 +141,9 @@ export default {
     BaseGrid,
     BaseCard,
     RenderlessFetchStrokes,
-    DoodleVideo
+    DoodleVideo,
+    SearchBar,
+    KaryDialog,
   },
   computed: {
     ...mapState(['user', 'isFetchingUser']),
@@ -133,8 +151,14 @@ export default {
   data () {
     return {
       classes: [],
+      classesIDs: [],
       snackbar: false,
       snackbarMessage: '',
+
+      enrollementService: initEnrollementService(),
+      chosenClass: '',
+      searchBarDialog: false,
+      searchBarDialogOptions: ['No', 'Yes'],
     }
   },
   created () {
@@ -142,22 +166,44 @@ export default {
   },
   methods: {
     fetchClasses () {
-      this.classes = [] 
-      db.collection("classes").get().then(querySnapshot => {
+        this.classes = []
+        db.collection("classes").get().then(querySnapshot => {
         querySnapshot.forEach(doc => {
-          this.classes.push({ ".key": doc.id, ...doc.data()})
+          let docObj = { ".key": doc.id, ...doc.data()}
+          this.classes.push(docObj)
+          this.classesIDs.push(docObj.name)
         })
-      })
+      })  
     },
-    async createClass (courseNumber) {
-      const ref = db.collection('classes').doc(courseNumber)
+    
+    classChosen(answer) {
+        this.searchBarDialog = true
+        this.chosenClass = answer
+    },
+    searchBarDialogSubmitted(answer) {
+        if(answer == 'No'){
+            this.chosenClass = ''
+            this.searchBarDialog = false
+            return
+        }
+        this.enrollementService.addClass(this.user, this.chosenClass)
+
+        this.chosenClass = ''
+        this.searchBarDialog = false
+    },
+
+    async createClass (name) {
+      let classID = encodeKey(name)
+      const ref = db.collection('classes').doc(classID)
       await ref.set({ 
-        courseNumber,
+        name,
         description: "description",
         introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
         paragraph: "paragraph",
+        tagsPool: [],
         tabs: ["New"]
       })
+      //add to enrolled classes
       this.fetchClasses()
     },
     quickplayVideo (i) {
