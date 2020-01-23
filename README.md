@@ -23,6 +23,7 @@ After each session, you can click "SAVE" to archive the blackboard's entire prog
   <img src="documentation/Elton.png" alt="member photo" width="150" height="180"/>
    <img src="documentation/Lujing.jpg" alt="member photo" width="150" height="180"/>
 </p>
+                                                                                   <img src="documentation/Samir.png" alt="member photo" width="150" height="180"/>
                                                                     
 
                                                                     
