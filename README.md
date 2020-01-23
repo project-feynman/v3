@@ -55,10 +55,10 @@ Sales team:
 - Ajay Arora
 - Elton Lin 
 
-**Past contributors**
+**Hall of Fame**
 - Hubert Wasilewski was the backend engineer back in the early days 
 - Tony Wang built the slider for traversing any video freely 
 - Yang Yang worked on email notifications
-- John Lin worked on the voice chat and copy-image-to-chat feature
+- John Lin built a live group chat, voice chat and copy-image-to-chat feature
 - Kirill Zabrodin improved the README, set up deployment tests and added the copy-to-clipboard feature for sharing video links
 - Kyle Xiao worked extensively the Q&A feature

@@ -30,15 +30,34 @@
           background-color="#f5f5f5"
         />
       </div>
-      <v-row class="question-options" justify-content="space-between" align-items="center">
-        <v-col cols="auto">
+      <!--
+      <v-container v-if="withTags">
+        <div id="Tags">
+          <SearchBar
+          label="Enter a Tag"
+          :items="tagsPool"
+          @submit="addTag"
+          />
+          
+          <Tags
+          :items="postTags"
+          :removable="true"
+          @delete="deleteTag"
+          />
+        </div>
+      </v-container> -->
+      <v-row class="question-options" justify="end" justify-sm="space-between" align="center">
+        <v-col cols="auto" order-sm="12">
+          <v-switch v-model="anonymous" label="Post Anonymously" color="accent"></v-switch>
+        </v-col>
+        <v-col cols='12' sm="auto" class="d-flex justify-space-around" order-sm="1">
           <v-btn
             :outlined="!blackboardAttached"
             color="accent lighten-1"
             class="board-action-btn"
             @click="blackboardAttached=!blackboardAttached"
           >
-            <span class="d-none d-sm-block mr-2">{{this.blackboardAttached?'Detach':'Attach'}} Blackboard</span>
+            <span class="mr-2">{{this.blackboardAttached?'Detach':'Attach'}} Blackboard</span>
             <v-icon>mdi-bulletin-board</v-icon>
           </v-btn>
           <v-btn
@@ -47,11 +66,10 @@
             color="accent lighten-1"
             class="board-action-btn"
           >
-            <span class="d-none d-sm-block mr-2">{{this.imageAdded?'Change':'Add'}} image</span>
+            <span class="mr-2">{{this.imageAdded?'Change':'Add'}} image</span>
             <v-icon>image</v-icon>
           </v-btn>
         </v-col>
-        <v-col></v-col>
       </v-row>
       <v-card outlined elevation="2" v-if="this.addedImage!=''" class="my-4 mx-2">
         <v-container>
@@ -82,7 +100,6 @@
         <BlackboardMini 
           ref="blackboard-mini"
           :visible="visible"
-          :changeBackground="changeImage"
           :background="addedImage"
           @boardImage="boardImage"
         />
@@ -92,46 +109,58 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import BlackboardMini from "@/components/BlackboardMini.vue"
+import SearchBar from '@/components/SearchBar.vue'
+import Tags from "@/components/Tags.vue"
 
 export default {
   props: {
     postType: String, // either "question" or "answer"
-    visible: Boolean
+    visible: Boolean,
+    tagsPool: Array,
+    withTags: Boolean
   },
   components: {
-    BlackboardMini
+    BlackboardMini,
+    Tags,
+    SearchBar
   },
   data: () => ({
     postTitle: "",
     postDescription: "",
     blackboardAttached: true,
     imageAdded: false,
-    //annotateImage: false,
     addedImage: '',
-    changeImage: false
+    changeImage: false,
+    postTags: [],
+    reRenderTags: 0,
+    anonymous: false
   }),
   methods: {
     submitPost () {
+      // take a snapshot of the text, images, drawings and audio that the user has created
+      // event.preventDefault()
       const BlackboardMini = this.$refs["blackboard-mini"]
-      event.preventDefault()
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      console.log("audio =", BlackboardMini.audioObj)
-
-      // blackboard object 
+      
       const post = { title: this.postTitle, 
                      description: this.postDescription, 
                      blackboardID,
+                     postTags : this.postTags,
                      boardStrokes: BlackboardMini.allStrokes,
                      audioURL: BlackboardMini.audioURL,
                      date: this.getDate(),
-                     background: this.addedImage
+                     image: this.addedImage,
+                     userVisibility: this.anonymous
                       }
       this.$emit('post-submit', post)
+    
       // reset 
-      this.postDescription = ""
       BlackboardMini.wipeBoard()
+      this.postDescription=""
+      this.postTags = []
     },
     getDate () {
       var today = new Date();
@@ -141,16 +170,18 @@ export default {
       return today = mm + '/' + dd + '/' + yyyy
     },
     boardImage (boardImage) {
-      this.imageAdded=true
-      this.addedImage=boardImage
-      this.changeImage=false
+      if (boardImage) {
+        this.imageAdded=true
+        this.addedImage=boardImage
+        this.changeImage=false
+      }
     },
     getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 
     },
     clickImage () {
-      this.changeImage=true
+      this.$refs['blackboard-mini'].$refs.background.$el.click()
     },
     addImage () {
       this.imageAdded=true;
@@ -167,8 +198,20 @@ export default {
     },
     removeImage() {
       this.imageAdded=false;
-      this.addedImage=''
+      //this.addedImage=''
+      Vue.set(this,'addedImage','')
+    },
+    //Start of Tags functions
+    addTag(tag) {
+        for(let t of this.postTags){
+            if(t == tag)return
+        }
+        this.postTags.push(tag)
+    },
+    deleteTag(tag) {
+        this.postTags = this.postTags.filter(x => {return x != tag})
     }
+    //End of Tags functions
   }
 }
 </script>

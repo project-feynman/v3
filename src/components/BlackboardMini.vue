@@ -56,6 +56,7 @@
                   <v-col class="py-0 px-0" cols="auto">
                     <v-btn 
                       @click="setImage()"
+                      ref="background"
                       outlined
                       color="accent lighten-1"
                       class="board-action-btn normal-text"
@@ -172,7 +173,6 @@ export default {
     hideToolbar: Boolean,
     height: String,
     visible: Boolean,
-    changeBackground: Boolean,
     background: String
   },
   components: {
@@ -203,6 +203,9 @@ export default {
         }
       }
     },
+    bg() {
+      return this.background
+    }
   },
   data () {
     return {
@@ -284,10 +287,8 @@ export default {
     visible() {
       this.blackboardSize()
     },
-    changeBackground() {
-      if (this.changeBackground) {
-        document.getElementById('whiteboard-bg-input').click()
-      }
+    bg() {
+      this.drawBackground(this.bg)
     }
   },
   mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
@@ -297,8 +298,8 @@ export default {
     // note that sidenav width = 200, BaseList width = 300
     const height = 9/16 * (window.innerWidth - 500)
     this.canvas.height = height - 48 // the blackboard's top-app-bar is 48px high
-    this.rescaleCanvas()
-    window.addEventListener('resize', this.rescaleCanvas, false)
+    this.rescaleCanvas(true)
+    window.addEventListener('resize', () => this.rescaleCanvas(true), false)
     this.initTouchEvents()
     this.initMouseEvents()
     document.fonts.ready.then(()=>this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
@@ -307,14 +308,16 @@ export default {
     window.addEventListener("orientationchange", this.blackboardToolbar);
     window.addEventListener("click", e=>this.palleteClose(e));
 
-    if (this.background!='') {
-      this.drawBackground(this.background);
-    }
+    this.drawBackground(this.background);
+  },
+  updated() {
+    console.log('updated')
+    this.drawBackground(this.background);
   },
   destroyed() {
     window.removeEventListener("resize", this.blackboardToolbar);
     window.removeEventListener("orientationchange", this.blackboardToolbar);
-    window.removeEventListener('resize', this.rescaleCanvas);
+    window.removeEventListener('resize', () => this.rescaleCanvas(true));
     window.removeEventListener("click", e=>this.palleteClose(e));
   },
   methods: {
@@ -328,6 +331,7 @@ export default {
       this.allStrokes = []
     },
     setImage () {
+      document.getElementById('whiteboard-bg-input').value=''
       document.getElementById('whiteboard-bg-input').click()
     },
     handleImage (e) {
@@ -347,6 +351,9 @@ export default {
     drawBackground(image) {
       var canvas = document.getElementById('background-canvas');
       var ctx = canvas.getContext('2d');
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      if (image=='') {return}
       var img = new Image();
       img.onload = function(){
         var w=img.width
@@ -362,7 +369,6 @@ export default {
           h=w/img_aspect_ratio
           y=(canvas.height-h)/2
         }
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
         ctx.drawImage(img,x,y,w,h);
       }
       img.src=image
