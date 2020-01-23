@@ -48,11 +48,23 @@
         <v-divider></v-divider>
 
         <v-list>
-          <v-list-item>
-            <v-list-item-action>
-              <v-switch v-model="message" color="purple"></v-switch>
-            </v-list-item-action>
-            <v-list-item-title>Enable notifications</v-list-item-title>
+          <v-list-item v-for="(s, i) in this.user.enrolledClasses" :key="i">
+            <v-container>
+                <v-list-item-title>{{s.name}}</v-list-item-title>
+                <v-list-item-action>
+                    <v-radio-group
+                    v-model="s.settings.notifications.newQuestion"
+                    row>
+                        <v-radio v-for="x in newQNotifs"
+                        :key="x"
+                        :label="x"
+                        :value="x"
+                        :id="x"
+                        @change="classNotifChanged(i, x)">
+                        </v-radio>
+                    </v-radio-group>
+                </v-list-item-action>
+            </v-container>
           </v-list-item>
 
         </v-list>
@@ -73,6 +85,8 @@
 <script>
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
+import db from '@/database.js'
+import {initEnrollementService} from '../dep'
 
   export default {
     props: {
@@ -84,11 +98,12 @@ import 'vue-swatches/dist/vue-swatches.min.css'
     data: () => ({
       fav: true,
       menu: false,
-      message: false,
       name: "",
       useDarkMode: false,
       color: "",
-      colors: ["black", "grey", "red", "orange", "yellow", "green", "blue", "purple"]
+      colors: ["black", "grey", "red", "orange", "yellow", "green", "blue", "purple"],
+      newQNotifs: ["always", "daily", "never"],
+      enrollementService : initEnrollementService()
     }),
     methods: {
       handleSave () {
@@ -103,6 +118,9 @@ import 'vue-swatches/dist/vue-swatches.min.css'
           updatedUser.name = this.user.name
         }
         this.$emit("save", updatedUser)
+      },
+      classNotifChanged(classID, frequency){
+          this.enrollementService.changeNotification(this.user, classID, 'newQuestion', frequency)
       }
     }
   }

@@ -86,16 +86,22 @@ export default {
     }
   },
   mounted () {
-    this.canvas = document.getElementById(`myCanvas-${this.canvasID}`)
-    this.ctx = this.canvas.getContext('2d')
-    this.canvas.height = this.height
+    this.canvas = document.getElementById(`myCanvas-${this.canvasID}`);
+
+    this.ctx = this.canvas.getContext('2d');
+    this.canvas.height = this.height;
+
     if (this.autoplay) {
-      this.rescaleCanvas(false)
-      setTimeout(this.quickplay, 1000)
+      this.rescaleCanvas(false);
+      setTimeout(this.quickplay, 1000);
     } else {
-      this.rescaleCanvas() // should rename to rescale and redraw
+      this.rescaleCanvas(false);
+      this.drawStrokesInstantly();
     }
+<<<<<<< HEAD
     window.addEventListener('resize', this.rescaleCanvas, false) // good
+=======
+>>>>>>> master
   },
   beforeDestroy () {
     // clean up everything - needs testing
@@ -115,7 +121,7 @@ export default {
     },
     async initData () {
       if (!this.strokes) {
-        return 
+        return
       }
       this.indexOfNextStroke = 0
       this.allStrokes = this.strokes
@@ -123,7 +129,11 @@ export default {
       if (this.ctx) {
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+<<<<<<< HEAD
         // this.rescaleCanvas()
+=======
+        this.rescaleCanvas(true)
+>>>>>>> master
       }
 
       this.$emit('animation-loaded')

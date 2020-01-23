@@ -200,10 +200,10 @@ export default {
     // new redraw code
     this.canvas.width = document.documentElement.clientWidth 
     this.canvas.height = 0.9 * document.documentElement.clientHeight
-    this.rescaleCanvas()
+    this.rescaleCanvas(true)
     window.addEventListener('resize', () => { 
       this.canvas.width = document.documentElement.clientWidth 
-      this.rescaleCanvas()
+      this.rescaleCanvas(true)
     }, false)
     this.initTouchEvents()
     this.initMouseEvents()
@@ -214,7 +214,7 @@ export default {
       } else {
         this.canvas.width = document.documentElement.clientWidth
       }
-      this.rescaleCanvas()
+      this.rescaleCanvas(true)
     })
   },
   beforeDestroy () {
@@ -549,12 +549,15 @@ export default {
       this.snackbar = true 
       this.snackbarMessage = 'Successfully saved to the "Videos" section'
     },
+<<<<<<< HEAD
     createThumbnail(){
         this.ctx.fillStyle = "rgb(62, 66, 66)";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawStrokesInstantly()
         return this.canvas.toDataURL()
     }
+=======
+>>>>>>> master
   }
 }
 </script>

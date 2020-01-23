@@ -10,9 +10,9 @@
 
       <!-- APP BAR -->
       <v-app-bar dense color="#eee" elevation="1" class="blackboard-toolbar">
-        <template v-if="currentState != recordingStateEnum.POST_RECORDING">
-          <v-container class="py-1 px-0">
-            <v-row align="center" justify="space-between">
+        <v-container class="py-1 px-0">
+          <v-row align="center" justify="space-between">
+            <template v-if="currentState != recordingStateEnum.POST_RECORDING">
               <v-col class="py-0">
                 <v-row justify="start" align="center">
                   <v-col class="px-1 py-0" cols="auto">
@@ -56,6 +56,7 @@
                   <v-col class="py-0 px-0" cols="auto">
                     <v-btn 
                       @click="setImage()"
+                      ref="background"
                       outlined
                       color="accent lighten-1"
                       class="board-action-btn normal-text"
@@ -74,38 +75,64 @@
                 </v-row>
               </v-col>
               <v-col cols="auto" class="py-0 px-0">
-                <template v-if="!isRecording">
-                  <v-btn 
-                    v-if="!isRecording"
-                    @click="wipeBoard()"
-                    outlined
-                    color="red"
-                    class="board-action-btn normal-text"
-                  >
-                    <span class="d-none d-lg-block mr-2">Clear</span>
-                    <v-icon>clear</v-icon>
-                  </v-btn>
-                  <v-btn @click="startRecording()" 
+                <v-btn
+                  @click="wipeBoard()"
+                  outlined
+                  color="red"
+                  class="board-action-btn normal-text"
+                >
+                  <span class="d-none d-lg-block mr-2">Clear</span>
+                  <v-icon>clear</v-icon>
+                </v-btn>
+                <v-btn
+                  v-if="!isRecording"
+                  @click="startRecording()" 
                   color="accent lighten-1"
-                  class="board-action-btn">
-                    <span class="d-none d-sm-block mr-2">Record</span>
-                    <v-icon>adjust</v-icon>
-                  </v-btn>
-                </template>
-                <v-btn v-else @click="stopRecording()" color="pink white--text">
-                  STOP VIDEO
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Record</span>
+                  <v-icon>adjust</v-icon>
+                </v-btn>
+                <v-btn
+                  v-else
+                  @click="stopRecording()"
+                  color="accent lighten-1"
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Stop</span>
+                  <v-icon>stop</v-icon>
                 </v-btn>
               </v-col>
-            </v-row>
-          </v-container>
-        </template>
-        <template v-else>
-          <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
-          <v-btn @click="recordAgain()">RETRY</v-btn>
-          <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
-            SAVE VIDEO
-          </v-btn> -->
-        </template>
+            </template>
+            <template v-else>
+              <v-col cols="auto" class="py-0">
+                <v-btn
+                  @click="initReplayLogic()"
+                  outlined
+                  color="accent lighten-1"
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Preview</span>
+                  <v-icon>mdi-eye</v-icon>
+                </v-btn>
+              </v-col>
+              <v-col cols="auto" class="py-0">
+                <v-btn
+                  @click="recordAgain()"
+                  outlined
+                  color="accent lighten-1"
+                  class="board-action-btn"
+                >
+                  <span class="d-none d-sm-block mr-2">Retry</span>
+                  <v-icon>mdi-undo-variant</v-icon>
+                </v-btn>
+              </v-col>
+              <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
+                SAVE VIDEO
+              </v-btn> -->
+            </template>
+          </v-row>
+        </v-container>
       </v-app-bar>
 
       <!-- WHITEBOARD -->
@@ -145,7 +172,8 @@ export default {
   props: {
     hideToolbar: Boolean,
     height: String,
-    visible: Boolean
+    visible: Boolean,
+    background: String
   },
   components: {
     AudioRecorderMini,
@@ -175,6 +203,9 @@ export default {
         }
       }
     },
+    bg() {
+      return this.background
+    }
   },
   data () {
     return {
@@ -227,11 +258,6 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
-        this.lineWidth = 2
-      } else {
-        this.lineWidth = 30
-      }
       this.setStyle(this.color, this.lineWidth)
     },
     isRecording () {
@@ -261,6 +287,9 @@ export default {
     visible() {
       this.blackboardSize()
     },
+    bg() {
+      this.drawBackground(this.bg)
+    }
   },
   mounted () {  // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById('myCanvas')
@@ -269,8 +298,8 @@ export default {
     // note that sidenav width = 200, BaseList width = 300
     const height = 9/16 * (window.innerWidth - 500)
     this.canvas.height = height - 48 // the blackboard's top-app-bar is 48px high
-    this.rescaleCanvas()
-    window.addEventListener('resize', this.rescaleCanvas, false)
+    this.rescaleCanvas(true)
+    window.addEventListener('resize', () => this.rescaleCanvas(true), false)
     this.initTouchEvents()
     this.initMouseEvents()
     document.fonts.ready.then(()=>this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
@@ -278,20 +307,17 @@ export default {
     window.addEventListener("resize", this.blackboardToolbar);
     window.addEventListener("orientationchange", this.blackboardToolbar);
     window.addEventListener("click", e=>this.palleteClose(e));
-    // USE THIS TO ENSURE THE BLACKBOARD SCALES CORRECTLY
-    // this.$root.$on("side-nav-toggled", sideNavOpened => {
-    //   if (sideNavOpened) {
-    //     this.canvas.width = document.documentElement.clientWidth
-    //   } else {
-    //     this.canvas.width = document.documentElement.clientWidth
-    //   }
-    //   this.rescaleCanvas()
-    // })
+
+    this.drawBackground(this.background);
+  },
+  updated() {
+    console.log('updated')
+    this.drawBackground(this.background);
   },
   destroyed() {
     window.removeEventListener("resize", this.blackboardToolbar);
     window.removeEventListener("orientationchange", this.blackboardToolbar);
-    window.removeEventListener('resize', this.rescaleCanvas);
+    window.removeEventListener('resize', () => this.rescaleCanvas(true));
     window.removeEventListener("click", e=>this.palleteClose(e));
   },
   methods: {
@@ -305,24 +331,47 @@ export default {
       this.allStrokes = []
     },
     setImage () {
+      document.getElementById('whiteboard-bg-input').value=''
       document.getElementById('whiteboard-bg-input').click()
     },
     handleImage (e) {
-      var canvas = document.getElementById('background-canvas');
-      var ctx = canvas.getContext('2d');
+      var file = e.target.files[0]
       var reader = new FileReader();
       var vue = this
       reader.onload = function(event){
-          var img = new Image();
-          img.onload = function(){
-              ctx.drawImage(img,0,0);
-          }
-          img.src = event.target.result;
-          var uri = canvas.toDataURL('image/png'),
-          boardImage = uri.replace(/^data:image.+;base64,/, '');
-          vue.$emit('board-image', boardImage);
+          var img = event.target.result;
+          vue.drawBackground(img)
+          vue.$emit('boardImage', img);
       }
-      reader.readAsDataURL(e.target.files[0]);
+      
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    },
+    drawBackground(image) {
+      var canvas = document.getElementById('background-canvas');
+      var ctx = canvas.getContext('2d');
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      if (image=='') {return}
+      var img = new Image();
+      img.onload = function(){
+        var w=img.width
+        var h=img.height
+        var img_aspect_ratio=w/h
+        var x,y=0
+        if (img_aspect_ratio<canvas.width/canvas.height) {
+          h=canvas.height
+          w=h*img_aspect_ratio
+          x=(canvas.width-w)/2
+        } else {
+          w=canvas.width
+          h=w/img_aspect_ratio
+          y=(canvas.height-h)/2
+        }
+        ctx.drawImage(img,x,y,w,h);
+      }
+      img.src=image
     },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
@@ -422,6 +471,7 @@ export default {
       this.lastX = -1
     },
     drawToPointAndSave (e) {
+      this.setStyle(this.color, this.lineWidth);
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -503,23 +553,15 @@ export default {
       if (!e)
         var e = event
       if (e.offsetX) {
-        this.mouseX = e.offsetX - window.scrollX //- window.scrollX
-        this.mouseY = e.offsetY - window.scrollY // - window.scrollY (in case these don't work)
+        this.mouseX = e.offsetX //- window.scrollX
+        this.mouseY = e.offsetY //- window.scrollY (in case these don't work)
       }
       else if (e.layerX) {
-        this.mouseX = e.layerX - window.scrollX
-        this.mouseY = e.layerY - window.scrollY
+        this.mouseX = e.layerX //- window.scrollX
+        this.mouseY = e.layerY //- window.scrollY
       }
-      // To get the pixel data of the canvas
-      // var c = document.getElementById('myCanvas');
-      // var pixelData = this.canvas.getContext('2d').getImageData(e.offsetX, e.offsetY, 1, 1).data;
-      // console.log(pixelData)
     },
     // --- END Mouse Drawing --- // 
-    useEraser () {
-      this.color = 'rgb(62, 66, 66)'
-      this.lineWidth = 18
-    },
     startRecording () {
       this.currentState = this.recordingStateEnum.MID_RECORDING
       const audioRecorder = this.$refs['audio-recorder']
@@ -557,7 +599,7 @@ export default {
     },
     palleteClose(e) {
       var pallete = document.getElementById('swatches-wrapper');
-      if (!pallete.contains(e.target)) {
+      if (pallete && !pallete.contains(e.target)) {
         this.palleteVisibility=false
       }
     },
@@ -591,9 +633,12 @@ export default {
 </script>
 
 <style scoped>
+#whiteboard {
+  z-index: 5;
+}
 #blackboard-wrapper {
   position: relative;
-  z-index: 10;
+  z-index:-1
 }
 #myCanvas {
   width: 100%;

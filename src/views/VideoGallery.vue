@@ -179,14 +179,19 @@ export default {
     },
     async deleteVideo (ID, audioPath) {
       if (audioPath) {
-         // TODO: audio file fails to delete 
-        const storageRef = firebase.storage().ref()
-        const audioFileRef = storageRef.child(`recordings/${audioPath}`)
-        audioFileRef.delete()
-      }    
-      const recursiveDelete = firebase.functions().httpsCallable("recursiveDelete")
-      await recursiveDelete({ path: `whiteboards/${ID}` })
-      this.fetchClassDoc()
+        try {
+          const storageRef = firebase.storage().ref();
+          const audioFileRef = storageRef.child(`recordings/${audioPath}`);
+          await audioFileRef.delete();
+        } catch (err) {
+          console.log(err);
+        }
+      }
+
+      const recursiveDelete = firebase.functions().httpsCallable("recursiveDelete");
+      await recursiveDelete({ path: `whiteboards/${ID}` });
+
+      this.fetchClassDoc();
     },
     hasPermission (video) {
       if (!this.user) {
