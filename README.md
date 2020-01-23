@@ -18,14 +18,13 @@ After each session, you can click "SAVE" to archive the blackboard's entire prog
   <img src="documentation/Harry.jpg" alt="member photo" width="160" height="180/>
   <img src="documentation/Samir.png" alt="member photo" width="150" height="180"/>
   <img src="documentation/Prabhakar.jpg" alt="member photo" height="180"/>
-</p>
-                                                                    
-<p float="left">
-  <img src="documentation/Stephanie.jpg" alt="member photo" height="180"/>
+                                                                         <img src="documentation/Stephanie.jpg" alt="member photo" height="180"/>
   <img src="documentation/Winston.jpg" alt="member photo" height="180"/>
   <img src="documentation/Elton.png" alt="member photo" height="180"/>
    <img src="documentation/Lujing.jpg" alt="member photo" height="180"/>
 </p>
+                                                                    
+
                                                                     
                                                                  
 
