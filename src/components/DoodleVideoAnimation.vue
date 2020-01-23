@@ -98,10 +98,7 @@ export default {
       this.rescaleCanvas(false);
       this.drawStrokesInstantly();
     }
-<<<<<<< HEAD
     window.addEventListener('resize', this.rescaleCanvas, false) // good
-=======
->>>>>>> master
   },
   beforeDestroy () {
     // clean up everything - needs testing
@@ -129,11 +126,7 @@ export default {
       if (this.ctx) {
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-<<<<<<< HEAD
         // this.rescaleCanvas()
-=======
-        this.rescaleCanvas(true)
->>>>>>> master
       }
 
       this.$emit('animation-loaded')

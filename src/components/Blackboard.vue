@@ -549,15 +549,12 @@ export default {
       this.snackbar = true 
       this.snackbarMessage = 'Successfully saved to the "Videos" section'
     },
-<<<<<<< HEAD
     createThumbnail(){
         this.ctx.fillStyle = "rgb(62, 66, 66)";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawStrokesInstantly()
         return this.canvas.toDataURL()
     }
-=======
->>>>>>> master
   }
 }
 </script>
