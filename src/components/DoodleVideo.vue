@@ -1,6 +1,6 @@
 <template >
-  <div @click="videoClicked = true" style="height: 100%; width: 100%;">
-    <template v-if="loadStrokes">
+  <div @click="fetchStrokesAndQuickplay()" style="height: 100%; width: 100%;">
+    <template v-if="videoClicked || !video || !video.thumbnail">
       <DoodleVideoAnimation
         
         ref="animation"
@@ -8,6 +8,7 @@
         :isFullscreen="false"
         :canvasID="canvasID"
         :height="height"
+        :overlay="overlay"
         @animation-loaded="handleAnimationLoaded()"
         @animation-finished="handleEvent()"
       />
@@ -79,25 +80,25 @@ export default {
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
-      videoClicked: false
+      videoClicked: false,
+      strokesFetched: false,
+      overlay: true
     }
   },
   computed: {
     ...mapState(["user"]),
     resourcesLoaded() {
-      return this.recorderLoaded && this.animationLoaded
-    },
-    loadStrokes() {
-      return (!this.video || !this.video.thumbnail || this.videoClicked)
-    }
-  },
-  watch: {
-    loadStrokes: {
-      handler: "fetchStrokes",
-      immediate: true
+      return this.animationLoaded && this.recorderLoaded
     }
   },
   methods: {
+    async fetchStrokesAndQuickplay () {
+      this.videoClicked = true
+      if (!this.strokesFetched){
+        await this.fetchStrokes()
+      }
+      this.quickplay()
+    },
     syncAnimation () {
       if (this.syncedVisualAndAudio) { return } 
       if (this.resourcesLoaded) {
@@ -111,26 +112,34 @@ export default {
       this.animationLoaded = true 
       this.$emit("animation-loaded")
     },
-    quickplay () {
+    async quickplay () {
+      this.overlay = false
       const animation = this.$refs["animation"]
-      animation.quickplay()
+      await animation.quickplay()
+      this.overlay = true
     },
     async fetchStrokes () {
-      if (!this.whiteboardID) {
-        return 
-      }
-      const baseRef = db.collection("whiteboards").doc(this.whiteboardID)
-      if (this.hasSubcollection === false) {
-        const doc = await baseRef.get()
-        this.strokes = doc.data().strokes
-      } else {
-        const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc")
-        strokesRef.get().then(querySnapshot => {
+      const P = new Promise(async resolve => {
+        if (!this.whiteboardID) {
+          resolve()
+        }
+        const baseRef = db.collection("whiteboards").doc(this.whiteboardID)
+        if (this.hasSubcollection === false) {
+          const doc = await baseRef.get()
+          this.strokes = doc.data().strokes
+          
+        } else {
+          const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc")
+          const querySnapshot = await strokesRef.get()
+          
           querySnapshot.forEach(doc => {
-            this.strokes.push({".key": doc.id, ...doc.data()})
+              this.strokes.push({".key": doc.id, ...doc.data()})
           })
-        })
-      }
+          this.strokesFetched = true
+        }
+        resolve()
+      })
+      return P 
     }
   }
 }

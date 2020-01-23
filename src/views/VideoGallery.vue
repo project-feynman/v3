@@ -39,26 +39,6 @@
                             >
 
                           </DoodleVideo>
-<!--
-                         <template v-if="!clickedSet[video['.key']] && (hasFetchedVideos=true)">  this is jank
-                            <img :src="video.thumbnail" >
-                          </template>
-
-                          <template v-else>
-                            <RenderlessFetchStrokes 
-                            :whiteboardID="video['.key']" key="video">
-                            <template slot-scope="{ strokes }">
-                              <DoodleVideo 
-                                v-if="strokes"
-                                :ref="`doodle-video-${i}-${j}`"
-                                :strokes="strokes"
-                                :canvasID="`${i}-${j}`"
-                                @animation-loaded="true"
-                              />
-                            </template>
-                            </RenderlessFetchStrokes>
-                          </template>  
--->
 
 
                         </template>
@@ -139,21 +119,6 @@ export default {
     this.fetchClassDoc()
   },
   methods: {
-    // addToClicked(key, videos){
-    //   Vue.set(clickedSet, key, true)
-    //   // this.clickedSet[key] = key
-    //   // videos.push({})
-    //   // videos.pop()
-    //   // video.push["clicked"] = true
-    //   this.x+=1
-    //   console.log(videos)
-    //   console.log("clickedSet", this.clickedSet)
-    //   console.log(key in this.clickedSet)
-    // },
-    // wasClicked(j){
-    //   console.log(j, " : clickedSet", this.clickedSet, " : ", j in this.clickedSet )
-    //   return j in this.clickedSet
-    // },
     async fetchClassDoc () {
       this.classDoc = {} 
       const classID = this.$route.params.class_id
@@ -167,7 +132,7 @@ export default {
         this.$router.push(`/${classID}/${videoID}`)
       } else if (buttonName === "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
-        videoElem.quickplay()
+        videoElem.fetchStrokesAndQuickplay()
       } else if (buttonName === "DELETE") {
         this.deleteVideo(videoID, audioPath)
       }

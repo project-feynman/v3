@@ -1,6 +1,6 @@
 <template>
   <div id="whiteboard" style="height: 100%">
-    <BaseOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
+    <BaseOverlay v-if="isFullscreen" :overlay="isOverlayed" @play-video="startVideo()">
       <canvas 
         v-if="isFullscreen"
         :id="`myCanvas-${canvasID}`"  
@@ -8,7 +8,7 @@
       >
       </canvas>
     </BaseOverlay>
-    <BaseOverlay v-else :overlay="overlay" @play-video="playVideo()">
+    <BaseOverlay v-else :overlay="isOverlayed" @play-video="playVideo()">
       <canvas 
         :id="`myCanvas-${canvasID}`" 
         style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
@@ -29,6 +29,7 @@ export default {
     strokes: Array,
     autoplay: Boolean,
     height: String,
+    overlay: Boolean,
     isFullscreen: {
       type: Boolean,
       default: true
@@ -43,7 +44,7 @@ export default {
   },
   mixins: [DrawMethods],
   watch: {
-    strokes: {
+    strokesReady: {
       handler: 'initData',
       immediate: true 
     },
@@ -62,11 +63,13 @@ export default {
         name: this.user.displayName,
         uid: this.user.uid
       }
+    },
+    isOverlayed(){
+        return this.overlay
     }
   },
   data () {
     return {
-      overlay: true,
       playProgress: null,
       isReplaying: false,
       allStrokes: [],
@@ -92,7 +95,7 @@ export default {
     } else {
       this.rescaleCanvas() // should rename to rescale and redraw
     }
-    window.addEventListener('resize', this.rescaleCanvas, false)
+    window.addEventListener('resize', this.rescaleCanvas, false) // good
   },
   beforeDestroy () {
     // clean up everything - needs testing
@@ -103,12 +106,12 @@ export default {
   methods: {
     startVideo () {
       this.$emit('play-video')
-      this.overlay = false
+      this.isOverlayed = false
     },
     async playVideo () {
-      this.overlay = false 
+      this.isOverlayed = false 
       await this.quickplay()
-      this.overlay = true 
+      this.isOverlayed = true 
     },
     async initData () {
       if (!this.strokes) {
@@ -116,12 +119,14 @@ export default {
       }
       this.indexOfNextStroke = 0
       this.allStrokes = this.strokes
-      this.$emit('animation-loaded')
+      
       if (this.ctx) {
         // already loaded an explanation before, visually wipe previous drawings
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        this.rescaleCanvas()
+        // this.rescaleCanvas()
       }
+
+      this.$emit('animation-loaded')
     }
   }
 }
