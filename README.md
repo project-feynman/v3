@@ -21,8 +21,15 @@ explain.mit.edu is a place where MIT peers create vivid explanations to help eac
 
 Our contributing guide is here: [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 
-**Current contributors** (photos incoming)
-We're a student organization. Our primary goal is to help make learning fun and efficient at MIT. If we succeed, we will consider expanding to other universities as a startup. 
+**Current contributors**
+We're a student organization. Our goal is to help make learning fun and efficient at MIT. If we succeed, we will expand to other universities as a startup. 
+<p float="left">
+  <img src="documentation/Harry.jpg" alt="member photo" width="200"/>
+  <img src="documentation/Winston.jpg" alt="member photo" width="200"/>
+  <img src="documentation/Lujing.jpg" alt="member photo" width="200"/>
+  <img src="documentation/Samir.png" alt="member photo" width="200"/>
+  <img src="documentation/Prabhakar.jpg" alt="member photo" width="200"/>
+</p>
 
 Tech team: 
 - Harry Liu 
