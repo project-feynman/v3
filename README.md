@@ -1,41 +1,25 @@
 # ExplainMIT [![Build Status](https://travis-ci.com/LingDingDong/feynman-mvp.svg?branch=master)](https://travis-ci.com/LingDingDong/feynman-mvp)
 
-ExplainMIT is a website where MIT students, TAs and professors share visual explanations
+explain.mit.edu is a place where MIT peers create vivid explanations to help each other 
 
 ## Problem
-1. Help is a scarce resource (long queues in Office Hours, vague answers in Piazza, hard to find study partners)
-2. There are 2 ways to alleviate scarcity: have more people help, or have more explanation videos ("store" past help)
-3. 1st option requires behavioral distortion; 2nd option requires heavy time commitment. 
-![Why videos are scarce](documentation/WhyVideosAreScarce.png "Why videos are scarce")
-
-## Insight
-1st option can be addressed (it's possible to shift behavior in people to help each other more)
-- People never post videos, but people explain things in-person live all the time. Why?
-- Because the latter is need-based, in response to an active listener, effective (can draw on a blackboard), and much more rewarding
-- What if people have more opportunities to explain things on a blackboard live more often without geographic barriers and social barriers (i.e. live in same place, know each other)
-
-2nd option can be addressed (it's possible to create videos efficiently with little overhead)
-- Answering questions take far less time if the user can draw and talk at the same time like in real life
-- Instead of sharing polished videos with animation (take weeks), what if we popularize sharing of quick-and-dirty hand-drawn videos where people can talk while drawing with iPads, mouse (takes minutes)
-- Instead of throwing the explanations away after each in-person interaction, what if we can preserve what's there already?
-
-![Insight](documentation/FundamentalInsight.png "FundamentalInsight")
+1. Help is a scarce resource because the time of professors, TAs and students are limited
 
 ## Solution
-1. Maximize interactions with a visual Q&A platform equipped with realtime blackboards
-  - People are most willing to explain things if:
-    - Social reward from live listener feedback is very engaging
-    - They feel that their help is scales and is economical
-    - If it is efficient and convenient (i.e. typing on messenger back and forth is not efficient) 
+1. Provide an efficient collaboration platform to increase the number of peer interactions
+- Peers can interact in real-time on a shared blackboard with voice chat
+- Peers can record and share lightweight pseudo-videos, built to use 100x less memory
 
-2. Minimize the cost of making videos with a website optimized for blackboard videos
-- "Oops, I accidentally made a video": can just save the explanation you made as a video
-- Instantaneous video upload time and no management of files (on Youtube it takes a few minutes) 
-
-ExplainMIT is a website where helping one person is no different than helping everyone - because all explanations can be archived and reused. (TODO: add product specs)
+2. Explanations are by-products of peer interactions and are archived on the platform
+- After a session, clicking "SAVE" will upload a silent animation of the blackboard process 
+- The session can also be pre-recorded and uploaded, which works best for one-sided teaching interactions
 
 ## Contributions
-Our stack is Vue, Vuetify and Firebase. For those interested to contribute, please read [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
+**Current stack:**
+- Technologies: Vue.js, Vuetify, Apollo, GraphQL, PostgreSQL
+- Languages: Javascript, Go
+
+Our contributing guide is here: [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 
 **Current contributors** (photos incoming)
 We're a student organization. Our primary goal is to help make learning fun and efficient at MIT. If we succeed, we will consider expanding to other universities as a startup. 
