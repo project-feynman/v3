@@ -8,28 +8,23 @@ Help is a scarce resource because the time of professors, TAs and students are l
 ## Solution
 We provide an efficient collaboration platform to increase the number of peer interactions. 
 Peers can interact in real-time on a shared blackboard with voice chat. 
-They can also record and share lightweight pseudo-videos, built to use 100x less memory
+They can also record and share lightweight pseudo-videos, built to use 100x less memory.
 
-Explanations are by-products of peer interactions and are archived on the platform. After a session, clicking "SAVE" will upload a silent animation of the blackboard process. The session can also be pre-recorded and uploaded, which works best for one-sided teaching interactions
+Explanations are by-products of peer interactions and are archived on the platform. After a session, clicking "SAVE" will upload a silent animation of the blackboard process. The session can also be pre-recorded and uploaded, which works best for one-sided teaching interactions.
 
-## Contributions
-**Current stack:**
-- Technologies: Vue.js, Vuetify, Apollo, GraphQL, PostgreSQL
-- Languages: Javascript, Go
-
-Our contributing guide is here: [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
-
-**Current contributors**
+## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
+- **Technologies:** Vue.js, Vuetify, Apollo, GraphQL, PostgreSQL
+- **Languages:** Javascript, Go
+- **Core-team:** Harry Liu, Prabhakar Kafle, Lujing Cen, Samir Droubi, Stephanie Yuen, Winston Fey, Elton Lin
 <p float="left">
   <img src="documentation/Harry.jpg" alt="member photo" height="200/>
-  <img src="documentation/Winston.jpg" alt="member photo" height="200"/>
   <img src="documentation/Lujing.jpg" alt="member photo" height="200"/>
   <img src="documentation/Samir.png" alt="member photo" height="200"/>
   <img src="documentation/Prabhakar.jpg" alt="member photo" height="200"/>
+  <img src="documentation/Stephanie.jpg" alt="member photo" height="200"/>
+  <img src="documentation/Winston.jpg" alt="member photo" height="200"/>
+  <img src="documentation/Elton.png" alt="member photo" height="200"/>
 </p>
-
-Tech team: 
-- Harry Liu, Prabhakar Kafle, Lujing Cen, Samir Droubi, Winston Fey, Elton Lin, Stephanie Yuen
 
 **Hall of Fame**
 - Hubert Wasilewski was the backend engineer back in the early days 
