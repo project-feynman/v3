@@ -12,9 +12,9 @@
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
-              <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber">
+              <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber" @videos-fetched="hasFetchedVideos=true">
                 <template slot-scope="{ videos }">
-                  <BaseGrid>
+                  <BaseGrid >
                     <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
                       <BaseCard
                         @save-tab-number="newValue => handleTabChange(newValue, video)"
@@ -25,23 +25,22 @@
                         :description="video.paragraph || ''"
                         :tabs="classDoc.tabs"
                         :tabNumber="i"
-                        :key="video['.key']"
                         class="mb-5"
                         :ref="`card--${j}`"
                       >
                         <!-- IMAGE SLOT -->
                         <template v-slot:card-image>
-                          <RenderlessFetchStrokes :whiteboardID="video['.key']">
-                            <template slot-scope="{ strokes }">
-                              <DoodleVideo 
-                                v-if="strokes"
-                                :ref="`doodle-video-${i}-${j}`"
-                                :strokes="strokes"
-                                :canvasID="`${i}-${j}`"
-                                @animation-loaded="hasFetchedVideos = true"
-                              />
-                            </template>
-                          </RenderlessFetchStrokes>
+
+                          <DoodleVideo
+                            :whiteboardID="video['.key']" 
+                            :ref="`doodle-video-${i}-${j}`"
+                            :canvasID="`${i}-${j}`"
+                            :video="video"
+                            >
+
+                          </DoodleVideo>
+
+
                         </template>
 
                         <!-- BUTTONS SLOT -->
@@ -107,6 +106,8 @@ export default {
       isEditting: false,
       whiteboardPopup: false,
       currentVideoID: "",
+      // clickedSet: {},
+      // x: 0
     }
   },
   computed: {
@@ -131,7 +132,7 @@ export default {
         this.$router.push(`/${classID}/${videoID}`)
       } else if (buttonName === "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
-        videoElem.quickplay()
+        videoElem.fetchStrokesAndQuickplay()
       } else if (buttonName === "DELETE") {
         this.deleteVideo(videoID, audioPath)
       }

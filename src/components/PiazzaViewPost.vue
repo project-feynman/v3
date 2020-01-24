@@ -7,9 +7,17 @@
       name="input-7-4"
       :value="post.description"
     />
-    <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
+    <DoodleVideo 
+      :whiteboardID="post.blackboardID" 
+      :hasSubcollection="false"
+      :canvasID="`${postNumber}`"
+      :audioURL="post.audioURL"
+      :height="`${getFullWidth() * 9/16}`"
+      @animation-loaded="hasFetchedVideos = true">
+    </DoodleVideo>
+     <!-- <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
       <template slot-scope="{ strokes }">
-        <!-- length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) -->
+       length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) 
         <DoodleVideo 
           v-if="strokes.length !== 0"
           :strokes="strokes"
@@ -19,7 +27,7 @@
           @animation-loaded="hasFetchedVideos = true"
         />
       </template>
-    </RenderlessFetchStrokes>
+    </RenderlessFetchStrokes>  -->
   </div>
 </template>
 
