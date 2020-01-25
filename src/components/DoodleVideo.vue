@@ -6,14 +6,14 @@
         ref="animation"
         :strokes="strokes"
         :isFullscreen="false"
-        :canvasID="canvasID"
+        :canvasID="whiteboardID"
         :height="height"
         @animation-loaded="handleAnimationLoaded()"
         @animation-finished="handleEvent()"
       />
       <audio-recorder
         v-if="audioURL"
-        ref="audio-recorder"
+        ref="audioRecorder"
         :audioURL="audioURL"
         @recorder-loading="recorderLoaded=false"
         @play="syncAnimation()"
@@ -81,9 +81,12 @@ export default {
   },
   async created() {
     // fetch strokes if no thumbnail is available
+    console.log("this.video =", this.video);
     if (this.video) {
-      if (this.video.thumbnail) return;
-      else this.fetchStrokes();
+      if (this.video.thumbnail) {
+        console.log("this.video.thumbnail succeeded!");
+        return;
+      } else this.fetchStrokes();
     } else if (this.whiteboardID) {
       this.fetchStrokes();
     }
@@ -96,8 +99,7 @@ export default {
     syncAnimation() {
       if (this.syncedVisualAndAudio) return;
       if (this.resourcesLoaded) {
-        const audioRecorder = this.$refs["audio-recorder"];
-        const animation = this.$refs["animation"];
+        const { animation, audioRecorder } = this.$refs;
         animation.startSync(audioRecorder.getAudioTime);
         this.syncedVisualAndAudio = true;
       }
@@ -108,7 +110,7 @@ export default {
     },
     async quickplay() {
       this.overlay = false;
-      const animation = this.$refs["animation"];
+      const { animation } = this.$refs;
       await animation.quickplay();
       this.overlay = true;
     },
