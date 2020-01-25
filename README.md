@@ -1,12 +1,11 @@
-# ExplainMIT [![Build Status](https://travis-ci.com/LingDingDong/feynman-mvp.svg?branch=master)](https://travis-ci.com/LingDingDong/feynman-mvp)
+# ExplainMIT 
+A website built by MIT students to make learning more efficient and collaborative. 
 
-The ExplainMIT project is a website built by MIT students in order to make learning more efficient and collaborative. 
+## [Problem](https://medium.com/@eltonlin1998/look-and-youll-see-71cb92125baa)
+Help is a scarce resource because people's time is limited
 
-## Problem
-Help is a scarce resource because the time of professors, TAs and students are limited.
-
-## Solution
-We enable people to explain things with less time, and to reuse explanations they've given that'd otherwise have been lost. 
+## [Solution](https://www.youtube.com/watch?v=POis_ihKexo)
+Our website enables people to explain things with less time and to reuse explanations that'd otherwise be lost. 
 
 ## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 - **Technologies:** Vue.js, Vuetify, Apollo, GraphQL, PostgreSQL
