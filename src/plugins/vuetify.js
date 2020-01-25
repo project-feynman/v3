@@ -1,24 +1,24 @@
-import Vue from 'vue'
-import Vuetify from 'vuetify/lib';
-import colors from 'vuetify/lib/util/colors'
+import Vue from "vue";
+import Vuetify from "vuetify/lib";
+import colors from "vuetify/lib/util/colors";
 
-Vue.use(Vuetify)
+Vue.use(Vuetify);
 
 export default new Vuetify({
   icons: {
-    iconfont: 'mdi',
+    iconfont: "mdi"
   },
   theme: {
-    // Configure color scheme of the website here 
+    // Configure color scheme of the website here
     themes: {
       light: {
         primary: colors.blue, // #E53935
         secondary: colors.purple, // #FFCDD2
-        accent: "#F03C02",
-      },
-    },
+        accent: "#F03C02"
+      }
+    }
   },
   options: {
-    customProperties: true,
-  },
-})
+    customProperties: true
+  }
+});

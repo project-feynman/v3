@@ -4,11 +4,12 @@ module.exports = {
     node: true
   },
   'extends': [
-    'plugin:vue/essential',
+    // 'plugin:vue/essential',
     // 'eslint:recommended',
     '@vue/airbnb'
   ],
   rules: {
+    "arrow-parens": ["error", "as-needed"],
     "space-before-function-paren": ["error", "always"],
     "comma-dangle": ["error", "never"], // disallows trailing commas
     "linebreak-style": ["error", "windows"],
