@@ -6,9 +6,7 @@ The ExplainMIT project is a website built by MIT students in order to make learn
 Help is a scarce resource because the time of professors, TAs and students are limited.
 
 ## Solution
-Our website lets people share knowledge efficiently. To explain concepts to someone, you can both visit the website, then proceed to talk and draw on a real-time blackboard. If both of you can't be on at the same time, you can record and share lightweight pseudo-videos, built to use 100x less memory.
-
-After each session, you can click "SAVE" to archive the blackboard's entire progression as a silent animation, add some title and description, and save that as an explanation on the platform. For one-sided teaching interactions, you can simply record the entire explanation and save it as a video explanation. In other words, by frequently explaining concepts to each other, you inadvertently produce precious explanations that benefit other people. 
+We enable people to explain things with less time, and to reuse explanations they've given that'd otherwise have been lost. 
 
 ## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 - **Technologies:** Vue.js, Vuetify, Apollo, GraphQL, PostgreSQL
