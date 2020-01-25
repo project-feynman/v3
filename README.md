@@ -24,12 +24,4 @@ Our website enables people to explain things with less time and to reuse explana
                                                                     
 
                                                                     
-                                                                 
-
-**Hall of Fame**
-- Hubert Wasilewski was the backend engineer back in the early days 
-- Tony Wang built the slider for traversing any video freely 
-- Yang Yang worked on email notifications
-- John Lin built a live group chat, voice chat and copy-image-to-chat feature
-- Kirill Zabrodin improved the README, set up deployment tests and added the copy-to-clipboard feature for sharing video links
-- Kyle Xiao worked extensively the Q&A feature
+                                                             
