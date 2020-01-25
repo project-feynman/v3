@@ -64,17 +64,12 @@
 </template>
 
 <script>
-import Swatches from "vue-swatches";
 import "vue-swatches/dist/vue-swatches.min.css";
-import db from "@/database.js";
 import { initEnrollementService } from "../dep";
 
 export default {
   props: {
     user: Object
-  },
-  components: {
-    Swatches
   },
   data: () => ({
     fav: true,

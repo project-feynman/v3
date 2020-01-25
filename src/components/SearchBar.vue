@@ -10,22 +10,18 @@
 
 <script>
 export default {
-  name: 'SearchBar',
-  data () {
+  name: "SearchBar",
+  data() {
     return {
-      searchText: "",
-    }
+      searchText: ""
+    };
   },
   props: ["label", "items"],
   methods: {
-    submit () {
-      let text = this.searchText
-      // this.$nextTick(() => {
-      //   this.searchText = ""
-      // })
-      this.$emit("submit", text)
-      this.searchText = ""
-    },
+    submit() {
+      this.$emit("submit", this.searchText);
+      this.searchText = "";
+    }
   }
-}
+};
 </script>

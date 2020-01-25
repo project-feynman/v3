@@ -5,16 +5,14 @@ module.exports = {
   },
   'extends': [
     'plugin:vue/essential',
-    'eslint:recommended',
+    // 'eslint:recommended',
     '@vue/airbnb'
   ],
   rules: {
-    semi: [
-      'error',
-      'always'
-    ],
+    "space-before-function-paren": ["error", "always"],
+    "comma-dangle": ["error", "never"], // disallows trailing commas
+    "linebreak-style": ["error", "windows"],
     quotes: ['error', 'double'],
-    'space-before-function-paren': ['error', 'always'],
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
   },
