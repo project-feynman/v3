@@ -206,6 +206,7 @@ export default {
       this.setStyle(stroke.color, stroke.lineWidth);
 
       // Draw a stroke. This constitutes a frame.
+      // TODO: use $_ instead of only _ or $ to avoid overwritting Vue's methods
       this._stroke(stroke.points, pointIndex, stroke.isErasing);
     },
 
