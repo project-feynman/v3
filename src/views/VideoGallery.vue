@@ -30,17 +30,12 @@
                       >
                         <!-- IMAGE SLOT -->
                         <template v-slot:card-image>
-
                           <DoodleVideo
                             :whiteboardID="video['.key']" 
                             :ref="`doodle-video-${i}-${j}`"
                             :canvasID="`${i}-${j}`"
                             :video="video"
-                            >
-
-                          </DoodleVideo>
-
-
+                          />
                         </template>
 
                         <!-- BUTTONS SLOT -->
@@ -106,18 +101,12 @@ export default {
       isEditting: false,
       whiteboardPopup: false,
       currentVideoID: "",
-      // clickedSet: {},
-      // x: 0
     }
   },
   computed: {
-    user () {
-      return this.$store.state.user
-    }
+    user () { return this.$store.state.user }
   },
-  created () {
-    this.fetchClassDoc()
-  },
+  created () { this.fetchClassDoc() },
   methods: {
     async fetchClassDoc () {
       this.classDoc = {} 
@@ -132,17 +121,14 @@ export default {
         this.$router.push(`/${classID}/${videoID}`)
       } else if (buttonName === "QUICKPLAY") {
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
-        videoElem.fetchStrokesAndQuickplay()
+        videoElem.fetchStrokesThenQuickplay()
       } else if (buttonName === "DELETE") {
         this.deleteVideo(videoID, audioPath)
       }
     },
     getSubtitle ({ authorName, duration }) {
-      if (duration) {
-        return `By ${authorName || 'Anonymous'}, ${Number.parseFloat(duration / 60).toPrecision(2)} minutes`
-      } else {
-        return `By ${authorName || 'Anonymous'}, silent animation`
-      }
+      if (duration) { return `By ${authorName || 'Anonymous'}, ${Number.parseFloat(duration / 60).toPrecision(2)} minutes` } 
+      else { return `By ${authorName || 'Anonymous'}, silent animation`}
     },
     initEditForCard (j) {
       const card = this.$refs[`card--${j}`][0]
