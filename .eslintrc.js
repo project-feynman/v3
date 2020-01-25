@@ -5,9 +5,16 @@ module.exports = {
   },
   'extends': [
     'plugin:vue/essential',
-    'eslint:recommended'
+    'eslint:recommended',
+    '@vue/airbnb'
   ],
   rules: {
+    semi: [
+      'error',
+      'always'
+    ],
+    quotes: ['error', 'double'],
+    'space-before-function-paren': ['error', 'always'],
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
   },
@@ -20,7 +27,7 @@ module.exports = {
         '**/__tests__/*.{j,t}s?(x)'
       ],
       env: {
-        mocha: true
+        jest: true
       }
     }
   ]
