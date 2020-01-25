@@ -10,7 +10,6 @@
     
     <!-- APP BAR -->
     <HomeAppBar @create-class="courseNumber => createClass(courseNumber)"/>
-
     <v-content> 
       <v-card class="mx-auto text-center" fluid>
         <div class="pt-5">
@@ -33,12 +32,14 @@
         </div>
 
         <v-divider></v-divider>
+
         <SearchBar 
-            label="Enter Class Number"
-            :items="classesIDs"
-            @submit="classChosen">
-        </SearchBar>
-        
+          v-if="user"
+          label="Enter Class Number"
+          :items="classesIDs"
+          @submit="classChosen"
+        />
+      
         <KaryDialog v-if="searchBarDialog"
             title="Do you want to add the following class?"
             :text="chosenClass"
@@ -48,7 +49,8 @@
         </KaryDialog>
 
         <v-divider></v-divider>
-        <v-container fluid class="py-0">
+        <!-- TUTORIAL -->
+        <v-container v-if="!user" fluid class="py-0">
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
@@ -90,13 +92,13 @@
         </v-container>
       </v-card>
       <transition name="fade" mode="out-in">
-        <div v-if="isFetchingUser || user==null" key="loading..."></div>
+        <div v-if="isFetchingUser || user === null" key="loading..."></div>
         <div v-else key="class-list">
           <BaseGrid>
             <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
-                <v-card @click="$router.push(`${i}/questions`)">
-                    <v-card-title>{{s.name}}</v-card-title>
-                </v-card>
+              <v-card @click="$router.push(`${i}/questions`)">
+                <v-card-title>{{s.name}}</v-card-title>
+              </v-card>
             </v-col>
           </BaseGrid>
         </div>
