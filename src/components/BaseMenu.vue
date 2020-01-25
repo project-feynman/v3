@@ -1,43 +1,29 @@
 <template>
   <div class="text-xs-center">
-    <v-menu
-      v-model="menu"
-      :close-on-content-click="false"
-      :nudge-width="200"
-      offset-x
-    >
+    <v-menu v-model="menu" :close-on-content-click="false" :nudge-width="200" offset-x>
       <template v-slot:activator="{ on }">
-        <slot :on="on">
-        
-        </slot>
+        <slot :on="on"></slot>
       </template>
 
       <v-card>
         <v-list>
           <v-list-item>
             <v-list-item-avatar>
-              <v-icon large :color="color">
-                account_circle
-              </v-icon>
+              <v-icon large :color="color">account_circle</v-icon>
               <!-- <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="John"> -->
             </v-list-item-avatar>
-            
-   
+
             <v-list-item-content>
-               <v-text-field
-                  placeholder="Enter your name here"
-                  :value="user.name"
-                  @input="value => name = value"
-                  single-line
-                />
+              <v-text-field
+                placeholder="Enter your name here"
+                :value="user.name"
+                @input="value => name = value"
+                single-line
+              />
             </v-list-item-content>
 
             <v-list-item-action>
-              <v-btn
-                :class="fav ? 'red--text' : ''"
-                icon
-                @click="fav = !fav"
-              >
+              <v-btn :class="fav ? 'red--text' : ''" icon @click="fav = !fav">
                 <!-- <v-icon>favorite</v-icon> -->
               </v-btn>
             </v-list-item-action>
@@ -51,18 +37,16 @@
             <v-container>
               <v-list-item-title>{{s.name}}</v-list-item-title>
               <v-list-item-action v-if="s.settings">
-                  <v-radio-group
-                    v-model="s.settings.notifications.newQuestion"
-                    row
-                  >
-                    <v-radio 
-                      v-for="x in newQNotifs" :key="x"
-                      @change="classNotifChanged(i, x)"
-                      :label="x"
-                      :value="x"
-                      :id="x"
-                    />
-                  </v-radio-group>
+                <v-radio-group v-model="s.settings.notifications.newQuestion" row>
+                  <v-radio
+                    v-for="x in newQNotifs"
+                    :key="x"
+                    @change="classNotifChanged(i, x)"
+                    :label="x"
+                    :value="x"
+                    :id="x"
+                  />
+                </v-radio-group>
               </v-list-item-action>
             </v-container>
           </v-list-item>
@@ -80,42 +64,56 @@
 </template>
 
 <script>
-import Swatches from 'vue-swatches'
-import 'vue-swatches/dist/vue-swatches.min.css'
-import db from '@/database.js'
-import {initEnrollementService} from '../dep'
+import Swatches from "vue-swatches";
+import "vue-swatches/dist/vue-swatches.min.css";
+import db from "@/database.js";
+import { initEnrollementService } from "../dep";
 
-  export default {
-    props: {
-      user: Object
+export default {
+  props: {
+    user: Object
+  },
+  components: {
+    Swatches
+  },
+  data: () => ({
+    fav: true,
+    menu: false,
+    name: "",
+    useDarkMode: false,
+    color: "",
+    colors: [
+      "black",
+      "grey",
+      "red",
+      "orange",
+      "yellow",
+      "green",
+      "blue",
+      "purple"
+    ],
+    newQNotifs: ["always", "daily", "never"],
+    enrollementService: initEnrollementService()
+  }),
+  methods: {
+    handleSave() {
+      this.menu = false;
+      const updatedUser = {
+        useDarkMode: this.useDarkMode
+        // color: this.color
+      };
+      if (this.name) updatedUser.name = this.name;
+      else updatedUser.name = this.user.name;
+      this.$emit("save", updatedUser);
     },
-    components: {
-      Swatches
-    },
-    data: () => ({
-      fav: true,
-      menu: false,
-      name: "",
-      useDarkMode: false,
-      color: "",
-      colors: ["black", "grey", "red", "orange", "yellow", "green", "blue", "purple"],
-      newQNotifs: ["always", "daily", "never"],
-      enrollementService : initEnrollementService()
-    }),
-    methods: {
-      handleSave () {
-        this.menu = false 
-        const updatedUser = {
-          useDarkMode: this.useDarkMode,
-          // color: this.color
-        }
-        if (this.name) updatedUser.name = this.name;
-        else updatedUser.name = this.user.name;
-        this.$emit("save", updatedUser)
-      },
-      classNotifChanged (classID, frequency){
-        this.enrollementService.changeNotification(this.user, classID, 'newQuestion', frequency)
-      }
+    classNotifChanged(classID, frequency) {
+      this.enrollementService.changeNotification(
+        this.user,
+        classID,
+        "newQuestion",
+        frequency
+      );
     }
   }
+};
 </script>

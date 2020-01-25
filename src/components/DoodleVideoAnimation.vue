@@ -1,29 +1,27 @@
 <template>
   <div style="height: 100%">
     <BaseOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
-      <canvas 
+      <canvas
         v-if="isFullscreen"
-        :id="`myCanvas-${canvasID}`"  
+        :id="`myCanvas-${canvasID}`"
         style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
-      >
-      </canvas>
+      ></canvas>
     </BaseOverlay>
     <!-- <BaseOverlay v-else :overlay="false" @play-video="playVideo()"> -->
-      <canvas 
-        v-else
-        :id="`myCanvas-${canvasID}`" 
-        style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
-      >
-      </canvas>
+    <canvas
+      v-else
+      :id="`myCanvas-${canvasID}`"
+      style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
+    ></canvas>
     <!-- </BaseOverlay> -->
   </div>
 </template>
 
 <script>
-import BaseOverlay from "@/components/BaseOverlay.vue"
-import { mapState } from 'vuex'
-import DrawMethods from '@/mixins/DrawMethods'
-import db from '@/database.js'
+import BaseOverlay from "@/components/BaseOverlay.vue";
+import { mapState } from "vuex";
+import DrawMethods from "@/mixins/DrawMethods";
+import db from "@/database.js";
 
 export default {
   props: {
@@ -45,15 +43,15 @@ export default {
   },
   mixins: [DrawMethods],
   computed: {
-    ...mapState(['user']),
-    author () {
+    ...mapState(["user"]),
+    author() {
       return {
         name: this.user.displayName,
         uid: this.user.uid
-      }
-    },
+      };
+    }
   },
-  data () {
+  data() {
     return {
       isReplaying: false,
       allStrokes: [],
@@ -67,47 +65,47 @@ export default {
       lastX: -1,
       lastY: -1,
       redrawTimeout: null,
-      interval: null 
-    }
+      interval: null
+    };
   },
-  created () {
-    this.initData()
+  created() {
+    this.initData();
   },
-  mounted () {
+  mounted() {
     this.canvas = document.getElementById(`myCanvas-${this.canvasID}`);
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext("2d");
     this.canvas.height = this.height;
     this.rescaleCanvas(false);
     if (this.autoplay) setTimeout(this.quickplay, 1000);
     else this.drawStrokesInstantly();
-    this.overlay = true
-    window.addEventListener('resize', this.rescaleCanvas, false)
+    this.overlay = true;
+    window.addEventListener("resize", this.rescaleCanvas, false);
   },
   methods: {
-    startVideo () {
-      this.$emit('play-video')
-      this.overlay = false
+    startVideo() {
+      this.$emit("play-video");
+      this.overlay = false;
     },
-    async quickplayVideo () {
-      this.overlay = false
-      await this.quickplay()
-      this.overlay = true
+    async quickplayVideo() {
+      this.overlay = false;
+      await this.quickplay();
+      this.overlay = true;
     },
-    renderAllStrokes () {
+    renderAllStrokes() {
       // TODO: rename "rescaleCanvas"
-      this.rescaleCanvas(true)
+      this.rescaleCanvas(true);
     },
-    async initData () {
+    async initData() {
       if (!this.strokes) return;
-      this.indexOfNextStroke = 0
-      this.allStrokes = this.strokes
+      this.indexOfNextStroke = 0;
+      this.allStrokes = this.strokes;
       // if (this.ctx) {
       //   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       // }
-      this.$emit('animation-loaded')
+      this.$emit("animation-loaded");
     }
   }
-}
+};
 </script>
 
 
