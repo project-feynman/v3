@@ -1,14 +1,13 @@
 <template >
-  <div @click="fetchStrokesAndQuickplay()" style="height: 100%; width: 100%;">
-    <template v-if="videoClicked || !video || !video.thumbnail">
+  <!-- TODO: add video documentation link -->
+  <div style="height: 100%; width: 100%;">
+    <template v-if="strokes.length !== 0">
       <DoodleVideoAnimation
-        
         ref="animation"
         :strokes="strokes"
         :isFullscreen="false"
         :canvasID="canvasID"
         :height="height"
-        :overlay="overlay"
         @animation-loaded="handleAnimationLoaded()"
         @animation-finished="handleEvent()"
       />
@@ -22,29 +21,25 @@
       />
     </template>
 
-    <template v-else>
-      
-      <v-img  :src="video.thumbnail"  >
-        <v-container fill-height fluid>
+    <template v-else-if="video">
+      <v-img :src="video.thumbnail"  >
+        <!-- <v-container fill-height fluid>
           <v-row align="center" justify="center">
-              <div>
+            <div>
               <v-btn fab large dark>
                 <v-icon>play_arrow</v-icon>
               </v-btn>
-              </div>
+            </div>
           </v-row>
-        </v-container>  
+        </v-container>   -->
       </v-img>  
-      
     </template>
-
   </div>
 </template>
 
 <script>
 import db from "@/database.js"
 import DoodleVideoAnimation from "@/components/DoodleVideoAnimation.vue"
-import BaseOverlay from "@/components/BaseOverlay.vue"
 import AudioRecorder from "@/components/AudioRecorder.vue"
 import { mapState } from "vuex"
 import firebase from "firebase/app"
@@ -52,6 +47,7 @@ import "firebase/storage"
 
 export default {
   props: {
+    video: Object,
     whiteboardID: String,
     hasSubcollection: {
       type: Boolean,
@@ -62,45 +58,41 @@ export default {
     audioURL: String,
     canvasID: String,
     height: String,
-    video: {
-      type: Object,
-      default () {
-        return null
-      }
-    }
   },
   components: {
     DoodleVideoAnimation,
     AudioRecorder,
-    BaseOverlay
   },
   data () {
     return {
+      hasFetchedStrokes: false,
       strokes: [],
+      isPlaying: true,
       recorderLoaded: false,
       animationLoaded: false,
       syncedVisualAndAudio: false,
-      videoClicked: false,
-      strokesFetched: false,
-      overlay: true
     }
   },
   computed: {
     ...mapState(["user"]),
-    resourcesLoaded() {
-      return this.animationLoaded && this.recorderLoaded
+    resourcesLoaded () { return this.animationLoaded && this.recorderLoaded }
+  },
+  async created () {
+    // fetch strokes if no thumbnail is available 
+    if (this.video) {
+      if (this.video.thumbnail) return;
+      else this.fetchStrokes()
+    } else if (this.whiteboardID) {
+      this.fetchStrokes()
     }
   },
   methods: {
-    async fetchStrokesAndQuickplay () {
-      this.videoClicked = true
-      if (!this.strokesFetched){
-        await this.fetchStrokes()
-      }
+    async fetchStrokesThenQuickplay () {
+      if (!this.hasFetchedStrokes) await this.fetchStrokes();
       this.quickplay()
     },
     syncAnimation () {
-      if (this.syncedVisualAndAudio) { return } 
+      if (this.syncedVisualAndAudio) return; 
       if (this.resourcesLoaded) {
         const audioRecorder = this.$refs['audio-recorder']
         const animation = this.$refs['animation']
@@ -120,22 +112,18 @@ export default {
     },
     async fetchStrokes () {
       const P = new Promise(async resolve => {
-        if (!this.whiteboardID) {
-          resolve()
-        }
+        if (!this.whiteboardID) resolve();
         const baseRef = db.collection("whiteboards").doc(this.whiteboardID)
         if (this.hasSubcollection === false) {
           const doc = await baseRef.get()
-          this.strokes = doc.data().strokes
-          
+          this.strokes = doc.data().strokes  
         } else {
           const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc")
           const querySnapshot = await strokesRef.get()
-          
           querySnapshot.forEach(doc => {
-              this.strokes.push({".key": doc.id, ...doc.data()})
+            this.strokes.push({".key": doc.id, ...doc.data()})
           })
-          this.strokesFetched = true
+          this.hasFetchedStrokes = true
         }
         resolve()
       })

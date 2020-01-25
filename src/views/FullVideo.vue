@@ -1,24 +1,19 @@
 <template>
   <div class="video">
-    <BaseAppBar :loading="!resourcesLoaded">
-      <v-btn v-if="animationLoaded" @click="quickplay()">
-        QUICKPLAY
-      </v-btn>
-    </BaseAppBar>
-
+    <BaseAppBar :loading="!resourcesLoaded"/>
     <v-content>
       <v-container fluid class="pa-0">
         <DoodleVideoAnimation
-          v-if="allStrokes"
+          v-if="allStrokes.length !== 0"
           ref="animation"
+          :isFullscreen="true"
           :strokes="allStrokes"
           :overlay="overlay"
           @animation-loaded="animationLoaded=true"
           @animation-finished="handleEvent()"
           @play-video="startVideo()"
         />
-
-        <audio-recorder
+        <AudioRecorder
           v-if="audioURL"
           ref="audio-recorder"
           :audioURL="audioURL"
@@ -27,7 +22,6 @@
           @stop="handleStop()"
           @seeking="handleSeeking()"
           @recorder-loaded="recorderLoaded=true"
-
         />
       </v-container>
     </v-content>
@@ -58,25 +52,23 @@
     },
     computed: {
       ...mapState(['user']),
-      resourcesLoaded() {
-        return this.recorderLoaded && this.animationLoaded
-      }
+      resourcesLoaded () { return this.recorderLoaded && this.animationLoaded }
     },
-    data() {
+    data () {
       return {
         video: null,
-        audioURL: '',
+        audioURL: "",
         recorderLoaded: false,
         animationLoaded: false,
         syncInitialized: false,
         audioFileRef: null,
-        allStrokes: null,
-        thumbnail: '',
+        allStrokes: [],
+        thumbnail: "",
         overlay: true
       }
     },
-
     watch: {
+      // figure out why both of these are necessary
       $route: {
         handler: "bindVariables",
         immediate: true
@@ -86,15 +78,12 @@
         immediate: true
       }
     },
-
-    mounted() {
+    mounted () {
       window.addEventListener('resize', this.resizeVideo);
     },
-
-    destroyed() {
+    destroyed () {
       window.removeEventListener('resize', this.resizeVideo);
     },
-
     methods: {
       handlePlay() {
         const animation = this.$refs['animation'];
@@ -106,14 +95,12 @@
           animation.sync = setTimeout(animation.syncVisualWithAudio, 0);
         }
       },
-
       handleStop() {
         // Stop sync.
         const animation = this.$refs['animation'];
         clearTimeout(animation.sync);
         animation.sync = undefined;
       },
-
       handleSeeking() {
         // Stop first.
         this.handleStop();
@@ -122,7 +109,6 @@
         const animation = this.$refs['animation'];
         animation.syncVisualWithAudio(true);
       },
-
       resizeVideo() {
         // Rescale canvas.
         const animation = this.$refs['animation'];
@@ -137,12 +123,10 @@
           animation.drawStrokesInstantly();
         }
       },
-
       startVideo() {
         const audioRecorder = this.$refs['audio-recorder'];
         audioRecorder.playAudio();
       },
-
       initializeAnimation() {
         if (!this.syncInitialized && this.resourcesLoaded) {
           const audioRecorder = this.$refs['audio-recorder'];
@@ -151,14 +135,10 @@
           this.syncInitialized = true;
         }
       },
-
       quickplay() {
         const animation = this.$refs['animation'];
-        if (animation) {
-          animation.quickplay();
-        }
+        if (animation) animation.quickplay();
       },
-
       async bindVariables() {
         // TODO: just keep track of this.video so that I don't need to keep track of this.audioURL, this.audioPath explictly
 
@@ -181,41 +161,25 @@
         video = video.data();
         // fix delete button logic
         this.video = video;
-        console.log("video =", video);
         this.thumbnail = video.thumbnail;
-        // audio
+        // set audio and visual
         this.audioURL = video.audioURL;
-        // visual
         const strokesRef = videoRef.collection('strokes');
-        if (video.audioPath) {
-          await this.$binding('allStrokes', strokesRef.orderBy('startTime', 'asc'));
-        } else {
-          await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'));
-        }
-        // other setup
-        // TODO: stop using root listeners and instead use a navcomponent directly here
-        this.$root.$on('replay-silent-animation', this.quickplay); // when pressing the replay icon, the whiteboard will replay
+        if (video.audioPath) await this.$binding('allStrokes', strokesRef.orderBy('startTime', 'asc'));
+        else await this.$binding('allStrokes', strokesRef.orderBy('strokeNumber', 'asc'));
 
-        // now bind references to make it easy to delete things
+        // bind references to make it easy to delete things
         const storageRef = firebase.storage().ref();
         if (video.audioPath) {
           this.audioFileRef = storageRef.child(`recordings/${video.audioPath}`);
         }
       },
-
       async deleteVideo() {
-        const classID = this.$route.params.class_id;
-        const videoID = this.$route.params.video_id;
-        // const videoRef = db.collection('classes').doc(classID).collection('videos').doc(videoID)
         const recursiveDelete = firebase.functions().httpsCallable('recursiveDelete');
-        // delete video, whiteboard, strokes, and audio
-        // recursiveDelete({ path: `whiteboards/${this.video.whiteboardID}` })
-        recursiveDelete({path: `whiteboards/${videoID}`});
-        // videoRef.delete()
-        if (this.audioFileRef) {
-          this.audioFileRef.delete();
-        }
-        this.$router.push(`/${classID}/ranking`);
+        recursiveDelete({path: `whiteboards/${this.$route.params.video_id}`});
+        if (this.audioFileRef) this.audioFileRef.delete();
+        // redirect
+        this.$router.push(`/${this.$route.params.class_id}/ranking`);
       }
     }
   }
