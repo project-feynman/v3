@@ -33,12 +33,18 @@
         </div>
 
         <v-divider></v-divider>
+        <v-container>
+        <v-row justify="center">
+        <v-col cols="6">
         <SearchBar 
+            color="accent"
             label="Enter Class Number"
             :items="classesIDs"
             @submit="classChosen">
         </SearchBar>
-        
+        </v-col>
+        </v-row>
+        </v-container>
         <KaryDialog v-if="searchBarDialog"
             title="Do you want to add the following class?"
             :text="chosenClass"
