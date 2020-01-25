@@ -40,7 +40,6 @@
       </template>
 
       <template v-if="!isFetchingUser">
-        
         <BaseMenu 
           v-if="user"
           :user="user"

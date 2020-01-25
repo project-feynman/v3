@@ -54,12 +54,11 @@
               <v-card>
                 <v-card-subtitle class="black--text">Ask & answer questions, just like on Piazza</v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
-
                   <DoodleVideo 
-                        whiteboardID="BlEjXn7RP7q8YwxG8FLO"
-                        canvasID="1"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
+                    whiteboardID="BlEjXn7RP7q8YwxG8FLO"
+                    canvasID="1"
+                    @animation-loaded="hasFetchedVideos = true"
+                  />
                 </v-img>
               </v-card>
             </v-col>
@@ -67,12 +66,11 @@
               <v-card>
                 <v-card-subtitle class="black--text">Draw & talk to explain harder ideas (live or recorded)</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
-
                  <DoodleVideo 
-                        whiteboardID="8hcybKON8Br67bNUA9TJ"
-                        canvasID="2"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
+                    whiteboardID="8hcybKON8Br67bNUA9TJ"
+                    canvasID="2"
+                    @animation-loaded="hasFetchedVideos = true"
+                  />
                 </v-img>
               </v-card>
             </v-col>
@@ -80,12 +78,11 @@
               <v-card>
                  <v-card-subtitle class="black--text">As people help each other, elegant explanations accumulate</v-card-subtitle>
                  <v-img :aspect-ratio="16/9">
-
                   <DoodleVideo 
-                        whiteboardID="vgPkZWvsqvt9pImHiMbe"
-                        canvasID="3"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
+                    whiteboardID="vgPkZWvsqvt9pImHiMbe"
+                    canvasID="3"
+                    @animation-loaded="hasFetchedVideos = true"
+                  />
                 </v-img>
               </v-card>
             </v-col>
@@ -134,7 +131,7 @@ export default {
     KaryDialog,
   },
   computed: {
-    ...mapState(['user', 'isFetchingUser']),
+    ...mapState(["user", "isFetchingUser"]),
   },
   data () {
     return {
@@ -164,9 +161,9 @@ export default {
       })  
     },
     
-    classChosen(answer) {
-        this.searchBarDialog = true
-        this.chosenClass = answer
+    classChosen (answer) {
+      this.searchBarDialog = true
+      this.chosenClass = answer
     },
     searchBarDialogSubmitted(answer) {
         if(answer == 'No'){
@@ -175,7 +172,6 @@ export default {
             return
         }
         this.enrollementService.addClass(this.user, this.chosenClass)
-
         this.chosenClass = ''
         this.searchBarDialog = false
     },
@@ -209,13 +205,10 @@ export default {
     },
     computeCardSize ({ courseNumber }) {
       if (courseNumber.length > 13) {
-        if (this.$vuetify.breakpoint.md) {
-          return 4
-        } else if (this.$vuetify.breakpoint.smAndDown) {
-          return 12
-        } 
+        if (this.$vuetify.breakpoint.md) return 4;
+        else if (this.$vuetify.breakpoint.smAndDown) return 12;
       }
-      return this.$vuetify.breakpoint.smAndDown? 6 : 2
+      return this.$vuetify.breakpoint.smAndDown? 6 : 2;
     }
   } 
 }

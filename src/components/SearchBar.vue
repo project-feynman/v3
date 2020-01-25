@@ -1,33 +1,30 @@
 <template>
-  <div>
-    <v-autocomplete
-      :label="label"
-      :items="items"
-      placeholder="Start Typing to Search"
-      @change="submit"
-      v-model="searchText"
-      ></v-autocomplete>
-  </div>
+  <v-autocomplete
+    :label="label"
+    :items="items"
+    placeholder="Start Typing to Search"
+    @change="submit"
+    v-model="searchText"
+  />
 </template>
 
-
 <script>
-
 export default {
   name: 'SearchBar',
-  data() {
-        return {
-            searchText: null,
-        }
+  data () {
+    return {
+      searchText: "",
+    }
   },
-  props: ['label', 'items'],
+  props: ["label", "items"],
   methods: {
-    submit() {
-        let text = this.searchText
-        this.$nextTick(() => {
-            this.searchText = null
-        })
-        this.$emit('submit', text)
+    submit () {
+      let text = this.searchText
+      // this.$nextTick(() => {
+      //   this.searchText = ""
+      // })
+      this.$emit("submit", text)
+      this.searchText = ""
     },
   }
 }
