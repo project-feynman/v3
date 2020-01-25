@@ -29,8 +29,7 @@
                   :value="user.name"
                   @input="value => name = value"
                   single-line
-              ></v-text-field>
-
+                />
             </v-list-item-content>
 
             <v-list-item-action>
@@ -48,30 +47,28 @@
         <v-divider></v-divider>
 
         <v-list>
-          <v-list-item v-for="(s, i) in this.user.enrolledClasses" :key="i">
+          <v-list-item v-for="(s, i) in user.enrolledClasses" :key="i">
             <v-container>
-                <v-list-item-title>{{s.name}}</v-list-item-title>
-                <v-list-item-action>
-                    <v-radio-group
+              <v-list-item-title>{{s.name}}</v-list-item-title>
+              <v-list-item-action v-if="s.settings">
+                  <v-radio-group
                     v-model="s.settings.notifications.newQuestion"
-                    row>
-                        <v-radio v-for="x in newQNotifs"
-                        :key="x"
-                        :label="x"
-                        :value="x"
-                        :id="x"
-                        @change="classNotifChanged(i, x)">
-                        </v-radio>
-                    </v-radio-group>
-                </v-list-item-action>
+                    row
+                  >
+                    <v-radio 
+                      v-for="x in newQNotifs" :key="x"
+                      @change="classNotifChanged(i, x)"
+                      :label="x"
+                      :value="x"
+                      :id="x"
+                    />
+                  </v-radio-group>
+              </v-list-item-action>
             </v-container>
           </v-list-item>
-
         </v-list>
-
         <v-card-actions>
           <!-- <v-spacer></v-spacer> -->
-
           <!-- <v-btn flat @click="menu = false">Cancel</v-btn> -->
           <v-btn color="primary" text @click="handleSave()">Save</v-btn>
           <v-spacer></v-spacer>
@@ -112,15 +109,12 @@ import {initEnrollementService} from '../dep'
           useDarkMode: this.useDarkMode,
           // color: this.color
         }
-        if (this.name) {
-          updatedUser.name = this.name
-        } else {
-          updatedUser.name = this.user.name
-        }
+        if (this.name) updatedUser.name = this.name;
+        else updatedUser.name = this.user.name;
         this.$emit("save", updatedUser)
       },
-      classNotifChanged(classID, frequency){
-          this.enrollementService.changeNotification(this.user, classID, 'newQuestion', frequency)
+      classNotifChanged (classID, frequency){
+        this.enrollementService.changeNotification(this.user, classID, 'newQuestion', frequency)
       }
     }
   }
