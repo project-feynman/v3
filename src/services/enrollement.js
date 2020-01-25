@@ -4,7 +4,6 @@ import {encodeKey} from '../dep'
 export class Enrollement {
     constructor () {}
     addClass (user, className) {
-        console.log("add user, className =", user, className)
         let classID = encodeKey(className)
         let userDoc = db.collection("users").doc(user.uid)
         userDoc.get().then(doc => {
