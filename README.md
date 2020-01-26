@@ -12,12 +12,10 @@ Get people to explain things on blackboards so they are saveable and reusable.
 - **Technologies:** Vue.js frontend, Go backend and Firestore/PostgreSQL database
 - **Core-team:** Prabhakar Kafle, Lujing Cen, Samir Droubi, Winston Fey, Elton Lin
 <p float="left">
-  <img src="documentation/Samir.png" alt="member photo" width="150" height="170"/>
   <img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/>
   <img src="documentation/Winston.jpg" alt="member photo" height="170"/>
   <img src="documentation/Elton.png" alt="member photo" height="170"/>
   <img src="documentation/Lujing.jpg" alt="member photo" height="170"/>
-  <img src="documentation/Samir.png" alt="member photo" width="150" height="170"/>
 </p>
  
                                                                     
