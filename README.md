@@ -1,10 +1,11 @@
 # [ExplainMIT](https://medium.com/@eltonlin1998/feynman-overview-338034dcb426) 
-ExplainMIT is a website built by MIT students to enable efficient collaboration.
+ExplainMIT is a website optimized for blackboard explanations. 
 
 * **[Problem:](https://medium.com/@eltonlin1998/look-and-youll-see-71cb92125baa)** 
-Help is a scarce resource because people's time is limited
+Help is a scarce resource because people have limited time.
+* **Insight:** What if we can capture the explanations that are passed among peers every day?
 * **[Solution:](https://www.youtube.com/watch?v=POis_ihKexo)**
-Enable people to explain things quickly and reuse these explanations. 
+Get people to explain things on blackboards so they are saveable and reusable.  
 
 ## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 - **Technologies:** Vue.js, Vuetify, Apollo, GraphQL, PostgreSQL
