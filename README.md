@@ -1,11 +1,10 @@
-# ExplainMIT 
-A website built by MIT students to make learning more efficient and collaborative. 
+# [ExplainMIT](https://medium.com/@eltonlin1998/feynman-overview-338034dcb426) 
+ExplainMIT is a website built by MIT students to enable efficient collaboration.
 
-## [Problem](https://medium.com/@eltonlin1998/look-and-youll-see-71cb92125baa)
+* **[Problem:](https://medium.com/@eltonlin1998/look-and-youll-see-71cb92125baa)** 
 Help is a scarce resource because people's time is limited
-
-## [Solution](https://www.youtube.com/watch?v=POis_ihKexo)
-Our website enables people to explain things with less time and to reuse explanations that'd otherwise be lost. 
+* **[Solution:](https://www.youtube.com/watch?v=POis_ihKexo)**
+Enable people to explain things quickly and reuse these explanations. 
 
 ## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 - **Technologies:** Vue.js, Vuetify, Apollo, GraphQL, PostgreSQL
