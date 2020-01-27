@@ -5,7 +5,8 @@
       <Blackboard
         v-if="loadCanvas && workspace.whiteboardID"
         ref="whiteboard"
-        :whiteboardID="workspace.whiteboardID"/>
+        :whiteboardID="workspace.whiteboardID"
+        :isRealtime="true"/>
     </v-container>
   </div>
 </template>

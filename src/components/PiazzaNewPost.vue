@@ -97,8 +97,9 @@
         </v-container>
       </v-card>
       <div class="blackboard-container" v-show="this.blackboardAttached">
-        <BlackboardMini 
+        <Blackboard 
           ref="blackboard-mini"
+          :isRealtime="false"
           :visible="visible"
           :background="addedImage"
           @boardImage="boardImage"
@@ -112,6 +113,7 @@
 import Vue from 'vue';
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import BlackboardMini from "@/components/BlackboardMini.vue"
+import Blackboard from "@/components/Blackboard.vue"
 import SearchBar from '@/components/SearchBar.vue'
 import Tags from "@/components/Tags.vue"
 
@@ -124,6 +126,7 @@ export default {
   },
   components: {
     BlackboardMini,
+    Blackboard,
     Tags,
     SearchBar
   },

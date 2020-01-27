@@ -1,192 +1,5 @@
 <template>
-  <div v-if="!isRealtime">
-  <v-card id="whiteboard" outlined elevation="1">
-    <!-- SNACKBAR -->
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>
-        CLOSE
-      </v-btn>
-    </v-snackbar>
-
-    <BaseAppBar v-if="isRealtime" :loading="loading">
-      <v-toolbar-items v-if="whiteboardDoc">
-        <template v-if="!whiteboardDoc.isAnswered">
-          <swatches 
-            v-model="color"
-            :colors="colors"
-            :show-border="true"
-            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-            inline
-            background-color="rgba(0, 0, 0, 0)"
-            swatch-size="40"
-          /> 
-          </template>
-      </v-toolbar-items>
-    </BaseAppBar>
-
-      <!-- APP BAR -->
-      <v-app-bar dense color="#eee" elevation="1" class="blackboard-toolbar">
-        <v-container class="py-1 px-0">
-          <v-row align="center" justify="space-between">
-            <template v-if="currentState != recordingStateEnum.POST_RECORDING">
-              <v-col class="py-0">
-                <v-row justify="start" align="center">
-                  <v-col class="px-1 py-0" cols="auto">
-                    <div :class="[smallScreen? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]" id="swatches-wrapper"
-                        @click="swatchClick()">
-                      <v-btn 
-                        :color="(!smallScreen || palleteVisibility || eraserActive)? 'accent lighten-1':color"
-                        @click="palleteClick()"
-                        :outlined="eraserActive? true:false"
-                        min-width="36px"
-                        class="px-3"
-                        height="38px"
-                        max-width="64px"
-                      >
-                        <v-icon>mdi-lead-pencil</v-icon>
-                        <v-icon class="down">keyboard_arrow_down</v-icon>
-                      </v-btn>
-                      <swatches 
-                        v-model="color"
-                        :colors="colors"
-                        :show-border="true"
-                        :wrapper-style="{ padding:'0px', maxHeight:'26px', display:'flex' }"
-                        :swatch-style="{margin:'0 5px', borderRadius:'50%'}"
-                        inline
-                        background-color="rgba(0, 0, 0, 0)"
-                        swatch-size="26"
-                      />
-                    </div>
-                  </v-col>
-                  <v-col class="py-0 px-0" cols="auto">
-                    <v-btn 
-                      @click="eraserClick()"
-                      :outlined="eraserActive? false:true"
-                      color="accent lighten-1"
-                      class="board-action-btn normal-text"
-                    >
-                      <span class="d-none d-md-block mr-2">Eraser</span>
-                      <v-icon>mdi-eraser</v-icon>
-                    </v-btn>
-                  </v-col>
-                  <v-col class="py-0 px-0" cols="auto">
-                    <v-btn 
-                      @click="setImage()"
-                      ref="background"
-                      outlined
-                      color="accent lighten-1"
-                      class="board-action-btn normal-text"
-                    >
-                      <span class="d-none d-md-block mr-2">Background</span>
-                      <v-icon>image</v-icon>
-                    <input
-                      @change="handleImage"
-                      id="whiteboard-bg-input"
-                      name="whiteboard-bg"
-                      type="file"
-                      style="display: none;"
-                    />
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-col>
-              <v-col cols="auto" class="py-0 px-0">
-                <v-btn
-                  @click="wipeBoard()"
-                  outlined
-                  color="accent"
-                  class="board-action-btn normal-text"
-                >
-                  <span class="d-none d-lg-block mr-2">Clear</span>
-                  <v-icon>clear</v-icon>
-                </v-btn>
-                <v-btn
-                  v-if="!isRecording"
-                  @click="startRecording()" 
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Record</span>
-                  <v-icon>adjust</v-icon>
-                </v-btn>
-                <v-btn
-                  v-else
-                  @click="stopRecording()"
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Stop</span>
-                  <v-icon>stop</v-icon>
-                </v-btn>
-              </v-col>
-            </template>
-            <template v-else>
-              <v-col cols="auto" class="py-0">
-                <v-btn
-                  @click="initReplayLogic()"
-                  outlined
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Preview</span>
-                  <v-icon>mdi-eye</v-icon>
-                </v-btn>
-              </v-col>
-              <v-col cols="auto" class="py-0">
-                <v-btn
-                  @click="recordAgain()"
-                  outlined
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Retry</span>
-                  <v-icon>mdi-undo-variant</v-icon>
-                </v-btn>
-              </v-col>
-              <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
-                SAVE VIDEO
-              </v-btn> -->
-            </template>
-          </v-row>
-        </v-container>
-      </v-app-bar>
-
-      <!-- WHITEBOARD -->
-      <div id="blackboard-wrapper" v-resize="blackboardSize">
-        <canvas id="myCanvas">
-        </canvas>
-        <canvas id="background-canvas"></canvas>
-      </div>
-
-      <!-- "@start-recording" is necessary because the audio-recorder can't 
-      start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
-      null-->
-      <AudioRecorderMini
-        v-if="!isRealtime"
-        v-show="false"
-        ref="audio-recorder"
-        @start-recording="isRecording = true"
-        @file-uploaded="audioObj => handleNewAudio(audioObj)"
-      />
-
-      <audio-recorder 
-        v-else-if="whiteboardDoc"
-        v-show="false"
-        ref="audio-recorder"
-        :audioURL="whiteboardDoc.audioURL"
-        :audioPath="whiteboardDoc.audioPath"
-        @start-recording="isRecording = true"
-        @file-uploaded="audio => saveFileReference(audio)"
-      />
-
-
-  </v-card>
-  </div>
-
-
-  <div v-else>
-    <div id="whiteboard">
+  <div id="whiteboard">
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -263,7 +76,6 @@
     </v-content>
 
   </div>
-  </div>
 </template>
 
 <script>
@@ -276,20 +88,14 @@ import DrawMethods from '@/mixins/DrawMethods.js'
 import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
 import AudioRecorder from '@/components/AudioRecorder.vue'
-import AudioRecorderMini from "@/components/AudioRecorderMini.vue"
 import BaseAppBar from "@/components/BaseAppBar.vue"
 
 export default {
   props: {
-    isRealtime: Boolean,
     whiteboardID: String,
-    hideToolbar: Boolean,
-    height: String,
-    visible: Boolean,
-    background: String
+    hideToolbar: Boolean
   },
   components: {
-    AudioRecorderMini,
     AudioRecorder,
     Swatches,
     BaseAppBar
@@ -316,15 +122,10 @@ export default {
           uid: 'Anonymous'
         }
       }
-    },
-    bg () {
-      //mini
-      return this.background;
     }
   },
   data () {
     return {
-      
       loading: true,
       whiteboardDoc: null,
       color: 'white',
@@ -357,19 +158,7 @@ export default {
       mousedown : 0,
       clearRectTimeout: null,
       snackbar: false,
-      snackbarMessage: "",
-      currentState: "",
-      audioObj: {},
-      audioPath: "",
-      audioURL: "",
-      recordingStateEnum: {
-        PRE_RECORDING: "pre-recording",
-        MID_RECORDING: "mid-recording",
-        POST_RECORDING: "post-recording"
-      },
-      smallScreen: window.innerWidth<960,
-      palleteVisibility: false,
-      eraserActive: false
+      snackbarMessage: ""
     }
   },
   watch: {
@@ -402,146 +191,36 @@ export default {
         }
       }
     },
-    eraserActive() {
-      /// all these are mini
-      this.customCursor()
-      this.canvas.getContext("2d").globalCompositeOperation=this.eraserActive?'destination-out':'source-over'
-      this.lineWidth=this.eraserActive?10:2
-    },
-    color(){
-      this.customCursor()
-    },
-    visible() {
-      this.blackboardSize()
-    },
-    bg() {
-      this.drawBackground(this.bg)
-    }
   },
   mounted () {
     // the mounted() hook is never called for subsequent switches between whiteboards
-    if (this.whiteboardID){    
-      const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
-    }
+    const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
     this.canvas = document.getElementById('myCanvas')
     this.ctx = this.canvas.getContext('2d')
     // new redraw code
-
-    if (!this.isRealtime){
-      //mini
-      const height = 9/16 * (window.innerWidth - 500)
-      this.canvas.height = height - 48 // the blackboard's top-app-bar is 48px high
-    }
-    else{
-      this.canvas.width = document.documentElement.clientWidth 
-      this.canvas.height = 0.9 * document.documentElement.clientHeight
-    }
+    this.canvas.width = document.documentElement.clientWidth 
+    this.canvas.height = 0.9 * document.documentElement.clientHeight
     this.rescaleCanvas(true)
-    if (this.isRealtime){
-      window.addEventListener('resize', () => { 
-        this.canvas.width = document.documentElement.clientWidth 
-        this.rescaleCanvas(true)
-      }, false)
-    }
-    else {
-      //mini
-      window.addEventListener('resize', () => this.rescaleCanvas(true), false)
-    }
+    window.addEventListener('resize', () => { 
+      this.canvas.width = document.documentElement.clientWidth 
+      this.rescaleCanvas(true)
+    }, false)
     this.initTouchEvents()
     this.initMouseEvents()
-    if (this.isRealtime){
-      this.continuouslySyncBoardWithDB()
-      this.$root.$on("side-nav-toggled", sideNavOpened => {
-        if (sideNavOpened) {
-          this.canvas.width = document.documentElement.clientWidth
-        } else {
-          this.canvas.width = document.documentElement.clientWidth
-        }
-        this.rescaleCanvas(true)
-      })
-    }
-    else{
-      //mini
-      document.fonts.ready.then(()=>this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
-      this.blackboardSize()
-      window.addEventListener("resize", this.blackboardToolbar);
-      window.addEventListener("orientationchange", this.blackboardToolbar);
-      window.addEventListener("click", e=>this.palleteClose(e));
-      this.drawBackground(this.background);
-    }
-  },
-  updated() {
-    //mini
-    console.log('updated')
-    if (!this.isRealtime) {
-      //mini
-      this.drawBackground(this.background);
-    }
+    this.continuouslySyncBoardWithDB()
+    this.$root.$on("side-nav-toggled", sideNavOpened => {
+      if (sideNavOpened) {
+        this.canvas.width = document.documentElement.clientWidth
+      } else {
+        this.canvas.width = document.documentElement.clientWidth
+      }
+      this.rescaleCanvas(true)
+    })
   },
   beforeDestroy () {
     this.unsubscribe()
   },
-  destroyed() {
-    //mini
-    window.removeEventListener("resize", this.blackboardToolbar);
-    window.removeEventListener("orientationchange", this.blackboardToolbar);
-    window.removeEventListener('resize', () => this.rescaleCanvas(true));
-    window.removeEventListener("click", e=>this.palleteClose(e));
-  },
   methods: {
-    /// mini until toggleDrawer
-    handleNewAudio ({ url }) {
-      this.audioURL = url
-    },
-    wipeBoard () {
-      if (this.ctx) {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      }
-      this.allStrokes = []
-    },
-    setImage () {
-      document.getElementById('whiteboard-bg-input').value=''
-      document.getElementById('whiteboard-bg-input').click()
-    },
-    handleImage (e) {
-      var file = e.target.files[0]
-      var reader = new FileReader();
-      var vue = this
-      reader.onload = function(event){
-          var img = event.target.result;
-          vue.drawBackground(img)
-          vue.$emit('boardImage', img);
-      }
-      
-      if (file) {
-        reader.readAsDataURL(file);
-      }
-    },
-    drawBackground(image) {
-      var canvas = document.getElementById('background-canvas');
-      var ctx = canvas.getContext('2d');
-      
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      if (image=='') {return}
-      var img = new Image();
-      img.onload = function(){
-        var w=img.width
-        var h=img.height
-        var img_aspect_ratio=w/h
-        var x,y=0
-        if (img_aspect_ratio<canvas.width/canvas.height) {
-          h=canvas.height
-          w=h*img_aspect_ratio
-          x=(canvas.width-w)/2
-        } else {
-          w=canvas.width
-          h=w/img_aspect_ratio
-          y=(canvas.height-h)/2
-        }
-        ctx.drawImage(img,x,y,w,h);
-      }
-      img.src=image
-    },
     toggleDrawer () {
       this.$root.$emit("toggle-drawer")
     },
@@ -549,30 +228,23 @@ export default {
     //   const dataURL = this.canvas.toDataURL()
     // },
     async initData () {
-      if (this.isRealtime){
-        this.loading = true
-        if (!this.whiteboardID) {
-          return
-        }
-        const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
-        this.strokesRef = whiteboardRef.collection('strokes')
-        // TODO: remove this whiteboard listener 
-        await this.$binding('whiteboardDoc', whiteboardRef)
-        // visually wipe previous drawings
-        if (this.ctx) {
-          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-        }
-        this.allStrokes = [] 
-        if (this.unsubscribe) {
-          this.unsubscribe() 
-        }
-        this.continuouslySyncBoardWithDB() 
+      this.loading = true
+      if (!this.whiteboardID) {
+        return
       }
-      else {
-        ///mini
-        this.wipeBoard()
-        this.currentState = this.recordingStateEnum.PRE_RECORDING
+      const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
+      this.strokesRef = whiteboardRef.collection('strokes')
+      // TODO: remove this whiteboard listener 
+      await this.$binding('whiteboardDoc', whiteboardRef)
+      // visually wipe previous drawings
+      if (this.ctx) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       }
+      this.allStrokes = [] 
+      if (this.unsubscribe) {
+        this.unsubscribe() 
+      }
+      this.continuouslySyncBoardWithDB() 
     },
     continuouslySyncBoardWithDB () {
       this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
@@ -596,9 +268,7 @@ export default {
       })
     },
     resetVariables () {
-      if (this.isRealtime){
-        this.allStrokes = []
-      }
+      this.allStrokes = []
       this.lastX = -1
     },
     sortStrokesByTimestamp () {
@@ -653,10 +323,6 @@ export default {
     },
     touchStart (e) {
       e.preventDefault()
-      //mini
-      if (!this.isRealtime){
-        this.palleteVisibility = false
-      }
       if (this.isNotValidTouch(e)) { 
         return 
       }
@@ -692,19 +358,15 @@ export default {
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
-        points: this.currentStroke,
-        isErasing: this.eraserActive // mini
+        points: this.currentStroke
       }
       this.allStrokes.push(stroke)
-      if (this.isRealtime){
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke)
-      }
+      this.strokesRef.doc(`${strokeNumber}`).set(stroke)
       // reset 
       this.currentStroke = []
       this.lastX = -1
     },
     drawToPointAndSave (e) {
-      this.setStyle(this.color, this.lineWidth); //mini
       this.getTouchPos(e)
       this.convertAndSavePoint(this.touchX, this.touchY)
       this.drawToPoint(this.touchX, this.touchY)
@@ -735,7 +397,7 @@ export default {
     // --- Mouse Drawing --- // 
     mouseDown(e) {
       this.mousedown=1;
-      this.palleteVisibility=false // mini
+
       // referenced from touchStart
       this.setStyle(this.color, this.lineWidth);
       this.getMousePos(e);
@@ -759,13 +421,10 @@ export default {
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
-        points: this.currentStroke,
-        isErasing: this.eraserActive // mini
+        points: this.currentStroke
       }
       this.allStrokes.push(stroke);
-      if (this.isRealtime){
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
-      }
+      this.strokesRef.doc(`${strokeNumber}`).set(stroke);
       // reset 
       this.currentStroke = [];
       this.lastX = -1;
@@ -787,26 +446,14 @@ export default {
     getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
       if (!e)
         var e = event;
-      if (this.isRealtime){
-        if (e.offsetX) {
-          this.mouseX = e.offsetX - window.scrollX;
-          this.mouseY = e.offsetY - window.scrollY;
-        }
-        else if (e.layerX) {
-          this.mouseX = e.layerX - window.scrollX;
-          this.mouseY = e.layerY - window.scrollY;
-        }
+
+      if (e.offsetX) {
+        this.mouseX = e.offsetX - window.scrollX;
+        this.mouseY = e.offsetY - window.scrollY;
       }
-      else {
-        //mini
-        if (e.offsetX) {
-          this.mouseX = e.offsetX //- window.scrollX
-          this.mouseY = e.offsetY //- window.scrollY (in case these don't work)
-        }
-        else if (e.layerX) {
-          this.mouseX = e.layerX //- window.scrollX
-          this.mouseY = e.layerY //- window.scrollY
-        }
+      else if (e.layerX) {
+        this.mouseX = e.layerX - window.scrollX;
+        this.mouseY = e.layerY - window.scrollY;
       }
     },
     // --- END Mouse Drawing --- // 
@@ -821,25 +468,19 @@ export default {
       this.handleSaving("No title yet")
     },
     startRecording () {
-      this.currentState = this.recordingStateEnum.MID_RECORDING // mini
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.startRecording()
     },
     stopRecording () {
-      this.currentState = this.recordingStateEnum.POST_RECORDING //mini
       this.isRecording = false
       this.removeTouchEvents()
       this.removeMouseEvents();
       const audioRecorder = this.$refs['audio-recorder']
       audioRecorder.stopRecording()
-
-      if (this.isRealtime){
-        const ID = this.whiteboardDoc['.key']
-        db.collection('whiteboards').doc(ID).update({
-          isAnswered: true 
-        })
-      }
-      
+      const ID = this.whiteboardDoc['.key']
+      db.collection('whiteboards').doc(ID).update({
+        isAnswered: true 
+      })
     },
     retryAnswer () {
       this.currentTime = 0 
@@ -913,53 +554,6 @@ export default {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawStrokesInstantly()
         return this.canvas.toDataURL()
-    },
-
-    //mini
-    recordAgain () {
-      this.currentTime = 0 
-      this.hasUploadedAudio = false
-      this.currentState = this.recordingStateEnum.PRE_RECORDING
-    },
-    blackboardToolbar() {
-      this.smallScreen= window.innerWidth<960;
-    },
-    palleteClick() {
-      if (this.eraserActive) {
-        this.palleteVisibility=false;
-      } else {
-        this.palleteVisibility=!this.palleteVisibility;
-      }
-    },
-    swatchClick(){
-      this.eraserActive=false;
-    },
-    eraserClick() {
-      this.eraserActive=true;
-      this.palleteVisibility=false;
-    },
-    palleteClose(e) {
-      var pallete = document.getElementById('swatches-wrapper');
-      if (pallete && !pallete.contains(e.target)) {
-        this.palleteVisibility=false
-      }
-    },
-    customCursor() {
-      var dummy_canvas = document.createElement("canvas");
-      dummy_canvas.width = 24;
-      dummy_canvas.height = 24;
-      var ctx = dummy_canvas.getContext("2d");
-      ctx.fillStyle = this.eraserActive?"#fff":this.color;
-      ctx.font = "24px 'Material Design Icons'";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(this.eraserActive?"\uF1FE":"\uF64F", 12, 12);
-      var dataURL = dummy_canvas.toDataURL('image/png')
-      document.getElementById("myCanvas").style.cursor='url('+dataURL+') 0 24, auto';
-    },
-    blackboardSize() {
-      var board=document.getElementById('myCanvas');
-      board.style.height=document.getElementById('blackboard-wrapper').offsetWidth*9/16+'px'
     }
   }
 }
