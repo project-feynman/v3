@@ -34,7 +34,9 @@
                             :whiteboardID="video['.key']" 
                             :ref="`doodle-video-${i}-${j}`"
                             :canvasID="`${i}-${j}`"
-                            :video="video"
+                            :thumbnail="video.thumbnail"
+                            @animation-loaded="handleAction('QUICKPLAY', video, `${i}-${j}`)"
+                            @video-clicked="handleAction('FULL VIDEO', video, j)"
                           />
                         </template>
 
@@ -120,8 +122,10 @@ export default {
         const classID = this.$route.params.class_id
         this.$router.push(`/${classID}/${videoID}`)
       } else if (buttonName === "QUICKPLAY") {
+        
         const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
-        videoElem.fetchStrokesThenQuickplay()
+        videoElem.quickplay()
+        console.log("in gallery ")
       } else if (buttonName === "DELETE") {
         this.deleteVideo(videoID, audioPath)
       }

@@ -1,7 +1,7 @@
 <template >
   <!-- TODO: add video documentation link -->
-  <div style="height: 100%; width: 100%;">
-    <template v-if="strokes.length !== 0">
+  <div @click="handleClick()" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+    <template v-if="!thumbnail || this.strokes.length > 0">
       <DoodleVideoAnimation
         ref="animation"
         :strokes="strokes"
@@ -21,8 +21,8 @@
       />
     </template>
 
-    <template v-else-if="video">
-      <v-img :src="video.thumbnail">
+    <template v-else-if="thumbnail">
+      <v-img :src="thumbnail">
         <!-- <v-container fill-height fluid>
           <v-row align="center" justify="center">
             <div>
@@ -47,7 +47,7 @@ import "firebase/storage";
 
 export default {
   props: {
-    video: Object,
+    thumbnail: String,
     whiteboardID: String,
     hasSubcollection: {
       type: Boolean,
@@ -65,13 +65,19 @@ export default {
   },
   data() {
     return {
-      hasFetchedStrokes: false,
+      strokesFetched: false,
       strokes: [],
       isPlaying: true,
       recorderLoaded: false,
       animationLoaded: false,
-      syncedVisualAndAudio: false
+      syncedVisualAndAudio: false,
+      mouseHover: false
     };
+  },
+  watch: {
+    mouseHover: {
+      handler: "handleMouseOver"
+    }
   },
   computed: {
     ...mapState(["user"]),
@@ -81,21 +87,24 @@ export default {
   },
   async created() {
     // fetch strokes if no thumbnail is available
-    console.log("this.video =", this.video);
-    if (this.video) {
-      if (this.video.thumbnail) {
+    if (this.thumbnail) {
         console.log("this.video.thumbnail succeeded!");
         return;
-      } else this.fetchStrokes();
-    } else if (this.whiteboardID) {
-      this.fetchStrokes();
+    } 
+    else {
+      await this.fetchStrokes();
     }
   },
   methods: {
-    async fetchStrokesThenQuickplay() {
-      if (!this.hasFetchedStrokes) await this.fetchStrokes();
-      this.quickplay();
-    },
+    // async fetchStrokesThenQuickplay() {
+    //   if (!this.hasFetchedStrokes) {
+    //     await this.fetchStrokes();
+    //   }
+    //   else {
+
+    //   }
+    //   this.quickplay();
+    // },
     syncAnimation() {
       if (this.syncedVisualAndAudio) return;
       if (this.resourcesLoaded) {
@@ -106,13 +115,43 @@ export default {
     },
     handleAnimationLoaded() {
       this.animationLoaded = true;
-      this.$emit("animation-loaded");
+      // this.$emit("animation-loaded");
+      this.$emit("strokes-ready");
+      console.log("animationLoaded")
     },
     async quickplay() {
-      this.overlay = false;
       const { animation } = this.$refs;
+      console.log("in quickplay",  this.strokesFetched);
       await animation.quickplay();
-      this.overlay = true;
+    },
+    handleClick () {
+      // if(thumbnail) {
+        this.$emit("video-clicked");
+      // }
+      
+    },
+    async handleMouseOver () {
+      console.log("in mouse over", this.mouseHover)
+      if (this.mouseHover){
+        
+        if (this.animationLoaded){
+            this.$emit("strokes-ready");
+        }
+        else {
+          if (this.thumbnail){
+            console.log("herer", this.strokesFetched)
+            await this.fetchStrokes();
+          }
+        }
+      }
+      else{
+
+
+      }
+      
+
+
+      
     },
     async fetchStrokes() {
       const P = new Promise(async resolve => {
@@ -129,7 +168,7 @@ export default {
           querySnapshot.forEach(doc => {
             this.strokes.push({ ".key": doc.id, ...doc.data() });
           });
-          this.hasFetchedStrokes = true;
+          this.strokesFetched = true
         }
         resolve();
       });
