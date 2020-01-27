@@ -1,44 +1,29 @@
 <template>
   <div class="text-xs-center">
-    <v-menu
-      v-model="menu"
-      :close-on-content-click="false"
-      :nudge-width="200"
-      offset-x
-    >
+    <v-menu v-model="menu" :close-on-content-click="false" :nudge-width="200" offset-x>
       <template v-slot:activator="{ on }">
-        <slot :on="on">
-        
-        </slot>
+        <slot :on="on"></slot>
       </template>
 
       <v-card>
         <v-list>
           <v-list-item>
             <v-list-item-avatar>
-              <v-icon large :color="color">
-                account_circle
-              </v-icon>
+              <v-icon large :color="color">account_circle</v-icon>
               <!-- <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="John"> -->
             </v-list-item-avatar>
-            
-   
-            <v-list-item-content>
-               <v-text-field
-                  placeholder="Enter your name here"
-                  :value="user.name"
-                  @input="value => name = value"
-                  single-line
-              ></v-text-field>
 
+            <v-list-item-content>
+              <v-text-field
+                placeholder="Enter your name here"
+                :value="user.name"
+                @input="value => name = value"
+                single-line
+              />
             </v-list-item-content>
 
             <v-list-item-action>
-              <v-btn
-                :class="fav ? 'red--text' : ''"
-                icon
-                @click="fav = !fav"
-              >
+              <v-btn :class="fav ? 'red--text' : ''" icon @click="fav = !fav">
                 <!-- <v-icon>favorite</v-icon> -->
               </v-btn>
             </v-list-item-action>
@@ -48,30 +33,26 @@
         <v-divider></v-divider>
 
         <v-list>
-          <v-list-item v-for="(s, i) in this.user.enrolledClasses" :key="i">
+          <v-list-item v-for="(s, i) in user.enrolledClasses" :key="i">
             <v-container>
-                <v-list-item-title>{{s.name}}</v-list-item-title>
-                <v-list-item-action>
-                    <v-radio-group
-                    v-model="s.settings.notifications.newQuestion"
-                    row>
-                        <v-radio v-for="x in newQNotifs"
-                        :key="x"
-                        :label="x"
-                        :value="x"
-                        :id="x"
-                        @change="classNotifChanged(i, x)">
-                        </v-radio>
-                    </v-radio-group>
-                </v-list-item-action>
+              <v-list-item-title>{{s.name}}</v-list-item-title>
+              <v-list-item-action v-if="s.settings">
+                <v-radio-group v-model="s.settings.notifications.newQuestion" row>
+                  <v-radio
+                    v-for="x in newQNotifs"
+                    :key="x"
+                    @change="classNotifChanged(i, x)"
+                    :label="x"
+                    :value="x"
+                    :id="x"
+                  />
+                </v-radio-group>
+              </v-list-item-action>
             </v-container>
           </v-list-item>
-
         </v-list>
-
         <v-card-actions>
           <!-- <v-spacer></v-spacer> -->
-
           <!-- <v-btn flat @click="menu = false">Cancel</v-btn> -->
           <v-btn color="primary" text @click="handleSave()">Save</v-btn>
           <v-spacer></v-spacer>
@@ -83,45 +64,51 @@
 </template>
 
 <script>
-import Swatches from 'vue-swatches'
-import 'vue-swatches/dist/vue-swatches.min.css'
-import db from '@/database.js'
-import {initEnrollementService} from '../dep'
+import "vue-swatches/dist/vue-swatches.min.css";
+import { initEnrollementService } from "../dep";
 
-  export default {
-    props: {
-      user: Object
+export default {
+  props: {
+    user: Object
+  },
+  data: () => ({
+    fav: true,
+    menu: false,
+    name: "",
+    useDarkMode: false,
+    color: "",
+    colors: [
+      "black",
+      "grey",
+      "red",
+      "orange",
+      "yellow",
+      "green",
+      "blue",
+      "purple"
+    ],
+    newQNotifs: ["always", "daily", "never"],
+    enrollementService: initEnrollementService()
+  }),
+  methods: {
+    handleSave() {
+      this.menu = false;
+      const updatedUser = {
+        useDarkMode: this.useDarkMode
+        // color: this.color
+      };
+      if (this.name) updatedUser.name = this.name;
+      else updatedUser.name = this.user.name;
+      this.$emit("save", updatedUser);
     },
-    components: {
-      Swatches
-    },
-    data: () => ({
-      fav: true,
-      menu: false,
-      name: "",
-      useDarkMode: false,
-      color: "",
-      colors: ["black", "grey", "red", "orange", "yellow", "green", "blue", "purple"],
-      newQNotifs: ["always", "daily", "never"],
-      enrollementService : initEnrollementService()
-    }),
-    methods: {
-      handleSave () {
-        this.menu = false 
-        const updatedUser = {
-          useDarkMode: this.useDarkMode,
-          // color: this.color
-        }
-        if (this.name) {
-          updatedUser.name = this.name
-        } else {
-          updatedUser.name = this.user.name
-        }
-        this.$emit("save", updatedUser)
-      },
-      classNotifChanged(classID, frequency){
-          this.enrollementService.changeNotification(this.user, classID, 'newQuestion', frequency)
-      }
+    classNotifChanged(classID, frequency) {
+      this.enrollementService.changeNotification(
+        this.user,
+        classID,
+        "newQuestion",
+        frequency
+      );
     }
   }
+};
 </script>

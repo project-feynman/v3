@@ -3,36 +3,36 @@
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" flat>
-        CLOSE
-      </v-btn>
+      <v-btn @click="snackbar = false" color="pink" flat>CLOSE</v-btn>
     </v-snackbar>
-    
-    <!-- APP BAR -->
-    <HomeAppBar @create-class="courseNumber => createClass(courseNumber)"/>
 
-    <v-content> 
+    <!-- APP BAR -->
+    <HomeAppBar @create-class="courseNumber => createClass(courseNumber)" />
+    <v-content>
       <v-card class="mx-auto text-center" fluid>
         <div class="pt-5">
-          <p class="display-2 text--primary">
-            explain.mit.edu
-          </p>
+          <p class="display-2 text--primary">explain.mit.edu</p>
           <!-- EXPLAIN THE WEBSITE WITH OVERLAYS -->
-          <p class="headline text--primary">
-            An efficient platform for visual explanations
-          </p>
+          <p class="headline text--primary">An efficient platform for visual explanations</p>
         </div>
         <div style="margin: auto" class="mb-5">
           <!-- previous button color was deep-purple accent-4 -->
-          <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text class="mx-auto" color="secondary">
-            LEARN MORE
-          </v-btn>
-          <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text class="mx-auto" color="secondary">
-            SOURCE CODE
-          </v-btn>
+          <v-btn
+            href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426"
+            text
+            class="mx-auto"
+            color="secondary"
+          >LEARN MORE</v-btn>
+          <v-btn
+            href="https://github.com/eltonlin1998/ExplainMIT"
+            text
+            class="mx-auto"
+            color="secondary"
+          >SOURCE CODE</v-btn>
         </div>
 
         <v-divider></v-divider>
+
         <v-container>
         <v-row justify="center">
         <v-col cols="6">
@@ -52,58 +52,48 @@
             @submit="searchBarDialogSubmitted"
         >
         </KaryDialog>
-
+        
         <v-divider></v-divider>
-        <v-container fluid class="py-0">
+        <!-- TUTORIAL -->
+        <v-container v-if="!user" fluid class="py-0">
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
                 <v-card-subtitle class="black--text">Ask & answer questions, just like on Piazza</v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="BlEjXn7RP7q8YwxG8FLO">
-                    <template slot-scope="{ strokes }">
-                      <DoodleVideo 
-                        v-if="strokes"
-                        :strokes="strokes"
-                        canvasID="1"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
-                    </template>
-                  </RenderlessFetchStrokes>
+                  <DoodleVideo
+                    whiteboardID="BlEjXn7RP7q8YwxG8FLO"
+                    canvasID="1"
+                    @animation-loaded="hasFetchedVideos = true"
+                  />
                 </v-img>
               </v-card>
             </v-col>
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle class="black--text">Draw & talk to explain harder ideas (live or recorded)</v-card-subtitle>
-                 <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="8hcybKON8Br67bNUA9TJ">
-                    <template slot-scope="{ strokes }">
-                      <DoodleVideo 
-                        v-if="strokes"
-                        :strokes="strokes"
-                        canvasID="2"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
-                    </template>
-                  </RenderlessFetchStrokes>
+                <v-card-subtitle
+                  class="black--text"
+                >Draw & talk to explain harder ideas (live or recorded)</v-card-subtitle>
+                <v-img :aspect-ratio="16/9">
+                  <DoodleVideo
+                    whiteboardID="8hcybKON8Br67bNUA9TJ"
+                    canvasID="2"
+                    @animation-loaded="hasFetchedVideos = true"
+                  />
                 </v-img>
               </v-card>
             </v-col>
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                 <v-card-subtitle class="black--text">As people help each other, elegant explanations accumulate</v-card-subtitle>
-                 <v-img :aspect-ratio="16/9">
-                  <RenderlessFetchStrokes whiteboardID="vgPkZWvsqvt9pImHiMbe">
-                    <template slot-scope="{ strokes }">
-                      <DoodleVideo 
-                        v-if="strokes"
-                        :strokes="strokes"
-                        canvasID="3"
-                        @animation-loaded="hasFetchedVideos = true"
-                      />
-                    </template>
-                  </RenderlessFetchStrokes>
+                <v-card-subtitle
+                  class="black--text"
+                >As people help each other, elegant explanations accumulate</v-card-subtitle>
+                <v-img :aspect-ratio="16/9">
+                  <DoodleVideo
+                    whiteboardID="vgPkZWvsqvt9pImHiMbe"
+                    canvasID="3"
+                    @animation-loaded="hasFetchedVideos = true"
+                  />
                 </v-img>
               </v-card>
             </v-col>
@@ -111,7 +101,7 @@
         </v-container>
       </v-card>
       <transition name="fade" mode="out-in">
-        <div v-if="isFetchingUser || user==null" key="loading..."></div>
+        <div v-if="isFetchingUser || user === null" key="loading..."></div>
         <div v-else key="class-list">
           <BaseGrid>
             <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
@@ -127,121 +117,118 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import firebase from 'firebase/app'
-import 'firebase/auth'
-import db from '@/database.js'
-import BaseGrid from "@/components/BaseGrid.vue"
-import BaseCard from "@/components/BaseCard.vue"
-import HomeAppBar from "@/components/HomeAppBar.vue"
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
-import DoodleVideo from "@/components/DoodleVideo.vue"
-import SearchBar from "@/components/SearchBar.vue"
-import KaryDialog from "@/components/KaryDialog.vue"
-import {initEnrollementService} from '../dep'
-import {encodeKey} from '../dep'
+import { mapState } from "vuex";
+import firebase from "firebase/app";
+import "firebase/auth";
+import db from "@/database.js";
+import BaseGrid from "@/components/BaseGrid.vue";
+import BaseCard from "@/components/BaseCard.vue";
+import HomeAppBar from "@/components/HomeAppBar.vue";
+import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue";
+import DoodleVideo from "@/components/DoodleVideo.vue";
+import SearchBar from "@/components/SearchBar.vue";
+import KaryDialog from "@/components/KaryDialog.vue";
+import { initEnrollementService } from "../dep";
+import { encodeKey } from "../dep";
 
 export default {
   components: {
     HomeAppBar,
     BaseGrid,
-    BaseCard,
-    RenderlessFetchStrokes,
     DoodleVideo,
     SearchBar,
-    KaryDialog,
+    KaryDialog
   },
   computed: {
-    ...mapState(['user', 'isFetchingUser']),
+    ...mapState(["user", "isFetchingUser"])
   },
-  data () {
+  data() {
     return {
       classes: [],
       classesIDs: [],
       snackbar: false,
-      snackbarMessage: '',
+      snackbarMessage: "",
 
       enrollementService: initEnrollementService(),
-      chosenClass: '',
+      chosenClass: "",
       searchBarDialog: false,
-      searchBarDialogOptions: ['No', 'Yes'],
-    }
+      searchBarDialogOptions: ["No", "Yes"]
+    };
   },
-  created () {
-    this.fetchClasses()
+  created() {
+    this.fetchClasses();
   },
   methods: {
-    fetchClasses () {
-        this.classes = []
-        db.collection("classes").get().then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          let docObj = { ".key": doc.id, ...doc.data()}
-          this.classes.push(docObj)
-          this.classesIDs.push(docObj.name)
-        })
-      })  
+    fetchClasses() {
+      this.classes = [];
+      db.collection("classes")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            let docObj = { ".key": doc.id, ...doc.data() };
+            this.classes.push(docObj);
+            this.classesIDs.push(docObj.name);
+          });
+        });
     },
-    
+
     classChosen(answer) {
-        this.searchBarDialog = true
-        this.chosenClass = answer
+      this.searchBarDialog = true;
+      this.chosenClass = answer;
     },
     searchBarDialogSubmitted(answer) {
-        if(answer == 'No'){
-            this.chosenClass = ''
-            this.searchBarDialog = false
-            return
-        }
-        this.enrollementService.addClass(this.user, this.chosenClass)
-
-        this.chosenClass = ''
-        this.searchBarDialog = false
+      if (answer == "No") {
+        this.chosenClass = "";
+        this.searchBarDialog = false;
+        return;
+      }
+      this.enrollementService.addClass(this.user, this.chosenClass);
+      this.chosenClass = "";
+      this.searchBarDialog = false;
     },
 
-    async createClass (name) {
-      let classID = encodeKey(name)
-      const ref = db.collection('classes').doc(classID)
-      await ref.set({ 
+    async createClass(name) {
+      let classID = encodeKey(name);
+      const ref = db.collection("classes").doc(classID);
+      await ref.set({
         name,
         description: "description",
         introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
         paragraph: "paragraph",
         tagsPool: [],
         tabs: ["New"]
-      })
+      });
       //add to enrolled classes
-      this.fetchClasses()
+      this.fetchClasses();
     },
-    quickplayVideo (i) {
-      const videoElem = this.$refs[`doodle-video-${i}`][0]
-      videoElem.quickplay()
+    quickplayVideo(i) {
+      const videoElem = this.$refs[`doodle-video-${i}`][0];
+      videoElem.quickplay();
     },
-    saveParagraph (newValue, courseNumber) {
-      const ref = db.collection("classes").doc(courseNumber)
+    saveParagraph(newValue, courseNumber) {
+      const ref = db.collection("classes").doc(courseNumber);
       ref.update({
         paragraph: newValue
-      })
+      });
     },
-    computeVideoSize () {
-      return this.$vuetify.breakpoint.smAndDown? 12 : 4
+    computeVideoSize() {
+      return this.$vuetify.breakpoint.smAndDown ? 12 : 4;
     },
-    computeCardSize ({ courseNumber }) {
+    computeCardSize({ courseNumber }) {
       if (courseNumber.length > 13) {
-        if (this.$vuetify.breakpoint.md) {
-          return 4
-        } else if (this.$vuetify.breakpoint.smAndDown) {
-          return 12
-        } 
+        if (this.$vuetify.breakpoint.md) return 4;
+        else if (this.$vuetify.breakpoint.smAndDown) return 12;
       }
-      return this.$vuetify.breakpoint.smAndDown? 6 : 2
+      return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
     }
-  } 
-}
+  }
+};
 </script>
 
 <style>
-.fade-enter-active, .fade-leave-active {
-  transition: opacity .7s;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.7s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;

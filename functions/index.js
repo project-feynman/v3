@@ -27,76 +27,76 @@
 // 	service: 'Gmail',
 // 	auth: oauth
 // })
-const firebase_tools = require('firebase-tools')
-const functions = require('firebase-functions')
-const admin = require('firebase-admin')
-admin.initializeApp()
+const firebase_tools = require("firebase-tools");
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+
+admin.initializeApp();
 
 // Since this code will be running in the Cloud Functions environment
 // we call initialize Firestore without any arguments because it
 // detects authentication from the environment.
 const firestore = admin.firestore();
-firestore.settings({timestampsInSnapshots: true})
+firestore.settings({ timestampsInSnapshots: true });
 
 
-exports.onUserStatusChanged = functions.database.ref('/status/{uid}').onUpdate(
+exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(
   async (change, context) => {
     // Get the data written to Realtime Database
-    const eventStatus = change.after.val()
+    const eventStatus = change.after.val();
     // eventStatus = {
-    //   isOnline: false 
+    //   isOnline: false
     // }
 
     // Then use other event data to create a reference to the
     // corresponding Firestore document.
-    const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`)
+    const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`);
 
-    // multiple requests may have been triggered, but earlier requests might not actually resolve earlier 
+    // multiple requests may have been triggered, but earlier requests might not actually resolve earlier
     // therefore it's necessary to compare the timestamps
-    const statusSnapshot = await change.after.ref.once('value')
-    const status = statusSnapshot.val()
-    console.log(status, eventStatus)
+    const statusSnapshot = await change.after.ref.once("value");
+    const status = statusSnapshot.val();
+    console.log(status, eventStatus);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
     if (status.last_changed > eventStatus.last_changed) {
-      return null
-    } else {
-      // eventStatus.last_changed = new Date(eventStatus.last_changed)
-      return firestoreUserRef.update(eventStatus)
+      return null;
     }
+    // eventStatus.last_changed = new Date(eventStatus.last_changed)
+    return firestoreUserRef.update(eventStatus);
   }
-)
+);
 
-exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{class_id}/{workspace_id}').onUpdate(
+exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{class_id}/{workspace_id}").onUpdate(
   async (change, context) => {
-    console.log("onWorkspaceParticipantsChanged()")
-     // obtain the data that was just written to Firebase
-    const userWhoLeft = change.after.val()
-    console.log('userWhoLeft =', userWhoLeft)
+    console.log("onWorkspaceParticipantsChanged()");
+    // obtain the data that was just written to Firebase
+    const userWhoLeft = change.after.val();
+    console.log("userWhoLeft =", userWhoLeft);
     if (!userWhoLeft.uid) {
-      console.log('false alarm')
+      console.log("false alarm")
     } else {
-      console.log('updating members')
-      const firebaseClassID = context.params.class_id.replace('-', '.')
-      const workspaceFirestoreRef = firestore.doc(`/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`)
-      console.log('ref =', `/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`)
+      console.log("updating members");
+      const firebaseClassID = context.params.class_id.replace("-", ".");
+      const workspaceFirestoreRef = firestore.doc(`/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`);
+      console.log("ref =", `/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`);
       await workspaceFirestoreRef.update({
         members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
-      })
-      const workspaceDoc = await workspaceFirestoreRef.get()
-      if (workspaceDoc.data().members.length == 0) {
+      });
+      const workspaceDoc = await workspaceFirestoreRef.get();
+      if (workspaceDoc.data().members.length === 0) {
         workspaceFirestoreRef.update({
-          hasAudioRoom: false 
-        })
-        console.log('successfully updated hasAudioRoom to false')
+          hasAudioRoom: false
+        });
+        console.log("successfully updated hasAudioRoom to false");
       }
     }
   }
-)
+);
 
 // exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{wid}/messages/{mid}').onCreate((doc, context) => {
 // 	_updateParticipants()
-	
+
 // 	const params = context.params;
 // 	const workspaceDocSnap = docy
 
@@ -119,7 +119,7 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{cla
 
 // 		participantsUids.forEach(participantUid => {
 // 			if(participantUid !== authorUid) {
-// 				_sendNotificationByUid(participantUid, authorName + " sent a message...", messageContent)	
+// 				_sendNotificationByUid(participantUid, authorName + " sent a message...", messageContent)
 // 			}
 // 		})
 // 	})
@@ -143,7 +143,7 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{cla
 // 	const askerUid = workspaceDocDataBefore.ownerUid
 // 	const askerName = workspaceDocDataBefore.ownerName
 // 	const askerFirstName = askerName.split(' ')[0]
-    
+
 // 	const workspaceOwnerUid = workspaceDocDataBefore.teacherUid
 // 	const workspaceId = params.wid
 
@@ -162,7 +162,7 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{cla
 // 			)
 // 		})
 // 	})
-	
+
 // 	// SUBJECT: "{first NAME} asked a question
 // 	// BODY: "{NAME} asked a question in a workspace you're a TA in. Here's the link to the workspace: {LINK}"
 // 	// HTML: same but LINK is an href
@@ -267,10 +267,10 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{cla
 // /**
 //  * Callable function that creates a custom auth token with the
 //  * custom attribute "admin" set to true.
-//  * 
+//  *
 //  * See https://firebase.google.com/docs/auth/admin/create-custom-tokens
 //  * for more information on creating custom tokens.
-//  * 
+//  *
 //  * @param {string} data.uid the user UID to set on the token.
 //  */
 // exports.mintAdminToken = functions.https.onCall((data, context) => {
@@ -287,19 +287,19 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref('/workspace/{cla
 // // [START recursive_delete_function]
 // /**
 //  * Initiate a recursive delete of documents at a given path.
-//  * 
+//  *
 //  * The calling user must be authenticated and have the custom "admin" attribute
 //  * set to true on the auth token.
-//  * 
+//  *
 //  * This delete is NOT an atomic operation and it's possible
 //  * that it may fail after only deleting some documents.
-//  * 
+//  *
 //  * @param {string} data.path the document or collection path to delete.
 //  */
 exports.recursiveDelete = functions
   .runWith({
     timeoutSeconds: 540,
-    memory: '2GB'
+    memory: "2GB"
   })
   .https.onCall((data, context) => {
     // // Only allow admin users to execute this function.
@@ -310,10 +310,10 @@ exports.recursiveDelete = functions
     //   );
     // }
 
-    const path = data.path;
+    const { path } = data;
     console.log(
       `User ${context.auth.uid} has requested to delete path ${path}`
-    )
+    );
 
     // Run a recursive delete on the given document or collection path.
     // The 'token' must be set in the functions config, and can be generated
@@ -325,10 +325,7 @@ exports.recursiveDelete = functions
         yes: true,
         token: functions.config().fb.token
       })
-      .then(() => {
-        return {
-          path: path 
-        }
-      })
+      .then(() => ({
+        path
+      }));
   });
-

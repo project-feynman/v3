@@ -37,6 +37,14 @@ Because the specs constantly change, we use manual checklist testing (like the c
 - Don't use a linter because it causes lots of noisy changes for code review (e.g. indentation and semicolons) 
 - Don't use semicolons because it doesn't improve readability (think Python) and its absence doesn't cause bugs for our stack
 
+**Hall of Fame**
+- Hubert Wasilewski was the backend engineer back in the early days 
+- Tony Wang built the slider for traversing any video freely 
+- Yang Yang worked on email notifications
+- John Lin built a live group chat, voice chat and copy-image-to-chat feature
+- Kirill Zabrodin improved the README, set up deployment tests and added the copy-to-clipboard feature for sharing video links
+- Kyle Xiao worked extensively the Q&A feature
+
 ## Recommended setup
 1. **Node and NPM**: Version 10.10.0 (we require 10.10+, version 11+ has known bugs) 
 2. **Code edtior**: Microsoft Visual Studio Code 

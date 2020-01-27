@@ -13,25 +13,20 @@
   </div>
 </template>
 
-
 <script>
-
 export default {
-  name: 'SearchBar',
+  name: "SearchBar",
   data() {
-        return {
-            searchText: null,
-        }
+    return {
+      searchText: ""
+    };
   },
-  props: ['label', 'items'],
+  props: ["label", "items"],
   methods: {
     submit() {
-        let text = this.searchText
-        this.$nextTick(() => {
-            this.searchText = null
-        })
-        this.$emit('submit', text)
-    },
+      this.$emit("submit", this.searchText);
+      this.searchText = "";
+    }
   }
-}
+};
 </script>
