@@ -1,11 +1,16 @@
 <template>
-  <v-autocomplete
-    :label="label"
-    :items="items"
-    placeholder="Start Typing to Search"
-    @change="submit"
-    v-model="searchText"
-  />
+  <div>
+    <v-autocomplete
+      color="accent lighten-1"
+      :label="label"
+      :items="items"
+      placeholder="Start Typing to Search"
+      @change="submit"
+      v-model="searchText"
+      outlined
+      elevate="2"
+      ></v-autocomplete>
+  </div>
 </template>
 
 <script>
