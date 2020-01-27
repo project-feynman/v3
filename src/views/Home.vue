@@ -115,7 +115,7 @@
         <div v-else key="class-list">
           <BaseGrid>
             <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
-                <v-card @click="$router.push(`${i}/questions`)">
+                <v-card @click="$router.push(`${i}/questions/`)">
                     <v-card-title>{{s.name}}</v-card-title>
                 </v-card>
             </v-col>

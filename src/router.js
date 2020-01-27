@@ -17,7 +17,11 @@ export default new Router({
       component: () => import(/* webpackChunkName: "videos" */ './views/VideoGallery.vue')
     },
     {
-      path: '/:class_id/questions',
+      path: '/:class_id/questions/',
+      component: () => import(/* webpackChunkName: "piazza" */ './views/Piazza.vue')
+    },
+    {
+      path: '/:class_id/questions/:question_id',
       component: () => import(/* webpackChunkName: "piazza" */ './views/Piazza.vue')
     },
     {
