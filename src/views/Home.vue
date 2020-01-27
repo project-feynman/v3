@@ -33,21 +33,26 @@
 
         <v-divider></v-divider>
 
-        <SearchBar
-          v-if="user"
-          label="Enter Class Number"
-          :items="classesIDs"
-          @submit="classChosen"
-        />
-
-        <KaryDialog
-          v-if="searchBarDialog"
-          title="Do you want to add the following class?"
-          :text="chosenClass"
-          :options="searchBarDialogOptions"
-          @submit="searchBarDialogSubmitted"
-        ></KaryDialog>
-
+        <v-container>
+        <v-row justify="center">
+        <v-col cols="6">
+        <SearchBar 
+            color="accent"
+            label="Enter Class Number"
+            :items="classesIDs"
+            @submit="classChosen">
+        </SearchBar>
+        </v-col>
+        </v-row>
+        </v-container>
+        <KaryDialog v-if="searchBarDialog"
+            title="Do you want to add the following class?"
+            :text="chosenClass"
+            :options="searchBarDialogOptions"
+            @submit="searchBarDialogSubmitted"
+        >
+        </KaryDialog>
+        
         <v-divider></v-divider>
         <!-- TUTORIAL -->
         <v-container v-if="!user" fluid class="py-0">
@@ -100,9 +105,9 @@
         <div v-else key="class-list">
           <BaseGrid>
             <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
-              <v-card @click="$router.push(`${i}/questions`)">
-                <v-card-title>{{s.name}}</v-card-title>
-              </v-card>
+                <v-card @click="$router.push(`${i}/questions/`)">
+                    <v-card-title>{{s.name}}</v-card-title>
+                </v-card>
             </v-col>
           </BaseGrid>
         </div>

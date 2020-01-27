@@ -78,7 +78,7 @@
                 <v-btn
                   @click="wipeBoard()"
                   outlined
-                  color="red"
+                  color="accent"
                   class="board-action-btn normal-text"
                 >
                   <span class="d-none d-lg-block mr-2">Clear</span>
