@@ -12,7 +12,6 @@
       <v-card class="mx-auto text-center" fluid>
         <div class="pt-5">
           <p class="display-2 text--primary">explain.mit.edu</p>
-          <!-- EXPLAIN THE WEBSITE WITH OVERLAYS -->
           <p class="headline text--primary">An efficient platform for visual explanations</p>
         </div>
         <div style="margin: auto" class="mb-5">

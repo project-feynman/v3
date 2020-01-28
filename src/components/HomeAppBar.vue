@@ -52,7 +52,9 @@
           @click="loginPopup = true"
           class="grey--text text--darken-2"
           text
-        >SIGN IN</v-btn>
+        >
+          SIGN IN
+        </v-btn>
       </template>
     </v-app-bar>
   </div>
