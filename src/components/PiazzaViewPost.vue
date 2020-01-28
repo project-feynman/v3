@@ -8,27 +8,14 @@
       :value="post.description"
     />
     <DoodleVideo 
-      v-if="video"
-      :thumbnail="video.thumbnail"
       :whiteboardID="post.blackboardID" 
       :hasSubcollection="false"
       :canvasID="`${postNumber}`"
       :audioURL="post.audioURL"
-      :height="`${getFullWidth() * 9/16}`">
-    </DoodleVideo>
-     <!-- <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
-      <template slot-scope="{ strokes }">
-       length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) 
-        <DoodleVideo 
-          v-if="strokes.length !== 0"
-          :strokes="strokes"
-          :canvasID="`${postNumber}`"
-          :audioURL="post.audioURL"
-          :height="`${getFullWidth() * 9/16}`"
-          @animation-loaded="hasFetchedVideos = true"
-        />
-      </template>
-    </RenderlessFetchStrokes>  -->
+      :height="`${getFullWidth() * 9/16}`"
+      ref = "DoodleVideo"
+      @full-video-ready="initVideo()"
+      />
   </div>
 </template>
 
@@ -52,7 +39,7 @@ export default {
     }
   },
   created () {
-    this.fetchVideo();
+    // this.fetchVideo();
   },
   methods: {
     getFullWidth () {
@@ -60,12 +47,21 @@ export default {
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 
     },
-    async fetchVideo () {
-      const videoRef = db.collection("whiteboards").doc(this.post.videoID);
-      let video = await videoRef.get();
-      this.video = video.data();
-      console.log("thumbnail: ", this.video.thumbnail)
+    initVideo () {
+      
+      const doodleVideo = this.$refs.DoodleVideo
+      // const animation = doodleVideo.$refs["animation"]
+      // animation.drawStrokesInstantly()
+      doodleVideo.resizeVideo();
+      console.log("inititalized video")
     }
+    // async fetchVideo () {
+    //   const videoRef = db.collection("whiteboards").doc(this.post.videoID);
+    //   let video = await videoRef.get();
+    //   this.video = video.data();
+    //   console.log("thumbnail: ", this.video.thumbnail)
+    // }
+    /// we need to figure out how to get thumbnail into this
   }
 }
 </script>

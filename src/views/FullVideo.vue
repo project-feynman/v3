@@ -2,27 +2,6 @@
   <div id="video" style="height: 90%">
     <BaseAppBar :loading="!resourcesLoaded" />
     <v-content style="height: 90%">
-      <!-- <v-container fluid class="pa-0"> -->
-        <!-- <DoodleVideoAnimation
-          v-if="allStrokes.length !== 0"
-          ref="animation"
-          :isFullscreen="true"
-          :strokes="allStrokes"
-          :overlay="overlay"
-          @animation-loaded="animationLoaded=true"
-          @animation-finished="handleEvent()"
-          @play-video="startVideo()"
-        />
-        <AudioRecorder
-          v-if="audioURL"
-          ref="audio-recorder"
-          :audioURL="audioURL"
-          @recorder-loading="recorderLoaded=false"
-          @play="handlePlay()"
-          @stop="handleStop()"
-          @seeking="handleSeeking()"
-          @recorder-loaded="recorderLoaded=true"
-        /> -->
         <DoodleVideo 
           v-if="video"
           :audioURL="video.audioURL"
@@ -31,13 +10,6 @@
           @video-clicked="handleClick()"
           ref="DoodleVideo"
         />
-             <!-- <DoodleVideo
-                :whiteboardID="$route.params.video_id" 
-                :ref="`doodle-video-${1}-${1}`"
-                :canvasID="`${1}-${1}`"
-              /> -->
-
-      <!-- </v-container> -->
     </v-content>
   </div>
 </template>
@@ -90,38 +62,6 @@ export default {
       ////implement if you want to play and pause
     },
 
-    // handlePlay() {
-    //   const animation = this.$refs["animation"];
-    //   animation.overlay = false;
-    //   this.initializeAnimation();
-
-    //   // Initialize playback synchronization if possible.
-    //   if (this.syncInitialized) {
-    //     animation.sync = setTimeout(animation.syncVisualWithAudio, 0);
-    //   }
-    // },
-    // handleStop() {
-    //   // Stop sync.
-    //   const animation = this.$refs["animation"];
-    //   clearTimeout(animation.sync);
-    //   animation.sync = undefined;
-    // },
-    // handleSeeking() {
-    //   // Stop first.
-    //   this.handleStop();
-
-    //   // Call once.
-    //   const animation = this.$refs["animation"];
-    //   animation.syncVisualWithAudio(true);
-    // },
-    // initializeAnimation() {
-    //   if (!this.syncInitialized && this.resourcesLoaded) {
-    //     const audioRecorder = this.$refs["audio-recorder"];
-    //     const animation = this.$refs["animation"];
-    //     animation.startSync(audioRecorder.getAudioTime);
-    //     this.syncInitialized = true;
-    //   }
-    // },
     async bindVariables() {
       // TODO: just keep track of this.video so that I don't need to keep track of this.audioURL, this.audioPath explictly
 
@@ -140,16 +80,7 @@ export default {
       // if (video.audioPath) {
       //   this.audioFileRef = storageRef.child(`recordings/${video.audioPath}`);
       // }
-    },
-    // async deleteVideo() {
-    //   const recursiveDelete = firebase
-    //     .functions()
-    //     .httpsCallable("recursiveDelete");
-    //   recursiveDelete({ path: `whiteboards/${this.$route.params.video_id}` });
-    //   if (this.audioFileRef) this.audioFileRef.delete();
-    //   // redirect
-    //   this.$router.push(`/${this.$route.params.class_id}/ranking`);
-    // },
+    }
         
   }
 };

@@ -1,9 +1,10 @@
 <template >
   <!-- TODO: add video documentation link -->
   <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-    <template v-if="!thumbnail || this.strokes.length > 0">
+    <template v-if="!thumbnail || strokes.length > 0">
       <DoodleVideoAnimation
         ref="animation"
+        v-if="strokes.length > 0"
         :strokes="strokes"
         :isFullscreen="false"
         :canvasID="whiteboardID"
@@ -12,14 +13,6 @@
         @animation-finished="handleEvent()"
         @click="handleClick()"
       />
-      <!-- <audio-recorder
-        v-if="audioURL"
-        ref="audioRecorder"
-        :audioURL="audioURL"
-         @recorder-loading="recorderLoaded=false"
-        @play="syncAnimation()"
-        @recorder-loaded="recorderLoaded=true" 
-      /> -->
 
       <audio-recorder
         v-if="audioURL"
@@ -104,9 +97,7 @@ export default {
   async created() {
     // fetch strokes if no thumbnail is available
     if (!this.thumbnail) { 
-      console.log(":strokes not loaded =", this.strokes)
       await this.fetchStrokes(); 
-      console.log(":strokes loaded =", this.strokes)
     }
   },
   // check if this breaks
@@ -133,7 +124,6 @@ export default {
     },
     async quickplay () {
       const { animation } = this.$refs;
-      console.log("in quickplay",  this.strokesFetched);
       this.isQuickplaying = true;
       await animation.quickplay();
       this.isQuickplaying = false;
@@ -148,7 +138,6 @@ export default {
         if (this.hasSubcollection === false) {
           const doc = await baseRef.get();
           this.strokes = doc.data().strokes;
-          
         } else {
           const strokesRef = baseRef
             .collection("strokes")
@@ -159,9 +148,7 @@ export default {
           });
         }
         this.strokesFetched = true
-        console.log("about to emit event")
         this.$emit("strokes-ready", this.strokes)
-        console.log("about to emit event2")
         resolve();
       });
       return P;
@@ -223,53 +210,6 @@ export default {
         this.syncInitialized = true;
       }
     },
-    // quickplay() {
-    //   const animation = this.$refs["animation"];
-    //   if (animation) animation.quickplay();
-    // },
-    // async bindVariables() {
-    //   // TODO: just keep track of this.video so that I don't need to keep track of this.audioURL, this.audioPath explictly
-
-    //   // initialize/reset variables
-    //   this.syncInitialized = false;
-    //   this.recorderLoaded = false;
-    //   this.animationLoaded = false;
-    //   this.audioURL = "";
-
-    //   // retrieve video
-    //   const classID = this.$route.params.class_id;
-    //   let videoRef = null;
-    //   if (!this.videoID) {
-    //     const videoID = this.$route.params.video_id;
-    //     videoRef = db.collection("whiteboards").doc(videoID);
-    //   } else {
-    //     videoRef = db.collection("whiteboards").doc(this.videoID);
-    //   }
-    //   let video = await videoRef.get();
-    //   video = video.data();
-    //   // fix delete button logic
-    //   this.video = video;
-    //   // this.thumbnail = video.thumbnail;
-    //   // set audio and visual
-    //   this.audioURL = video.audioURL;
-    //   const strokesRef = videoRef.collection("strokes");
-    //   if (video.audioPath)
-    //     await this.$binding(
-    //       "allStrokes",
-    //       strokesRef.orderBy("startTime", "asc")
-    //     );
-    //   else
-    //     await this.$binding(
-    //       "allStrokes",
-    //       strokesRef.orderBy("strokeNumber", "asc")
-    //     );
-
-    //   // bind references to make it easy to delete things
-    //   const storageRef = firebase.storage().ref();
-    //   if (video.audioPath) {
-    //     this.audioFileRef = storageRef.child(`recordings/${video.audioPath}`);
-    //   }
-    // },
     async deleteVideo() {
       const recursiveDelete = firebase
         .functions()
