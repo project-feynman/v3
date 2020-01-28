@@ -157,6 +157,8 @@ export default {
                    }
       const payloads = { post, boardStrokes: BlackboardMini.allStrokes}
       this.$emit('post-submit', payloads)
+
+      ///TODO possibly delete the current answer because it persists?
     },
     getDate () {
       var today = new Date();
