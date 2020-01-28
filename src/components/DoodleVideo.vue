@@ -196,6 +196,7 @@ export default {
     },
     resizeVideo() {
       // Rescale canvas.
+      //TODO error being thrown here by video gallery when thumbnail only is displayed
       const animation = this.$refs["animation"];
       animation.rescaleCanvas(false);
 
