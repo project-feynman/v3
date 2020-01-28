@@ -28,9 +28,14 @@
                 />
               </template>
               <template v-else>
-                <PiazzaViewPost :post="currentQuestion" postType="Question"/>
+                <!-- <PiazzaViewPost :post="currentQuestion" postType="Question"/> -->
                 <PiazzaViewPost 
-                  v-for="(answer, i) in answers" :key="answer['.key']"
+                  :post="currentQuestion"
+                  :key="currentQuestion['.key']"
+                  />
+                <PiazzaViewPost 
+                  v-for="(answer, i) in answers" 
+                  :key="answer['.key']"
                   :post="answer" 
                   :postNumber="i"
                   postType="Answers"
