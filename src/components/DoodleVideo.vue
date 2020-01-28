@@ -70,7 +70,7 @@ export default {
   },
   data() {
     return {
-      strokesFetched: false,
+      hasFetchedStrokes: false,
       strokes: [],
       isPlaying: true,
       recorderLoaded: false,
@@ -147,7 +147,7 @@ export default {
             this.strokes.push({ ".key": doc.id, ...doc.data() });
           });
         }
-        this.strokesFetched = true
+        this.hasFetchedStrokes = true
         this.$emit("strokes-ready", this.strokes)
         resolve();
       });
