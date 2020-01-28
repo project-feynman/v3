@@ -1,31 +1,34 @@
 <template>
   <div>
     <BaseAppBar 
-      :icon="viewingPost && isMobile ? 'back' : undefined" 
+      :icon="isViewingPost && isMobile ? 'back' : undefined" 
       @icon-click="backToList()"
     />
     <v-content>
       <v-container fluid class="py-0" ref="main">
         <v-row>
-          <v-col id="piazza-question-list" cols="12" sm="auto" ref="questions" :class="(viewingPost?'d-none':'d-block')+' d-sm-block'">
+          <v-col id="piazza-question-list" cols="12" sm="auto" ref="questions" :class="(isViewingPost?'d-none':'d-block')+' d-sm-block'">
             <PiazzaQuestionsList
               :questions="questions"
+              v-model="activeElem"
               @question-create="handleQuestionCreate()"
               @question-click="clickedQuestion => handleQuestionClick(clickedQuestion)"
             />
           </v-col>
-          <v-col v-if="(viewingPost && isMobile) || (!isMobile)" id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(viewingPost?'d-block':'d-none')+' d-sm-block'">
+          <v-col v-if="(isViewingPost && isMobile) || (!isMobile)" id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(isViewingPost?'d-block':'d-none')+' d-sm-block'">
             <v-card class="mx-auto elevation-6" style="max-width:1000px;">
               <template v-if="isAddingNewQuestion">
                 <PiazzaNewPost 
+                  :key="newQuestionKey"
                   postType="Question"
-                  :visible="this.viewingPost"
+                  :visible="this.isViewingPost"
                   :tagsPool="tagsPool"
                   :withTags="true"
                   @post-submit="question => submitPost(question, questionsRef)"
                 />
               </template>
               <template v-else>
+                <!-- <PiazzaViewPost :post="currentQuestion" postType="Question"/> -->
                 <PiazzaViewPost 
                   :post="currentQuestion"
                   :key="currentQuestion['.key']"
@@ -35,9 +38,10 @@
                   :key="answer['.key']"
                   :post="answer" 
                   :postNumber="i"
+                  postType="Answers"
                 />
                 <PiazzaNewPost
-                  postType="answer"
+                  postType="Answer"
                   :withTags="false"
                   @post-submit="answer => submitPost(answer, answersRef)"
                 />
@@ -75,6 +79,7 @@ export default {
     AsyncRenderless
   },
   data: () => ({
+    newQuestionKey: 0,
     questionService: initQuestionService(),
     isAddingNewQuestion: true,
     currentQuestion: {},
@@ -82,9 +87,10 @@ export default {
     answers: [],
     boardStrokes: [],
     whiteBoardImage: "",
-    viewingPost: false,
+    isViewingPost: false,
     isMobile: window.innerWidth < 600,
-    tagsPool: []
+    tagsPool: [],
+    activeElem: 0
   }),
   computed: {
     user () {
@@ -101,7 +107,20 @@ export default {
     }
   },
   async created () {
-    this.fetchQuestions()
+    // first fetch questions
+    await this.fetchQuestions()
+    const questionID = this.$route.params.question_id
+    if (!questionID) return; // early exit user visited from home page 
+    // search for the question
+    this.questions.forEach((question, index )=> {
+      if (question[".key"] === questionID) {
+        this.currentQuestion = question;
+        this.isAddingNewQuestion = false;
+        this.isViewingPost = true;
+        this.activeElem = index + 1
+      }
+    })
+    // case 2: user wants to visit a specific question using a link
     this.fetchTagsPool()
   },
   mounted() {
@@ -110,12 +129,17 @@ export default {
     window.addEventListener("orientationchange", this.setQuestionsHeight);
   },
   methods: {
-    async fetchQuestions () {
-      this.questions = []
-      let questionDocs = await this.questionsRef.get()
-      questionDocs.forEach(doc => {
-        this.questions.push({".key": doc.id, ...doc.data()})
-      })
+    fetchQuestions () {
+      // has to return a promise 
+      const P = new Promise(async (resolve) => {
+        this.questions = []
+        let questionDocs = await this.questionsRef.get()
+        questionDocs.forEach(doc => {
+          this.questions.push({".key": doc.id, ...doc.data()})
+        })
+        resolve()
+      }) 
+      return P
     },
     async fetchAnswers () {
       this.answers = [] 
@@ -136,38 +160,32 @@ export default {
       this.isAddingNewQuestion = false
       this.isAddingNewQuestion = true
       this.currentQuestion = {}
-      this.viewingPost = true
+      this.isViewingPost = true
     },
     handleQuestionClick (clickedQuestion) {
+      this.$router.push(`${clickedQuestion[".key"]}`)
       this.currentQuestion = clickedQuestion
       this.fetchAnswers()
       this.isAddingNewQuestion = false 
-      this.viewingPost = true
+      this.isViewingPost = true
     },
-    async submitPost ({ title, description, blackboardID, boardStrokes, date, audioURL, postTags, image, userVisibility }, ref) {
-      db.collection("whiteboards").doc(blackboardID).set({
+    async submitPost ({ post, boardStrokes }, ref) {
+      db.collection("whiteboards").doc(post.blackboardID).set({
             strokes: boardStrokes,
             // image: this.whiteBoardImage
       })
-      const postObj = {
-        title,
-        description,
-        // to get graphQL to not complain
-        questionDescription: description,
-        blackboardID,
-        videoID: blackboardID,
-        postTags,
-        date,
-        audioURL,
-        usersWhoUpvoted: [],
-        inquisitorID: this.user ? this.user.uid : "",
-        classID: this.$route.params.class_id,
-        image: image,
-        userVisibility: userVisibility
-      }
-      await ref.add(postObj)
-
+      // const postObj = post 
+      post.author = this.user
+      // below is graphQL 
+      post.videoID = post.blackboardID;
+      post.questionDescription = post.description;
+      post.classID = this.$route.params.class_id;
+      post.inquisitorID = this.user ? this.user.uid : "";
+      await ref.add(post)
       this.fetchQuestions()
+      // Incrementing the key causes the new question component to re-render to reset its state
+      this.newQuestionKey += 1
+      console.log("this.newQuestionKey =", this.newQuestionKey)
       //this.fetchAnswers()
       // trigger email notification
       // let inquisitorID = this.user ? this.user.uid : "";
@@ -176,7 +194,7 @@ export default {
       // trigger email notification
       let question;
       try {
-        question = await this.questionService.askQuestion(postObj)
+        // question = await this.questionService.askQuestion(post)
         //   {
         //   title,
         //   questionDescription: description,
@@ -200,7 +218,7 @@ export default {
       return window.innerWidth
     },
     backToList() {
-      this.viewingPost = false;
+      this.isViewingPost = false;
     },
     setQuestionsHeight() {
       if (this.$refs.main) {
@@ -249,4 +267,24 @@ export default {
     max-width: 300px;
   }
 }
+  .post-header {
+    background: linear-gradient(#eee,#fff);
+    box-shadow: 0 5px 5px rgba(0,0,0,0.15);
+  }
+  .question-options .v-btn {
+    text-transform: unset;
+    letter-spacing: unset;
+    margin: 0 5px;
+  }
+  #addedImage {
+    max-width:100%;
+    max-height: 200px;
+  }
+  .input-title textarea {
+    max-height:100%;
+  }
+  .input-description textarea {
+    color: #555 !important;
+    font-size: 0.9em;
+  }
 </style> 
