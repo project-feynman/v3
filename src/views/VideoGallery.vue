@@ -5,7 +5,7 @@
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
           v-if="classDoc.tabs"
-          :tabs="classDoc.tabs"
+          :tabs="classDoc.tabs"cb
           :tab="tab"
           @tab-change="newValue => tab = newValue"
           @tabs-rename="newValues => renameTabs(newValues)"
@@ -14,7 +14,7 @@
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
               <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber" @videos-fetched="hasFetchedVideos=true">
                 <template slot-scope="{ videos }">
-                  <BaseGrid >
+                  <BaseGrid>
                     <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
                       <BaseCard
                         @save-tab-number="newValue => handleTabChange(newValue, video)"
@@ -35,8 +35,9 @@
                             :ref="`doodle-video-${i}-${j}`"
                             :canvasID="`${i}-${j}`"
                             :thumbnail="video.thumbnail"
-                            @animation-loaded="handleAction('QUICKPLAY', video, `${i}-${j}`)"
+                            @strokes-ready="handleAction('QUICKPLAY', video, `${i}-${j}`)"
                             @video-clicked="handleAction('FULL VIDEO', video, j)"
+                            @mouse-change="handleAction('HANDLEHOVER', video, `${i}-${j}`, $event)"
                           />
                         </template>
 
@@ -117,15 +118,30 @@ export default {
       const doc = await ref.get()
       this.classDoc = doc.data()
     },
-    handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID) {
+    handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID, hover=false) {
       if (buttonName === "FULL VIDEO") {
         const classID = this.$route.params.class_id
         this.$router.push(`/${classID}/${videoID}`)
-      } else if (buttonName === "QUICKPLAY") {
-        
-        const videoElem = this.$refs[`doodle-video-${canvasID}`][0]
-        videoElem.quickplay()
-        console.log("in gallery ")
+      }else if (buttonName === "HANDLEHOVER") {
+        if (hover){
+          this.$nextTick(() => {
+            const videoElem = this.$refs[`doodle-video-${canvasID}`][0];
+            if (!videoElem.strokesFetched){
+              videoElem.fetchStrokes(); // if strokes arent fetched strokes-ready event will be emmitted after this
+            } else if (!videoElem.isQuickplaying){
+              videoElem.quickplay();
+            }
+          });
+        }
+      }
+      else if (buttonName === "QUICKPLAY") {
+        console.log("what is this? ", this.$refs[`doodle-video-${canvasID}`])
+        this.$nextTick(() => {
+          const videoElem = this.$refs[`doodle-video-${canvasID}`][0];
+          if (!videoElem.isQuickplaying){
+            videoElem.quickplay();
+          }
+        });
       } else if (buttonName === "DELETE") {
         this.deleteVideo(videoID, audioPath)
       }
