@@ -1,161 +1,45 @@
 <template>
   <div v-if="!isRealtime">
-  <v-card id="whiteboard" outlined elevation="1">
-    <!-- SNACKBAR -->
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>
-        CLOSE
-      </v-btn>
-    </v-snackbar>
+    <v-card id="whiteboard" outlined elevation="1">
+      <!-- SNACKBAR -->
+      <v-snackbar v-model="snackbar">
+        {{ snackbarMessage }}
+        <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
+      </v-snackbar>
 
-    <BaseAppBar v-if="isRealtime" :loading="loading">
-      <v-toolbar-items v-if="whiteboardDoc">
-        <template v-if="!whiteboardDoc.isAnswered">
-          <swatches 
-            v-model="color"
-            :colors="colors"
-            :show-border="true"
-            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-            inline
-            background-color="rgba(0, 0, 0, 0)"
-            swatch-size="40"
-          /> 
+      <BaseAppBar v-if="isRealtime" :loading="loading">
+        <v-toolbar-items v-if="whiteboardDoc">
+          <template v-if="!whiteboardDoc.isAnswered">
+            <swatches
+              v-model="color"
+              :colors="colors"
+              :show-border="true"
+              :isRealtime="isRealtime"
+              :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
+              inline
+              background-color="rgba(0, 0, 0, 0)"
+              swatch-size="40"
+            />
           </template>
-      </v-toolbar-items>
-    </BaseAppBar>
+        </v-toolbar-items>
+      </BaseAppBar>
 
       <!-- APP BAR -->
-      <v-app-bar dense color="#eee" elevation="1" class="blackboard-toolbar">
-        <v-container class="py-1 px-0">
-          <v-row align="center" justify="space-between">
-            <template v-if="currentState != recordingStateEnum.POST_RECORDING">
-              <v-col class="py-0">
-                <v-row justify="start" align="center">
-                  <v-col class="px-1 py-0" cols="auto">
-                    <div :class="[smallScreen? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]" id="swatches-wrapper"
-                        @click="swatchClick()">
-                      <v-btn 
-                        :color="(!smallScreen || palleteVisibility || eraserActive)? 'accent lighten-1':color"
-                        @click="palleteClick()"
-                        :outlined="eraserActive? true:false"
-                        min-width="36px"
-                        class="px-3"
-                        height="38px"
-                        max-width="64px"
-                      >
-                        <v-icon>mdi-lead-pencil</v-icon>
-                        <v-icon class="down">keyboard_arrow_down</v-icon>
-                      </v-btn>
-                      <swatches 
-                        v-model="color"
-                        :colors="colors"
-                        :show-border="true"
-                        :wrapper-style="{ padding:'0px', maxHeight:'26px', display:'flex' }"
-                        :swatch-style="{margin:'0 5px', borderRadius:'50%'}"
-                        inline
-                        background-color="rgba(0, 0, 0, 0)"
-                        swatch-size="26"
-                      />
-                    </div>
-                  </v-col>
-                  <v-col class="py-0 px-0" cols="auto">
-                    <v-btn 
-                      @click="eraserClick()"
-                      :outlined="eraserActive? false:true"
-                      color="accent lighten-1"
-                      class="board-action-btn normal-text"
-                    >
-                      <span class="d-none d-md-block mr-2">Eraser</span>
-                      <v-icon>mdi-eraser</v-icon>
-                    </v-btn>
-                  </v-col>
-                  <v-col class="py-0 px-0" cols="auto">
-                    <v-btn 
-                      @click="setImage()"
-                      ref="background"
-                      outlined
-                      color="accent lighten-1"
-                      class="board-action-btn normal-text"
-                    >
-                      <span class="d-none d-md-block mr-2">Background</span>
-                      <v-icon>image</v-icon>
-                    <input
-                      @change="handleImage"
-                      id="whiteboard-bg-input"
-                      name="whiteboard-bg"
-                      type="file"
-                      style="display: none;"
-                    />
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-col>
-              <v-col cols="auto" class="py-0 px-0">
-                <v-btn
-                  @click="wipeBoard()"
-                  outlined
-                  color="accent"
-                  class="board-action-btn normal-text"
-                >
-                  <span class="d-none d-lg-block mr-2">Clear</span>
-                  <v-icon>clear</v-icon>
-                </v-btn>
-                <v-btn
-                  v-if="!isRecording"
-                  @click="startRecording()" 
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Record</span>
-                  <v-icon>adjust</v-icon>
-                </v-btn>
-                <v-btn
-                  v-else
-                  @click="stopRecording()"
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Stop</span>
-                  <v-icon>stop</v-icon>
-                </v-btn>
-              </v-col>
-            </template>
-            <template v-else>
-              <v-col cols="auto" class="py-0">
-                <v-btn
-                  @click="initReplayLogic()"
-                  outlined
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Preview</span>
-                  <v-icon>mdi-eye</v-icon>
-                </v-btn>
-              </v-col>
-              <v-col cols="auto" class="py-0">
-                <v-btn
-                  @click="recordAgain()"
-                  outlined
-                  color="accent lighten-1"
-                  class="board-action-btn"
-                >
-                  <span class="d-none d-sm-block mr-2">Retry</span>
-                  <v-icon>mdi-undo-variant</v-icon>
-                </v-btn>
-              </v-col>
-              <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
-                SAVE VIDEO
-              </v-btn> -->
-            </template>
-          </v-row>
-        </v-container>
-      </v-app-bar>
-
+      <div id="mini-toolbar">
+        <BoardToolBar
+          :currentState="currentState"
+          :eraserActive="eraserActive"
+          :color="color"
+          @eraser-click="status=>eraserClick(status)"
+          @set-image="e=>handleImage(e)"
+          @color-click="newColor=>{color=newColor}"
+          @wipe-board="wipeBoard"
+          ref="blackboardToolbar"
+        />
+      </div>
       <!-- WHITEBOARD -->
       <div id="blackboard-wrapper" v-resize="blackboardSize">
-        <canvas id="myCanvas">
-        </canvas>
+        <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
 
@@ -170,7 +54,7 @@
         @file-uploaded="audioObj => handleNewAudio(audioObj)"
       />
 
-      <audio-recorder 
+      <audio-recorder
         v-else-if="whiteboardDoc"
         v-show="false"
         ref="audio-recorder"
@@ -179,105 +63,72 @@
         @start-recording="isRecording = true"
         @file-uploaded="audio => saveFileReference(audio)"
       />
-
-
-  </v-card>
+    </v-card>
   </div>
-
 
   <div v-else>
     <div id="whiteboard">
-    <!-- SNACKBAR -->
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>
-        CLOSE
-      </v-btn>
-    </v-snackbar>
+      <!-- SNACKBAR -->
+      <v-snackbar v-model="snackbar">
+        {{ snackbarMessage }}
+        <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
+      </v-snackbar>
 
-    <!-- WHITEBOARD BUTTONS -->
-    <BaseAppBar :loading="loading">
-      <v-toolbar-items v-if="whiteboardDoc">
-        <template v-if="!whiteboardDoc.isAnswered">
-          <swatches 
-            v-model="color"
-            :colors="colors"
-            :show-border="true"
-            :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-            inline
-            background-color="rgba(0, 0, 0, 0)"
-            swatch-size="40"
+      <!-- WHITEBOARD BUTTONS -->
+      <BaseAppBar :loading="loading" page="realtime">
+        <div id="realtime-toolbar">
+          <BoardToolBar
+            :currentState="currentState"
+            :eraserActive="eraserActive"
+            :color="color"
+            :isRealtime="isRealtime"
+            @eraser-click="eraserClick"
+            @set-image="handleImage"
+            @color-click="newColor=>{color=newColor}"
+            @wipe-board="wipeBoard"
           />
-          <!-- <v-btn @click="disableTouch = !disableTouch">
-            {{ disableTouch ? "ENABLE TOUCH" : "DISABLE TOUCH"}}
-          </v-btn> -->
-          <v-btn 
-            v-if="!isRecording"
-            @click="deleteStrokesSubcollection()"
-            color="red darken-2 white--text"
-          >
-            CLEAR
-            <v-icon dark right>clear</v-icon>
-          </v-btn>
-          <template v-if="!isRecording">
-            <v-btn @click="saveDoodle()">
-              SAVE 
-              <v-icon dark right>save</v-icon>
-            </v-btn>
-            <v-btn @click="startRecording()" color="pink white--text" dark>
-              RECORD
-              <v-icon dark right>fiber_manual_record</v-icon>
-            </v-btn>
-          </template>
-          <v-btn v-else @click="stopRecording()" color="pink white--text">
-            STOP VIDEO
-          </v-btn>
-        </template>
-        <template v-else>
-          <v-btn @click="initReplayLogic()">PREVIEW</v-btn>
-          <v-btn @click="retryAnswer()">RETRY</v-btn>
-          <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
-            SAVE VIDEO
-          </v-btn>
-        </template>
-      </v-toolbar-items>
-    </BaseAppBar>
+        </div>
+      </BaseAppBar>
 
-    <v-content>
-      <!-- "@start-recording" is necessary because the audio-recorder can't 
+      <v-content>
+        <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
-      null-->
-      <audio-recorder 
-        v-if="whiteboardDoc"
-        v-show="false"
-        ref="audio-recorder"
-        :audioURL="whiteboardDoc.audioURL"
-        :audioPath="whiteboardDoc.audioPath"
-        @start-recording="isRecording = true"
-        @file-uploaded="audio => saveFileReference(audio)"
-      />
+        null-->
+        <audio-recorder
+          v-if="whiteboardDoc"
+          v-show="false"
+          ref="audio-recorder"
+          :audioURL="whiteboardDoc.audioURL"
+          :audioPath="whiteboardDoc.audioPath"
+          @start-recording="isRecording = true"
+          @file-uploaded="audio => saveFileReference(audio)"
+        />
 
-      <!-- WHITEBOARD -->
-      <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)"/>
-      <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
-    </v-content>
-
-  </div>
+        <!-- WHITEBOARD -->
+        <div id="blackboard-wrapper" class="realtime-canvas" v-resize="blackboardSize">
+          <canvas id="myCanvas"></canvas>
+          <canvas id="background-canvas"></canvas>
+        </div>
+        <!-- <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)" /> -->
+        <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
+      </v-content>
+    </div>
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import firebase from 'firebase/app'
-import 'firebase/functions'
-import slugify from 'slugify'
-import db from '@/database.js'
-import DrawMethods from '@/mixins/DrawMethods.js'
-import Swatches from 'vue-swatches'
-import 'vue-swatches/dist/vue-swatches.min.css'
-import AudioRecorder from '@/components/AudioRecorder.vue'
-import AudioRecorderMini from "@/components/AudioRecorderMini.vue"
-import BaseAppBar from "@/components/BaseAppBar.vue"
+import { mapState } from "vuex";
+import firebase from "firebase/app";
+import "firebase/functions";
+import slugify from "slugify";
+import db from "@/database.js";
+import DrawMethods from "@/mixins/DrawMethods.js";
+import Swatches from "vue-swatches";
+import "vue-swatches/dist/vue-swatches.min.css";
+import AudioRecorder from "@/components/AudioRecorder.vue";
+import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
+import BaseAppBar from "@/components/BaseAppBar.vue";
+import BoardToolBar from "@/components/BoardToolBar.vue";
 
 export default {
   props: {
@@ -292,50 +143,50 @@ export default {
     AudioRecorderMini,
     AudioRecorder,
     Swatches,
-    BaseAppBar
+    BaseAppBar,
+    BoardToolBar
   },
   mixins: [DrawMethods],
   computed: {
-    ...mapState(['user']),
-    author () {
+    ...mapState(["user"]),
+    author() {
       if (this.user) {
         if (this.user.name) {
           return {
             name: this.user.name,
             uid: this.user.uid
-          }
+          };
         } else {
           return {
             email: this.user.email,
             uid: this.user.uid
-          }
+          };
         }
       } else {
         return {
-          name: 'Anonymous',
-          uid: 'Anonymous'
-        }
+          name: "Anonymous",
+          uid: "Anonymous"
+        };
       }
     },
-    bg () {
+    bg() {
       //mini
       return this.background;
     }
   },
-  data () {
+  data() {
     return {
-      
       loading: true,
       whiteboardDoc: null,
-      color: 'white',
+      color: "white",
       lineWidth: 2,
-      colors: ['white', 'orange', '#0AF2F2', 'deeppink', 'rgb(62, 66, 66)'],
+      colors: ["white", "orange", "#0AF2F2", "deeppink", "rgb(62, 66, 66)"],
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
       isRecording: false,
       strokesRef: null,
-      stylus: false, 
+      stylus: false,
       allStrokes: [],
       currentStroke: [],
       canvas: null,
@@ -352,9 +203,9 @@ export default {
       unsubscribe: null,
       redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
       hasUploadedAudio: false,
-      mouseX : 0,
-      mouseY : 0,
-      mousedown : 0,
+      mouseX: 0,
+      mouseY: 0,
+      mousedown: 0,
       clearRectTimeout: null,
       snackbar: false,
       snackbarMessage: "",
@@ -367,33 +218,34 @@ export default {
         MID_RECORDING: "mid-recording",
         POST_RECORDING: "post-recording"
       },
-      smallScreen: window.innerWidth<960,
+      smallScreen: window.innerWidth < 960,
       palleteVisibility: false,
       eraserActive: false
-    }
+    };
   },
   watch: {
     whiteboardID: {
-      handler: 'initData',
+      handler: "initData",
       immediate: true
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
-    color () {
-      if (this.color != 'rgb(62, 66, 66)') { // eraser color stroke width is larger
-        this.lineWidth = 2
+    color() {
+      if (this.color != "rgb(62, 66, 66)") {
+        // eraser color stroke width is larger
+        this.lineWidth = 2;
       } else {
-        this.lineWidth = 30
+        this.lineWidth = 30;
       }
-      this.setStyle(this.color, this.lineWidth)
+      this.setStyle(this.color, this.lineWidth);
     },
-    isRecording () {
+    isRecording() {
       if (this.isRecording) {
-        this.startTimer()
+        this.startTimer();
       } else {
-        this.stopTimer()
+        this.stopTimer();
       }
     },
-    whiteboardDoc (newVal) {
+    whiteboardDoc(newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
       if (newVal) {
         if (!newVal.isAnswered || this.canvas || this.ctx) {
@@ -404,563 +256,623 @@ export default {
     },
     eraserActive() {
       /// all these are mini
-      this.customCursor()
-      this.canvas.getContext("2d").globalCompositeOperation=this.eraserActive?'destination-out':'source-over'
-      this.lineWidth=this.eraserActive?10:2
+      this.customCursor();
+      this.canvas.getContext("2d").globalCompositeOperation = this.eraserActive
+        ? "destination-out"
+        : "source-over";
+      this.lineWidth = this.eraserActive ? 20 : 2;
     },
-    color(){
-      this.customCursor()
+    color() {
+      this.customCursor();
     },
     visible() {
-      this.blackboardSize()
+      this.blackboardSize();
     },
     bg() {
-      this.drawBackground(this.bg)
+      this.drawBackground(this.bg);
     }
   },
-  mounted () {
+  mounted() {
     // the mounted() hook is never called for subsequent switches between whiteboards
-    if (this.whiteboardID){    
-      const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
+    if (this.whiteboardID) {
+      const whiteboardRef = db.collection("whiteboards").doc(this.whiteboardID);
     }
-    this.canvas = document.getElementById('myCanvas')
-    this.ctx = this.canvas.getContext('2d')
+    this.canvas = document.getElementById("myCanvas");
+    this.ctx = this.canvas.getContext("2d");
     // new redraw code
 
-    if (!this.isRealtime){
+    if (!this.isRealtime) {
       //mini
-      const height = 9/16 * (window.innerWidth - 500)
-      this.canvas.height = height - 48 // the blackboard's top-app-bar is 48px high
+      const height = (9 / 16) * (window.innerWidth - 500);
+      this.canvas.height = height - 48; // the blackboard's top-app-bar is 48px high
+    } else {
+      this.canvas.width = document.documentElement.clientWidth;
+      this.canvas.height = 0.9 * document.documentElement.clientHeight;
     }
-    else{
-      this.canvas.width = document.documentElement.clientWidth 
-      this.canvas.height = 0.9 * document.documentElement.clientHeight
-    }
-    this.rescaleCanvas(true)
-    if (this.isRealtime){
-      window.addEventListener('resize', () => { 
-        this.canvas.width = document.documentElement.clientWidth 
-        this.rescaleCanvas(true)
-      }, false)
-    }
-    else {
+    this.rescaleCanvas(true);
+    if (this.isRealtime) {
+      window.addEventListener(
+        "resize",
+        () => {
+          this.canvas.width = document.documentElement.clientWidth;
+          this.rescaleCanvas(true);
+        },
+        false
+      );
+    } else {
       //mini
-      window.addEventListener('resize', () => this.rescaleCanvas(true), false)
+      window.addEventListener("resize", () => this.rescaleCanvas(true), false);
     }
-    this.initTouchEvents()
-    this.initMouseEvents()
-    if (this.isRealtime){
-      this.continuouslySyncBoardWithDB()
+    this.initTouchEvents();
+    this.initMouseEvents();
+    if (this.isRealtime) {
+      this.continuouslySyncBoardWithDB();
       this.$root.$on("side-nav-toggled", sideNavOpened => {
         if (sideNavOpened) {
-          this.canvas.width = document.documentElement.clientWidth
+          this.canvas.width = document.documentElement.clientWidth;
         } else {
-          this.canvas.width = document.documentElement.clientWidth
+          this.canvas.width = document.documentElement.clientWidth;
         }
-        this.rescaleCanvas(true)
-      })
-    }
-    else{
+        this.rescaleCanvas(true);
+      });
+    } else {
       //mini
-      document.fonts.ready.then(()=>this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
-      this.blackboardSize()
+      document.fonts.ready.then(() => this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
+      this.blackboardSize();
       window.addEventListener("resize", this.blackboardToolbar);
       window.addEventListener("orientationchange", this.blackboardToolbar);
-      window.addEventListener("click", e=>this.palleteClose(e));
+      window.addEventListener("click", e => this.palleteClose(e));
       this.drawBackground(this.background);
     }
   },
   updated() {
     //mini
-    console.log('updated')
+    console.log("updated");
     if (!this.isRealtime) {
       //mini
       this.drawBackground(this.background);
     }
   },
-  beforeDestroy () {
-    this.unsubscribe()
+  beforeDestroy() {
+    this.unsubscribe();
   },
   destroyed() {
     //mini
     window.removeEventListener("resize", this.blackboardToolbar);
     window.removeEventListener("orientationchange", this.blackboardToolbar);
-    window.removeEventListener('resize', () => this.rescaleCanvas(true));
-    window.removeEventListener("click", e=>this.palleteClose(e));
+    window.removeEventListener("resize", () => this.rescaleCanvas(true));
+    window.removeEventListener("click", e => this.palleteClose(e));
   },
   methods: {
     /// mini until toggleDrawer
-    handleNewAudio ({ url }) {
-      this.audioURL = url
+    handleNewAudio({ url }) {
+      this.audioURL = url;
     },
-    wipeBoard () {
+    wipeBoard() {
       if (this.ctx) {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       }
-      this.allStrokes = []
+      this.allStrokes = [];
     },
-    setImage () {
-      document.getElementById('whiteboard-bg-input').value=''
-      document.getElementById('whiteboard-bg-input').click()
+    setImage() {
+      document.getElementById("whiteboard-bg-input").value = "";
+      document.getElementById("whiteboard-bg-input").click();
     },
-    handleImage (e) {
-      var file = e.target.files[0]
+    handleImage(e) {
+      var file = e.target.files[0];
       var reader = new FileReader();
-      var vue = this
-      reader.onload = function(event){
-          var img = event.target.result;
-          vue.drawBackground(img)
-          vue.$emit('boardImage', img);
-      }
-      
+      var vue = this;
+      reader.onload = function(event) {
+        var img = event.target.result;
+        vue.drawBackground(img);
+        vue.$emit("boardImage", img);
+      };
+
       if (file) {
         reader.readAsDataURL(file);
       }
     },
     drawBackground(image) {
-      var canvas = document.getElementById('background-canvas');
-      var ctx = canvas.getContext('2d');
-      
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      if (image=='') {return}
-      var img = new Image();
-      img.onload = function(){
-        var w=img.width
-        var h=img.height
-        var img_aspect_ratio=w/h
-        var x,y=0
-        if (img_aspect_ratio<canvas.width/canvas.height) {
-          h=canvas.height
-          w=h*img_aspect_ratio
-          x=(canvas.width-w)/2
-        } else {
-          w=canvas.width
-          h=w/img_aspect_ratio
-          y=(canvas.height-h)/2
-        }
-        ctx.drawImage(img,x,y,w,h);
+      var canvas = document.getElementById("background-canvas");
+      var ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (image == "") {
+        return;
       }
-      img.src=image
+      var img = new Image();
+      img.onload = function() {
+        var w = img.width;
+        var h = img.height;
+        var img_aspect_ratio = w / h;
+        var x,
+          y = 0;
+        if (img_aspect_ratio < canvas.width / canvas.height) {
+          h = canvas.height;
+          w = h * img_aspect_ratio;
+          x = (canvas.width - w) / 2;
+        } else {
+          w = canvas.width;
+          h = w / img_aspect_ratio;
+          y = (canvas.height - h) / 2;
+        }
+        ctx.drawImage(img, x, y, w, h);
+      };
+      img.src = image;
     },
-    toggleDrawer () {
-      this.$root.$emit("toggle-drawer")
+    toggleDrawer() {
+      this.$root.$emit("toggle-drawer");
     },
     // takePicture () {
     //   const dataURL = this.canvas.toDataURL()
     // },
-    async initData () {
-      if (this.isRealtime){
-        this.loading = true
+    async initData() {
+      if (this.isRealtime) {
+        this.loading = true;
         if (!this.whiteboardID) {
-          return
+          return;
         }
-        const whiteboardRef = db.collection('whiteboards').doc(this.whiteboardID)
-        this.strokesRef = whiteboardRef.collection('strokes')
-        // TODO: remove this whiteboard listener 
-        await this.$binding('whiteboardDoc', whiteboardRef)
+        const whiteboardRef = db
+          .collection("whiteboards")
+          .doc(this.whiteboardID);
+        this.strokesRef = whiteboardRef.collection("strokes");
+        // TODO: remove this whiteboard listener
+        await this.$binding("whiteboardDoc", whiteboardRef);
         // visually wipe previous drawings
         if (this.ctx) {
-          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
-        this.allStrokes = [] 
+        this.allStrokes = [];
         if (this.unsubscribe) {
-          this.unsubscribe() 
+          this.unsubscribe();
         }
-        this.continuouslySyncBoardWithDB() 
-      }
-      else {
+        this.continuouslySyncBoardWithDB();
+      } else {
         ///mini
-        this.wipeBoard()
-        this.currentState = this.recordingStateEnum.PRE_RECORDING
+        this.wipeBoard();
+        this.currentState = this.recordingStateEnum.PRE_RECORDING;
       }
     },
-    continuouslySyncBoardWithDB () {
-      this.unsubscribe = this.strokesRef.orderBy('strokeNumber').onSnapshot(snapshot => {
-        snapshot.docChanges().forEach(change => {
-          if (change.type === 'added') {
-            const stroke = change.doc.data()
-            // check if local strokes and db strokes are in sync 
-            if (this.allStrokes.length < stroke.strokeNumber) {
-              this.drawStroke(stroke, null)
-              this.allStrokes.push(stroke)
+    continuouslySyncBoardWithDB() {
+      this.unsubscribe = this.strokesRef
+        .orderBy("strokeNumber")
+        .onSnapshot(snapshot => {
+          snapshot.docChanges().forEach(change => {
+            if (change.type === "added") {
+              const stroke = change.doc.data();
+              // check if local strokes and db strokes are in sync
+              if (this.allStrokes.length < stroke.strokeNumber) {
+                this.drawStroke(stroke, null);
+                this.allStrokes.push(stroke);
+              }
+            } else if (change.type === "removed") {
+              // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
+              clearTimeout(this.clearRectTimeout);
+              this.clearRectTimeout = setTimeout(
+                () =>
+                  this.ctx.clearRect(
+                    0,
+                    0,
+                    this.canvas.width,
+                    this.canvas.height
+                  ),
+                400
+              );
+              this.resetVariables();
             }
-          } 
-          else if (change.type === 'removed') {
-            // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
-            clearTimeout(this.clearRectTimeout)
-            this.clearRectTimeout = setTimeout(() => this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height), 400)
-            this.resetVariables()
-          }
-        })
-        this.loading = false
-      })
+          });
+          this.loading = false;
+        });
     },
-    resetVariables () {
-      if (this.isRealtime){
-        this.allStrokes = []
+    resetVariables() {
+      if (this.isRealtime) {
+        this.allStrokes = [];
       }
-      this.lastX = -1
+      this.lastX = -1;
     },
-    sortStrokesByTimestamp () {
-      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime))
+    sortStrokesByTimestamp() {
+      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime));
     },
-    getHeightToWidthRatio () {
-      return this.canvas.scrollHeight / this.canvas.scrollWidth
+    getHeightToWidthRatio() {
+      return this.canvas.scrollHeight / this.canvas.scrollWidth;
     },
-    startTimer () {
-      this.currentTime = 0 
-      this.timer = setInterval(() => this.currentTime += 0.1, 100)
+    startTimer() {
+      this.currentTime = 0;
+      this.timer = setInterval(() => (this.currentTime += 0.1), 100);
     },
-    stopTimer () {
-      clearInterval(this.timer)
+    stopTimer() {
+      clearInterval(this.timer);
     },
-    initReplayLogic () {
-      this.quickplay()
+    initReplayLogic() {
+      this.quickplay();
     },
-    initTouchEvents () {
-      this.canvas.addEventListener('touchstart', this.touchStart, false)
-      this.canvas.addEventListener('touchend',this.touchEnd, false)
-      this.canvas.addEventListener('touchmove', this.touchMove, false)
-      this.setStyle(this.color, this.lineWidth)
+    initTouchEvents() {
+      this.canvas.addEventListener("touchstart", this.touchStart, false);
+      this.canvas.addEventListener("touchend", this.touchEnd, false);
+      this.canvas.addEventListener("touchmove", this.touchMove, false);
+      this.setStyle(this.color, this.lineWidth);
     },
-    removeTouchEvents () {
-      this.canvas.removeEventListener('touchstart', this.touchStart, false)
-      this.canvas.removeEventListener('touchend', this.touchEnd, false)
-      this.canvas.removeEventListener('touchmove', this.touchMove, false)
+    removeTouchEvents() {
+      this.canvas.removeEventListener("touchstart", this.touchStart, false);
+      this.canvas.removeEventListener("touchend", this.touchEnd, false);
+      this.canvas.removeEventListener("touchmove", this.touchMove, false);
     },
     initMouseEvents() {
       // TODO: implement mouseUp, mouseDown, mouseMove
-      window.addEventListener('mouseup', this.mouseUp, false);
-      this.canvas.addEventListener('mousedown', this.mouseDown, false);
-      this.canvas.addEventListener('mousemove', this.mouseMove, false);
+      window.addEventListener("mouseup", this.mouseUp, false);
+      this.canvas.addEventListener("mousedown", this.mouseDown, false);
+      this.canvas.addEventListener("mousemove", this.mouseMove, false);
     },
     removeMouseEvents() {
-      window.removeEventListener('mouseup', this.mouseUp, false);
-      this.canvas.removeEventListener('mousedown', this.mouseDown, false);
-      this.canvas.removeEventListener('mousemove', this.mouseMove, false);
+      window.removeEventListener("mouseup", this.mouseUp, false);
+      this.canvas.removeEventListener("mousedown", this.mouseDown, false);
+      this.canvas.removeEventListener("mousemove", this.mouseMove, false);
     },
-    async deleteStrokesSubcollection () {
+    async deleteStrokesSubcollection() {
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
-        this.strokesRef.doc(`${i}`).delete()
+        this.strokesRef.doc(`${i}`).delete();
       }
-      this.allStrokes = [] 
+      this.allStrokes = [];
     },
-    convertAndSavePoint (x, y) {
-      const unitX = parseFloat(x / this.canvas.width).toFixed(4)
-      const unitY = parseFloat(y / this.canvas.height).toFixed(4)
-      this.currentStroke.push({ unitX, unitY })
+    convertAndSavePoint(x, y) {
+      const unitX = parseFloat(x / this.canvas.width).toFixed(4);
+      const unitY = parseFloat(y / this.canvas.height).toFixed(4);
+      this.currentStroke.push({ unitX, unitY });
       this.drawToPoint(x, y);
     },
-    touchStart (e) {
-      e.preventDefault()
+    touchStart(e) {
+      e.preventDefault();
       //mini
-      if (!this.isRealtime){
-        this.palleteVisibility = false
+      if (!this.isRealtime) {
+        this.palleteVisibility = false;
       }
-      if (this.isNotValidTouch(e)) { 
-        return 
+      if (this.isNotValidTouch(e)) {
+        return;
       }
-      if (e.touches[0].touchType == 'stylus') {
-        this.disableTouch = true
-      } 
-      this.drawToPointAndSave(e)
+      if (e.touches[0].touchType == "stylus") {
+        this.disableTouch = true;
+      }
+      this.drawToPointAndSave(e);
       if (this.isRecording) {
-        this.startTime = this.currentTime.toFixed(1) // this.startTime keeps track of current stroke's startTime
+        this.startTime = this.currentTime.toFixed(1); // this.startTime keeps track of current stroke's startTime
       }
-   
     },
-    touchMove (e) {
-      e.preventDefault()
-      if (this.isNotValidTouch(e)) { 
-        return 
+    touchMove(e) {
+      e.preventDefault();
+      if (this.isNotValidTouch(e)) {
+        return;
       }
-      this.drawToPointAndSave(e)
-      event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
+      this.drawToPointAndSave(e);
+      event.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
     },
-    touchEnd (e) {
-      e.preventDefault()
+    touchEnd(e) {
+      e.preventDefault();
       if (this.currentStroke.length == 0) {
         // user is touching the screen despite that touch is disabled
-        return 
+        return;
       }
-      const strokeNumber = this.allStrokes.length + 1
+      const strokeNumber = this.allStrokes.length + 1;
       // save
       const stroke = {
         strokeNumber,
-        author: this.author || 'anonymous',
+        author: this.author || "anonymous",
         color: this.color,
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
         points: this.currentStroke,
         isErasing: this.eraserActive // mini
+      };
+      this.allStrokes.push(stroke);
+      if (this.isRealtime) {
+        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
       }
-      this.allStrokes.push(stroke)
-      if (this.isRealtime){
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke)
-      }
-      // reset 
-      this.currentStroke = []
-      this.lastX = -1
+      // reset
+      this.currentStroke = [];
+      this.lastX = -1;
     },
-    drawToPointAndSave (e) {
+    drawToPointAndSave(e) {
       this.setStyle(this.color, this.lineWidth); //mini
-      this.getTouchPos(e)
-      this.convertAndSavePoint(this.touchX, this.touchY)
-      this.drawToPoint(this.touchX, this.touchY)
+      this.getTouchPos(e);
+      this.convertAndSavePoint(this.touchX, this.touchY);
+      this.drawToPoint(this.touchX, this.touchY);
     },
-    getTouchPos (e) {
-      const finger1 = e.touches[0] 
-      this.touchX = finger1.pageX - this.canvas.getBoundingClientRect().left - window.scrollX
-      this.touchY = finger1.pageY - this.canvas.getBoundingClientRect().top - window.scrollY
+    getTouchPos(e) {
+      const finger1 = e.touches[0];
+      this.touchX =
+        finger1.pageX -
+        this.canvas.getBoundingClientRect().left -
+        window.scrollX;
+      this.touchY =
+        finger1.pageY -
+        this.canvas.getBoundingClientRect().top -
+        window.scrollY;
     },
-    isNotValidTouch (e) {
-      // multiple fingers not allowed 
+    isNotValidTouch(e) {
+      // multiple fingers not allowed
       if (e.touches.length != 1) {
-        return true
+        return true;
       }
       if (this.isFinger(e) && this.disableTouch) {
-        return true
+        return true;
       } else {
-        return false 
+        return false;
       }
     },
-    isFinger (e) {
-      if (e.touches[0].touchType != 'stylus') {
-        return true 
-      } 
-      return false
+    isFinger(e) {
+      if (e.touches[0].touchType != "stylus") {
+        return true;
+      }
+      return false;
     },
 
-    // --- Mouse Drawing --- // 
+    // --- Mouse Drawing --- //
     mouseDown(e) {
-      this.mousedown=1;
-      this.palleteVisibility=false // mini
+      this.mousedown = 1;
+      this.palleteVisibility = false; // mini
       // referenced from touchStart
       this.setStyle(this.color, this.lineWidth);
       this.getMousePos(e);
       this.convertAndSavePoint(this.mouseX, this.mouseY);
       this.drawToPoint(this.mouseX, this.mouseY);
       if (this.isRecording) {
-        this.startTime = this.currentTime.toFixed(1)
+        this.startTime = this.currentTime.toFixed(1);
       }
       event.preventDefault();
     },
 
     mouseUp(e) {
-      this.mousedown=0;
+      this.mousedown = 0;
       // referenced from touchEnd
-      const strokeNumber = this.allStrokes.length + 1
+      const strokeNumber = this.allStrokes.length + 1;
       // save
       const stroke = {
         strokeNumber,
-        author: this.author || 'anonymous',
+        author: this.author || "anonymous",
         color: this.color,
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
         points: this.currentStroke,
         isErasing: this.eraserActive // mini
-      }
+      };
       this.allStrokes.push(stroke);
-      if (this.isRealtime){
+      if (this.isRealtime) {
         this.strokesRef.doc(`${strokeNumber}`).set(stroke);
       }
-      // reset 
+      // reset
       this.currentStroke = [];
       this.lastX = -1;
     },
 
-    mouseMove(e) { // Update the mouse co-ordinates when moved
+    mouseMove(e) {
+      // Update the mouse co-ordinates when moved
       this.getMousePos(e);
 
-      // Draw a pixel if the mouse button is currently being pressed 
-      if (this.mousedown == 1) { 
+      // Draw a pixel if the mouse button is currently being pressed
+      if (this.mousedown == 1) {
         // referenced from touchMove
         this.getMousePos(e);
         this.convertAndSavePoint(this.mouseX, this.mouseY);
         this.drawToPoint(this.mouseX, this.mouseY);
-        event.preventDefault() // this line improves drawing performance for Microsoft Surfaces
+        event.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
       }
     },
 
-    getMousePos(e) { // Get the current mouse position relative to the top-left of the canvas
-      if (!e)
-        var e = event;
-      if (this.isRealtime){
+    getMousePos(e) {
+      // Get the current mouse position relative to the top-left of the canvas
+      if (!e) var e = event;
+      if (this.isRealtime) {
         if (e.offsetX) {
           this.mouseX = e.offsetX - window.scrollX;
           this.mouseY = e.offsetY - window.scrollY;
-        }
-        else if (e.layerX) {
+        } else if (e.layerX) {
           this.mouseX = e.layerX - window.scrollX;
           this.mouseY = e.layerY - window.scrollY;
         }
-      }
-      else {
+      } else {
         //mini
         if (e.offsetX) {
-          this.mouseX = e.offsetX //- window.scrollX
-          this.mouseY = e.offsetY //- window.scrollY (in case these don't work)
-        }
-        else if (e.layerX) {
-          this.mouseX = e.layerX //- window.scrollX
-          this.mouseY = e.layerY //- window.scrollY
+          this.mouseX = e.offsetX; //- window.scrollX
+          this.mouseY = e.offsetY; //- window.scrollY (in case these don't work)
+        } else if (e.layerX) {
+          this.mouseX = e.layerX; //- window.scrollX
+          this.mouseY = e.layerY; //- window.scrollY
         }
       }
     },
-    // --- END Mouse Drawing --- // 
+    // --- END Mouse Drawing --- //
 
-    useEraser () {
-      this.color = 'rgb(62, 66, 66)'
-      this.lineWidth = 18
+    useEraser() {
+      this.color = "rgb(62, 66, 66)";
+      this.lineWidth = 18;
     },
-    saveDoodle () {
+    saveDoodle() {
       // this.saveSilently = true
-      // this.saveVideoPopup = true 
-      this.handleSaving("No title yet")
+      // this.saveVideoPopup = true
+      this.handleSaving("No title yet");
     },
-    startRecording () {
-      this.currentState = this.recordingStateEnum.MID_RECORDING // mini
-      const audioRecorder = this.$refs['audio-recorder']
-      audioRecorder.startRecording()
+    startRecording() {
+      this.currentState = this.recordingStateEnum.MID_RECORDING; // mini
+      const audioRecorder = this.$refs["audio-recorder"];
+      audioRecorder.startRecording();
     },
-    stopRecording () {
-      this.currentState = this.recordingStateEnum.POST_RECORDING //mini
-      this.isRecording = false
-      this.removeTouchEvents()
+    stopRecording() {
+      this.currentState = this.recordingStateEnum.POST_RECORDING; //mini
+      this.isRecording = false;
+      this.removeTouchEvents();
       this.removeMouseEvents();
-      const audioRecorder = this.$refs['audio-recorder']
-      audioRecorder.stopRecording()
+      const audioRecorder = this.$refs["audio-recorder"];
+      audioRecorder.stopRecording();
 
-      if (this.isRealtime){
-        const ID = this.whiteboardDoc['.key']
-        db.collection('whiteboards').doc(ID).update({
-          isAnswered: true 
-        })
+      if (this.isRealtime) {
+        const ID = this.whiteboardDoc[".key"];
+        db.collection("whiteboards")
+          .doc(ID)
+          .update({
+            isAnswered: true
+          });
       }
-      
     },
-    retryAnswer () {
-      this.currentTime = 0 
-      this.hasUploadedAudio = false
-      const ID = this.whiteboardDoc['.key']
-      const whiteboardRef = db.collection('whiteboards').doc(ID)
+    retryAnswer() {
+      this.currentTime = 0;
+      this.hasUploadedAudio = false;
+      const ID = this.whiteboardDoc[".key"];
+      const whiteboardRef = db.collection("whiteboards").doc(ID);
       whiteboardRef.update({
         isAnswered: false,
-        audioURL: '',
-        audioPath: ''
-      })
+        audioURL: "",
+        audioPath: ""
+      });
     },
     saveFileReference({ url, path }) {
-      this.hasUploadedAudio = true
-      const ID = this.whiteboardDoc['.key']
-      db.collection('whiteboards').doc(ID).update({
-        audioURL: url,
-        audioPath: path
-      })
+      this.hasUploadedAudio = true;
+      const ID = this.whiteboardDoc[".key"];
+      db.collection("whiteboards")
+        .doc(ID)
+        .update({
+          audioURL: url,
+          audioPath: path
+        });
     },
-    async handleSaving (videoTitle) {
-      // mark the whiteboard as saved 
-      const whiteboardID = this.whiteboardDoc['.key']
-      const classID = this.$route.params.class_id
+    async handleSaving(videoTitle) {
+      // mark the whiteboard as saved
+      const whiteboardID = this.whiteboardDoc[".key"];
+      const classID = this.$route.params.class_id;
 
       // take a screenshot of the whiteboard to be used as the "preview" of the video
       // const dataURL = this.canvas.toDataURL()
-      const videoThumbnail = this.createThumbnail()
+      const videoThumbnail = this.createThumbnail();
 
       let metadata = {
-        title: videoTitle, 
+        title: videoTitle,
         fromClass: classID,
         isSaved: true,
         tabNumber: 0,
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
-      }
+      };
       if (this.user) {
-        metadata.authorUID = this.user.uid
-        metadata.authorEmail = this.user.email
+        metadata.authorUID = this.user.uid;
+        metadata.authorEmail = this.user.email;
         if (this.user.name) {
-          metadata.authorName = this.user.name
+          metadata.authorName = this.user.name;
         }
       }
       if (this.currentTime) {
-        metadata.duration = this.currentTime
+        metadata.duration = this.currentTime;
       }
-      db.collection('whiteboards').doc(whiteboardID).update(metadata)
+      db.collection("whiteboards")
+        .doc(whiteboardID)
+        .update(metadata);
 
-      // KEEP TRACK OF HOW MANY VIDEOS A CLASS HAS ACCUMULATED 
-      const classRef = db.collection("classes").doc(classID)
+      // KEEP TRACK OF HOW MANY VIDEOS A CLASS HAS ACCUMULATED
+      const classRef = db.collection("classes").doc(classID);
       classRef.update({
         numOfVideos: firebase.firestore.FieldValue.increment(1)
-      })
+      });
 
       // initialize a new whiteboard for the workspace
-      const workspaceID = this.$route.params.id
-      const newWhiteboardRef = await db.collection('whiteboards').add({ isAnswered: false })
-      const workspaceRef = db.collection('classes').doc(classID).collection('workspaces').doc(workspaceID)
+      const workspaceID = this.$route.params.id;
+      const newWhiteboardRef = await db
+        .collection("whiteboards")
+        .add({ isAnswered: false });
+      const workspaceRef = db
+        .collection("classes")
+        .doc(classID)
+        .collection("workspaces")
+        .doc(workspaceID);
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
-      })
+      });
       // let popup show the success state and the shareable URL
       // this.$refs["popup-save"].showSuccessMessage(whiteboardID)
- 
-      this.hasUploadAudio = false
-      this.snackbar = true 
-      this.snackbarMessage = 'Successfully saved to the "Videos" section'
+
+      this.hasUploadAudio = false;
+      this.snackbar = true;
+      this.snackbarMessage = 'Successfully saved to the "Videos" section';
     },
-    createThumbnail(){
-        this.ctx.fillStyle = "rgb(62, 66, 66)";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.drawStrokesInstantly()
-        return this.canvas.toDataURL()
+    createThumbnail() {
+      this.ctx.fillStyle = "rgb(62, 66, 66)";
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+      this.drawStrokesInstantly();
+      return this.canvas.toDataURL();
     },
 
     //mini
-    recordAgain () {
-      this.currentTime = 0 
-      this.hasUploadedAudio = false
-      this.currentState = this.recordingStateEnum.PRE_RECORDING
+    recordAgain() {
+      this.currentTime = 0;
+      this.hasUploadedAudio = false;
+      this.currentState = this.recordingStateEnum.PRE_RECORDING;
     },
     blackboardToolbar() {
-      this.smallScreen= window.innerWidth<960;
-    },
-    palleteClick() {
-      if (this.eraserActive) {
-        this.palleteVisibility=false;
-      } else {
-        this.palleteVisibility=!this.palleteVisibility;
-      }
-    },
-    swatchClick(){
-      this.eraserActive=false;
-    },
-    eraserClick() {
-      this.eraserActive=true;
-      this.palleteVisibility=false;
+      this.smallScreen = window.innerWidth < 960;
     },
     palleteClose(e) {
-      var pallete = document.getElementById('swatches-wrapper');
+      var pallete = document.getElementById("swatches-wrapper");
       if (pallete && !pallete.contains(e.target)) {
-        this.palleteVisibility=false
+        this.palleteVisibility = false;
       }
+    },
+    eraserClick(status) {
+      this.eraserActive = status;
     },
     customCursor() {
       var dummy_canvas = document.createElement("canvas");
       dummy_canvas.width = 24;
       dummy_canvas.height = 24;
       var ctx = dummy_canvas.getContext("2d");
-      ctx.fillStyle = this.eraserActive?"#fff":this.color;
+      ctx.fillStyle = this.eraserActive ? "#fff" : this.color;
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(this.eraserActive?"\uF1FE":"\uF64F", 12, 12);
-      var dataURL = dummy_canvas.toDataURL('image/png')
-      document.getElementById("myCanvas").style.cursor='url('+dataURL+') 0 24, auto';
+      ctx.fillText(this.eraserActive ? "\uF1FE" : "\uF64F", 12, 12);
+      var dataURL = dummy_canvas.toDataURL("image/png");
+      document.getElementById("myCanvas").style.cursor =
+        "url(" + dataURL + ") 0 24, auto";
     },
     blackboardSize() {
-      var board=document.getElementById('myCanvas');
-      board.style.height=document.getElementById('blackboard-wrapper').offsetWidth*9/16+'px'
+      var board = document.getElementById("myCanvas");
+      var mini_height =
+        (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +
+        "px";
+      var realtime_height = window.innerHeight - 48 + "px";
+      board.style.height = this.isRealtime ? realtime_height : mini_height;
     }
   }
-}
+};
 </script>
+
+<style scoped>
+#whiteboard {
+  z-index: 5;
+}
+#blackboard-wrapper {
+  position: relative;
+  z-index: -1;
+}
+#blackboard-wrapper.realtime-canvas {
+  z-index: 1;
+}
+#myCanvas {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-color: transparent;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25) inset;
+}
+#background-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-color: rgb(62, 66, 66);
+  background-size: 100% 100%;
+  z-index: -1;
+}
+#realtime-toolbar {
+  margin: -10px;
+}
+</style>
