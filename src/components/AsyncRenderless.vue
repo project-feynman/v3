@@ -12,7 +12,7 @@ export default {
     fetchedData: Array
   },
   create () {
-    this.$emit("initialization")
+    this.$emit("create")
   }
 }
 </script>

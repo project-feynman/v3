@@ -70,9 +70,9 @@
             </v-col>
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle
-                  class="black--text"
-                >Draw & talk to explain harder ideas (live or recorded)</v-card-subtitle>
+                <v-card-subtitle class="black--text">
+                  Draw & talk to explain harder ideas (live or recorded)
+                </v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
                   <DoodleVideo
                     whiteboardID="8hcybKON8Br67bNUA9TJ"
@@ -84,9 +84,9 @@
             </v-col>
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle
-                  class="black--text"
-                >As people help each other, elegant explanations accumulate</v-card-subtitle>
+                <v-card-subtitle class="black--text">
+                  As people help each other, elegant explanations accumulate
+                </v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
                   <DoodleVideo
                     whiteboardID="vgPkZWvsqvt9pImHiMbe"
@@ -102,13 +102,15 @@
       <transition name="fade" mode="out-in">
         <div v-if="isFetchingUser || user === null" key="loading..."></div>
         <div v-else key="class-list">
-          <BaseGrid>
-            <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
-                <v-card @click="$router.push(`${i}/questions/`)">
-                    <v-card-title>{{s.name}}</v-card-title>
-                </v-card>
-            </v-col>
-          </BaseGrid>
+          <v-container fluid>
+            <v-row>
+              <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
+                  <v-card @click="$router.push(`${i}/questions/`)">
+                      <v-card-title>{{s.name}}</v-card-title>
+                  </v-card>
+              </v-col>
+            </v-row>
+          </v-container>
         </div>
       </transition>
     </v-content>
@@ -120,10 +122,8 @@ import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/auth";
 import db from "@/database.js";
-import BaseGrid from "@/components/BaseGrid.vue";
 import BaseCard from "@/components/BaseCard.vue";
 import HomeAppBar from "@/components/HomeAppBar.vue";
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import KaryDialog from "@/components/KaryDialog.vue";
@@ -133,7 +133,6 @@ import { encodeKey } from "../dep";
 export default {
   components: {
     HomeAppBar,
-    BaseGrid,
     DoodleVideo,
     SearchBar,
     KaryDialog

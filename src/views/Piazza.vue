@@ -59,10 +59,8 @@ import db from "@/database.js"
 import BaseAppBar from "@/components/BaseAppBar.vue"
 import PiazzaQuestionsList from "@/components/PiazzaQuestionsList.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
 import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
-import AsyncRenderless from "@/components/AsyncRenderless.vue"
 import firebase from "firebase/app"
 import "firebase/firestore"
 import {initQuestionService} from "../dep";
@@ -73,10 +71,8 @@ export default {
     BaseAppBar,
     PiazzaQuestionsList,
     DoodleVideo,
-    RenderlessFetchStrokes,
     PiazzaNewPost,
     PiazzaViewPost,
-    AsyncRenderless
   },
   data: () => ({
     newQuestionKey: 0,
