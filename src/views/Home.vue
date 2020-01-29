@@ -14,13 +14,29 @@
       @create-account="payload => createAccount(payload)"
     />
 
+    <!-- POPUP BUTTON AND POPUP NEW CLASS -->
+    <PopupNewClass
+      v-model="newClassPopup"
+      @create-class="courseNumber => createClass(courseNumber)"
+    />
+
+    <!-- CONFIRM SIGNUP POPUP -->
+    <BasePopup 
+      v-if="searchBarDialog"
+      title="Do you want to add the following class?"
+      :text="chosenClass"
+      :options="searchBarDialogOptions"
+      @submit="searchBarDialogSubmitted"
+    />
+
     <BaseAppBar>
+      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="secondary">
+        BLOG
+      </v-btn>
+      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="secondary">
+        GITHUB
+      </v-btn>
       <template v-if="user && $route.path == '/'">
-        <!-- POPUP BUTTON AND POPUP NEW CLASS -->
-        <PopupNewClass
-          v-model="newClassPopup"
-          @create-class="courseNumber => createClass(courseNumber)"
-        />
         <v-btn @click="newClassPopup = true" dark color="grey">CREATE CLASS</v-btn>
       </template>
       <template v-if="!isFetchingUser">
@@ -32,13 +48,8 @@
             </v-btn>
           </template>
         </BaseMenu>
-        <v-btn v-else-if="!user" @click="loginPopup = true" class="grey--text text--darken-2" text>
-          SIGN IN
-        </v-btn>
       </template>
     </BaseAppBar>
-    <!-- APP BAR -->
-    <!-- <HomeAppBar @create-class="courseNumber => createClass(courseNumber)" /> -->
     <v-content>
       <v-card class="mx-auto text-center" fluid>
         <div class="pt-5">
@@ -51,57 +62,43 @@
         </div>
         <div style="margin: auto" class="mb-5">
           <!-- previous button color was deep-purple accent-4 -->
-          <v-btn
-            href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426"
-            text
-            class="mx-auto"
-            color="secondary"
-          >
-            LEARN MORE
-          </v-btn>
-          <v-btn
-            href="https://github.com/eltonlin1998/ExplainMIT"
-            text
-            class="mx-auto"
-            color="secondary"
-          >
-            SOURCE CODE
-          </v-btn>
+          <template v-if="!user">
+            <v-btn @click="loginPopup = true" color="secondary" text>
+              LOG IN
+            </v-btn>
+             <v-btn @click="loginPopup = true" color="secondary" text>
+              SIGN UP
+            </v-btn>
+          </template>
         </div>
-
-        <v-divider></v-divider>
-
-        <v-container>
-        <v-row justify="center">
-        <v-col cols="6">
-        <BaseSearchBar 
-            color="accent"
-            label="Enter Class Number"
-            :items="classesIDs"
-            @submit="classChosen">
-        </BaseSearchBar>
-        </v-col>
-        </v-row>
+        <!-- SEARCH BAR -->
+        <v-container v-if="user">
+          <v-row justify="center">
+            <v-col cols="6">
+              <BaseSearchBar 
+                  color="accent"
+                  label="Enter Class Number"
+                  :items="classesIDs"
+                  @submit="classChosen">
+              </BaseSearchBar>
+            </v-col>
+          </v-row>
         </v-container>
-        <BasePopup 
-          v-if="searchBarDialog"
-          title="Do you want to add the following class?"
-          :text="chosenClass"
-          :options="searchBarDialogOptions"
-          @submit="searchBarDialogSubmitted"
-        />
+
         <v-divider></v-divider>
         <!-- TUTORIAL -->
-        <v-container v-if="!user" fluid class="py-0">
+        <v-container v-if="!user && !isFetchingUser" fluid class="py-0">
           <v-row justify="center" class="py-0">
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
-                <v-card-subtitle class="black--text">Ask & answer questions, just like on Piazza</v-card-subtitle>
+                <v-card-subtitle class="black--text">Ask & answer questions with text and visuals</v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
                   <DoodleVideo
+                    ref="DoodleVideo1"
                     whiteboardID="BlEjXn7RP7q8YwxG8FLO"
                     canvasID="1"
                     @animation-loaded="hasFetchedVideos = true"
+                    @strokes-ready="startDemo()"
                   />
                 </v-img>
               </v-card>
@@ -109,10 +106,11 @@
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
                 <v-card-subtitle class="black--text">
-                  Draw & talk to explain harder ideas (live or recorded)
+                  Draw & talk on the real-time blackboard
                 </v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
                   <DoodleVideo
+                    ref="DoodleVideo2"
                     whiteboardID="8hcybKON8Br67bNUA9TJ"
                     canvasID="2"
                     @animation-loaded="hasFetchedVideos = true"
@@ -123,10 +121,11 @@
             <v-col :cols="computeVideoSize()" class="py-0">
               <v-card>
                 <v-card-subtitle class="black--text">
-                  As people help each other, elegant explanations accumulate
+                  Save & reuse any blackboard explanations
                 </v-card-subtitle>
                 <v-img :aspect-ratio="16/9">
                   <DoodleVideo
+                    ref="DoodleVideo3"
                     whiteboardID="vgPkZWvsqvt9pImHiMbe"
                     canvasID="3"
                     @animation-loaded="hasFetchedVideos = true"
@@ -144,7 +143,7 @@
             <v-row>
               <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
                   <v-card @click="$router.push(`${i}/questions/`)">
-                      <v-card-title>{{s.name}}</v-card-title>
+                      <v-card-title>{{ s.name }}</v-card-title>
                   </v-card>
               </v-col>
             </v-row>
@@ -178,7 +177,8 @@ export default {
     BaseSearchBar,
     PopupLogin,
     PopupNewClass,
-    BaseMenu
+    BaseMenu,
+    BasePopup
   },
   computed: {
     ...mapState(["user", "isFetchingUser"])
@@ -198,10 +198,20 @@ export default {
       loginPopup: false,
     };
   },
-  created() {
+  created () {
     this.fetchClasses();
   },
   methods: {
+    startDemo () {
+      this.$nextTick(async () => {
+        const DoodleVideo1 = this.$refs.DoodleVideo1;
+        const DoodleVideo2 = this.$refs.DoodleVideo2;
+        const DoodleVideo3 = this.$refs.DoodleVideo3;
+        await DoodleVideo1.quickplay()
+        await DoodleVideo2.quickplay()
+        DoodleVideo3.quickplay()
+      })
+    },
     fetchClasses() {
       this.classes = [];
       db.collection("classes")
