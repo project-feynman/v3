@@ -14,7 +14,7 @@
       @click="$router.push('/')"
     >
     <v-toolbar-title class="home-logo headline font-weight-regular ml-2" @click="$router.push('/')">
-      ExplainMIT/{{ $route.params.class_id }}
+      {{ $route.path == "/" ? "ExplainMIT" : `ExplainMIT/${$route.params.class_id}` }}
     </v-toolbar-title>
     <v-progress-linear
       :active="loading"

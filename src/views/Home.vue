@@ -3,16 +3,51 @@
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" flat>CLOSE</v-btn>
+      <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
 
+    <!-- LOGIN / SIGNUP -->
+    <PopupLogin
+      v-model="loginPopup"
+      :newAccount="false"
+      @sign-in="payload => signIn(payload)"
+      @create-account="payload => createAccount(payload)"
+    />
+
+    <BaseAppBar>
+      <template v-if="user && $route.path == '/'">
+        <!-- POPUP BUTTON AND POPUP NEW CLASS -->
+        <PopupNewClass
+          v-model="newClassPopup"
+          @create-class="courseNumber => createClass(courseNumber)"
+        />
+        <v-btn @click="newClassPopup = true" dark color="grey">CREATE CLASS</v-btn>
+      </template>
+      <template v-if="!isFetchingUser">
+        <!-- BASE MENU AND V-BTN -->
+        <BaseMenu v-if="user" :user="user" @save="payload => updateUser(payload)" @sign-out="signOut()">
+          <template v-slot:default="{ on }">
+            <v-btn v-on="on" icon class="ml-4">
+              <v-icon large :color="user.color">account_circle</v-icon>
+            </v-btn>
+          </template>
+        </BaseMenu>
+        <v-btn v-else-if="!user" @click="loginPopup = true" class="grey--text text--darken-2" text>
+          SIGN IN
+        </v-btn>
+      </template>
+    </BaseAppBar>
     <!-- APP BAR -->
-    <HomeAppBar @create-class="courseNumber => createClass(courseNumber)" />
+    <!-- <HomeAppBar @create-class="courseNumber => createClass(courseNumber)" /> -->
     <v-content>
       <v-card class="mx-auto text-center" fluid>
         <div class="pt-5">
-          <p class="display-2 text--primary">explain.mit.edu</p>
-          <p class="headline text--primary">An efficient platform for visual explanations</p>
+          <p class="display-2 text--primary">
+            explain.mit.edu
+          </p>
+          <p class="headline text--primary">
+            An efficient platform for visual explanations
+          </p>
         </div>
         <div style="margin: auto" class="mb-5">
           <!-- previous button color was deep-purple accent-4 -->
@@ -21,13 +56,17 @@
             text
             class="mx-auto"
             color="secondary"
-          >LEARN MORE</v-btn>
+          >
+            LEARN MORE
+          </v-btn>
           <v-btn
             href="https://github.com/eltonlin1998/ExplainMIT"
             text
             class="mx-auto"
             color="secondary"
-          >SOURCE CODE</v-btn>
+          >
+            SOURCE CODE
+          </v-btn>
         </div>
 
         <v-divider></v-divider>
@@ -35,23 +74,22 @@
         <v-container>
         <v-row justify="center">
         <v-col cols="6">
-        <SearchBar 
+        <BaseSearchBar 
             color="accent"
             label="Enter Class Number"
             :items="classesIDs"
             @submit="classChosen">
-        </SearchBar>
+        </BaseSearchBar>
         </v-col>
         </v-row>
         </v-container>
-        <KaryDialog v-if="searchBarDialog"
-            title="Do you want to add the following class?"
-            :text="chosenClass"
-            :options="searchBarDialogOptions"
-            @submit="searchBarDialogSubmitted"
-        >
-        </KaryDialog>
-        
+        <BasePopup 
+          v-if="searchBarDialog"
+          title="Do you want to add the following class?"
+          :text="chosenClass"
+          :options="searchBarDialogOptions"
+          @submit="searchBarDialogSubmitted"
+        />
         <v-divider></v-divider>
         <!-- TUTORIAL -->
         <v-container v-if="!user" fluid class="py-0">
@@ -123,19 +161,24 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import db from "@/database.js";
 import BaseCard from "@/components/BaseCard.vue";
-import HomeAppBar from "@/components/HomeAppBar.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
-import SearchBar from "@/components/SearchBar.vue";
-import KaryDialog from "@/components/KaryDialog.vue";
+import BaseAppBar from "@/components/BaseAppBar.vue";
+import BaseMenu from "@/components/BaseMenu.vue";
+import BaseSearchBar from "@/components/BaseSearchBar.vue";
+import BasePopup from "@/components/BasePopup.vue";
+import PopupLogin from "@/components/PopupLogin.vue";
+import PopupNewClass from "@/components/PopupNewClass.vue";
 import { initEnrollementService } from "../dep";
 import { encodeKey } from "../dep";
 
 export default {
   components: {
-    HomeAppBar,
+    BaseAppBar,
     DoodleVideo,
-    SearchBar,
-    KaryDialog
+    BaseSearchBar,
+    PopupLogin,
+    PopupNewClass,
+    BaseMenu
   },
   computed: {
     ...mapState(["user", "isFetchingUser"])
@@ -146,11 +189,13 @@ export default {
       classesIDs: [],
       snackbar: false,
       snackbarMessage: "",
-
       enrollementService: initEnrollementService(),
       chosenClass: "",
       searchBarDialog: false,
-      searchBarDialogOptions: ["No", "Yes"]
+      searchBarDialogOptions: ["No", "Yes"],
+      // todo - let the popup button handle it itself
+      newClassPopup: false,
+      loginPopup: false,
     };
   },
   created() {
@@ -169,7 +214,6 @@ export default {
           });
         });
     },
-
     classChosen(answer) {
       this.searchBarDialog = true;
       this.chosenClass = answer;
@@ -184,7 +228,6 @@ export default {
       this.chosenClass = "";
       this.searchBarDialog = false;
     },
-
     async createClass(name) {
       let classID = encodeKey(name);
       const ref = db.collection("classes").doc(classID);
@@ -218,6 +261,44 @@ export default {
         else if (this.$vuetify.breakpoint.smAndDown) return 12;
       }
       return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
+    },
+     async updateUser ({ name, color }) {
+      const ref = db.collection("users").doc(this.user.uid);
+      ref.update({
+        name
+      });
+    },
+    signIn ({ email, password }) {
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(email, password)
+        .then(user => {
+          this.$store.dispatch("handleUserLogic", user);
+          this.snackbarMessage = `Welcome to ExplainMIT!`;
+          this.snackbar = true;
+          this.loginPopup = false;
+        })
+        .catch(error => {
+          this.snackbarMessage = error.message;
+          this.snackbar = true;
+        });
+    },
+    createAccount ({ email, password }) {
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then(user => {
+          this.snackbarMessage = `Welcome to ExplainMIT!`;
+          this.snackbar = true;
+          this.loginPopup = false;
+        })
+        .catch(error => {
+          this.snackbarMessage = error.message;
+          this.snackbar = true;
+        });
+    },
+    signOut () {
+      firebase.auth().signOut();
     }
   }
 };
