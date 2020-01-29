@@ -136,7 +136,6 @@ export default {
         }
       }
       else if (buttonName === "QUICKPLAY") {
-        console.log("what is this? ", this.$refs[`doodle-video-${canvasID}`])
         this.$nextTick(() => {
           const videoElem = this.$refs[`doodle-video-${canvasID}`][0];
           if (!videoElem.isQuickplaying){
