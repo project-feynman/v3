@@ -5,7 +5,7 @@
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
           v-if="classDoc.tabs"
-          :tabs="classDoc.tabs"cb
+          :tabs="classDoc.tabs"
           :tab="tab"
           @tab-change="newValue => tab = newValue"
           @tabs-rename="newValues => renameTabs(newValues)"
@@ -27,6 +27,7 @@
                         :tabNumber="i"
                         class="mb-5"
                         :ref="`card--${j}`"
+                        @title-clicked="handleAction('FULL VIDEO', video, j)"
                       >
                         <!-- IMAGE SLOT -->
                         <template v-slot:card-image>
@@ -42,7 +43,7 @@
                         </template>
 
                         <!-- BUTTONS SLOT -->
-                        <template v-slot:card-actions>
+                        <!-- <template v-slot:card-actions>
                           <v-btn @click="handleAction('FULL VIDEO', video, j)" text color="secondary">
                             FULL VIDEO
                           </v-btn>
@@ -52,7 +53,7 @@
                           <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text color="secondary" class="subtitle-2">
                             EDIT
                           </v-btn>
-                        </template>
+                        </template> -->
 
                         <template v-slot:card-actions-editing>
                           <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
