@@ -10,7 +10,6 @@
           <v-list-item>
             <v-list-item-avatar>
               <v-icon large :color="color">account_circle</v-icon>
-              <!-- <img src="https://cdn.vuetifyjs.com/images/john.jpg" alt="John"> -->
             </v-list-item-avatar>
 
             <v-list-item-content>
