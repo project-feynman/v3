@@ -67,13 +67,13 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import PopupNewClass from "@/components/PopupNewClass.vue";
 import PopupLogin from "@/components/PopupLogin.vue";
-import BaseMenu from "@/components/BaseMenu.vue";
+import DropdownMenu from "@/components/DropdownMenu.vue";
 
 export default {
   components: {
     PopupNewClass,
     PopupLogin,
-    BaseMenu
+    DropdownMenu
   },
   computed: {
     ...mapState(["user", "isFetchingUser"]),
