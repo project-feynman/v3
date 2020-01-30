@@ -1,6 +1,6 @@
 <template >
   <!-- TODO: add video documentation link -->
-  <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+  <div @click="handleClick()" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
     <template v-if="!thumbnail || strokes.length > 0">
       <DoodleVideoAnimation
         ref="animation"
@@ -11,7 +11,6 @@
         :height="height"
         @animation-loaded="handleAnimationLoaded()"
         @animation-finished="handleEvent()"
-        @click="handleClick()"
       />
       <audio-recorder
         v-if="audioURL"

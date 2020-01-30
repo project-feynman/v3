@@ -18,55 +18,55 @@
                 @videos-fetched="hasFetchedVideos=true"
               >
                 <template slot-scope="{ videos }">
-                  <v-container fluid>
-                    <v-row>
-                      <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
-                        <BaseCard
-                          @save-tab-number="newValue => handleTabChange(newValue, video)"
-                          @save-paragraph="newValue => saveParagraph(newValue, video)"
-                          :isEditting="isEditting"
-                          :title="video.title"
-                          :subtitle="getSubtitle(video)"
-                          :description="video.paragraph || ''"
-                          :tabs="classDoc.tabs"
-                          :tabNumber="i"
-                          class="mb-5"
-                          :ref="`card--${j}`"
-                        >
-                          <!-- IMAGE SLOT -->
-                          <template v-slot:card-image>
-                            <DoodleVideo
-                              :whiteboardID="video['.key']" 
-                              :ref="`doodle-video-${i}-${j}`"
-                              :canvasID="`${i}-${j}`"
-                              :thumbnail="video.thumbnail"
-                              @strokes-ready="handleAction('QUICKPLAY', video, `${i}-${j}`)"
-                              @video-clicked="handleAction('FULL VIDEO', video, j)"
-                              @mouse-change="handleAction('HANDLEHOVER', video, `${i}-${j}`, $event)"
-                            />
-                          </template>
+                  <BaseGrid>
+                    <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
+                      <BaseCard
+                        @save-tab-number="newValue => handleTabChange(newValue, video)"
+                        @save-paragraph="newValue => saveParagraph(newValue, video)"
+                        :isEditting="isEditting"
+                        :title="video.title"
+                        :subtitle="getSubtitle(video)"
+                        :description="video.paragraph || ''"
+                        :tabs="classDoc.tabs"
+                        :tabNumber="i"
+                        class="mb-5"
+                        :ref="`card--${j}`"
+                        @title-clicked="handleAction('FULL VIDEO', video, j)"
+                      >
+                        <!-- IMAGE SLOT -->
+                        <template v-slot:card-image>
+                          <DoodleVideo
+                            :whiteboardID="video['.key']" 
+                            :ref="`doodle-video-${i}-${j}`"
+                            :canvasID="`${i}-${j}`"
+                            :thumbnail="video.thumbnail"
+                            @strokes-ready="handleAction('QUICKPLAY', video, `${i}-${j}`)"
+                            @video-clicked="handleAction('FULL VIDEO', video, j)"
+                            @mouse-change="handleAction('HANDLEHOVER', video, `${i}-${j}`, $event)"
+                          />
+                        </template>
 
-                          <!-- BUTTONS SLOT -->
-                          <template v-slot:card-actions>
-                            <v-btn @click="handleAction('FULL VIDEO', video, j)" text color="secondary">
-                              FULL VIDEO
-                            </v-btn>
-                            <v-btn @click="handleAction('QUICKPLAY', video, `${i}-${j}`)" text color="secondary">
-                              QUICKPLAY
-                            </v-btn>
-                            <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text color="secondary" class="subtitle-2">
-                              EDIT
-                            </v-btn>
-                          </template>
-                          <template v-slot:card-actions-editing>
-                            <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
-                              DELETE
-                            </v-btn>
-                          </template> 
-                        </BaseCard>
-                      </v-col>
-                    </v-row>
-                  </v-container>
+                        <!-- BUTTONS SLOT -->
+                        <!-- <template v-slot:card-actions>
+                          <v-btn @click="handleAction('FULL VIDEO', video, j)" text color="secondary">
+                            FULL VIDEO
+                          </v-btn>
+                          <v-btn @click="handleAction('QUICKPLAY', video, `${i}-${j}`)" text color="secondary">
+                            QUICKPLAY
+                          </v-btn>
+                          <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text color="secondary" class="subtitle-2">
+                            EDIT
+                          </v-btn>
+                        </template> -->
+
+                        <template v-slot:card-actions-editing>
+                          <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
+                            DELETE
+                          </v-btn>
+                        </template> 
+                      </BaseCard>
+                    </v-col>
+                  </BaseGrid>
                 </template>
               </RenderlessFetchVideos>
             </v-tab-item>

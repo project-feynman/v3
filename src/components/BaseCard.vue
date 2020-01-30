@@ -1,19 +1,36 @@
 <template>
   <div>
-    <v-card> 
-      <v-card-title primary-title>
-        <v-text-field 
-          v-if="isEditing" 
-          v-model="localTitle" label="Title"
-        />
-        <div v-else class="title font-weight-bold">
-          {{ title }}
-        </div>
-      </v-card-title>
+    <v-card class="d-flex flex-column"> 
+      <div @click="handleTitleClicked()">
 
-      <v-card-subtitle>
-        {{ subtitle }}
-      </v-card-subtitle>
+        <v-card-title primary-title >
+          <v-text-field 
+            v-if="isEditing" 
+            v-model="localTitle" label="Title"
+          />
+          <div v-else class="title font-weight-bold">
+            {{ title }}
+          </div>
+        </v-card-title>
+
+        <v-card-subtitle >
+          {{ subtitle }}
+        </v-card-subtitle>
+        
+        <v-card-text v-if="!show" style="text-overflow: ellipsis; 
+                            overflow: hidden; 
+                            white-space: nowrap;">
+          {{ description || "No description." }}
+        </v-card-text>
+        <v-card-text v-else >
+          {{ description || "No description." }}
+        </v-card-text>
+
+      </div>
+
+      <v-btn icon @click="show = !show" style="align-self: flex-end">
+            <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+      </v-btn>
 
       <v-img :aspect-ratio="16/9">
         <slot name="card-image">
@@ -23,7 +40,7 @@
 
       <v-expand-transition>
         <div v-show="show">
-          <v-divider></v-divider>
+          <!-- <v-divider></v-divider> -->
           <!-- IF EDITTING -->
           <template v-if="isEditing">
             <v-textarea
@@ -44,11 +61,6 @@
               </v-radio-group>
             </div>
           </template>
-
-          <!-- ELSE -->
-          <template v-else>
-            <v-card-text>{{ description || "No description." }}</v-card-text>
-          </template>
         </div>
       </v-expand-transition>
 
@@ -65,10 +77,6 @@
           <slot name="card-actions">
             
           </slot>
-          <v-spacer/>
-          <v-btn icon @click="show = !show">
-            <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-          </v-btn>
         </template> 
       </v-card-actions>
 
@@ -118,6 +126,9 @@ export default {
       this.isEditing = false 
       this.$emit("save-tab-number", this.localTabNumber)
       this.$emit("save-paragraph", { title: this.localTitle, paragraph: this.localDescription})
+    },
+    handleTitleClicked(){
+      this.$emit("title-clicked")
     }
   }
 }
