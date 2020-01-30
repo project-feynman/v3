@@ -124,6 +124,9 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{cla
 // 		})
 // 	})
 
+exports.notifyOnNewQuestion() = functions.firestore.document('/classes/{classID}/questions').onUpdate((doc, context) => {
+  
+})
 // 	return null;
 // })
 
