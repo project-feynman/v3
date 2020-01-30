@@ -159,7 +159,6 @@ import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/auth";
 import db from "@/database.js";
-import BaseCard from "@/components/BaseCard.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import BaseAppBar from "@/components/BaseAppBar.vue";
 import BaseMenu from "@/components/BaseMenu.vue";

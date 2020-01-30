@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="d-flex flex-column"> 
+    <v-card class="d-flex flex-column" style="cursor: pointer;"> 
       <div @click="handleTitleClicked()">
 
         <v-card-title primary-title >
@@ -28,9 +28,9 @@
 
       </div>
 
-      <v-btn icon @click="show = !show" style="align-self: flex-end">
+      <!-- <v-btn icon @click="show = !show" style="align-self: flex-end">
             <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-      </v-btn>
+      </v-btn> -->
 
       <v-img :aspect-ratio="16/9">
         <slot name="card-image">
