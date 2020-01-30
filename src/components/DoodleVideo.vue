@@ -12,7 +12,6 @@
         @animation-loaded="handleAnimationLoaded()"
         @animation-finished="handleEvent()"
       />
-
       <audio-recorder
         v-if="audioURL"
         ref="audioRecorder"
@@ -24,7 +23,6 @@
         @recorder-loaded="recorderLoaded=true"
       />
     </template>
-
     <template v-else-if="thumbnail">
       <v-img :src="thumbnail">
         <!-- <v-container fill-height fluid>
@@ -53,15 +51,13 @@ export default {
   props: {
     thumbnail: String,
     whiteboardID: String,
-    hasSubcollection: {
-      type: Boolean,
-      default() {
-        return true;
-      }
-    },
     audioURL: String,
     canvasID: String,
-    height: String
+    height: String,
+    hasSubcollection: {
+      type: Boolean,
+      default () { return true; }
+    },
   },
   components: {
     DoodleVideoAnimation,
@@ -117,9 +113,6 @@ export default {
     },
     handleAnimationLoaded() {
       this.animationLoaded = true;
-      // this.$emit("animation-loaded");
-      // // this.$emit("strokes-ready");
-      // console.log("animationLoaded")
     },
     async quickplay () {
       const { animation } = this.$refs;
@@ -152,10 +145,6 @@ export default {
       });
       return P;
     },
-
-/////////////////////////////////////
-
-
     handlePlay() {
       const animation = this.$refs.animation;
       animation.overlay = false;

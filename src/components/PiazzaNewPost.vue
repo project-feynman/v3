@@ -112,8 +112,8 @@
 import Vue from 'vue';
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import BlackboardMini from "@/components/BlackboardMini.vue"
-import SearchBar from '@/components/SearchBar.vue'
-import Tags from "@/components/Tags.vue"
+// import SearchBar from '@/components/SearchBar.vue'
+// import Tags from "@/components/Tags.vue"
 
 export default {
   props: {
@@ -124,8 +124,8 @@ export default {
   },
   components: {
     BlackboardMini,
-    Tags,
-    SearchBar
+    // Tags,
+    // SearchBar
   },
   data: () => ({
     postTitle: "",

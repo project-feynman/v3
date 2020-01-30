@@ -12,7 +12,11 @@
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
-              <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber" @videos-fetched="hasFetchedVideos=true">
+              <RenderlessFetchVideos 
+                :tabNumber="i" 
+                :classID="classDoc.courseNumber" 
+                @videos-fetched="hasFetchedVideos=true"
+              >
                 <template slot-scope="{ videos }">
                   <BaseGrid>
                     <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
@@ -75,11 +79,9 @@
 
 <script>
 import BaseCard from "@/components/BaseCard.vue"
-import BaseGrid from "@/components/BaseGrid.vue"
 import BaseAppBar from "@/components/BaseAppBar.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue'
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
 import db from "@/database.js"
 import firebase from "firebase/app"
@@ -91,10 +93,8 @@ export default {
     VideoGalleryTabs,
     DoodleVideo,
     BaseCard,
-    BaseGrid,
     BaseAppBar,
-    RenderlessFetchVideos,
-    RenderlessFetchStrokes
+    RenderlessFetchVideos
   },
   data () {
     return {
@@ -136,7 +136,6 @@ export default {
         }
       }
       else if (buttonName === "QUICKPLAY") {
-        console.log("what is this? ", this.$refs[`doodle-video-${canvasID}`])
         this.$nextTick(() => {
           const videoElem = this.$refs[`doodle-video-${canvasID}`][0];
           if (!videoElem.isQuickplaying){

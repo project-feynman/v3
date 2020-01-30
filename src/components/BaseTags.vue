@@ -21,12 +21,6 @@
 
 <script>
 export default {
-    name: "Tags",
-    data() {
-        return {
-
-        }
-    },
     props : {
         items: Array,
         removable: Boolean,
