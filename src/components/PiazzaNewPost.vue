@@ -114,7 +114,6 @@
 <script>
 import Vue from "vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
-import BlackboardMini from "@/components/BlackboardMini.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import Tags from "@/components/Tags.vue";
@@ -127,7 +126,6 @@ export default {
     withTags: Boolean
   },
   components: {
-    BlackboardMini,
     Blackboard,
     Tags,
     SearchBar
@@ -172,10 +170,7 @@ export default {
     },
     getDate() {
       var today = new Date();
-      var dd = String(today.getDate()).padStart(2, "0");
-      var mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0!
-      var yyyy = today.getFullYear();
-      return (today = mm + "/" + dd + "/" + yyyy);
+      return today.toISOString();
     },
     boardImage(boardImage) {
       if (boardImage) {

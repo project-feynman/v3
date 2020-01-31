@@ -20,7 +20,7 @@
               <v-list-item @click="$emit('question-click', question)" :key="question['.key']">
                 <v-list-item-content>
                   <v-list-item-subtitle class="text--primary" v-text="question.title"/>
-                  <v-list-item-subtitle v-text="question.date"/>
+                  <v-list-item-subtitle v-text="displayDate(question.date)"/>
                 </v-list-item-content>
               </v-list-item>
               <v-divider v-if="index + 1 < questions.length" :key="index"></v-divider>
@@ -42,6 +42,15 @@ export default {
   computed: {
     user () {
       return this.$store.state.user;
+    },
+    questionsLen () {
+      return this.questions.length;
+    }
+  },
+  watch: {
+    questionsLen: {
+      handler: "sortQuestions",
+      immediate: true
     }
   },
   methods: {
@@ -52,6 +61,15 @@ export default {
     handleClick () {
       if (this.user) this.$emit('question-create');
       // TODO: else show login popup
+    },
+    displayDate (date) {
+      var d = new Date(date);
+      return (d.getUTCMonth() + 1)  + '/' + d.getUTCDate() + '/' + d.getUTCFullYear()
+    },
+    sortQuestions () {
+      this.questions.sort(function(a, b) {
+      return (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0);
+      });
     }
   }
 }

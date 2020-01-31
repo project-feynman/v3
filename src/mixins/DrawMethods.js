@@ -25,7 +25,7 @@ export default {
       if (!this.allStrokes || this.allStrokes.length === 0) {
         return;
       }
-
+      
       // Create ordering of frames in `[[strokeIndex, pointIndex], ...]` format.
       this.allFrames = [];
       for (let i = 0; i < this.allStrokes.length; i++) {

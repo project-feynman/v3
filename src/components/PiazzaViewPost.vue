@@ -8,19 +8,16 @@
       <div v-if="post.image" class="image-container">
         <img :src="post.image"/>
       </div>
-      <RenderlessFetchStrokes :whiteboardID="post.blackboardID" :hasSubcollection="false">
-        <template slot-scope="{ strokes }">
-          <!-- length check is necessary because a length 0 array does not necessarily === [] (TODO: investigate why) -->
-          <DoodleVideo 
-            v-if="strokes.length !== 0"
-            :strokes="strokes"
-            :canvasID="`${postNumber}`"
-            :audioURL="post.audioURL"
-            :height="`${getFullWidth() * 9/16}`"
-            @animation-loaded="hasFetchedVideos = true"
-          />
-        </template>
-      </RenderlessFetchStrokes>
+      <DoodleVideo 
+        :whiteboardID="post.blackboardID" 
+        :hasSubcollection="false"
+        :canvasID="`${postNumber}`"
+        :audioURL="post.audioURL"
+        :height="`${getFullWidth() * 9/16}`"
+        ref = "DoodleVideo"
+        @full-video-ready="initVideo()"
+        @canvas-clicked="handleClick()"
+      />
     </v-container>
     <footer class="post-footer px-4 py-3">
       Posted by {{ post.isAnonymous? 'Anonymous':post.author.name }}
@@ -30,7 +27,7 @@
 
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue"
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
+import db from "@/database.js";
 
 export default {
   props: {
@@ -39,14 +36,45 @@ export default {
     postType: String
   },
   components: {
-    DoodleVideo,
-    RenderlessFetchStrokes
+    DoodleVideo
+  },
+  data () {
+    return {
+    video: null
+    }
+  },
+  created () {
+    // this.fetchVideo();
   },
   methods: {
     getFullWidth () {
+      console.log("post: ", this.post)
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 
+    },
+    initVideo () {
+      
+      const doodleVideo = this.$refs.DoodleVideo
+      // const animation = doodleVideo.$refs["animation"]
+      // animation.drawStrokesInstantly()
+      doodleVideo.resizeVideo();
+      console.log("inititalized video")
+    },
+    handleClick() {
+      if (!this.post.audioURL){
+        const DoodleVideo = this.$refs.DoodleVideo;
+        if (!DoodleVideo.isQuickplaying){
+          DoodleVideo.quickplay();
+        }
+      }
     }
+    // async fetchVideo () {
+    //   const videoRef = db.collection("whiteboards").doc(this.post.videoID);
+    //   let video = await videoRef.get();
+    //   this.video = video.data();
+    //   console.log("thumbnail: ", this.video.thumbnail)
+    // }
+    /// we need to figure out how to get thumbnail into this
   }
 }
 </script>

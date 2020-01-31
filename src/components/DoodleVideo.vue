@@ -1,28 +1,32 @@
 <template >
   <!-- TODO: add video documentation link -->
-  <div style="height: 100%; width: 100%;">
-    <template v-if="strokes.length !== 0">
+  <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+    <template v-if="!thumbnail || strokes.length > 0">
       <DoodleVideoAnimation
-        ref="animation"
-        :strokes="strokes"
-        :isFullscreen="false"
-        :canvasID="whiteboardID"
-        :height="height"
-        @animation-loaded="handleAnimationLoaded()"
-        @animation-finished="handleEvent()"
-      />
+          ref="animation"
+          v-if="strokes.length > 0"
+          :strokes="strokes"
+          :isFullscreen="false"
+          :canvasID="whiteboardID"
+          :height="height"
+          @animation-loaded="handleAnimationLoaded()"
+          @animation-finished="handleEvent()"
+          @canvas-clicked="handleClick()"
+        />
       <audio-recorder
         v-if="audioURL"
         ref="audioRecorder"
         :audioURL="audioURL"
         @recorder-loading="recorderLoaded=false"
-        @play="syncAnimation()"
+        @play="handlePlay()"
+        @stop="handleStop()"
+        @seeking="handleSeeking()"
         @recorder-loaded="recorderLoaded=true"
       />
     </template>
-
-    <template v-else-if="video">
-      <v-img :src="video.thumbnail">
+    <template v-else-if="thumbnail">
+      <v-img @click="handleClick()"
+      :src="thumbnail">
         <!-- <v-container fill-height fluid>
           <v-row align="center" justify="center">
             <div>
@@ -47,17 +51,15 @@ import "firebase/storage";
 
 export default {
   props: {
-    video: Object,
+    thumbnail: String,
     whiteboardID: String,
-    hasSubcollection: {
-      type: Boolean,
-      default() {
-        return true;
-      }
-    },
     audioURL: String,
     canvasID: String,
-    height: String
+    height: String,
+    hasSubcollection: {
+      type: Boolean,
+      default () { return true; }
+    },
   },
   components: {
     DoodleVideoAnimation,
@@ -70,8 +72,18 @@ export default {
       isPlaying: true,
       recorderLoaded: false,
       animationLoaded: false,
-      syncedVisualAndAudio: false
+      syncedVisualAndAudio: false,
+      mouseHover: false,
+      isQuickplaying: false
     };
+  },
+  watch: {
+    mouseHover () {
+      this.$emit("mouse-change", this.mouseHover);
+    },
+    resourcesLoaded () {
+      this.$emit("full-video-ready");
+    }
   },
   computed: {
     ...mapState(["user"]),
@@ -81,21 +93,18 @@ export default {
   },
   async created() {
     // fetch strokes if no thumbnail is available
-    console.log("this.video =", this.video);
-    if (this.video) {
-      if (this.video.thumbnail) {
-        console.log("this.video.thumbnail succeeded!");
-        return;
-      } else this.fetchStrokes();
-    } else if (this.whiteboardID) {
-      this.fetchStrokes();
+    if (!this.thumbnail) { 
+      await this.fetchStrokes(); 
     }
   },
+  // check if this breaks
+  mounted () {
+    window.addEventListener("resize", this.resizeVideo);
+  },
+  destroyed () {
+    window.removeEventListener("resize", this.resizeVideo);
+  },
   methods: {
-    async fetchStrokesThenQuickplay() {
-      if (!this.hasFetchedStrokes) await this.fetchStrokes();
-      this.quickplay();
-    },
     syncAnimation() {
       if (this.syncedVisualAndAudio) return;
       if (this.resourcesLoaded) {
@@ -106,13 +115,15 @@ export default {
     },
     handleAnimationLoaded() {
       this.animationLoaded = true;
-      this.$emit("animation-loaded");
     },
-    async quickplay() {
-      this.overlay = false;
+    async quickplay () {
       const { animation } = this.$refs;
+      this.isQuickplaying = true;
       await animation.quickplay();
-      this.overlay = true;
+      this.isQuickplaying = false;
+    },
+    handleClick () {
+      this.$emit("video-clicked");
     },
     async fetchStrokes() {
       const P = new Promise(async resolve => {
@@ -129,11 +140,74 @@ export default {
           querySnapshot.forEach(doc => {
             this.strokes.push({ ".key": doc.id, ...doc.data() });
           });
-          this.hasFetchedStrokes = true;
         }
+        this.hasFetchedStrokes = true
+        this.$emit("strokes-ready", this.strokes)
         resolve();
       });
       return P;
+    },
+    handlePlay() {
+      const animation = this.$refs.animation;
+      animation.overlay = false;
+      this.initializeAnimation();
+
+      // Initialize playback synchronization if possible.
+      if (this.syncInitialized) {
+        animation.sync = setTimeout(animation.syncVisualWithAudio, 0);
+      }
+    },
+    handleStop() {
+      // Stop sync.
+      const animation = this.$refs["animation"];
+      clearTimeout(animation.sync);
+      animation.sync = undefined;
+    },
+    handleSeeking() {
+      // Stop first.
+      this.handleStop();
+
+      // Call once.
+      const animation = this.$refs["animation"];
+      animation.syncVisualWithAudio(true);
+    },
+    resizeVideo() {
+      // Rescale canvas.
+      //TODO error being thrown here by video gallery when thumbnail only is displayed
+      const animation = this.$refs["animation"];
+      animation.rescaleCanvas(false);
+
+      // If we are in playback, just resize, stop, reset, and play. This will re-render. Otherwise, redraw everything.
+      if (animation.sync) {
+        this.handleStop();
+        animation.indexOfNextFrame = 0;
+        this.handlePlay();
+      } else {
+        animation.drawStrokesInstantly();
+      }
+    },
+    startVideo() {
+      this.$nextTick(() => {
+        const audioRecorder = this.$refs.audioRecorder;
+        audioRecorder.playAudio();
+      })
+    },
+    initializeAnimation() {
+      if (!this.syncInitialized && this.resourcesLoaded) {
+        const audioRecorder = this.$refs.audioRecorder;
+        const animation = this.$refs["animation"];
+        animation.startSync(audioRecorder.getAudioTime);
+        this.syncInitialized = true;
+      }
+    },
+    async deleteVideo() {
+      const recursiveDelete = firebase
+        .functions()
+        .httpsCallable("recursiveDelete");
+      recursiveDelete({ path: `whiteboards/${this.$route.params.video_id}` });
+      if (this.audioFileRef) this.audioFileRef.delete();
+      // redirect
+      this.$router.push(`/${this.$route.params.class_id}/ranking`);
     }
   }
 };
