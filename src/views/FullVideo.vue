@@ -68,7 +68,7 @@ export default {
           });
       }
     },
-    handleClick(){
+    handleClick (){
       const DoodleVideo = this.$refs.DoodleVideo;
       if (!DoodleVideo.isQuickplaying) {
         DoodleVideo.quickplay();
