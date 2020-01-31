@@ -68,11 +68,9 @@ export default {
           });
       }
     },
-    handleClick(){
-      ////implement if you want to play and pause
-      
+    handleClick (){
       const DoodleVideo = this.$refs.DoodleVideo;
-      if (!DoodleVideo.isQuickplaying){
+      if (!DoodleVideo.isQuickplaying) {
         DoodleVideo.quickplay();
       }
     },
