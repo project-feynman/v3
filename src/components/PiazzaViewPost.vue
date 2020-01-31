@@ -16,6 +16,7 @@
         :height="`${getFullWidth() * 9/16}`"
         ref = "DoodleVideo"
         @full-video-ready="initVideo()"
+        @canvas-clicked="handleClick()"
       />
     </v-container>
     <footer class="post-footer px-4 py-3">
@@ -58,6 +59,14 @@ export default {
       // animation.drawStrokesInstantly()
       doodleVideo.resizeVideo();
       console.log("inititalized video")
+    },
+    handleClick() {
+      if (!this.post.audioURL){
+        const DoodleVideo = this.$refs.DoodleVideo;
+        if (!DoodleVideo.isQuickplaying){
+          DoodleVideo.quickplay();
+        }
+      }
     }
     // async fetchVideo () {
     //   const videoRef = db.collection("whiteboards").doc(this.post.videoID);

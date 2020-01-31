@@ -1,17 +1,18 @@
 <template >
   <!-- TODO: add video documentation link -->
-  <div @click="handleClick()" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+  <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
     <template v-if="!thumbnail || strokes.length > 0">
       <DoodleVideoAnimation
-        ref="animation"
-        v-if="strokes.length > 0"
-        :strokes="strokes"
-        :isFullscreen="false"
-        :canvasID="whiteboardID"
-        :height="height"
-        @animation-loaded="handleAnimationLoaded()"
-        @animation-finished="handleEvent()"
-      />
+          ref="animation"
+          v-if="strokes.length > 0"
+          :strokes="strokes"
+          :isFullscreen="false"
+          :canvasID="whiteboardID"
+          :height="height"
+          @animation-loaded="handleAnimationLoaded()"
+          @animation-finished="handleEvent()"
+          @canvas-clicked="handleClick()"
+        />
       <audio-recorder
         v-if="audioURL"
         ref="audioRecorder"
@@ -24,7 +25,8 @@
       />
     </template>
     <template v-else-if="thumbnail">
-      <v-img :src="thumbnail">
+      <v-img @click="handleClick()"
+      :src="thumbnail">
         <!-- <v-container fill-height fluid>
           <v-row align="center" justify="center">
             <div>
