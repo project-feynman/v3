@@ -1,8 +1,9 @@
 <template>
   <div>
-    <BaseAppBar 
+    <BaseAppBar v-if="classData"
       :icon="isViewingPost && isMobile ? 'back' : undefined" 
       @icon-click="backToList()"
+      :classData="classData"
     />
     <v-content>
       <v-container fluid class="py-0" ref="main">
@@ -65,7 +66,8 @@ import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import AsyncRenderless from "@/components/AsyncRenderless.vue"
 import firebase from "firebase/app"
 import "firebase/firestore"
-import {initQuestionService} from "../dep";
+import {initQuestionService} from "../dep"
+import {initClassesService} from "../dep"
 import { mapState } from 'vuex'
 
 export default {
@@ -81,6 +83,7 @@ export default {
   data: () => ({
     newQuestionKey: 0,
     questionService: initQuestionService(),
+    classesService: initClassesService(),
     isAddingNewQuestion: true,
     currentQuestion: {},
     questions: [],
@@ -90,23 +93,25 @@ export default {
     isViewingPost: false,
     isMobile: window.innerWidth < 600,
     tagsPool: [],
-    activeElem: 0
+    activeElem: 0,
+    classData : null,
+    classID: null,
   }),
   computed: {
     user () {
       return this.$store.state.user
     },
     questionsRef () {
-      const classID = this.$route.params.class_id
-      return db.collection("classes").doc(classID).collection("questions")
+      return db.collection("classes").doc(this.classID).collection("questions")
     },
     answersRef () {
-      const classID = this.$route.params.class_id
       const questionID = this.currentQuestion['.key']
-      return db.collection("classes").doc(classID).collection("questions").doc(questionID).collection("answers")
+      return db.collection("classes").doc(this.classID).collection("questions").doc(questionID).collection("answers")
     }
   },
   async created () {
+    this.classID = this.$route.params.class_id;
+    this.classData = await this.classesService.getClassData(this.classID);
     // first fetch questions
     await this.fetchQuestions()
     const questionID = this.$route.params.question_id

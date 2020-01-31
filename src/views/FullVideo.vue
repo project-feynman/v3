@@ -1,6 +1,8 @@
 <template>
   <div id="video" style="height: 90%">
-    <BaseAppBar :loading="!resourcesLoaded" />
+    <BaseAppBar v-if="classData"
+    :classData="classData"
+    :loading="!resourcesLoaded" />
     <v-content style="height: 90%">
         <DoodleVideo 
           v-if="video"
@@ -25,6 +27,7 @@ import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/storage";
 import "firebase/functions";
+import {initClassesService} from '../dep'
 
 export default {
   components: {
@@ -37,12 +40,20 @@ export default {
   computed: {
     ...mapState(["user"]),
   },
+  async created() {
+      this.classID = this.$route.params.class_id;
+      this.classData = await this.classesService.getClassData(this.classID);
+  },
+
   data () {
     return {
       video: null,
       audioFileRef: null,
       overlay: true,
-      resourcesLoaded: false
+      resourcesLoaded: false,
+      classesService: initClassesService(),
+      classID: null,
+      classData: null
     }
   },
   watch: {

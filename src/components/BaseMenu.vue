@@ -32,16 +32,16 @@
 
         <v-divider></v-divider>
 
-        <v-list>
-          <v-list-item v-for="(s, i) in user.enrolledClasses" :key="i">
+        <v-list v-if="enrollementService != null">
+          <v-list-item v-for="(s, i) in enrollementService.getEnrolledClasses(user)" :key="i">
             <v-container>
               <v-list-item-title>{{s.name}}</v-list-item-title>
-              <v-list-item-action v-if="s.settings">
-                <v-radio-group v-model="s.settings.notifications.newQuestion" row>
+              <v-list-item-action v-if="s.newQuestion">
+                <v-radio-group v-model="s.newQuestion" row>
                   <v-radio
                     v-for="x in newQNotifs"
                     :key="x"
-                    @change="classNotifChanged(i, x)"
+                    @change="classNotifChanged(s.name, x)"
                     :label="x"
                     :value="x"
                     :id="x"
@@ -101,11 +101,10 @@ export default {
       else updatedUser.name = this.user.name;
       this.$emit("save", updatedUser);
     },
-    classNotifChanged(classID, frequency) {
-      this.enrollementService.changeNotification(
+    classNotifChanged(className, frequency) {
+      this.enrollementService.changeNewQuestionNotif(
         this.user,
-        classID,
-        "newQuestion",
+        className,
         frequency
       );
     }

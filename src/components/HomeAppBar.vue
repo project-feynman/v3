@@ -24,7 +24,7 @@
       <template v-if="user && $route.path == '/'">
         <PopupNewClass
           v-model="newClassPopup"
-          @create-class="courseNumber => $emit('create-class', courseNumber)"
+          @create-class="className => $emit('create-class', className)"
         />
 
         <v-btn @click="newClassPopup = true" dark color="grey">CREATE CLASS</v-btn>

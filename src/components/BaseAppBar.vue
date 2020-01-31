@@ -14,7 +14,7 @@
       @click="$router.push('/')"
     >
     <v-toolbar-title class="home-logo headline font-weight-regular ml-2" @click="$router.push('/')">
-      ExplainMIT/{{ $route.params.class_id }}
+      ExplainMIT/{{ this.classData.name }}
     </v-toolbar-title>
     <v-progress-linear
       :active="loading"
@@ -35,6 +35,7 @@ export default {
   props: {
     loading: Boolean,
     icon: String,
+    classData : Object,
     default () {
       return false 
     }

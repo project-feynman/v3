@@ -9,7 +9,9 @@
     </v-snackbar>
 
     <!-- WHITEBOARD BUTTONS -->
-    <BaseAppBar :loading="loading">
+    <BaseAppBar v-if="classData"
+    :classData="classData"
+    :loading="loading">
       <v-toolbar-items v-if="whiteboardDoc">
         <template v-if="!whiteboardDoc.isAnswered">
           <swatches 
@@ -89,6 +91,7 @@ import Swatches from 'vue-swatches'
 import 'vue-swatches/dist/vue-swatches.min.css'
 import AudioRecorder from '@/components/AudioRecorder.vue'
 import BaseAppBar from "@/components/BaseAppBar.vue"
+import {initClassesService} from '../dep'
 
 export default {
   props: {
@@ -124,6 +127,10 @@ export default {
       }
     }
   },
+  async created() {
+    this.classID = this.$route.params.class_id;
+    this.classData = await this.classesService.getClassData(this.classID)
+  },
   data () {
     return {
       loading: true,
@@ -158,7 +165,10 @@ export default {
       mousedown : 0,
       clearRectTimeout: null,
       snackbar: false,
-      snackbarMessage: ""
+      snackbarMessage: "",
+      classesService: initClassesService(),
+      classID: null,
+      classData: null,
     }
   },
   watch: {

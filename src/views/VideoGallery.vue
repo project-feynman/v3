@@ -1,18 +1,20 @@
 <template>
   <div>
-    <BaseAppBar :loading="!hasFetchedVideos"/>
+    <BaseAppBar v-if="classData"
+    :classData="classData" 
+    :loading="!hasFetchedVideos"/>
     <v-content>
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
           v-if="classDoc.tabs"
-          :tabs="classDoc.tabs"cb
+          :tabs="classDoc.tabs"
           :tab="tab"
           @tab-change="newValue => tab = newValue"
           @tabs-rename="newValues => renameTabs(newValues)"
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
-              <RenderlessFetchVideos :tabNumber="i" :classID="classDoc.courseNumber" @videos-fetched="hasFetchedVideos=true">
+              <RenderlessFetchVideos :tabNumber="i" :classID="classID" @videos-fetched="hasFetchedVideos=true">
                 <template slot-scope="{ videos }">
                   <BaseGrid>
                     <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
@@ -84,6 +86,7 @@ import db from "@/database.js"
 import firebase from "firebase/app"
 import "firebase/functions"
 import "firebase/storage"
+import {initClassesService} from '../dep'
 
 export default {
   components: {
@@ -104,12 +107,19 @@ export default {
       isEditting: false,
       whiteboardPopup: false,
       currentVideoID: "",
+      classesService: initClassesService(),
+      classID : null,
+      classData : null
     }
   },
   computed: {
     user () { return this.$store.state.user }
   },
-  created () { this.fetchClassDoc() },
+  async created () {
+      this.fetchClassDoc();
+      this.classID = this.$route.params.class_id;
+      this.classData = await this.classesService.getClassData(this.classID);
+    },
   methods: {
     async fetchClassDoc () {
       this.classDoc = {} 
@@ -118,7 +128,7 @@ export default {
       const doc = await ref.get()
       this.classDoc = doc.data()
     },
-    handleAction (buttonName, { courseNumber, ".key": videoID, audioPath }, canvasID, hover=false) {
+    handleAction (buttonName, { className, ".key": videoID, audioPath }, canvasID, hover=false) {
       if (buttonName === "FULL VIDEO") {
         const classID = this.$route.params.class_id
         this.$router.push(`/${classID}/${videoID}`)

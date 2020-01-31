@@ -1,54 +1,54 @@
 import db from '@/database.js'
-import {encodeKey} from '../dep'
+import {initClassesService} from '../dep'
 
 export class Enrollement {
-    constructor () {}
-    addClass (user, className) {
-        let classID = encodeKey(className)
-        let userDoc = db.collection("users").doc(user.uid)
+    constructor () {
+        this.classesService = initClassesService();
+    }
+
+    getEnrolledClasses(user){
+        return user.enrolledClasses;
+    }
+
+    async addClass (user, className) {
+        let classID = await this.classesService.getClassID(className);
+        
+        let userDoc = db.collection("users").doc(user.uid);
+        
         userDoc.get().then(doc => {
-            // TODO: please rename A
-            let A = {...doc.data()}.enrolledClasses
-            if (!A || Array.isArray(A)) A = {};
-            if (classID in A) return;
+            
+            let enrolledClasses = {...doc.data()}.enrolledClasses;
+            
+            if (!enrolledClasses || Array.isArray(enrolledClasses))
+                enrolledClasses = {};
+            
+            if (classID in enrolledClasses) return;
+            
             var classObj = {
                 name: className,
-                settings: {
-                notifications: {
-                    newQuestion: "always",
-                  },
-                }
-            }
+                newQuestion: "always",
+            };
 
-            A[classID] = classObj
+            enrolledClasses[classID] = classObj;
+
             userDoc.set(
-                {enrolledClasses : A},
-                {merge: true})
-        })
+                {enrolledClasses : enrolledClasses},
+                {merge: true});
+        });
     }
 
-    deleteClass(user, className) {
-        let classID = encodeKey(className)
-        let userDoc = db.collection("users").doc(user.uid)
-        userDoc.get().then(doc => {
-            let A = {...doc.data()}.enrolledClasses
-
-            if(!(classID in A))return
-            
-            delete A[classID]
-            
-            userDoc.set(
-                {enrolledClasses : A},
-                {merge: true})
-        })
+    deleteClass(user,  className) {
+        //ToDo
     }
 
-    changeNotification(user, className, notifType, notifFrequency) {
-        let classID = encodeKey(className)
-        let userDoc = db.collection("users").doc(user.uid)
-        const K = `enrolledClasses.${classID}.settings.notifications.${notifType}`
+    async changeNewQuestionNotif(user, className, notifFrequency) {
+        let classID = await this.classesService.getClassID(className);
+
+        let userDoc = db.collection("users").doc(user.uid);
+        
+        const T = `enrolledClasses.${classID}.newQuestion`;
         userDoc.update({
-             [K] : notifFrequency
+            [T] : notifFrequency
         })
     }
 }   
