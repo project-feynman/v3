@@ -7,7 +7,7 @@
   >
     <v-container class="py-1 px-0">
       <v-row align="center" justify="space-between">
-        <template v-if="currentState != 'post-recording'">
+        <template v-if="currentState !== recordStateEnum.POST_RECORD">
           <v-col class="py-0">
             <v-row justify="start" align="center">
               <v-col class="px-1 py-0" cols="auto">
@@ -85,8 +85,8 @@
               <v-icon>clear</v-icon>
             </v-btn>
             <v-btn
-              v-if="currentState=='mid-recording'"
-              @click="stopRecording()"
+              v-if="currentState===recordStateEnum.MID_RECORD"
+              @click="$emit('record-state-change', recordStateEnum.POST_RECORD)"
               color="accent lighten-1"
               class="board-action-btn"
             >
@@ -95,7 +95,7 @@
             </v-btn>
             <v-btn
               v-else
-              @click="startRecording()"
+              @click="$emit('record-state-change', recordStateEnum.MID_RECORD)"
               color="accent lighten-1"
               class="board-action-btn"
             >
@@ -106,7 +106,7 @@
         </template>
         <template v-else>
           <v-col cols="auto" class="py-0">
-            <v-btn
+            <!-- <v-btn
               @click="initReplayLogic()"
               outlined
               color="accent lighten-1"
@@ -114,11 +114,11 @@
             >
               <span class="d-none d-sm-block mr-2">Preview</span>
               <v-icon>mdi-eye</v-icon>
-            </v-btn>
+            </v-btn>-->
           </v-col>
           <v-col cols="auto" class="py-0">
             <v-btn
-              @click="recordAgain()"
+              @click="$emit('record-state-change', recordStateEnum.PRE_RECORD)"
               outlined
               color="accent lighten-1"
               class="board-action-btn"
@@ -126,10 +126,16 @@
               <span class="d-none d-sm-block mr-2">Retry</span>
               <v-icon>mdi-undo-variant</v-icon>
             </v-btn>
+            <v-btn
+              @click="$emit('video-save')"
+              color="accent lighten-1"
+              class="board-action-btn"
+              :disabled="!hasUploadedAudio"
+            >
+              <span class="d-none d-sm-block mr-2">Save</span>
+              <v-icon>save</v-icon>
+            </v-btn>
           </v-col>
-          <!-- <v-btn @click="handleSaving('No title yet')" :disabled="!hasUploadedAudio" class="pink white--text">
-                SAVE VIDEO
-          </v-btn>-->
         </template>
       </v-row>
     </v-container>
@@ -138,13 +144,15 @@
 
 <script>
 import Swatches from "vue-swatches";
+import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
   props: {
     color: String,
     eraserActive: Boolean,
     currentState: String,
-    isRealtime: Boolean
+    isRealtime: Boolean,
+    hasUploadedAudio: Boolean
   },
   components: {
     Swatches
@@ -153,7 +161,8 @@ export default {
     return {
       colors: ["white", "orange", "#0AF2F2", "deeppink", "rgb(62, 66, 66)"],
       palleteVisibility: false,
-      isSmallScreen: window.innerWidth < 960
+      isSmallScreen: window.innerWidth < 960,
+      recordStateEnum: CONSTANTS.recordStateEnum
     };
   },
   mounted() {

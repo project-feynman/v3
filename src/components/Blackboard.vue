@@ -1,44 +1,52 @@
 <template>
-  <div v-if="!isRealtime">
-    <v-card id="whiteboard" outlined elevation="1">
+  <div>
+    <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime?'0':'1'">
       <!-- SNACKBAR -->
       <v-snackbar v-model="snackbar">
         {{ snackbarMessage }}
-        <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
+        <v-btn @click="snackbar = false" color="accent" text>CLOSE</v-btn>
       </v-snackbar>
 
-      <BaseAppBar v-if="isRealtime" :loading="loading">
-        <v-toolbar-items v-if="whiteboardDoc">
-          <template v-if="!whiteboardDoc.isAnswered">
-            <swatches
-              v-model="color"
-              :colors="colors"
-              :show-border="true"
-              :isRealtime="isRealtime"
-              :wrapper-style="{ paddingTop: '0px', paddingBottom: '0px', paddingLeft: '40px', height: '30px' }"
-              inline
-              background-color="rgba(0, 0, 0, 0)"
-              swatch-size="40"
-            />
-          </template>
-        </v-toolbar-items>
+      <BaseAppBar v-if="isRealtime" :loading="loading" page="realtime">
+        <div id="realtime-toolbar">
+          <BoardToolBar
+            :currentState="currentState"
+            :eraserActive="eraserActive"
+            :color="color"
+            :isRealtime="isRealtime"
+            :hasUploadedAudio="hasUploadedAudio"
+            @eraser-click="eraserClick"
+            @set-image="handleImage"
+            @color-click="newColor=>{color=newColor}"
+            @wipe-board="wipeBoard"
+            @record-state-change="newState=>handleRecordStateChange(newState)"
+            @video-save="handleSaving('No title yet')"
+          />
+        </div>
       </BaseAppBar>
 
       <!-- APP BAR -->
-      <div id="mini-toolbar">
+      <div v-if="!isRealtime" id="mini-toolbar">
         <BoardToolBar
           :currentState="currentState"
           :eraserActive="eraserActive"
           :color="color"
+          :isRealtime="isRealtime"
+          :hasUploadedAudio="hasUploadedAudio"
           @eraser-click="status=>eraserClick(status)"
           @set-image="e=>handleImage(e)"
           @color-click="newColor=>{color=newColor}"
           @wipe-board="wipeBoard"
+          @record-state-change="newState=>handleRecordStateChange(newState)"
           ref="blackboardToolbar"
         />
       </div>
       <!-- WHITEBOARD -->
-      <div id="blackboard-wrapper" v-resize="blackboardSize">
+      <div
+        id="blackboard-wrapper"
+        :class="isRealtime? 'realtime-canvas':''"
+        v-resize="blackboardSize"
+      >
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
@@ -63,55 +71,6 @@
         @start-recording="isRecording = true"
         @file-uploaded="audio => saveFileReference(audio)"
       />
-    </v-card>
-  </div>
-
-  <div v-else>
-    <div id="whiteboard">
-      <!-- SNACKBAR -->
-      <v-snackbar v-model="snackbar">
-        {{ snackbarMessage }}
-        <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
-      </v-snackbar>
-
-      <!-- WHITEBOARD BUTTONS -->
-      <BaseAppBar :loading="loading" page="realtime">
-        <div id="realtime-toolbar">
-          <BoardToolBar
-            :currentState="currentState"
-            :eraserActive="eraserActive"
-            :color="color"
-            :isRealtime="isRealtime"
-            @eraser-click="eraserClick"
-            @set-image="handleImage"
-            @color-click="newColor=>{color=newColor}"
-            @wipe-board="wipeBoard"
-          />
-        </div>
-      </BaseAppBar>
-
-      <v-content>
-        <!-- "@start-recording" is necessary because the audio-recorder can't 
-      start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
-        null-->
-        <audio-recorder
-          v-if="whiteboardDoc"
-          v-show="false"
-          ref="audio-recorder"
-          :audioURL="whiteboardDoc.audioURL"
-          :audioPath="whiteboardDoc.audioPath"
-          @start-recording="isRecording = true"
-          @file-uploaded="audio => saveFileReference(audio)"
-        />
-
-        <!-- WHITEBOARD -->
-        <div id="blackboard-wrapper" class="realtime-canvas" v-resize="blackboardSize">
-          <canvas id="myCanvas"></canvas>
-          <canvas id="background-canvas"></canvas>
-        </div>
-        <!-- <canvas id="myCanvas" style="background-color: rgb(62, 66, 66)" /> -->
-        <!-- <canvas id="myCanvas" style="height: 90vh; background-color: rgb(62, 66, 66)"/> -->
-      </v-content>
     </div>
   </div>
 </template>
@@ -129,6 +88,7 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
 import BaseAppBar from "@/components/BaseAppBar.vue";
 import BoardToolBar from "@/components/BoardToolBar.vue";
+import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -213,11 +173,7 @@ export default {
       audioObj: {},
       audioPath: "",
       audioURL: "",
-      recordingStateEnum: {
-        PRE_RECORDING: "pre-recording",
-        MID_RECORDING: "mid-recording",
-        POST_RECORDING: "post-recording"
-      },
+      recordStateEnum: CONSTANTS.recordStateEnum,
       smallScreen: window.innerWidth < 960,
       palleteVisibility: false,
       eraserActive: false
@@ -248,7 +204,11 @@ export default {
     whiteboardDoc(newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
       if (newVal) {
-        if (!newVal.isAnswered || this.canvas || this.ctx) {
+        if (
+          newVal.recordState !== this.recordStateEnum.POST_RECORD ||
+          this.canvas ||
+          this.ctx
+        ) {
           this.initTouchEvents();
           this.initMouseEvents();
         }
@@ -281,14 +241,14 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     // new redraw code
 
-    if (!this.isRealtime) {
-      //mini
-      const height = (9 / 16) * (window.innerWidth - 500);
-      this.canvas.height = height - 48; // the blackboard's top-app-bar is 48px high
-    } else {
-      this.canvas.width = document.documentElement.clientWidth;
-      this.canvas.height = 0.9 * document.documentElement.clientHeight;
-    }
+    // if (!this.isRealtime) {
+    //   //mini
+    //   const height = (9 / 16) * (window.innerWidth - 500);
+    //   this.canvas.height = height - 48; // the blackboard's top-app-bar is 48px high
+    // } else {
+    //   this.canvas.width = document.documentElement.clientWidth;
+    //   this.canvas.height = 0.9 * document.documentElement.clientHeight;
+    // }
     this.rescaleCanvas(true);
     if (this.isRealtime) {
       window.addEventListener(
@@ -305,6 +265,7 @@ export default {
     }
     this.initTouchEvents();
     this.initMouseEvents();
+    document.fonts.ready.then(() => this.customCursor());
     if (this.isRealtime) {
       this.continuouslySyncBoardWithDB();
       this.$root.$on("side-nav-toggled", sideNavOpened => {
@@ -326,8 +287,6 @@ export default {
     }
   },
   updated() {
-    //mini
-    console.log("updated");
     if (!this.isRealtime) {
       //mini
       this.drawBackground(this.background);
@@ -430,7 +389,7 @@ export default {
       } else {
         ///mini
         this.wipeBoard();
-        this.currentState = this.recordingStateEnum.PRE_RECORDING;
+        this.currentState = this.recordStateEnum.PRE_RECORD;
       }
     },
     continuouslySyncBoardWithDB() {
@@ -692,13 +651,22 @@ export default {
       // this.saveVideoPopup = true
       this.handleSaving("No title yet");
     },
+    handleRecordStateChange(newState) {
+      if (newState === this.recordStateEnum.MID_RECORD) this.startRecording();
+      else if (newState === this.recordStateEnum.POST_RECORD)
+        this.stopRecording();
+      else {
+        if (this.isRealtime) this.retryAnswer();
+        else this.recordAgain();
+      }
+    },
     startRecording() {
-      this.currentState = this.recordingStateEnum.MID_RECORDING; // mini
+      this.currentState = this.recordStateEnum.MID_RECORD; // mini
       const audioRecorder = this.$refs["audio-recorder"];
       audioRecorder.startRecording();
     },
     stopRecording() {
-      this.currentState = this.recordingStateEnum.POST_RECORDING; //mini
+      this.currentState = this.recordStateEnum.POST_RECORD; //mini
       this.isRecording = false;
       this.removeTouchEvents();
       this.removeMouseEvents();
@@ -710,17 +678,18 @@ export default {
         db.collection("whiteboards")
           .doc(ID)
           .update({
-            isAnswered: true
+            recordState: this.currentState
           });
       }
     },
     retryAnswer() {
       this.currentTime = 0;
+      this.currentState = this.recordStateEnum.PRE_RECORD;
       this.hasUploadedAudio = false;
       const ID = this.whiteboardDoc[".key"];
       const whiteboardRef = db.collection("whiteboards").doc(ID);
       whiteboardRef.update({
-        isAnswered: false,
+        recordState: this.currentState,
         audioURL: "",
         audioPath: ""
       });
@@ -746,7 +715,7 @@ export default {
 
       let metadata = {
         title: videoTitle,
-        fromClass: classID,
+        fromClass: "6.006",
         isSaved: true,
         tabNumber: 0,
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
@@ -775,7 +744,7 @@ export default {
       const workspaceID = this.$route.params.id;
       const newWhiteboardRef = await db
         .collection("whiteboards")
-        .add({ isAnswered: false });
+        .add({ recordState: this.recordStateEnum.PRE_RECORD });
       const workspaceRef = db
         .collection("classes")
         .doc(classID)
@@ -802,7 +771,7 @@ export default {
     recordAgain() {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
-      this.currentState = this.recordingStateEnum.PRE_RECORDING;
+      this.currentState = this.recordStateEnum.PRE_RECORD;
     },
     blackboardToolbar() {
       this.smallScreen = window.innerWidth < 960;
@@ -836,7 +805,9 @@ export default {
         (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +
         "px";
       var realtime_height = window.innerHeight - 48 + "px";
+      var margin_top = this.isRealtime ? "48px" : "";
       board.style.height = this.isRealtime ? realtime_height : mini_height;
+      board.style.marginTop = margin_top;
     }
   }
 };
@@ -844,6 +815,7 @@ export default {
 
 <style scoped>
 #whiteboard {
+  position: relative;
   z-index: 5;
 }
 #blackboard-wrapper {
@@ -860,6 +832,7 @@ export default {
   background-size: 100% 100%;
   background-color: transparent;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25) inset;
+  display: block;
 }
 #background-canvas {
   position: absolute;
