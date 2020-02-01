@@ -1,9 +1,18 @@
 <template>
   <v-app-bar app clipped-left color="white" dense>
-    <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'" @click.stop="$root.$emit('toggle-drawer')" />
-    <v-icon v-else-if="this.icon==='back'" @click="$emit('icon-click')" x-large>mdi-chevron-left</v-icon>
+    <v-app-bar-nav-icon 
+      v-if="!icon && $route.path !== '/'"
+      @click.stop="$root.$emit('toggle-drawer')" 
+    />
+    <v-icon 
+      v-else-if="this.icon === 'back'" 
+      @click="$emit('icon-click')" 
+      x-large
+    >
+      mdi-chevron-left
+    </v-icon>
     <img
-      :class="['home-logo',page==='realtime'?'d-none':'','d-sm-block']"
+      :class="['home-logo',page === 'realtime'?'d-none':'','d-sm-block']"
       src="/favicon.ico"
       @click="$router.push('/')"
     />

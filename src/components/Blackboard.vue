@@ -359,9 +359,6 @@ export default {
       };
       img.src = image;
     },
-    toggleDrawer() {
-      this.$root.$emit("toggle-drawer");
-    },
     // takePicture () {
     //   const dataURL = this.canvas.toDataURL()
     // },
