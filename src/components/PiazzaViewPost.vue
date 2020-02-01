@@ -16,7 +16,7 @@
         :height="`${getFullWidth() * 9/16}`"
         ref = "DoodleVideo"
         @full-video-ready="initVideo()"
-        @canvas-clicked="handleClick()"
+        @video-clicked="handleClick()"
       />
     </v-container>
     <footer class="post-footer px-4 py-3">
