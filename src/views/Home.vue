@@ -104,7 +104,7 @@
         <v-container class="py-10">
           <div v-if="isFetchingUser || user === null" key="loading...">
             <v-row justify="center" class="py-0 text-center">
-              <v-col cols="12" sm="6" md="4">
+              <v-col cols="12" sm="10" md="4">
                 <v-card elevation="10">
                   <v-card-subtitle
                     class="black--text font-weight-medium"
@@ -120,7 +120,7 @@
                   </v-img>
                 </v-card>
               </v-col>
-              <v-col cols="12" sm="6" md="4">
+              <v-col cols="12" sm="10" md="4">
                 <v-card elevation="10">
                   <v-card-subtitle
                     class="black--text font-weight-medium"
@@ -135,7 +135,7 @@
                   </v-img>
                 </v-card>
               </v-col>
-              <v-col cols="12" sm="6" md="4">
+              <v-col cols="12" sm="10" md="4">
                 <v-card elevation="10">
                   <v-card-subtitle
                     class="black--text font-weight-medium"
@@ -156,9 +156,21 @@
             <div class="enrolled-classes-header text-center mb-5">
               <h2>Your Classes</h2>
             </div>
-            <v-row justify="space-around" align="stretch">
-              <v-col cols="10" sm="4" md="3" v-for="(s, i) in user.enrolledClasses" :key="i">
-                <v-card hover @click="$router.push(`${i}/questions/`)" class="text-center">
+            <v-row justify="space-around" align="stretch" class="enrolled-classes">
+              <v-col
+                cols="10"
+                sm="4"
+                md="3"
+                v-for="(s, i) in user.enrolledClasses"
+                :key="i"
+                class="d-flex align-center"
+              >
+                <v-card
+                  hover
+                  @click="$router.push(`${i}/questions/`)"
+                  class="text-center"
+                  width="100%"
+                >
                   <v-card-title>{{ s.name }}</v-card-title>
                 </v-card>
               </v-col>
@@ -378,5 +390,10 @@ export default {
   .central-title h1 {
     font-size: 2.5em;
   }
+}
+.enrolled-classes .v-card__title {
+  word-break: unset;
+  justify-content: center;
+  font-size: 1.1em;
 }
 </style>
