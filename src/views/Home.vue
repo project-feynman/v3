@@ -71,18 +71,19 @@
             </v-btn>
           </template>
         </div>
-        <!-- SEARCH BAR -->
-        <v-container v-if="user">
-          <v-row justify="center">
-            <v-col cols="6">
-              <BaseSearchBar 
-                  color="accent"
-                  label="Enter Class Number"
-                  :items="classesIDs"
-                  @submit="classChosen">
-              </BaseSearchBar>
-            </v-col>
-          </v-row>
+        <v-divider></v-divider>
+
+        <v-container>
+        <v-row justify="center">
+        <v-col cols="6">
+        <SearchBar 
+            color="accent"
+            label="Enter Class Number"
+            :items="classesNames"
+            @submit="classChosen">
+        </SearchBar>
+        </v-col>
+        </v-row>
         </v-container>
 
         <v-divider></v-divider>
@@ -137,7 +138,7 @@
         </v-container>
       </v-card>
       <transition name="fade" mode="out-in">
-        <div v-if="isFetchingUser || user === null" key="loading..."></div>
+        <div v-if="isFetchingUser || user === null || enrollementService == null" key="loading..."></div>
         <div v-else key="class-list">
           <v-container fluid>
             <v-row>
@@ -185,7 +186,7 @@ export default {
   data() {
     return {
       classes: [],
-      classesIDs: [],
+      classesNames: [],
       snackbar: false,
       snackbarMessage: "",
       enrollementService: initEnrollementService(),
@@ -219,7 +220,7 @@ export default {
           querySnapshot.forEach(doc => {
             let docObj = { ".key": doc.id, ...doc.data() };
             this.classes.push(docObj);
-            this.classesIDs.push(docObj.name);
+            this.classesNames.push(docObj.name);
           });
         });
     },
@@ -227,6 +228,7 @@ export default {
       this.searchBarDialog = true;
       this.chosenClass = answer;
     },
+
     searchBarDialogSubmitted(answer) {
       if (answer == "No") {
         this.chosenClass = "";
@@ -238,14 +240,19 @@ export default {
       this.searchBarDialog = false;
     },
     async createClass(name) {
-      let classID = encodeKey(name);
-      const ref = db.collection("classes").doc(classID);
-      await ref.set({
+      this.fetchClasses();
+      if(name in this.classesNames)
+      {
+          console.log("Class Exists");
+          return;
+      }
+      const ref = db.collection("classes");
+      await ref.add({
         name,
         description: "description",
         introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
         paragraph: "paragraph",
-        tagsPool: [],
+        tags: [],
         tabs: ["New"]
       });
       //add to enrolled classes
@@ -264,8 +271,8 @@ export default {
     computeVideoSize() {
       return this.$vuetify.breakpoint.smAndDown ? 12 : 4;
     },
-    computeCardSize({ courseNumber }) {
-      if (courseNumber.length > 13) {
+    computeCardSize({ className }) {
+      if (className.length > 13) {
         if (this.$vuetify.breakpoint.md) return 4;
         else if (this.$vuetify.breakpoint.smAndDown) return 12;
       }

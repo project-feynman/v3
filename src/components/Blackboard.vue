@@ -89,6 +89,7 @@ import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
 import BaseAppBar from "@/components/BaseAppBar.vue";
 import BoardToolBar from "@/components/BoardToolBar.vue";
 import CONSTANTS from "@/CONSTANTS.js";
+import {initClassesService} from '../dep';
 
 export default {
   props: {
@@ -134,7 +135,11 @@ export default {
       return this.background;
     }
   },
-  data() {
+  async created() {
+    this.classID = this.$route.params.class_id;
+    this.classData = await this.classesService.getClassData(this.classID)
+  },
+  data () {
     return {
       loading: true,
       whiteboardDoc: null,
@@ -176,8 +181,11 @@ export default {
       recordStateEnum: CONSTANTS.recordStateEnum,
       smallScreen: window.innerWidth < 960,
       palleteVisibility: false,
-      eraserActive: false
-    };
+      eraserActive: false,
+      classesService: initClassesService(),
+      classID: null,
+      classData: null,
+    }
   },
   watch: {
     whiteboardID: {

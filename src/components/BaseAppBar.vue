@@ -20,7 +20,7 @@
       :class="['home-logo', 'headline', 'font-weight-regular', 'ml-2',page==='realtime'?'d-none':'','d-md-block']"
       @click="$router.push('/')"
     >
-      {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${$route.params.class_id}` }}
+      {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${classData.name}` }}
     </v-toolbar-title>
     <v-progress-linear
       :active="loading"
@@ -40,8 +40,9 @@ export default {
     loading: Boolean,
     icon: String,
     page: String,
-    default() {
-      return false;
+    classData: {
+      type: Object,
+      default () { return false; }
     }
   }
 };

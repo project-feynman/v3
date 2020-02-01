@@ -125,7 +125,7 @@ export default {
     handleClick () {
       this.$emit("video-clicked");
     },
-    async fetchStrokes() {
+    async fetchStrokes () {
       const P = new Promise(async resolve => {
         if (!this.whiteboardID) resolve();
         const baseRef = db.collection("whiteboards").doc(this.whiteboardID);
@@ -142,7 +142,7 @@ export default {
           });
         }
         this.hasFetchedStrokes = true
-        this.$emit("strokes-ready", this.strokes)
+        this.$nextTick(() => this.$emit("strokes-ready", this.strokes))
         resolve();
       });
       return P;
