@@ -14,7 +14,7 @@ export default new Vuetify({
       light: {
         primary: colors.blue, // #E53935
         secondary: colors.purple, // #FFCDD2
-        accent: "#F03C02"
+        accent: "#e91e63"
       }
     }
   },

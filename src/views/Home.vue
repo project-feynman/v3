@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="home-page">
     <!-- SNACKBAR -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -21,7 +21,7 @@
     />
 
     <!-- CONFIRM SIGNUP POPUP -->
-    <BasePopup 
+    <BasePopup
       v-if="searchBarDialog"
       title="Do you want to add the following class?"
       :text="chosenClass"
@@ -30,18 +30,29 @@
     />
 
     <BaseAppBar>
-      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="secondary">
-        BLOG
-      </v-btn>
-      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="secondary">
-        GITHUB
-      </v-btn>
+      <v-btn
+        href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426"
+        text
+        color="accent"
+        target="_blank"
+      >BLOG</v-btn>
+      <v-btn
+        href="https://github.com/eltonlin1998/ExplainMIT"
+        text
+        color="accent"
+        target="_blank"
+      >GITHUB</v-btn>
       <template v-if="user && $route.path == '/'">
-        <v-btn @click="newClassPopup = true" dark color="grey">CREATE CLASS</v-btn>
+        <v-btn @click="newClassPopup = true" dark color="accent lighten-1">CREATE CLASS</v-btn>
       </template>
       <template v-if="!isFetchingUser">
         <!-- BASE MENU AND V-BTN -->
-        <BaseMenu v-if="user" :user="user" @save="payload => updateUser(payload)" @sign-out="signOut()">
+        <BaseMenu
+          v-if="user"
+          :user="user"
+          @save="payload => updateUser(payload)"
+          @sign-out="signOut()"
+        >
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
               <v-icon large :color="user.color">account_circle</v-icon>
@@ -52,103 +63,108 @@
     </BaseAppBar>
     <v-content>
       <v-card class="mx-auto text-center" fluid>
-        <div class="pt-5">
-          <p class="display-2 text--primary">
-            explain.mit.edu
-          </p>
-          <p class="headline text--primary">
-            An efficient platform for visual explanations
-          </p>
-        </div>
-        <div style="margin: auto" class="mb-5">
-          <!-- previous button color was deep-purple accent-4 -->
-          <template v-if="!user">
-            <v-btn @click="loginPopup = true" color="secondary" text>
-              LOG IN
-            </v-btn>
-             <v-btn @click="loginPopup = true" color="secondary" text>
-              SIGN UP
-            </v-btn>
-          </template>
-        </div>
-        <!-- SEARCH BAR -->
-        <v-container v-if="user">
-          <v-row justify="center">
-            <v-col cols="6">
-              <BaseSearchBar 
-                  color="accent"
-                  label="Enter Class Number"
-                  :items="classesIDs"
-                  @submit="classChosen">
-              </BaseSearchBar>
-            </v-col>
-          </v-row>
-        </v-container>
+        <v-container>
+          <div class="home-hero py-5">
+            <div class="home-header">
+              <div class="central-title d-flex justify-center align-center mb-4">
+                <img src="/logo.png" class="hero-img" />
+                <h1 class="text--primary ml-2">ExplainMIT</h1>
+              </div>
+              <h3 class="headline text--primary">An efficient platform for visual explanations</h3>
+            </div>
+            <v-row class="my-5" justify="center">
+              <!-- previous button color was deep-purple accent-4 -->
+              <template v-if="!user">
+                <v-col cols="auto">
+                  <v-btn @click="loginPopup = true" color="accent lighten-1">LOG IN</v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn @click="loginPopup = true" color="accent lighten-1" outlined>SIGN UP</v-btn>
+                </v-col>
+              </template>
+              <!-- Search Bar -->
+              <template v-else>
+                <v-col cols="12" sm="6">
+                  <BaseSearchBar
+                    color="accent"
+                    label="Enter Class Number"
+                    :items="classesIDs"
+                    @submit="classChosen"
+                  ></BaseSearchBar>
+                </v-col>
+              </template>
+            </v-row>
+          </div>
 
-        <v-divider></v-divider>
-        <!-- TUTORIAL -->
-        <v-container v-if="!user && !isFetchingUser" fluid class="py-0">
-          <v-row justify="center" class="py-0">
-            <v-col :cols="computeVideoSize()" class="py-0">
-              <v-card>
-                <v-card-subtitle class="black--text">Ask & answer questions with text and visuals</v-card-subtitle>
-                <v-img :aspect-ratio="16/9">
-                  <DoodleVideo
-                    ref="DoodleVideo1"
-                    whiteboardID="BlEjXn7RP7q8YwxG8FLO"
-                    canvasID="1"
-                    @animation-loaded="hasFetchedVideos = true"
-                    @strokes-ready="startDemo()"
-                  />
-                </v-img>
-              </v-card>
-            </v-col>
-            <v-col :cols="computeVideoSize()" class="py-0">
-              <v-card>
-                <v-card-subtitle class="black--text">
-                  Draw & talk on the real-time blackboard
-                </v-card-subtitle>
-                <v-img :aspect-ratio="16/9">
-                  <DoodleVideo
-                    ref="DoodleVideo2"
-                    whiteboardID="8hcybKON8Br67bNUA9TJ"
-                    canvasID="2"
-                    @animation-loaded="hasFetchedVideos = true"
-                  />
-                </v-img>
-              </v-card>
-            </v-col>
-            <v-col :cols="computeVideoSize()" class="py-0">
-              <v-card>
-                <v-card-subtitle class="black--text">
-                  Save & reuse any blackboard explanations
-                </v-card-subtitle>
-                <v-img :aspect-ratio="16/9">
-                  <DoodleVideo
-                    ref="DoodleVideo3"
-                    whiteboardID="vgPkZWvsqvt9pImHiMbe"
-                    canvasID="3"
-                    @animation-loaded="hasFetchedVideos = true"
-                  />
-                </v-img>
-              </v-card>
-            </v-col>
-          </v-row>
+          <!-- TUTORIAL -->
         </v-container>
       </v-card>
+
       <transition name="fade" mode="out-in">
-        <div v-if="isFetchingUser || user === null" key="loading..."></div>
-        <div v-else key="class-list">
-          <v-container fluid>
-            <v-row>
-              <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
-                  <v-card @click="$router.push(`${i}/questions/`)">
-                      <v-card-title>{{ s.name }}</v-card-title>
-                  </v-card>
+        <v-container class="py-10">
+          <div v-if="isFetchingUser || user === null" key="loading...">
+            <v-row justify="center" class="py-0 text-center">
+              <v-col cols="12" sm="6" md="4">
+                <v-card elevation="10">
+                  <v-card-subtitle
+                    class="black--text font-weight-medium"
+                  >Ask & answer questions with text and visuals</v-card-subtitle>
+                  <v-img :aspect-ratio="16/9">
+                    <DoodleVideo
+                      ref="DoodleVideo1"
+                      whiteboardID="BlEjXn7RP7q8YwxG8FLO"
+                      canvasID="1"
+                      @animation-loaded="hasFetchedVideos = true"
+                      @strokes-ready="startDemo()"
+                    />
+                  </v-img>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-card elevation="10">
+                  <v-card-subtitle
+                    class="black--text font-weight-medium"
+                  >Draw & talk on the real-time blackboard</v-card-subtitle>
+                  <v-img :aspect-ratio="16/9">
+                    <DoodleVideo
+                      ref="DoodleVideo2"
+                      whiteboardID="8hcybKON8Br67bNUA9TJ"
+                      canvasID="2"
+                      @animation-loaded="hasFetchedVideos = true"
+                    />
+                  </v-img>
+                </v-card>
+              </v-col>
+              <v-col cols="12" sm="6" md="4">
+                <v-card elevation="10">
+                  <v-card-subtitle
+                    class="black--text font-weight-medium"
+                  >Save & reuse any blackboard explanations</v-card-subtitle>
+                  <v-img :aspect-ratio="16/9">
+                    <DoodleVideo
+                      ref="DoodleVideo3"
+                      whiteboardID="vgPkZWvsqvt9pImHiMbe"
+                      canvasID="3"
+                      @animation-loaded="hasFetchedVideos = true"
+                    />
+                  </v-img>
+                </v-card>
               </v-col>
             </v-row>
-          </v-container>
-        </div>
+          </div>
+          <div v-else key="class-list">
+            <div class="enrolled-classes-header text-center mb-5">
+              <h2>Your Classes</h2>
+            </div>
+            <v-row justify="space-around" align="stretch">
+              <v-col cols="10" sm="4" md="3" v-for="(s, i) in user.enrolledClasses" :key="i">
+                <v-card hover @click="$router.push(`${i}/questions/`)" class="text-center">
+                  <v-card-title>{{ s.name }}</v-card-title>
+                </v-card>
+              </v-col>
+            </v-row>
+          </div>
+        </v-container>
       </transition>
     </v-content>
   </div>
@@ -194,22 +210,29 @@ export default {
       searchBarDialogOptions: ["No", "Yes"],
       // todo - let the popup button handle it itself
       newClassPopup: false,
-      loginPopup: false,
+      loginPopup: false
     };
   },
-  created () {
+  created() {
     this.fetchClasses();
   },
+  mounted() {
+    this.logoVisibility();
+    window.addEventListener("scroll", this.logoVisibility);
+  },
+  destroyed() {
+    window.removeEventListener("scroll", this.logoVisibility);
+  },
   methods: {
-    startDemo () {
+    startDemo() {
       this.$nextTick(async () => {
         const DoodleVideo1 = this.$refs.DoodleVideo1;
         const DoodleVideo2 = this.$refs.DoodleVideo2;
         const DoodleVideo3 = this.$refs.DoodleVideo3;
-        await DoodleVideo1.quickplay()
-        await DoodleVideo2.quickplay()
-        DoodleVideo3.quickplay()
-      })
+        await DoodleVideo1.quickplay();
+        await DoodleVideo2.quickplay();
+        DoodleVideo3.quickplay();
+      });
     },
     fetchClasses() {
       this.classes = [];
@@ -264,20 +287,20 @@ export default {
     computeVideoSize() {
       return this.$vuetify.breakpoint.smAndDown ? 12 : 4;
     },
-    computeCardSize({ courseNumber }) {
-      if (courseNumber.length > 13) {
+    computeCardSize() {
+      if (this.classes.length > 13) {
         if (this.$vuetify.breakpoint.md) return 4;
         else if (this.$vuetify.breakpoint.smAndDown) return 12;
       }
       return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
     },
-     async updateUser ({ name, color }) {
+    async updateUser({ name, color }) {
       const ref = db.collection("users").doc(this.user.uid);
       ref.update({
         name
       });
     },
-    signIn ({ email, password }) {
+    signIn({ email, password }) {
       firebase
         .auth()
         .signInWithEmailAndPassword(email, password)
@@ -292,7 +315,7 @@ export default {
           this.snackbar = true;
         });
     },
-    createAccount ({ email, password }) {
+    createAccount({ email, password }) {
       firebase
         .auth()
         .createUserWithEmailAndPassword(email, password)
@@ -306,8 +329,18 @@ export default {
           this.snackbar = true;
         });
     },
-    signOut () {
+    signOut() {
       firebase.auth().signOut();
+    },
+    logoVisibility() {
+      var hero_pos = document
+        .querySelector(".central-title")
+        .getBoundingClientRect().top;
+      if (hero_pos < 0) {
+        document.getElementById("home-page").classList.add("scrolled");
+      } else {
+        document.getElementById("home-page").classList.remove("scrolled");
+      }
     }
   }
 };
@@ -320,5 +353,30 @@ export default {
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
+}
+#home-page .app-banner {
+  border-bottom: none !important;
+}
+.hero-img {
+  max-width: 20%;
+  width: 90px;
+}
+.central-title h1 {
+  font-size: 3em;
+  font-weight: 600;
+  font-family: "Raleway", sans-serif;
+  text-decoration: underline;
+  text-decoration-color: #eee;
+}
+#home-page .app-banner .home-logo {
+  display: none;
+}
+#home-page.scrolled .app-banner .home-logo {
+  display: unset;
+}
+@media (max-width: 400px) {
+  .central-title h1 {
+    font-size: 2.5em;
+  }
 }
 </style>
