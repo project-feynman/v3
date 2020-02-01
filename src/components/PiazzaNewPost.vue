@@ -115,8 +115,6 @@
 import Vue from "vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
-import SearchBar from "@/components/SearchBar.vue";
-import Tags from "@/components/Tags.vue";
 
 export default {
   props: {
@@ -127,8 +125,6 @@ export default {
   },
   components: {
     Blackboard,
-    Tags,
-    SearchBar
   },
   data: () => ({
     postTitle: "",

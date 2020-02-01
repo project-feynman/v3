@@ -2,36 +2,26 @@
   <div>
     <v-card class="d-flex flex-column" style="cursor: pointer;"> 
       <div @click="handleTitleClicked()">
-
         <v-card-title primary-title >
           <v-text-field 
             v-if="isEditing" 
-            v-model="localTitle" label="Title"
+            label="Title"
+            v-model="localTitle" 
           />
           <div v-else class="title font-weight-bold">
             {{ title }}
           </div>
         </v-card-title>
-
         <v-card-subtitle >
           {{ subtitle }}
         </v-card-subtitle>
-        
-        <v-card-text v-if="!show" style="text-overflow: ellipsis; 
-                            overflow: hidden; 
-                            white-space: nowrap;">
+        <v-card-text v-if="!show" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
           {{ description || "No description." }}
         </v-card-text>
-        <v-card-text v-else >
+        <v-card-text v-else>
           {{ description || "No description." }}
         </v-card-text>
-
       </div>
-
-      <!-- <v-btn icon @click="show = !show" style="align-self: flex-end">
-            <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-      </v-btn> -->
-
       <v-img :aspect-ratio="16/9">
         <slot name="card-image">
           
