@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%">
+  <div @click="handleClick()" style="height: 100%">
     <BaseOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
       <canvas
         v-if="isFullscreen"
@@ -103,6 +103,9 @@ export default {
       //   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       // }
       this.$emit("animation-loaded");
+    },
+    handleClick () {
+      this.$emit('canvas-clicked');
     }
   }
 };

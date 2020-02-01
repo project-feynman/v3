@@ -8,8 +8,9 @@
           v-if="video"
           :audioURL="video.audioURL"
           :whiteboardID="$route.params.video_id"
-          @full-video-ready="playVideo()"
+          @full-video-ready="initFullVideo()"
           @video-clicked="handleClick()"
+          @strokes-ready="handleStrokesReady()"
           ref="DoodleVideo"
         />
     </v-content>
@@ -64,13 +65,25 @@ export default {
     }
   },
   methods: {
-    playVideo () {
+    initFullVideo () {
       this.resourcesLoaded = true
       const DoodleVideo = this.$refs.DoodleVideo
       DoodleVideo.resizeVideo() // might need next tick 
     },
-    handleClick(){
-      ////implement if you want to play and pause
+    handleStrokesReady () {
+      if (!this.video.audioURL) {
+        this.$nextTick(() => {
+            this.resourcesLoaded = true
+            const DoodleVideo = this.$refs.DoodleVideo;
+            DoodleVideo.quickplay();
+          });
+      }
+    },
+    handleClick (){
+      const DoodleVideo = this.$refs.DoodleVideo;
+      if (!DoodleVideo.isQuickplaying) {
+        DoodleVideo.quickplay();
+      }
     },
 
     async bindVariables() {

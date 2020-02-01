@@ -112,8 +112,8 @@
 import Vue from 'vue';
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import BlackboardMini from "@/components/BlackboardMini.vue"
-import SearchBar from '@/components/SearchBar.vue'
-import Tags from "@/components/Tags.vue"
+// import SearchBar from '@/components/SearchBar.vue'
+// import Tags from "@/components/Tags.vue"
 
 export default {
   props: {
@@ -124,8 +124,8 @@ export default {
   },
   components: {
     BlackboardMini,
-    Tags,
-    SearchBar
+    // Tags,
+    // SearchBar
   },
   data: () => ({
     postTitle: "",
@@ -162,10 +162,7 @@ export default {
     },
     getDate () {
       var today = new Date();
-      var dd = String(today.getDate()).padStart(2, '0');
-      var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-      var yyyy = today.getFullYear()
-      return today = mm + '/' + dd + '/' + yyyy
+      return today.toISOString();
     },
     boardImage (boardImage) {
       if (boardImage) {

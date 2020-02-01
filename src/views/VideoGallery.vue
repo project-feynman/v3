@@ -14,9 +14,18 @@
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
+<<<<<<< HEAD
               <RenderlessFetchVideos :tabNumber="i" :classID="classID" @videos-fetched="hasFetchedVideos=true">
+=======
+              <RenderlessFetchVideos 
+                :tabNumber="i" 
+                :classID="classDoc.courseNumber" 
+                @videos-fetched="hasFetchedVideos=true"
+              >
+>>>>>>> master
                 <template slot-scope="{ videos }">
-                  <BaseGrid>
+                  <v-container fluid>
+                    <v-row>
                     <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
                       <BaseCard
                         @save-tab-number="newValue => handleTabChange(newValue, video)"
@@ -29,6 +38,7 @@
                         :tabNumber="i"
                         class="mb-5"
                         :ref="`card--${j}`"
+                        @title-clicked="handleAction('FULL VIDEO', video, j)"
                       >
                         <!-- IMAGE SLOT -->
                         <template v-slot:card-image>
@@ -42,20 +52,6 @@
                             @mouse-change="handleAction('HANDLEHOVER', video, `${i}-${j}`, $event)"
                           />
                         </template>
-
-                        <!-- BUTTONS SLOT -->
-                        <template v-slot:card-actions>
-                          <v-btn @click="handleAction('FULL VIDEO', video, j)" text color="secondary">
-                            FULL VIDEO
-                          </v-btn>
-                          <v-btn @click="handleAction('QUICKPLAY', video, `${i}-${j}`)" text color="secondary">
-                            QUICKPLAY
-                          </v-btn>
-                          <v-btn v-if="hasPermission(video)" @click="initEditForCard(j)" text color="secondary" class="subtitle-2">
-                            EDIT
-                          </v-btn>
-                        </template>
-
                         <template v-slot:card-actions-editing>
                           <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
                             DELETE
@@ -63,7 +59,8 @@
                         </template> 
                       </BaseCard>
                     </v-col>
-                  </BaseGrid>
+                    </v-row>
+                  </v-container>
                 </template>
               </RenderlessFetchVideos>
             </v-tab-item>
@@ -76,11 +73,9 @@
 
 <script>
 import BaseCard from "@/components/BaseCard.vue"
-import BaseGrid from "@/components/BaseGrid.vue"
 import BaseAppBar from "@/components/BaseAppBar.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue'
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
 import db from "@/database.js"
 import firebase from "firebase/app"
@@ -93,10 +88,8 @@ export default {
     VideoGalleryTabs,
     DoodleVideo,
     BaseCard,
-    BaseGrid,
     BaseAppBar,
-    RenderlessFetchVideos,
-    RenderlessFetchStrokes
+    RenderlessFetchVideos
   },
   data () {
     return {
@@ -145,7 +138,6 @@ export default {
         }
       }
       else if (buttonName === "QUICKPLAY") {
-        console.log("what is this? ", this.$refs[`doodle-video-${canvasID}`])
         this.$nextTick(() => {
           const videoElem = this.$refs[`doodle-video-${canvasID}`][0];
           if (!videoElem.isQuickplaying){

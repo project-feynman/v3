@@ -9,13 +9,14 @@
         <img :src="post.image"/>
       </div>
       <DoodleVideo 
-      :whiteboardID="post.blackboardID" 
-      :hasSubcollection="false"
-      :canvasID="`${postNumber}`"
-      :audioURL="post.audioURL"
-      :height="`${getFullWidth() * 9/16}`"
-      ref = "DoodleVideo"
-      @full-video-ready="initVideo()"
+        :whiteboardID="post.blackboardID" 
+        :hasSubcollection="false"
+        :canvasID="`${postNumber}`"
+        :audioURL="post.audioURL"
+        :height="`${getFullWidth() * 9/16}`"
+        ref = "DoodleVideo"
+        @full-video-ready="initVideo()"
+        @canvas-clicked="handleClick()"
       />
     </v-container>
     <footer class="post-footer px-4 py-3">
@@ -26,7 +27,6 @@
 
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue"
-import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"
 import db from "@/database.js";
 
 export default {
@@ -36,8 +36,7 @@ export default {
     postType: String
   },
   components: {
-    DoodleVideo,
-    RenderlessFetchStrokes
+    DoodleVideo
   },
   data () {
     return {
@@ -60,6 +59,14 @@ export default {
       // animation.drawStrokesInstantly()
       doodleVideo.resizeVideo();
       console.log("inititalized video")
+    },
+    handleClick() {
+      if (!this.post.audioURL){
+        const DoodleVideo = this.$refs.DoodleVideo;
+        if (!DoodleVideo.isQuickplaying){
+          DoodleVideo.quickplay();
+        }
+      }
     }
     // async fetchVideo () {
     //   const videoRef = db.collection("whiteboards").doc(this.post.videoID);

@@ -3,17 +3,16 @@
   <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
     <template v-if="!thumbnail || strokes.length > 0">
       <DoodleVideoAnimation
-        ref="animation"
-        v-if="strokes.length > 0"
-        :strokes="strokes"
-        :isFullscreen="false"
-        :canvasID="whiteboardID"
-        :height="height"
-        @animation-loaded="handleAnimationLoaded()"
-        @animation-finished="handleEvent()"
-        @click="handleClick()"
-      />
-
+          ref="animation"
+          v-if="strokes.length > 0"
+          :strokes="strokes"
+          :isFullscreen="false"
+          :canvasID="whiteboardID"
+          :height="height"
+          @animation-loaded="handleAnimationLoaded()"
+          @animation-finished="handleEvent()"
+          @canvas-clicked="handleClick()"
+        />
       <audio-recorder
         v-if="audioURL"
         ref="audioRecorder"
@@ -25,9 +24,9 @@
         @recorder-loaded="recorderLoaded=true"
       />
     </template>
-
     <template v-else-if="thumbnail">
-      <v-img :src="thumbnail">
+      <v-img @click="handleClick()"
+      :src="thumbnail">
         <!-- <v-container fill-height fluid>
           <v-row align="center" justify="center">
             <div>
@@ -54,15 +53,13 @@ export default {
   props: {
     thumbnail: String,
     whiteboardID: String,
-    hasSubcollection: {
-      type: Boolean,
-      default() {
-        return true;
-      }
-    },
     audioURL: String,
     canvasID: String,
-    height: String
+    height: String,
+    hasSubcollection: {
+      type: Boolean,
+      default () { return true; }
+    },
   },
   components: {
     DoodleVideoAnimation,
@@ -118,9 +115,6 @@ export default {
     },
     handleAnimationLoaded() {
       this.animationLoaded = true;
-      // this.$emit("animation-loaded");
-      // // this.$emit("strokes-ready");
-      // console.log("animationLoaded")
     },
     async quickplay () {
       const { animation } = this.$refs;
@@ -153,10 +147,6 @@ export default {
       });
       return P;
     },
-
-/////////////////////////////////////
-
-
     handlePlay() {
       const animation = this.$refs.animation;
       animation.overlay = false;
