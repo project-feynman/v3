@@ -88,7 +88,7 @@
                   <BaseSearchBar
                     color="accent"
                     label="Enter Class Number"
-                    :items="classesIDs"
+                    :items="classesNames"
                     @submit="classChosen"
                   ></BaseSearchBar>
                 </v-col>
