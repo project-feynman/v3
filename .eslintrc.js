@@ -3,10 +3,10 @@ module.exports = {
   env: {
     node: true
   },
-  'extends': [
-    '@vue/airbnb',
-    'plugin:vue/essential'
-  ],
+  // 'extends': [
+  //   '@vue/airbnb',
+  //   'plugin:vue/essential'
+  // ],
   rules: {
     'arrow-parens': ['error', 'as-needed'],
     'space-before-function-paren': ['error', 'always'],
