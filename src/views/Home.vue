@@ -213,7 +213,7 @@ export default {
   data() {
     return {
       classes: [],
-      classesIDs: [],
+      classesNames: [],
       snackbar: false,
       snackbarMessage: "",
       enrollementService: initEnrollementService(),
@@ -254,7 +254,7 @@ export default {
           querySnapshot.forEach(doc => {
             let docObj = { ".key": doc.id, ...doc.data() };
             this.classes.push(docObj);
-            this.classesIDs.push(docObj.name);
+            this.classesNames.push(docObj.name);
           });
         });
     },
@@ -262,6 +262,7 @@ export default {
       this.searchBarDialog = true;
       this.chosenClass = answer;
     },
+
     searchBarDialogSubmitted(answer) {
       if (answer == "No") {
         this.chosenClass = "";
@@ -273,14 +274,19 @@ export default {
       this.searchBarDialog = false;
     },
     async createClass(name) {
-      let classID = encodeKey(name);
-      const ref = db.collection("classes").doc(classID);
-      await ref.set({
+      this.fetchClasses();
+      if(name in this.classesNames)
+      {
+          console.log("Class Exists");
+          return;
+      }
+      const ref = db.collection("classes");
+      await ref.add({
         name,
         description: "description",
         introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
         paragraph: "paragraph",
-        tagsPool: [],
+        tags: [],
         tabs: ["New"]
       });
       //add to enrolled classes

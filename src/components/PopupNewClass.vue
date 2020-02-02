@@ -9,7 +9,7 @@
           <v-container grid-list-md>
             <v-layout wrap justify-center>
               <v-flex xs12>
-                <v-text-field v-model="courseNumber" placeholder="e.g. 6.006, 6.036" label="Course Number" required></v-text-field>
+                <v-text-field v-model="className" placeholder="e.g. 6.006, 6.036" label="Class Name" required></v-text-field>
               </v-flex>
             </v-layout>
           </v-container>
@@ -31,13 +31,13 @@ export default {
   },
   data () {
     return {
-      courseNumber: ''
+      className: ''
     }
   },
   methods: {
     createClass () {
       this.$emit('input', !this.value)
-      this.$emit('create-class', this.courseNumber)
+      this.$emit('create-class', this.className)
     }
   }
 }
