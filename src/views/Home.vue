@@ -71,9 +71,8 @@
             </v-btn>
           </template>
         </div>
-        <v-divider></v-divider>
-
-
+        <!-- <v-divider></v-divider> -->
+        
         <!-- Search bar  -->
         <v-container v-if="user">
           <v-row justify="center">

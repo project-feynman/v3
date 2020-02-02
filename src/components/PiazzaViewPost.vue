@@ -16,11 +16,11 @@
         :height="`${getFullWidth() * 9/16}`"
         ref = "DoodleVideo"
         @full-video-ready="initVideo()"
-        @video-clicked="hsdleClick()"
+        @video-clicked="handleClick()"
       />
     </v-container>
     <footer class="post-footer px-4 py-3">
-      Posted by {{ post.isAnonymous? 'Anonymous':post.author.name }}
+      Posted by {{ post.isAnonymous? 'Anonymous' : post.author.name }}
     </footer>
   </v-card>
 </template>
@@ -40,20 +40,18 @@ export default {
   },
   data () {
     return {
-    video: null
+      video: null
     }
   },
   methods: {
     getFullWidth () {
-      console.log("post: ", this.post)
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 
     },
     initVideo () {
-      const doodleVideo = this.$refs.DoodleVideo
-      doodleVideo.resizeVideo();
+      this.$refs.DoodleVideo.resizeVideo();
     },
-    handleClick() {
+    handleClick () {
       if (this.post.audioURL) return;
       const DoodleVideo = this.$refs.DoodleVideo;
       if (!DoodleVideo.isQuickplaying) DoodleVideo.quickplay();
