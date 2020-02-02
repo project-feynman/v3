@@ -43,9 +43,6 @@ export default {
     video: null
     }
   },
-  created () {
-    // this.fetchVideo();
-  },
   methods: {
     getFullWidth () {
       console.log("post: ", this.post)
@@ -53,31 +50,18 @@ export default {
       return window.innerWidth - 500 
     },
     initVideo () {
-      
       const doodleVideo = this.$refs.DoodleVideo
-      // const animation = doodleVideo.$refs["animation"]
-      // animation.drawStrokesInstantly()
       doodleVideo.resizeVideo();
-      console.log("inititalized video")
     },
     handleClick() {
-      if (!this.post.audioURL){
-        const DoodleVideo = this.$refs.DoodleVideo;
-        if (!DoodleVideo.isQuickplaying){
-          DoodleVideo.quickplay();
-        }
-      }
+      if (this.post.audioURL) return;
+      const DoodleVideo = this.$refs.DoodleVideo;
+      if (!DoodleVideo.isQuickplaying) DoodleVideo.quickplay();
     }
-    // async fetchVideo () {
-    //   const videoRef = db.collection("whiteboards").doc(this.post.videoID);
-    //   let video = await videoRef.get();
-    //   this.video = video.data();
-    //   console.log("thumbnail: ", this.video.thumbnail)
-    // }
-    /// we need to figure out how to get thumbnail into this
   }
 }
 </script>
+
 <style>
 .post-title {
     line-height: 1.3;

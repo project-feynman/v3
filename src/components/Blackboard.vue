@@ -301,7 +301,7 @@ export default {
     }
   },
   beforeDestroy() {
-    this.unsubscribe();
+    if (this.unsubscribe) this.unsubscribe();
   },
   destroyed() {
     //mini
