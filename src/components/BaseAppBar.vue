@@ -17,7 +17,6 @@
       @click="$router.push('/')"
     />
     <v-toolbar-title
-      v-if="className"
       :class="['home-logo', 'headline', 'font-weight-regular', 'ml-2',page==='realtime'?'d-none':'','d-md-block']"
       @click="$router.push('/')"
     >
