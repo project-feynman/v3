@@ -17,10 +17,11 @@
       @click="$router.push('/')"
     />
     <v-toolbar-title
+      v-if="className"
       :class="['home-logo', 'headline', 'font-weight-regular', 'ml-2',page==='realtime'?'d-none':'','d-md-block']"
       @click="$router.push('/')"
     >
-      {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${classData.name}` }}
+      {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${className}` }}
     </v-toolbar-title>
     <v-progress-linear
       :active="loading"
@@ -30,19 +31,41 @@
       color="deep-purple accent-4"
     />
     <v-spacer />
-    <slot></slot>
+    <slot>
+
+    </slot>
   </v-app-bar>
 </template>
 
 <script>
+import db from "@/database.js"
+
 export default {
   props: {
     loading: Boolean,
     icon: String,
     page: String,
-    classData: {
-      type: Object,
-      default () { return false; }
+    classID: String
+  },
+  data () {
+    return {
+      className: ""
+    }
+  },
+  watch: {
+    $route: {
+      handler: "getClassName",
+      immediate: true
+    }
+  },
+  methods: {
+    async getClassName () {
+      if (this.$route.path === "/") return;
+      else if (this.$route.params.class_id) {
+        const ref = db.collection("classes").doc(this.$route.params.class_id);
+        const classDoc = await ref.get();
+        this.className = classDoc.data().name;
+      }
     }
   }
 };
