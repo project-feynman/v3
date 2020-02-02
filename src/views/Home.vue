@@ -62,7 +62,7 @@
         </div>
         <div style="margin: auto" class="mb-5">
           <!-- previous button color was deep-purple accent-4 -->
-          <template v-if="!user">
+          <template v-if="!user && !isFetchingUser">
             <v-btn @click="loginPopup = true" color="secondary" text>
               LOG IN
             </v-btn>
@@ -73,17 +73,19 @@
         </div>
         <v-divider></v-divider>
 
-        <v-container>
-        <v-row justify="center">
-        <v-col cols="6">
-        <SearchBar 
-            color="accent"
-            label="Enter Class Number"
-            :items="classesNames"
-            @submit="classChosen">
-        </SearchBar>
-        </v-col>
-        </v-row>
+
+        <!-- Search bar  -->
+        <v-container v-if="user">
+          <v-row justify="center">
+            <v-col cols="6">
+              <BaseSearchBar 
+                color="accent"
+                label="Enter Class Number"
+                :items="classesNames"
+                @submit="classChosen">
+              </BaseSearchBar>
+            </v-col>
+          </v-row>
         </v-container>
 
         <v-divider></v-divider>
