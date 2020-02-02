@@ -9,7 +9,7 @@
 
       <BaseAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
-          <BoardToolBar
+          <BlackboardToolBar
             :currentState="currentState"
             :eraserActive="eraserActive"
             :color="color"
@@ -27,7 +27,7 @@
 
       <!-- APP BAR -->
       <div v-if="!isRealtime" id="mini-toolbar">
-        <BoardToolBar
+        <BlackboardToolBar
           :currentState="currentState"
           :eraserActive="eraserActive"
           :color="color"
@@ -87,7 +87,7 @@ import "vue-swatches/dist/vue-swatches.min.css";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
 import BaseAppBar from "@/components/BaseAppBar.vue";
-import BoardToolBar from "@/components/BoardToolBar.vue";
+import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 import {initClassesService} from '../dep';
 
@@ -105,7 +105,7 @@ export default {
     AudioRecorder,
     Swatches,
     BaseAppBar,
-    BoardToolBar
+    BlackboardToolBar
   },
   mixins: [DrawMethods],
   computed: {
