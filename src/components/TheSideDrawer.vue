@@ -1,6 +1,6 @@
 <template>
-  <v-card>
-    <v-navigation-drawer 
+  <v-card style="zIndex:6">
+    <v-navigation-drawer
       app
       :value="value"
       @input="newValue => $emit('input', newValue)"
@@ -10,34 +10,37 @@
       <v-list>
         <!-- QUESTIONS -->
         <v-list-item link :to="`/${this.$route.params.class_id}/questions`">
-          <v-list-item-icon><v-icon>priority_high</v-icon></v-list-item-icon>
+          <v-list-item-icon>
+            <v-icon>priority_high</v-icon>
+          </v-list-item-icon>
           <v-list-item-content>Q&A</v-list-item-content>
         </v-list-item>
-        
-        <v-divider/>
+
+        <v-divider />
 
         <!-- VIDEOS -->
         <v-list-item link :to="`/${this.$route.params.class_id}/videos`">
-          <v-list-item-icon><v-icon>video_library</v-icon></v-list-item-icon>
+          <v-list-item-icon>
+            <v-icon>video_library</v-icon>
+          </v-list-item-icon>
           <v-list-item-content>Saved videos</v-list-item-content>
         </v-list-item>
-        
-        <v-divider/>
+
+        <v-divider />
 
         <v-list-item>
           <v-list-item-content>
-            <v-list-item-title class="title">
-              Realtime boards
-            </v-list-item-title>
+            <v-list-item-title class="title">Realtime boards</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
-        <v-divider/>
+        <v-divider />
 
         <!-- BLACKBOARDS -->
         <template v-if="hasFetchedWorkspaces">
-          <v-list-item 
-            v-for="(workspace, i) in workspaces" :key="workspace['.key']"
+          <v-list-item
+            v-for="(workspace, i) in workspaces"
+            :key="workspace['.key']"
             :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
           >
             <template v-if="workspace.members">
@@ -52,10 +55,7 @@
               </v-list-item-content>
             </template>
           </v-list-item>
-          <v-list-item 
-            v-if="workspaces.length < 6" 
-            @click="addWorkspace()" link
-          >
+          <v-list-item v-if="workspaces.length < 6" @click="addWorkspace()" link>
             <v-list-item-icon>
               <v-icon color="grey darken-1">add</v-icon>
             </v-list-item-icon>
@@ -68,71 +68,86 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import db from '@/database.js'
-import firebase from 'firebase/app'
-import "firebase/auth"
+import { mapState } from "vuex";
+import db from "@/database.js";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 export default {
   props: {
     value: Boolean
   },
-  data () {
+  data() {
     return {
       drawer: true,
       mini: false,
       prevClassID: "",
       workspaces: [],
       hasFetchedWorkspaces: false
-    }
+    };
   },
   computed: {
-    user () {
-      return this.$store.state.user
+    user() {
+      return this.$store.state.user;
     }
   },
   watch: {
     $route: {
-      handler: 'updateNavComponents',
+      handler: "updateNavComponents",
       immediate: true
-    },
+    }
   },
   methods: {
-    async addWorkspace () {
-      const workspacesRef = db.collection("classes").doc(this.prevClassID).collection("workspaces")
-      const whiteboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      db.collection("whiteboards").doc(whiteboardID).set({})
+    async addWorkspace() {
+      const workspacesRef = db
+        .collection("classes")
+        .doc(this.prevClassID)
+        .collection("workspaces");
+      const whiteboardID =
+        Math.random()
+          .toString(36)
+          .substring(2, 15) +
+        Math.random()
+          .toString(36)
+          .substring(2, 15);
+      db.collection("whiteboards")
+        .doc(whiteboardID)
+        .set({});
       workspacesRef.add({
         ownerUID: this.user.uid || "anonymous",
         whiteboardID,
         members: []
-      })
+      });
     },
-    clickedButtonStateName () {
-      const buttonState = this.clickedButtonStateName
-      this[buttonState] = !this[buttonState]
-      this.$root.$on('delete-whiteboard-strokes-success', () => (this[buttonState] = false))
-      this.clickedButtonStateName = null
+    clickedButtonStateName() {
+      const buttonState = this.clickedButtonStateName;
+      this[buttonState] = !this[buttonState];
+      this.$root.$on(
+        "delete-whiteboard-strokes-success",
+        () => (this[buttonState] = false)
+      );
+      this.clickedButtonStateName = null;
     },
-    async updateNavComponents () {
-      this.hasFetchedWorkspaces = false
-      const classID = this.$route.params.class_id
+    async updateNavComponents() {
+      this.hasFetchedWorkspaces = false;
+      const classID = this.$route.params.class_id;
       // sidenav content should not reload everytime the user navigates between the workspaces, but should update
       // everytime the user visits a different TA page
-      if (classID !== this.prevClassID) { // update sidenav content
-        const classRef = db.collection('classes').doc(classID)
-        await this.$binding('workspaces', classRef.collection('workspaces'))
-        this.prevClassID = classID
+      if (classID !== this.prevClassID) {
+        // update sidenav content
+        const classRef = db.collection("classes").doc(classID);
+        await this.$binding("workspaces", classRef.collection("workspaces"));
+        this.prevClassID = classID;
       }
-      this.hasFetchedWorkspaces = true
+      this.hasFetchedWorkspaces = true;
     },
-    getUserColor () {
+    getUserColor() {
       if (this.user) {
-        return this.user.color
+        return this.user.color;
       } else {
-        return "pink"
+        return "pink";
       }
     }
-  },
-}
+  }
+};
 </script>

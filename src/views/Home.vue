@@ -275,10 +275,9 @@ export default {
     },
     async createClass(name) {
       this.fetchClasses();
-      if(name in this.classesNames)
-      {
-          console.log("Class Exists");
-          return;
+      if (name in this.classesNames) {
+        console.log("Class Exists");
+        return;
       }
       const ref = db.collection("classes");
       await ref.add({
@@ -354,6 +353,7 @@ export default {
       var hero_pos = document
         .querySelector(".central-title")
         .getBoundingClientRect().top;
+      console.log("this is called", hero_pos);
       if (hero_pos < 0) {
         document.getElementById("home-page").classList.add("scrolled");
       } else {
