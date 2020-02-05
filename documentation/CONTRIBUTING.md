@@ -1,4 +1,4 @@
-# Contributing.md
+# CONTRIBUTING.md
 - **Documentation:** we use [OneNote](https://1drv.ms/u/s!Aq-kqfQKPQB-hapzHNlOWvL7hVfH_Q?e=bQd1CQ) 
 and [ExplainMIT](https://explain.mit.edu/vzAnPh3xFS1xCjt1aQo3/questions/)
 - **Task coordination:** we use [Trello](https://trello.com/b/2VdWvqBJ/explainmit) and [Facebook](https://www.facebook.com/eltonlin1998)
