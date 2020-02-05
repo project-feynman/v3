@@ -1,5 +1,5 @@
 # CONTRIBUTING.md
-- **Documentation:** OneNote ([web app](https://1drv.ms/u/s!Aq-kqfQKPQB-hapzHNlOWvL7hVfH_Q?e=bQd1CQ), [download link](https://www.onenote.com/download))
+- **Documentation:** OneNote ([use the web app directly](https://1drv.ms/u/s!Aq-kqfQKPQB-hapzHNlOWvL7hVfH_Q?e=bQd1CQ) or [download the native app for much faster load times](https://www.onenote.com/download))
 and [ExplainMIT](https://explain.mit.edu/vzAnPh3xFS1xCjt1aQo3/questions/)
 - **Task coordination:** [Trello](https://trello.com/b/2VdWvqBJ/explainmit) and [Facebook](https://www.facebook.com/eltonlin1998)
 
