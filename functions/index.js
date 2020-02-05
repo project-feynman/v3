@@ -1,6 +1,10 @@
-// const webpush = require('web-push')
-// const nodemailer = require('nodemailer')
-// const config = require('./config')
+const webpush = require("web-push");
+const nodemailer = require("nodemailer");
+const firebase_tools = require("firebase-tools");
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const config = require("./config");
+
 // const adminCredentials = require('./feynman-mvp-firebase-adminsdk-3zyg9-7ce076beb3.json')
 
 // admin.initializeApp({
@@ -8,26 +12,37 @@
 // 	databaseUrl: "https://feynman-mvp.firebaseio.com"
 // })
 
-// const vapidKeys = config.vapidKeys
-// webpush.setVapidDetails(
-// 	'mailto:hubewasi@gmail.com',
-// 	vapidKeys.publicKey,
-// 	vapidKeys.privateKey
-// )
+const { vapidKeys } = config;
+webpush.setVapidDetails(
+  "mailto:hubewasi@gmail.com",
+  vapidKeys.publicKey,
+  vapidKeys.privateKey
+);
 
-const gmailPass = config.gmailPass
-const oauth = config.oauth
+const { gmailPass } = config;
+const { oauth } = config;
 const transporter = nodemailer.createTransport({
-	host: 'smtp.gmail.com',
-	port: 465,
-	secure: true,
-	service: 'Gmail',
-	auth: oauth
-})
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  service: "Gmail",
+  auth: oauth
+});
 
-const firebase_tools = require("firebase-tools");
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
+function sendEmail (email, subject, text, html) {
+  const message = {
+    from: "\"Feynman Notifications\" feynmannotif@gmail.com",
+    to: email,
+    subject,
+    text,
+    html
+  };
+
+  transporter.sendMail(message, (error, response) => {
+    console.log(error);
+    console.log(response);
+  });
+}
 
 admin.initializeApp();
 
@@ -77,23 +92,22 @@ exports.emailOnNewQuestion = functions.firestore.document("/classes/{classID}/qu
   const question = doc.data();
   const { classID } = context.params;
   console.log(`Detected a new question ${question} for class ${classID}`);
-  // get class name from the ID
-  // const classRef = db.collection("classes").doc(classID);
-  // const classDoc = await classRef.get()
-  // if (!classDoc.data()) return;
-  // const className = classDoc.data().name
-
   // Get all classmates
   const classmatesRef = firestore.collection("users")
     .where("enrolledClasses", "array-contains", { name: classID, newQuestion: "always" });
-    .where("isOnline", "==", true)
+
+  // TEST
+  sendEmail("eltonlin1998@gmail.com", "TEST SUBJECT", "TEST TEXT", "<h1>HELLO WORLD</h1>");
+
+
+  // Send the emails
   const classmates = await classmatesRef.get();
   if (!classmates.data()) return;
   for (const classmate of classmates.data()) {
     console.log("classmate =", classmate);
-    // sendEmail()
   }
 });
+
 
 // send email to a person if his/her question got answered
 
@@ -198,21 +212,6 @@ exports.emailOnNewQuestion = functions.firestore.document("/classes/{classID}/qu
 // 	})
 // }
 
-// function _sendEmail(email, subject, text, html) {
-
-// 	const message = {
-// 		from: '"Feynman Notifications" feynmannotif@gmail.com',
-// 		to: email,
-// 		subject,
-// 		text,
-// 		html
-// 	}
-
-// 	transporter.sendMail(message, (error, response) => {
-// 		console.log(error)
-// 		console.log(response)
-// 	})
-// }
 // exports.sendNotificationByUid = functions.https.onCall((data, context) => {
 // 	_sendNotificationByUid(data.uid, data.title, data.body)
 // })
