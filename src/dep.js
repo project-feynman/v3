@@ -1,7 +1,7 @@
 import {HttpClient} from "./httpClient";
 import {GraphQLClient} from "./graphqlClient";
 import {Question} from "./services/question";
-import {Enrollement} from "./services/enrollement"
+import {Enrollement} from "./services/enrollment"
 import {Classes} from "./services/classes"
 
 const GRAPHQL_ENDPOINT = 'https://us-central1-feynman-mvp.cloudfunctions.net/GraphQLAPI';

@@ -236,17 +236,14 @@ export default {
     window.removeEventListener("scroll", this.logoVisibility);
   },
   methods: {
-    startDemo() {
+    startDemo () {
       this.$nextTick(async () => {
-        const DoodleVideo1 = this.$refs.DoodleVideo1;
-        const DoodleVideo2 = this.$refs.DoodleVideo2;
-        const DoodleVideo3 = this.$refs.DoodleVideo3;
-        await DoodleVideo1.quickplay();
-        await DoodleVideo2.quickplay();
-        DoodleVideo3.quickplay();
+        await this.$refs.DoodleVideo1.quickplay();
+        await this.$refs.DoodleVideo2.quickplay();
+        this.$refs.DoodleVideo3.quickplay();
       });
     },
-    fetchClasses() {
+    fetchClasses () {
       this.classes = [];
       db.collection("classes")
         .get()
@@ -254,6 +251,9 @@ export default {
           querySnapshot.forEach(doc => {
             let docObj = { ".key": doc.id, ...doc.data() };
             this.classes.push(docObj);
+
+            // schoolClasses
+
             this.classesNames.push(docObj.name);
           });
         });
@@ -275,10 +275,7 @@ export default {
     },
     async createClass(name) {
       this.fetchClasses();
-      if (name in this.classesNames) {
-        console.log("Class Exists");
-        return;
-      }
+      if (name in this.classesNames) { return; }
       const ref = db.collection("classes");
       await ref.add({
         name,
@@ -288,7 +285,6 @@ export default {
         tags: [],
         tabs: ["New"]
       });
-      //add to enrolled classes
       this.fetchClasses();
     },
     quickplayVideo(i) {
