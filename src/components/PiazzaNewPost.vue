@@ -149,7 +149,7 @@ export default {
       const post = { title: this.postTitle, 
                      description: this.postDescription, 
                      blackboardID,
-                     postTags : this.postTags,
+                    //  postTags: this.postTags,
                      audioURL: BlackboardMini.audioURL,
                      date: this.getDate(),
                      image: this.addedImage,
@@ -197,11 +197,11 @@ export default {
       Vue.set(this,'addedImage','')
     },
     //Start of Tags functions
-    addTag(tag) {
-        for(let t of this.postTags){
-            if(t == tag)return
-        }
-        this.postTags.push(tag)
+    addTag (tag) {
+      for (let t of this.postTags) {
+        if (t == tag) return;
+      }
+      this.postTags.push(tag)
     },
     deleteTag(tag) {
         this.postTags = this.postTags.filter(x => {return x != tag})

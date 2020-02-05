@@ -40,12 +40,12 @@ export class Enrollement {
     });
   }
 
-  changeNotification (user, className, notifType, notifFrequency) {
-    const classID = encodeKey(className);
-    const userDoc = db.collection("users").doc(user.uid);
-    const K = `enrolledClasses.${classID}.settings.notifications.${notifType}`;
-    userDoc.update({
-      [K]: notifFrequency
-    });
-  }
+//   changeNotification (user, className, notifType, notifFrequency) {
+//     const classID = encodeKey(className);
+//     const userDoc = db.collection("users").doc(user.uid);
+//     const K = `enrolledClasses.${classID}.settings.notifications.${notifType}`;
+//     userDoc.update({
+//       [K]: notifFrequency
+//     });
+//   }
 }
