@@ -22,8 +22,6 @@
                   :key="newQuestionKey"
                   postType="Question"
                   :visible="this.isViewingPost"
-                  :tagsPool="tagsPool"
-                  :withTags="true"
                   @post-submit="question => submitPost(question, questionsRef)"
                 />
               </template>
@@ -63,7 +61,6 @@ import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
 import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import firebase from "firebase/app"
 import "firebase/firestore"
-import {initQuestionService} from "../dep";
 import { mapState } from 'vuex'
 
 export default {
@@ -76,7 +73,6 @@ export default {
   },
   data: () => ({
     newQuestionKey: 0,
-    questionService: initQuestionService(),
     isAddingNewQuestion: true,
     currentQuestion: {},
     questions: [],
@@ -89,18 +85,9 @@ export default {
     activeElem: 0
   }),
   computed: {
-    user () {
-      return this.$store.state.user
-    },
-    questionsRef () {
-      const classID = this.$route.params.class_id
-      return db.collection("classes").doc(classID).collection("questions")
-    },
-    answersRef () {
-      const classID = this.$route.params.class_id
-      const questionID = this.currentQuestion['.key']
-      return db.collection("classes").doc(classID).collection("questions").doc(questionID).collection("answers")
-    }
+    user () { return this.$store.state.user },
+    questionsRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions") },
+    answersRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions").doc(this.currentQuestion['.key']).collection("answers") }
   },
   async created () {
     // first fetch questions
@@ -117,7 +104,7 @@ export default {
       }
     })
     // case 2: user wants to visit a specific question using a link
-    this.fetchTagsPool()
+    // this.fetchTagsPool()
   },
   mounted() {
     this.setQuestionsHeight();
@@ -127,7 +114,7 @@ export default {
   methods: {
     fetchQuestions () {
       // has to return a promise 
-      const P = new Promise(async (resolve) => {
+      const promise = new Promise(async (resolve) => {
         this.questions = []
         let questionDocs = await this.questionsRef.get()
         questionDocs.forEach(doc => {
@@ -135,7 +122,7 @@ export default {
         })
         resolve()
       }) 
-      return P
+      return promise
     },
     async fetchAnswers () {
       this.answers = [] 
@@ -143,13 +130,6 @@ export default {
       answersDocs.forEach(doc => {
         this.answers.push({".key": doc.id, ...doc.data()})
       })
-    },
-    async fetchTagsPool() {
-        /*this.tagsPool = []
-        const classID = this.$route.params.class_id
-        db.collection('classes').doc(classID).get().then(doc => {
-            this.tagsPool = doc.data().tagsPool
-        })*/
     },
     handleQuestionCreate () {
       // destroy and create a new one
@@ -167,42 +147,22 @@ export default {
     },
     async submitPost ({ post, boardStrokes }, ref) {
       db.collection("whiteboards").doc(post.blackboardID).set({
-            strokes: boardStrokes,
-            // image: this.whiteBoardImage
+        strokes: boardStrokes,
+        // image: this.whiteBoardImage
       })
-      // const postObj = post 
       post.author = this.user
       // below is graphQL 
       post.videoID = post.blackboardID;
-      post.questionDescription = post.description;
       post.classID = this.$route.params.class_id;
-      post.inquisitorID = this.user ? this.user.uid : "";
       await ref.add(post)
       this.fetchQuestions()
       // Incrementing the key causes the new question component to re-render to reset its state
       this.newQuestionKey += 1
-      console.log("this.newQuestionKey =", this.newQuestionKey)
       //this.fetchAnswers()
       // trigger email notification
       // let inquisitorID = this.user ? this.user.uid : "";
       // let classID = this.$route.params.class_id;
 
-      // trigger email notification
-      let question;
-      try {
-        // question = await this.questionService.askQuestion(post)
-        //   {
-        //   title,
-        //   questionDescription: description,
-        //   videoID: blackboardID,
-        //   date,
-        //   usersWhoUpvoted: [],
-        //   inquisitorID: inquisitorID,
-        //   classID,
-        // }
-      } catch (error) {
-        console.log(error)
-      }
       // TODO: reset/update variables
     },
     async deleteQuestion ({ ".key": questionID }) {
@@ -210,13 +170,9 @@ export default {
       await ref.delete()
       this.fetchQuestions()
     },
-    getFullWidth () {
-      return window.innerWidth
-    },
-    backToList() {
-      this.isViewingPost = false;
-    },
-    setQuestionsHeight() {
+    getFullWidth () { return window.innerWidth },
+    backToList () { this.isViewingPost = false; },
+    setQuestionsHeight () {
       if (this.$refs.main) {
         var topOffset = this.$refs.main.getBoundingClientRect();
         this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
