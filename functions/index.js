@@ -1,6 +1,3 @@
-// const admin = require('firebase-admin')
-// const functions = require('firebase-functions')
-
 // const webpush = require('web-push')
 // const nodemailer = require('nodemailer')
 // const config = require('./config')
@@ -18,15 +15,16 @@
 // 	vapidKeys.privateKey
 // )
 
-// const gmailPass = config.gmailPass
-// const oauth = config.oauth
-// const transporter = nodemailer.createTransport({
-// 	host: 'smtp.gmail.com',
-// 	port: 465,
-// 	secure: true,
-// 	service: 'Gmail',
-// 	auth: oauth
-// })
+const gmailPass = config.gmailPass
+const oauth = config.oauth
+const transporter = nodemailer.createTransport({
+	host: 'smtp.gmail.com',
+	port: 465,
+	secure: true,
+	service: 'Gmail',
+	auth: oauth
+})
+
 const firebase_tools = require("firebase-tools");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
@@ -39,60 +37,65 @@ admin.initializeApp();
 const firestore = admin.firestore();
 firestore.settings({ timestampsInSnapshots: true });
 
-
+// keep track of whether users are online or offline
 exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(
   async (change, context) => {
     // Get the data written to Realtime Database
-    const eventStatus = change.after.val();
-    // eventStatus = {
-    //   isOnline: false
-    // }
+    const eventStatus = change.after.val(); // console.log(eventStatus) --> { isOnline: false }
 
-    // Then use other event data to create a reference to the
-    // corresponding Firestore document.
+    // Then use other event data to create a reference to the corresponding Firestore document.
     const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`);
 
-    // multiple requests may have been triggered, but earlier requests might not actually resolve earlier
-    // therefore it's necessary to compare the timestamps
+    // multiple requests may have been triggered, but earlier requests might not actually resolve earlier therefore it's necessary to compare the timestamps
     const statusSnapshot = await change.after.ref.once("value");
     const status = statusSnapshot.val();
-    console.log(status, eventStatus);
-    // If the current timestamp for this data is newer than
-    // the data that triggered this event, we exit this function.
-    if (status.last_changed > eventStatus.last_changed) {
-      return null;
-    }
+
+    // If the current timestamp for this data is newer than the data that triggered this event, we exit this function.
+    if (status.last_changed > eventStatus.last_changed) return null;
     // eventStatus.last_changed = new Date(eventStatus.last_changed)
     return firestoreUserRef.update(eventStatus);
   }
 );
 
+// updates blackboard participants when people join and leave
 exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{class_id}/{workspace_id}").onUpdate(
-  async (change, context) => {
-    console.log("onWorkspaceParticipantsChanged()");
-    // obtain the data that was just written to Firebase
+  (change, context) => {
     const userWhoLeft = change.after.val();
-    console.log("userWhoLeft =", userWhoLeft);
-    if (!userWhoLeft.uid) {
-      console.log("false alarm")
-    } else {
-      console.log("updating members");
-      const firebaseClassID = context.params.class_id.replace("-", ".");
-      const workspaceFirestoreRef = firestore.doc(`/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`);
-      console.log("ref =", `/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`);
-      await workspaceFirestoreRef.update({
-        members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
-      });
-      const workspaceDoc = await workspaceFirestoreRef.get();
-      if (workspaceDoc.data().members.length === 0) {
-        workspaceFirestoreRef.update({
-          hasAudioRoom: false
-        });
-        console.log("successfully updated hasAudioRoom to false");
-      }
-    }
+    if (!userWhoLeft.uid) return;
+
+    // update participants
+    const firebaseClassID = context.params.class_id.replace("-", ".");
+    const workspaceFirestoreRef = firestore.doc(`/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`);
+    workspaceFirestoreRef.update({
+      members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
+    });
   }
 );
+
+// Sends email to entire class whenever a new question is created
+exports.emailOnNewQuestion = functions.firestore.document("/classes/{classID}/questions/{questionID}").onCreate(async (doc, context) => {
+  const question = doc.data();
+  const { classID } = context.params;
+  console.log(`Detected a new question ${question} for class ${classID}`);
+  // get class name from the ID
+  // const classRef = db.collection("classes").doc(classID);
+  // const classDoc = await classRef.get()
+  // if (!classDoc.data()) return;
+  // const className = classDoc.data().name
+
+  // Get all classmates
+  const classmatesRef = firestore.collection("users")
+    .where("enrolledClasses", "array-contains", { name: classID, newQuestion: "always" });
+    .where("isOnline", "==", true)
+  const classmates = await classmatesRef.get();
+  if (!classmates.data()) return;
+  for (const classmate of classmates.data()) {
+    console.log("classmate =", classmate);
+    // sendEmail()
+  }
+});
+
+// send email to a person if his/her question got answered
 
 // exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{wid}/messages/{mid}').onCreate((doc, context) => {
 // 	_updateParticipants()
@@ -124,9 +127,6 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{cla
 // 		})
 // 	})
 
-exports.notifyOnNewQuestion() = functions.firestore.document('/classes/{classID}/questions').onUpdate((doc, context) => {
-  
-})
 // 	return null;
 // })
 
@@ -287,18 +287,6 @@ exports.notifyOnNewQuestion() = functions.firestore.document('/classes/{classID}
 //     });
 // });
 
-// // [START recursive_delete_function]
-// /**
-//  * Initiate a recursive delete of documents at a given path.
-//  *
-//  * The calling user must be authenticated and have the custom "admin" attribute
-//  * set to true on the auth token.
-//  *
-//  * This delete is NOT an atomic operation and it's possible
-//  * that it may fail after only deleting some documents.
-//  *
-//  * @param {string} data.path the document or collection path to delete.
-//  */
 exports.recursiveDelete = functions
   .runWith({
     timeoutSeconds: 540,
