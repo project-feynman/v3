@@ -2,11 +2,11 @@
 ExplainMIT is a website optimized for blackboard explanations. 
 
 * **[Problem:](https://medium.com/@eltonlin1998/look-and-youll-see-71cb92125baa)** 
-Help is scarce because people are busy
+Explanations are scarce because people don't have time
 * **[Insight:](https://medium.com/@eltonlin1998/how-explainmit-optimizes-efficiency-for-content-creation-b0162895ff81)** 
-Capture the explanations that are passed among peers anyway
+People explain things all the time - it's just the explanations are lost.
 * **[Solution:](https://www.youtube.com/watch?v=POis_ihKexo)**
-Get people to use our blackboards so explanations are saveable and reusable.  
+If people explain things on our blackboards then the explanations are preservable. 
 
 ## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 - **Technologies:** Vue.js frontend, Firebase backend
