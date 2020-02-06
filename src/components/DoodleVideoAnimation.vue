@@ -1,24 +1,24 @@
 <template>
   <div @click="handleClick()" style="height: 100%">
-    <BaseOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
+    <DoodleVideoOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
       <canvas
         v-if="isFullscreen"
         :id="`myCanvas-${canvasID}`"
         style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
       ></canvas>
-    </BaseOverlay>
-    <!-- <BaseOverlay v-else :overlay="false" @play-video="playVideo()"> -->
+    </DoodleVideoOverlay>
+    <!-- <DoodleVideoOverlay v-else :overlay="false" @play-video="playVideo()"> -->
     <canvas
       v-else
       :id="`myCanvas-${canvasID}`"
       style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
     ></canvas>
-    <!-- </BaseOverlay> -->
+    <!-- </DoodleVideoOverlay> -->
   </div>
 </template>
 
 <script>
-import BaseOverlay from "@/components/BaseOverlay.vue";
+import DoodleVideoOverlay from "@/components/DoodleVideoOverlay.vue";
 import { mapState } from "vuex";
 import DrawMethods from "@/mixins/DrawMethods";
 import db from "@/database.js";
@@ -39,7 +39,7 @@ export default {
     }
   },
   components: {
-    BaseOverlay
+    DoodleVideoOverlay
   },
   mixins: [DrawMethods],
   computed: {
