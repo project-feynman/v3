@@ -7,7 +7,7 @@
     </v-snackbar>
 
     <!-- APP BAR -->
-    <BaseAppBar>
+    <TheAppBar>
       <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
         BLOG
       </v-btn>
@@ -22,22 +22,21 @@
           color="accent lighten-1"
         />
       </template>
-      <template v-if="!isFetchingUser">
+      <template v-if="user">
         <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
-        <BaseMenu
-          v-if="user"
+        <TheDropdownMenu
           @save="payload => updateUser(payload)"
           @sign-out="signOut()"
           @notif-setting-change="payload => updateNotifSetting(payload)"
         >
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
-              <v-icon large :color="user.color">account_circle</v-icon>
+              <v-icon large :color="user.color">notifications_active</v-icon>
             </v-btn>
           </template>
-        </BaseMenu>
+        </TheDropdownMenu>
       </template>
-    </BaseAppBar>
+    </TheAppBar>
 
     <!-- MAIN CONTENT -->
     <v-content>
@@ -73,13 +72,13 @@
                 </v-col>
               </template>
               <!-- Search Bar -->
-              <template v-else>
+              <template v-else-if="user">
                 <v-col cols="12" sm="6">
                   <BaseSearchBar 
                     :items="schoolClasses"
                     @submit="payload => enrollInClass(payload)"
                     color="accent"
-                    label="Enter Class Number"
+                    label="Join an existing class"
                   />
                 </v-col>
               </template>
@@ -143,28 +142,34 @@
           </div>
 
           <div v-else-if="user" key="class-list">
-            <div class="enrolled-classes-header text-center mb-5">
+            <!-- <div class="enrolled-classes-header text-center mb-5">
               <h2>Your Classes</h2>
-            </div>
-            <v-row justify="space-around" align="stretch" class="enrolled-classes">
-              <v-col
+            </div> -->
+            <v-row align="stretch" class="enrolled-classes">
+              <!-- <v-col
                 v-for="enrolledClass in user.enrolledClasses"
                 cols="10"
                 sm="4"
                 md="3"
                 :key="enrolledClass.ID"
                 class="d-flex align-center"
+              > -->
+              <v-col
+                v-for="enrolledClass in user.enrolledClasses"
+                cols="12" sm="4" md="3"
+                :key="enrolledClass.ID"
               >
-                <!-- <h1>{{ user.enrolledClasses }}</h1> -->
+                <!--           class="text-center" -->
                 <v-card
                   hover
                   @click="$router.push(`${enrolledClass.ID}/questions/`)"
-                  class="text-center"
                   width="100%"
                 >
-                  <v-card-title>
+                  <v-card-title class="title">
                     {{ enrolledClass.name }}
                   </v-card-title>
+                  <!-- <v-card-subtitle>1 member</v-card-subtitle> -->
+                  <!-- <v-card-text>{{ enrolledClass.description }}</v-card-text> -->
                 </v-card>
               </v-col>
             </v-row>
@@ -181,8 +186,8 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
-import BaseAppBar from "@/components/BaseAppBar.vue";
-import BaseMenu from "@/components/BaseMenu.vue";
+import TheAppBar from "@/components/TheAppBar.vue";
+import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseSearchBar from "@/components/BaseSearchBar.vue";
 import helpers from "@/helpers.js";
 import CONSTANTS from "@/CONSTANTS.js";
@@ -190,10 +195,10 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   components: {
-    BaseAppBar,
+    TheAppBar,
     DoodleVideo,
     BaseSearchBar,
-    BaseMenu,
+    TheDropdownMenu,
     BasePopupButton
   },
   computed: {
@@ -228,30 +233,23 @@ export default {
       const ref = db.collection("classes");
       this.schoolClasses = await helpers.getCollectionFromDB(ref);
     },
-    classChosen (answer) {
-      this.searchBarDialog = true;
-      this.chosenClass = answer;
-    },
-    enrollInClass ({ name, ".key": ID }) {
-      const userRef = db.collection("users").doc(this.user.uid);  
-    
-      // Abort if user is already enrolled in the class
+    enrollInClass ({ name, ".key": ID }) {    
+      // Abort if user is already enrolled in the class  
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
           if (classObj.ID === ID) { return; }
         }
       }
+
       // Add the new class
       const classObj = {
         ID,
         name,
         notifFrequency: CONSTANTS.notifFrequencyEnum.ALWAYS
       }
-      userRef.update({
+      db.collection("users").doc(this.user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classObj)
       });
-      this.chosenClass = "";
-      this.searchBarDialog = false;
     },
     async updateNotifSetting (payload) {
       const userRef = db.collection("users").doc(this.user.uid);
@@ -284,16 +282,16 @@ export default {
         paragraph: newValue
       });
     },
-    computeVideoSize() {
-      return this.$vuetify.breakpoint.smAndDown ? 12 : 4;
-    },
-    computeCardSize() {
-      if (this.classes.length > 13) {
-        if (this.$vuetify.breakpoint.md) return 4;
-        else if (this.$vuetify.breakpoint.smAndDown) return 12;
-      }
-      return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
-    },
+    // computeVideoSize() {
+    //   return this.$vuetify.breakpoint.smAndDown ? 12 : 4;
+    // },
+    // computeCardSize () {
+    //   if (this.classes.length > 13) {
+    //     if (this.$vuetify.breakpoint.md) return 4;
+    //     else if (this.$vuetify.breakpoint.smAndDown) return 12;
+    //   }
+    //   return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
+    // },
     logIn ({ email, password }) {
       firebase
         .auth()
@@ -311,16 +309,38 @@ export default {
     signUp ({ "first name": firstName, "last name": lastName, email, password }) {
       firebase.auth()
         .createUserWithEmailAndPassword(email, password)
-        .then(user => {
+        .then(async result => {
           this.snackbarMessage = `Welcome to ExplainMIT!`;
           this.snackbar = true;
-          // handle the name
-          console.log("will handle firstName and lastName =", firstName, lastName);
+          this.createAccount({ ...result.user, firstName, lastName })
         })
         .catch(error => {
           this.snackbarMessage = error.message;
           this.snackbar = true;
         });
+    },
+    async createAccount ({ uid, email, firstName, lastName }) {
+      console.log("createAccount()")
+      function getRandomColor () {
+        var letters = '0123456789ABCDEF'
+        var color = '#'
+        for (let i=0; i<6; i++) {
+          color += letters[Math.floor(Math.random() * 16)]
+        }
+        return color
+      }
+      const newUser = {
+        uid,
+        email,
+        firstName,
+        lastName,
+        color: getRandomColor(),
+        enrolledClasses: []
+      }
+      const userRef = db.collection("users").doc(uid);
+      await userRef.set(newUser)
+      console.log("successfully created account")
+      // syncUserWithDB(userRef, context);
     },
     signOut () {
       firebase.auth().signOut();
@@ -354,6 +374,7 @@ export default {
   max-width: 20%;
   width: 90px;
 }
+
 .central-title h1 {
   font-size: 3em;
   font-weight: 600;
@@ -361,17 +382,20 @@ export default {
   text-decoration: underline;
   text-decoration-color: #eee;
 }
+
+@media (max-width: 400px) {
+  .central-title h1 {
+    font-size: 2.5em;
+  }
+}
+
 #home-page .app-banner .home-logo {
   display: none;
 }
 #home-page.scrolled .app-banner .home-logo {
   display: unset;
 }
-@media (max-width: 400px) {
-  .central-title h1 {
-    font-size: 2.5em;
-  }
-}
+
 .enrolled-classes .v-card__title {
   word-break: unset;
   justify-content: center;

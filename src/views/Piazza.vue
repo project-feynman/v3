@@ -1,6 +1,6 @@
 <template>
   <div>
-    <BaseAppBar
+    <TheAppBar
       :icon="isViewingPost && isMobile ? 'back' : undefined" 
       @icon-click="backToList()"
     />
@@ -17,9 +17,9 @@
           </v-col>
           <v-col v-if="(isViewingPost && isMobile) || (!isMobile)" id="question-canvas" class="px-0 px-sm-5" cols="12" sm :class="(isViewingPost?'d-block':'d-none')+' d-sm-block'">
             <v-card class="mx-auto elevation-6" style="max-width:1000px;">
-              <template v-if="isAddingNewQuestion">
+              <template v-if="!isViewingPost">
                 <PiazzaNewPost 
-                  :key="newQuestionKey"
+                  :key="keyToForceReload"
                   postType="Question"
                   :visible="this.isViewingPost"
                   @post-submit="question => submitPost(question, questionsRef)"
@@ -31,13 +31,14 @@
                   :key="currentQuestion['.key']"
                 />
                 <PiazzaViewPost 
-                  v-for="(answer, i) in answers" 
+                  v-for="(answer, i) in sortedAnswers" 
                   :key="answer['.key']"
                   :post="answer" 
                   :postNumber="i"
-                  postType="Answers"
+                  postType="Answer"
                 />
                 <PiazzaNewPost
+                  :key="keyToForceReload"
                   postType="Answer"
                   :withTags="false"
                   @post-submit="answer => submitPost(answer, answersRef)"
@@ -53,7 +54,7 @@
 
 <script>
 import db from "@/database.js"
-import BaseAppBar from "@/components/BaseAppBar.vue"
+import TheAppBar from "@/components/TheAppBar.vue"
 import PiazzaQuestionsList from "@/components/PiazzaQuestionsList.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
@@ -65,29 +66,36 @@ import helpers from "@/helpers.js";
 
 export default {
   components: {
-    BaseAppBar,
+    TheAppBar,
     PiazzaQuestionsList,
     DoodleVideo,
     PiazzaNewPost,
     PiazzaViewPost,
   },
   data: () => ({
-    newQuestionKey: 0,
-    isAddingNewQuestion: true,
+    keyToForceReload: 0,
+    newAnswerKey: 0,
+    isViewingPost: false,
     currentQuestion: {},
     questions: [],
     answers: [],
     boardStrokes: [],
     whiteBoardImage: "",
-    isViewingPost: false,
     isMobile: window.innerWidth < 600,
     tagsPool: [],
     activeElem: 0,
   }),
   computed: {
-    user () { return this.$store.state.user },
+    user () { 
+      return this.$store.state.user 
+    },
     questionsRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions") },
-    answersRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions").doc(this.currentQuestion['.key']).collection("answers") }
+    answersRef () { 
+      return db.collection("classes").doc(this.$route.params.class_id).collection("questions").doc(this.currentQuestion['.key']).collection("answers") 
+    },
+    sortedAnswers () {
+      return this.answers.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0))
+    }
   },
   async created () {
     this.classID = this.$route.params.class_id;
@@ -96,16 +104,21 @@ export default {
     const questionID = this.$route.params.question_id
     if (!questionID) return; // early exit user visited from home page 
     // search for the question
-    this.questions.forEach((question, index )=> {
+    this.questions.forEach((question, index)=> {
       if (question[".key"] === questionID) {
         this.currentQuestion = question;
-        this.isAddingNewQuestion = false;
         this.isViewingPost = true;
         this.activeElem = index + 1
       }
     })
     // case 2: user wants to visit a specific question using a link
     // this.fetchTagsPool()
+  },
+  watch: {
+    currentQuestion: {
+      handler: "fetchAnswers",
+      immediate: true
+    }
   },
   mounted () {
     this.setQuestionsHeight();
@@ -121,20 +134,19 @@ export default {
       return promise
     },
     async fetchAnswers () {
-      this.answers = helpers.getCollectionFromDB(this.answersRef);
+      if (!this.currentQuestion[".key"]) return; // edge case: user is creating a new question
+      this.answers = await helpers.getCollectionFromDB(this.answersRef);
     },
     handleQuestionCreate () {
-      // destroy and create a new one
-      this.isAddingNewQuestion = false
-      this.isAddingNewQuestion = true
-      this.currentQuestion = {}
-      this.isViewingPost = true
+      this.currentQuestion = {};
+      this.isViewingPost = false;
+      this.answers = [];
     },
     handleQuestionClick (clickedQuestion) {
-      this.$router.push(`${clickedQuestion[".key"]}`)
+      const classID = this.$route.params.class_id;
+      this.$router.push(`/${classID}/questions/${clickedQuestion[".key"]}`)
       this.currentQuestion = clickedQuestion
-      this.fetchAnswers()
-      this.isAddingNewQuestion = false 
+      this.fetchAnswers();
       this.isViewingPost = true
     },
     async submitPost ({ post, boardStrokes }, ref) {
@@ -149,20 +161,21 @@ export default {
       const classRef = db.collection("classes").doc(classID);
       const classDoc = await classRef.get();
       post.class = {
-        ID: classID,
+        id: classID,
         name: classDoc.data().name
       }
       post.author = {
-        UID: this.user.uid,
+        uid: this.user.uid,
         firstName: this.user.firstName || "no first name",
         lastName: this.user.lastName || "no last name"
       }
       await ref.add(post);
-      this.fetchQuestions();
+      // either a question or an answ er is added 
+      if (!this.isViewingPost) { this.fetchQuestions(); }// was a new question 
+      else { this.fetchAnswers(); } // was a new answer
       // Incrementing the key to force NewPost to re-render
-      this.newQuestionKey += 1;
+      this.keyToForceReload += 1;
       // TODO: update UI correctly after submitting an answer
-      // this.fetchAnswers()
     },
     async deleteQuestion ({ ".key": questionID }) {
       const ref = this.questionsRef.doc(questionID);
@@ -210,24 +223,25 @@ export default {
     max-width: 300px;
   }
 }
-  .post-header {
-    background: linear-gradient(#eee,#fff);
-    box-shadow: 0 5px 5px rgba(0,0,0,0.15);
-  }
-  .question-options .v-btn {
-    text-transform: unset;
-    letter-spacing: unset;
-    margin: 0 5px;
-  }
-  #addedImage {
-    max-width:100%;
-    max-height: 200px;
-  }
-  .input-title textarea {
-    max-height:100%;
-  }
-  .input-description textarea {
-    color: #555 !important;
-    font-size: 0.9em;
-  }
+
+.post-header {
+  background: linear-gradient(#eee,#fff);
+  box-shadow: 0 5px 5px rgba(0,0,0,0.15);
+}
+.question-options .v-btn {
+  text-transform: unset;
+  letter-spacing: unset;
+  margin: 0 5px;
+}
+#addedImage {
+  max-width:100%;
+  max-height: 200px;
+}
+.input-title textarea {
+  max-height:100%;
+}
+.input-description textarea {
+  color: #555 !important;
+  font-size: 0.9em;
+}
 </style> 

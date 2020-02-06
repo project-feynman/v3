@@ -7,7 +7,7 @@
       @change="payload => submit(payload)"
       return-object
       item-text="name"
-      placeholder="Start Typing to Search"
+      placeholder="Enter a class number"
       color="accent lighten-1"
       outlined
       elevate="2"

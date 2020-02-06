@@ -1,6 +1,6 @@
 <template>
   <div>
-    <BaseAppBar :loading="!hasFetchedVideos"/>
+    <TheAppBar :loading="!hasFetchedVideos"/>
     <v-content>
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
@@ -63,7 +63,7 @@
 
 <script>
 import BaseCard from "@/components/BaseCard.vue";
-import BaseAppBar from "@/components/BaseAppBar.vue";
+import TheAppBar from "@/components/TheAppBar.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue';
 import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue";
@@ -77,7 +77,7 @@ export default {
     VideoGalleryTabs,
     DoodleVideo,
     BaseCard,
-    BaseAppBar,
+    TheAppBar,
     RenderlessFetchVideos
   },
   data () {

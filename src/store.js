@@ -29,17 +29,9 @@ function setDisconnectHook (user) {
   });
 }
 
-function getRandomColor () {
-  var letters = '0123456789ABCDEF'
-  var color = '#'
-  for (let i=0; i<6; i++) {
-    color += letters[Math.floor(Math.random() * 16)]
-  }
-  return color
-}
-
 function syncUserWithDB (userRef, context) {
   userRef.onSnapshot(user => {
+    if (!user.exists) { return; }
     context.commit('SET_USER', user.data())
     // TODO: delete previous onDisconnect() hook 
     setDisconnectHook(user.data())
@@ -67,15 +59,7 @@ export default new Vuex.Store({
       
       // Fetch additional data from the mirror doc 
       const userRef = db.collection('users').doc(uid)
-      const mirrorUser = await userRef.get() 
-      if (mirrorUser.exists) { syncUserWithDB(userRef, context); } 
-      else {
-        // Create a new account
-        simplifiedUser.color = getRandomColor()
-        simplifiedUser.enrolledClasses = [] 
-        userRef.set(simplifiedUser)
-        syncUserWithDB(userRef, context);
-      }
+      syncUserWithDB(userRef, context);
     }
   }
 })

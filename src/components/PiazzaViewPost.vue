@@ -19,8 +19,8 @@
         @video-clicked="handleClick()"
       />
     </v-container>
-    <footer class="post-footer px-4 py-3">
-      Posted by {{ post.isAnonymous? 'Anonymous' : post.author.name }}
+    <footer v-if="post.author" class="post-footer px-4 py-3">
+      Posted by {{ post.isAnonymous? 'Anonymous' : post.author.firstName }}, {{ displayDate(post.date) }} 
     </footer>
   </v-card>
 </template>
@@ -28,6 +28,7 @@
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import db from "@/database.js";
+import moment from "moment";
 
 export default {
   props: {
@@ -44,6 +45,9 @@ export default {
     }
   },
   methods: {
+    displayDate (date) {
+      return moment(date).format('MMM Do, h:mm a');
+    },
     getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 

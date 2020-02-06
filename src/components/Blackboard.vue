@@ -7,7 +7,7 @@
         <v-btn @click="snackbar = false" color="accent" text>CLOSE</v-btn>
       </v-snackbar>
 
-      <BaseAppBar v-if="isRealtime" :loading="loading" page="realtime">
+      <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
             :currentState="currentState"
@@ -23,7 +23,7 @@
             @video-save="payload => handleSaving(payload)"
           />
         </div>
-      </BaseAppBar>
+      </TheAppBar>
 
       <!-- APP BAR -->
       <div v-if="!isRealtime" id="mini-toolbar">
@@ -57,15 +57,15 @@
       <AudioRecorderMini
         v-if="!isRealtime"
         v-show="false"
-        ref="audio-recorder"
+        ref="AudioRecorder"
         @start-recording="isRecording = true"
         @file-uploaded="audioObj => handleNewAudio(audioObj)"
       />
 
-      <audio-recorder
+      <AudioRecorder
         v-else-if="whiteboardDoc"
         v-show="false"
-        ref="audio-recorder"
+        ref="AudioRecorder"
         :audioURL="whiteboardDoc.audioURL"
         :audioPath="whiteboardDoc.audioPath"
         @start-recording="isRecording = true"
@@ -86,7 +86,7 @@ import Swatches from "vue-swatches";
 import "vue-swatches/dist/vue-swatches.min.css";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
-import BaseAppBar from "@/components/BaseAppBar.vue";
+import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 
@@ -103,36 +103,13 @@ export default {
     AudioRecorderMini,
     AudioRecorder,
     Swatches,
-    BaseAppBar,
+    TheAppBar,
     BlackboardToolBar
   },
   mixins: [DrawMethods],
   computed: {
     ...mapState(["user"]),
-    author() {
-      if (this.user) {
-        if (this.user.name) {
-          return {
-            name: this.user.name,
-            uid: this.user.uid
-          };
-        } else {
-          return {
-            email: this.user.email,
-            uid: this.user.uid
-          };
-        }
-      } else {
-        return {
-          name: "Anonymous",
-          uid: "Anonymous"
-        };
-      }
-    },
-    bg() {
-      //mini
-      return this.background;
-    }
+    bg () { return this.background; } //mini
   },
   data () {
     return {
@@ -187,45 +164,38 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      if (this.color != "rgb(62, 66, 66)") {
-        this.lineWidth = 2;// eraser color stroke width is larger
-      } else {
-        this.lineWidth = 30;
-      }
+      if (this.color != "rgb(62, 66, 66)") { this.lineWidth = 2; } // eraser color stroke width is larger
+      else { this.lineWidth = 30; }
       this.setStyle(this.color, this.lineWidth);
     },
     isRecording() {
       if (this.isRecording) { this.startTimer(); } 
       else { this.stopTimer(); }
     },
-    whiteboardDoc(newVal) {
+    whiteboardDoc (newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
-      if (newVal) {
-        if (
-          newVal.recordState !== this.recordStateEnum.POST_RECORD ||
-          this.canvas ||
-          this.ctx
-        ) {
-          this.initTouchEvents();
-          this.initMouseEvents();
-        }
+      const { POST_RECORD } = this.recordStateEnum;
+      if (!newVal) { return; }
+      if (newVal.recordState !== POST_RECORD || this.canvas || this.ctx) {
+        this.initTouchEvents();
+        this.initMouseEvents();
       }
     },
     eraserActive() {
-      /// all these are mini
+      // all these are mini
       this.customCursor();
       this.canvas.getContext("2d").globalCompositeOperation = this.eraserActive
         ? "destination-out"
         : "source-over";
       this.lineWidth = this.eraserActive ? 20 : 2;
     },
-    color() {
+    color () {
       this.customCursor();
     },
-    visible() {
+    visible () {
       this.blackboardSize();
     },
-    bg() {
+    bg () {
       this.drawBackground(this.bg);
     }
   },
@@ -248,17 +218,14 @@ export default {
     // }
     this.rescaleCanvas(true);
     if (this.isRealtime) {
-      window.addEventListener(
-        "resize",
-        () => {
+      window.addEventListener("resize", () => {
           this.canvas.width = document.documentElement.clientWidth;
           this.rescaleCanvas(true);
         },
         false
       );
     } else {
-      //mini
-      window.addEventListener("resize", () => this.rescaleCanvas(true), false);
+      window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
     }
     this.initTouchEvents();
     this.initMouseEvents();
@@ -266,15 +233,11 @@ export default {
     if (this.isRealtime) {
       this.continuouslySyncBoardWithDB();
       this.$root.$on("side-nav-toggled", sideNavOpened => {
-        if (sideNavOpened) {
-          this.canvas.width = document.documentElement.clientWidth;
-        } else {
-          this.canvas.width = document.documentElement.clientWidth;
-        }
+        this.canvas.width = document.documentElement.clientWidth;
         this.rescaleCanvas(true);
       });
     } else {
-      //mini
+      // mini
       document.fonts.ready.then(() => this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
       this.blackboardSize();
       window.addEventListener("resize", this.blackboardToolbar);
@@ -301,13 +264,13 @@ export default {
     handleNewAudio({ url }) {
       this.audioURL = url;
     },
-    wipeBoard() {
+    wipeBoard () {
+      this.allStrokes = [];
       if (this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       }
-      this.allStrokes = [];
     },
-    setImage() {
+    setImage () {
       document.getElementById("whiteboard-bg-input").value = "";
       document.getElementById("whiteboard-bg-input").click();
     },
@@ -320,10 +283,9 @@ export default {
         vue.drawBackground(img);
         vue.$emit("boardImage", img);
       };
-
       if (file) { reader.readAsDataURL(file); }
     },
-    drawBackground(image) {
+    drawBackground (image) {
       var canvas = document.getElementById("background-canvas");
       var ctx = canvas.getContext("2d");
 
@@ -349,25 +311,19 @@ export default {
       };
       img.src = image;
     },
-    async initData() {
+    async initData () {
       if (this.isRealtime) {
         this.loading = true;
         if (!this.whiteboardID) { return; }
-        const whiteboardRef = db
-          .collection("whiteboards")
-          .doc(this.whiteboardID);
+        const whiteboardRef = db.collection("whiteboards").doc(this.whiteboardID);
         this.strokesRef = whiteboardRef.collection("strokes");
         // TODO: remove this whiteboard listener
         await this.$binding("whiteboardDoc", whiteboardRef);
-        // visually wipe previous drawings
-        if (this.ctx) { 
-          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
-        }
-        this.allStrokes = [];
+        this.wipeBoard();
         if (this.unsubscribe) { this.unsubscribe(); }
         this.continuouslySyncBoardWithDB();
       } else {
-        ///mini
+        /// mini
         this.wipeBoard();
         this.currentState = this.recordStateEnum.PRE_RECORD;
       }
@@ -403,61 +359,60 @@ export default {
           this.loading = false;
         });
     },
-    resetVariables() {
+    resetVariables () {
       if (this.isRealtime) { this.allStrokes = []; }
       this.lastX = -1;
     },
-    sortStrokesByTimestamp() {
+    sortStrokesByTimestamp () {
       this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime));
     },
-    getHeightToWidthRatio() {
-      return this.canvas.scrollHeight / this.canvas.scrollWidth;
-    },
-    startTimer() {
+    // getAspectRatio () {
+    //   return this.canvas.scrollHeight / this.canvas.scrollWidth;
+    // },
+    startTimer () {
       this.currentTime = 0;
       this.timer = setInterval(() => (this.currentTime += 0.1), 100);
     },
-    stopTimer() {
+    stopTimer () {
       clearInterval(this.timer);
     },
     initReplayLogic() {
       this.quickplay();
     },
-    initTouchEvents() {
+    initTouchEvents () {
       this.canvas.addEventListener("touchstart", this.touchStart, false);
       this.canvas.addEventListener("touchend", this.touchEnd, false);
       this.canvas.addEventListener("touchmove", this.touchMove, false);
       this.setStyle(this.color, this.lineWidth);
     },
-    removeTouchEvents() {
+    removeTouchEvents () {
       this.canvas.removeEventListener("touchstart", this.touchStart, false);
       this.canvas.removeEventListener("touchend", this.touchEnd, false);
       this.canvas.removeEventListener("touchmove", this.touchMove, false);
     },
     initMouseEvents() {
-      // TODO: implement mouseUp, mouseDown, mouseMove
-      window.addEventListener("mouseup", this.mouseUp, false);
+      this.canvas.addEventListener("mouseup", this.mouseUp, false);
       this.canvas.addEventListener("mousedown", this.mouseDown, false);
       this.canvas.addEventListener("mousemove", this.mouseMove, false);
     },
-    removeMouseEvents() {
-      window.removeEventListener("mouseup", this.mouseUp, false);
+    removeMouseEvents () {
+      this.canvas.removeEventListener("mouseup", this.mouseUp, false);
       this.canvas.removeEventListener("mousedown", this.mouseDown, false);
       this.canvas.removeEventListener("mousemove", this.mouseMove, false);
     },
-    async deleteStrokesSubcollection() {
+    async deleteStrokesSubcollection () {
       for (let i = 1; i < this.allStrokes.length + 1; i++) {
         this.strokesRef.doc(`${i}`).delete();
       }
       this.allStrokes = [];
     },
-    convertAndSavePoint(x, y) {
+    convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4);
       const unitY = parseFloat(y / this.canvas.height).toFixed(4);
       this.currentStroke.push({ unitX, unitY });
       this.drawToPoint(x, y);
     },
-    touchStart(e) {
+    touchStart (e) {
       e.preventDefault();
       //mini
       if (!this.isRealtime) { this.palleteVisibility = false; }
@@ -468,27 +423,27 @@ export default {
       this.drawToPointAndSave(e);
       if (this.isRecording) { this.startTime = this.currentTime.toFixed(1); } // this.startTime keeps track of current stroke's startTime
     },
-    touchMove(e) {
-      e.preventDefault();
+    touchMove (e) {
+      e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
       if (this.isNotValidTouch(e)) { return; }
       this.drawToPointAndSave(e);
-      event.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
     },
-    touchEnd(e) {
+    touchEnd (e) {
       e.preventDefault();
       if (this.currentStroke.length == 0) { return; } // user is touching the screen despite that touch is disabled
       const strokeNumber = this.allStrokes.length + 1;
       // save
+      const { uid: UID, firstName, lastName, email } = this.user
       const stroke = {
         strokeNumber,
-        author: this.author || "anonymous",
+        author: { UID, firstName, lastName, email },
         color: this.color,
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
         points: this.currentStroke,
         isErasing: this.eraserActive // mini
-      };
+      }
       this.allStrokes.push(stroke);
       if (this.isRealtime) {
         this.strokesRef.doc(`${strokeNumber}`).set(stroke);
@@ -517,22 +472,13 @@ export default {
     isNotValidTouch(e) {
       if (e.touches.length != 1) { return true; } // multiple fingers not allowed
       return this.isFinger(e) && this.disableTouch;
-      // if (this.isFinger(e) && this.disableTouch) {
-      //   return true;
-      // } else {
-      //   return false;
-      // }
     },
     isFinger(e) {
       return e.touches[0].touchType !== "stylus"
-      // if (e.touches[0].touchType != "stylus") {
-      //   return true;
-      // }
-      // return false;
     },
-
     // --- Mouse Drawing --- //
-    mouseDown(e) {
+    mouseDown (e) {
+      e.preventDefault();
       this.mousedown = 1;
       this.palleteVisibility = false; // mini
       // referenced from touchStart
@@ -543,10 +489,8 @@ export default {
       if (this.isRecording) {
         this.startTime = this.currentTime.toFixed(1);
       }
-      event.preventDefault();
     },
-
-    mouseUp(e) {
+    mouseUp (e) {
       this.mousedown = 0;
       // referenced from touchEnd
       const strokeNumber = this.allStrokes.length + 1;
@@ -570,21 +514,20 @@ export default {
       this.lastX = -1;
     },
 
-    mouseMove(e) {
+    mouseMove (e) {
+      e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
       // Update the mouse co-ordinates when moved
       this.getMousePos(e);
 
       // Draw a pixel if the mouse button is currently being pressed
-      if (this.mousedown == 1) {
-        // referenced from touchMove
+      if (this.mousedown === 1) {
         this.getMousePos(e);
         this.convertAndSavePoint(this.mouseX, this.mouseY);
         this.drawToPoint(this.mouseX, this.mouseY);
-        event.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
       }
     },
 
-    getMousePos(e) {
+    getMousePos (e) {
       // Get the current mouse position relative to the top-left of the canvas
       if (!e) var e = event;
       if (this.isRealtime) {
@@ -613,39 +556,32 @@ export default {
       this.lineWidth = 18;
     },
     saveDoodle () {
-      // this.saveSilently = true
-      // this.saveVideoPopup = true
       this.handleSaving("No title yet");
     },
     handleRecordStateChange (newState) {
-      if (newState === this.recordStateEnum.MID_RECORD) this.startRecording();
-      else if (newState === this.recordStateEnum.POST_RECORD)
-        this.stopRecording();
+      const { MID_RECORD, POST_RECORD } = this.recordStateEnum
+      if (newState === MID_RECORD) { this.startRecording(); } 
+      else if (newState === POST_RECORD) { this.stopRecording(); } 
       else {
-        if (this.isRealtime) this.retryAnswer();
-        else this.recordAgain();
+        if (this.isRealtime) { this.retryAnswer(); }
+        else { this.recordAgain(); }
       }
     },
     startRecording () {
       this.currentState = this.recordStateEnum.MID_RECORD; // mini
-      const audioRecorder = this.$refs["audio-recorder"];
-      audioRecorder.startRecording();
+      this.$refs.AudioRecorder.startRecording();
     },
     stopRecording () {
       this.currentState = this.recordStateEnum.POST_RECORD; //mini
       this.isRecording = false;
       this.removeTouchEvents();
       this.removeMouseEvents();
-      const audioRecorder = this.$refs["audio-recorder"];
-      audioRecorder.stopRecording();
-
+      this.$refs.AudioRecorder.stopRecording();
       if (this.isRealtime) {
         const ID = this.whiteboardDoc[".key"];
-        db.collection("whiteboards")
-          .doc(ID)
-          .update({
-            recordState: this.currentState
-          });
+        db.collection("whiteboards").doc(ID).update({
+          recordState: this.currentState
+        });
       }
     },
     retryAnswer () {
@@ -663,12 +599,10 @@ export default {
     saveFileReference({ url, path }) {
       this.hasUploadedAudio = true;
       const ID = this.whiteboardDoc[".key"];
-      db.collection("whiteboards")
-        .doc(ID)
-        .update({
-          audioURL: url,
-          audioPath: path
-        });
+      db.collection("whiteboards").doc(ID).update({
+        audioURL: url,
+        audioPath: path
+      });
     },
     async handleSaving ( { title }) {
       // mark the whiteboard as saved
@@ -713,22 +647,15 @@ export default {
       const newWhiteboardRef = await db
         .collection("whiteboards")
         .add({ recordState: this.recordStateEnum.PRE_RECORD });
-      const workspaceRef = db
-        .collection("classes")
-        .doc(classID)
-        .collection("workspaces")
-        .doc(workspaceID);
+      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       });
-      // let popup show the success state and the shareable URL
-      // this.$refs["popup-save"].showSuccessMessage(whiteboardID)
-
       this.hasUploadAudio = false;
       this.snackbar = true;
       this.snackbarMessage = 'Successfully saved to the "Videos" section';
     },
-    createThumbnail() {
+    createThumbnail () {
       this.ctx.fillStyle = "rgb(62, 66, 66)";
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       this.drawStrokesInstantly();
@@ -736,24 +663,24 @@ export default {
     },
 
     //mini
-    recordAgain() {
+    recordAgain () {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
       this.currentState = this.recordStateEnum.PRE_RECORD;
     },
-    blackboardToolbar() {
+    blackboardToolbar () {
       this.smallScreen = window.innerWidth < 960;
     },
-    palleteClose(e) {
+    palleteClose (e) {
       var pallete = document.getElementById("swatches-wrapper");
       if (pallete && !pallete.contains(e.target)) {
         this.palleteVisibility = false;
       }
     },
-    eraserClick(status) {
+    eraserClick (status) {
       this.eraserActive = status;
     },
-    customCursor() {
+    customCursor () {
       var dummy_canvas = document.createElement("canvas");
       dummy_canvas.width = 24;
       dummy_canvas.height = 24;
@@ -767,7 +694,7 @@ export default {
       document.getElementById("myCanvas").style.cursor =
         "url(" + dataURL + ") 0 24, auto";
     },
-    blackboardSize() {
+    blackboardSize () {
       var board = document.getElementById("myCanvas");
       var mini_height =
         (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +

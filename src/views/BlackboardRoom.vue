@@ -27,18 +27,17 @@ export default {
   computed: {
     ...mapState(["user"]),
     simpleUser () {
-      if (this.user) return { email: this.user.email, uid: this.user.uid };
-      else return { email: "anonymous", uid: "anonymous" };
+      if (!this.user) { return;} 
+      const { email, uid, firstName } = this.user;
+      return { email, uid, firstName }
     }
   },
   data () {
     return {
-      whiteboardPopup: false,
       workspace: null,
       loadCanvas: false,
       prevWorkspaceRef: null,
-      classDoc: null
-    };
+    }
   },
   watch: {
     $route: {
@@ -55,17 +54,11 @@ export default {
   },
   methods: {
     async bindVariables () {
-      const userUID = this.$route.params.id;
+      const workspaceID = this.$route.params.id;
       const classID = this.$route.params.class_id;
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(userUID);
+      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
       if (this.prevWorkspaceRef) await this.cleanUpPrevWorkspace();
       await this.$binding("workspace", workspaceRef);
-      
-      // Fetch classes
-      const classRef = db.collection("classes").doc(this.$route.params.class_id);
-      const classDoc = await classRef.get();
-      this.classDoc = classDoc.data()
-
       this.setDisconnectHook();
       this.prevWorkspaceRef = workspaceRef;
     },
@@ -92,20 +85,18 @@ export default {
       const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${workspaceID}`);
       // mirror the Firebase workspace with the Firestore workspace
       firebase.database().ref(".info/connected").on("value", async snapshot => {
-        if (snapshot.val() === false) {
-          // do nothing
-        } else {
-          // wait till server successfully processes the onDisconnectHook()
-          await firebaseRef.onDisconnect().set(this.simpleUser);
-          workspaceRef.update({ // it's much faster to update Firestore directly
-            members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
-          });
-          // reset it (otherwise setting the user is not actually triggering any changes)
-          firebaseRef.set({ // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
-            email: "",
-            uid: ""
-          });
-        }
+        if (snapshot.val() === false) { return; } 
+        // wait till server successfully processes the onDisconnectHook()
+        await firebaseRef.onDisconnect().set(this.simpleUser);
+        workspaceRef.update({ // it's much faster to update Firestore directly
+          members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
+        });
+        // reset it (otherwise setting the user is not actually triggering any changes)
+        firebaseRef.set({ // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
+          email: "",
+          uid: "",
+          firstName: ""
+        });
       });
     },
     updateHasAudioRoom () {
