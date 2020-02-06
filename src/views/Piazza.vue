@@ -26,11 +26,10 @@
                 />
               </template>
               <template v-else>
-                <!-- <PiazzaViewPost :post="currentQuestion" postType="Question"/> -->
                 <PiazzaViewPost 
                   :post="currentQuestion"
                   :key="currentQuestion['.key']"
-                  />
+                />
                 <PiazzaViewPost 
                   v-for="(answer, i) in answers" 
                   :key="answer['.key']"
@@ -146,31 +145,37 @@ export default {
       this.isViewingPost = true
     },
     async submitPost ({ post, boardStrokes }, ref) {
+      // should be stored as subcollections so it can be lazy fetched
       db.collection("whiteboards").doc(post.blackboardID).set({
         strokes: boardStrokes,
         // image: this.whiteBoardImage
       })
-      post.author = this.user
-      // below is graphQL 
-      post.videoID = post.blackboardID;
-      post.classID = this.$route.params.class_id;
-      await ref.add(post)
-      this.fetchQuestions()
-      // Incrementing the key causes the new question component to re-render to reset its state
-      this.newQuestionKey += 1
-      //this.fetchAnswers()
-      // trigger email notification
-      // let inquisitorID = this.user ? this.user.uid : "";
-      // let classID = this.$route.params.class_id;
-
-      // TODO: reset/update variables
+      
+      // get the class name 
+      const classID = this.$route.params.class_id
+      const classRef = db.collection("classes").doc(classID);
+      const classDoc = await classRef.get();
+      post.class = {
+        ID: classID,
+        name: classDoc.data().name
+      }
+      post.author = {
+        UID: this.user.uid,
+        name: this.user.name
+      }
+      await ref.add(post);
+      this.fetchQuestions();
+      // Incrementing the key to force NewPost to re-render
+      this.newQuestionKey += 1;
+      // TODO: update UI correctly after submitting an answer
+      // this.fetchAnswers()
     },
     async deleteQuestion ({ ".key": questionID }) {
-      const ref = this.questionsRef.doc(questionID)
-      await ref.delete()
-      this.fetchQuestions()
+      const ref = this.questionsRef.doc(questionID);
+      await ref.delete();
+      this.fetchQuestions();
     },
-    getFullWidth () { return window.innerWidth },
+    getFullWidth () { return window.innerWidth; },
     backToList () { this.isViewingPost = false; },
     setQuestionsHeight () {
       if (this.$refs.main) {
@@ -178,15 +183,7 @@ export default {
         this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
       }
       this.isMobile = window.innerWidth < 600;
-    },
-    // async joinClass () {
-    //   const classID = this.$route.params.class_id
-    //   const ref = db.collection("users").doc(this.user.uid) 
-    //   await ref.update({
-    //     enrolledClasses: firebase.firestore.FieldValue.arrayUnion({classID: "notify_always"})
-    //   })
-    //   settimeout(() => console.log("this.user =", this.user), 2000)
-    // },
+    }
     // allowedToUpvote ({ usersWhoUpvoted }) {
     //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
     // },

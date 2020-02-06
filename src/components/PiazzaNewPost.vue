@@ -140,16 +140,14 @@ export default {
   }),
   methods: {
     submitPost () {
-      if (!this.postTitle) return 
+      if (!this.postTitle) { return; }
       // take a snapshot of the text, images, drawings and audio that the user has created
-      // event.preventDefault()
       const BlackboardMini = this.$refs["blackboard-mini"]
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      
       const post = { title: this.postTitle, 
                      description: this.postDescription, 
                      blackboardID,
-                    //  postTags: this.postTags,
+                     // postTags: this.postTags,
                      audioURL: BlackboardMini.audioURL,
                      date: this.getDate(),
                      image: this.addedImage,
@@ -157,8 +155,7 @@ export default {
                    }
       const payloads = { post, boardStrokes: BlackboardMini.allStrokes}
       this.$emit('post-submit', payloads)
-
-      ///TODO possibly delete the current answer because it persists?
+      /// TODO possibly delete the current answer because it persists?
     },
     getDate () {
       var today = new Date();

@@ -24,11 +24,18 @@
     <BasePopup 
       v-if="searchBarDialog"
       title="Do you want to add the following class?"
-      :text="chosenClass"
-      :options="searchBarDialogOptions"
-      @submit="searchBarDialogSubmitted"
-    />
+      :text="chosenClass.name"
+      @submit="payload => enrollInClass(payload)"
+    >
+      <v-btn color="green darken-1" text>
+        NO
+      </v-btn>
+      <v-btn color="green darken-1" text @click="enrollInClass(chosenClass)">
+        YES
+      </v-btn>
+    </BasePopup>
 
+    <!-- APP BAR -->
     <BaseAppBar>
       <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="secondary">
         BLOG
@@ -40,7 +47,7 @@
         <v-btn @click="newClassPopup = true" dark color="grey">CREATE CLASS</v-btn>
       </template>
       <template v-if="!isFetchingUser">
-        <!-- BASE MENU AND V-BTN -->
+        <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
         <BaseMenu v-if="user" :user="user" @save="payload => updateUser(payload)" @sign-out="signOut()">
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
@@ -50,6 +57,8 @@
         </BaseMenu>
       </template>
     </BaseAppBar>
+
+    <!-- MAIN CONTENT -->
     <v-content>
       <v-card class="mx-auto text-center" fluid>
         <div class="pt-5">
@@ -62,7 +71,7 @@
         </div>
         <div style="margin: auto" class="mb-5">
           <!-- previous button color was deep-purple accent-4 -->
-          <template v-if="!user">
+          <template v-if="!user && !isFetchingUser">
             <v-btn @click="loginPopup = true" color="secondary" text>
               LOG IN
             </v-btn>
@@ -76,11 +85,11 @@
           <v-row justify="center">
             <v-col cols="6">
               <BaseSearchBar 
-                  color="accent"
-                  label="Enter Class Number"
-                  :items="classesIDs"
-                  @submit="classChosen">
-              </BaseSearchBar>
+                :items="schoolClasses"
+                @submit="payload => classChosen(payload)"
+                color="accent"
+                label="Enter Class Number"
+              />
             </v-col>
           </v-row>
         </v-container>
@@ -136,14 +145,16 @@
           </v-row>
         </v-container>
       </v-card>
+
+      <!-- DISPLAY CLASSES -->
       <transition name="fade" mode="out-in">
         <div v-if="isFetchingUser || user === null" key="loading..."></div>
         <div v-else key="class-list">
           <v-container fluid>
             <v-row>
-              <v-col v-for="(s, i) in user.enrolledClasses" :key="i">
-                  <v-card @click="$router.push(`${i}/questions/`)">
-                      <v-card-title>{{ s.name }}</v-card-title>
+              <v-col v-for="enrolledClass in user.enrolledClasses" :key="enrolledClass.ID">
+                  <v-card @click="$router.push(`${enrolledClass.ID}/questions/`)">
+                      <v-card-title>{{ enrolledClass.name }}</v-card-title>
                   </v-card>
               </v-col>
             </v-row>
@@ -166,8 +177,8 @@ import BaseSearchBar from "@/components/BaseSearchBar.vue";
 import BasePopup from "@/components/BasePopup.vue";
 import PopupLogin from "@/components/PopupLogin.vue";
 import PopupNewClass from "@/components/PopupNewClass.vue";
-import { initEnrollementService } from "../dep";
-import { encodeKey } from "../dep";
+import helpers from "@/helpers.js";
+import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
   components: {
@@ -182,17 +193,15 @@ export default {
   computed: {
     ...mapState(["user", "isFetchingUser"])
   },
-  data() {
+  data () {
     return {
-      classes: [],
-      classesIDs: [],
+      schoolClasses: [],
       snackbar: false,
       snackbarMessage: "",
-      enrollementService: initEnrollementService(),
+      // TODO: let the popup handle its own state
       chosenClass: "",
       searchBarDialog: false,
-      searchBarDialogOptions: ["No", "Yes"],
-      // todo - let the popup button handle it itself
+      // TODO - let the popup button handle it itself
       newClassPopup: false,
       loginPopup: false,
     };
@@ -211,34 +220,28 @@ export default {
         DoodleVideo3.quickplay()
       })
     },
-    fetchClasses() {
-      this.classes = [];
-      db.collection("classes")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            let docObj = { ".key": doc.id, ...doc.data() };
-            this.classes.push(docObj);
-            this.classesIDs.push(docObj.name);
-          });
-        });
+    async fetchClasses () {
+      const ref = db.collection("classes");
+      this.schoolClasses = await helpers.getCollectionFromDB(ref);
     },
-    classChosen(answer) {
+    classChosen (answer) {
       this.searchBarDialog = true;
       this.chosenClass = answer;
     },
-    searchBarDialogSubmitted(answer) {
-      if (answer == "No") {
-        this.chosenClass = "";
-        this.searchBarDialog = false;
-        return;
+    enrollInClass ({ name, ".key": ID }) {
+      const userRef = db.collection("users").doc(this.user.uid);  
+      const classObj = {
+        ID,
+        name,
+        notifFrequency: CONSTANTS.notifFrequencyEnum.ALWAYS
       }
-      this.enrollementService.addClass(this.user, this.chosenClass);
+      userRef.update({
+        enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classObj)
+      });
       this.chosenClass = "";
       this.searchBarDialog = false;
     },
-    async createClass(name) {
-      let classID = encodeKey(name);
+    async createClass (name) {
       const ref = db.collection("classes").doc(classID);
       await ref.set({
         name,
@@ -248,7 +251,6 @@ export default {
         tagsPool: [],
         tabs: ["New"]
       });
-      //add to enrolled classes
       this.fetchClasses();
     },
     quickplayVideo(i) {
