@@ -12,7 +12,7 @@
     </v-banner>
     <v-container tag="section" class="py-5">
       <div class="question-main">
-        <v-textarea
+        <!-- <v-textarea
           class="input-title"
           filled
           outlined
@@ -21,13 +21,22 @@
           :placeholder="`Your ${postType} here...`"
           v-model="postTitle"
           color="accent lighten-1"
+        /> -->
+         <v-text-field
+          v-if="postType === 'Question'"
+          class="input-title"
+          outlined
+          label="Title"
+          placeholder="Summarize your question in 1 sentence"
+          v-model="postTitle"
+          color="accent lighten-1"
         />
+      
         <v-textarea
           class="input-description"
-          v-if="postType=='Question'"
           filled
           label="Description"
-          placeholder="Your description here..."
+          :placeholder="`Write your ${postType} here`"
           v-model="postDescription"
           color="accent lighten-2"
           background-color="#f5f5f5"
