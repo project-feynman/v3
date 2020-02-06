@@ -17,10 +17,10 @@
             :hasUploadedAudio="hasUploadedAudio"
             @eraser-click="eraserClick"
             @set-image="handleImage"
-            @color-click="newColor=>{color=newColor}"
+            @color-click="newColor => {color=newColor}"
             @wipe-board="wipeBoard"
-            @record-state-change="newState=>handleRecordStateChange(newState)"
-            @video-save="handleSaving('No title yet')"
+            @record-state-change="newState => handleRecordStateChange(newState)"
+            @video-save="payload => handleSaving(payload)"
           />
         </div>
       </BaseAppBar>
@@ -33,11 +33,11 @@
           :color="color"
           :isRealtime="isRealtime"
           :hasUploadedAudio="hasUploadedAudio"
-          @eraser-click="status=>eraserClick(status)"
-          @set-image="e=>handleImage(e)"
-          @color-click="newColor=>{color=newColor}"
+          @eraser-click="status => eraserClick(status)"
+          @set-image="e => handleImage(e)"
+          @color-click="newColor => {color=newColor}"
           @wipe-board="wipeBoard"
-          @record-state-change="newState=>handleRecordStateChange(newState)"
+          @record-state-change="newState => handleRecordStateChange(newState)"
           ref="blackboardToolbar"
         />
       </div>
@@ -699,7 +699,7 @@ export default {
           audioPath: path
         });
     },
-    async handleSaving(videoTitle) {
+    async handleSaving ( { title }) {
       // mark the whiteboard as saved
       const whiteboardID = this.whiteboardDoc[".key"];
       const classID = this.$route.params.class_id;
@@ -720,8 +720,8 @@ export default {
           name: this.user.name || "anonymous",
           email: this.user.email
         },
-        title: videoTitle,
-        isSaved: true,
+        title,
+        isSaved: true, // marks blackboard as saved
         tabNumber: 0,
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       };

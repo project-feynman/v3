@@ -126,7 +126,15 @@
               <span class="d-none d-sm-block mr-2">Retry</span>
               <v-icon>mdi-undo-variant</v-icon>
             </v-btn>
-            <v-btn
+
+            <BasePopupButton
+              actionName="Save video" 
+              :disabled="!hasUploadedAudio"
+              :inputFields="['title', 'description']"
+              @action-do="payload => $emit('video-save', payload)"
+              color="accent lighten-1"
+            />
+            <!-- <v-btn
               @click="$emit('video-save')"
               color="accent lighten-1"
               class="board-action-btn"
@@ -134,7 +142,7 @@
             >
               <span class="d-none d-sm-block mr-2">Save</span>
               <v-icon>save</v-icon>
-            </v-btn>
+            </v-btn> -->
           </v-col>
         </template>
       </v-row>
@@ -145,6 +153,7 @@
 <script>
 import Swatches from "vue-swatches";
 import CONSTANTS from "@/CONSTANTS.js";
+import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   props: {
@@ -155,7 +164,8 @@ export default {
     hasUploadedAudio: Boolean
   },
   components: {
-    Swatches
+    Swatches,
+    BasePopupButton
   },
   data() {
     return {

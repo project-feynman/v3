@@ -40,12 +40,8 @@ export default {
     value: Number
   },
   computed: {
-    user () {
-      return this.$store.state.user;
-    },
-    questionsLen () {
-      return this.questions.length;
-    }
+    user () { return this.$store.state.user; },
+    questionsLen () { return this.questions.length; }
   },
   watch: {
     questionsLen: {

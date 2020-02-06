@@ -6,35 +6,6 @@
       <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
 
-    <!-- LOGIN / SIGNUP -->
-    <PopupLogin
-      v-model="loginPopup"
-      :newAccount="false"
-      @sign-in="payload => signIn(payload)"
-      @create-account="payload => createAccount(payload)"
-    />
-
-    <!-- POPUP BUTTON AND POPUP NEW CLASS -->
-    <PopupNewClass
-      v-model="newClassPopup"
-      @create-class="courseNumber => createClass(courseNumber)"
-    />
-
-    <!-- CONFIRM SIGNUP POPUP -->
-    <BasePopup
-      v-if="searchBarDialog"
-      title="Do you want to add the following class?"
-      :text="chosenClass.name"
-      @submit="payload => enrollInClass(payload)"
-    >
-      <v-btn color="green darken-1" text>
-        NO
-      </v-btn>
-      <v-btn color="green darken-1" text @click="enrollInClass(chosenClass)">
-        YES
-      </v-btn>
-    </BasePopup>
-
     <!-- APP BAR -->
     <BaseAppBar>
       <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
@@ -44,7 +15,12 @@
         GITHUB
       </v-btn>
       <template v-if="user && $route.path == '/'">
-        <v-btn @click="newClassPopup = true" dark color="accent lighten-1">CREATE CLASS</v-btn>
+        <BasePopupButton
+          actionName="Create class" 
+          :inputFields="['class name', 'class description']"
+          @action-do="payload => createClass(payload)"
+          color="accent lighten-1"
+        />
       </template>
       <template v-if="!isFetchingUser">
         <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
@@ -79,14 +55,21 @@
               <!-- previous button color was deep-purple accent-4 -->
               <template v-if="!user && !isFetchingUser">
                 <v-col cols="auto">
-                  <v-btn @click="loginPopup = true" color="accent lighten-1">
-                    LOG IN
-                  </v-btn>
+                  <BasePopupButton
+                    actionName="Log in" 
+                    :inputFields="['email', 'password']"
+                    @action-do="payload => logIn(payload)"
+                    color="accent lighten-1"
+                  />
                 </v-col>
                 <v-col cols="auto">
-                  <v-btn @click="loginPopup = true" color="accent lighten-1" outlined>
-                    SIGN UP
-                  </v-btn>
+                  <BasePopupButton
+                    actionName="Sign up" 
+                    color="accent lighten-1"
+                    :outlined="true"
+                    :inputFields="['first name', 'last name', 'email', 'password']"
+                    @action-do="payload => signUp(payload)"
+                  />
                 </v-col>
               </template>
               <!-- Search Bar -->
@@ -94,7 +77,7 @@
                 <v-col cols="12" sm="6">
                   <BaseSearchBar 
                     :items="schoolClasses"
-                    @submit="payload => classChosen(payload)"
+                    @submit="payload => enrollInClass(payload)"
                     color="accent"
                     label="Enter Class Number"
                   />
@@ -201,21 +184,17 @@ import DoodleVideo from "@/components/DoodleVideo.vue";
 import BaseAppBar from "@/components/BaseAppBar.vue";
 import BaseMenu from "@/components/BaseMenu.vue";
 import BaseSearchBar from "@/components/BaseSearchBar.vue";
-import BasePopup from "@/components/BasePopup.vue";
-import PopupLogin from "@/components/PopupLogin.vue";
-import PopupNewClass from "@/components/PopupNewClass.vue";
 import helpers from "@/helpers.js";
 import CONSTANTS from "@/CONSTANTS.js";
+import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   components: {
     BaseAppBar,
     DoodleVideo,
     BaseSearchBar,
-    PopupLogin,
-    PopupNewClass,
     BaseMenu,
-    BasePopup
+    BasePopupButton
   },
   computed: {
     ...mapState(["user", "isFetchingUser"])
@@ -225,22 +204,16 @@ export default {
       schoolClasses: [],
       snackbar: false,
       snackbarMessage: "",
-      // TODO: let the popup handle its own state
-      chosenClass: "",
-      searchBarDialog: false,
-      // TODO - let the popup button handle it itself
-      newClassPopup: false,
-      loginPopup: false
-    };
+    }
   },
-  created() {
+  created () {
     this.fetchClasses();
   },
   mounted() {
     this.logoVisibility();
     window.addEventListener("scroll", this.logoVisibility);
   },
-  destroyed() {
+  destroyed () {
     window.removeEventListener("scroll", this.logoVisibility);
   },
   methods: {
@@ -288,7 +261,7 @@ export default {
     updateUser (payload) {
       return; // TODO
     },
-    async createClass (name) {
+    async createClass ({ "class name": name, "class description": description }) {
       // Check if class exists already
       this.fetchClasses();
       for (const c of this.schoolClasses) {
@@ -320,7 +293,7 @@ export default {
       }
       return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
     },
-    signIn({ email, password }) {
+    logIn ({ email, password }) {
       firebase
         .auth()
         .signInWithEmailAndPassword(email, password)
@@ -328,35 +301,33 @@ export default {
           this.$store.dispatch("handleUserLogic", user);
           this.snackbarMessage = `Welcome to ExplainMIT!`;
           this.snackbar = true;
-          this.loginPopup = false;
         })
         .catch(error => {
           this.snackbarMessage = error.message;
           this.snackbar = true;
         });
     },
-    createAccount({ email, password }) {
-      firebase
-        .auth()
+    signUp ({ "first name": firstName, "last name": lastName, email, password }) {
+      firebase.auth()
         .createUserWithEmailAndPassword(email, password)
         .then(user => {
           this.snackbarMessage = `Welcome to ExplainMIT!`;
           this.snackbar = true;
-          this.loginPopup = false;
+          // handle the name
+          console.log("will handle firstName and lastName =", firstName, lastName);
         })
         .catch(error => {
           this.snackbarMessage = error.message;
           this.snackbar = true;
         });
     },
-    signOut() {
+    signOut () {
       firebase.auth().signOut();
     },
-    logoVisibility() {
+    logoVisibility () {
       var hero_pos = document
         .querySelector(".central-title")
         .getBoundingClientRect().top;
-      console.log("this is called", hero_pos);
       if (hero_pos < 0) {
         document.getElementById("home-page").classList.add("scrolled");
       } else {
