@@ -186,10 +186,9 @@ export default {
       immediate: true
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
-    color() {
+    color () {
       if (this.color != "rgb(62, 66, 66)") {
-        // eraser color stroke width is larger
-        this.lineWidth = 2;
+        this.lineWidth = 2;// eraser color stroke width is larger
       } else {
         this.lineWidth = 30;
       }
@@ -284,11 +283,8 @@ export default {
       this.drawBackground(this.background);
     }
   },
-  updated() {
-    if (!this.isRealtime) {
-      //mini
-      this.drawBackground(this.background);
-    }
+  updated () {
+    if (!this.isRealtime) { this.drawBackground(this.background); }
   },
   beforeDestroy() {
     if (this.unsubscribe) this.unsubscribe();
@@ -325,18 +321,14 @@ export default {
         vue.$emit("boardImage", img);
       };
 
-      if (file) {
-        reader.readAsDataURL(file);
-      }
+      if (file) { reader.readAsDataURL(file); }
     },
     drawBackground(image) {
       var canvas = document.getElementById("background-canvas");
       var ctx = canvas.getContext("2d");
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (image == "") {
-        return;
-      }
+      if (image === "") { return; }
       var img = new Image();
       img.onload = function() {
         var w = img.width;
@@ -357,15 +349,10 @@ export default {
       };
       img.src = image;
     },
-    // takePicture () {
-    //   const dataURL = this.canvas.toDataURL()
-    // },
     async initData() {
       if (this.isRealtime) {
         this.loading = true;
-        if (!this.whiteboardID) {
-          return;
-        }
+        if (!this.whiteboardID) { return; }
         const whiteboardRef = db
           .collection("whiteboards")
           .doc(this.whiteboardID);
@@ -373,13 +360,11 @@ export default {
         // TODO: remove this whiteboard listener
         await this.$binding("whiteboardDoc", whiteboardRef);
         // visually wipe previous drawings
-        if (this.ctx) {
-          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        if (this.ctx) { 
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); 
         }
         this.allStrokes = [];
-        if (this.unsubscribe) {
-          this.unsubscribe();
-        }
+        if (this.unsubscribe) { this.unsubscribe(); }
         this.continuouslySyncBoardWithDB();
       } else {
         ///mini
@@ -419,9 +404,7 @@ export default {
         });
     },
     resetVariables() {
-      if (this.isRealtime) {
-        this.allStrokes = [];
-      }
+      if (this.isRealtime) { this.allStrokes = []; }
       this.lastX = -1;
     },
     sortStrokesByTimestamp() {
@@ -477,34 +460,23 @@ export default {
     touchStart(e) {
       e.preventDefault();
       //mini
-      if (!this.isRealtime) {
-        this.palleteVisibility = false;
-      }
-      if (this.isNotValidTouch(e)) {
-        return;
-      }
-      if (e.touches[0].touchType == "stylus") {
-        this.disableTouch = true;
-      }
+      if (!this.isRealtime) { this.palleteVisibility = false; }
+      if (this.isNotValidTouch(e)) { return; }
+
+      // Automatically disable touch drawing if a stylus is detected
+      if (e.touches[0].touchType == "stylus") { this.disableTouch = true; }
       this.drawToPointAndSave(e);
-      if (this.isRecording) {
-        this.startTime = this.currentTime.toFixed(1); // this.startTime keeps track of current stroke's startTime
-      }
+      if (this.isRecording) { this.startTime = this.currentTime.toFixed(1); } // this.startTime keeps track of current stroke's startTime
     },
     touchMove(e) {
       e.preventDefault();
-      if (this.isNotValidTouch(e)) {
-        return;
-      }
+      if (this.isNotValidTouch(e)) { return; }
       this.drawToPointAndSave(e);
       event.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
     },
     touchEnd(e) {
       e.preventDefault();
-      if (this.currentStroke.length == 0) {
-        // user is touching the screen despite that touch is disabled
-        return;
-      }
+      if (this.currentStroke.length == 0) { return; } // user is touching the screen despite that touch is disabled
       const strokeNumber = this.allStrokes.length + 1;
       // save
       const stroke = {
@@ -543,21 +515,20 @@ export default {
         window.scrollY;
     },
     isNotValidTouch(e) {
-      // multiple fingers not allowed
-      if (e.touches.length != 1) {
-        return true;
-      }
-      if (this.isFinger(e) && this.disableTouch) {
-        return true;
-      } else {
-        return false;
-      }
+      if (e.touches.length != 1) { return true; } // multiple fingers not allowed
+      return this.isFinger(e) && this.disableTouch;
+      // if (this.isFinger(e) && this.disableTouch) {
+      //   return true;
+      // } else {
+      //   return false;
+      // }
     },
     isFinger(e) {
-      if (e.touches[0].touchType != "stylus") {
-        return true;
-      }
-      return false;
+      return e.touches[0].touchType !== "stylus"
+      // if (e.touches[0].touchType != "stylus") {
+      //   return true;
+      // }
+      // return false;
     },
 
     // --- Mouse Drawing --- //
@@ -637,16 +608,16 @@ export default {
     },
     // --- END Mouse Drawing --- //
 
-    useEraser() {
+    useEraser () {
       this.color = "rgb(62, 66, 66)";
       this.lineWidth = 18;
     },
-    saveDoodle() {
+    saveDoodle () {
       // this.saveSilently = true
       // this.saveVideoPopup = true
       this.handleSaving("No title yet");
     },
-    handleRecordStateChange(newState) {
+    handleRecordStateChange (newState) {
       if (newState === this.recordStateEnum.MID_RECORD) this.startRecording();
       else if (newState === this.recordStateEnum.POST_RECORD)
         this.stopRecording();
@@ -655,12 +626,12 @@ export default {
         else this.recordAgain();
       }
     },
-    startRecording() {
+    startRecording () {
       this.currentState = this.recordStateEnum.MID_RECORD; // mini
       const audioRecorder = this.$refs["audio-recorder"];
       audioRecorder.startRecording();
     },
-    stopRecording() {
+    stopRecording () {
       this.currentState = this.recordStateEnum.POST_RECORD; //mini
       this.isRecording = false;
       this.removeTouchEvents();
@@ -677,7 +648,7 @@ export default {
           });
       }
     },
-    retryAnswer() {
+    retryAnswer () {
       this.currentTime = 0;
       this.currentState = this.recordStateEnum.PRE_RECORD;
       this.hasUploadedAudio = false;
