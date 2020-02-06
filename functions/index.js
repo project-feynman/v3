@@ -4,13 +4,7 @@ const firebase_tools = require("firebase-tools");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const config = require("./config");
-
-// const adminCredentials = require('./feynman-mvp-firebase-adminsdk-3zyg9-7ce076beb3.json')
-
-// admin.initializeApp({
-// 	credential: admin.credential.cert(adminCredentials),
-// 	databaseUrl: "https://feynman-mvp.firebaseio.com"
-// })
+const adminCredentials = require('./feynman-mvp-firebase-adminsdk-d10vx-70c5b69675.json') // might be disactivated
 
 // const { vapidKeys } = config;
 // webpush.setVapidDetails(
@@ -58,7 +52,11 @@ function sendEmail (email, subject, text, html) {
   // });
 }
 
-admin.initializeApp();
+admin.initializeApp({
+	credential: admin.credential.cert(adminCredentials),
+	databaseUrl: "https://feynman-mvp.firebaseio.com"
+});
+
 
 // Since this code will be running in the Cloud Functions environment
 // we call initialize Firestore without any arguments because it
@@ -102,24 +100,52 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{cla
 );
 
 // Sends email to entire class whenever a new question is created
-exports.emailOnNewQuestion = functions.firestore.document("/classes/{classID}/questions/{questionID}").onCreate(async (doc, context) => {
+exports.emailOnNewQuestion = functions.firestore.document("/classes/{classID}/questions/{questionID}").onCreate(async (questionDoc, context) => {
   const question = doc.data();
-  const { classID } = context.params;
-  console.log(`Detected a new question ${question} for class ${classID}`);
-  // Get all classmates
-  const classmatesRef = firestore.collection("users")
-    .where("enrolledClasses", "array-contains", { name: classID, newQuestion: "always" });
-
-  // TEST
-  sendEmail("winstfe@gmail.com", "TEST SUBJECT", "TEST TEXT", "<h1>HELLO WORLD</h1>");
-  // Send the emails
-  const classmates = await classmatesRef.get();
-  if (!classmates.data()) return;
-  for (const classmate of classmates.data()) {
-    console.log("classmate =", classmate);
+  const classObj = {
+    ID: question.class.ID,
+    name: question.class.name,
+    notifFrequency: "always"
   }
+
+  console.log("classObj =", classObj);
+  // Get all classmates
+  let classmatesQuery = firestore.collection('users');
+  classmatesQuery.get().then(querySnapshot => {
+    // console.log("successfully ran query, might be empty");
+    querySnapshot.forEach(documentSnapshot => {
+      // console.log(`Found document at ${documentSnapshot.ref.path}`);
+    });
+  });
+  const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classObj);
+
+  // Send the emails
+  let classmatesDocs = await classmatesRef.get();
+  classmatesDocs.forEach(doc => {
+    const { title, description }
+    const classmate = doc.data();
+    sendEmail(classmate.email, `Your classmate asked a question`, `Question title: ${title}`, "<h1>Description</h1>");
+  })
 });
 
+exports.emailOnNewAnswer = functions.firestore.document("/classes/{classID}/questions/{questionID}/answers/{answerID}").onCreate(async (answerDoc, context) => {
+  const { questionID, classID } = context.params;
+  // Get original question
+  const questionRef = firestore.doc(`/classes/${classID}/questions/${questionID}`);
+  let questionDoc = await questionRef.get();
+  if (!questionDoc.exists) { return; } // TODO: throw an explicit error
+  questionDoc = questionDoc.data();
+
+  // Get creator of original question
+  const creatorRef = firestore.doc(`/users/${questionDoc.author.UID}`);
+  let creatorDoc = await creatorRef.get();
+  if (!creatorDoc.exists) { return; }
+  creatorDoc = creatorDoc.data();
+
+  // Send email
+  const { author, title, description } = answerDoc.data();
+  sendEmail(creatorDoc.email, `Your question was answered by ${author}`, `Answer title: ${title}`, `<h1>Description: ${description}</h1>`)
+});
 
 // send email to a person if his/her question got answered
 
