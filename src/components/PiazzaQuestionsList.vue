@@ -14,7 +14,7 @@
 
         <!-- EXISTING QUESTIONS -->
         <div v-if="questions">
-          <template v-for="(question, index) in questions">
+          <template v-for="(question, index) in sortedQuestions">
             <!-- QUICKFIX FOR INCOMPATIBLE API to not display duplicate questions -->
             <template v-if="question.title"> 
               <v-list-item @click="$emit('question-click', question)" :key="question['.key']">
@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import moment from "moment";
 
 export default {
   props: {
@@ -41,31 +42,17 @@ export default {
   },
   computed: {
     user () { return this.$store.state.user; },
-    questionsLen () { return this.questions.length; }
-  },
-  watch: {
-    questionsLen: {
-      handler: "sortQuestions",
-      immediate: true
+    sortedQuestions () {
+      return this.questions.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0))
     }
   },
   methods: {
-    getFullHeight () {
-      // 48 is the height of the  navbar
-      return window.innerHeight - 48 
-    },
     handleClick () {
       if (this.user) this.$emit('question-create');
       // TODO: else show login popup
     },
     displayDate (date) {
-      var d = new Date(date);
-      return (d.getUTCMonth() + 1)  + '/' + d.getUTCDate() + '/' + d.getUTCFullYear()
-    },
-    sortQuestions () {
-      this.questions.sort(function(a, b) {
-      return (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0);
-      });
+      return moment(date).format('MMM Do, h:mm a');
     }
   }
 }
