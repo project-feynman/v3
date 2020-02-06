@@ -5,7 +5,9 @@
       <Blackboard
         v-if="loadCanvas && workspace.whiteboardID"
         ref="whiteboard"
-        :whiteboardID="workspace.whiteboardID"/>
+        :whiteboardID="workspace.whiteboardID"
+        :isRealtime="true"
+      />
     </v-container>
   </div>
 </template>
@@ -25,18 +27,8 @@ export default {
   computed: {
     ...mapState(["user"]),
     simpleUser () {
-      if (this.user) {
-        return {
-          email: this.user.email || "anonymous@gmail.com",
-          uid: this.user.uid || "anonymous",
-          color: this.user.color || "grey"
-        };
-      }
-      return {
-        email: "anonymous",
-        uid: "anonymous",
-        color: "grey"
-      };
+      if (this.user) return { email: this.user.email, uid: this.user.uid };
+      else return { email: "anonymous", uid: "anonymous" };
     }
   },
   data () {
@@ -44,7 +36,8 @@ export default {
       whiteboardPopup: false,
       workspace: null,
       loadCanvas: false,
-      prevWorkspaceRef: null
+      prevWorkspaceRef: null,
+      classDoc: null
     };
   },
   watch: {
@@ -58,18 +51,21 @@ export default {
     setTimeout(() => (this.loadCanvas = true), 0);
   },
   async beforeDestroy () {
-    // when the user switches to any other place besides another workspace
-    this.cleanUpPrevWorkspace();
+    this.cleanUpPrevWorkspace(); // needed when the user switches to any other place besides another blackboard
   },
   methods: {
     async bindVariables () {
       const userUID = this.$route.params.id;
       const classID = this.$route.params.class_id;
       const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(userUID);
-      if (this.prevWorkspaceRef) {
-        await this.cleanUpPrevWorkspace();
-      }
+      if (this.prevWorkspaceRef) await this.cleanUpPrevWorkspace();
       await this.$binding("workspace", workspaceRef);
+      
+      // Fetch classes
+      const classRef = db.collection("classes").doc(this.$route.params.class_id);
+      const classDoc = await classRef.get();
+      this.classDoc = classDoc.data()
+
       this.setDisconnectHook();
       this.prevWorkspaceRef = workspaceRef;
     },
@@ -113,9 +109,7 @@ export default {
       });
     },
     updateHasAudioRoom () {
-      this.prevWorkspaceRef.update({
-        hasAudioRoom: true
-      });
+      this.prevWorkspaceRef.update({ hasAudioRoom: true });
     }
   }
 };

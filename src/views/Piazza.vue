@@ -1,8 +1,9 @@
 <template>
   <div>
-    <BaseAppBar 
+    <BaseAppBar v-if="classData"
       :icon="isViewingPost && isMobile ? 'back' : undefined" 
       @icon-click="backToList()"
+      :classData="classData"
     />
     <v-content>
       <v-container fluid class="py-0" ref="main">
@@ -81,7 +82,9 @@ export default {
     isViewingPost: false,
     isMobile: window.innerWidth < 600,
     tagsPool: [],
-    activeElem: 0
+    activeElem: 0,
+    classData : null,
+    classID: null,
   }),
   computed: {
     user () { return this.$store.state.user },
@@ -89,6 +92,8 @@ export default {
     answersRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions").doc(this.currentQuestion['.key']).collection("answers") }
   },
   async created () {
+    this.classID = this.$route.params.class_id;
+    this.classData = await this.classesService.getClassData(this.classID);
     // first fetch questions
     await this.fetchQuestions()
     const questionID = this.$route.params.question_id

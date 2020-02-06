@@ -1,17 +1,18 @@
 <template >
   <!-- TODO: add video documentation link -->
-  <div @click="handleClick()" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+  <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
     <template v-if="!thumbnail || strokes.length > 0">
       <DoodleVideoAnimation
-        ref="animation"
-        v-if="strokes.length > 0"
-        :strokes="strokes"
-        :isFullscreen="false"
-        :canvasID="whiteboardID"
-        :height="height"
-        @animation-loaded="handleAnimationLoaded()"
-        @animation-finished="handleEvent()"
-      />
+          ref="animation"
+          v-if="strokes.length > 0"
+          :strokes="strokes"
+          :isFullscreen="false"
+          :canvasID="whiteboardID"
+          :height="height"
+          @animation-loaded="handleAnimationLoaded()"
+          @animation-finished="handleEvent()"
+          @canvas-clicked="handleClick()"
+        />
       <audio-recorder
         v-if="audioURL"
         ref="audioRecorder"
@@ -24,7 +25,8 @@
       />
     </template>
     <template v-else-if="thumbnail">
-      <v-img :src="thumbnail">
+      <v-img @click="handleClick()"
+      :src="thumbnail">
         <!-- <v-container fill-height fluid>
           <v-row align="center" justify="center">
             <div>
@@ -123,7 +125,7 @@ export default {
     handleClick () {
       this.$emit("video-clicked");
     },
-    async fetchStrokes() {
+    async fetchStrokes () {
       const P = new Promise(async resolve => {
         if (!this.whiteboardID) resolve();
         const baseRef = db.collection("whiteboards").doc(this.whiteboardID);
@@ -140,7 +142,7 @@ export default {
           });
         }
         this.hasFetchedStrokes = true
-        this.$emit("strokes-ready", this.strokes)
+        this.$nextTick(() => this.$emit("strokes-ready", this.strokes))
         resolve();
       });
       return P;
