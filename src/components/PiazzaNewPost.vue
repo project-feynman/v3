@@ -138,31 +138,22 @@ export default {
     anonymous: false
   }),
   methods: {
-    submitPost() {
-      if (!this.postTitle) return;
+    submitPost () {
+      if (!this.postTitle) { return; }
       // take a snapshot of the text, images, drawings and audio that the user has created
-      // event.preventDefault()
-      const BlackboardMini = this.$refs["blackboard-mini"];
-      const blackboardID =
-        Math.random()
-          .toString(36)
-          .substring(2, 15) +
-        Math.random()
-          .toString(36)
-          .substring(2, 15);
-
-      const post = {
-        title: this.postTitle,
-        description: this.postDescription,
-        blackboardID,
-        postTags: this.postTags,
-        audioURL: BlackboardMini.audioURL,
-        date: this.getDate(),
-        image: this.addedImage,
-        isAnonymous: this.anonymous
-      };
-      const payloads = { post, boardStrokes: BlackboardMini.allStrokes };
-      this.$emit("post-submit", payloads);
+      const BlackboardMini = this.$refs["blackboard-mini"]
+      const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const post = { title: this.postTitle, 
+                     description: this.postDescription, 
+                     blackboardID,
+                     // postTags: this.postTags,
+                     audioURL: BlackboardMini.audioURL,
+                     date: this.getDate(),
+                     image: this.addedImage,
+                     isAnonymous: this.anonymous
+                   }
+      const payloads = { post, boardStrokes: BlackboardMini.allStrokes}
+      this.$emit('post-submit', payloads)
     },
     getDate() {
       var today = new Date();
@@ -207,11 +198,11 @@ export default {
       Vue.set(this, "addedImage", "");
     },
     //Start of Tags functions
-    addTag(tag) {
+    addTag (tag) {
       for (let t of this.postTags) {
         if (t == tag) return;
       }
-      this.postTags.push(tag);
+      this.postTags.push(tag)
     },
     deleteTag(tag) {
       this.postTags = this.postTags.filter(x => {

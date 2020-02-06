@@ -24,11 +24,18 @@
     <BasePopup
       v-if="searchBarDialog"
       title="Do you want to add the following class?"
-      :text="chosenClass"
-      :options="searchBarDialogOptions"
-      @submit="searchBarDialogSubmitted"
-    />
+      :text="chosenClass.name"
+      @submit="payload => enrollInClass(payload)"
+    >
+      <v-btn color="green darken-1" text>
+        NO
+      </v-btn>
+      <v-btn color="green darken-1" text @click="enrollInClass(chosenClass)">
+        YES
+      </v-btn>
+    </BasePopup>
 
+    <!-- APP BAR -->
     <BaseAppBar>
       <v-btn
         href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426"
@@ -46,7 +53,7 @@
         <v-btn @click="newClassPopup = true" dark color="accent lighten-1">CREATE CLASS</v-btn>
       </template>
       <template v-if="!isFetchingUser">
-        <!-- BASE MENU AND V-BTN -->
+        <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
         <BaseMenu
           v-if="user"
           :user="user"
@@ -61,6 +68,8 @@
         </BaseMenu>
       </template>
     </BaseAppBar>
+
+    <!-- MAIN CONTENT -->
     <v-content>
       <v-card class="mx-auto text-center" fluid>
         <v-container>
@@ -85,21 +94,20 @@
               <!-- Search Bar -->
               <template v-else>
                 <v-col cols="12" sm="6">
-                  <BaseSearchBar
+                  <BaseSearchBar 
+                    :items="schoolClasses"
+                    @submit="payload => classChosen(payload)"
                     color="accent"
                     label="Enter Class Number"
-                    :items="classesNames"
-                    @submit="classChosen"
-                  ></BaseSearchBar>
+                  />
                 </v-col>
               </template>
             </v-row>
           </div>
-
-          <!-- TUTORIAL -->
         </v-container>
       </v-card>
 
+      <!-- DISPLAY CLASSES -->
       <transition name="fade" mode="out-in">
         <v-container class="py-10">
           <div v-if="isFetchingUser || user === null" key="loading...">
@@ -161,17 +169,17 @@
                 cols="10"
                 sm="4"
                 md="3"
-                v-for="(s, i) in user.enrolledClasses"
-                :key="i"
+                v-for="enrolledClass in user.enrolledClasses"
+                :key="enrolledClass.ID"
                 class="d-flex align-center"
               >
                 <v-card
                   hover
-                  @click="$router.push(`${i}/questions/`)"
+                  @click="$router.push(`${enrolledClass.ID}/questions/`)"
                   class="text-center"
                   width="100%"
                 >
-                  <v-card-title>{{ s.name }}</v-card-title>
+                  <v-card-title>{{ enrolledClass.name }}</v-card-title>
                 </v-card>
               </v-col>
             </v-row>
@@ -194,8 +202,8 @@ import BaseSearchBar from "@/components/BaseSearchBar.vue";
 import BasePopup from "@/components/BasePopup.vue";
 import PopupLogin from "@/components/PopupLogin.vue";
 import PopupNewClass from "@/components/PopupNewClass.vue";
-import { initEnrollementService } from "../dep";
-import { encodeKey } from "../dep";
+import helpers from "@/helpers.js";
+import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
   components: {
@@ -210,17 +218,15 @@ export default {
   computed: {
     ...mapState(["user", "isFetchingUser"])
   },
-  data() {
+  data () {
     return {
-      classes: [],
-      classesNames: [],
+      schoolClasses: [],
       snackbar: false,
       snackbarMessage: "",
-      enrollementService: initEnrollementService(),
+      // TODO: let the popup handle its own state
       chosenClass: "",
       searchBarDialog: false,
-      searchBarDialogOptions: ["No", "Yes"],
-      // todo - let the popup button handle it itself
+      // TODO - let the popup button handle it itself
       newClassPopup: false,
       loginPopup: false
     };
@@ -246,30 +252,24 @@ export default {
         DoodleVideo3.quickplay();
       });
     },
-    fetchClasses() {
-      this.classes = [];
-      db.collection("classes")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            let docObj = { ".key": doc.id, ...doc.data() };
-            this.classes.push(docObj);
-            this.classesNames.push(docObj.name);
-          });
-        });
+    async fetchClasses () {
+      const ref = db.collection("classes");
+      this.schoolClasses = await helpers.getCollectionFromDB(ref);
     },
-    classChosen(answer) {
+    classChosen (answer) {
       this.searchBarDialog = true;
       this.chosenClass = answer;
     },
-
-    searchBarDialogSubmitted(answer) {
-      if (answer == "No") {
-        this.chosenClass = "";
-        this.searchBarDialog = false;
-        return;
+    enrollInClass ({ name, ".key": ID }) {
+      const userRef = db.collection("users").doc(this.user.uid);  
+      const classObj = {
+        ID,
+        name,
+        notifFrequency: CONSTANTS.notifFrequencyEnum.ALWAYS
       }
-      this.enrollementService.addClass(this.user, this.chosenClass);
+      userRef.update({
+        enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classObj)
+      });
       this.chosenClass = "";
       this.searchBarDialog = false;
     },
@@ -288,7 +288,6 @@ export default {
         tags: [],
         tabs: ["New"]
       });
-      //add to enrolled classes
       this.fetchClasses();
     },
     quickplayVideo(i) {

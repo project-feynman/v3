@@ -64,7 +64,7 @@
 
 <script>
 import "vue-swatches/dist/vue-swatches.min.css";
-import { initEnrollementService } from "../dep";
+// import { initEnrollementService } from "../dep";
 
 export default {
   props: {
@@ -76,18 +76,8 @@ export default {
     name: "",
     useDarkMode: false,
     color: "",
-    colors: [
-      "black",
-      "grey",
-      "red",
-      "orange",
-      "yellow",
-      "green",
-      "blue",
-      "purple"
-    ],
     newQNotifs: ["always", "daily", "never"],
-    enrollementService: initEnrollementService()
+    // enrollementService: initEnrollementService()
   }),
   methods: {
     handleSave() {
@@ -101,12 +91,12 @@ export default {
       this.$emit("save", updatedUser);
     },
     classNotifChanged(classID, frequency) {
-      this.enrollementService.changeNotification(
-        this.user,
-        classID,
-        "newQuestion",
-        frequency
-      );
+      // this.enrollementService.changeNotification(
+      //   this.user,
+      //   classID,
+      //   "newQuestion",
+      //   frequency
+      // );
     }
   }
 };

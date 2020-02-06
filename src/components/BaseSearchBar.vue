@@ -1,31 +1,36 @@
 <template>
   <div>
     <v-autocomplete
-      color="accent lighten-1"
       :label="label"
       :items="items"
+      v-model="searchBarValue"
+      @change="payload => submit(payload)"
+      return-object
+      item-text="name"
       placeholder="Start Typing to Search"
-      @change="submit"
-      v-model="searchText"
+      color="accent lighten-1"
       outlined
       elevate="2"
-      ></v-autocomplete>
+    />
   </div>
 </template>
 
 <script>
 export default {
-  name: "SearchBar",
-  data() {
-    return {
-      searchText: ""
-    };
+  name: "BaseSearchBar",
+  props: {
+    label: String,
+    items: Array
   },
-  props: ["label", "items"],
+  data () {
+    return {
+      searchBarValue: ""
+    }
+  },
   methods: {
-    submit() {
-      this.$emit("submit", this.searchText);
-      this.searchText = "";
+    submit (payload) {
+      this.$emit("submit", payload);
+      this.searchBarValue = "";
     }
   }
 };
