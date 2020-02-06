@@ -48,6 +48,7 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/storage";
+import helpers from "@/helpers.js"
 
 export default {
   props: {
@@ -75,7 +76,7 @@ export default {
       syncedVisualAndAudio: false,
       mouseHover: false,
       isQuickplaying: false
-    };
+    }
   },
   watch: {
     mouseHover () {
@@ -87,15 +88,12 @@ export default {
   },
   computed: {
     ...mapState(["user"]),
-    resourcesLoaded() {
+    resourcesLoaded () {
       return this.animationLoaded && this.recorderLoaded;
     }
   },
   async created() {
-    // fetch strokes if no thumbnail is available
-    if (!this.thumbnail) { 
-      await this.fetchStrokes(); 
-    }
+    if (!this.thumbnail) { this.fetchStrokes(); } // fetch strokes if no thumbnail is available
   },
   // check if this breaks
   mounted () {
@@ -133,13 +131,8 @@ export default {
           const doc = await baseRef.get();
           this.strokes = doc.data().strokes;
         } else {
-          const strokesRef = baseRef
-            .collection("strokes")
-            .orderBy("strokeNumber", "asc");
-          const querySnapshot = await strokesRef.get();
-          querySnapshot.forEach(doc => {
-            this.strokes.push({ ".key": doc.id, ...doc.data() });
-          });
+          const strokesRef = baseRef.collection("strokes").orderBy("strokeNumber", "asc");
+          this.strokes = await helpers.getCollectionFromDB(strokesRef);
         }
         this.hasFetchedStrokes = true
         this.$nextTick(() => this.$emit("strokes-ready", this.strokes))

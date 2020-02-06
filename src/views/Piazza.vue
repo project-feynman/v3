@@ -60,7 +60,8 @@ import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
 import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import firebase from "firebase/app"
 import "firebase/firestore"
-import { mapState } from 'vuex'
+import { mapState } from 'vuex';
+import helpers from "@/helpers.js";
 
 export default {
   components: {
@@ -106,30 +107,21 @@ export default {
     // case 2: user wants to visit a specific question using a link
     // this.fetchTagsPool()
   },
-  mounted() {
+  mounted () {
     this.setQuestionsHeight();
     window.addEventListener("resize", this.setQuestionsHeight);
     window.addEventListener("orientationchange", this.setQuestionsHeight);
   },
   methods: {
     fetchQuestions () {
-      // has to return a promise 
-      const promise = new Promise(async (resolve) => {
-        this.questions = []
-        let questionDocs = await this.questionsRef.get()
-        questionDocs.forEach(doc => {
-          this.questions.push({".key": doc.id, ...doc.data()})
-        })
+      const promise = new Promise(async resolve => {
+        this.questions = await helpers.getCollectionFromDB(this.questionsRef);
         resolve()
       }) 
       return promise
     },
     async fetchAnswers () {
-      this.answers = [] 
-      let answersDocs = await this.answersRef.get() 
-      answersDocs.forEach(doc => {
-        this.answers.push({".key": doc.id, ...doc.data()})
-      })
+      this.answers = helpers.getCollectionFromDB(this.answersRef);
     },
     handleQuestionCreate () {
       // destroy and create a new one
@@ -162,7 +154,8 @@ export default {
       }
       post.author = {
         UID: this.user.uid,
-        name: this.user.name
+        firstName: this.user.firstName || "no first name",
+        lastName: this.user.lastName || "no last name"
       }
       await ref.add(post);
       this.fetchQuestions();

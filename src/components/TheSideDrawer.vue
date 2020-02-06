@@ -141,12 +141,9 @@ export default {
       }
       this.hasFetchedWorkspaces = true;
     },
-    getUserColor() {
-      if (this.user) {
-        return this.user.color;
-      } else {
-        return "pink";
-      }
+    getUserColor () {
+      if (this.user) { return this.user.color; } 
+      else { return "pink"; }
     }
   }
 };
