@@ -77,7 +77,7 @@
             </div>
             <v-row class="my-5" justify="center">
               <!-- previous button color was deep-purple accent-4 -->
-              <template v-if="!user">
+              <template v-if="!user && !isFetchingUser">
                 <v-col cols="auto">
                   <v-btn @click="loginPopup = true" color="accent lighten-1">
                     LOG IN
@@ -108,7 +108,7 @@
       <!-- DISPLAY CLASSES -->
       <transition name="fade" mode="out-in">
         <v-container class="py-10">
-          <div v-if="isFetchingUser || user === null" key="loading...">
+          <div v-if="!user && !isFetchingUser" key="loading...">
             <v-row justify="center" class="py-0 text-center">
               <v-col cols="12" sm="10" md="4">
                 <v-card elevation="10">
@@ -158,26 +158,30 @@
               </v-col>
             </v-row>
           </div>
-          <div v-else key="class-list">
+
+          <div v-else-if="user" key="class-list">
             <div class="enrolled-classes-header text-center mb-5">
               <h2>Your Classes</h2>
             </div>
             <v-row justify="space-around" align="stretch" class="enrolled-classes">
               <v-col
+                v-for="enrolledClass in user.enrolledClasses"
                 cols="10"
                 sm="4"
                 md="3"
-                v-for="enrolledClass in user.enrolledClasses"
                 :key="enrolledClass.ID"
                 class="d-flex align-center"
               >
+                <!-- <h1>{{ user.enrolledClasses }}</h1> -->
                 <v-card
                   hover
                   @click="$router.push(`${enrolledClass.ID}/questions/`)"
                   class="text-center"
                   width="100%"
                 >
-                  <v-card-title>{{ enrolledClass.name }}</v-card-title>
+                  <v-card-title>
+                    {{ enrolledClass.name }}
+                  </v-card-title>
                 </v-card>
               </v-col>
             </v-row>
@@ -257,6 +261,13 @@ export default {
     },
     enrollInClass ({ name, ".key": ID }) {
       const userRef = db.collection("users").doc(this.user.uid);  
+    
+      // Abort if user is already enrolled in the class
+      for (const classObj of this.user.enrolledClasses) {
+        if (classObj.ID === ID) { return; }
+      }
+
+      // Add the new class
       const classObj = {
         ID,
         name,
@@ -273,6 +284,9 @@ export default {
       userRef.update({
         enrolledClasses: payload
       })
+    },
+    updateUser (payload) {
+      return; // TODO
     },
     async createClass (name) {
       // Check if class exists already
@@ -305,12 +319,6 @@ export default {
         else if (this.$vuetify.breakpoint.smAndDown) return 12;
       }
       return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
-    },
-    async updateUser({ name, color }) {
-      const ref = db.collection("users").doc(this.user.uid);
-      ref.update({
-        name
-      });
     },
     signIn({ email, password }) {
       firebase

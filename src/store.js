@@ -29,7 +29,7 @@ function setDisconnectHook (user) {
   });
 }
 
-function getRandomColor() {
+function getRandomColor () {
   var letters = '0123456789ABCDEF'
   var color = '#'
   for (let i=0; i<6; i++) {
@@ -43,7 +43,7 @@ function syncUserWithDB (userRef, context) {
     context.commit('SET_USER', user.data())
     // TODO: delete previous onDisconnect() hook 
     setDisconnectHook(user.data())
-  }) 
+  });
 }
 
 export default new Vuex.Store({
@@ -70,7 +70,7 @@ export default new Vuex.Store({
       const mirrorUser = await userRef.get() 
       if (mirrorUser.exists) { syncUserWithDB(userRef, context); } 
       else {
-        // create a new account
+        // Create a new account
         simplifiedUser.color = getRandomColor()
         userRef.set(simplifiedUser)
         syncUserWithDB(userRef, context);

@@ -18,7 +18,6 @@ export default {
   }),
   created () {
     this.$root.$on("toggle-drawer", () => {
-      console.log("toggling drawer")
       this.drawer = !this.drawer
     })
   }

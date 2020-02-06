@@ -1,8 +1,6 @@
 <template>
   <div>
-    <BaseAppBar v-if="classData"
-    :classData="classData" 
-    :loading="!hasFetchedVideos"/>
+    <BaseAppBar :loading="!hasFetchedVideos"/>
     <v-content>
       <template v-if="classDoc != {}">
         <VideoGalleryTabs 
@@ -14,43 +12,43 @@
         >
           <template v-slot:default="{ tabs }">
             <v-tab-item v-for="(tab, i) in tabs" :key="`tab--item--${i}`"> 
-              <RenderlessFetchVideos :tabNumber="i" :classID="classID" @videos-fetched="hasFetchedVideos=true">
+              <RenderlessFetchVideos :tabNumber="i" @videos-fetched="hasFetchedVideos=true">
                 <template slot-scope="{ videos }">
                   <v-container fluid>
                     <v-row>
-                    <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
-                      <BaseCard
-                        @save-tab-number="newValue => handleTabChange(newValue, video)"
-                        @save-paragraph="newValue => saveParagraph(newValue, video)"
-                        :isEditting="isEditting"
-                        :title="video.title"
-                        :subtitle="getSubtitle(video)"
-                        :description="video.paragraph || ''"
-                        :tabs="classDoc.tabs"
-                        :tabNumber="i"
-                        class="mb-5"
-                        :ref="`card--${j}`"
-                        @title-clicked="$router.push(`/${$route.params.class_id}/${video['.key']}`)"
-                      >
-                        <!-- IMAGE SLOT -->
-                        <template v-slot:card-image>
-                          <DoodleVideo
-                            :whiteboardID="video['.key']" 
-                            :ref="`doodle-video-${i}-${j}`"
-                            :canvasID="`${i}-${j}`"
-                            :thumbnail="video.thumbnail"
-                            @strokes-ready="handleAction('QUICKPLAY', video, `${i}-${j}`)"
-                            @video-clicked="$router.push(`/${$route.params.class_id}/${video['.key']}`)"
-                            @mouse-change="handleAction('HANDLEHOVER', video, `${i}-${j}`, $event)"
-                          />
-                        </template>
-                        <template v-slot:card-actions-editing>
-                          <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
-                            DELETE
-                          </v-btn>
-                        </template> 
-                      </BaseCard>
-                    </v-col>
+                      <v-col v-for="(video, j) in videos" :key="video['.key']" :cols="computeCardSize()">
+                        <BaseCard
+                          @save-tab-number="newValue => handleTabChange(newValue, video)"
+                          @save-paragraph="newValue => saveParagraph(newValue, video)"
+                          :isEditting="isEditting"
+                          :title="video.title"
+                          :subtitle="getSubtitle(video)"
+                          :description="video.paragraph || ''"
+                          :tabs="classDoc.tabs"
+                          :tabNumber="i"
+                          class="mb-5"
+                          :ref="`card--${j}`"
+                          @title-clicked="$router.push(`/${$route.params.class_id}/${video['.key']}`)"
+                        >
+                          <!-- IMAGE SLOT -->
+                          <template v-slot:card-image>
+                            <DoodleVideo
+                              :whiteboardID="video['.key']" 
+                              :ref="`doodle-video-${i}-${j}`"
+                              :canvasID="`${i}-${j}`"
+                              :thumbnail="video.thumbnail"
+                              @strokes-ready="handleAction('QUICKPLAY', video, `${i}-${j}`)"
+                              @video-clicked="$router.push(`/${$route.params.class_id}/${video['.key']}`)"
+                              @mouse-change="handleAction('HANDLEHOVER', video, `${i}-${j}`, $event)"
+                            />
+                          </template>
+                          <template v-slot:card-actions-editing>
+                            <v-btn v-if="hasPermission(video)" @click="handleAction('DELETE', video, j)" text color="red" class="subtitle-2">
+                              DELETE
+                            </v-btn>
+                          </template> 
+                        </BaseCard>
+                      </v-col>
                     </v-row>
                   </v-container>
                 </template>
@@ -90,10 +88,7 @@ export default {
       classDoc: {},
       isEditting: false,
       whiteboardPopup: false,
-      currentVideoID: "",
-      classesService: initClassesService(),
-      classID : null,
-      classData : null
+      currentVideoID: ""
     }
   },
   computed: {
@@ -101,8 +96,6 @@ export default {
   },
   async created () {
       this.fetchClassDoc();
-      this.classID = this.$route.params.class_id;
-      this.classData = await this.classesService.getClassData(this.classID);
     },
   methods: {
     async fetchClassDoc () {
