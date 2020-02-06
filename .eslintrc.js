@@ -6,7 +6,7 @@ module.exports = {
   'extends': [
     // 'plugin:vue/essential',
     // 'eslint:recommended',
-    '@vue/airbnb'
+    // '@vue/airbnb'
   ],
   rules: {
     "arrow-parens": ["error", "as-needed"],
