@@ -1,6 +1,6 @@
 <template>
   <div>
-    <BaseAppBar
+    <TheAppBar
       :icon="isViewingPost && isMobile ? 'back' : undefined" 
       @icon-click="backToList()"
     />
@@ -53,7 +53,7 @@
 
 <script>
 import db from "@/database.js"
-import BaseAppBar from "@/components/BaseAppBar.vue"
+import TheAppBar from "@/components/TheAppBar.vue"
 import PiazzaQuestionsList from "@/components/PiazzaQuestionsList.vue"
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
@@ -65,7 +65,7 @@ import helpers from "@/helpers.js";
 
 export default {
   components: {
-    BaseAppBar,
+    TheAppBar,
     PiazzaQuestionsList,
     DoodleVideo,
     PiazzaNewPost,

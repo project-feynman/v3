@@ -7,7 +7,7 @@
         <v-btn @click="snackbar = false" color="accent" text>CLOSE</v-btn>
       </v-snackbar>
 
-      <BaseAppBar v-if="isRealtime" :loading="loading" page="realtime">
+      <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
             :currentState="currentState"
@@ -23,7 +23,7 @@
             @video-save="payload => handleSaving(payload)"
           />
         </div>
-      </BaseAppBar>
+      </TheAppBar>
 
       <!-- APP BAR -->
       <div v-if="!isRealtime" id="mini-toolbar">
@@ -86,7 +86,7 @@ import Swatches from "vue-swatches";
 import "vue-swatches/dist/vue-swatches.min.css";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
-import BaseAppBar from "@/components/BaseAppBar.vue";
+import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 
@@ -103,7 +103,7 @@ export default {
     AudioRecorderMini,
     AudioRecorder,
     Swatches,
-    BaseAppBar,
+    TheAppBar,
     BlackboardToolBar
   },
   mixins: [DrawMethods],

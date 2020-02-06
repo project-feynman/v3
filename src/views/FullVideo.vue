@@ -1,6 +1,6 @@
 <template>
   <div id="video" style="height: 90%">
-    <BaseAppBar :loading="!resourcesLoaded"/>
+    <TheAppBar :loading="!resourcesLoaded"/>
     <v-content style="height: 90%">
       <DoodleVideo 
         v-if="video"
@@ -18,13 +18,13 @@
 <script>
 import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
-import BaseAppBar from "@/components/BaseAppBar.vue";
+import TheAppBar from "@/components/TheAppBar.vue";
 import { mapState } from "vuex";
 
 export default {
   components: {
     DoodleVideo,
-    BaseAppBar
+    TheAppBar
   },
   computed: {
     ...mapState(["user"]),

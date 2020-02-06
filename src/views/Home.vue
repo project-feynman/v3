@@ -7,7 +7,7 @@
     </v-snackbar>
 
     <!-- APP BAR -->
-    <BaseAppBar>
+    <TheAppBar>
       <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
         BLOG
       </v-btn>
@@ -22,22 +22,21 @@
           color="accent lighten-1"
         />
       </template>
-      <template v-if="!isFetchingUser">
+      <template v-if="user">
         <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
-        <BaseMenu
-          v-if="user"
+        <TheDropdownMenu
           @save="payload => updateUser(payload)"
           @sign-out="signOut()"
           @notif-setting-change="payload => updateNotifSetting(payload)"
         >
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
-              <v-icon large :color="user.color">account_circle</v-icon>
+              <v-icon large :color="user.color">notifications_active</v-icon>
             </v-btn>
           </template>
-        </BaseMenu>
+        </TheDropdownMenu>
       </template>
-    </BaseAppBar>
+    </TheAppBar>
 
     <!-- MAIN CONTENT -->
     <v-content>
@@ -187,8 +186,8 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
-import BaseAppBar from "@/components/BaseAppBar.vue";
-import BaseMenu from "@/components/BaseMenu.vue";
+import TheAppBar from "@/components/TheAppBar.vue";
+import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseSearchBar from "@/components/BaseSearchBar.vue";
 import helpers from "@/helpers.js";
 import CONSTANTS from "@/CONSTANTS.js";
@@ -196,10 +195,10 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   components: {
-    BaseAppBar,
+    TheAppBar,
     DoodleVideo,
     BaseSearchBar,
-    BaseMenu,
+    TheDropdownMenu,
     BasePopupButton
   },
   computed: {
