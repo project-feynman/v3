@@ -270,25 +270,25 @@ export default {
       this.chosenClass = "";
       this.searchBarDialog = false;
     },
-    async createClass(name) {
+    // TODO: fix this
+    async createClass (name) {
+      // Check if class exists already
       this.fetchClasses();
-      if (name in this.classesNames) { return; }
+      for (const c of this.schoolClasses)  {
+        if (c.name === name) { return; }
+      }
+
+      // Create it
       const ref = db.collection("classes");
       await ref.add({
         name,
         description: "description",
-        introVideoID: "4zV1vCQE3CDAuZC8vtEw", // always initialize picture to Sun, Moon and Lake
-        paragraph: "paragraph",
+        tabs: ["New"],
         tags: [],
-        tabs: ["New"]
       });
       this.fetchClasses();
     },
-    quickplayVideo(i) {
-      const videoElem = this.$refs[`doodle-video-${i}`][0];
-      videoElem.quickplay();
-    },
-    saveParagraph(newValue, courseNumber) {
+    saveParagraph (newValue, courseNumber) {
       const ref = db.collection("classes").doc(courseNumber);
       ref.update({
         paragraph: newValue

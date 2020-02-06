@@ -134,10 +134,6 @@ export default {
       return this.background;
     }
   },
-  async created() {
-    this.classID = this.$route.params.class_id;
-    this.classData = await this.classesService.getClassData(this.classID)
-  },
   data () {
     return {
       loading: true,
@@ -181,9 +177,7 @@ export default {
       smallScreen: window.innerWidth < 960,
       palleteVisibility: false,
       eraserActive: false,
-      classesService: initClassesService(),
       classID: null,
-      classData: null,
     }
   },
   watch: {
