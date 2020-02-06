@@ -131,7 +131,8 @@ export default {
       this.isViewingPost = true
     },
     handleQuestionClick (clickedQuestion) {
-      this.$router.push(`${clickedQuestion[".key"]}`)
+      const classID = this.$route.params.class_id;
+      this.$router.push(`/${classID}/questions/${clickedQuestion[".key"]}`)
       this.currentQuestion = clickedQuestion
       this.fetchAnswers()
       this.isAddingNewQuestion = false 
@@ -210,24 +211,25 @@ export default {
     max-width: 300px;
   }
 }
-  .post-header {
-    background: linear-gradient(#eee,#fff);
-    box-shadow: 0 5px 5px rgba(0,0,0,0.15);
-  }
-  .question-options .v-btn {
-    text-transform: unset;
-    letter-spacing: unset;
-    margin: 0 5px;
-  }
-  #addedImage {
-    max-width:100%;
-    max-height: 200px;
-  }
-  .input-title textarea {
-    max-height:100%;
-  }
-  .input-description textarea {
-    color: #555 !important;
-    font-size: 0.9em;
-  }
+
+.post-header {
+  background: linear-gradient(#eee,#fff);
+  box-shadow: 0 5px 5px rgba(0,0,0,0.15);
+}
+.question-options .v-btn {
+  text-transform: unset;
+  letter-spacing: unset;
+  margin: 0 5px;
+}
+#addedImage {
+  max-width:100%;
+  max-height: 200px;
+}
+.input-title textarea {
+  max-height:100%;
+}
+.input-description textarea {
+  color: #555 !important;
+  font-size: 0.9em;
+}
 </style> 
