@@ -37,18 +37,12 @@
 
     <!-- APP BAR -->
     <BaseAppBar>
-      <v-btn
-        href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426"
-        text
-        color="accent"
-        target="_blank"
-      >BLOG</v-btn>
-      <v-btn
-        href="https://github.com/eltonlin1998/ExplainMIT"
-        text
-        color="accent"
-        target="_blank"
-      >GITHUB</v-btn>
+      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
+        BLOG
+      </v-btn>
+      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank">
+        GITHUB
+      </v-btn>
       <template v-if="user && $route.path == '/'">
         <v-btn @click="newClassPopup = true" dark color="accent lighten-1">CREATE CLASS</v-btn>
       </template>
@@ -56,9 +50,9 @@
         <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
         <BaseMenu
           v-if="user"
-          :user="user"
           @save="payload => updateUser(payload)"
           @sign-out="signOut()"
+          @notif-setting-change="payload => updateNotifSetting(payload)"
         >
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
@@ -85,10 +79,14 @@
               <!-- previous button color was deep-purple accent-4 -->
               <template v-if="!user">
                 <v-col cols="auto">
-                  <v-btn @click="loginPopup = true" color="accent lighten-1">LOG IN</v-btn>
+                  <v-btn @click="loginPopup = true" color="accent lighten-1">
+                    LOG IN
+                  </v-btn>
                 </v-col>
                 <v-col cols="auto">
-                  <v-btn @click="loginPopup = true" color="accent lighten-1" outlined>SIGN UP</v-btn>
+                  <v-btn @click="loginPopup = true" color="accent lighten-1" outlined>
+                    SIGN UP
+                  </v-btn>
                 </v-col>
               </template>
               <!-- Search Bar -->
@@ -270,14 +268,18 @@ export default {
       this.chosenClass = "";
       this.searchBarDialog = false;
     },
-    // TODO: fix this
+    async updateNotifSetting (payload) {
+      const userRef = db.collection("users").doc(this.user.uid);
+      userRef.update({
+        enrolledClasses: payload
+      })
+    },
     async createClass (name) {
       // Check if class exists already
       this.fetchClasses();
-      for (const c of this.schoolClasses)  {
+      for (const c of this.schoolClasses) {
         if (c.name === name) { return; }
       }
-
       // Create it
       const ref = db.collection("classes");
       await ref.add({

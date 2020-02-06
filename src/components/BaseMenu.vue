@@ -32,18 +32,18 @@
         <v-divider></v-divider>
 
         <v-list>
-          <v-list-item v-for="(s, i) in user.enrolledClasses" :key="i">
+          <v-list-item v-for="classObj in user.enrolledClasses" :key="classObj.ID">
             <v-container>
-              <v-list-item-title>{{s.name}}</v-list-item-title>
-              <v-list-item-action v-if="s.settings">
-                <v-radio-group v-model="s.settings.notifications.newQuestion" row>
+              <v-list-item-title>{{ classObj.name}}</v-list-item-title>
+              <v-list-item-action>
+                <v-radio-group v-model="classObj.notifFrequency" row>
                   <v-radio
-                    v-for="x in newQNotifs"
-                    :key="x"
-                    @change="classNotifChanged(i, x)"
-                    :label="x"
-                    :value="x"
-                    :id="x"
+                    v-for="option in notifFrequencyEnum"
+                    :key="option"
+                    @change="classNotifChanged(classObj, option)"
+                    :label="option"
+                    :value="option"
+                    :id="option"
                   />
                 </v-radio-group>
               </v-list-item-action>
@@ -63,24 +63,22 @@
 </template>
 
 <script>
-import "vue-swatches/dist/vue-swatches.min.css";
-// import { initEnrollementService } from "../dep";
+import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
-  props: {
-    user: Object
-  },
   data: () => ({
     fav: true,
     menu: false,
     name: "",
     useDarkMode: false,
     color: "",
-    newQNotifs: ["always", "daily", "never"],
-    // enrollementService: initEnrollementService()
+    notifFrequencyEnum: CONSTANTS.notifFrequencyEnum
   }),
+  computed: {
+    user () { return this.$store.state.user; }
+  },
   methods: {
-    handleSave() {
+    handleSave () {
       this.menu = false;
       const updatedUser = {
         useDarkMode: this.useDarkMode
@@ -90,13 +88,18 @@ export default {
       else updatedUser.name = this.user.name;
       this.$emit("save", updatedUser);
     },
-    classNotifChanged(classID, frequency) {
-      // this.enrollementService.changeNotification(
-      //   this.user,
-      //   classID,
-      //   "newQuestion",
-      //   frequency
-      // );
+    classNotifChanged (classObj, newFrequency) {
+      const updatedArray = this.user.enrolledClasses;
+      for (let i = 0; i < updatedArray.length; i++) {
+        if (updatedArray[i].ID === classObj.ID) {
+          updatedArray[i] = {
+            name: classObj.name,
+            ID: classObj.ID,
+            notifFrequency: newFrequency
+          }
+        }
+      }
+      this.$emit("notif-setting-change", updatedArray);
     }
   }
 };
