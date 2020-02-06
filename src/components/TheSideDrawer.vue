@@ -8,7 +8,6 @@
       width="250"
     >
       <v-list>
-
         <v-list-item :to="`/${$route.params.class_id}/videos`">
           <v-list-item-icon>
             <v-icon>video_library</v-icon>
@@ -28,15 +27,6 @@
           </v-list-item-content>
         </v-list-item>
         <v-divider />
-<!-- 
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon>phone_in_talk</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title class="subtitle-1 font-weight-regular">Realtime boards</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item> -->
 
         <!-- BLACKBOARDS -->
         <template v-if="hasFetchedWorkspaces">
@@ -50,7 +40,7 @@
           </v-list-item-icon>
             <template v-if="workspace.members">
               <v-list-item-content>
-                Board {{ i }}
+                Realtime Board {{ i }}
                 <template v-for="(member, i) in workspace.members">
                   <div style="display: flex;" :key="i">
                     <v-icon :color="getUserColor()">person</v-icon>
@@ -84,12 +74,10 @@ export default {
   },
   data () {
     return {
-      drawer: true,
-      mini: false,
       prevClassID: "",
       workspaces: [],
       hasFetchedWorkspaces: false
-    };
+    }
   },
   computed: {
     user () {
@@ -113,15 +101,6 @@ export default {
         members: []
       });
     },
-    clickedButtonStateName() {
-      const buttonState = this.clickedButtonStateName;
-      this[buttonState] = !this[buttonState];
-      this.$root.$on(
-        "delete-whiteboard-strokes-success",
-        () => (this[buttonState] = false)
-      );
-      this.clickedButtonStateName = null;
-    },
     async updateNavComponents () {
       this.hasFetchedWorkspaces = false;
       const classID = this.$route.params.class_id;
@@ -137,8 +116,6 @@ export default {
     },
     getUserColor () {
       return this.user ? this.user.color : "pink";
-      // if (this.user) { return this.user.color; } 
-      // else { return "pink"; }
     }
   }
 };
