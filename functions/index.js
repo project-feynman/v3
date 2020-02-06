@@ -1,5 +1,5 @@
-const webpush = require("web-push");
-const nodemailer = require("nodemailer");
+// const webpush = require("web-push");
+// const nodemailer = require("nodemailer");
 const firebase_tools = require("firebase-tools");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
@@ -12,36 +12,50 @@ const config = require("./config");
 // 	databaseUrl: "https://feynman-mvp.firebaseio.com"
 // })
 
-const { vapidKeys } = config;
-webpush.setVapidDetails(
-  "mailto:hubewasi@gmail.com",
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
+// const { vapidKeys } = config;
+// webpush.setVapidDetails(
+//   "mailto:hubewasi@gmail.com",
+//   vapidKeys.publicKey,
+//   vapidKeys.privateKey
+// );
 
-const { gmailPass } = config;
-const { oauth } = config;
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  service: "Gmail",
-  auth: oauth
-});
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey('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');
+
+
+// const { gmailPass } = config;
+// const { oauth } = config;
+// const transporter = nodemailer.createTransport({
+//   host: "smtp.gmail.com",
+//   port: 465,
+//   secure: true,
+//   service: "Gmail",
+//   auth: oauth
+// });
 
 function sendEmail (email, subject, text, html) {
-  const message = {
-    from: "\"Feynman Notifications\" feynmannotif@gmail.com",
+  const msg = {
     to: email,
-    subject,
-    text,
-    html
+    from: "feynmannotif@gmail.com",
+    subject: subject,
+    text: text,
+    html: html,
   };
+  console.log("message", msg);
+  sgMail.send(msg);
 
-  transporter.sendMail(message, (error, response) => {
-    console.log(error);
-    console.log(response);
-  });
+  // const message = {
+  //   from: "\"Feynman Notifications\" feynmannotif@gmail.com",
+  //   to: email,
+  //   subject,
+  //   text,
+  //   html
+  // };
+
+  // transporter.sendMail(message, (error, response) => {
+  //   console.log(error);
+  //   console.log(response);
+  // });
 }
 
 admin.initializeApp();
@@ -97,9 +111,7 @@ exports.emailOnNewQuestion = functions.firestore.document("/classes/{classID}/qu
     .where("enrolledClasses", "array-contains", { name: classID, newQuestion: "always" });
 
   // TEST
-  sendEmail("eltonlin1998@gmail.com", "TEST SUBJECT", "TEST TEXT", "<h1>HELLO WORLD</h1>");
-
-
+  sendEmail("winstfe@gmail.com", "TEST SUBJECT", "TEST TEXT", "<h1>HELLO WORLD</h1>");
   // Send the emails
   const classmates = await classmatesRef.get();
   if (!classmates.data()) return;
