@@ -64,16 +64,15 @@
 </template>
 
 <script>
-import BaseCard from "@/components/BaseCard.vue"
-import BaseAppBar from "@/components/BaseAppBar.vue"
-import DoodleVideo from "@/components/DoodleVideo.vue"
-import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue'
-import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue"
-import db from "@/database.js"
-import firebase from "firebase/app"
-import "firebase/functions"
-import "firebase/storage"
-import {initClassesService} from '../dep'
+import BaseCard from "@/components/BaseCard.vue";
+import BaseAppBar from "@/components/BaseAppBar.vue";
+import DoodleVideo from "@/components/DoodleVideo.vue";
+import RenderlessFetchVideos from '@/components/RenderlessFetchVideos.vue';
+import VideoGalleryTabs from "@/components/VideoGalleryTabs.vue";
+import db from "@/database.js";
+import firebase from "firebase/app";
+import "firebase/functions";
+import "firebase/storage";
 
 export default {
   components: {

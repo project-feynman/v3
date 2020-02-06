@@ -21,7 +21,7 @@ export class Tags {
                 if(!(tag in this.tree))
                     this.tree[tag] = []
                 if(!(taginfo.parent in this.tree))
-                    t
+                    
             }
         })
     }

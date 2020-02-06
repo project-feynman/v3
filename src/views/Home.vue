@@ -249,26 +249,9 @@ export default {
         this.$refs.DoodleVideo3.quickplay();
       });
     },
-<<<<<<< HEAD
-    fetchClasses () {
-      this.classes = [];
-      db.collection("classes")
-        .get()
-        .then(querySnapshot => {
-          querySnapshot.forEach(doc => {
-            let docObj = { ".key": doc.id, ...doc.data() };
-            this.classes.push(docObj);
-
-            // schoolClasses
-
-            this.classesNames.push(docObj.name);
-          });
-        });
-=======
     async fetchClasses () {
       const ref = db.collection("classes");
       this.schoolClasses = await helpers.getCollectionFromDB(ref);
->>>>>>> 4a9855877fe0948b6fa59e0cf804244ea7f4b2f2
     },
     classChosen (answer) {
       this.searchBarDialog = true;

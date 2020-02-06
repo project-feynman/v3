@@ -89,7 +89,6 @@ import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
 import BaseAppBar from "@/components/BaseAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CONSTANTS from "@/CONSTANTS.js";
-import {initClassesService} from '../dep';
 
 export default {
   props: {
@@ -203,11 +202,8 @@ export default {
       this.setStyle(this.color, this.lineWidth);
     },
     isRecording() {
-      if (this.isRecording) {
-        this.startTimer();
-      } else {
-        this.stopTimer();
-      }
+      if (this.isRecording) { this.startTimer(); } 
+      else { this.stopTimer(); }
     },
     whiteboardDoc(newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
