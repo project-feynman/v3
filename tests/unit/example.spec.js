@@ -1,5 +1,12 @@
-describe("FakeTest.vue", () => {
-  it("passes no matter what", () => {
-    expect(42).toBe(42);
-  });
-});
+import { shallowMount } from '@vue/test-utils'
+import HelloWorld from '@/components/HelloWorld.vue'
+
+describe('HelloWorld.vue', () => {
+  it('renders props.msg when passed', () => {
+    const msg = 'new message'
+    const wrapper = shallowMount(HelloWorld, {
+      propsData: { msg }
+    })
+    expect(wrapper.text()).toMatch(msg)
+  })
+})

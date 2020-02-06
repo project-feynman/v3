@@ -7,11 +7,11 @@
 </template>
 
 <script>
-import db from "@/database.js"
+import db from "@/database.js";
+import helpers from "@/helpers.js";
 
 export default {
   props: {
-    classID: String,
     tabNumber: Number
   },
   data () {
@@ -20,17 +20,17 @@ export default {
     }
   },
   async created () {
-    if (this.classID == null|| this.tabNumber == null) {
-      return 
+    const classID = this.$route.params.class_id;
+    if (!classID || this.tabNumber === null) { return; } // tabNumber can be 0, therefore explicitly check for null
+    const classRef = db.collection("classes").doc(classID);
+    let classDoc = await classRef.get();
+    const classObj = {
+      ID: classID,
+      name: classDoc.data().name,
     }
-    const ref = db.collection("whiteboards").where("fromClass", "==", this.classID).where("tabNumber", "==", this.tabNumber)
-    ref.get().then(querySnapshot => {
-      this.videos = []
-      querySnapshot.forEach(doc => {
-        this.videos.push({".key": doc.id, ...doc.data()})
-      })
-      this.$emit('videos-fetched')
-    })
+    const ref = db.collection("whiteboards").where("fromClass", "==", classObj).where("tabNumber", "==", this.tabNumber)    
+    this.videos = await helpers.getCollectionFromDB(ref);
+    this.$emit("videos-fetched");
   }
 }
 </script>

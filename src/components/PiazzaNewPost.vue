@@ -3,13 +3,16 @@
   <div id="new-post">
     <v-banner single-line sticky class="post-header container py-0" tag="header">
       <h3>New {{ postType }}</h3>
-      <template v-slot:actions>
-        <v-btn @click="submitPost()" color="accent">Post <v-icon small class="pl-2">send</v-icon></v-btn>
-      </template>
+      <!-- <template v-slot:actions>
+        <v-btn block @click="submitPost()" color="accent">
+          Post
+          <v-icon small class="pl-2">send</v-icon>
+        </v-btn>
+      </template> -->
     </v-banner>
     <v-container tag="section" class="py-5">
       <div class="question-main">
-        <v-textarea
+        <!-- <v-textarea
           class="input-title"
           filled
           outlined
@@ -18,13 +21,22 @@
           :placeholder="`Your ${postType} here...`"
           v-model="postTitle"
           color="accent lighten-1"
+        /> -->
+         <v-text-field
+          v-if="postType === 'Question'"
+          class="input-title"
+          outlined
+          label="Title"
+          placeholder="Summarize your question in 1 sentence"
+          v-model="postTitle"
+          color="accent lighten-1"
         />
+      
         <v-textarea
           class="input-description"
-          v-if="postType=='Question'"
           filled
           label="Description"
-          placeholder="Your description here..."
+          :placeholder="`Write your ${postType} here`"
           v-model="postDescription"
           color="accent lighten-2"
           background-color="#f5f5f5"
@@ -45,19 +57,24 @@
           @delete="deleteTag"
           />
         </div>
-      </v-container> -->
+      </v-container>-->
+
+      <v-btn block @click="submitPost()" color="secondary">
+          Post {{ postType }}
+          <v-icon small class="pl-2">send</v-icon>
+        </v-btn>
       <v-row class="question-options" justify="end" justify-sm="space-between" align="center">
         <v-col cols="auto" order-sm="12">
           <v-switch v-model="anonymous" label="Post Anonymously" color="accent"></v-switch>
         </v-col>
-        <v-col cols='12' sm="auto" class="d-flex justify-space-around" order-sm="1">
+        <v-col cols="12" sm="auto" class="d-flex justify-space-around" order-sm="1">
           <v-btn
             :outlined="!blackboardAttached"
             color="accent lighten-1"
             class="board-action-btn"
-            @click="blackboardAttached=!blackboardAttached"
+            @click="blackboardAttached = !blackboardAttached"
           >
-            <span class="mr-2">{{this.blackboardAttached?'Detach':'Attach'}} Blackboard</span>
+            <span class="mr-2">{{ blackboardAttached ? 'Hide' : 'Use'}} blackboard</span>
             <v-icon>mdi-bulletin-board</v-icon>
           </v-btn>
           <v-btn
@@ -66,7 +83,7 @@
             color="accent lighten-1"
             class="board-action-btn"
           >
-            <span class="mr-2">{{this.imageAdded?'Change':'Add'}} image</span>
+            <span class="mr-2">{{ imageAdded ? 'Change' : 'Add'}} image</span>
             <v-icon>image</v-icon>
           </v-btn>
         </v-col>
@@ -75,7 +92,7 @@
         <v-container>
           <v-row class="preview-image" align="center" justify="space-around">
             <v-col cols="6" sm="4" md="2">
-              <img :src="addedImage" id="addedImage"/>
+              <img :src="addedImage" id="addedImage" />
             </v-col>
             <v-col cols="6" sm="4" md="8">
               <v-row class="px-0" align="center" justify="space-around">
@@ -83,7 +100,6 @@
                   <v-switch v-model="blackboardAttached" label="Annotate Image" color="accent"></v-switch>
                 </v-col>
                 <v-col cols="auto">
-                  
                   <v-btn
                     @click="removeImage()"
                     outlined
@@ -96,24 +112,32 @@
           </v-row>
         </v-container>
       </v-card>
-      <div class="blackboard-container" v-show="this.blackboardAttached">
-        <BlackboardMini 
+      <div class="blackboard-container" v-show="blackboardAttached">
+        <Blackboard
           ref="blackboard-mini"
+          :isRealtime="false"
           :visible="visible"
           :background="addedImage"
           @boardImage="boardImage"
         />
       </div>
+
+      <!-- <v-btn block @click="submitPost()" color="secondary" class="mt-5">
+          Post {{ postType }}
+          <v-icon small class="pl-2">send</v-icon>
+        </v-btn> -->
     </v-container>
+
+
+
+
   </div>
 </template>
 
 <script>
-import Vue from 'vue';
-import DoodleVideo from "@/components/DoodleVideo.vue"
-import BlackboardMini from "@/components/BlackboardMini.vue"
-// import SearchBar from '@/components/SearchBar.vue'
-// import Tags from "@/components/Tags.vue"
+import Vue from "vue";
+import DoodleVideo from "@/components/DoodleVideo.vue";
+import Blackboard from "@/components/Blackboard.vue";
 
 export default {
   props: {
@@ -123,16 +147,14 @@ export default {
     withTags: Boolean
   },
   components: {
-    BlackboardMini,
-    // Tags,
-    // SearchBar
+    Blackboard,
   },
   data: () => ({
     postTitle: "",
     postDescription: "",
     blackboardAttached: true,
     imageAdded: false,
-    addedImage: '',
+    addedImage: "",
     changeImage: false,
     postTags: [],
     reRenderTags: 0,
@@ -140,61 +162,64 @@ export default {
   }),
   methods: {
     submitPost () {
-      if (!this.postTitle) return 
+      if (!this.postTitle && this.postType === "Question") { return; }
       // take a snapshot of the text, images, drawings and audio that the user has created
-      // event.preventDefault()
       const BlackboardMini = this.$refs["blackboard-mini"]
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      
       const post = { title: this.postTitle, 
                      description: this.postDescription, 
                      blackboardID,
-                    //  postTags: this.postTags,
+                     // postTags: this.postTags,
                      audioURL: BlackboardMini.audioURL,
                      date: this.getDate(),
                      image: this.addedImage,
                      isAnonymous: this.anonymous
                    }
       const payloads = { post, boardStrokes: BlackboardMini.allStrokes}
+      console.log("payloads =", payloads);
       this.$emit('post-submit', payloads)
-
-      ///TODO possibly delete the current answer because it persists?
     },
-    getDate () {
+    getDate() {
       var today = new Date();
       return today.toISOString();
     },
-    boardImage (boardImage) {
+    boardImage(boardImage) {
       if (boardImage) {
-        this.imageAdded=true
-        this.addedImage=boardImage
-        this.changeImage=false
+        this.imageAdded = true;
+        this.addedImage = boardImage;
+        this.changeImage = false;
       }
     },
-    getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300 
-      return window.innerWidth - 500 
+    getFullWidth() {
+      // sidenav's width = 200, BaseList's width = 300
+      return window.innerWidth - 500;
     },
-    clickImage () {
-      this.$refs['blackboard-mini'].$refs.background.$el.click()
+    clickImage() {
+      this.$refs[
+        "blackboard-mini"
+      ].$refs.blackboardToolbar.$refs.background.$el.click();
     },
-    addImage () {
-      this.imageAdded=true;
-      var file = document.getElementById('img-input').files[0];
+    addImage() {
+      this.imageAdded = true;
+      var file = document.getElementById("img-input").files[0];
       var reader = new FileReader();
 
-      reader.addEventListener("load", ()=> {
-        this.addedImage = reader.result;
-      }, false);
+      reader.addEventListener(
+        "load",
+        () => {
+          this.addedImage = reader.result;
+        },
+        false
+      );
 
       if (file) {
         reader.readAsDataURL(file);
       }
     },
     removeImage() {
-      this.imageAdded=false;
+      this.imageAdded = false;
       //this.addedImage=''
-      Vue.set(this,'addedImage','')
+      Vue.set(this, "addedImage", "");
     },
     //Start of Tags functions
     addTag (tag) {
@@ -204,9 +229,11 @@ export default {
       this.postTags.push(tag)
     },
     deleteTag(tag) {
-        this.postTags = this.postTags.filter(x => {return x != tag})
+      this.postTags = this.postTags.filter(x => {
+        return x != tag;
+      });
     }
     //End of Tags functions
   }
-}
+};
 </script>

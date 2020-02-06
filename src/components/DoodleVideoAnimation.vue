@@ -1,24 +1,24 @@
 <template>
-  <div style="height: 100%">
-    <BaseOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
+  <div @click="handleClick()" style="height: 100%">
+    <DoodleVideoOverlay v-if="isFullscreen" :overlay="overlay" @play-video="startVideo()">
       <canvas
         v-if="isFullscreen"
         :id="`myCanvas-${canvasID}`"
         style="width: 100%; height: 90vh; background-color: rgb(62, 66, 66)"
       ></canvas>
-    </BaseOverlay>
-    <!-- <BaseOverlay v-else :overlay="false" @play-video="playVideo()"> -->
+    </DoodleVideoOverlay>
+    <!-- <DoodleVideoOverlay v-else :overlay="false" @play-video="playVideo()"> -->
     <canvas
       v-else
       :id="`myCanvas-${canvasID}`"
       style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
     ></canvas>
-    <!-- </BaseOverlay> -->
+    <!-- </DoodleVideoOverlay> -->
   </div>
 </template>
 
 <script>
-import BaseOverlay from "@/components/BaseOverlay.vue";
+import DoodleVideoOverlay from "@/components/DoodleVideoOverlay.vue";
 import { mapState } from "vuex";
 import DrawMethods from "@/mixins/DrawMethods";
 import db from "@/database.js";
@@ -39,19 +39,13 @@ export default {
     }
   },
   components: {
-    BaseOverlay
+    DoodleVideoOverlay
   },
   mixins: [DrawMethods],
   computed: {
-    ...mapState(["user"]),
-    author() {
-      return {
-        name: this.user.displayName,
-        uid: this.user.uid
-      };
-    }
+    ...mapState(["user"])
   },
-  data() {
+  data () {
     return {
       isReplaying: false,
       allStrokes: [],
@@ -68,10 +62,10 @@ export default {
       interval: null
     };
   },
-  created() {
+  created () {
     this.initData();
   },
-  mounted() {
+  mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.canvasID}`);
     this.ctx = this.canvas.getContext("2d");
     this.canvas.height = this.height;
@@ -96,13 +90,16 @@ export default {
       this.rescaleCanvas(true);
     },
     async initData() {
-      if (!this.strokes) return;
+      if (!this.strokes) { return };
       this.indexOfNextStroke = 0;
       this.allStrokes = this.strokes;
       // if (this.ctx) {
       //   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       // }
       this.$emit("animation-loaded");
+    },
+    handleClick () {
+      this.$emit('canvas-clicked');
     }
   }
 };

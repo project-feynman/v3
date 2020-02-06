@@ -1,8 +1,6 @@
 <template>
   <v-app>
-    <template v-if="$route.path != '/'">
-      <TheSideDrawer v-model="drawer"/>
-    </template>
+    <TheSideDrawer v-if="$route.path !== '/'" v-model="drawer"/>
     <!-- RouterView "becomes" different components depending on the URL, and is specified in main.js -->
     <RouterView/>
   </v-app>
@@ -25,6 +23,7 @@ export default {
   }
 }
 </script>
+
 <style>
 html {
   overflow-y: auto;

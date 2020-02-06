@@ -16,10 +16,11 @@
         :height="`${getFullWidth() * 9/16}`"
         ref = "DoodleVideo"
         @full-video-ready="initVideo()"
+        @video-clicked="handleClick()"
       />
     </v-container>
-    <footer class="post-footer px-4 py-3">
-      Posted by {{ post.isAnonymous? 'Anonymous':post.author.name }}
+    <footer v-if="post.author" class="post-footer px-4 py-3">
+      Posted by {{ post.isAnonymous? 'Anonymous' : post.author.firstName }}, {{ displayDate(post.date) }} 
     </footer>
   </v-card>
 </template>
@@ -27,6 +28,7 @@
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue"
 import db from "@/database.js";
+import moment from "moment";
 
 export default {
   props: {
@@ -39,36 +41,29 @@ export default {
   },
   data () {
     return {
-    video: null
+      video: null
     }
   },
-  created () {
-    // this.fetchVideo();
-  },
   methods: {
+    displayDate (date) {
+      return moment(date).format('MMM Do, h:mm a');
+    },
     getFullWidth () {
-      console.log("post: ", this.post)
       // sidenav's width = 200, BaseList's width = 300 
       return window.innerWidth - 500 
     },
     initVideo () {
-      
-      const doodleVideo = this.$refs.DoodleVideo
-      // const animation = doodleVideo.$refs["animation"]
-      // animation.drawStrokesInstantly()
-      doodleVideo.resizeVideo();
-      console.log("inititalized video")
+      this.$refs.DoodleVideo.resizeVideo();
+    },
+    handleClick () {
+      if (this.post.audioURL) return;
+      const DoodleVideo = this.$refs.DoodleVideo;
+      if (!DoodleVideo.isQuickplaying) DoodleVideo.quickplay();
     }
-    // async fetchVideo () {
-    //   const videoRef = db.collection("whiteboards").doc(this.post.videoID);
-    //   let video = await videoRef.get();
-    //   this.video = video.data();
-    //   console.log("thumbnail: ", this.video.thumbnail)
-    // }
-    /// we need to figure out how to get thumbnail into this
   }
 }
 </script>
+
 <style>
 .post-title {
     line-height: 1.3;
