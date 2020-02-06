@@ -23,17 +23,14 @@
                   :key="newQuestionKey"
                   postType="Question"
                   :visible="this.isViewingPost"
-                  :tagsPool="tagsPool"
-                  :withTags="true"
                   @post-submit="question => submitPost(question, questionsRef)"
                 />
               </template>
               <template v-else>
-                <!-- <PiazzaViewPost :post="currentQuestion" postType="Question"/> -->
                 <PiazzaViewPost 
                   :post="currentQuestion"
                   :key="currentQuestion['.key']"
-                  />
+                />
                 <PiazzaViewPost 
                   v-for="(answer, i) in answers" 
                   :key="answer['.key']"
@@ -64,8 +61,6 @@ import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
 import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
 import firebase from "firebase/app"
 import "firebase/firestore"
-import {initQuestionService} from "../dep"
-import {initClassesService} from "../dep"
 import { mapState } from 'vuex'
 
 export default {
@@ -78,8 +73,6 @@ export default {
   },
   data: () => ({
     newQuestionKey: 0,
-    questionService: initQuestionService(),
-    classesService: initClassesService(),
     isAddingNewQuestion: true,
     currentQuestion: {},
     questions: [],
@@ -94,16 +87,9 @@ export default {
     classID: null,
   }),
   computed: {
-    user () {
-      return this.$store.state.user
-    },
-    questionsRef () {
-      return db.collection("classes").doc(this.classID).collection("questions")
-    },
-    answersRef () {
-      const questionID = this.currentQuestion['.key']
-      return db.collection("classes").doc(this.classID).collection("questions").doc(questionID).collection("answers")
-    }
+    user () { return this.$store.state.user },
+    questionsRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions") },
+    answersRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions").doc(this.currentQuestion['.key']).collection("answers") }
   },
   async created () {
     this.classID = this.$route.params.class_id;
@@ -122,7 +108,7 @@ export default {
       }
     })
     // case 2: user wants to visit a specific question using a link
-    this.fetchTagsPool()
+    // this.fetchTagsPool()
   },
   mounted() {
     this.setQuestionsHeight();
@@ -132,7 +118,7 @@ export default {
   methods: {
     fetchQuestions () {
       // has to return a promise 
-      const P = new Promise(async (resolve) => {
+      const promise = new Promise(async (resolve) => {
         this.questions = []
         let questionDocs = await this.questionsRef.get()
         questionDocs.forEach(doc => {
@@ -140,7 +126,7 @@ export default {
         })
         resolve()
       }) 
-      return P
+      return promise
     },
     async fetchAnswers () {
       this.answers = [] 
@@ -148,13 +134,6 @@ export default {
       answersDocs.forEach(doc => {
         this.answers.push({".key": doc.id, ...doc.data()})
       })
-    },
-    async fetchTagsPool() {
-        /*this.tagsPool = []
-        const classID = this.$route.params.class_id
-        db.collection('classes').doc(classID).get().then(doc => {
-            this.tagsPool = doc.data().tagsPool
-        })*/
     },
     handleQuestionCreate () {
       // destroy and create a new one
@@ -171,71 +150,45 @@ export default {
       this.isViewingPost = true
     },
     async submitPost ({ post, boardStrokes }, ref) {
+      // should be stored as subcollections so it can be lazy fetched
       db.collection("whiteboards").doc(post.blackboardID).set({
-            strokes: boardStrokes,
-            // image: this.whiteBoardImage
+        strokes: boardStrokes,
+        // image: this.whiteBoardImage
       })
-      // const postObj = post 
-      post.author = this.user
-      // below is graphQL 
-      post.videoID = post.blackboardID;
-      post.questionDescription = post.description;
-      post.classID = this.$route.params.class_id;
-      post.inquisitorID = this.user ? this.user.uid : "";
-      await ref.add(post)
-      this.fetchQuestions()
-      // Incrementing the key causes the new question component to re-render to reset its state
-      this.newQuestionKey += 1
-      console.log("this.newQuestionKey =", this.newQuestionKey)
-      //this.fetchAnswers()
-      // trigger email notification
-      // let inquisitorID = this.user ? this.user.uid : "";
-      // let classID = this.$route.params.class_id;
-
-      // trigger email notification
-      let question;
-      try {
-        // question = await this.questionService.askQuestion(post)
-        //   {
-        //   title,
-        //   questionDescription: description,
-        //   videoID: blackboardID,
-        //   date,
-        //   usersWhoUpvoted: [],
-        //   inquisitorID: inquisitorID,
-        //   classID,
-        // }
-      } catch (error) {
-        console.log(error)
+      
+      // get the class name 
+      const classID = this.$route.params.class_id
+      const classRef = db.collection("classes").doc(classID);
+      const classDoc = await classRef.get();
+      post.class = {
+        ID: classID,
+        name: classDoc.data().name
       }
-      // TODO: reset/update variables
+      post.author = {
+        UID: this.user.uid,
+        name: this.user.name
+      }
+      await ref.add(post);
+      this.fetchQuestions();
+      // Incrementing the key to force NewPost to re-render
+      this.newQuestionKey += 1;
+      // TODO: update UI correctly after submitting an answer
+      // this.fetchAnswers()
     },
     async deleteQuestion ({ ".key": questionID }) {
-      const ref = this.questionsRef.doc(questionID)
-      await ref.delete()
-      this.fetchQuestions()
+      const ref = this.questionsRef.doc(questionID);
+      await ref.delete();
+      this.fetchQuestions();
     },
-    getFullWidth () {
-      return window.innerWidth
-    },
-    backToList() {
-      this.isViewingPost = false;
-    },
-    setQuestionsHeight() {
+    getFullWidth () { return window.innerWidth; },
+    backToList () { this.isViewingPost = false; },
+    setQuestionsHeight () {
       if (this.$refs.main) {
         var topOffset = this.$refs.main.getBoundingClientRect();
         this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
       }
       this.isMobile = window.innerWidth < 600;
-    },
-    // async joinClass () {
-    //   const classID = this.$route.params.class_id
-    //   const ref = db.collection("users").doc(this.user.uid) 
-    //   await ref.update({
-    //     enrolledClasses: firebase.firestore.FieldValue.arrayUnion({classID: "notify_always"})
-    //   })
-    //   settimeout(() => console.log("this.user =", this.user), 2000)
-    // },
+    }
     // allowedToUpvote ({ usersWhoUpvoted }) {
     //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
     // },

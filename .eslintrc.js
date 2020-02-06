@@ -3,10 +3,11 @@ module.exports = {
   env: {
     node: true
   },
-  // 'extends': [
-  //   '@vue/airbnb',
-  //   'plugin:vue/essential'
-  // ],
+  'extends': [
+    // 'plugin:vue/essential',
+    // 'eslint:recommended',
+    // '@vue/airbnb'
+  ],
   rules: {
     'arrow-parens': ['error', 'as-needed'],
     'space-before-function-paren': ['error', 'always'],

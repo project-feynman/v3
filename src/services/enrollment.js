@@ -9,10 +9,6 @@ export class Enrollment {
         this.classesService = initClassesService();
     }
 
-    getEnrolledClasses(user){
-        return user.enrolledClasses;
-    }
-
     async addClass (user, className) {
         const classID = await this.classesService.getClassID(className);
         
@@ -35,7 +31,7 @@ export class Enrollment {
         userRef.update({
             enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classObj)
         })
-
+        
     deleteClass(user,  className) {
       // TODO
     }
