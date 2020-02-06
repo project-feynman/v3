@@ -10,7 +10,6 @@
       </div>
       <DoodleVideo 
         :whiteboardID="post.blackboardID" 
-        :hasSubcollection="false"
         :canvasID="`${postNumber}`"
         :audioURL="post.audioURL"
         :height="`${getFullWidth() * 9/16}`"
@@ -18,9 +17,12 @@
         @full-video-ready="initVideo()"
         @video-clicked="handleClick()"
       />
+      <v-btn v-if="post.blackboardID && !post.isSaved" @click="$emit('video-save', post)" block color="accent lighten-1">
+        Save video
+      </v-btn>
     </v-container>
     <footer v-if="post.author" class="post-footer px-4 py-3">
-      Posted by {{ post.isAnonymous? 'Anonymous' : post.author.firstName }}, {{ displayDate(post.date) }} 
+      Posted by {{ post.isAnonymous ? 'Anonymous' : post.author.firstName }}, {{ displayDate(post.date) }} 
     </footer>
   </v-card>
 </template>
@@ -56,9 +58,9 @@ export default {
       this.$refs.DoodleVideo.resizeVideo();
     },
     handleClick () {
-      if (this.post.audioURL) return;
-      const DoodleVideo = this.$refs.DoodleVideo;
-      if (!DoodleVideo.isQuickplaying) DoodleVideo.quickplay();
+      if (this.post.audioURL) { return; }
+      const { DoodleVideo } = this.$refs;
+      if (!DoodleVideo.isQuickplaying) { DoodleVideo.quickplay(); }
     }
   }
 }

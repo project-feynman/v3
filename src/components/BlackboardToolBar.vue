@@ -54,7 +54,7 @@
                 </v-btn>
               </v-col>
               <v-col class="py-0 px-0" cols="auto">
-                <v-btn
+                <!-- <v-btn
                   @click="setImage()"
                   ref="background"
                   outlined
@@ -70,7 +70,7 @@
                     type="file"
                     style="display: none;"
                   />
-                </v-btn>
+                </v-btn> -->
               </v-col>
             </v-row>
           </v-col>
@@ -81,11 +81,11 @@
               color="accent"
               class="board-action-btn normal-text"
             >
-              <span class="d-none d-lg-block mr-2">Clear</span>
+              <span class="d-none d-lg-block mr-2">Wipe blackboard</span>
               <v-icon>clear</v-icon>
             </v-btn>
             <v-btn
-              v-if="currentState===recordStateEnum.MID_RECORD"
+              v-if="currentState === recordStateEnum.MID_RECORD"
               @click="$emit('record-state-change', recordStateEnum.POST_RECORD)"
               color="accent lighten-1"
               class="board-action-btn"
@@ -169,11 +169,11 @@ export default {
   },
   data() {
     return {
-      colors: ["white", "orange", "#0AF2F2", "deeppink", "rgb(62, 66, 66)"],
+      colors: ["white", "orange", "#0AF2F2", "deeppink"],
       palleteVisibility: false,
       isSmallScreen: window.innerWidth < 960,
       recordStateEnum: CONSTANTS.recordStateEnum
-    };
+    }
   },
   mounted() {
     window.addEventListener("resize", this.smallScreen);

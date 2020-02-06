@@ -69,10 +69,8 @@ export default {
     // METHODS NEEDED FOR PLAYBACK
     getAudioTime() {
       const audioElement = document.getElementById('audio-element')
-      if (!audioElement) {
-        return 0
-      }
-      return audioElement.currentTime
+      if (!audioElement) { return 0; }
+      return audioElement.currentTime;
     },
     downloadAudioFile () {
       this.$emit('recorder-loading')
@@ -176,11 +174,8 @@ export default {
       const storageRef = firebase.storage().ref()
       // reuse path if possible
       let path = ""
-      if (this.audioPath) {
-        path = this.audioPath
-      } else {
-        path = this.getRandomUID()
-      }
+      if (this.audioPath) { path = this.audioPath; } 
+      else { path = this.getRandomUID(); }
       const recordingRef = storageRef.child(`recordings/${path}`)
       // upload blob 
       const audioFile = this.recordings[0].blob 

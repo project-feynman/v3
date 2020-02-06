@@ -1,5 +1,5 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from 'vue';
+import Router from 'vue-router';
 
 Vue.use(Router)
 
@@ -8,7 +8,6 @@ export default new Router({
   base: process.env.BASE_URL,
   routes: [
     { 
-      name: "Home",
       path: '/',
       component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
     },
@@ -18,14 +17,14 @@ export default new Router({
     },
     {
       path: '/:class_id/questions/',
-      component: () => import(/* webpackChunkName: "piazza" */ './views/Piazza.vue')
+      component: () => import(/* webpackChunkName: "piazza" */ './views/Piazza.vue') // there are no questions to navigate to initially
     },
     {
       path: '/:class_id/questions/:question_id',
       component: () => import(/* webpackChunkName: "piazza" */ './views/Piazza.vue')
     },
     {
-      path: '/:class_id/workspace/:id',
+      path: '/:class_id/room/:room_id',
       component: () => import(/* webpackChunkName: "blackboard" */ './views/BlackboardRoom.vue'),
     },
     {

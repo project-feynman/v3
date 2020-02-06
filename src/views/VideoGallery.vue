@@ -92,11 +92,13 @@ export default {
     }
   },
   computed: {
-    user () { return this.$store.state.user }
+    user () { 
+      return this.$store.state.user;
+    }
   },
   async created () {
-      this.fetchClassDoc();
-    },
+    this.fetchClassDoc();
+  },
   methods: {
     async fetchClassDoc () {
       this.classDoc = {} 
@@ -141,7 +143,7 @@ export default {
     },
     async saveParagraph ({ paragraph, title } , { ".key": videoID }) {
       const ref = db.collection("whiteboards").doc(videoID)
-      this.isEditting = false
+      this.isEditting = false;
       await ref.update({ paragraph, title })
       this.fetchClassDoc()
     },

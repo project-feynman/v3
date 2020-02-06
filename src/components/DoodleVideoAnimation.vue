@@ -93,9 +93,6 @@ export default {
       if (!this.strokes) { return };
       this.indexOfNextStroke = 0;
       this.allStrokes = this.strokes;
-      // if (this.ctx) {
-      //   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      // }
       this.$emit("animation-loaded");
     },
     handleClick () {

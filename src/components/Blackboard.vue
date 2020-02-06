@@ -63,11 +63,11 @@
       />
 
       <AudioRecorder
-        v-else-if="whiteboardDoc"
+        v-else-if="blackboard"
         v-show="false"
         ref="AudioRecorder"
-        :audioURL="whiteboardDoc.audioURL"
-        :audioPath="whiteboardDoc.audioPath"
+        :audioURL="blackboard.audioURL"
+        :audioPath="blackboard.audioPath"
         @start-recording="isRecording = true"
         @file-uploaded="audio => saveFileReference(audio)"
       />
@@ -93,7 +93,7 @@ import CONSTANTS from "@/CONSTANTS.js";
 export default {
   props: {
     isRealtime: Boolean,
-    whiteboardID: String,
+    blackboardId: String,
     hideToolbar: Boolean,
     height: String,
     visible: Boolean,
@@ -107,14 +107,10 @@ export default {
     BlackboardToolBar
   },
   mixins: [DrawMethods],
-  computed: {
-    ...mapState(["user"]),
-    bg () { return this.background; } //mini
-  },
   data () {
     return {
       loading: true,
-      whiteboardDoc: null,
+      blackboard: null,
       color: "white",
       lineWidth: 2,
       colors: ["white", "orange", "#0AF2F2", "deeppink", "rgb(62, 66, 66)"],
@@ -122,7 +118,6 @@ export default {
       saveSilently: false,
       saveVideoPopup: false,
       isRecording: false,
-      strokesRef: null,
       stylus: false,
       allStrokes: [],
       currentStroke: [],
@@ -154,11 +149,23 @@ export default {
       smallScreen: window.innerWidth < 960,
       palleteVisibility: false,
       eraserActive: false,
-      classID: null,
+      classId: null,
     }
   },
+  computed: {
+    ...mapState(["user"]),
+    blackboardRef () {
+      const classId = this.$route.params.class_id;
+      return db.collection("classes").doc(classId).collection("blackboards").doc(this.blackboardId);
+    },
+    strokesRef () {
+      return this.blackboardRef.collection("strokes");
+    },
+    bg () { return this.background; } //mini
+  },
+  
   watch: {
-    whiteboardID: {
+    blackboardId: {
       handler: "initData",
       immediate: true
     },
@@ -172,7 +179,7 @@ export default {
       if (this.isRecording) { this.startTimer(); } 
       else { this.stopTimer(); }
     },
-    whiteboardDoc (newVal) {
+    blackboard (newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
       const { POST_RECORD } = this.recordStateEnum;
       if (!newVal) { return; }
@@ -199,23 +206,11 @@ export default {
       this.drawBackground(this.bg);
     }
   },
-  mounted() {
+  mounted () {
     // the mounted() hook is never called for subsequent switches between whiteboards
-    if (this.whiteboardID) {
-      const whiteboardRef = db.collection("whiteboards").doc(this.whiteboardID);
-    }
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
-    // new redraw code
 
-    // if (!this.isRealtime) {
-    //   //mini
-    //   const height = (9 / 16) * (window.innerWidth - 500);
-    //   this.canvas.height = height - 48; // the blackboard's top-app-bar is 48px high
-    // } else {
-    //   this.canvas.width = document.documentElement.clientWidth;
-    //   this.canvas.height = 0.9 * document.documentElement.clientHeight;
-    // }
     this.rescaleCanvas(true);
     if (this.isRealtime) {
       window.addEventListener("resize", () => {
@@ -231,7 +226,7 @@ export default {
     this.initMouseEvents();
     document.fonts.ready.then(() => this.customCursor());
     if (this.isRealtime) {
-      this.continuouslySyncBoardWithDB();
+      this.keepSyncingBoardWithDb();
       this.$root.$on("side-nav-toggled", sideNavOpened => {
         this.canvas.width = document.documentElement.clientWidth;
         this.rescaleCanvas(true);
@@ -314,23 +309,20 @@ export default {
     async initData () {
       if (this.isRealtime) {
         this.loading = true;
-        if (!this.whiteboardID) { return; }
-        const whiteboardRef = db.collection("whiteboards").doc(this.whiteboardID);
-        this.strokesRef = whiteboardRef.collection("strokes");
+        if (!this.blackboardId) { return; }
         // TODO: remove this whiteboard listener
-        await this.$binding("whiteboardDoc", whiteboardRef);
+        await this.$binding("blackboard", this.blackboardRef);
         this.wipeBoard();
         if (this.unsubscribe) { this.unsubscribe(); }
-        this.continuouslySyncBoardWithDB();
+        this.keepSyncingBoardWithDb();
       } else {
         /// mini
         this.wipeBoard();
         this.currentState = this.recordStateEnum.PRE_RECORD;
       }
     },
-    continuouslySyncBoardWithDB() {
-      this.unsubscribe = this.strokesRef
-        .orderBy("strokeNumber")
+    keepSyncingBoardWithDb () {
+      this.unsubscribe = this.strokesRef.orderBy("strokeNumber")
         .onSnapshot(snapshot => {
           snapshot.docChanges().forEach(change => {
             if (change.type === "added") {
@@ -578,8 +570,8 @@ export default {
       this.removeMouseEvents();
       this.$refs.AudioRecorder.stopRecording();
       if (this.isRealtime) {
-        const ID = this.whiteboardDoc[".key"];
-        db.collection("whiteboards").doc(ID).update({
+        const Id = this.blackboard[".key"];
+        this.blackboardRef.update({
           recordState: this.currentState
         });
       }
@@ -588,40 +580,39 @@ export default {
       this.currentTime = 0;
       this.currentState = this.recordStateEnum.PRE_RECORD;
       this.hasUploadedAudio = false;
-      const ID = this.whiteboardDoc[".key"];
-      const whiteboardRef = db.collection("whiteboards").doc(ID);
-      whiteboardRef.update({
+      const Id = this.blackboard[".key"];
+      this.blackboardRef.update({
         recordState: this.currentState,
         audioURL: "",
         audioPath: ""
       });
     },
-    saveFileReference({ url, path }) {
+    saveFileReference ({ url, path }) {
       this.hasUploadedAudio = true;
-      const ID = this.whiteboardDoc[".key"];
-      db.collection("whiteboards").doc(ID).update({
+      const Id = this.blackboard[".key"];
+      this.blackboardRef.update({
         audioURL: url,
         audioPath: path
       });
     },
-    async handleSaving ( { title }) {
+    async handleSaving ({ title }) {
       // mark the whiteboard as saved
-      const whiteboardID = this.whiteboardDoc[".key"];
-      const classID = this.$route.params.class_id;
+      const boardId = this.blackboard[".key"];
+      const classId = this.$route.params.class_id;
 
       // Take a screenshot of the whiteboard to be used as the "preview" of the video
       const videoThumbnail = this.createThumbnail();
 
-      const classRef = db.collection("classes").doc(classID);
+      const classRef = db.collection("classes").doc(classId);
       const classDoc = await classRef.get();
 
       const metadata = {
         fromClass: {
-          ID: classID,
+          id: classId,
           name: classDoc.data().name
         },
         creator: {
-          UID: this.user.uid,
+          uid: this.user.uid,
           name: this.user.name || "anonymous",
           email: this.user.email
         },
@@ -635,7 +626,8 @@ export default {
       }
       
       // Save on Firestore
-      db.collection("whiteboards").doc(whiteboardID).update(metadata);
+      console.log("metadata =", metadata);
+      this.blackboardRef.update(metadata);
 
       // Keep track of how many videos the class has
       classRef.update({
@@ -643,13 +635,12 @@ export default {
       });
 
       // initialize a new whiteboard for the workspace
-      const workspaceID = this.$route.params.id;
-      const newWhiteboardRef = await db
-        .collection("whiteboards")
-        .add({ recordState: this.recordStateEnum.PRE_RECORD });
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
-      workspaceRef.update({
-        whiteboardID: newWhiteboardRef.id
+      const roomId = this.$route.params.room_id;
+      const boardsRef = db.collection("classes").doc(classId).collection("blackboards")
+      const newBoardRef = await boardsRef.add({ recordState: this.recordStateEnum.PRE_RECORD });
+      const roomsRef = db.collection("rooms").doc(roomId);
+      roomsRef.update({
+        blackboardId: newBoardRef.id
       });
       this.hasUploadAudio = false;
       this.snackbar = true;

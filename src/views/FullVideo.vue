@@ -5,7 +5,7 @@
       <DoodleVideo 
         v-if="video"
         :audioURL="video.audioURL"
-        :whiteboardID="$route.params.video_id"
+        :blackboardId="$route.params.video_id"
         @full-video-ready="initFullVideo()"
         @video-clicked="handleClick()"
         @strokes-ready="handleStrokesReady()"
@@ -48,25 +48,24 @@ export default {
   methods: {
     initFullVideo () {
       this.resourcesLoaded = true
-      const DoodleVideo = this.$refs.DoodleVideo
-      DoodleVideo.resizeVideo() // might need next tick 
+      this.$refs.DoodleVideo.resizeVideo() // might need next tick 
     },
     handleStrokesReady () {
-      if (this.video.audioURL) return; // autoplay is only for "preview" videos
-      this.resourcesLoaded = true
-      const DoodleVideo = this.$refs.DoodleVideo;
-      DoodleVideo.quickplay();
+      if (this.video.audioURL) { return; } // autoplay is only for "preview" videos
+      this.resourcesLoaded = true;
+      this.$refs.DoodleVideo.quickplay();
     },
     handleClick () {
       const DoodleVideo = this.$refs.DoodleVideo;
-      if (!DoodleVideo.isQuickplaying) DoodleVideo.quickplay();
+      if (!DoodleVideo.isQuickplaying) { DoodleVideo.quickplay(); }
     },
     async bindVariables() {
       // TODO: just keep track of this.video so that I don't need to keep track of this.audioURL, this.audioPath explictly
       // initialize/reset variables
       this.audioURL = ""; //TODO this might not be necessary
-      const videoID = this.$route.params.video_id;
-      const videoRef = db.collection("whiteboards").doc(videoID);
+      const videoId = this.$route.params.video_id;
+      const classId = this.$route.params.class_id;
+      const videoRef = db.collection("classes").doc(classId).collection("blackboards").doc(videoId);
       
       // Fetch video
       let video = await videoRef.get();

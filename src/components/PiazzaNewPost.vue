@@ -64,9 +64,9 @@
           <v-icon small class="pl-2">send</v-icon>
         </v-btn>
       <v-row class="question-options" justify="end" justify-sm="space-between" align="center">
-        <v-col cols="auto" order-sm="12">
+        <!-- <v-col cols="auto" order-sm="12">
           <v-switch v-model="anonymous" label="Post Anonymously" color="accent"></v-switch>
-        </v-col>
+        </v-col> -->
         <v-col cols="12" sm="auto" class="d-flex justify-space-around" order-sm="1">
           <v-btn
             :outlined="!blackboardAttached"
@@ -114,23 +114,14 @@
       </v-card>
       <div class="blackboard-container" v-show="blackboardAttached">
         <Blackboard
-          ref="blackboard-mini"
+          ref="Blackboard"
           :isRealtime="false"
           :visible="visible"
           :background="addedImage"
           @boardImage="boardImage"
         />
       </div>
-
-      <!-- <v-btn block @click="submitPost()" color="secondary" class="mt-5">
-          Post {{ postType }}
-          <v-icon small class="pl-2">send</v-icon>
-        </v-btn> -->
     </v-container>
-
-
-
-
   </div>
 </template>
 
@@ -164,42 +155,43 @@ export default {
     submitPost () {
       if (!this.postTitle && this.postType === "Question") { return; }
       // take a snapshot of the text, images, drawings and audio that the user has created
-      const BlackboardMini = this.$refs["blackboard-mini"]
-      const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const { Blackboard } = this.$refs;
       const post = { title: this.postTitle, 
                      description: this.postDescription, 
-                     blackboardID,
-                     // postTags: this.postTags,
-                     audioURL: BlackboardMini.audioURL,
+                     blackboardID: "",
+                     audioURL: Blackboard.audioURL,
+                     duration: Blackboard.currentTime,
                      date: this.getDate(),
                      image: this.addedImage,
-                     isAnonymous: this.anonymous
+                     isAnonymous: this.anonymous,
+                     isSaved: false // is it already in saved videos
+                     // postTags: this.postTags,
                    }
-      const payloads = { post, boardStrokes: BlackboardMini.allStrokes}
-      console.log("payloads =", payloads);
+      if (Blackboard.allStrokes.length > 0 || this.addedImage) {
+        post.blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      }
+      const payloads = { post, boardStrokes: Blackboard.allStrokes}
       this.$emit('post-submit', payloads)
     },
-    getDate() {
+    getDate () {
       var today = new Date();
       return today.toISOString();
     },
-    boardImage(boardImage) {
+    boardImage (boardImage) {
       if (boardImage) {
         this.imageAdded = true;
         this.addedImage = boardImage;
         this.changeImage = false;
       }
     },
-    getFullWidth() {
+    getFullWidth () {
       // sidenav's width = 200, BaseList's width = 300
       return window.innerWidth - 500;
     },
-    clickImage() {
-      this.$refs[
-        "blackboard-mini"
-      ].$refs.blackboardToolbar.$refs.background.$el.click();
+    clickImage () {
+      this.$refs.Blackboard.$refs.blackboardToolbar.$refs.background.$el.click();
     },
-    addImage() {
+    addImage () {
       this.imageAdded = true;
       var file = document.getElementById("img-input").files[0];
       var reader = new FileReader();
@@ -212,9 +204,7 @@ export default {
         false
       );
 
-      if (file) {
-        reader.readAsDataURL(file);
-      }
+      if (file) { reader.readAsDataURL(file); }
     },
     removeImage() {
       this.imageAdded = false;
