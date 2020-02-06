@@ -8,18 +8,19 @@
       <v-card>
         <v-list>
           <v-list-item>
-            <v-list-item-avatar>
+            <v-list-item-title>Notification settings</v-list-item-title>
+            <!-- <v-list-item-avatar>
               <v-icon large :color="color">account_circle</v-icon>
-            </v-list-item-avatar>
+            </v-list-item-avatar> -->
 
-            <v-list-item-content>
+            <!-- <v-list-item-content>
               <v-text-field
                 placeholder="Enter your name here"
                 :value="user.name"
                 @input="value => name = value"
                 single-line
               />
-            </v-list-item-content>
+            </v-list-item-content> -->
 
             <v-list-item-action>
               <v-btn :class="fav ? 'red--text' : ''" icon @click="fav = !fav">

@@ -65,7 +65,7 @@ export default {
     DoodleVideoAnimation,
     AudioRecorder
   },
-  data() {
+  data () {
     return {
       hasFetchedStrokes: false,
       strokes: [],

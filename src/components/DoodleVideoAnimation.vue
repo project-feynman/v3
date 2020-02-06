@@ -96,7 +96,7 @@ export default {
       this.rescaleCanvas(true);
     },
     async initData() {
-      if (!this.strokes) return;
+      if (!this.strokes) { return };
       this.indexOfNextStroke = 0;
       this.allStrokes = this.strokes;
       // if (this.ctx) {

@@ -236,10 +236,11 @@ export default {
       const userRef = db.collection("users").doc(this.user.uid);  
     
       // Abort if user is already enrolled in the class
-      for (const classObj of this.user.enrolledClasses) {
-        if (classObj.ID === ID) { return; }
+      if (this.user.enrolledClasses) {
+        for (const classObj of this.user.enrolledClasses) {
+          if (classObj.ID === ID) { return; }
+        }
       }
-
       // Add the new class
       const classObj = {
         ID,

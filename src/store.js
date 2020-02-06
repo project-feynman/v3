@@ -72,6 +72,7 @@ export default new Vuex.Store({
       else {
         // Create a new account
         simplifiedUser.color = getRandomColor()
+        simplifiedUser.enrolledClasses = [] 
         userRef.set(simplifiedUser)
         syncUserWithDB(userRef, context);
       }
