@@ -109,30 +109,7 @@ export default {
   mixins: [DrawMethods],
   computed: {
     ...mapState(["user"]),
-    author() {
-      if (this.user) {
-        if (this.user.name) {
-          return {
-            name: this.user.name,
-            uid: this.user.uid
-          };
-        } else {
-          return {
-            email: this.user.email,
-            uid: this.user.uid
-          };
-        }
-      } else {
-        return {
-          name: "Anonymous",
-          uid: "Anonymous"
-        };
-      }
-    },
-    bg() {
-      //mini
-      return this.background;
-    }
+    bg () { return this.background; } //mini
   },
   data () {
     return {
@@ -389,9 +366,9 @@ export default {
     sortStrokesByTimestamp () {
       this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime));
     },
-    getHeightToWidthRatio () {
-      return this.canvas.scrollHeight / this.canvas.scrollWidth;
-    },
+    // getAspectRatio () {
+    //   return this.canvas.scrollHeight / this.canvas.scrollWidth;
+    // },
     startTimer () {
       this.currentTime = 0;
       this.timer = setInterval(() => (this.currentTime += 0.1), 100);
@@ -414,7 +391,6 @@ export default {
       this.canvas.removeEventListener("touchmove", this.touchMove, false);
     },
     initMouseEvents() {
-      // TODO: implement mouseUp, mouseDown, mouseMove
       this.canvas.addEventListener("mouseup", this.mouseUp, false);
       this.canvas.addEventListener("mousedown", this.mouseDown, false);
       this.canvas.addEventListener("mousemove", this.mouseMove, false);
@@ -447,20 +423,20 @@ export default {
       this.drawToPointAndSave(e);
       if (this.isRecording) { this.startTime = this.currentTime.toFixed(1); } // this.startTime keeps track of current stroke's startTime
     },
-    touchMove(e) {
-      e.preventDefault();
+    touchMove (e) {
+      e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
       if (this.isNotValidTouch(e)) { return; }
       this.drawToPointAndSave(e);
-      event.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
     },
     touchEnd (e) {
       e.preventDefault();
       if (this.currentStroke.length == 0) { return; } // user is touching the screen despite that touch is disabled
       const strokeNumber = this.allStrokes.length + 1;
       // save
+      const { uid: UID, firstName, lastName, email } = this.user
       const stroke = {
         strokeNumber,
-        author: this.author || "anonymous",
+        author: { UID, firstName, lastName, email },
         color: this.color,
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
@@ -514,8 +490,7 @@ export default {
         this.startTime = this.currentTime.toFixed(1);
       }
     },
-
-    mouseUp(e) {
+    mouseUp (e) {
       this.mousedown = 0;
       // referenced from touchEnd
       const strokeNumber = this.allStrokes.length + 1;
@@ -552,7 +527,7 @@ export default {
       }
     },
 
-    getMousePos(e) {
+    getMousePos (e) {
       // Get the current mouse position relative to the top-left of the canvas
       if (!e) var e = event;
       if (this.isRealtime) {
@@ -672,11 +647,7 @@ export default {
       const newWhiteboardRef = await db
         .collection("whiteboards")
         .add({ recordState: this.recordStateEnum.PRE_RECORD });
-      const workspaceRef = db
-        .collection("classes")
-        .doc(classID)
-        .collection("workspaces")
-        .doc(workspaceID);
+      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
       workspaceRef.update({
         whiteboardID: newWhiteboardRef.id
       });
@@ -706,10 +677,10 @@ export default {
         this.palleteVisibility = false;
       }
     },
-    eraserClick(status) {
+    eraserClick (status) {
       this.eraserActive = status;
     },
-    customCursor() {
+    customCursor () {
       var dummy_canvas = document.createElement("canvas");
       dummy_canvas.width = 24;
       dummy_canvas.height = 24;
@@ -723,7 +694,7 @@ export default {
       document.getElementById("myCanvas").style.cursor =
         "url(" + dataURL + ") 0 24, auto";
     },
-    blackboardSize() {
+    blackboardSize () {
       var board = document.getElementById("myCanvas");
       var mini_height =
         (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +

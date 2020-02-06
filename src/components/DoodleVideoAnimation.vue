@@ -43,15 +43,9 @@ export default {
   },
   mixins: [DrawMethods],
   computed: {
-    ...mapState(["user"]),
-    author() {
-      return {
-        name: this.user.displayName,
-        uid: this.user.uid
-      };
-    }
+    ...mapState(["user"])
   },
-  data() {
+  data () {
     return {
       isReplaying: false,
       allStrokes: [],
@@ -68,10 +62,10 @@ export default {
       interval: null
     };
   },
-  created() {
+  created () {
     this.initData();
   },
-  mounted() {
+  mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.canvasID}`);
     this.ctx = this.canvas.getContext("2d");
     this.canvas.height = this.height;

@@ -3,16 +3,16 @@
   <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
     <template v-if="!thumbnail || strokes.length > 0">
       <DoodleVideoAnimation
-          ref="animation"
-          v-if="strokes.length > 0"
-          :strokes="strokes"
-          :isFullscreen="false"
-          :canvasID="whiteboardID"
-          :height="height"
-          @animation-loaded="handleAnimationLoaded()"
-          @animation-finished="handleEvent()"
-          @canvas-clicked="handleClick()"
-        />
+        ref="animation"
+        v-if="strokes.length > 0"
+        :strokes="strokes"
+        :isFullscreen="false"
+        :canvasID="whiteboardID"
+        :height="height"
+        @animation-loaded="handleAnimationLoaded()"
+        @animation-finished="handleEvent()"
+        @canvas-clicked="handleClick()"
+      />
       <audio-recorder
         v-if="audioURL"
         ref="audioRecorder"
@@ -203,5 +203,5 @@ export default {
       this.$router.push(`/${this.$route.params.class_id}/ranking`);
     }
   }
-};
+}
 </script>
