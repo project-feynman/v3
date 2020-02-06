@@ -3,12 +3,12 @@
   <div id="new-post">
     <v-banner single-line sticky class="post-header container py-0" tag="header">
       <h3>New {{ postType }}</h3>
-      <template v-slot:actions>
-        <v-btn @click="submitPost()" color="accent">
+      <!-- <template v-slot:actions>
+        <v-btn block @click="submitPost()" color="accent">
           Post
           <v-icon small class="pl-2">send</v-icon>
         </v-btn>
-      </template>
+      </template> -->
     </v-banner>
     <v-container tag="section" class="py-5">
       <div class="question-main">
@@ -58,6 +58,11 @@
           />
         </div>
       </v-container>-->
+
+      <v-btn block @click="submitPost()" color="secondary">
+          Post {{ postType }}
+          <v-icon small class="pl-2">send</v-icon>
+        </v-btn>
       <v-row class="question-options" justify="end" justify-sm="space-between" align="center">
         <v-col cols="auto" order-sm="12">
           <v-switch v-model="anonymous" label="Post Anonymously" color="accent"></v-switch>
@@ -67,9 +72,9 @@
             :outlined="!blackboardAttached"
             color="accent lighten-1"
             class="board-action-btn"
-            @click="blackboardAttached=!blackboardAttached"
+            @click="blackboardAttached = !blackboardAttached"
           >
-            <span class="mr-2">{{this.blackboardAttached?'Detach':'Attach'}} Blackboard</span>
+            <span class="mr-2">{{ blackboardAttached ? 'Hide' : 'Use'}} blackboard</span>
             <v-icon>mdi-bulletin-board</v-icon>
           </v-btn>
           <v-btn
@@ -78,7 +83,7 @@
             color="accent lighten-1"
             class="board-action-btn"
           >
-            <span class="mr-2">{{this.imageAdded?'Change':'Add'}} image</span>
+            <span class="mr-2">{{ imageAdded ? 'Change' : 'Add'}} image</span>
             <v-icon>image</v-icon>
           </v-btn>
         </v-col>
@@ -107,7 +112,7 @@
           </v-row>
         </v-container>
       </v-card>
-      <div class="blackboard-container" v-show="this.blackboardAttached">
+      <div class="blackboard-container" v-show="blackboardAttached">
         <Blackboard
           ref="blackboard-mini"
           :isRealtime="false"
@@ -116,7 +121,16 @@
           @boardImage="boardImage"
         />
       </div>
+
+      <!-- <v-btn block @click="submitPost()" color="secondary" class="mt-5">
+          Post {{ postType }}
+          <v-icon small class="pl-2">send</v-icon>
+        </v-btn> -->
     </v-container>
+
+
+
+
   </div>
 </template>
 
@@ -148,7 +162,7 @@ export default {
   }),
   methods: {
     submitPost () {
-      if (!this.postTitle) { return; }
+      if (!this.postTitle && this.postType === "Question") { return; }
       // take a snapshot of the text, images, drawings and audio that the user has created
       const BlackboardMini = this.$refs["blackboard-mini"]
       const blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
@@ -162,6 +176,7 @@ export default {
                      isAnonymous: this.anonymous
                    }
       const payloads = { post, boardStrokes: BlackboardMini.allStrokes}
+      console.log("payloads =", payloads);
       this.$emit('post-submit', payloads)
     },
     getDate() {
