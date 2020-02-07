@@ -33,3 +33,21 @@
 //       </div>
 //     </v-row>
 //   </v-container>-->
+
+// TAGS
+// <!--
+// <v-container v-if="withTags">
+//   <div id="Tags">
+//     <SearchBar
+//     label="Enter a Tag"
+//     :items="tagsPool"
+//     @submit="addTag"
+//     />
+    
+//     <Tags
+//     :items="postTags"
+//     :removable="true"
+//     @delete="deleteTag"
+//     />
+//   </div>
+// </v-container>-->

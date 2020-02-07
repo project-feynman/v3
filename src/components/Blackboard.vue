@@ -64,11 +64,6 @@
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
-
-      <!-- "@start-recording" is necessary because the audio-recorder can't 
-      start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
-      null-->
-      <!-- :audioUrl="blackboard.audioUrl" -->
       <AudioRecorder
         v-show="false"
         ref="AudioRecorder"
@@ -549,6 +544,7 @@ export default {
       this.currentState = MID_RECORD;
       this.$refs.AudioRecorder.startRecording();
       if (this.isRealtime) this.blackboardRef.update({ recordState: MID_RECORD });
+      this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button 
     },
     stopRecording () {
       this.stopTimer();
@@ -558,6 +554,7 @@ export default {
       this.$refs.AudioRecorder.stopRecording();
       this.currentState = POST_RECORD;
       if (this.isRealtime) this.blackboardRef.update({ recordState: POST_RECORD });
+      this.$emit("audio-upload-start"); // AudioRecorder implicitly starts uploading the file to Firestore
     },
     tryRecordAgain () {
       this.currentTime = 0;
@@ -570,6 +567,7 @@ export default {
       this.hasUploadedAudio = true;
       this.audioUrl = url;
       if (this.isRealtime) this.blackboardRef.update({ audioUrl: url });
+      this.$emit("audio-upload-end");
     },
     async handleSaving ({ title, description }) {
       // Save the video

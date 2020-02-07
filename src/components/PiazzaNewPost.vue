@@ -42,27 +42,12 @@
           background-color="#f5f5f5"
         />
       </div>
-      <!--
-      <v-container v-if="withTags">
-        <div id="Tags">
-          <SearchBar
-          label="Enter a Tag"
-          :items="tagsPool"
-          @submit="addTag"
-          />
-          
-          <Tags
-          :items="postTags"
-          :removable="true"
-          @delete="deleteTag"
-          />
-        </div>
-      </v-container>-->
 
-      <v-btn block @click="submitPost()" color="secondary">
-          Post {{ postType }}
-          <v-icon small class="pl-2">send</v-icon>
-        </v-btn>
+      <VLoadingButton @click="submitPost()" :isLoading="isButtonDisabled" color="secondary" block>
+        Post {{ postType }}
+        <v-icon class="pl-2">send</v-icon>
+      </VLoadingButton>
+
       <v-row class="question-options" justify="end" justify-sm="space-between" align="center">
         <!-- <v-col cols="auto" order-sm="12">
           <v-switch v-model="anonymous" label="Post Anonymously" color="accent"></v-switch>
@@ -100,12 +85,9 @@
                   <v-switch v-model="blackboardAttached" label="Annotate Image" color="accent"></v-switch>
                 </v-col>
                 <v-col cols="auto">
-                  <v-btn
-                    @click="removeImage()"
-                    outlined
-                    color="accent lighten-1"
-                    class="board-action-btn"
-                  >Remove</v-btn>
+                  <v-btn @click="removeImage()" outlined color="accent lighten-1" class="board-action-btn">
+                    Remove
+                  </v-btn>
                 </v-col>
               </v-row>
             </v-col>
@@ -119,6 +101,9 @@
           :visible="visible"
           :background="addedImage"
           @boardImage="boardImage"
+          @record-start="isRecordingVideo = true"
+          @audio-upload-start="isRecordingVideo = false; isUploadingAudio = true"
+          @audio-upload-end="isUploadingAudio = false"
         />
       </div>
     </v-container>
@@ -127,8 +112,10 @@
 
 <script>
 import Vue from "vue";
+import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
+import VLoadingButton from "@/components/VLoadingButton";
 
 export default {
   props: {
@@ -139,41 +126,82 @@ export default {
   },
   components: {
     Blackboard,
+    VLoadingButton
   },
   data: () => ({
     postTitle: "",
     postDescription: "",
     postTags: [],
+    isUploadingAudio: false,
+    isUploadingPost: false,
+    isRecordingVideo: false,
     blackboardAttached: true,
     imageAdded: false,
     addedImage: "",
     changeImage: false,
     reRenderTags: 0,
-    anonymous: false
+    anonymous: false,
   }),
+  computed: {
+    user () {
+      return this.$store.state.user;
+    },
+    isButtonDisabled () {
+      return this.isUploadingPost || this.isUploadingAudio || this.isRecordingVideo;
+    }
+  },
   methods: {
-    submitPost () {
-      if (!this.postTitle && this.postType === "Question") return;
-      // take a snapshot of the text, images, drawings and audio that the user has created
+    // Uploads the snapshot of the text, images, drawings and audio for the post
+    async submitPost () {
+      if (!this.postTitle && this.postType === "Question") return; // a question must have a title
+      this.isUploadingPost = true // trigger the "submit" button to go into a loading state 
+
+      // Initialize variables
       const { Blackboard } = this.$refs;
-      const post = { title: this.postTitle, 
-                     description: this.postDescription, 
-                     blackboardId: "",
-                     audioUrl: Blackboard.audioUrl,
-                     duration: Blackboard.currentTime,
-                     date: this.getDate(),
-                     image: this.addedImage,
-                     isAnonymous: this.anonymous,
-                     isSaved: false // is it already in saved videos
-                     // postTags: this.postTags,
-                   }
-                   
+      const { class_id, question_id } = this.$route.params
+      const classRef = db.collection("classes").doc(class_id);
+      const questionRef = classRef.collection("questions").doc(question_id);
+      const answersRef = questionRef.collection("answers");  ;
+
+      // Build the object for the Piazza post 
+      const post = { 
+        title: this.postTitle, 
+        description: this.postDescription, 
+        date: this.getDate(),
+        creator: {
+          uid: this.user.uid,
+          firstName: this.user.firstName,
+          lastName: this.user.lastName
+        }
+      }       
+      
+      // If the blackboard was used, save everything related to it 
       if (Blackboard.allStrokes.length > 0 || this.addedImage) {
-        post.blackboardId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        const blackboardId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        const blackboardRef = classRef.collection("blackboards").doc(blackboardId);
+        blackboardRef.set({ 
+          audioUrl: Blackboard.audioUrl,
+          duration: Blackboard.currentTime,
+          image: this.addedImage,
+          ...post // "spread" and integrate post into this object
+        })
+        // Save each stroke as a sub-document of blackboard
+        for (let stroke of Blackboard.allStrokes) {
+          blackboardRef.collection("strokes").add(stroke);
+        }
+        // The post will need a reference to the blackboard and audio file
+        post.blackboardId = blackboardId;
+        post.audioUrl = Blackboard.audioUrl;
       }
-      const payloads = { post, boardStrokes: Blackboard.allStrokes };
-      this.$emit('post-submit', payloads);
-      this.keyForReload += 1; // reload the blackboard
+
+      // Now save the post itself
+      if (this.postType === "Answer") {
+        await answersRef.add({ isInSavedVideos: false, ...post });
+      } else if (this.postType === "Question") {
+        await classRef.collection("questions").add({ isInSavedVideos: false, ...post})
+      } 
+      this.isUploadingPost = false;
+      this.$emit("post-create");
     },
     getDate () {
       var today = new Date();
@@ -186,26 +214,14 @@ export default {
         this.changeImage = false;
       }
     },
-    getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300
-      return window.innerWidth - 500;
-    },
     clickImage () {
       this.$refs.Blackboard.$refs.blackboardToolbar.$refs.background.$el.click();
     },
     addImage () {
       this.imageAdded = true;
-      var file = document.getElementById("img-input").files[0];
-      var reader = new FileReader();
-
-      reader.addEventListener(
-        "load",
-        () => {
-          this.addedImage = reader.result;
-        },
-        false
-      );
-
+      const file = document.getElementById("img-input").files[0];
+      const reader = new FileReader();
+      reader.addEventListener("load", () => this.addedImage = reader.result, false);
       if (file) reader.readAsDataURL(file);
     },
     removeImage () {
@@ -213,17 +229,17 @@ export default {
       Vue.set(this, "addedImage", "");
     },
     //Start of Tags functions
-    addTag (tag) {
-      for (let t of this.postTags) {
-        if (t == tag) return;
-      }
-      this.postTags.push(tag)
-    },
-    deleteTag(tag) {
-      this.postTags = this.postTags.filter(x => {
-        return x != tag;
-      });
-    }
+    // addTag (tag) {
+    //   for (let t of this.postTags) {
+    //     if (t == tag) return;
+    //   }
+    //   this.postTags.push(tag)
+    // },
+    // deleteTag(tag) {
+    //   this.postTags = this.postTags.filter(x => {
+    //     return x != tag;
+    //   });
+    // }
     //End of Tags functions
   }
 };

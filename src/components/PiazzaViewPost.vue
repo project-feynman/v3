@@ -1,6 +1,7 @@
 <!-- Given a post, display its text and its blackboard -->
 <template>
   <v-card id="view-post">
+    <!-- <p>{{ post }}</p> -->
     <v-card-title class="post-header py-2">
       {{ postType }}
     </v-card-title>

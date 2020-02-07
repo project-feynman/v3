@@ -22,7 +22,7 @@
                   :key="keyToForceReload"
                   postType="Question"
                   :visible="this.isViewingPost"
-                  @post-submit="question => submitPost(question, questionsRef)"
+                  @post-create="handlePostCreate()"
                 />
               </template>
               <template v-else>
@@ -42,7 +42,7 @@
                   :key="keyToForceReload"
                   postType="Answer"
                   :withTags="false"
-                  @post-submit="answer => submitPost(answer, answersRef)"
+                  @post-create="handlePostCreate()"
                 />
               </template>
             </v-card>
@@ -56,20 +56,17 @@
 <script>
 import db from "@/database.js";
 import TheAppBar from "@/components/TheAppBar.vue";
-import DoodleVideo from "@/components/DoodleVideo.vue";
 import PiazzaQuestionsList from "@/components/PiazzaQuestionsList.vue";
 import PiazzaNewPost from "@/components/PiazzaNewPost.vue";
 import PiazzaViewPost from "@/components/PiazzaViewPost.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import { mapState } from 'vuex';
 import helpers from "@/helpers.js";
 
 export default {
   components: {
     TheAppBar,
     PiazzaQuestionsList,
-    DoodleVideo,
     PiazzaNewPost,
     PiazzaViewPost,
   },
@@ -104,12 +101,17 @@ export default {
       return this.answers.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0))
     }
   },
+  watch: {
+    currentQuestion: {
+      handler: "fetchAnswers",
+      immediate: true
+    }
+  },
   async created () {
-    // first fetch questions
     await this.fetchQuestions();
     const { question_id } = this.$route.params;
     if (!question_id) return; // early exit user visited from home page 
-    // search for the question
+    // Find the particular question given the URL
     this.questions.forEach((question, index)=> {
       if (question[".key"] === question_id) {
         this.currentQuestion = question;
@@ -117,12 +119,6 @@ export default {
         this.activeElem = index + 1
       }
     })
-  },
-  watch: {
-    currentQuestion: {
-      handler: "fetchAnswers",
-      immediate: true
-    }
   },
   mounted () {
     this.setQuestionsHeight();
@@ -141,6 +137,7 @@ export default {
       if (!this.currentQuestion[".key"]) return;  // edge case: user is creating a new question
       this.answers = await helpers.getCollectionFromDB(this.answersRef);
     },
+    // TODO: this is confusing
     handleQuestionCreate () {
       this.currentQuestion = {};
       this.isViewingPost = false;
@@ -151,33 +148,8 @@ export default {
       this.currentQuestion = clickedQuestion
       this.isViewingPost = true
     },
-    async submitPost ({ post, boardStrokes }, ref) {
-      // should be stored as subcollections so it can be lazy fetched
-      if (post.blackboardId) {
-        const boardRef = this.classRef.collection("blackboards").doc(post.blackboardId);
-        boardRef.set({
-          audioUrl: post.audioUrl,
-          description: post.description,
-          duration: post.duration
-        })
-        // Save the strokes as a subcollection
-        for (let stroke of boardStrokes) {
-          boardRef.collection("strokes").add(stroke);
-        }
-      }
-      // Get the class name (TODO: refactor to Vuex)
-      const classDoc = await this.classRef.get();
-      post.fromClass = {
-        id: this.classId,
-        name: classDoc.data().name
-      }
-      post.author = {
-        uid: this.user.uid,
-        firstName: this.user.firstName || "no first name",
-        lastName: this.user.lastName || "no last name"
-      }
-      await ref.add(post);
-      // either a question or an answ er is added 
+    async handlePostCreate () {
+      // either a question or an answer is added 
       if (!this.isViewingPost) this.fetchQuestions(); // was a new question 
       else this.fetchAnswers(); // was a new answer, currentQuestion doesn't change so watch hook won't invoke fetchAnswers()
       this.keyToForceReload += 1; // Incrementing the key to force NewPost to re-render

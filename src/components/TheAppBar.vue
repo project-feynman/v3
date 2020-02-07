@@ -37,7 +37,7 @@ export default {
   data () {
     return {
       className: ""
-    };
+    }
   },
   watch: {
     $route: {

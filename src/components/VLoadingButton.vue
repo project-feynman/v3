@@ -3,19 +3,26 @@
     :loading="isLoading"
     :disabled="isLoading"
     @click="$emit('click')"
-    color="blue-grey" class="ma-2 white--text"
+    :block="block" :color="color" class="ma-2 white--text"
   >
     <slot>
-
+      
+      <v-icon right dark>mdi-cloud-upload</v-icon>
     </slot>
-    <v-icon right dark>mdi-cloud-upload</v-icon>
   </v-btn>
 </template>
 
 <script>
 export default {
   props: {
-    isLoading: Boolean
+    isLoading: Boolean,
+    block: Boolean,
+    color: {
+      type: String,
+      default () {
+        return "blue-grey"
+      }
+    }
   }
 }
 </script>
