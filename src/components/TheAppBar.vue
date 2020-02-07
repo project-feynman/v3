@@ -34,7 +34,7 @@ export default {
     page: String,
     classID: String
   },
-  data() {
+  data () {
     return {
       className: ""
     };

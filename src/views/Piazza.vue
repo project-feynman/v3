@@ -160,13 +160,11 @@ export default {
           description: post.description,
           duration: post.duration
         })
-        
         // Save the strokes as a subcollection
         for (let stroke of boardStrokes) {
           boardRef.collection("strokes").add(stroke);
         }
       }
-     
       // Get the class name (TODO: refactor to Vuex)
       const classDoc = await this.classRef.get();
       post.fromClass = {
@@ -182,9 +180,7 @@ export default {
       // either a question or an answ er is added 
       if (!this.isViewingPost) this.fetchQuestions(); // was a new question 
       else this.fetchAnswers(); // was a new answer, currentQuestion doesn't change so watch hook won't invoke fetchAnswers()
-
-      // Incrementing the key to force NewPost to re-render
-      this.keyToForceReload += 1;
+      this.keyToForceReload += 1; // Incrementing the key to force NewPost to re-render
     },
     async saveVideo ({ ".key": postId, blackboardId, description }) {
       this.answersRef.doc(postId).update({

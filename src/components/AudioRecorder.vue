@@ -85,7 +85,7 @@ export default {
         xhr.send();
       }
     },
-    getRandomUID() {
+    getRandomUID () {
       function s4 () {
         return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
       }
@@ -117,7 +117,7 @@ export default {
         error => console.log('error =', error), 
         async () => {
           const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
-          this.$emit('file-uploaded', { url: downloadURL, path })
+          this.$emit('file-uploaded', { url: downloadURL })
         }
       )
     }
