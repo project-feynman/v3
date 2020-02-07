@@ -33,12 +33,12 @@
                           <!-- IMAGE SLOT -->
                           <template v-slot:card-image>
                             <DoodleVideo
-                              :whiteboardID="video['.key']" 
+                              :blackboardId="video['.key']" 
                               :ref="`doodle-video-${i}-${j}`"
-                              :canvasID="`${i}-${j}`"
+                              :canvasId="`${i}-${j}`"
                               :thumbnail="video.thumbnail"
                               @strokes-ready="handleAction('QUICKPLAY', video, `${i}-${j}`)"
-                              @video-clicked="$router.push(`/${$route.params.class_id}/${video['.key']}`)"
+                              @video-click="$router.push(`/${classId}/${video['.key']}`)"
                               @mouse-change="handleAction('HANDLEHOVER', video, `${i}-${j}`, $event)"
                             />
                           </template>
@@ -94,6 +94,9 @@ export default {
   computed: {
     user () { 
       return this.$store.state.user;
+    },
+    classId () {
+      return this.$route.params.class_id;
     }
   },
   async created () {
@@ -102,23 +105,22 @@ export default {
   methods: {
     async fetchClassDoc () {
       this.classDoc = {} 
-      const classID = this.$route.params.class_id
-      const ref = db.collection("classes").doc(classID)
+      const ref = db.collection("classes").doc(this.classId);
       const doc = await ref.get()
       this.classDoc = doc.data()
     },
-    handleAction (buttonName, { className, ".key": videoID, audioPath }, canvasID, hover = false) {
+    handleAction (buttonName, { className, ".key": videoID, audioPath }, canvasId, hover = false) {
       if (buttonName === "HANDLEHOVER") {
         if (!hover) return;
-        const videoElem = this.$refs[`doodle-video-${canvasID}`][0];
+        const videoElem = this.$refs[`doodle-video-${canvasId}`][0];
         if (!videoElem.strokesFetched) videoElem.fetchStrokes(); // if strokes arent fetched strokes-ready event will be emmitted after this
         else if (!videoElem.isQuickplaying) videoElem.quickplay();
       } 
-      else if (buttonName === "QUICKPLAY") this.quickplayVideo(canvasID);
+      else if (buttonName === "QUICKPLAY") this.quickplayVideo(canvasId);
       else if (buttonName === "DELETE") this.deleteVideo(videoID, audioPath);
     },
-    quickplayVideo (canvasID) {
-      const DoodleVideo = this.$refs[`doodle-video-${canvasID}`][0];
+    quickplayVideo (canvasId) {
+      const DoodleVideo = this.$refs[`doodle-video-${canvasId}`][0];
       if (!DoodleVideo.isQuickplaying) DoodleVideo.quickplay();
     },
     getSubtitle ({ authorName, duration }) {

@@ -143,23 +143,23 @@ export default {
   data: () => ({
     postTitle: "",
     postDescription: "",
+    postTags: [],
     blackboardAttached: true,
     imageAdded: false,
     addedImage: "",
     changeImage: false,
-    postTags: [],
     reRenderTags: 0,
     anonymous: false
   }),
   methods: {
     submitPost () {
-      if (!this.postTitle && this.postType === "Question") { return; }
+      if (!this.postTitle && this.postType === "Question") return;
       // take a snapshot of the text, images, drawings and audio that the user has created
       const { Blackboard } = this.$refs;
       const post = { title: this.postTitle, 
                      description: this.postDescription, 
-                     blackboardID: "",
-                     audioURL: Blackboard.audioURL,
+                     blackboardId: "",
+                     audioUrl: Blackboard.audioUrl,
                      duration: Blackboard.currentTime,
                      date: this.getDate(),
                      image: this.addedImage,
@@ -167,11 +167,13 @@ export default {
                      isSaved: false // is it already in saved videos
                      // postTags: this.postTags,
                    }
+                   
       if (Blackboard.allStrokes.length > 0 || this.addedImage) {
-        post.blackboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+        post.blackboardId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
       }
-      const payloads = { post, boardStrokes: Blackboard.allStrokes}
-      this.$emit('post-submit', payloads)
+      const payloads = { post, boardStrokes: Blackboard.allStrokes };
+      this.$emit('post-submit', payloads);
+      this.keyForReload += 1; // reload the blackboard
     },
     getDate () {
       var today = new Date();
@@ -204,11 +206,10 @@ export default {
         false
       );
 
-      if (file) { reader.readAsDataURL(file); }
+      if (file) reader.readAsDataURL(file);
     },
-    removeImage() {
+    removeImage () {
       this.imageAdded = false;
-      //this.addedImage=''
       Vue.set(this, "addedImage", "");
     },
     //Start of Tags functions

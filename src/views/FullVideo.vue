@@ -1,14 +1,13 @@
 <template>
   <div id="video" style="height: 90%">
-    <TheAppBar :loading="!resourcesLoaded"/>
+    <TheAppBar :loading="isLoading"/>
     <v-content style="height: 90%">
       <DoodleVideo 
         v-if="video"
-        :audioURL="video.audioURL"
-        :blackboardId="$route.params.video_id"
-        @full-video-ready="initFullVideo()"
-        @video-clicked="handleClick()"
-        @strokes-ready="handleStrokesReady()"
+        :audioUrl="video.audioUrl"
+        :blackboardId="videoId"
+        @available-resources-ready="isLoading = false"
+        @video-click="playGivenWhatIsAvailable()"
         ref="DoodleVideo"
       />
     </v-content>
@@ -19,64 +18,63 @@
 import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
-import { mapState } from "vuex";
 
 export default {
   components: {
     DoodleVideo,
     TheAppBar
   },
-  computed: {
-    ...mapState(["user"]),
-  },
   data () {
     return {
       video: null,
-      audioFileRef: null,
-      overlay: true,
-      resourcesLoaded: false,
-      classDoc: null
+      isLoading: true,
+      audioFileRef: null
+    }
+  },
+  computed: {
+    DoodleVideo () {
+      return this.$refs.DoodleVideo;
+    },
+    videoId () {
+      return this.$route.params.video_id;
     }
   },
   watch: {
-    // TODO: maybe not neede 
+    // TODO: maybe not needed
     $route: {
       handler: "bindVariables",
       immediate: true
     }
   },
   methods: {
-    initFullVideo () {
-      this.resourcesLoaded = true
-      this.$refs.DoodleVideo.resizeVideo() // might need next tick 
-    },
-    handleStrokesReady () {
-      if (this.video.audioURL) { return; } // autoplay is only for "preview" videos
-      this.resourcesLoaded = true;
-      this.$refs.DoodleVideo.quickplay();
-    },
-    handleClick () {
-      const DoodleVideo = this.$refs.DoodleVideo;
-      if (!DoodleVideo.isQuickplaying) { DoodleVideo.quickplay(); }
+    playGivenWhatIsAvailable () {
+      if (isLoading) return;
+      if (!this.video.audioUrl) { // silent animation
+        if (this.DoodleVideo.isQuickplaying) return;
+        this.DoodleVideo.quickplay();
+      } else if (this.DoodleVideo.hasVisualAndAudio) {
+        this.DoodleVideo.handlePlay();
+      }
     },
     async bindVariables() {
       // TODO: just keep track of this.video so that I don't need to keep track of this.audioURL, this.audioPath explictly
       // initialize/reset variables
       this.audioURL = ""; //TODO this might not be necessary
-      const videoId = this.$route.params.video_id;
       const classId = this.$route.params.class_id;
-      const videoRef = db.collection("classes").doc(classId).collection("blackboards").doc(videoId);
+      const videoRef = db.collection("classes").doc(classId).collection("blackboards").doc(this.videoId);
       
-      // Fetch video
+      // TODO: implement a getDocFromDb function for helper.js
       let video = await videoRef.get();
       video = video.data();
       this.video = video;
-      // bind references to make it easy to delete things
-      // const storageRef = firebase.storage().ref();
-      // if (video.audioPath) {
-      //   this.audioFileRef = storageRef.child(`recordings/${video.audioPath}`);
-      // }
-    }       
+    },
+    // deleteVideo () {
+    //   // bind references to make it easy to delete things
+    //   // const storageRef = firebase.storage().ref();
+    //   // if (video.audioPath) {
+    //   //   this.audioFileRef = storageRef.child(`recordings/${video.audioPath}`);
+    //   // }
+    // }
   }
 };
 </script>

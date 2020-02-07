@@ -1,11 +1,9 @@
 <template>
   <v-card style="zIndex:6">
     <v-navigation-drawer
-      app
       :value="value"
       @input="newValue => $emit('input', newValue)"
-      clipped
-      width="250"
+      app clipped width="250"
     >
       <v-list>
         <v-list-item :to="`/${$route.params.class_id}/videos`">
@@ -18,7 +16,7 @@
         </v-list-item>
         <v-divider/>
 
-        <v-list-item link :to="`/${$route.params.class_id}/questions`">
+        <v-list-item :to="`/${$route.params.class_id}/questions`">
           <v-list-item-icon>
             <v-icon>group</v-icon>
           </v-list-item-icon>
@@ -35,12 +33,12 @@
             :key="workspace['.key']"
             :to="`/${$route.params.class_id}/room/${workspace['.key']}`"
           >
-              <v-list-item-icon>
-            <v-icon>phone_in_talk</v-icon>
-          </v-list-item-icon>
+            <v-list-item-icon>
+              <v-icon>phone_in_talk</v-icon>
+            </v-list-item-icon>
             <template v-if="workspace.members">
               <v-list-item-content>
-                Realtime Board {{ i }}
+                Realtime Board {{ i + 1 }}
                 <template v-for="(member, i) in workspace.members">
                   <div style="display: flex;" :key="i">
                     <v-icon :color="getUserColor()">person</v-icon>

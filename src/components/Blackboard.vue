@@ -1,7 +1,6 @@
 <template>
   <div>
     <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime?'0':'1'">
-      <!-- SNACKBAR -->
       <v-snackbar v-model="snackbar">
         {{ snackbarMessage }}
         <v-btn @click="snackbar = false" color="accent" text>CLOSE</v-btn>
@@ -10,17 +9,18 @@
       <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
-            :currentState="currentState"
+            :currentState="blackboard.recordState"
             :eraserActive="eraserActive"
             :color="color"
             :isRealtime="isRealtime"
             :hasUploadedAudio="hasUploadedAudio"
             @eraser-click="eraserClick"
             @set-image="handleImage"
-            @color-click="newColor => {color=newColor}"
-            @wipe-board="wipeBoard"
+            @color-click="newColor => color = newColor"
+            @wipe-board="wipeBoard()"
             @record-state-change="newState => handleRecordStateChange(newState)"
             @video-save="payload => handleSaving(payload)"
+            @animation-save="handleSaving({title: 'No title yet', description: 'No description yet'})"
           />
         </div>
       </TheAppBar>
@@ -41,7 +41,7 @@
           ref="blackboardToolbar"
         />
       </div>
-      <!-- WHITEBOARD -->
+      <!-- BLACKBOARD -->
       <div
         id="blackboard-wrapper"
         :class="isRealtime? 'realtime-canvas':''"
@@ -54,21 +54,11 @@
       <!-- "@start-recording" is necessary because the audio-recorder can't 
       start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
       null-->
-      <AudioRecorderMini
-        v-if="!isRealtime"
-        v-show="false"
-        ref="AudioRecorder"
-        @start-recording="isRecording = true"
-        @file-uploaded="audioObj => handleNewAudio(audioObj)"
-      />
-
+      <!-- :audioUrl="blackboard.audioUrl" -->
       <AudioRecorder
-        v-else-if="blackboard"
         v-show="false"
         ref="AudioRecorder"
-        :audioURL="blackboard.audioURL"
-        :audioPath="blackboard.audioPath"
-        @start-recording="isRecording = true"
+        @record-start="currentState = recordStateEnum.MID_RECORD"
         @file-uploaded="audio => saveFileReference(audio)"
       />
     </div>
@@ -85,7 +75,6 @@ import DrawMethods from "@/mixins/DrawMethods.js";
 import Swatches from "vue-swatches";
 import "vue-swatches/dist/vue-swatches.min.css";
 import AudioRecorder from "@/components/AudioRecorder.vue";
-import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CONSTANTS from "@/CONSTANTS.js";
@@ -100,7 +89,6 @@ export default {
     background: String
   },
   components: {
-    AudioRecorderMini,
     AudioRecorder,
     Swatches,
     TheAppBar,
@@ -117,7 +105,6 @@ export default {
       disableTouch: false,
       saveSilently: false,
       saveVideoPopup: false,
-      isRecording: false,
       stylus: false,
       allStrokes: [],
       currentStroke: [],
@@ -144,24 +131,30 @@ export default {
       currentState: "",
       audioObj: {},
       audioPath: "",
-      audioURL: "",
+      audioUrl: "",
       recordStateEnum: CONSTANTS.recordStateEnum,
       smallScreen: window.innerWidth < 960,
       palleteVisibility: false,
       eraserActive: false,
-      classId: null,
     }
   },
   computed: {
     ...mapState(["user"]),
+    classId () {
+      return this.$route.params.class_id;
+    },
+    classRef () {
+      return db.collection("classes").doc(this.classId);
+    },
     blackboardRef () {
-      const classId = this.$route.params.class_id;
-      return db.collection("classes").doc(classId).collection("blackboards").doc(this.blackboardId);
+      return this.classRef.collection("blackboards").doc(this.blackboardId);
     },
     strokesRef () {
       return this.blackboardRef.collection("strokes");
     },
-    bg () { return this.background; } //mini
+    bg () { 
+      return this.background; // mini
+    } 
   },
   
   watch: {
@@ -171,18 +164,14 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      if (this.color != "rgb(62, 66, 66)") { this.lineWidth = 2; } // eraser color stroke width is larger
-      else { this.lineWidth = 30; }
+      if (this.color != "rgb(62, 66, 66)") this.lineWidth = 2;  // eraser color stroke width is larger
+      else this.lineWidth = 30; 
       this.setStyle(this.color, this.lineWidth);
-    },
-    isRecording() {
-      if (this.isRecording) { this.startTimer(); } 
-      else { this.stopTimer(); }
     },
     blackboard (newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
       const { POST_RECORD } = this.recordStateEnum;
-      if (!newVal) { return; }
+      if (!newVal) return;
       if (newVal.recordState !== POST_RECORD || this.canvas || this.ctx) {
         this.initTouchEvents();
         this.initMouseEvents();
@@ -210,7 +199,6 @@ export default {
     // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
-
     this.rescaleCanvas(true);
     if (this.isRealtime) {
       window.addEventListener("resize", () => {
@@ -242,7 +230,7 @@ export default {
     }
   },
   updated () {
-    if (!this.isRealtime) { this.drawBackground(this.background); }
+    if (!this.isRealtime) this.drawBackground(this.background);
   },
   beforeDestroy() {
     if (this.unsubscribe) this.unsubscribe();
@@ -255,13 +243,9 @@ export default {
     window.removeEventListener("click", e => this.palleteClose(e));
   },
   methods: {
-    /// mini until toggleDrawer
-    handleNewAudio({ url }) {
-      this.audioURL = url;
-    },
     wipeBoard () {
       this.allStrokes = [];
-      if (this.ctx) {
+      if (this.canvas && this.ctx) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       }
     },
@@ -278,14 +262,14 @@ export default {
         vue.drawBackground(img);
         vue.$emit("boardImage", img);
       };
-      if (file) { reader.readAsDataURL(file); }
+      if (file) reader.readAsDataURL(file); 
     },
     drawBackground (image) {
       var canvas = document.getElementById("background-canvas");
       var ctx = canvas.getContext("2d");
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (image === "") { return; }
+      if (image === "") return; 
       var img = new Image();
       img.onload = function() {
         var w = img.width;
@@ -309,14 +293,13 @@ export default {
     async initData () {
       if (this.isRealtime) {
         this.loading = true;
-        if (!this.blackboardId) { return; }
-        // TODO: remove this whiteboard listener
+        if (!this.blackboardId) return;
+        // TODO: remove this blackboard listener
         await this.$binding("blackboard", this.blackboardRef);
         this.wipeBoard();
-        if (this.unsubscribe) { this.unsubscribe(); }
+        if (this.unsubscribe) this.unsubscribe();
         this.keepSyncingBoardWithDb();
       } else {
-        /// mini
         this.wipeBoard();
         this.currentState = this.recordStateEnum.PRE_RECORD;
       }
@@ -363,13 +346,10 @@ export default {
     // },
     startTimer () {
       this.currentTime = 0;
-      this.timer = setInterval(() => (this.currentTime += 0.1), 100);
+      this.timer = setInterval(() => this.currentTime += 0.1, 100);
     },
     stopTimer () {
       clearInterval(this.timer);
-    },
-    initReplayLogic() {
-      this.quickplay();
     },
     initTouchEvents () {
       this.canvas.addEventListener("touchstart", this.touchStart, false);
@@ -405,30 +385,30 @@ export default {
       this.drawToPoint(x, y);
     },
     touchStart (e) {
-      e.preventDefault();
-      //mini
-      if (!this.isRealtime) { this.palleteVisibility = false; }
-      if (this.isNotValidTouch(e)) { return; }
-
+      e.preventDefault(); // speeds up drawing massively
+      if (!this.isRealtime) this.palleteVisibility = false; // mini
+      if (this.isNotValidTouch(e)) return; 
       // Automatically disable touch drawing if a stylus is detected
-      if (e.touches[0].touchType == "stylus") { this.disableTouch = true; }
+      if (e.touches[0].touchType === "stylus") this.disableTouch = true; 
       this.drawToPointAndSave(e);
-      if (this.isRecording) { this.startTime = this.currentTime.toFixed(1); } // this.startTime keeps track of current stroke's startTime
+      if (this.currentState === this.recordStateEnum.MID_RECORD) { 
+        this.startTime = this.currentTime.toFixed(1); // this.startTime keeps track of current stroke's startTime
+      } 
     },
     touchMove (e) {
       e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       this.drawToPointAndSave(e);
     },
     touchEnd (e) {
       e.preventDefault();
-      if (this.currentStroke.length == 0) { return; } // user is touching the screen despite that touch is disabled
+      if (this.currentStroke.length == 0) return;  // user is touching the screen despite that touch is disabled
       const strokeNumber = this.allStrokes.length + 1;
       // save
-      const { uid: UID, firstName, lastName, email } = this.user
+      const { uid, firstName, lastName, email } = this.user;
       const stroke = {
         strokeNumber,
-        author: { UID, firstName, lastName, email },
+        author: { uid, firstName, lastName, email },
         color: this.color,
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
@@ -438,7 +418,7 @@ export default {
       }
       this.allStrokes.push(stroke);
       if (this.isRealtime) {
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
+        this.strokesRef.doc(strokeNumber).set(stroke);
       }
       // reset
       this.currentStroke = [];
@@ -462,7 +442,7 @@ export default {
         window.scrollY;
     },
     isNotValidTouch(e) {
-      if (e.touches.length != 1) { return true; } // multiple fingers not allowed
+      if (e.touches.length !== 1) return true;  // multiple fingers not allowed
       return this.isFinger(e) && this.disableTouch;
     },
     isFinger(e) {
@@ -478,7 +458,7 @@ export default {
       this.getMousePos(e);
       this.convertAndSavePoint(this.mouseX, this.mouseY);
       this.drawToPoint(this.mouseX, this.mouseY);
-      if (this.isRecording) {
+      if (this.currentState === this.recordStateEnum.MID_RECORD) {
         this.startTime = this.currentTime.toFixed(1);
       }
     },
@@ -505,7 +485,6 @@ export default {
       this.currentStroke = [];
       this.lastX = -1;
     },
-
     mouseMove (e) {
       e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
       // Update the mouse co-ordinates when moved
@@ -518,7 +497,6 @@ export default {
         this.drawToPoint(this.mouseX, this.mouseY);
       }
     },
-
     getMousePos (e) {
       // Get the current mouse position relative to the top-left of the canvas
       if (!e) var e = event;
@@ -542,122 +520,95 @@ export default {
       }
     },
     // --- END Mouse Drawing --- //
-
     useEraser () {
       this.color = "rgb(62, 66, 66)";
       this.lineWidth = 18;
     },
-    saveDoodle () {
-      this.handleSaving("No title yet");
-    },
     handleRecordStateChange (newState) {
       const { MID_RECORD, POST_RECORD } = this.recordStateEnum
-      if (newState === MID_RECORD) { this.startRecording(); } 
-      else if (newState === POST_RECORD) { this.stopRecording(); } 
-      else {
-        if (this.isRealtime) { this.retryAnswer(); }
-        else { this.recordAgain(); }
-      }
+      if (newState === MID_RECORD) this.startRecording(); 
+      else if (newState === POST_RECORD) this.stopRecording(); 
+      else this.tryRecordAgain();
     },
     startRecording () {
-      this.currentState = this.recordStateEnum.MID_RECORD; // mini
+      this.startTimer();
+      const { MID_RECORD } = this.recordStateEnum;
+      if (this.isRealtime) this.blackboardRef.update({ recordState: MID_RECORD });
+      else this.currentState = MID_RECORD;
       this.$refs.AudioRecorder.startRecording();
     },
     stopRecording () {
-      this.currentState = this.recordStateEnum.POST_RECORD; //mini
-      this.isRecording = false;
+      this.stopTimer();
+      const { POST_RECORD } = this.recordStateEnum;
       this.removeTouchEvents();
       this.removeMouseEvents();
       this.$refs.AudioRecorder.stopRecording();
-      if (this.isRealtime) {
-        const Id = this.blackboard[".key"];
+      if (this.isRealtime) this.blackboardRef.update({ recordState: POST_RECORD });
+      else this.currentState = POST_RECORD; //mini
+    },
+    tryRecordAgain () {
+      this.currentTime = 0;
+      this.hasUploadedAudio = false;
+      if (!this.isRealtime) {
+        this.currentState = this.recordStateEnum.PRE_RECORD;
+      } else {
         this.blackboardRef.update({
-          recordState: this.currentState
+          recordState: this.currentState,
+          audioUrl: "",
+          audioPath: ""
         });
       }
     },
-    retryAnswer () {
-      this.currentTime = 0;
-      this.currentState = this.recordStateEnum.PRE_RECORD;
-      this.hasUploadedAudio = false;
-      const Id = this.blackboard[".key"];
-      this.blackboardRef.update({
-        recordState: this.currentState,
-        audioURL: "",
-        audioPath: ""
-      });
-    },
     saveFileReference ({ url, path }) {
-      this.hasUploadedAudio = true;
-      const Id = this.blackboard[".key"];
-      this.blackboardRef.update({
-        audioURL: url,
-        audioPath: path
-      });
+      if (!this.isRealtime) this.audioUrl = url;
+      else {
+        this.hasUploadedAudio = true;
+        this.blackboardRef.update({
+          audioUrl: url,
+          audioPath: path //i spath useful?
+        });
+      }
     },
-    async handleSaving ({ title }) {
-      // mark the whiteboard as saved
-      const boardId = this.blackboard[".key"];
-      const classId = this.$route.params.class_id;
-
-      // Take a screenshot of the whiteboard to be used as the "preview" of the video
+    async handleSaving ({ title, description }) {
+      // Save the video
       const videoThumbnail = this.createThumbnail();
-
-      const classRef = db.collection("classes").doc(classId);
-      const classDoc = await classRef.get();
-
       const metadata = {
-        fromClass: {
-          id: classId,
-          name: classDoc.data().name
-        },
         creator: {
           uid: this.user.uid,
-          name: this.user.name || "anonymous",
+          firstName: this.user.firstName,
           email: this.user.email
         },
         title,
+        description,
         isSaved: true, // marks blackboard as saved
         tabNumber: 0,
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       };
-      if (this.currentTime) {
-        metadata.duration = this.currentTime;
-      }
-      
-      // Save on Firestore
-      console.log("metadata =", metadata);
+      if (this.currentTime) metadata.duration = this.currentTime;
       this.blackboardRef.update(metadata);
-
-      // Keep track of how many videos the class has
-      classRef.update({
+      this.classRef.update({
         numOfVideos: firebase.firestore.FieldValue.increment(1)
       });
 
-      // initialize a new whiteboard for the workspace
+      // Initialize a new blackboard for the workspace
       const roomId = this.$route.params.room_id;
-      const boardsRef = db.collection("classes").doc(classId).collection("blackboards")
-      const newBoardRef = await boardsRef.add({ recordState: this.recordStateEnum.PRE_RECORD });
+      const boardsRef = db.collection("classes").doc(this.classId).collection("blackboards");
+      const newBoardRef = await boardsRef.add({ 
+        recordState: this.recordStateEnum.PRE_RECORD 
+      });
       const roomsRef = db.collection("rooms").doc(roomId);
       roomsRef.update({
         blackboardId: newBoardRef.id
       });
       this.hasUploadAudio = false;
       this.snackbar = true;
-      this.snackbarMessage = 'Successfully saved to the "Videos" section';
+      this.snackbarMessage = 'Successfully archived to the "Saved videos" section';
     },
     createThumbnail () {
       this.ctx.fillStyle = "rgb(62, 66, 66)";
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       this.drawStrokesInstantly();
       return this.canvas.toDataURL();
-    },
-
-    //mini
-    recordAgain () {
-      this.currentTime = 0;
-      this.hasUploadedAudio = false;
-      this.currentState = this.recordStateEnum.PRE_RECORD;
     },
     blackboardToolbar () {
       this.smallScreen = window.innerWidth < 960;

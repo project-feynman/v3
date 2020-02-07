@@ -90,12 +90,15 @@ export default {
     classId () {
       return this.$route.params.class_id;
     },
+    classRef () {
+      return db.collection("classes").doc(this.classId);
+    },
     questionsRef () { 
-      return db.collection("classes").doc(this.$route.params.class_id).collection("questions") 
+      return this.classRef.collection("questions") 
     },
     answersRef () { 
-      if (!this.currentQuestion[".key"]) { return; }
-      return this.questionsRef.doc(this.currentQuestion['.key']).collection("answers") 
+      if (!this.currentQuestion[".key"]) return; 
+      return this.questionsRef.doc(this.currentQuestion['.key']).collection("answers");
     },
     sortedAnswers () {
       return this.answers.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0))
@@ -130,7 +133,7 @@ export default {
     fetchQuestions () {
       const promise = new Promise(async resolve => {
         this.questions = await helpers.getCollectionFromDB(this.questionsRef);
-        resolve()
+        resolve();
       }) 
       return promise;
     },
@@ -150,14 +153,14 @@ export default {
     },
     async submitPost ({ post, boardStrokes }, ref) {
       // should be stored as subcollections so it can be lazy fetched
-      if (post.blackboardID) {
-        const boardRef = db.collection("whiteboards").doc(post.blackboardID);
+      if (post.blackboardId) {
+        const boardRef = this.classRef.collection("blackboards").doc(post.blackboardId);
         boardRef.set({
-          audioURL: post.audioURL,
+          audioUrl: post.audioUrl,
           description: post.description,
           duration: post.duration
         })
-
+        
         // Save the strokes as a subcollection
         for (let stroke of boardStrokes) {
           boardRef.collection("strokes").add(stroke);
@@ -165,8 +168,7 @@ export default {
       }
      
       // Get the class name (TODO: refactor to Vuex)
-      const classRef = db.collection("classes").doc(this.classId);
-      const classDoc = await classRef.get();
+      const classDoc = await this.classRef.get();
       post.fromClass = {
         id: this.classId,
         name: classDoc.data().name
@@ -178,52 +180,40 @@ export default {
       }
       await ref.add(post);
       // either a question or an answ er is added 
-      if (!this.isViewingPost) { this.fetchQuestions(); }// was a new question 
-      else { this.fetchAnswers(); } // was a new answer, currentQuestion doesn't change so watch hook won't invoke fetchAnswers()
+      if (!this.isViewingPost) this.fetchQuestions(); // was a new question 
+      else this.fetchAnswers(); // was a new answer, currentQuestion doesn't change so watch hook won't invoke fetchAnswers()
 
       // Incrementing the key to force NewPost to re-render
       this.keyToForceReload += 1;
+    },
+    async saveVideo ({ ".key": postId, blackboardId, description }) {
+      this.answersRef.doc(postId).update({
+        isSaved: true
+      });
+      const blackboardRef = this.classRef.collection("blackboards").doc(blackboardId);
+      await blackboardRef.update({
+        description,
+        tabNumber: 0
+      });
     },
     async deleteQuestion ({ ".key": questionId }) {
       const ref = this.questionsRef.doc(questionId);
       await ref.delete();
       this.fetchQuestions();
     },
-    getFullWidth () { return window.innerWidth; },
-    backToList () { this.isViewingPost = false; },
+    getFullWidth () { 
+      return window.innerWidth; 
+    },
+    backToList () { 
+      this.isViewingPost = false; 
+    },
     setQuestionsHeight () {
       if (this.$refs.main) {
         var topOffset = this.$refs.main.getBoundingClientRect();
         this.$refs.questions.style.height = window.innerHeight - topOffset.top + "px";
       }
       this.isMobile = window.innerWidth < 600;
-    },
-    async saveVideo ({ ".key": postId, blackboardID: boardId, description, fromClass }) {
-      this.answersRef.doc(postId).update({
-        isSaved: true
-      })
-      const classRef = db.collection("classes").doc(this.classId);
-      const boardsRef = classRef.collection("blackboards").doc(boardId);
-      await ref.update({
-        description,
-        tabNumber: 0
-      });
-      // populate the video description and title with the answer description and title 
-      // give the video a "fromClass" property so it's saved technically
     }
-    // allowedToUpvote ({ usersWhoUpvoted }) {
-    //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
-    // },
-    // async upvoteQuestion ({ ".key": questionID, usersWhoUpvoted }) {
-    //   if (!this.user) { 
-    //     return 
-    //   }
-    //   const ref = this.questionsRef.doc(questionID)
-    //   ref.update({
-    //     usersWhoUpvoted: firebase.firestore.FieldValue.arrayUnion(this.user.email)
-    //   })
-    //   this.fetchQuestions()
-    // },
   }
 }
 </script>
@@ -243,7 +233,6 @@ export default {
     max-width: 300px;
   }
 }
-
 .post-header {
   background: linear-gradient(#eee,#fff);
   box-shadow: 0 5px 5px rgba(0,0,0,0.15);
