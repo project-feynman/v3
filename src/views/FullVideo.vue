@@ -4,6 +4,7 @@
     <v-content style="height: 90%">
       <DoodleVideo 
         v-if="video"
+        :hasBetaOverlay="true"
         :audioUrl="video.audioUrl"
         :blackboardId="videoId"
         @available-resources-ready="isLoading = false"

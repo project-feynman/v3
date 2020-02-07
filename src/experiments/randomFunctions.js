@@ -12,6 +12,7 @@
     //   this.fetchQuestions()
     // },
 
+    // RECURSIVE DELETE
         // async deleteVideo() {
     //   const recursiveDelete = firebase
     //     .functions()
@@ -21,3 +22,14 @@
     //   // redirect
     //   this.$router.push(`/${this.$route.params.class_id}/ranking`);
     // }
+
+// OVERLAY CODE 
+//     <!-- <v-container fill-height fluid>
+//     <v-row align="center" justify="center">
+//       <div>
+//         <v-btn fab large dark>
+//           <v-icon>play_arrow</v-icon>
+//         </v-btn>
+//       </div>
+//     </v-row>
+//   </v-container>-->

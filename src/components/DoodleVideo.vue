@@ -1,47 +1,64 @@
 <template>
   <div style="height: 100%">
+    <!-- VISUAL SECTION -->
     <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-      <template v-if="thumbnail && strokes.length === 0">
-        <v-img :src="thumbnail"></v-img>
+      <!-- Even if overlays is permitted by the parent, only show it when the video is actually ready -->
+      <template v-if="hasBetaOverlay">
+        <DoodleVideoOverlay :overlay="hasOverlay" @play-click="playGivenWhatIsAvailable()">
+          <template v-if="thumbnail && strokes.length === 0">
+            <v-img :src="thumbnail"></v-img>
+          </template>
+          <template v-else-if="strokes.length > 0">
+            <DoodleVideoAnimation
+              ref="animation"
+              v-if="strokes.length > 0"
+              :strokes="strokes"
+              :canvasId="blackboardId"
+              :height="height"
+              @animation-loaded="animationLoaded = true"
+              @animation-finished="handleEvent()"
+              @canvas-clicked="$emit('video-click')"
+            />
+          </template>
+        </DoodleVideoOverlay>
       </template>
-      <template v-else-if="strokes.length > 0">
-        <DoodleVideoAnimation
-          ref="animation"
-          v-if="strokes.length > 0"
-          :strokes="strokes"
-          :canvasId="blackboardId"
-          :height="height"
-          @animation-loaded="animationLoaded = true"
-          @animation-finished="handleEvent()"
-          @canvas-clicked="handleClick()"
-        />
+      <template v-else>
+        <!-- TODO: obviously just use the "component" component -->
+        <template v-if="thumbnail && strokes.length === 0">
+          <v-img :src="thumbnail"></v-img>
+        </template>
+        <template v-else-if="strokes.length > 0">
+          <DoodleVideoAnimation
+            ref="animation"
+            v-if="strokes.length > 0"
+            :strokes="strokes"
+            :canvasId="blackboardId"
+            :height="height"
+            @animation-loaded="animationLoaded = true"
+            @animation-finished="handleEvent()"
+            @canvas-clicked="$emit('video-click')"
+          />
+        </template>
       </template>
     </div>
-        <audio-recorder
-          v-if="audioUrl"
-          ref="audioRecorder"
-          :audioUrl="audioUrl"
-          @recorder-loading="hasFetchedAudio = false"
-          @play="handlePlay()"
-          @stop="handleStop()"
-          @seeking="handleSeeking()"
-          @recorder-loaded="hasFetchedAudio = true"
-        />
-          <!-- <v-container fill-height fluid>
-          <v-row align="center" justify="center">
-            <div>
-              <v-btn fab large dark>
-                <v-icon>play_arrow</v-icon>
-              </v-btn>
-            </div>
-          </v-row>
-        </v-container>-->
+    <!-- AUDIO SECTION -->
+    <audio-recorder
+      v-if="audioUrl"
+      ref="audioRecorder"
+      :audioUrl="audioUrl"
+      @recorder-loading="hasFetchedAudio = false"
+      @play="handlePlay()"
+      @stop="handleStop()"
+      @seeking="handleSeeking()"
+      @recorder-loaded="hasFetchedAudio = true"
+    />
   </div>
 </template>
 
 <script>
 import db from "@/database.js";
 import DoodleVideoAnimation from "@/components/DoodleVideoAnimation.vue";
+import DoodleVideoOverlay from "@/components/DoodleVideoOverlay.vue";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import firebase from "firebase/app";
 import "firebase/storage";
@@ -53,10 +70,17 @@ export default {
     blackboardId: String,
     audioUrl: String,
     canvasId: String,
+    hasBetaOverlay: {
+      type: Boolean,
+      default () {
+        return false;
+      }
+    },
     height: String
   },
   components: {
     DoodleVideoAnimation,
+    DoodleVideoOverlay,
     AudioRecorder
   },
   data () {
@@ -65,7 +89,6 @@ export default {
       hasFetchedAudio: false,
       strokes: [],
       hasPreparedFrames: false,
-      isPlaying: false,
       isQuickplaying: false,
       animationLoaded: false,
       isSyncing: false,
@@ -84,6 +107,12 @@ export default {
     }
   },
   computed: {
+    Animation () {
+      return this.$refs.animation;
+    },
+    hasOverlay () {
+      return this.hasLoadedAvailableResources && (!this.isSyncing && !this.isQuickplaying)
+    },
     hasLoadedAvailableResources () {
       return (this.hasFetchedAudio || !this.audioUrl) 
         && (this.hasFetchedStrokes || !this.blackboardId)
@@ -103,6 +132,10 @@ export default {
     window.removeEventListener("resize", this.resizeVideo);
   },
   methods: {
+    playGivenWhatIsAvailable () { // called because the video is ready to play i.e. hasOverlay === true
+      if (this.audioUrl) this.handlePlay(); // silent animation
+      else this.quickplay();
+    },
     handlePlay () {
       const { animation, audioRecorder } = this.$refs;
       if (!this.hasPreparedFrames) { // create the frames and order them by time
@@ -117,12 +150,10 @@ export default {
       audioRecorder.playAudio();
     },
     async quickplay () {
+      if (!this.Animation) return;
       this.isQuickplaying = true;
-      await this.$refs.animation.quickplay();
+      await this.Animation.quickplay();
       this.isQuickplaying = false;
-    },
-    handleClick () {
-      this.$emit("video-click");
     },
     async fetchStrokes () {
       const promise = new Promise(async resolve => {
@@ -153,6 +184,7 @@ export default {
     },
     resizeVideo () {
       const { animation } = this.$refs;
+      if (!animation) return;
       // If we are in playback, just resize, stop, reset, and play. This will re-render. Otherwise, redraw everything.
       if (animation.sync) {
         animation.rescaleCanvas(false);
