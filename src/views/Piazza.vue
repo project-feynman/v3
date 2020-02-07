@@ -32,6 +32,7 @@
                 />
                 <PiazzaViewPost 
                   v-for="(answer, i) in sortedAnswers" 
+                  @video-save="post => saveVideo(post)"
                   :key="answer['.key']"
                   :post="answer" 
                   :postNumber="i"
@@ -53,14 +54,14 @@
 </template>
 
 <script>
-import db from "@/database.js"
-import TheAppBar from "@/components/TheAppBar.vue"
-import PiazzaQuestionsList from "@/components/PiazzaQuestionsList.vue"
-import DoodleVideo from "@/components/DoodleVideo.vue"
-import PiazzaNewPost from "@/components/PiazzaNewPost.vue"
-import PiazzaViewPost from "@/components/PiazzaViewPost.vue"
-import firebase from "firebase/app"
-import "firebase/firestore"
+import db from "@/database.js";
+import TheAppBar from "@/components/TheAppBar.vue";
+import DoodleVideo from "@/components/DoodleVideo.vue";
+import PiazzaQuestionsList from "@/components/PiazzaQuestionsList.vue";
+import PiazzaNewPost from "@/components/PiazzaNewPost.vue";
+import PiazzaViewPost from "@/components/PiazzaViewPost.vue";
+import firebase from "firebase/app";
+import "firebase/firestore";
 import { mapState } from 'vuex';
 import helpers from "@/helpers.js";
 
@@ -74,45 +75,48 @@ export default {
   },
   data: () => ({
     keyToForceReload: 0,
-    newAnswerKey: 0,
     isViewingPost: false,
     currentQuestion: {},
     questions: [],
     answers: [],
-    boardStrokes: [],
-    whiteBoardImage: "",
     isMobile: window.innerWidth < 600,
-    tagsPool: [],
+    // tagsPool: [],
     activeElem: 0,
   }),
   computed: {
     user () { 
-      return this.$store.state.user 
+      return this.$store.state.user;
     },
-    questionsRef () { return db.collection("classes").doc(this.$route.params.class_id).collection("questions") },
+    classId () {
+      return this.$route.params.class_id;
+    },
+    classRef () {
+      return db.collection("classes").doc(this.classId);
+    },
+    questionsRef () { 
+      return this.classRef.collection("questions") 
+    },
     answersRef () { 
-      return db.collection("classes").doc(this.$route.params.class_id).collection("questions").doc(this.currentQuestion['.key']).collection("answers") 
+      if (!this.currentQuestion[".key"]) return; 
+      return this.questionsRef.doc(this.currentQuestion['.key']).collection("answers");
     },
     sortedAnswers () {
       return this.answers.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0))
     }
   },
   async created () {
-    this.classID = this.$route.params.class_id;
     // first fetch questions
-    await this.fetchQuestions()
-    const questionID = this.$route.params.question_id
-    if (!questionID) return; // early exit user visited from home page 
+    await this.fetchQuestions();
+    const { question_id } = this.$route.params;
+    if (!question_id) return; // early exit user visited from home page 
     // search for the question
     this.questions.forEach((question, index)=> {
-      if (question[".key"] === questionID) {
+      if (question[".key"] === question_id) {
         this.currentQuestion = question;
         this.isViewingPost = true;
         this.activeElem = index + 1
       }
     })
-    // case 2: user wants to visit a specific question using a link
-    // this.fetchTagsPool()
   },
   watch: {
     currentQuestion: {
@@ -129,12 +133,12 @@ export default {
     fetchQuestions () {
       const promise = new Promise(async resolve => {
         this.questions = await helpers.getCollectionFromDB(this.questionsRef);
-        resolve()
+        resolve();
       }) 
-      return promise
+      return promise;
     },
     async fetchAnswers () {
-      if (!this.currentQuestion[".key"]) return; // edge case: user is creating a new question
+      if (!this.currentQuestion[".key"]) return;  // edge case: user is creating a new question
       this.answers = await helpers.getCollectionFromDB(this.answersRef);
     },
     handleQuestionCreate () {
@@ -143,25 +147,30 @@ export default {
       this.answers = [];
     },
     handleQuestionClick (clickedQuestion) {
-      const classID = this.$route.params.class_id;
-      this.$router.push(`/${classID}/questions/${clickedQuestion[".key"]}`)
+      this.$router.push(`/${this.classId}/questions/${clickedQuestion[".key"]}`)
       this.currentQuestion = clickedQuestion
-      this.fetchAnswers();
       this.isViewingPost = true
     },
     async submitPost ({ post, boardStrokes }, ref) {
       // should be stored as subcollections so it can be lazy fetched
-      db.collection("whiteboards").doc(post.blackboardID).set({
-        strokes: boardStrokes,
-        // image: this.whiteBoardImage
-      })
-      
-      // get the class name 
-      const classID = this.$route.params.class_id
-      const classRef = db.collection("classes").doc(classID);
-      const classDoc = await classRef.get();
-      post.class = {
-        id: classID,
+      if (post.blackboardId) {
+        const boardRef = this.classRef.collection("blackboards").doc(post.blackboardId);
+        boardRef.set({
+          audioUrl: post.audioUrl,
+          description: post.description,
+          duration: post.duration
+        })
+        
+        // Save the strokes as a subcollection
+        for (let stroke of boardStrokes) {
+          boardRef.collection("strokes").add(stroke);
+        }
+      }
+     
+      // Get the class name (TODO: refactor to Vuex)
+      const classDoc = await this.classRef.get();
+      post.fromClass = {
+        id: this.classId,
         name: classDoc.data().name
       }
       post.author = {
@@ -171,19 +180,33 @@ export default {
       }
       await ref.add(post);
       // either a question or an answ er is added 
-      if (!this.isViewingPost) { this.fetchQuestions(); }// was a new question 
-      else { this.fetchAnswers(); } // was a new answer
+      if (!this.isViewingPost) this.fetchQuestions(); // was a new question 
+      else this.fetchAnswers(); // was a new answer, currentQuestion doesn't change so watch hook won't invoke fetchAnswers()
+
       // Incrementing the key to force NewPost to re-render
       this.keyToForceReload += 1;
-      // TODO: update UI correctly after submitting an answer
     },
-    async deleteQuestion ({ ".key": questionID }) {
-      const ref = this.questionsRef.doc(questionID);
+    async saveVideo ({ ".key": postId, blackboardId, description }) {
+      this.answersRef.doc(postId).update({
+        isSaved: true
+      });
+      const blackboardRef = this.classRef.collection("blackboards").doc(blackboardId);
+      await blackboardRef.update({
+        description,
+        tabNumber: 0
+      });
+    },
+    async deleteQuestion ({ ".key": questionId }) {
+      const ref = this.questionsRef.doc(questionId);
       await ref.delete();
       this.fetchQuestions();
     },
-    getFullWidth () { return window.innerWidth; },
-    backToList () { this.isViewingPost = false; },
+    getFullWidth () { 
+      return window.innerWidth; 
+    },
+    backToList () { 
+      this.isViewingPost = false; 
+    },
     setQuestionsHeight () {
       if (this.$refs.main) {
         var topOffset = this.$refs.main.getBoundingClientRect();
@@ -191,19 +214,6 @@ export default {
       }
       this.isMobile = window.innerWidth < 600;
     }
-    // allowedToUpvote ({ usersWhoUpvoted }) {
-    //   return this.user && usersWhoUpvoted.includes(this.user.email) === false 
-    // },
-    // async upvoteQuestion ({ ".key": questionID, usersWhoUpvoted }) {
-    //   if (!this.user) { 
-    //     return 
-    //   }
-    //   const ref = this.questionsRef.doc(questionID)
-    //   ref.update({
-    //     usersWhoUpvoted: firebase.firestore.FieldValue.arrayUnion(this.user.email)
-    //   })
-    //   this.fetchQuestions()
-    // },
   }
 }
 </script>
@@ -223,7 +233,6 @@ export default {
     max-width: 300px;
   }
 }
-
 .post-header {
   background: linear-gradient(#eee,#fff);
   box-shadow: 0 5px 5px rgba(0,0,0,0.15);

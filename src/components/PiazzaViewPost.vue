@@ -1,26 +1,39 @@
 <!-- Given a post, display its text and its blackboard -->
 <template>
   <v-card id="view-post">
-    <v-card-title class="post-header py-2">{{ postType }}</v-card-title>
+    <v-card-title class="post-header py-2">
+      {{ postType }}
+    </v-card-title>
     <v-container class="py-5 px-5">
-      <h3 class="post-title">{{ post.title }}</h3>
-      <div class="post-description mb-5">{{ post.description }} </div>
+      <h3 class="post-title">
+        {{ post.title }}
+      </h3>
+      <div class="post-description mb-5">
+        {{ post.description }}
+      </div>
       <div v-if="post.image" class="image-container">
         <img :src="post.image"/>
       </div>
       <DoodleVideo 
-        :whiteboardID="post.blackboardID" 
-        :hasSubcollection="false"
-        :canvasID="`${postNumber}`"
-        :audioURL="post.audioURL"
+        :blackboardId="post.blackboardId" 
+        :canvasId="`${postNumber}`"
+        :audioUrl="post.audioUrl"
         :height="`${getFullWidth() * 9/16}`"
         ref = "DoodleVideo"
         @full-video-ready="initVideo()"
         @video-clicked="handleClick()"
       />
+      <!-- notice "postType" is a prop -->
+      <v-btn 
+        v-if="post.blackboardId && !post.isSaved && postType === 'Answer'" 
+        @click="$emit('video-save', post)" 
+        color="accent lighten-1"
+      >
+        Save video
+      </v-btn>
     </v-container>
     <footer v-if="post.author" class="post-footer px-4 py-3">
-      Posted by {{ post.isAnonymous? 'Anonymous' : post.author.firstName }}, {{ displayDate(post.date) }} 
+      Posted by {{ post.isAnonymous ? 'Anonymous' : post.author.firstName }}, {{ displayDate(post.date) }} 
     </footer>
   </v-card>
 </template>
@@ -44,21 +57,24 @@ export default {
       video: null
     }
   },
+  computed: {
+    DoodleVideo () { // disgintuish between the Vue component and the Firestore document
+      return this.$refs.DoodleVideo;
+    }
+  },
   methods: {
     displayDate (date) {
       return moment(date).format('MMM Do, h:mm a');
     },
     getFullWidth () {
-      // sidenav's width = 200, BaseList's width = 300 
-      return window.innerWidth - 500 
+      return window.innerWidth - 500;       // sidenav's width = 200, BaseList's width = 300 
     },
     initVideo () {
-      this.$refs.DoodleVideo.resizeVideo();
+      this.DoodleVideo.resizeVideo();
     },
     handleClick () {
-      if (this.post.audioURL) return;
-      const DoodleVideo = this.$refs.DoodleVideo;
-      if (!DoodleVideo.isQuickplaying) DoodleVideo.quickplay();
+      if (this.post.audioUrl) return; 
+      if (!this.DoodleVideo.isQuickplaying) this.DoodleVideo.quickplay(); 
     }
   }
 }

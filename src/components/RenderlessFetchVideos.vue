@@ -20,15 +20,9 @@ export default {
     }
   },
   async created () {
-    const classID = this.$route.params.class_id;
-    if (!classID || this.tabNumber === null) { return; } // tabNumber can be 0, therefore explicitly check for null
-    const classRef = db.collection("classes").doc(classID);
-    let classDoc = await classRef.get();
-    const classObj = {
-      ID: classID,
-      name: classDoc.data().name,
-    }
-    const ref = db.collection("whiteboards").where("fromClass", "==", classObj).where("tabNumber", "==", this.tabNumber)    
+    const classId = this.$route.params.class_id;
+    if (!classId || this.tabNumber === null) return;// tabNumber can be 0, therefore explicitly check for null
+    const ref = db.collection("classes").doc(classId).collection("blackboards").where("tabNumber", "==", this.tabNumber);
     this.videos = await helpers.getCollectionFromDB(ref);
     this.$emit("videos-fetched");
   }

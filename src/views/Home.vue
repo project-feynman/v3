@@ -202,7 +202,10 @@ export default {
     BasePopupButton
   },
   computed: {
-    ...mapState(["user", "isFetchingUser"])
+    ...mapState(["user", "isFetchingUser"]),
+    userRef () {
+      return db.collection("users").doc(this.user.uid);
+    }
   },
   data () {
     return {
@@ -252,8 +255,7 @@ export default {
       });
     },
     async updateNotifSetting (payload) {
-      const userRef = db.collection("users").doc(this.user.uid);
-      userRef.update({
+      this.userRef.update({
         enrolledClasses: payload
       })
     },
@@ -264,16 +266,24 @@ export default {
       // Check if class exists already
       this.fetchClasses();
       for (const c of this.schoolClasses) {
-        if (c.name === name) { return; }
+        if (c.name === name) return; 
       }
       // Create it
-      const ref = db.collection("classes");
-      await ref.add({
+      const classRef = db.collection("classes");
+      const classDoc = await classRef.add({
         name,
         description: "description",
         tabs: ["New"],
         tags: [],
       });
+      // Enroll in it 
+      await this.userRef.update({
+        enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
+          id: classDoc.id,
+          name,
+          notifFrequency: CONSTANTS.notifFrequencyEnum.ALWAYS
+        })
+      })
       this.fetchClasses();
     },
     saveParagraph (newValue, courseNumber) {
@@ -320,7 +330,6 @@ export default {
         });
     },
     async createAccount ({ uid, email, firstName, lastName }) {
-      console.log("createAccount()")
       function getRandomColor () {
         var letters = '0123456789ABCDEF'
         var color = '#'
@@ -337,10 +346,8 @@ export default {
         color: getRandomColor(),
         enrolledClasses: []
       }
-      const userRef = db.collection("users").doc(uid);
-      await userRef.set(newUser)
-      console.log("successfully created account")
-      // syncUserWithDB(userRef, context);
+      const newUserRef = db.collection("users").doc(uid);
+      await newUserRef.set(newUser)
     },
     signOut () {
       firebase.auth().signOut();

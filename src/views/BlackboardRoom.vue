@@ -1,11 +1,12 @@
 <template>
   <div id="workspace">
     <v-container v-if="simpleUser && workspace" fluid class="pa-0">
+      <p>workspace {{ workspace }}</p>
       <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
       <Blackboard
-        v-if="loadCanvas && workspace.whiteboardID"
+        v-if="loadCanvas && workspace.blackboardId"
         ref="whiteboard"
-        :whiteboardID="workspace.whiteboardID"
+        :blackboardId="workspace.blackboardId"
         :isRealtime="true"
       />
     </v-container>
@@ -15,7 +16,6 @@
 <script>
 import firebase from "firebase/app";
 import "firebase/firestore";
-
 import { mapState } from "vuex";
 import db from "@/database.js";
 import Blackboard from "@/components/Blackboard.vue";
@@ -27,9 +27,16 @@ export default {
   computed: {
     ...mapState(["user"]),
     simpleUser () {
-      if (!this.user) { return;} 
-      const { email, uid, firstName } = this.user;
-      return { email, uid, firstName }
+      if (!this.user) { return; } 
+      return {
+        email: this.user.email,
+        uid: this.user.uid,
+        firstName: this.user.firstName
+      }
+    },
+    roomRef () {
+      const roomId = this.$route.params.room_id;
+      return db.collection("rooms").doc(roomId)
     }
   },
   data () {
@@ -54,13 +61,10 @@ export default {
   },
   methods: {
     async bindVariables () {
-      const workspaceID = this.$route.params.id;
-      const classID = this.$route.params.class_id;
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
-      if (this.prevWorkspaceRef) await this.cleanUpPrevWorkspace();
-      await this.$binding("workspace", workspaceRef);
+      if (this.prevWorkspaceRef) { await this.cleanUpPrevWorkspace(); }
+      await this.$binding("workspace", this.roomRef);
       this.setDisconnectHook();
-      this.prevWorkspaceRef = workspaceRef;
+      this.prevWorkspaceRef = this.roomRef;
     },
     async cleanUpPrevWorkspace () {
       const promise = new Promise(async (resolve, reject) => {
@@ -78,17 +82,17 @@ export default {
       return promise;
     },
     setDisconnectHook () {
-      const classID = this.$route.params.class_id;
-      const workspaceID = this.$route.params.id;
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
-      const firebaseClassID = classID.replace(".", "-");
-      const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${workspaceID}`);
+      const classId = this.$route.params.class_id;
+      const roomId = this.$route.params.room_id;
+
+      const firebaseclassId = classId.replace(".", "-");
+      const firebaseRef = firebase.database().ref(`/workspace/${firebaseclassId}/${roomId}`);
       // mirror the Firebase workspace with the Firestore workspace
       firebase.database().ref(".info/connected").on("value", async snapshot => {
         if (snapshot.val() === false) { return; } 
         // wait till server successfully processes the onDisconnectHook()
         await firebaseRef.onDisconnect().set(this.simpleUser);
-        workspaceRef.update({ // it's much faster to update Firestore directly
+        this.roomRef.update({ // it's much faster to update Firestore directly
           members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
         });
         // reset it (otherwise setting the user is not actually triggering any changes)

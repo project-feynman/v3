@@ -29,7 +29,7 @@
                     <v-icon class="down">keyboard_arrow_down</v-icon>
                   </v-btn>
                   <swatches
-                    @input="newVal => $emit('color-click',newVal)"
+                    @input="newVal => $emit('color-click', newVal)"
                     :value="color"
                     :colors="colors"
                     :show-border="true"
@@ -45,16 +45,18 @@
                 <v-btn
                   :value="eraserActive"
                   @click="eraserClick"
-                  :outlined="eraserActive? false:true"
+                  :outlined="eraserActive? false : true"
                   color="accent lighten-1"
                   class="board-action-btn normal-text"
                 >
-                  <span class="d-none d-md-block mr-2">Eraser</span>
+                  <span class="d-none d-md-block mr-2">
+                    Eraser
+                  </span>
                   <v-icon>mdi-eraser</v-icon>
                 </v-btn>
               </v-col>
               <v-col class="py-0 px-0" cols="auto">
-                <v-btn
+                <!-- <v-btn
                   @click="setImage()"
                   ref="background"
                   outlined
@@ -70,22 +72,45 @@
                     type="file"
                     style="display: none;"
                   />
-                </v-btn>
+                </v-btn> -->
               </v-col>
             </v-row>
           </v-col>
           <v-col cols="auto" class="py-0 px-0">
-            <v-btn
+            <!-- TODO: do a confirmation popup -->
+            <!-- <v-btn
               @click="$emit('wipe-board')"
               outlined
               color="accent"
               class="board-action-btn normal-text"
             >
-              <span class="d-none d-lg-block mr-2">Clear</span>
+              <span class="d-none d-lg-block mr-2">
+                Wipe blackboard
+              </span>
               <v-icon>clear</v-icon>
+            </v-btn> -->
+            
+
+            <v-btn 
+              v-if="currentState === recordStateEnum.PRE_RECORD"
+              @click="$emit('wipe-board')" 
+              class="button-with-icon-and-text" outlined color="accent"
+            >
+              <p>WIPE & RESET<br>BLACKBOARD</p>
+              <v-icon>delete_outline</v-icon>
             </v-btn>
+           
+            <v-btn 
+              v-if="currentState === recordStateEnum.PRE_RECORD"
+              @click="$emit('animation-save')" 
+              class="button-with-icon-and-text" outlined color="accent"
+            >
+              <p>SAVE AS<br>ANIMATION</p>
+              <v-icon>save</v-icon>
+            </v-btn>
+
             <v-btn
-              v-if="currentState===recordStateEnum.MID_RECORD"
+              v-if="currentState === recordStateEnum.MID_RECORD"
               @click="$emit('record-state-change', recordStateEnum.POST_RECORD)"
               color="accent lighten-1"
               class="board-action-btn"
@@ -123,7 +148,9 @@
               color="accent lighten-1"
               class="board-action-btn"
             >
-              <span class="d-none d-sm-block mr-2">Retry</span>
+              <span class="d-none d-sm-block mr-2">
+                Retry
+              </span>
               <v-icon>mdi-undo-variant</v-icon>
             </v-btn>
 
@@ -169,11 +196,11 @@ export default {
   },
   data() {
     return {
-      colors: ["white", "orange", "#0AF2F2", "deeppink", "rgb(62, 66, 66)"],
+      colors: ["white", "orange", "#0AF2F2", "deeppink"],
       palleteVisibility: false,
       isSmallScreen: window.innerWidth < 960,
       recordStateEnum: CONSTANTS.recordStateEnum
-    };
+    }
   },
   mounted() {
     window.addEventListener("resize", this.smallScreen);
@@ -283,5 +310,9 @@ button {
   letter-spacing: unset;
   text-transform: unset;
   font-size: 0.9em;
+}
+.button-with-icon-and-text p {
+  font-size: 0.6em;
+  margin-bottom: 0;
 }
 </style>

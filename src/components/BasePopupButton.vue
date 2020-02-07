@@ -6,7 +6,9 @@
       </template>
       <v-card>
         <v-card-title>
-          <span class="headline">{{ actionName }}</span>
+          <span class="headline">
+            {{ actionName }}
+          </span>
         </v-card-title>
         <v-card-text>
           <v-container>
