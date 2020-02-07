@@ -2,7 +2,9 @@
   <!-- <v-row justify="center"> -->
     <v-dialog v-model="isOpen" persistent max-width="600px">
       <template v-slot:activator="{ on }">
-        <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">{{ actionName }}</v-btn>
+        <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">
+          {{ actionName }}
+        </v-btn>
       </template>
       <v-card>
         <v-card-title>

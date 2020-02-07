@@ -144,23 +144,16 @@
           <v-col cols="auto" class="py-0">
             <v-btn
               @click="$emit('record-state-change', recordStateEnum.PRE_RECORD)"
-              outlined
-              color="accent lighten-1"
-              class="board-action-btn"
+              outlined color="accent lighten-1" class="board-action-btn"
             >
               <span class="d-none d-sm-block mr-2">
                 Retry
               </span>
               <v-icon>mdi-undo-variant</v-icon>
             </v-btn>
-
-            <BasePopupButton
-              actionName="Save video" 
-              :disabled="!hasUploadedAudio"
-              :inputFields="['title', 'description']"
-              @action-do="payload => $emit('video-save', payload)"
-              color="accent lighten-1"
-            />
+            <slot>
+  
+            </slot>
             <!-- <v-btn
               @click="$emit('video-save')"
               color="accent lighten-1"
@@ -178,9 +171,9 @@
 </template>
 
 <script>
+import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
 import CONSTANTS from "@/CONSTANTS.js";
-import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   props: {
@@ -188,13 +181,11 @@ export default {
     eraserActive: Boolean,
     currentState: String,
     isRealtime: Boolean,
-    hasUploadedAudio: Boolean
   },
   components: {
-    Swatches,
-    BasePopupButton
+    Swatches
   },
-  data() {
+  data () {
     return {
       colors: ["white", "orange", "#0AF2F2", "deeppink"],
       palleteVisibility: false,
@@ -216,17 +207,13 @@ export default {
   },
   methods: {
     palleteClick() {
-      if (this.eraserActive) {
-        this.palleteVisibility = false;
-      } else {
-        this.palleteVisibility = !this.palleteVisibility;
-      }
+      if (this.eraserActive) this.palleteVisibility = false;
+      else this.palleteVisibility = !this.palleteVisibility;
     },
     setImage() {
       document.getElementById("whiteboard-bg-input").value = "";
       document.getElementById("whiteboard-bg-input").click();
     },
-
     smallScreen() {
       this.isSmallScreen = window.innerWidth < 960;
     },
