@@ -1,11 +1,13 @@
 <template>
   <div style="height: 100%">
-    <DoodleVideoOverlay :overlay="false" @play-video="playVideo()">
+    <!-- Uncomment below to debug -->
+    <!-- <p>strokes: {{ strokes }}</p> -->
+    <!-- <DoodleVideoOverlay :overlay="false" @play-video="playVideo()"> -->
       <canvas
         :id="`myCanvas-${canvasId}`"
-        style="width: 100%; height: 100%; background-color: rgb(62, 66, 66)"
+        style="width: 100%; height: 1; background-color: rgb(62, 66, 66)"
       ></canvas>
-    </DoodleVideoOverlay>
+    <!-- </DoodleVideoOverlay> -->
   </div>
 </template>
 
@@ -49,16 +51,25 @@ export default {
   created () {
     this.initData();
   },
-  mounted () {
+  async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.canvasId}`);
     this.ctx = this.canvas.getContext("2d");
     // TODO: modify this so the height is automatically adjusted based on the the available width the video can occupy
-    this.canvas.height = 500;
+    await this.setCanvasHeight();
     this.rescaleCanvas(true);
     this.overlay = true;
   },
   methods: {
-    startVideo() {
+    setCanvasHeight () {
+      const setHeight = resolve => {
+        const correctHeight = 0.65 * this.canvas.scrollWidth;
+        if (Math.round(this.canvas.scrollHeight) === Math.round(correctHeight)) return;
+        this.canvas.height = correctHeight;
+        resolve();
+      }
+      return new Promise(resolve => setTimeout(setHeight(resolve), 0));
+    },
+    startVideo () {
       this.$emit("play-video");
       this.overlay = false;
     },

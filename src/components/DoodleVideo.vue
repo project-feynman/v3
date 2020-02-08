@@ -7,6 +7,7 @@
       @mouseleave="mouseHover = false" 
       style="height: 100%; width: 100%;"
     >
+      <!-- https://dev.to/deepaksisodiya/working-with-dynamic-components-in-vue-js-56ag -->
       <!-- Even if overlays is permitted by the parent, only show it when the video is actually ready -->
       <template v-if="hasBetaOverlay">
         <DoodleVideoOverlay 
@@ -76,10 +77,12 @@ export default {
       type: Object,
       required: true
     },
+    blackboardId: {
+      type: String,
+      required: true
+    },
     thumbnail: String,
-    blackboardId: String,
     audioUrl: String,
-    canvasId: String,
     hasBetaOverlay: {
       type: Boolean,
       default () {
@@ -141,30 +144,6 @@ export default {
     window.removeEventListener("resize", this.resizeVideo);
   },
   methods: {
-    playGivenWhatIsAvailable () { // called because the video is ready to play i.e. hasOverlay === true
-      if (!this.hasLoadedAvailableResources) return;
-      else if (this.hasVisualAndAudio) this.handlePlay(); // silent animation
-      else if (this.blackboardId) this.quickplay();
-    },
-    handlePlay () {
-      const { animation, audioRecorder } = this.$refs;
-      if (!this.hasPreparedFrames) { // create the frames and order them by time
-        animation.prepareFrames(audioRecorder.getAudioTime); 
-        this.hasPreparedFrames = true
-      }
-      if (!this.isSyncing) { // now constantly sync against the audio player's progress
-        animation.keepSyncing();
-        this.isSyncing = true;
-      }
-      animation.sync = setTimeout(animation.keepSyncing, 0);
-      audioRecorder.playAudio();
-    },
-    async quickplay () {
-      if (!this.Animation) return;
-      this.isQuickplaying = true;
-      await this.Animation.quickplay();
-      this.isQuickplaying = false;
-    },
     async fetchStrokes () {
       const promise = new Promise(async resolve => {
         if (!this.blackboardId) { 
@@ -179,6 +158,33 @@ export default {
         resolve();
       });
       return promise;
+    },
+    playGivenWhatIsAvailable () { // called because the video is ready to play i.e. hasOverlay === true
+      console.log("called()")
+      if (!this.hasLoadedAvailableResources) return;
+      else if (this.hasVisualAndAudio) this.handlePlay(); // silent animation
+      else if (this.blackboardId) this.quickplay();
+    },
+    handlePlay () {
+      // TODO: refactor - handle play is triggered twice because the audio player has an @play event
+      const { animation, audioRecorder } = this.$refs;
+      if (!this.hasPreparedFrames) { // create the frames and order them by time
+        animation.prepareFrames(audioRecorder.getAudioTime); 
+        this.hasPreparedFrames = true
+      }
+      animation.ctx.clearRect(0, 0, animation.canvas.width, animation.canvas.height); // Clear the initial preview or completed video.
+      if (!this.isSyncing) { // now constantly sync against the audio player's progress
+        animation.keepSyncing();
+        this.isSyncing = true;
+      }
+      animation.sync = setTimeout(animation.keepSyncing, 0);
+      audioRecorder.playAudio();
+    },
+    async quickplay () {
+      if (!this.Animation) return;
+      this.isQuickplaying = true;
+      await this.Animation.quickplay();
+      this.isQuickplaying = false;
     },
     handleStop () {
       // Stop sync.

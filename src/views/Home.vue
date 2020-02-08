@@ -87,57 +87,29 @@
 
       <!-- DISPLAY CLASSES -->
       <transition name="fade" mode="out-in">
-        <v-container class="py-10">
+        <v-container fluid class="py-5">
           <div v-if="!user && !isFetchingUser" key="loading...">
             <v-row justify="center" class="py-0 text-center">
-              <v-col cols="12" sm="10" md="4">
-                <v-card elevation="10">
-                  <v-card-subtitle
-                    class="black--text font-weight-medium"
-                  >Ask & answer questions with text and visuals</v-card-subtitle>
-                  <v-img :aspect-ratio="16/9">
-                    <DoodleVideo
-                      ref="DoodleVideo1"
-                      whiteboardID="BlEjXn7RP7q8YwxG8FLO"
-                      canvasID="1"
-                      @animation-loaded="hasFetchedVideos = true"
-                      @strokes-ready="startDemo()"
-                    />
-                  </v-img>
-                </v-card>
-              </v-col>
-              <v-col cols="12" sm="10" md="4">
-                <v-card elevation="10">
-                  <v-card-subtitle
-                    class="black--text font-weight-medium"
-                  >Draw & talk on the real-time blackboard</v-card-subtitle>
-                  <v-img :aspect-ratio="16/9">
-                    <DoodleVideo
-                      ref="DoodleVideo2"
-                      whiteboardID="8hcybKON8Br67bNUA9TJ"
-                      canvasID="2"
-                      @animation-loaded="hasFetchedVideos = true"
-                    />
-                  </v-img>
-                </v-card>
-              </v-col>
-              <v-col cols="12" sm="10" md="4">
-                <v-card elevation="10">
-                  <v-card-subtitle
-                    class="black--text font-weight-medium"
-                  >Save & reuse any blackboard explanations</v-card-subtitle>
-                  <v-img :aspect-ratio="16/9">
-                    <DoodleVideo
-                      ref="DoodleVideo3"
-                      whiteboardID="vgPkZWvsqvt9pImHiMbe"
-                      canvasID="3"
-                      @animation-loaded="hasFetchedVideos = true"
-                    />
-                  </v-img>
-                </v-card>
-              </v-col>
+              <template v-for="(tutorial, i) in tutorials">
+                <v-col cols="12" sm="10" md="4" :key="tutorial.blackboardId">
+                  <v-card elevation="5">
+                    <v-card-subtitle class="black--text font-weight-medium">
+                      {{ tutorial.description }}
+                    </v-card-subtitle>
+                    <v-img :aspect-ratio="16/9">
+                      <DoodleVideo
+                        :ref="`DoodleVideo${i+1}`"
+                        :blackboardId="tutorial.blackboardId"
+                        :blackboardRef="tutorial.blackboardRef"
+                        @strokes-ready="i === 0? startDemo() : 0"
+                      />      
+                    </v-img>
+                  </v-card>
+                </v-col>
+              </template>
             </v-row>
           </div>
+                            
           <!-- Display classes -->
           <div v-else-if="user" key="class-list">
             <v-row align="stretch" class="enrolled-classes">
@@ -147,13 +119,16 @@
                     <v-card-title class="title">
                       {{ enrolledClass.name }}
                     </v-card-title>
+                    <v-card-subtitle>
+                      No description yet
+                    </v-card-subtitle>
                   </v-card>
                 </v-col>
               </template>
             </v-row>
           </div>
         </v-container>
-      </transition>
+      </transition>             
     </v-content>
   </div>
 </template>
@@ -190,12 +165,29 @@ export default {
       schoolClasses: [],
       snackbar: false,
       snackbarMessage: "",
+      tutorials: [
+        { 
+          blackboardId: "r0rqij6hpxnx12220xf1lm",
+          blackboardRef: this.getBlackboardRef("r0rqij6hpxnx12220xf1lm"),
+          description: "We think university is fun when people help each other"
+        },
+        { 
+          blackboardId: "gm0h4wqrwhnrwnpnwxclhj",
+          blackboardRef: this.getBlackboardRef("gm0h4wqrwhnrwnpnwxclhj"),
+          description: "Join your classes to ask & answer questions"
+        },
+        { 
+          blackboardId: "4lx2bg9nk9glvhk68ba5n",
+          blackboardRef: this.getBlackboardRef("4lx2bg9nk9glvhk68ba5n"),
+          description: "Express ideas efficiently by drawing and talking"
+        }
+      ]
     }
   },
   created () {
     this.fetchClasses();
   },
-  mounted() {
+  mounted () {
     this.logoVisibility();
     window.addEventListener("scroll", this.logoVisibility);
   },
@@ -203,12 +195,20 @@ export default {
     window.removeEventListener("scroll", this.logoVisibility);
   },
   methods: {
+    getBlackboardRef (explanationId) {
+      return db.collection("classes").doc("P2NYaQfwhb1WiJAMVhJQ")
+        .collection("posts").doc(explanationId)
+        .collection("explanations").doc(explanationId);
+    },
     startDemo () {
+      const { DoodleVideo1, DoodleVideo2, DoodleVideo3 } = this.$refs;
+      // need next tick so the quickplay starts after the resize event
       this.$nextTick(async () => {
-        await this.$refs.DoodleVideo1.quickplay();
-        await this.$refs.DoodleVideo2.quickplay();
-        this.$refs.DoodleVideo3.quickplay();
-      });
+        // Don't know why DoodleVideo returns arrays
+        await DoodleVideo1[0].quickplay();
+        await DoodleVideo2[0].quickplay();
+        DoodleVideo3[0].quickplay();
+      })
     },
     async fetchClasses () {
       const ref = db.collection("classes");
@@ -218,10 +218,9 @@ export default {
       // Abort if user is already enrolled in the class  
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
-          if (classObj.id === id) { return; }
+          if (classObj.id === id) return; 
         }
       }
-
       // Add the new class
       const classObj = {
         id,
@@ -247,10 +246,9 @@ export default {
         if (c.name === name) return; 
       }
       // Create it
-      const classRef = db.collection("classes");
-      const classDoc = await classRef.add({
+      const classDoc = await db.collection("classes").add({
         name,
-        description: "description",
+        description: description || "No description yet",
         tabs: ["New"],
         tags: [],
       });
@@ -264,16 +262,8 @@ export default {
       })
       this.fetchClasses();
     },
-    saveParagraph (newValue, courseNumber) {
-      const ref = db.collection("classes").doc(courseNumber);
-      ref.update({
-        paragraph: newValue
-      });
-    },
     logIn ({ email, password }) {
-      firebase
-        .auth()
-        .signInWithEmailAndPassword(email, password)
+      firebase.auth().signInWithEmailAndPassword(email, password)
         .then(user => {
           this.$store.dispatch("handleUserLogic", user);
           this.snackbarMessage = `Welcome to ExplainMIT!`;
@@ -297,7 +287,7 @@ export default {
           this.snackbar = true;
         });
     },
-    async createAccount ({ uid, email, firstName, lastName }) {
+    createAccount ({ uid, email, firstName, lastName }) {
       function getRandomColor () {
         var letters = '0123456789ABCDEF'
         var color = '#'
@@ -306,16 +296,11 @@ export default {
         }
         return color
       }
-      const newUser = {
-        uid,
-        email,
-        firstName,
-        lastName,
-        color: getRandomColor(),
-        enrolledClasses: []
-      }
+      const color = getRandomColor();
+      const enrolledClasses = [];
+      const newUser = { uid, email, firstName, lastName, color, enrolledClasses };
       const newUserRef = db.collection("users").doc(uid);
-      await newUserRef.set(newUser)
+      newUserRef.set(newUser);
     },
     signOut () {
       firebase.auth().signOut();
@@ -370,7 +355,7 @@ export default {
 
 .enrolled-classes .v-card__title {
   word-break: unset;
-  justify-content: center;
+  /* justify-content: center; */
   font-size: 1.1em;
 }
 </style>

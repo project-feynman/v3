@@ -5,7 +5,6 @@ export default {
       indexOfNextPoint: 0,
     }
   },
-
   methods: {
     rescaleCanvas (redraw) {
       // Make the drawing coordinate system 1:1 with the actual size of the canvas (`scrollWidth` is the actual width
@@ -29,7 +28,6 @@ export default {
 
       // Sort frames.
       this.allFrames.sort((a, b) => this.frameStartTime(a) - this.frameStartTime(b));
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear the initial preview or completed video.
 
       // Update the shared time method.
       this.getTimeInSeconds = getTimeInSeconds; 
@@ -37,9 +35,9 @@ export default {
     },
     // Synchronize drawings with the audio on a point-by-point basis.
     keepSyncing (once = false) {
-      console.log("syncing...")
       const n = this.allFrames.length;
       const currentTime = this.getTimeInSeconds();
+      // console.log(this.frameStartTime(this.allFrames[this.indexOfNextFrame - 1]));
       if (this.nextFrameStartTime() <= currentTime) {
         // The next frame should already have been rendered. Therefore, the visual needs to catch up. Draw until the we
         // reach a frame that should not be visible yet.
@@ -54,27 +52,22 @@ export default {
         // It's `indexOfNextFrame - 1` because that is the index of current frame! Most recent i.e. current stroke on
         // canvas no longer belongs. However, this doesn't apply if there are no frames rendered at all. Reset canvas
         // and frames.
+
+        // TODO: figure out why sometimes canvas.height is undefined
+        // De-draw all frames to the current time.
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.indexOfNextFrame = 0;
-
-        // De-draw all frames to the current time.
         for (const frame of this.allFrames) {
-          // Exit when we reach a frame that should not be visible.
-          if (this.frameStartTime(frame) > currentTime) {
-            break;
-          }
-
-          // Render frame.
+          if (this.frameStartTime(frame) > currentTime) break;
           this.renderFrame(frame);
           this.indexOfNextFrame++;
         }
       }
-      // If we are not done rendering, we need to call this method again after a timeout. If only synchronizing once,
-      // don't repeat call.
+      // sync continuously, unless "once" is true
       if (this.indexOfNextFrame !== n && !once) {
         // TODO: never catches up to n for some reason
-        console.log("indexOfNextFrame =", this.indexOfNextFrame)
-        console.log("n =", n);
+        // console.log("indexOfNextFrame =", this.indexOfNextFrame)
+        // console.log("n =", n);
         // Determine how long to wait. The event loop takes some time, so we will always be a bit behind. Recompute the
         // current time here. Generally speaking, the timeout guarantees a wait of at least the specified amount, so we
         // should not waste too many calls to the method by doing this.
