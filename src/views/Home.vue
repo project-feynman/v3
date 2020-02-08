@@ -214,17 +214,17 @@ export default {
       const ref = db.collection("classes");
       this.schoolClasses = await helpers.getCollectionFromDB(ref);
     },
-    enrollInClass ({ name, ".key": ID }) {    
+    enrollInClass ({ name, ".key": id }) {    
       // Abort if user is already enrolled in the class  
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
-          if (classObj.ID === ID) { return; }
+          if (classObj.id === id) { return; }
         }
       }
 
       // Add the new class
       const classObj = {
-        ID,
+        id,
         name,
         notifFrequency: CONSTANTS.notifFrequencyEnum.ALWAYS
       }
@@ -270,16 +270,6 @@ export default {
         paragraph: newValue
       });
     },
-    // computeVideoSize() {
-    //   return this.$vuetify.breakpoint.smAndDown ? 12 : 4;
-    // },
-    // computeCardSize () {
-    //   if (this.classes.length > 13) {
-    //     if (this.$vuetify.breakpoint.md) return 4;
-    //     else if (this.$vuetify.breakpoint.smAndDown) return 12;
-    //   }
-    //   return this.$vuetify.breakpoint.smAndDown ? 6 : 2;
-    // },
     logIn ({ email, password }) {
       firebase
         .auth()

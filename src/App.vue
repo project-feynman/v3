@@ -17,9 +17,8 @@ export default {
     drawer: true
   }),
   created () {
-    this.$root.$on("toggle-drawer", () => {
-      this.drawer = !this.drawer
-    })
+    this.$root.$on("toggle-drawer", () => this.drawer = !this.drawer);
+    this.$root.$on("open-drawer", () => this.drawer = true);
   }
 }
 </script>

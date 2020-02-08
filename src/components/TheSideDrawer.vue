@@ -62,6 +62,7 @@ export default {
   },
   methods: {
     async fetchPosts () {
+      this.$root.$emit("open-drawer");
       await this.$binding("posts", this.postsRef);
     },
     displayDate (date) {
