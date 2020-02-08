@@ -51,3 +51,14 @@
 //     />
 //   </div>
 // </v-container>-->
+
+// async saveVideo ({ ".key": postId, blackboardId, description }) {
+//     this.answersRef.doc(postId).update({
+//       isSaved: true
+//     });
+//     const blackboardRef = this.classRef.collection("blackboards").doc(blackboardId);
+//     await blackboardRef.update({
+//       description,
+//       tabNumber: 0
+//     });
+//   },

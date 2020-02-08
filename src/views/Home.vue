@@ -1,6 +1,6 @@
 <template>
   <div id="home-page">
-    <!-- SNACKBAR -->
+    <!-- TODO: move snackbar to App.vue and use root listeners to communicate with it -->
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
       <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
@@ -31,7 +31,7 @@
         >
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
-              <v-icon large :color="user.color">notifications_active</v-icon>
+              <v-icon large :color="user.color">settings</v-icon>
             </v-btn>
           </template>
         </TheDropdownMenu>
@@ -51,7 +51,6 @@
               <h3 class="headline text--primary">An efficient platform for visual explanations</h3>
             </div>
             <v-row class="my-5" justify="center">
-              <!-- previous button color was deep-purple accent-4 -->
               <template v-if="!user && !isFetchingUser">
                 <v-col cols="auto">
                   <BasePopupButton
@@ -64,10 +63,9 @@
                 <v-col cols="auto">
                   <BasePopupButton
                     actionName="Sign up" 
-                    color="accent lighten-1"
-                    :outlined="true"
                     :inputFields="['first name', 'last name', 'email', 'password']"
                     @action-do="payload => signUp(payload)"
+                    color="accent lighten-1" :outlined="true"
                   />
                 </v-col>
               </template>
@@ -140,38 +138,18 @@
               </v-col>
             </v-row>
           </div>
-
+          <!-- Display classes -->
           <div v-else-if="user" key="class-list">
-            <!-- <div class="enrolled-classes-header text-center mb-5">
-              <h2>Your Classes</h2>
-            </div> -->
             <v-row align="stretch" class="enrolled-classes">
-              <!-- <v-col
-                v-for="enrolledClass in user.enrolledClasses"
-                cols="10"
-                sm="4"
-                md="3"
-                :key="enrolledClass.ID"
-                class="d-flex align-center"
-              > -->
-              <v-col
-                v-for="enrolledClass in user.enrolledClasses"
-                cols="12" sm="4" md="3"
-                :key="enrolledClass.ID"
-              >
-                <!--           class="text-center" -->
-                <v-card
-                  hover
-                  @click="$router.push(`${enrolledClass.ID}/questions/`)"
-                  width="100%"
-                >
-                  <v-card-title class="title">
-                    {{ enrolledClass.name }}
-                  </v-card-title>
-                  <!-- <v-card-subtitle>1 member</v-card-subtitle> -->
-                  <!-- <v-card-text>{{ enrolledClass.description }}</v-card-text> -->
-                </v-card>
-              </v-col>
+              <template v-for="enrolledClass in user.enrolledClasses")>
+                <v-col cols="12" sm="4" md="3" :key="enrolledClass.id">
+                  <v-card  @click="$router.push(`${enrolledClass.id}/posts/`)">
+                    <v-card-title class="title">
+                      {{ enrolledClass.name }}
+                    </v-card-title>
+                  </v-card>
+                </v-col>
+              </template>
             </v-row>
           </div>
         </v-container>
@@ -353,9 +331,7 @@ export default {
       firebase.auth().signOut();
     },
     logoVisibility () {
-      var hero_pos = document
-        .querySelector(".central-title")
-        .getBoundingClientRect().top;
+      const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;
       if (hero_pos < 0) {
         document.getElementById("home-page").classList.add("scrolled");
       } else {
@@ -381,7 +357,6 @@ export default {
   max-width: 20%;
   width: 90px;
 }
-
 .central-title h1 {
   font-size: 3em;
   font-weight: 600;

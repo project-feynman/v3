@@ -31,4 +31,18 @@ export default {
         }
     }
 }
+    //Start of Tags functions
+    // addTag (tag) {
+    //   for (let t of this.postTags) {
+    //     if (t == tag) return;
+    //   }
+    //   this.postTags.push(tag)
+    // },
+    // deleteTag(tag) {
+    //   this.postTags = this.postTags.filter(x => {
+    //     return x != tag;
+    //   });
+    // }
+    //End of Tags functions
 </script>
+

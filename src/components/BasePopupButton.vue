@@ -31,8 +31,12 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="resetState()">Cancel</v-btn>
-          <v-btn color="blue darken-1" text @click="doAction()">{{ actionName }}</v-btn>
+          <v-btn @click="resetState()" color="blue darken-1" text>
+            Cancel
+          </v-btn>
+          <v-btn @click="doAction()" color="blue darken-1" text>
+            {{ actionName }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

@@ -1,10 +1,18 @@
 <template>
   <div style="height: 100%">
     <!-- VISUAL SECTION -->
-    <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+    <div 
+      @click="$emit('click')" 
+      @mouseover="mouseHover = true" 
+      @mouseleave="mouseHover = false" 
+      style="height: 100%; width: 100%;"
+    >
       <!-- Even if overlays is permitted by the parent, only show it when the video is actually ready -->
       <template v-if="hasBetaOverlay">
-        <DoodleVideoOverlay :overlay="hasOverlay" @play-click="playGivenWhatIsAvailable()">
+        <DoodleVideoOverlay 
+          :overlay="hasOverlay" 
+          @play-click="playGivenWhatIsAvailable()"
+        >
           <template v-if="thumbnail && strokes.length === 0">
             <v-img :src="thumbnail"></v-img>
           </template>
@@ -14,10 +22,9 @@
               v-if="strokes.length > 0"
               :strokes="strokes"
               :canvasId="blackboardId"
-              :height="height"
               @animation-loaded="animationLoaded = true"
               @animation-finished="handleEvent()"
-              @canvas-clicked="$emit('video-click')"
+              @canvas-clicked="playGivenWhatIsAvailable()"
             />
           </template>
         </DoodleVideoOverlay>
@@ -33,10 +40,9 @@
             v-if="strokes.length > 0"
             :strokes="strokes"
             :canvasId="blackboardId"
-            :height="height"
             @animation-loaded="animationLoaded = true"
             @animation-finished="handleEvent()"
-            @canvas-clicked="$emit('video-click')"
+            @canvas-clicked="playGivenWhatIsAvailable()"
           />
         </template>
       </template>
@@ -66,6 +72,10 @@ import helpers from "@/helpers.js";
 
 export default {
   props: {
+    blackboardRef: {
+      type: Object,
+      required: true
+    },
     thumbnail: String,
     blackboardId: String,
     audioUrl: String,
@@ -75,8 +85,7 @@ export default {
       default () {
         return false;
       }
-    },
-    height: String
+    }
   },
   components: {
     DoodleVideoAnimation,
@@ -133,8 +142,9 @@ export default {
   },
   methods: {
     playGivenWhatIsAvailable () { // called because the video is ready to play i.e. hasOverlay === true
-      if (this.audioUrl) this.handlePlay(); // silent animation
-      else this.quickplay();
+      if (!this.hasLoadedAvailableResources) return;
+      else if (this.hasVisualAndAudio) this.handlePlay(); // silent animation
+      else if (this.blackboardId) this.quickplay();
     },
     handlePlay () {
       const { animation, audioRecorder } = this.$refs;
@@ -161,9 +171,8 @@ export default {
           resolve(); 
           return;
         }
-        const classId = this.$route.params.class_id;
-        const boardRef = db.collection("classes").doc(classId).collection("blackboards").doc(this.blackboardId);
-        const strokesRef = boardRef.collection("strokes").orderBy("strokeNumber", "asc");
+        // blackboardRef
+        const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
         this.strokes = await helpers.getCollectionFromDB(strokesRef);
         this.hasFetchedStrokes = true;
         this.$nextTick(() => this.$emit("strokes-ready", this.strokes))

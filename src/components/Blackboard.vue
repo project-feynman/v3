@@ -9,6 +9,7 @@
       <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
+            ref="blackboardToolbar"
             :currentState="blackboard.recordState"
             :eraserActive="eraserActive"
             :color="color"
@@ -29,11 +30,11 @@
               @action-do="payload => handleSaving(payload)"
               color="accent lighten-1"
             >
-              <VLoadingButton 
+              <BaseLoadingButton 
                 :isLoading="!hasUploadedAudio"
               >
                 Upload video
-              </VLoadingButton>
+              </BaseLoadingButton>
             </BasePopupButton>
           </BlackboardToolBar>
         </div>
@@ -42,6 +43,7 @@
       <!-- APP BAR -->
       <div v-if="!isRealtime" id="mini-toolbar">
         <BlackboardToolBar
+          ref="blackboardToolbar"
           :currentState="currentState"
           :eraserActive="eraserActive"
           :color="color"
@@ -52,7 +54,6 @@
           @color-click="newColor => color = newColor"
           @wipe-board="wipeBoard"
           @record-state-change="newState => handleRecordStateChange(newState)"
-          ref="blackboardToolbar"
         />
       </div>
       <!-- BLACKBOARD -->
@@ -84,7 +85,7 @@ import DrawMethods from "@/mixins/DrawMethods.js";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
-import VLoadingButton from "@/components/VLoadingButton.vue";
+import BaseLoadingButton from "@/components/BaseLoadingButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 
@@ -101,7 +102,7 @@ export default {
     BlackboardToolBar,
     AudioRecorder,
     TheAppBar,
-    VLoadingButton,
+    BaseLoadingButton,
     BasePopupButton
   },
   mixins: [DrawMethods],

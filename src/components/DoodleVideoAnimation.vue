@@ -1,5 +1,5 @@
 <template>
-  <div @click="handleClick()" style="height: 100%">
+  <div style="height: 100%">
     <DoodleVideoOverlay :overlay="false" @play-video="playVideo()">
       <canvas
         :id="`myCanvas-${canvasId}`"
@@ -52,7 +52,8 @@ export default {
   mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.canvasId}`);
     this.ctx = this.canvas.getContext("2d");
-    this.canvas.height = this.height;
+    // TODO: modify this so the height is automatically adjusted based on the the available width the video can occupy
+    this.canvas.height = 500;
     this.rescaleCanvas(true);
     this.overlay = true;
   },
@@ -71,9 +72,6 @@ export default {
       this.indexOfNextStroke = 0;
       this.allStrokes = this.strokes;
       this.$emit("animation-loaded");
-    },
-    handleClick () {
-      this.$emit('canvas-clicked');
     }
   }
 };

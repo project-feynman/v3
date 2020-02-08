@@ -3,7 +3,7 @@
     :loading="isLoading"
     :disabled="isLoading"
     @click="$emit('click')"
-    :block="block" :color="color" class="ma-2 white--text"
+    :block="block" :color="color" class="white--text"
   >
     <slot>
       
