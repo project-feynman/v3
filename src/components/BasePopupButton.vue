@@ -2,7 +2,9 @@
   <!-- <v-row justify="center"> -->
     <v-dialog v-model="isOpen" persistent max-width="600px">
       <template v-slot:activator="{ on }">
-        <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">{{ actionName }}</v-btn>
+        <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">
+          {{ actionName }}
+        </v-btn>
       </template>
       <v-card>
         <v-card-title>
@@ -29,8 +31,12 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="resetState()">Cancel</v-btn>
-          <v-btn color="blue darken-1" text @click="doAction()">{{ actionName }}</v-btn>
+          <v-btn @click="resetState()" color="blue darken-1" text>
+            Cancel
+          </v-btn>
+          <v-btn @click="doAction()" color="blue darken-1" text>
+            {{ actionName }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

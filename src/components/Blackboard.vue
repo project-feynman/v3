@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime?'0':'1'">
+    <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
       <v-snackbar v-model="snackbar">
         {{ snackbarMessage }}
         <v-btn @click="snackbar = false" color="accent" text>CLOSE</v-btn>
@@ -9,6 +9,7 @@
       <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
+            ref="blackboardToolbar"
             :currentState="blackboard.recordState"
             :eraserActive="eraserActive"
             :color="color"
@@ -21,13 +22,28 @@
             @record-state-change="newState => handleRecordStateChange(newState)"
             @video-save="payload => handleSaving(payload)"
             @animation-save="handleSaving({title: 'No title yet', description: 'No description yet'})"
-          />
+          >
+            <BasePopupButton
+              actionName="Save video" 
+              :disabled="!hasUploadedAudio"
+              :inputFields="['title', 'description']"
+              @action-do="payload => handleSaving(payload)"
+              color="accent lighten-1"
+            >
+              <BaseLoadingButton 
+                :isLoading="!hasUploadedAudio"
+              >
+                Upload video
+              </BaseLoadingButton>
+            </BasePopupButton>
+          </BlackboardToolBar>
         </div>
       </TheAppBar>
 
       <!-- APP BAR -->
       <div v-if="!isRealtime" id="mini-toolbar">
         <BlackboardToolBar
+          ref="blackboardToolbar"
           :currentState="currentState"
           :eraserActive="eraserActive"
           :color="color"
@@ -35,10 +51,9 @@
           :hasUploadedAudio="hasUploadedAudio"
           @eraser-click="status => eraserClick(status)"
           @set-image="e => handleImage(e)"
-          @color-click="newColor => {color=newColor}"
+          @color-click="newColor => color = newColor"
           @wipe-board="wipeBoard"
           @record-state-change="newState => handleRecordStateChange(newState)"
-          ref="blackboardToolbar"
         />
       </div>
       <!-- BLACKBOARD -->
@@ -50,11 +65,6 @@
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
-
-      <!-- "@start-recording" is necessary because the audio-recorder can't 
-      start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
-      null-->
-      <!-- :audioUrl="blackboard.audioUrl" -->
       <AudioRecorder
         v-show="false"
         ref="AudioRecorder"
@@ -72,11 +82,11 @@ import "firebase/functions";
 import slugify from "slugify";
 import db from "@/database.js";
 import DrawMethods from "@/mixins/DrawMethods.js";
-import Swatches from "vue-swatches";
-import "vue-swatches/dist/vue-swatches.min.css";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
+import BaseLoadingButton from "@/components/BaseLoadingButton.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
@@ -89,10 +99,11 @@ export default {
     background: String
   },
   components: {
+    BlackboardToolBar,
     AudioRecorder,
-    Swatches,
     TheAppBar,
-    BlackboardToolBar
+    BaseLoadingButton,
+    BasePopupButton
   },
   mixins: [DrawMethods],
   data () {
@@ -441,11 +452,11 @@ export default {
         this.canvas.getBoundingClientRect().top -
         window.scrollY;
     },
-    isNotValidTouch(e) {
+    isNotValidTouch (e) {
       if (e.touches.length !== 1) return true;  // multiple fingers not allowed
       return this.isFinger(e) && this.disableTouch;
     },
-    isFinger(e) {
+    isFinger (e) {
       return e.touches[0].touchType !== "stylus"
     },
     // --- Mouse Drawing --- //
@@ -464,9 +475,8 @@ export default {
     },
     mouseUp (e) {
       this.mousedown = 0;
-      // referenced from touchEnd
       const strokeNumber = this.allStrokes.length + 1;
-      // save
+      // Store the stroke locally
       const stroke = {
         strokeNumber,
         author: this.author || "anonymous",
@@ -478,10 +488,9 @@ export default {
         isErasing: this.eraserActive // mini
       };
       this.allStrokes.push(stroke);
-      if (this.isRealtime) {
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
-      }
-      // reset
+      // Upload it online if it's real-time
+      if (this.isRealtime) this.strokesRef.doc(`${strokeNumber}`).set(stroke);
+      // Reset
       this.currentStroke = [];
       this.lastX = -1;
     },
@@ -525,7 +534,7 @@ export default {
       this.lineWidth = 18;
     },
     handleRecordStateChange (newState) {
-      const { MID_RECORD, POST_RECORD } = this.recordStateEnum
+      const { MID_RECORD, POST_RECORD } = this.recordStateEnum;
       if (newState === MID_RECORD) this.startRecording(); 
       else if (newState === POST_RECORD) this.stopRecording(); 
       else this.tryRecordAgain();
@@ -533,9 +542,10 @@ export default {
     startRecording () {
       this.startTimer();
       const { MID_RECORD } = this.recordStateEnum;
-      if (this.isRealtime) this.blackboardRef.update({ recordState: MID_RECORD });
-      else this.currentState = MID_RECORD;
+      this.currentState = MID_RECORD;
       this.$refs.AudioRecorder.startRecording();
+      if (this.isRealtime) this.blackboardRef.update({ recordState: MID_RECORD });
+      this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button 
     },
     stopRecording () {
       this.stopTimer();
@@ -543,31 +553,22 @@ export default {
       this.removeTouchEvents();
       this.removeMouseEvents();
       this.$refs.AudioRecorder.stopRecording();
+      this.currentState = POST_RECORD;
       if (this.isRealtime) this.blackboardRef.update({ recordState: POST_RECORD });
-      else this.currentState = POST_RECORD; //mini
+      this.$emit("audio-upload-start"); // AudioRecorder implicitly starts uploading the file to Firestore
     },
     tryRecordAgain () {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
-      if (!this.isRealtime) {
-        this.currentState = this.recordStateEnum.PRE_RECORD;
-      } else {
-        this.blackboardRef.update({
-          recordState: this.currentState,
-          audioUrl: "",
-          audioPath: ""
-        });
-      }
+      const { PRE_RECORD } = this.recordStateEnum;
+      this.currentState = PRE_RECORD;
+      if (this.isRealtime) this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
     },
-    saveFileReference ({ url, path }) {
-      if (!this.isRealtime) this.audioUrl = url;
-      else {
-        this.hasUploadedAudio = true;
-        this.blackboardRef.update({
-          audioUrl: url,
-          audioPath: path //i spath useful?
-        });
-      }
+    saveFileReference ({ url }) {
+      this.hasUploadedAudio = true;
+      this.audioUrl = url;
+      if (this.isRealtime) this.blackboardRef.update({ audioUrl: url });
+      this.$emit("audio-upload-end");
     },
     async handleSaving ({ title, description }) {
       // Save the video
@@ -585,7 +586,7 @@ export default {
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       };
       if (this.currentTime) metadata.duration = this.currentTime;
-      this.blackboardRef.update(metadata);
+      this.blackboardRef.update(metadata).then(() => this.isUploadingVideo = false);
       this.classRef.update({
         numOfVideos: firebase.firestore.FieldValue.increment(1)
       });
