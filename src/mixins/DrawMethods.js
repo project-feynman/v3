@@ -1,5 +1,5 @@
 export default {
-  data() {
+  data () {
     return {
       indexOfNextStroke: 0,
       indexOfNextPoint: 0,
@@ -95,7 +95,6 @@ export default {
       if (this.indexOfNextFrame === this.allFrames.length) {
         return Infinity; // We finished the last frame. The next frame should never start.
       } else {
-        // Compute the start time.
         return this.frameStartTime(this.allFrames[this.indexOfNextFrame]);
       }
     },
@@ -115,7 +114,6 @@ export default {
         this.drawStroke(stroke);
       }
     },
-
     // Internal stroke method for drawing a line between two points. The color and line width should be set before
     // calling this method.
     _stroke(points, i, isErasing) {

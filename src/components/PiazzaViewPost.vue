@@ -16,13 +16,13 @@
         <img :src="post.image"/>
       </div>
       <DoodleVideo 
+        ref = "DoodleVideo"
+        @video-click="playGivenWhatIsAvailable()"
         :blackboardId="post.blackboardId" 
         :canvasId="`${postNumber}`"
         :audioUrl="post.audioUrl"
         :height="`${getFullWidth() * 9/16}`"
-        ref = "DoodleVideo"
-        @full-video-ready="initVideo()"
-        @video-clicked="handleClick()"
+        :hasBetaOverlay="true"
       />
       <!-- notice "postType" is a prop -->
       <v-btn 
@@ -70,9 +70,6 @@ export default {
     getFullWidth () {
       return window.innerWidth - 500;       // sidenav's width = 200, BaseList's width = 300 
     },
-    initVideo () {
-      this.DoodleVideo.resizeVideo();
-    },
     handleClick () {
       if (this.post.audioUrl) return; 
       if (!this.DoodleVideo.isQuickplaying) this.DoodleVideo.quickplay(); 
@@ -83,10 +80,10 @@ export default {
 
 <style>
 .post-title {
-    line-height: 1.3;
-    font-size: 1.1em;
-    font-weight: 500;
-    margin-bottom: 15px;
+  line-height: 1.3;
+  font-size: 1.1em;
+  font-weight: 500;
+  margin-bottom: 15px;
 }
 .image-container img {
   max-width: 100%

@@ -3,12 +3,6 @@
   <div id="new-post">
     <v-banner single-line sticky class="post-header container py-0" tag="header">
       <h3>New {{ postType }}</h3>
-      <!-- <template v-slot:actions>
-        <v-btn block @click="submitPost()" color="accent">
-          Post
-          <v-icon small class="pl-2">send</v-icon>
-        </v-btn>
-      </template> -->
     </v-banner>
     <v-container tag="section" class="py-5">
       <div class="question-main">
@@ -160,8 +154,6 @@ export default {
       const { Blackboard } = this.$refs;
       const { class_id, question_id } = this.$route.params
       const classRef = db.collection("classes").doc(class_id);
-      const questionRef = classRef.collection("questions").doc(question_id);
-      const answersRef = questionRef.collection("answers");  ;
 
       // Build the object for the Piazza post 
       const post = { 
@@ -196,7 +188,8 @@ export default {
 
       // Now save the post itself
       if (this.postType === "Answer") {
-        await answersRef.add({ isInSavedVideos: false, ...post });
+        const questionRef = classRef.collection("questions").doc(question_id);
+        await questionRef.collection("answers").add({ isInSavedVideos: false, ...post });
       } else if (this.postType === "Question") {
         await classRef.collection("questions").add({ isInSavedVideos: false, ...post})
       } 

@@ -49,9 +49,13 @@ export default {
     async getClassName() {
       if (this.$route.path === "/") return;
       else if (this.$route.params.class_id) {
+        // toggling the side-drawer fixes the mousedrawing offset bug 
+        this.$root.$emit("toggle-drawer");
+        this.$root.$emit("toggle-drawer");
         const ref = db.collection("classes").doc(this.$route.params.class_id);
         const classDoc = await ref.get();
         this.className = classDoc.data().name;
+        
       }
     }
   }
