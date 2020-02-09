@@ -19,7 +19,6 @@
           actionName="Create class" 
           :inputFields="['class name', 'class description']"
           @action-do="payload => createClass(payload)"
-          color="accent lighten-1"
         />
       </template>
       <template v-if="user">
@@ -31,7 +30,9 @@
         >
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
-              <v-icon large :color="user.color">settings</v-icon>
+              <v-icon large :color="user.color">
+                settings
+              </v-icon>
             </v-btn>
           </template>
         </TheDropdownMenu>
@@ -42,50 +43,48 @@
     <v-content>
       <v-card class="mx-auto text-center" fluid>
         <v-container>
-          <div class="home-hero py-5">
-            <div class="home-header">
-              <div class="central-title d-flex justify-center align-center mb-4">
-                <img src="/logo.png" class="hero-img" />
-                <h1 class="text--primary ml-2">
-                  ExplainMIT
-                </h1>
-              </div>
-              <h3 class="headline text--primary">
-                An efficient platform for visual explanations
-              </h3>
-            </div>
-            <v-row class="my-5" justify="center">
-              <template v-if="!user && !isFetchingUser">
-                <v-col cols="auto">
-                  <BasePopupButton
-                    actionName="Log in" 
-                    :inputFields="['email', 'password']"
-                    @action-do="payload => logIn(payload)"
-                    color="accent lighten-1"
-                  />
-                </v-col>
-                <v-col cols="auto">
-                  <BasePopupButton
-                    actionName="Sign up" 
-                    :inputFields="['first name', 'last name', 'email', 'password']"
-                    @action-do="payload => signUp(payload)"
-                    color="accent lighten-1" :outlined="true"
-                  />
-                </v-col>
-              </template>
-              <!-- Search Bar -->
-              <template v-else-if="user">
-                <v-col cols="12" sm="6">
-                  <BaseSearchBar 
-                    :items="schoolClasses"
-                    @submit="payload => enrollInClass(payload)"
-                    color="accent"
-                    label="Join an existing class"
-                  />
-                </v-col>
-              </template>
-            </v-row>
+          <div class="central-title d-flex justify-center align-center mb-4">
+            <img src="/logo.png" class="hero-img" />
+            <h1 class="text--primary ml-2">
+              ExplainMIT
+            </h1>
           </div>
+          <h3 class="headline text--primary">
+            An efficient platform for visual explanations
+          </h3>
+
+          <!-- Log in / Sign up -->
+          <v-row class="my-5" justify="center">
+            <template v-if="!user && !isFetchingUser">
+              <v-col cols="auto">
+                <BasePopupButton
+                  actionName="Log in" 
+                  :inputFields="['email', 'password']"
+                  @action-do="payload => logIn(payload)"
+                />
+              </v-col>
+              <v-col cols="auto">
+                <BasePopupButton
+                  actionName="Sign up" 
+                  :inputFields="['first name', 'last name', 'email', 'password']"
+                  @action-do="payload => signUp(payload)"
+                  :outlined="true"
+                />
+              </v-col>
+            </template>
+
+            <!-- Search Bar -->
+            <template v-else-if="user">
+              <v-col cols="12" sm="6">
+                <BaseSearchBar 
+                  :items="schoolClasses"
+                  @submit="payload => enrollInClass(payload)"
+                  color="accent"
+                  label="Join an existing class"
+                />
+              </v-col>
+            </template>
+          </v-row>
         </v-container>
       </v-card>
 

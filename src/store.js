@@ -4,6 +4,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/database';
 import db from '@/database.js';
+import helpers from "@/helpers.js";
 
 Vue.use(Vuex)
 
@@ -31,7 +32,7 @@ function setDisconnectHook (user) {
 
 function syncUserWithDB (userRef, context) {
   userRef.onSnapshot(user => {
-    if (!user.exists) { return; }
+    if (!user.exists) return;
     context.commit('SET_USER', user.data())
     // TODO: delete previous onDisconnect() hook 
     setDisconnectHook(user.data())
@@ -41,18 +42,27 @@ function syncUserWithDB (userRef, context) {
 export default new Vuex.Store({
   state: {
     user: null,
-    isFetchingUser: true
+    isFetchingUser: true,
+    mitClass: null
   },
   mutations: {
     SET_USER (state, user) {
       state.user = user 
       state.isFetchingUser = false 
+    },
+    SET_CLASS (state, mitClass) {
+      state.mitClass = mitClass;
     }
   },
   actions: {
+    async fetchClass (context, classId) {
+      const ref = db.collection("classes").doc(classId);
+      const classDoc = await helpers.getDocFromDb(ref);
+      context.commit("SET_CLASS", classDoc);
+    },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
-    async handleUserLogic (context, { uid, email }) {
-      if (!uid) { return; }
+    async fetchUser (context, { uid, email }) {
+      if (!uid) return; 
       const simplifiedUser = { uid, email }
       // Commit the user to avoid blocking page load first 
       context.commit('SET_USER', simplifiedUser) 

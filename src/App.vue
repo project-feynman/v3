@@ -16,9 +16,24 @@ export default {
   data: () => ({
     drawer: true
   }),
+  computed: {
+    classId () { return this.$route.params.class_id; }
+  },
+  watch: {
+    classId: {
+      handler: "fetchMitClass",
+      immediate: true
+    }
+  },
   created () {
     this.$root.$on("toggle-drawer", () => this.drawer = !this.drawer);
     this.$root.$on("open-drawer", () => this.drawer = true);
+  },
+  methods: {
+    fetchMitClass () {
+      if (!this.classId) return;
+      this.$store.dispatch("fetchClass", this.classId);
+    }
   }
 }
 </script>

@@ -173,7 +173,7 @@ export default {
         this.enableDrawing();
       }
       let imageSrc;
-      console.log("newVal.imageUrl =", newVal.imageUrl);
+      // console.log("newVal.imageUrl =", newVal.imageUrl);
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
         imageSrc = this.imageUrl;

@@ -76,11 +76,13 @@ export default {
     changeKeyToForceReset: 0
   }),
   computed: {
-    user () {
-      return this.$store.state.user;
-    },
+    user () { return this.$store.state.user; },
+    mitClass () { return this.$store.state.mitClass; },
     isButtonDisabled () {
       return this.isUploadingPost || this.isUploadingAudio || this.isRecordingVideo;
+    },
+    classId () {
+      return this.$route.params.classId;
     }
   },
   methods: {
@@ -94,11 +96,17 @@ export default {
         lastName: this.user.lastName
       }
 
+      const mitClass = {
+        id: this.mitClass.id,
+        name: this.mitClass.name
+      }
+
       const metadata = {
         title: this.postTitle, 
         description: this.postDescription, 
         date: this.getDate(),
-        creator
+        creator,
+        mitClass
       }
 
       const { Blackboard } = this.$refs;
