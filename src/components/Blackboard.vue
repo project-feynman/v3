@@ -1,7 +1,9 @@
 <template>
   <div>
-    <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime?'0':'1'">
-      <!-- SNACKBAR -->
+    <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
+      <!-- Uncomment line below for an easy life debugging -->
+      <!-- <p>blackboard: {{ blackboard }}</p> -->
+      <!-- TODO: refactor to App.vue -->
       <v-snackbar v-model="snackbar">
         {{ snackbarMessage }}
         <v-btn @click="snackbar = false" color="accent" text>CLOSE</v-btn>
@@ -10,38 +12,51 @@
       <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
-            :currentState="currentState"
+            ref="blackboardToolbar"
+            :currentState="blackboard.recordState"
             :eraserActive="eraserActive"
             :color="color"
             :isRealtime="isRealtime"
             :hasUploadedAudio="hasUploadedAudio"
-            @eraser-click="eraserClick"
+            @eraser-click="newVal => eraserActive = newVal"
             @set-image="handleImage"
-            @color-click="newColor => {color=newColor}"
-            @wipe-board="wipeBoard"
+            @color-click="newColor => color = newColor"
+            @wipe-board="resetBoard()"
             @record-state-change="newState => handleRecordStateChange(newState)"
             @video-save="payload => handleSaving(payload)"
-          />
+            @animation-save="handleSaving({ title: 'No title yet', description: 'No description yet' })"
+          >
+            <BasePopupButton
+              actionName="Save video" 
+              :disabled="!hasUploadedAudio"
+              :inputFields="['title', 'description']"
+              @action-do="payload => handleSaving(payload)"
+            >
+              <BaseLoadingButton :isLoading="!hasUploadedAudio">
+                Upload video
+              </BaseLoadingButton>
+            </BasePopupButton>
+          </BlackboardToolBar>
         </div>
       </TheAppBar>
 
       <!-- APP BAR -->
       <div v-if="!isRealtime" id="mini-toolbar">
         <BlackboardToolBar
+          ref="blackboardToolbar"
           :currentState="currentState"
           :eraserActive="eraserActive"
           :color="color"
           :isRealtime="isRealtime"
           :hasUploadedAudio="hasUploadedAudio"
-          @eraser-click="status => eraserClick(status)"
+          @eraser-click="status => eraserActive = status"
           @set-image="e => handleImage(e)"
-          @color-click="newColor => {color=newColor}"
-          @wipe-board="wipeBoard"
+          @color-click="newColor => color = newColor"
+          @wipe-board="resetBoard"
           @record-state-change="newState => handleRecordStateChange(newState)"
-          ref="blackboardToolbar"
         />
       </div>
-      <!-- WHITEBOARD -->
+      <!-- BLACKBOARD -->
       <div
         id="blackboard-wrapper"
         :class="isRealtime? 'realtime-canvas':''"
@@ -50,25 +65,10 @@
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
-
-      <!-- "@start-recording" is necessary because the audio-recorder can't 
-      start recording instantaneously - and if we falsely believe it is, then `getAudioTime` will be 
-      null-->
-      <AudioRecorderMini
-        v-if="!isRealtime"
-        v-show="false"
-        ref="AudioRecorder"
-        @start-recording="isRecording = true"
-        @file-uploaded="audioObj => handleNewAudio(audioObj)"
-      />
-
       <AudioRecorder
-        v-else-if="whiteboardDoc"
         v-show="false"
         ref="AudioRecorder"
-        :audioURL="whiteboardDoc.audioURL"
-        :audioPath="whiteboardDoc.audioPath"
-        @start-recording="isRecording = true"
+        @record-start="currentState = recordStateEnum.MID_RECORD"
         @file-uploaded="audio => saveFileReference(audio)"
       />
     </div>
@@ -76,335 +76,333 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/functions";
 import slugify from "slugify";
 import db from "@/database.js";
 import DrawMethods from "@/mixins/DrawMethods.js";
-import Swatches from "vue-swatches";
-import "vue-swatches/dist/vue-swatches.min.css";
 import AudioRecorder from "@/components/AudioRecorder.vue";
-import AudioRecorderMini from "@/components/AudioRecorderMini.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
+import BaseLoadingButton from "@/components/BaseLoadingButton.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
   props: {
+    blackboardId: {
+      type: String
+    },
     isRealtime: Boolean,
-    whiteboardID: String,
-    hideToolbar: Boolean,
-    height: String,
     visible: Boolean,
+    // TODO: should be encapsulated within this component
     background: String
   },
   components: {
-    AudioRecorderMini,
+    BlackboardToolBar,
     AudioRecorder,
-    Swatches,
     TheAppBar,
-    BlackboardToolBar
+    BaseLoadingButton,
+    BasePopupButton
   },
   mixins: [DrawMethods],
-  computed: {
-    ...mapState(["user"]),
-    bg () { return this.background; } //mini
-  },
   data () {
     return {
       loading: true,
-      whiteboardDoc: null,
+      blackboard: null,
+      canvas: null,
+      ctx: null,
+      bgCanvas: null,
+      bgCtx: null,
       color: "white",
+      eraserActive: false,
       lineWidth: 2,
-      colors: ["white", "orange", "#0AF2F2", "deeppink", "rgb(62, 66, 66)"],
       disableTouch: false,
-      saveSilently: false,
-      saveVideoPopup: false,
-      isRecording: false,
-      strokesRef: null,
       stylus: false,
       allStrokes: [],
       currentStroke: [],
-      canvas: null,
-      ctx: null,
+      imageUrl: "",
+      imageBlob: null,
       timer: null,
-      getCurrentTime: null,
       currentTime: 0,
+      // TODO: refactor currentStroke to be an object so startTiem and endTime aren't necessary
       startTime: 0,
       endTime: null,
       touchX: null,
       touchY: null,
+      mouseX: 0,
+      mouseY: 0,
+      mousedown: 0, // Necessary to know if user is holding left click while dragging the mouse
       lastX: -1,
       lastY: -1,
       unsubscribe: null,
-      redrawTimeout: null, // needed for mixins/DrawMethods.js TODO: consider declaring it in the data () section of DrawMethods.js instead,
+      currentState: "",
+      audioUrl: "",
       hasUploadedAudio: false,
-      mouseX: 0,
-      mouseY: 0,
-      mousedown: 0,
+      recordStateEnum: CONSTANTS.recordStateEnum,
       clearRectTimeout: null,
+      // Refactor to App.vue
       snackbar: false,
       snackbarMessage: "",
-      currentState: "",
-      audioObj: {},
-      audioPath: "",
-      audioURL: "",
-      recordStateEnum: CONSTANTS.recordStateEnum,
-      smallScreen: window.innerWidth < 960,
-      palleteVisibility: false,
-      eraserActive: false,
-      classID: null,
     }
   },
+  computed: {
+    user () { return this.$store.state.user; },
+    classId () { return this.$route.params.class_id; },
+    classRef () { return db.collection("classes").doc(this.classId); },
+    blackboardRef () { return this.classRef.collection("blackboards").doc(this.blackboardId); },
+    strokesRef () { return this.blackboardRef.collection("strokes"); },
+    bg () { return this.background; }// mini 
+  },
   watch: {
-    whiteboardID: {
+    blackboardId: {
       handler: "initData",
       immediate: true
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      if (this.color != "rgb(62, 66, 66)") { this.lineWidth = 2; } // eraser color stroke width is larger
-      else { this.lineWidth = 30; }
+      if (this.color != "rgb(62, 66, 66)") this.lineWidth = 2;  // eraser color stroke width is larger
+      else this.lineWidth = 30; 
       this.setStyle(this.color, this.lineWidth);
     },
-    isRecording() {
-      if (this.isRecording) { this.startTimer(); } 
-      else { this.stopTimer(); }
-    },
-    whiteboardDoc (newVal) {
+    blackboard (newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
+      // answer: timestamp changes on the doc;
       const { POST_RECORD } = this.recordStateEnum;
-      if (!newVal) { return; }
-      if (newVal.recordState !== POST_RECORD || this.canvas || this.ctx) {
-        this.initTouchEvents();
-        this.initMouseEvents();
+      if (newVal.recordState !== POST_RECORD || this.canvas) {
+        this.enableDrawing();
+      }
+      let imageSrc;
+      // console.log("newVal.imageUrl =", newVal.imageUrl);
+      if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
+        this.imageUrl = newVal.imageUrl;
+        imageSrc = this.imageUrl;
+      } else {
+        // Already have the image blob locally  
+        try {
+          imageSrc = URL.createObjectURL(this.imageBlob); 
+        } catch {
+          imageSrc = this.imageUrl;
+        }
+      }
+      this.displayImageAsBackground(imageSrc);
+    },
+    currentState (oldVal, newVal) {
+      if (!newVal || oldVal) return;
+      const { POST_RECORD, PRE_RECORD } = this.recordStateEnum;
+      if (oldVal === POST_RECORD && newVal === PRE_RECORD) {
+        this.enableDrawing();
       }
     },
-    eraserActive() {
-      // all these are mini
+    eraserActive () {
       this.customCursor();
       this.canvas.getContext("2d").globalCompositeOperation = this.eraserActive
         ? "destination-out"
         : "source-over";
       this.lineWidth = this.eraserActive ? 20 : 2;
     },
-    color () {
-      this.customCursor();
-    },
-    visible () {
-      this.blackboardSize();
-    },
-    bg () {
-      this.drawBackground(this.bg);
-    }
+    color () { this.customCursor(); },
+    visible () { this.blackboardSize(); },
+    bg () { this.drawBackground(this.bg); }
   },
-  mounted() {
-    // the mounted() hook is never called for subsequent switches between whiteboards
-    if (this.whiteboardID) {
-      const whiteboardRef = db.collection("whiteboards").doc(this.whiteboardID);
-    }
+  mounted () {
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
-    // new redraw code
-
-    // if (!this.isRealtime) {
-    //   //mini
-    //   const height = (9 / 16) * (window.innerWidth - 500);
-    //   this.canvas.height = height - 48; // the blackboard's top-app-bar is 48px high
-    // } else {
-    //   this.canvas.width = document.documentElement.clientWidth;
-    //   this.canvas.height = 0.9 * document.documentElement.clientHeight;
-    // }
+    this.bgCanvas = document.getElementById("background-canvas");
+    this.bgCtx = this.bgCanvas.getContext("2d");
     this.rescaleCanvas(true);
-    if (this.isRealtime) {
-      window.addEventListener("resize", () => {
-          this.canvas.width = document.documentElement.clientWidth;
-          this.rescaleCanvas(true);
-        },
-        false
-      );
-    } else {
-      window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
-    }
-    this.initTouchEvents();
-    this.initMouseEvents();
+    window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
+    this.enableDrawing();
+
+    // Hack to fix drawing offset bug
+    this.$nextTick(() => {
+      this.$root.$emit("toggle-drawer")
+      this.$nextTick(() => this.$root.$emit("toggle-drawer"));
+    })
+       
+    // since cursor uses material icons font, load it after fonts are ready
     document.fonts.ready.then(() => this.customCursor());
+    this.drawBackground(this.background);
+    this.blackboardSize();
     if (this.isRealtime) {
-      this.continuouslySyncBoardWithDB();
+      this.keepSyncingBoardWithDb();
+      // TODO: is this detectable by resize - should make blackboard change size in response to this
       this.$root.$on("side-nav-toggled", sideNavOpened => {
         this.canvas.width = document.documentElement.clientWidth;
         this.rescaleCanvas(true);
       });
-    } else {
-      // mini
-      document.fonts.ready.then(() => this.customCursor()); //since cursor uses material icons font, load it after fonts are ready
-      this.blackboardSize();
-      window.addEventListener("resize", this.blackboardToolbar);
-      window.addEventListener("orientationchange", this.blackboardToolbar);
-      window.addEventListener("click", e => this.palleteClose(e));
-      this.drawBackground(this.background);
     }
   },
   updated () {
-    if (!this.isRealtime) { this.drawBackground(this.background); }
+    if (!this.isRealtime) this.drawBackground(this.background);
   },
   beforeDestroy() {
     if (this.unsubscribe) this.unsubscribe();
   },
-  destroyed() {
-    //mini
-    window.removeEventListener("resize", this.blackboardToolbar);
-    window.removeEventListener("orientationchange", this.blackboardToolbar);
+  destroyed () {
+    // TODO: refactor this to a "resize" module
     window.removeEventListener("resize", () => this.rescaleCanvas(true));
-    window.removeEventListener("click", e => this.palleteClose(e));
   },
   methods: {
-    /// mini until toggleDrawer
-    handleNewAudio({ url }) {
-      this.audioURL = url;
+    async initData () {
+      // no need to reset data, just reset variables and UI as it's only useful when switching between different blackboards
+      this.resetVariables();
+      this.wipeBoard();
+      this.currentState = this.recordStateEnum.PRE_RECORD;
+      if (this.isRealtime) {
+        this.loading = true;
+        if (!this.blackboardId) return;
+        // TODO: remove this blackboard listener
+        await this.$binding("blackboard", this.blackboardRef);
+        if (this.unsubscribe) this.unsubscribe();
+        this.keepSyncingBoardWithDb();
+      } 
+      this.initCopyAndPasteImage()
+    },
+    keepSyncingBoardWithDb () {
+      this.unsubscribe = this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
+        if (snapshot.docs.length === 0) {
+          this.wipeBoard();
+          this.resetVariables(); // no need to wipe database again
+        }
+        snapshot.docChanges().forEach(change => {
+          if (change.type === "added") {
+            const newStroke = change.doc.data();
+            // check if local strokes and db strokes are in sync
+            if (this.allStrokes.length < newStroke.strokeNumber) {
+              if (this.loading) this.drawStroke(newStroke); // initial render: catch up to current state - draw quickly
+              else this.drawStroke(newStroke, this.getPointPeriod(newStroke)); // render the new stroke smoothly
+              this.allStrokes.push(newStroke);
+            }
+          } 
+        });
+        this.loading = false;
+      });
+    },
+    async resetBoard () {
+      console.log("resetBoard()")
+      if (this.isRealtime) {
+        this.disableDrawing();
+        // Delete strokes subcollection // allStrokes is empty if the user himself initiated the deletes
+        const strokeDeleteRequests = [];
+        this.allStrokes.forEach(stroke => {
+          strokeDeleteRequests.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
+        })
+        console.log("Successfully wiped board");
+        const backgroundResetRequest = this.blackboardRef.update({
+          imageUrl: ""
+        });
+        await Promise.all([...strokeDeleteRequests, backgroundResetRequest]);
+      }
+      this.wipeBoard(); // UI
+      this.resetVariables(); // local state
+      this.enableDrawing();
     },
     wipeBoard () {
+      if (!this.ctx) return;
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
+    },
+    resetVariables () {
       this.allStrokes = [];
-      if (this.ctx) {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.lastX = -1;
+      this.currentTime = 0;
+      this.imageBlob = null;
+      this.imageUrl = "";
+    },
+    initCopyAndPasteImage () {
+       document.onpaste = async event => {
+        // use event.originalEvent.clipboard for newer chrome versions
+        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        // console.log(JSON.stringify(items)); // will give you the mime types
+        // Find pasted image among pasted items
+        
+        let blob = null;
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf("image") === 0) {
+            blob = items[i].getAsFile();
+          }
+        }
+        
+        // Load image if there is a pasted image
+        if (blob !== null) {
+          this.imageBlob = blob;
+          if (!this.isRealtime) {
+            const imageUrl = URL.createObjectURL(this.imageBlob);
+            this.displayImageAsBackground(imageUrl);
+          } else {
+            const storageRef = firebase.storage().ref();
+            const imageRef = storageRef.child(`images/${this.blackboardId}`);
+            const uploadTask = imageRef.put(blob)
+            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
+              snapshot => {}, 
+              error => console.log('error =', error), 
+              async () => {
+                // Update blackboard doc's image reference to this new image
+                const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
+                this.blackboardRef.update({
+                  imageUrl
+                });
+                // Store locally 
+                this.imageUrl = imageUrl;
+              }
+            );
+          }
+        }
       }
+    },
+    displayImageAsBackground (src) {
+      const image = new Image();
+      image.src = src;
+      this.bgCanvas.height = this.canvas.scrollHeight;
+      this.bgCanvas.width = this.canvas.scrollWidth;
+      image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
     },
     setImage () {
       document.getElementById("whiteboard-bg-input").value = "";
       document.getElementById("whiteboard-bg-input").click();
     },
-    handleImage(e) {
-      var file = e.target.files[0];
-      var reader = new FileReader();
-      var vue = this;
-      reader.onload = function(event) {
-        var img = event.target.result;
-        vue.drawBackground(img);
-        vue.$emit("boardImage", img);
-      };
-      if (file) { reader.readAsDataURL(file); }
-    },
-    drawBackground (image) {
-      var canvas = document.getElementById("background-canvas");
-      var ctx = canvas.getContext("2d");
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (image === "") { return; }
-      var img = new Image();
-      img.onload = function() {
-        var w = img.width;
-        var h = img.height;
-        var img_aspect_ratio = w / h;
-        var x,
-          y = 0;
-        if (img_aspect_ratio < canvas.width / canvas.height) {
-          h = canvas.height;
-          w = h * img_aspect_ratio;
-          x = (canvas.width - w) / 2;
-        } else {
-          w = canvas.width;
-          h = w / img_aspect_ratio;
-          y = (canvas.height - h) / 2;
-        }
-        ctx.drawImage(img, x, y, w, h);
-      };
-      img.src = image;
-    },
-    async initData () {
-      if (this.isRealtime) {
-        this.loading = true;
-        if (!this.whiteboardID) { return; }
-        const whiteboardRef = db.collection("whiteboards").doc(this.whiteboardID);
-        this.strokesRef = whiteboardRef.collection("strokes");
-        // TODO: remove this whiteboard listener
-        await this.$binding("whiteboardDoc", whiteboardRef);
-        this.wipeBoard();
-        if (this.unsubscribe) { this.unsubscribe(); }
-        this.continuouslySyncBoardWithDB();
-      } else {
-        /// mini
-        this.wipeBoard();
-        this.currentState = this.recordStateEnum.PRE_RECORD;
-      }
-    },
-    continuouslySyncBoardWithDB() {
-      this.unsubscribe = this.strokesRef
-        .orderBy("strokeNumber")
-        .onSnapshot(snapshot => {
-          snapshot.docChanges().forEach(change => {
-            if (change.type === "added") {
-              const stroke = change.doc.data();
-              // check if local strokes and db strokes are in sync
-              if (this.allStrokes.length < stroke.strokeNumber) {
-                this.drawStroke(stroke, null);
-                this.allStrokes.push(stroke);
-              }
-            } else if (change.type === "removed") {
-              // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
-              clearTimeout(this.clearRectTimeout);
-              this.clearRectTimeout = setTimeout(
-                () =>
-                  this.ctx.clearRect(
-                    0,
-                    0,
-                    this.canvas.width,
-                    this.canvas.height
-                  ),
-                400
-              );
-              this.resetVariables();
-            }
-          });
-          this.loading = false;
-        });
-    },
-    resetVariables () {
-      if (this.isRealtime) { this.allStrokes = []; }
-      this.lastX = -1;
-    },
-    sortStrokesByTimestamp () {
-      this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime));
-    },
-    // getAspectRatio () {
-    //   return this.canvas.scrollHeight / this.canvas.scrollWidth;
-    // },
+    handleImage (e) {},
+    drawBackground (image) {},
     startTimer () {
       this.currentTime = 0;
-      this.timer = setInterval(() => (this.currentTime += 0.1), 100);
+      this.timer = setInterval(() => this.currentTime += 0.1, 100);
     },
     stopTimer () {
       clearInterval(this.timer);
     },
-    initReplayLogic() {
-      this.quickplay();
+    enableDrawing () {
+      this.initTouchEvents();
+      this.initMouseEvents();
+    },
+    disableDrawing () {
+      this.removeMouseEvents();
+      this.removeTouchEvents();
     },
     initTouchEvents () {
+      if (!this.canvas) return;
       this.canvas.addEventListener("touchstart", this.touchStart, false);
       this.canvas.addEventListener("touchend", this.touchEnd, false);
       this.canvas.addEventListener("touchmove", this.touchMove, false);
-      this.setStyle(this.color, this.lineWidth);
+      this.setStyle(this.color, this.lineWidth); // TODO: kind of sketch
     },
     removeTouchEvents () {
+      if (!this.canvas) return;
       this.canvas.removeEventListener("touchstart", this.touchStart, false);
       this.canvas.removeEventListener("touchend", this.touchEnd, false);
       this.canvas.removeEventListener("touchmove", this.touchMove, false);
     },
-    initMouseEvents() {
-      this.canvas.addEventListener("mouseup", this.mouseUp, false);
+    initMouseEvents () {
+      if (!this.canvas) return;
       this.canvas.addEventListener("mousedown", this.mouseDown, false);
+      this.canvas.addEventListener("mouseup", this.mouseUp, false);
       this.canvas.addEventListener("mousemove", this.mouseMove, false);
     },
     removeMouseEvents () {
-      this.canvas.removeEventListener("mouseup", this.mouseUp, false);
+      if (!this.canvas) return;
       this.canvas.removeEventListener("mousedown", this.mouseDown, false);
+      this.canvas.removeEventListener("mouseup", this.mouseUp, false);
       this.canvas.removeEventListener("mousemove", this.mouseMove, false);
-    },
-    async deleteStrokesSubcollection () {
-      for (let i = 1; i < this.allStrokes.length + 1; i++) {
-        this.strokesRef.doc(`${i}`).delete();
-      }
-      this.allStrokes = [];
     },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4);
@@ -413,112 +411,80 @@ export default {
       this.drawToPoint(x, y);
     },
     touchStart (e) {
-      e.preventDefault();
-      //mini
-      if (!this.isRealtime) { this.palleteVisibility = false; }
-      if (this.isNotValidTouch(e)) { return; }
-
+      if (this.isNotValidTouch(e)) return; 
+      // Call preventDefault()  only if we're sure the user is drawing
+      // rather than trying to scroll
+      e.preventDefault(); // preventDefault only if it's a valid touch to enable scrolling behavior 
       // Automatically disable touch drawing if a stylus is detected
-      if (e.touches[0].touchType == "stylus") { this.disableTouch = true; }
+      if (e.touches[0].touchType === "stylus") this.disableTouch = true; 
       this.drawToPointAndSave(e);
-      if (this.isRecording) { this.startTime = this.currentTime.toFixed(1); } // this.startTime keeps track of current stroke's startTime
+      if (this.currentState === this.recordStateEnum.MID_RECORD) { 
+        this.startTime = this.currentTime.toFixed(1); // this.startTime keeps track of current stroke's startTime
+      } 
     },
     touchMove (e) {
       e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       this.drawToPointAndSave(e);
     },
     touchEnd (e) {
       e.preventDefault();
-      if (this.currentStroke.length == 0) { return; } // user is touching the screen despite that touch is disabled
+      if (this.currentStroke.length === 0) return;  // user is touching the screen despite that touch is disabled
       const strokeNumber = this.allStrokes.length + 1;
-      // save
-      const { uid: UID, firstName, lastName, email } = this.user
+      // Save the stroke
+      const { uid, firstName, lastName, email } = this.user;
       const stroke = {
+        points: this.currentStroke,
         strokeNumber,
-        author: { UID, firstName, lastName, email },
+        author: { uid, firstName, lastName, email },
         color: this.color,
         lineWidth: this.lineWidth,
         startTime: Number(this.startTime),
         endTime: Number(this.currentTime.toFixed(1)),
-        points: this.currentStroke,
         isErasing: this.eraserActive // mini
       }
       this.allStrokes.push(stroke);
       if (this.isRealtime) {
         this.strokesRef.doc(`${strokeNumber}`).set(stroke);
       }
-      // reset
+      // Reset
       this.currentStroke = [];
       this.lastX = -1;
     },
     drawToPointAndSave(e) {
       this.setStyle(this.color, this.lineWidth); //mini
       this.getTouchPos(e);
+      // all the touchX and touchY are non-sensical to be honest - ah it's to preserve old value
       this.convertAndSavePoint(this.touchX, this.touchY);
       this.drawToPoint(this.touchX, this.touchY);
     },
     getTouchPos(e) {
       const finger1 = e.touches[0];
-      this.touchX =
-        finger1.pageX -
-        this.canvas.getBoundingClientRect().left -
-        window.scrollX;
-      this.touchY =
-        finger1.pageY -
-        this.canvas.getBoundingClientRect().top -
-        window.scrollY;
+      const { left, top } = this.canvas.getBoundingClientRect();
+      this.touchX = finger1.pageX - left - window.scrollX;
+      this.touchY = finger1.pageY - top - window.scrollY;
     },
-    isNotValidTouch(e) {
-      if (e.touches.length != 1) { return true; } // multiple fingers not allowed
+    isNotValidTouch (e) {
+      if (e.touches.length !== 1) return true;  // multiple fingers not allowed
       return this.isFinger(e) && this.disableTouch;
     },
-    isFinger(e) {
+    isFinger (e) {
       return e.touches[0].touchType !== "stylus"
     },
-    // --- Mouse Drawing --- //
     mouseDown (e) {
       e.preventDefault();
       this.mousedown = 1;
-      this.palleteVisibility = false; // mini
-      // referenced from touchStart
       this.setStyle(this.color, this.lineWidth);
       this.getMousePos(e);
       this.convertAndSavePoint(this.mouseX, this.mouseY);
       this.drawToPoint(this.mouseX, this.mouseY);
-      if (this.isRecording) {
+      if (this.currentState === this.recordStateEnum.MID_RECORD) {
         this.startTime = this.currentTime.toFixed(1);
       }
     },
-    mouseUp (e) {
-      this.mousedown = 0;
-      // referenced from touchEnd
-      const strokeNumber = this.allStrokes.length + 1;
-      // save
-      const stroke = {
-        strokeNumber,
-        author: this.author || "anonymous",
-        color: this.color,
-        lineWidth: this.lineWidth,
-        startTime: Number(this.startTime),
-        endTime: Number(this.currentTime.toFixed(1)),
-        points: this.currentStroke,
-        isErasing: this.eraserActive // mini
-      };
-      this.allStrokes.push(stroke);
-      if (this.isRealtime) {
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
-      }
-      // reset
-      this.currentStroke = [];
-      this.lastX = -1;
-    },
-
     mouseMove (e) {
       e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
-      // Update the mouse co-ordinates when moved
       this.getMousePos(e);
-
       // Draw a pixel if the mouse button is currently being pressed
       if (this.mousedown === 1) {
         this.getMousePos(e);
@@ -526,159 +492,117 @@ export default {
         this.drawToPoint(this.mouseX, this.mouseY);
       }
     },
-
+    mouseUp (e) {
+      this.mousedown = 0;
+      const strokeNumber = this.allStrokes.length + 1;
+      // Store the stroke locally
+      const stroke = {
+        points: this.currentStroke,
+        strokeNumber,
+        author: this.author || "anonymous",
+        color: this.color,
+        lineWidth: this.lineWidth,
+        startTime: Number(this.startTime),
+        endTime: Number(this.currentTime.toFixed(1)),
+        isErasing: this.eraserActive // mini
+      };
+      this.allStrokes.push(stroke);
+      // Upload it online if it's real-time
+      if (this.isRealtime) {
+        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
+      }
+      // Reset current stroke
+      this.currentStroke = [];
+      this.lastX = -1;
+    },
     getMousePos (e) {
       // Get the current mouse position relative to the top-left of the canvas
-      if (!e) var e = event;
-      if (this.isRealtime) {
-        if (e.offsetX) {
-          this.mouseX = e.offsetX - window.scrollX;
-          this.mouseY = e.offsetY - window.scrollY;
-        } else if (e.layerX) {
-          this.mouseX = e.layerX - window.scrollX;
-          this.mouseY = e.layerY - window.scrollY;
-        }
-      } else {
-        //mini
-        if (e.offsetX) {
-          this.mouseX = e.offsetX; //- window.scrollX
-          this.mouseY = e.offsetY; //- window.scrollY (in case these don't work)
-        } else if (e.layerX) {
-          this.mouseX = e.layerX; //- window.scrollX
-          this.mouseY = e.layerY; //- window.scrollY
-        }
-      }
-    },
-    // --- END Mouse Drawing --- //
-
-    useEraser () {
-      this.color = "rgb(62, 66, 66)";
-      this.lineWidth = 18;
-    },
-    saveDoodle () {
-      this.handleSaving("No title yet");
+      this.mouseX = e.offsetX; //- window.scrollX
+      this.mouseY = e.offsetY; //- window.scrollY (in case these don't work)
     },
     handleRecordStateChange (newState) {
-      const { MID_RECORD, POST_RECORD } = this.recordStateEnum
-      if (newState === MID_RECORD) { this.startRecording(); } 
-      else if (newState === POST_RECORD) { this.stopRecording(); } 
-      else {
-        if (this.isRealtime) { this.retryAnswer(); }
-        else { this.recordAgain(); }
-      }
+      const { MID_RECORD, POST_RECORD } = this.recordStateEnum;
+      if (newState === MID_RECORD) this.startRecording(); 
+      else if (newState === POST_RECORD) this.stopRecording(); 
+      else this.tryRecordAgain();
     },
     startRecording () {
-      this.currentState = this.recordStateEnum.MID_RECORD; // mini
+      this.startTimer();
+      const { MID_RECORD } = this.recordStateEnum;
+      this.currentState = MID_RECORD;
       this.$refs.AudioRecorder.startRecording();
+      if (this.isRealtime) {
+        this.blackboardRef.update({ recordState: MID_RECORD });
+      }
+      this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button 
     },
     stopRecording () {
-      this.currentState = this.recordStateEnum.POST_RECORD; //mini
-      this.isRecording = false;
-      this.removeTouchEvents();
-      this.removeMouseEvents();
+      this.stopTimer();
+      const { POST_RECORD } = this.recordStateEnum;
+      this.disableDrawing();
       this.$refs.AudioRecorder.stopRecording();
+      this.currentState = POST_RECORD;
       if (this.isRealtime) {
-        const ID = this.whiteboardDoc[".key"];
-        db.collection("whiteboards").doc(ID).update({
-          recordState: this.currentState
-        });
+        this.blackboardRef.update({ recordState: POST_RECORD });
+      }
+      this.$emit("audio-upload-start"); // AudioRecorder implicitly starts uploading the file to Firestore
+    },
+    tryRecordAgain () {
+      this.currentTime = 0;
+      this.hasUploadedAudio = false;
+      const { PRE_RECORD } = this.recordStateEnum;
+      this.currentState = PRE_RECORD;
+      if (this.isRealtime) {
+        this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
       }
     },
-    retryAnswer () {
-      this.currentTime = 0;
-      this.currentState = this.recordStateEnum.PRE_RECORD;
-      this.hasUploadedAudio = false;
-      const ID = this.whiteboardDoc[".key"];
-      const whiteboardRef = db.collection("whiteboards").doc(ID);
-      whiteboardRef.update({
-        recordState: this.currentState,
-        audioURL: "",
-        audioPath: ""
-      });
-    },
-    saveFileReference({ url, path }) {
+    saveFileReference ({ url }) {
       this.hasUploadedAudio = true;
-      const ID = this.whiteboardDoc[".key"];
-      db.collection("whiteboards").doc(ID).update({
-        audioURL: url,
-        audioPath: path
-      });
+      this.audioUrl = url;
+      if (this.isRealtime) this.blackboardRef.update({ audioUrl: url });
+      this.$emit("audio-upload-end");
     },
-    async handleSaving ( { title }) {
-      // mark the whiteboard as saved
-      const whiteboardID = this.whiteboardDoc[".key"];
-      const classID = this.$route.params.class_id;
-
-      // Take a screenshot of the whiteboard to be used as the "preview" of the video
+    async handleSaving ({ title, description }) {
+      // Save the video
       const videoThumbnail = this.createThumbnail();
-
-      const classRef = db.collection("classes").doc(classID);
-      const classDoc = await classRef.get();
-
       const metadata = {
-        fromClass: {
-          ID: classID,
-          name: classDoc.data().name
-        },
         creator: {
-          UID: this.user.uid,
-          name: this.user.name || "anonymous",
+          uid: this.user.uid,
+          firstName: this.user.firstName,
           email: this.user.email
         },
         title,
+        description,
         isSaved: true, // marks blackboard as saved
         tabNumber: 0,
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       };
-      if (this.currentTime) {
-        metadata.duration = this.currentTime;
-      }
-      
-      // Save on Firestore
-      db.collection("whiteboards").doc(whiteboardID).update(metadata);
 
-      // Keep track of how many videos the class has
-      classRef.update({
+      if (this.currentTime) metadata.duration = this.currentTime;
+      this.blackboardRef.update(metadata).then(() => this.isUploadingVideo = false);
+      this.classRef.update({
         numOfVideos: firebase.firestore.FieldValue.increment(1)
       });
 
-      // initialize a new whiteboard for the workspace
-      const workspaceID = this.$route.params.id;
-      const newWhiteboardRef = await db
-        .collection("whiteboards")
-        .add({ recordState: this.recordStateEnum.PRE_RECORD });
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
-      workspaceRef.update({
-        whiteboardID: newWhiteboardRef.id
+      // Initialize a new blackboard for the workspace
+      const roomId = this.$route.params.room_id;
+      const boardsRef = db.collection("classes").doc(this.classId).collection("blackboards");
+      const newBoardRef = await boardsRef.add({ 
+        recordState: this.recordStateEnum.PRE_RECORD 
+      });
+      const roomsRef = db.collection("rooms").doc(roomId);
+      roomsRef.update({
+        blackboardId: newBoardRef.id
       });
       this.hasUploadAudio = false;
       this.snackbar = true;
-      this.snackbarMessage = 'Successfully saved to the "Videos" section';
+      this.snackbarMessage = 'Successfully archived to the "Saved videos" section';
     },
     createThumbnail () {
       this.ctx.fillStyle = "rgb(62, 66, 66)";
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
       this.drawStrokesInstantly();
       return this.canvas.toDataURL();
-    },
-
-    //mini
-    recordAgain () {
-      this.currentTime = 0;
-      this.hasUploadedAudio = false;
-      this.currentState = this.recordStateEnum.PRE_RECORD;
-    },
-    blackboardToolbar () {
-      this.smallScreen = window.innerWidth < 960;
-    },
-    palleteClose (e) {
-      var pallete = document.getElementById("swatches-wrapper");
-      if (pallete && !pallete.contains(e.target)) {
-        this.palleteVisibility = false;
-      }
-    },
-    eraserClick (status) {
-      this.eraserActive = status;
     },
     customCursor () {
       var dummy_canvas = document.createElement("canvas");
@@ -694,16 +618,23 @@ export default {
       document.getElementById("myCanvas").style.cursor =
         "url(" + dataURL + ") 0 24, auto";
     },
+    // If this works you're a genius
     blackboardSize () {
       var board = document.getElementById("myCanvas");
       var mini_height =
         (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +
         "px";
       var realtime_height = window.innerHeight - 48 + "px";
-      var margin_top = this.isRealtime ? "48px" : "";
+      // var margin_top = this.isRealtime ? "48px" : "";
       board.style.height = this.isRealtime ? realtime_height : mini_height;
-      board.style.marginTop = margin_top;
-    }
+      // board.style.marginTop = margin_top;
+    },
+    // sortStrokesByTimestamp () {
+    //   this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime));
+    // },
+    // getAspectRatio () {
+    //   return this.canvas.scrollHeight / this.canvas.scrollWidth;
+    // },
   }
 };
 </script>

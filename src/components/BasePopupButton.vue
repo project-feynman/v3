@@ -2,11 +2,15 @@
   <!-- <v-row justify="center"> -->
     <v-dialog v-model="isOpen" persistent max-width="600px">
       <template v-slot:activator="{ on }">
-        <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">{{ actionName }}</v-btn>
+        <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">
+          {{ actionName }}
+        </v-btn>
       </template>
       <v-card>
         <v-card-title>
-          <span class="headline">{{ actionName }}</span>
+          <span class="headline">
+            {{ actionName }}
+          </span>
         </v-card-title>
         <v-card-text>
           <v-container>
@@ -27,8 +31,12 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue darken-1" text @click="resetState()">Cancel</v-btn>
-          <v-btn color="blue darken-1" text @click="doAction()">{{ actionName }}</v-btn>
+          <v-btn @click="resetState()" color="blue darken-1" text>
+            Cancel
+          </v-btn>
+          <v-btn @click="doAction()" color="blue darken-1" text>
+            {{ actionName }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -40,10 +48,17 @@ export default {
   props: {
     actionName: String,
     inputFields: Array,
-    color: String,
+    color: {
+      type: String,
+      default () {
+        return "accent lighten-1"
+      }
+    },
     outlined: {
       type: Boolean,
-      default () { return false; }
+      default () { 
+        return false; 
+      }
     },
     disabled: {
       type: Boolean,

@@ -1,72 +1,41 @@
 <template>
   <v-card style="zIndex:6">
     <v-navigation-drawer
-      app
       :value="value"
       @input="newValue => $emit('input', newValue)"
-      clipped
-      width="250"
+      app clipped
     >
+      <v-btn @click="$router.push(`/${classId}/room/${classId}`)" outlined block color="accent lighten-1">
+        Realtime blackboard
+      </v-btn>
+      <!-- NEW post -->
+      <v-btn @click="$router.push(`/${classId}/posts`)" outlined block color="accent lighten-1">
+        New Post
+      </v-btn>
       <v-list>
-        <v-list-item :to="`/${$route.params.class_id}/videos`">
-          <v-list-item-icon>
-            <v-icon>video_library</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title class="subtitle-1 font-weight-regular">Saved videos</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-divider/>
-
-        <v-list-item link :to="`/${$route.params.class_id}/questions`">
-          <v-list-item-icon>
-            <v-icon>group</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title class="subtitle-1 font-weight-regular">Q&A forum</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-divider />
-
-        <!-- BLACKBOARDS -->
-        <template v-if="hasFetchedWorkspaces">
-          <v-list-item
-            v-for="(workspace, i) in workspaces"
-            :key="workspace['.key']"
-            :to="`/${$route.params.class_id}/workspace/${workspace['.key']}`"
-          >
-              <v-list-item-icon>
-            <v-icon>phone_in_talk</v-icon>
-          </v-list-item-icon>
-            <template v-if="workspace.members">
-              <v-list-item-content>
-                Realtime Board {{ i }}
-                <template v-for="(member, i) in workspace.members">
-                  <div style="display: flex;" :key="i">
-                    <v-icon :color="getUserColor()">person</v-icon>
-                    <p class="pl-4 pt-4">{{ workspace.members[i].firstName }}</p>
-                  </div>
-                </template>
-              </v-list-item-content>
-            </template>
-          </v-list-item>
-          <v-list-item v-if="workspaces.length < 3" @click="addWorkspace()" link>
-            <v-list-item-icon>
-              <v-icon color="grey darken-1">add</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content class="grey--text text--darken-1">NEW BOARD</v-list-item-content>
-          </v-list-item>
-        </template>
+        <v-list-item-group active-class="orange--text">
+          <template v-for="post in posts">
+            <div :key="post['.key']">
+              <v-list-item @click="$router.push(`/${classId}/posts/${post['.key']}`)" :key="post['.key']">
+                <v-list-item-content>
+                  <v-list-item-subtitle class="text--primary" v-text="post.title"/>
+                  <v-list-item-subtitle v-text="displayDate(post.date)"/>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider></v-divider>
+            </div>
+          </template>
+        </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
   </v-card>
 </template>
 
 <script>
-import { mapState } from "vuex";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/auth";
+import moment from "moment";
 
 export default {
   props: {
@@ -74,48 +43,33 @@ export default {
   },
   data () {
     return {
-      prevClassID: "",
-      workspaces: [],
-      hasFetchedWorkspaces: false
+      posts: [],
     }
   },
   computed: {
     user () {
       return this.$store.state.user;
+    },
+    classId () {
+      return this.$route.params.class_id;
+    },
+    postsRef () {
+      return db.collection("classes").doc(this.classId).collection("posts").orderBy("date");
     }
   },
   watch: {
-    $route: {
-      handler: "updateNavComponents",
+    classId: {
+      handler: "fetchPosts",
       immediate: true
     }
   },
   methods: {
-    async addWorkspace () {
-      const workspacesRef = db.collection("classes").doc(this.prevClassID).collection("workspaces");
-      const whiteboardID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      db.collection("whiteboards").doc(whiteboardID).set({});
-      workspacesRef.add({
-        ownerUID: this.user.uid || "anonymous",
-        whiteboardID,
-        members: []
-      });
+    async fetchPosts () {
+      this.$root.$emit("open-drawer");
+      await this.$binding("posts", this.postsRef);
     },
-    async updateNavComponents () {
-      this.hasFetchedWorkspaces = false;
-      const classID = this.$route.params.class_id;
-      // sidenav content should not reload everytime the user navigates between the workspaces, but should update
-      // everytime the user visits a different TA page
-      if (classID !== this.prevClassID) {
-        // update sidenav content
-        const classRef = db.collection("classes").doc(classID);
-        await this.$binding("workspaces", classRef.collection("workspaces"));
-        this.prevClassID = classID;
-      }
-      this.hasFetchedWorkspaces = true;
-    },
-    getUserColor () {
-      return this.user ? this.user.color : "pink";
+    displayDate (date) {
+      return moment(date).format('MMM Do, h:mm a');
     }
   }
 };

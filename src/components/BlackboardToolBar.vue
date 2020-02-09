@@ -1,10 +1,5 @@
 <template>
-  <v-app-bar
-    dense
-    :color="isRealtime?'#fff':'#eee'"
-    :elevation="isRealtime?0:1"
-    class="blackboard-toolbar"
-  >
+  <v-app-bar dense :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime?0:1" class="blackboard-toolbar">
     <v-container class="py-1 px-0">
       <v-row align="center" justify="space-between">
         <template v-if="currentState !== recordStateEnum.POST_RECORD">
@@ -12,12 +7,12 @@
             <v-row justify="start" align="center">
               <v-col class="px-1 py-0" cols="auto">
                 <div
-                  :class="[isSmallScreen? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
+                  :class="[$vuetify.breakpoint.smAndDown? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
                   id="swatches-wrapper"
-                  @click="$emit('eraser-click',false)"
+                  @click="$emit('eraser-click', false)"
                 >
                   <v-btn
-                    :color="(!isSmallScreen || palleteVisibility || eraserActive)? 'accent lighten-1':color"
+                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent lighten-1':color"
                     @click="palleteClick()"
                     :outlined="eraserActive? true:false"
                     min-width="36px"
@@ -29,121 +24,60 @@
                     <v-icon class="down">keyboard_arrow_down</v-icon>
                   </v-btn>
                   <swatches
-                    @input="newVal => $emit('color-click',newVal)"
+                    @input="newVal => $emit('color-click', newVal)"
                     :value="color"
                     :colors="colors"
                     :show-border="true"
-                    :wrapper-style="{ padding:'0px', maxHeight:'26px', display:'flex' }"
-                    :swatch-style="{margin:'0 5px', borderRadius:'50%'}"
+                    :wrapper-style="{ padding:'0px', maxHeight:'26px', display:'flex'}"
+                    :swatch-style="{ margin:'0 5px', borderRadius:'50%' }"
                     inline
                     background-color="rgba(0, 0, 0, 0)"
                     swatch-size="26"
                   />
                 </div>
               </v-col>
-              <v-col class="py-0 px-0" cols="auto">
-                <v-btn
-                  :value="eraserActive"
-                  @click="eraserClick"
-                  :outlined="eraserActive? false:true"
-                  color="accent lighten-1"
-                  class="board-action-btn normal-text"
-                >
-                  <span class="d-none d-md-block mr-2">Eraser</span>
-                  <v-icon>mdi-eraser</v-icon>
-                </v-btn>
-              </v-col>
-              <v-col class="py-0 px-0" cols="auto">
-                <v-btn
-                  @click="setImage()"
-                  ref="background"
-                  outlined
-                  color="accent lighten-1"
-                  class="board-action-btn normal-text"
-                >
-                  <span class="d-none d-md-block mr-2">Background</span>
-                  <v-icon>image</v-icon>
-                  <input
-                    @change="event=>$emit('set-image',event)"
-                    id="whiteboard-bg-input"
-                    name="whiteboard-bg"
-                    type="file"
-                    style="display: none;"
-                  />
-                </v-btn>
-              </v-col>
+              <ButtonPrabhakar @click="eraserClick()" :outlined="!eraserActive" icon="mdi-eraser" :isNormalText="true">
+                Eraser
+              </ButtonPrabhakar>
             </v-row>
           </v-col>
-          <v-col cols="auto" class="py-0 px-0">
-            <v-btn
-              @click="$emit('wipe-board')"
-              outlined
-              color="accent"
-              class="board-action-btn normal-text"
-            >
-              <span class="d-none d-lg-block mr-2">Clear</span>
-              <v-icon>clear</v-icon>
-            </v-btn>
-            <v-btn
-              v-if="currentState===recordStateEnum.MID_RECORD"
-              @click="$emit('record-state-change', recordStateEnum.POST_RECORD)"
-              color="accent lighten-1"
-              class="board-action-btn"
-            >
-              <span class="d-none d-sm-block mr-2">Stop</span>
-              <v-icon>stop</v-icon>
-            </v-btn>
-            <v-btn
-              v-else
-              @click="$emit('record-state-change', recordStateEnum.MID_RECORD)"
-              color="accent lighten-1"
-              class="board-action-btn"
-            >
-              <span class="d-none d-sm-block mr-2">Record</span>
-              <v-icon>adjust</v-icon>
-            </v-btn>
-          </v-col>
         </template>
-        <template v-else>
-          <v-col cols="auto" class="py-0">
-            <!-- <v-btn
-              @click="initReplayLogic()"
-              outlined
-              color="accent lighten-1"
-              class="board-action-btn"
-            >
-              <span class="d-none d-sm-block mr-2">Preview</span>
-              <v-icon>mdi-eye</v-icon>
-            </v-btn>-->
-          </v-col>
-          <v-col cols="auto" class="py-0">
-            <v-btn
-              @click="$emit('record-state-change', recordStateEnum.PRE_RECORD)"
-              outlined
-              color="accent lighten-1"
-              class="board-action-btn"
-            >
-              <span class="d-none d-sm-block mr-2">Retry</span>
-              <v-icon>mdi-undo-variant</v-icon>
-            </v-btn>
+          <template v-if="currentState === recordStateEnum.PRE_RECORD">
+            <v-col class="py-0 px-0" cols="auto">
+              <ButtonPrabhakar @click="clickImage()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="image">
+                <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br> (CTRL + V)</p>
+              </ButtonPrabhakar>
+            </v-col>
+            <v-col class="py-0 px-0" cols="auto">
+              <ButtonPrabhakar @click="$emit('wipe-board')" :isSuperSmallText="true" :outlined="true" icon="delete_outline">
+                <p>WIPE<br>BOARD</p>
+              </ButtonPrabhakar>
+            </v-col>
+            <v-col cols="auto" class="py-0 px-0">
+              <ButtonPrabhakar @click="$emit('record-state-change', recordStateEnum.MID_RECORD)" icon="adjust">
+                Record
+              </ButtonPrabhakar>
+            </v-col>
+          </template>
 
-            <BasePopupButton
-              actionName="Save video" 
-              :disabled="!hasUploadedAudio"
-              :inputFields="['title', 'description']"
-              @action-do="payload => $emit('video-save', payload)"
-              color="accent lighten-1"
-            />
-            <!-- <v-btn
-              @click="$emit('video-save')"
-              color="accent lighten-1"
-              class="board-action-btn"
-              :disabled="!hasUploadedAudio"
-            >
-              <span class="d-none d-sm-block mr-2">Save</span>
-              <v-icon>save</v-icon>
-            </v-btn> -->
+          <template v-else-if="currentState === recordStateEnum.MID_RECORD">
+            <v-col class="py-0 px-0" cols="auto">
+              <ButtonPrabhakar @click="$emit('record-state-change', recordStateEnum.POST_RECORD)">
+                Stop
+              </ButtonPrabhakar>
+            </v-col>
+          </template>
+
+        <template v-else>
+          <v-col class="py-0 px-0" cols="auto">
+            <ButtonPrabhakar @click="$emit('record-state-change', recordStateEnum.PRE_RECORD)" outlined icon="mdi-undo-variant">
+              Retry
+            </ButtonPrabhakar>
           </v-col>
+          <!-- TODO: give ability to preview -->
+          <slot>
+
+          </slot>
         </template>
       </v-row>
     </v-container>
@@ -151,9 +85,10 @@
 </template>
 
 <script>
+import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
 import CONSTANTS from "@/CONSTANTS.js";
-import BasePopupButton from "@/components/BasePopupButton.vue";
+import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue"
 
 export default {
   props: {
@@ -161,57 +96,49 @@ export default {
     eraserActive: Boolean,
     currentState: String,
     isRealtime: Boolean,
-    hasUploadedAudio: Boolean
   },
   components: {
     Swatches,
-    BasePopupButton
+    ButtonPrabhakar
   },
-  data() {
+  data () {
     return {
-      colors: ["white", "orange", "#0AF2F2", "deeppink", "rgb(62, 66, 66)"],
+      colors: ["white", "orange", "#0AF2F2", "deeppink"],
       palleteVisibility: false,
-      isSmallScreen: window.innerWidth < 960,
-      recordStateEnum: CONSTANTS.recordStateEnum
-    };
+      recordStateEnum: CONSTANTS.recordStateEnum,
+      imageAdded: false,
+      blackboardAttached: true
+    }
   },
-  mounted() {
-    window.addEventListener("resize", this.smallScreen);
-    window.addEventListener("orientationchange", this.smallScreen);
+  mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
   },
-  destroyed() {
-    window.removeEventListener("resize", this.smallScreen);
-    window.removeEventListener("orientationchange", this.smallScreen);
+  destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
-    palleteClick() {
-      if (this.eraserActive) {
-        this.palleteVisibility = false;
-      } else {
-        this.palleteVisibility = !this.palleteVisibility;
-      }
-    },
-    setImage() {
+    setImage () {
       document.getElementById("whiteboard-bg-input").value = "";
       document.getElementById("whiteboard-bg-input").click();
     },
-
-    smallScreen() {
-      this.isSmallScreen = window.innerWidth < 960;
-    },
-    eraserClick() {
+    eraserClick () {
       this.palleteVisibility = false;
       this.$emit("eraser-click", true);
     },
-    palleteClose(e) {
+    palleteClick () {
+      if (this.eraserActive) this.palleteVisibility = false;
+      else this.palleteVisibility = !this.palleteVisibility;
+    },
+    palleteClose (e) {
       var pallete = document.getElementById("swatches-wrapper");
       if (pallete && !pallete.contains(e.target)) {
         this.palleteVisibility = false;
       }
+    },
+    clickImage (e) {
+      // TODO
     }
   }
 };
@@ -279,9 +206,10 @@ button {
 .v-icon {
   font-size: 20px;
 }
-.board-action-btn.normal-text {
-  letter-spacing: unset;
-  text-transform: unset;
-  font-size: 0.9em;
+
+/* TODO: CSS leak */
+.super-small-text p {
+  font-size: 0.6em;
+  margin-bottom: 0;
 }
 </style>

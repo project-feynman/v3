@@ -11,7 +11,7 @@ import VuePlyr from 'vue-plyr'
 import 'vue-plyr/dist/vue-plyr.css'
 import vuetify from './plugins/vuetify'
 
-// plugins 
+// Plugins 
 Vue.use(VueChatScroll)
 Vue.use(VueFirestore)
 Vue.use(VuePlyr)
@@ -19,7 +19,7 @@ Vue.use(VuePlyr)
 Vue.config.productionTip = false
 
 firebase.auth().onAuthStateChanged(user => {
-  if (user) store.dispatch('handleUserLogic', user);
+  if (user) store.dispatch("fetchUser", user);
   else store.commit('SET_USER', null); // necessary for detecting when the user logs out 
 })
 

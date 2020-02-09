@@ -1,11 +1,12 @@
 <template>
-  <div id="workspace">
-    <v-container v-if="simpleUser && workspace" fluid class="pa-0">
-      <!-- "v-if="...workspace.whiteboardID"" needed because workspace goes from null to {} (surprisingly), before becoming fully populated -->
+  <div id="room">
+    <v-container v-if="simpleUser && room" fluid class="pa-0">
+      <!-- <p>room {{ room }}</p> -->
+      <!-- "v-if="...room.whiteboardID"" needed because room goes from null to {} (surprisingly), before becoming fully populated -->
       <Blackboard
-        v-if="loadCanvas && workspace.whiteboardID"
+        v-if="room.blackboardId"
         ref="whiteboard"
-        :whiteboardID="workspace.whiteboardID"
+        :blackboardId="room.blackboardId"
         :isRealtime="true"
       />
     </v-container>
@@ -15,8 +16,6 @@
 <script>
 import firebase from "firebase/app";
 import "firebase/firestore";
-
-import { mapState } from "vuex";
 import db from "@/database.js";
 import Blackboard from "@/components/Blackboard.vue";
 
@@ -25,18 +24,24 @@ export default {
     Blackboard
   },
   computed: {
-    ...mapState(["user"]),
+    user () { return this.$store.state.user; },
+    roomId () { return this.$route.params.room_id; },
+    classId () { return this.$route.params.class_id; },
+    roomRef () { return db.collection("rooms").doc(this.roomId); },
     simpleUser () {
-      if (!this.user) { return;} 
-      const { email, uid, firstName } = this.user;
-      return { email, uid, firstName }
+      if (!this.user) return; 
+      return {
+        email: this.user.email,
+        uid: this.user.uid,
+        firstName: this.user.firstName
+      }
     }
   },
   data () {
     return {
-      workspace: null,
+      room: null,
       loadCanvas: false,
-      prevWorkspaceRef: null,
+      prevroomRef: null,
     }
   },
   watch: {
@@ -45,63 +50,54 @@ export default {
       immediate: true
     }
   },
-  created () {
-    // necessary for canvas to not be invisible during initial render
-    setTimeout(() => (this.loadCanvas = true), 0);
-  },
   async beforeDestroy () {
-    this.cleanUpPrevWorkspace(); // needed when the user switches to any other place besides another blackboard
+    this.cleanUpPrevroom(); // needed when the user switches to any other place besides another blackboard
   },
   methods: {
     async bindVariables () {
-      const workspaceID = this.$route.params.id;
-      const classID = this.$route.params.class_id;
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
-      if (this.prevWorkspaceRef) await this.cleanUpPrevWorkspace();
-      await this.$binding("workspace", workspaceRef);
+      if (this.prevroomRef) await this.cleanUpPrevroom();
+      // Create a new room if it doesn't exist
+      const room = await this.roomRef.get();
+      if (!room.exists) {
+        // roomId and blackboardId will be same
+        const createNewBoard = db.collection("classes").doc(this.classId).collection("blackboards").doc(this.roomId).set({})
+        const createNewRoom = this.roomRef.set({
+          blackboardId: this.roomId,
+          members: [],
+          forClassId: this.classId
+        });
+        await Promise.all(createNewBoard, createNewRoom);
+      }
+      await this.$binding("room", this.roomRef);
       this.setDisconnectHook();
-      this.prevWorkspaceRef = workspaceRef;
+      this.prevroomRef = this.roomRef;
     },
-    async cleanUpPrevWorkspace () {
+    async cleanUpPrevroom () {
       const promise = new Promise(async (resolve, reject) => {
-        await this.prevWorkspaceRef.update({
+        await this.prevroomRef.update({
           members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
         });
-        const workspaceDoc = await this.prevWorkspaceRef.get();
-        if (workspaceDoc.data().members.length === 0) {
-          await this.prevWorkspaceRef.update({
-            hasAudioRoom: false
-          });
-        }
         resolve();
       });
       return promise;
     },
     setDisconnectHook () {
-      const classID = this.$route.params.class_id;
-      const workspaceID = this.$route.params.id;
-      const workspaceRef = db.collection("classes").doc(classID).collection("workspaces").doc(workspaceID);
-      const firebaseClassID = classID.replace(".", "-");
-      const firebaseRef = firebase.database().ref(`/workspace/${firebaseClassID}/${workspaceID}`);
-      // mirror the Firebase workspace with the Firestore workspace
+      const firebaseclassId = this.classId.replace(".", "-");
+      const firebaseRef = firebase.database().ref(`/room/${firebaseclassId}/${this.roomId}`);
+      // Mirror the Firebase room with the Firestore room
       firebase.database().ref(".info/connected").on("value", async snapshot => {
         if (snapshot.val() === false) { return; } 
-        // wait till server successfully processes the onDisconnectHook()
+        // Wait till server successfully processes the onDisconnectHook()
         await firebaseRef.onDisconnect().set(this.simpleUser);
-        workspaceRef.update({ // it's much faster to update Firestore directly
+        this.roomRef.update({ // it's much faster to update Firestore directly
           members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
         });
-        // reset it (otherwise setting the user is not actually triggering any changes)
-        firebaseRef.set({ // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
-          email: "",
-          uid: "",
-          firstName: ""
-        });
+
+        // Reset it (otherwise setting the user is not actually triggering any changes)
+        // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
+        firebaseRef.set({ email: "", uid: "", firstName: "" });
       });
     },
-    updateHasAudioRoom () {
-      this.prevWorkspaceRef.update({ hasAudioRoom: true });
-    }
   }
 };
 </script>

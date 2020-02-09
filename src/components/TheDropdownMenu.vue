@@ -2,9 +2,10 @@
   <div class="text-xs-center">
     <v-menu v-model="menu" :close-on-content-click="false" :nudge-width="200" offset-x>
       <template v-slot:activator="{ on }">
-        <slot :on="on"></slot>
-      </template>
+        <slot :on="on">
 
+        </slot>
+      </template>
       <v-card>
         <v-list>
           <v-list-item>
@@ -33,15 +34,15 @@
         <v-divider></v-divider>
 
         <v-list>
-          <v-list-item v-for="classObj in user.enrolledClasses" :key="classObj.ID">
+          <v-list-item v-for="mitClass in user.enrolledClasses" :key="mitClass.id">
             <v-container>
-              <v-list-item-title>{{ classObj.name}}</v-list-item-title>
+              <v-list-item-title>{{ mitClass.name }}</v-list-item-title>
               <v-list-item-action>
-                <v-radio-group v-model="classObj.notifFrequency" row>
+                <v-radio-group v-model="mitClass.notifFrequency" row>
                   <v-radio
                     v-for="option in notifFrequencyEnum"
                     :key="option"
-                    @change="classNotifChanged(classObj, option)"
+                    @change="classNotifChanged(mitClass, option)"
                     :label="option"
                     :value="option"
                     :id="option"
@@ -89,18 +90,15 @@ export default {
       else updatedUser.name = this.user.name;
       this.$emit("save", updatedUser);
     },
-    classNotifChanged (classObj, newFrequency) {
-      const updatedArray = this.user.enrolledClasses;
-      for (let i = 0; i < updatedArray.length; i++) {
-        if (updatedArray[i].ID === classObj.ID) {
-          updatedArray[i] = {
-            name: classObj.name,
-            ID: classObj.ID,
-            notifFrequency: newFrequency
-          }
+    classNotifChanged ({ name, id }, notifFrequency) {
+      const updateArray = this.user.enrolledClasses;
+      for (let i = 0; i < updateArray.length; i++) {
+        if (updateArray[i].id === id) {
+          updateArray[i] = { name, id, notifFrequency }
         }
       }
-      this.$emit("notif-setting-change", updatedArray);
+      console.log("updateArray =", updateArray)
+      this.$emit("notif-setting-change", updateArray);
     }
   }
 };
