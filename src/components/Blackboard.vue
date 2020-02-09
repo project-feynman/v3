@@ -112,6 +112,8 @@ export default {
       blackboard: null,
       canvas: null,
       ctx: null,
+      bgCanvas: null,
+      bgCtx: null,
       color: "white",
       eraserActive: false,
       lineWidth: 2,
@@ -165,25 +167,21 @@ export default {
     },
     blackboard (newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
+      // answer: timestamp changes on the doc;
       const { POST_RECORD } = this.recordStateEnum;
-      // if (!newVal) return; // Why is this necessary?
-      console.log("newVal =", newVal);
       if (newVal.recordState !== POST_RECORD || this.canvas) {
         this.enableDrawing();
       }
-      if (this.imageUrl !== newVal.imageUrl) {
-        console.log("ImageURL changed, fetching image from =", newVal.imageUrl);
+      const image = new Image();
+      if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
-        const image = new Image();
         image.src = this.imageUrl;
-        image.onload = () => this.ctx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
-      } else { // Just render what I have on my computer 
-        console.log("Aleady have the image locally didn't change, rendering...")
-        const image = new Image();
-        // image.src = this.imageUrl;
+      } else { // Already have the image locally, display it now
         image.src = URL.createObjectURL(this.imageBlob);
-        image.onload = () => this.ctx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
       }   
+      this.bgCanvas.height = this.canvas.scrollHeight;
+      this.bgCanvas.width = this.canvas.scrollWidth;
+      image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
     },
     currentState (oldVal, newVal) {
       if (!newVal || oldVal) return;
@@ -204,9 +202,10 @@ export default {
     bg () { this.drawBackground(this.bg); }
   },
   mounted () {
-    // the mounted() hook is never called for subsequent switches between whiteboards
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
+    this.bgCanvas = document.getElementById("background-canvas");
+    this.bgCtx = this.bgCanvas.getContext("2d");
     this.rescaleCanvas(true);
     window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
     this.enableDrawing();
@@ -314,7 +313,7 @@ export default {
         // Load image if there is a pasted image
         if (blob !== null) {
           this.imageBlob = blob;
-          console.log("Processing pasted image...");
+          // console.log("Processing pasted image...");
           // Save image to Firebase storage 
           const storageRef = firebase.storage().ref();
           const imageRef = storageRef.child(`images/${this.blackboardId}`);
