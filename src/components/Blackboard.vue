@@ -444,14 +444,9 @@ export default {
     },
     getTouchPos(e) {
       const finger1 = e.touches[0];
-      this.touchX =
-        finger1.pageX -
-        this.canvas.getBoundingClientRect().left -
-        window.scrollX;
-      this.touchY =
-        finger1.pageY -
-        this.canvas.getBoundingClientRect().top -
-        window.scrollY;
+      const { left, top } = this.canvas.getBoundingClientRect();
+      this.touchX = finger1.pageX - left - window.scrollX;
+      this.touchY = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
       if (e.touches.length !== 1) return true;  // multiple fingers not allowed
