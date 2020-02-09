@@ -24,6 +24,15 @@ function sendEmail (email, subject, text, html) {
   sgMail.send(msg);
 }
 
+function getDocFromDb (ref) {
+  const promise = new Promise((resolve, reject) => {
+    let doc = await ref.get();
+    if (doc.exists) resolve({"id": doc.id, ...doc.data()});  // TODO: throw an explicit error
+    else reject();
+  })
+  return promise;
+}
+
 exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(
   async (change, context) => {
     // Get the data written to Realtime Database
@@ -59,16 +68,15 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{cla
 );
 
 // Sends email to entire class whenever a new question is created
-exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async doc => {
-  const post = doc.data();
-  const classObj = {
-    id: post.mitClass.id,
-    name: post.mitClass.name,
+exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async post => {
+  const mitClass = {
+    id: post.data().mitClass.id,
+    name: post.data().mitClass.name,
     notifFrequency: "always"
   }
   
   // Email all classmates
-  const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classObj);
+  const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", mitClass);
   const classmatesDocs = await classmatesRef.get();
   classmatesDocs.forEach(classmateDoc => {
     const { email, title, description } = classmateDoc.data();
@@ -80,19 +88,13 @@ exports.emailOnNewAnswer = functions.firestore.document("/classes/{classId}/post
   const { postId, classId } = context.params;
   // Get original post
   const postRef = firestore.doc(`/classes/${classId}/posts/${postId}`);
-  let post = await postRef.get();
-  if (!post.exists) return;  // TODO: throw an explicit error
-  post = post.data();
-
-  // Get creator of original question
-  const creatorRef = firestore.doc(`/users/${post.creator.uid}`);
-  let creatorDoc = await creatorRef.get();
-  if (!creatorDoc.exists) return; 
-  creatorDoc = creatorDoc.data();
+  const originalPost = await getDocFromDb(postRef);
+  const creatorRef = firestore.doc(`/users/${originalPost.creator.uid}`);
+  const postCreator = await getDocFromDb(creatorRef);
 
   const subject = `Your question was answered by ${ explanationDoc.creator.firstName }`
   const { title, description } = explanationDoc.data();
-  sendEmail(creatorDoc.email, subject, `Explanation title: ${title}`, `<p>Description: ${description}</p>`)
+  sendEmail(postCreator.email, subject, `Explanation title: ${title}`, `<p>Description: ${description}</p>`)
 });
 
 // /* AUTO-CREATED FUNCTIONS */
