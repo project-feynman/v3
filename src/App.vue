@@ -24,7 +24,8 @@ export default {
 </script>
 
 <style>
+/* Make the side-drawer vertically scrollable  */
 html {
-  overflow-y: auto;
+  overflow-y: auto; 
 }
 </style>

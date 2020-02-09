@@ -48,10 +48,17 @@ export default {
   props: {
     actionName: String,
     inputFields: Array,
-    color: String,
+    color: {
+      type: String,
+      default () {
+        return "accent lighten-1"
+      }
+    },
     outlined: {
       type: Boolean,
-      default () { return false; }
+      default () { 
+        return false; 
+      }
     },
     disabled: {
       type: Boolean,
