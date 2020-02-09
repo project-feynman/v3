@@ -5,25 +5,33 @@
       @input="newValue => $emit('input', newValue)"
       app clipped
     >
-    <v-list>
-      <v-list-item-group>
-      <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent lighten-1">
-        <v-list-item-icon>
-          <v-icon>book</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Realtime board</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+      <v-list>
+        <v-list-item-group>
+          <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent lighten-1">
+            <v-list-item-icon>
+              <v-icon>phone_in_talk</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>Realtime board</v-list-item-title>
+              <template v-for="(member, i) in room.members">
+                <div style="display: flex;" :key="i">
+                  <v-icon color="orange">person</v-icon>
+                  <p class="pl-4 pt-4">
+                    {{ member.firstName }}
+                  </p>
+                </div>
+              </template>
+            </v-list-item-content>
+          </v-list-item>
 
-        <v-list-item @click="$router.push(`/${classId}/posts`)" color="accent lighten-1">
-          <v-list-item-icon>
-            <v-icon>book</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>New post</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+          <v-list-item @click="$router.push(`/${classId}/posts`)" color="accent lighten-1">
+            <v-list-item-icon>
+              <v-icon>post_add</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>New post</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
 
           <template v-for="post in posts">
             <div :key="post['.key']">
@@ -55,6 +63,9 @@ export default {
   data () {
     return {
       posts: [],
+      room: {
+        members: []
+      }
     }
   },
   computed: {
@@ -66,18 +77,22 @@ export default {
     },
     postsRef () {
       return db.collection("classes").doc(this.classId).collection("posts").orderBy("date");
+    },
+    roomRef () {
+      return db.collection("rooms").doc(this.classId);
     }
   },
   watch: {
     classId: {
-      handler: "fetchPosts",
+      handler: "syncDataWithDb",
       immediate: true
     }
   },
   methods: {
-    async fetchPosts () {
+    async syncDataWithDb () {
       this.$root.$emit("open-drawer");
-      await this.$binding("posts", this.postsRef);
+      this.$binding("posts", this.postsRef);
+      this.$binding("room", this.roomRef);
     },
     displayDate (date) {
       return moment(date).format('MMM Do, h:mm a');
