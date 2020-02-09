@@ -7,15 +7,13 @@ export default {
   },
   methods: {
     rescaleCanvas (redraw) {
-      // Make the drawing coordinate system 1:1 with the actual size of the canvas (`scrollWidth` is the actual width
-      // of the canvas).
+      // width = internal coordinate system 1:1, scrollWidth = external dimension
       this.canvas.width = this.canvas.scrollWidth;
       this.canvas.height = this.canvas.scrollHeight;
       this.setStyle(this.color, this.lineWidth);
       if (redraw) this.drawStrokesInstantly();
     },
     async prepareFrames (getTimeInSeconds) {
-      // Don't sync on empty strokes.
       if (!this.allStrokes || this.allStrokes.length === 0) return;
       
       // Create ordering of frames in `[[strokeIndex, pointIndex], ...]` format.
@@ -26,7 +24,7 @@ export default {
         }
       }
 
-      // Sort frames.
+      // Sort frames
       this.allFrames.sort((a, b) => this.frameStartTime(a) - this.frameStartTime(b));
 
       // Update the shared time method.
@@ -99,6 +97,7 @@ export default {
     async quickplay () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       for (const stroke of this.allStrokes) {
+        // draw 1 stroke per event loop
         await this.drawStroke(stroke, 0);
       }
     },
@@ -128,7 +127,7 @@ export default {
       this.ctx.stroke();
     },
     // Used for blackboards.
-    drawStroke({points, color, lineWidth, isErasing}, pointPeriod = null) {
+    drawStroke({ points, color, lineWidth, isErasing }, pointPeriod = null) {
       return new Promise(async resolve => {
         // Scale line width to canvas width and set style.
         let newLineWidth = lineWidth * (this.canvas.width / 1000);
@@ -136,9 +135,7 @@ export default {
 
         // Go through all points.
         for (let i = 1; i < points.length; i++) {
-          // Draw a line.
           this._stroke(points, i, isErasing);
-
           // Wait if necessary.
           if (pointPeriod !== null) {
             await new Promise(resolve => setTimeout(resolve, pointPeriod));
@@ -149,22 +146,19 @@ export default {
       });
     },
     // Used for recorded videos.
-    renderFrame(frame) {
+    renderFrame (frame) {
       // Extract index.
       const strokeIndex = frame[0];
       const pointIndex = frame[1];
-
-      // Get the stroke.
       const stroke = this.allStrokes[strokeIndex];
 
       // Set line style, since multiple strokes can be drawn simultaneously.
       this.setStyle(stroke.color, stroke.lineWidth);
-
-      // Draw a stroke. This constitutes a frame.
       // TODO: use $_ instead of only _ or $ to avoid overwritting Vue's methods
       this._stroke(stroke.points, pointIndex, stroke.isErasing);
     },
     drawToPoint(x, y) {
+      // This is the start of stroke, don't connect to any previous points
       if (this.lastX === -1) {
         this.lastX = x;
         this.lastY = y;
@@ -178,7 +172,7 @@ export default {
       this.lastX = x;
       this.lastY = y;
     },
-    setStyle(color = 'white', lineWidth = 2) {
+    setStyle (color = 'white', lineWidth = 2) {
       this.ctx.strokeStyle = color;
       this.ctx.lineCap = 'round'; // lines at different angles can join into each other
       this.ctx.lineWidth = lineWidth;

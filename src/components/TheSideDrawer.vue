@@ -5,6 +5,9 @@
       @input="newValue => $emit('input', newValue)"
       app clipped
     >
+      <v-btn @click="$router.push(`/${classId}/room/${classId}`)" outlined block color="accent lighten-1">
+        Realtime blackboard
+      </v-btn>
       <!-- NEW post -->
       <v-btn @click="$router.push(`/${classId}/posts`)" outlined block color="accent lighten-1">
         New Post

@@ -45,7 +45,7 @@
           <template v-if="currentState === recordStateEnum.PRE_RECORD">
             <v-col class="py-0 px-0" cols="auto">
               <ButtonPrabhakar @click="clickImage()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="image">
-                <p>{{ imageAdded? "Change" : "Attach" }}<br>IMAGE</p>
+                <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br> (CTRL + V)</p>
               </ButtonPrabhakar>
             </v-col>
             <v-col class="py-0 px-0" cols="auto">
