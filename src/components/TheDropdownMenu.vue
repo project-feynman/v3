@@ -97,7 +97,6 @@ export default {
           updateArray[i] = { name, id, notifFrequency }
         }
       }
-      console.log("updateArray =", updateArray)
       this.$emit("notif-setting-change", updateArray);
     }
   }
