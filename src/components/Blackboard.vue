@@ -80,13 +80,13 @@ import firebase from "firebase/app";
 import "firebase/functions";
 import slugify from "slugify";
 import db from "@/database.js";
-import DrawMethods from "@/mixins/DrawMethods.js";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BaseLoadingButton from "@/components/BaseLoadingButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CONSTANTS from "@/CONSTANTS.js";
+import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 
 export default {
   props: {
@@ -98,6 +98,7 @@ export default {
     // TODO: should be encapsulated within this component
     background: String
   },
+  mixins: [CanvasDrawMixin],
   components: {
     BlackboardToolBar,
     AudioRecorder,
@@ -105,7 +106,6 @@ export default {
     BaseLoadingButton,
     BasePopupButton
   },
-  mixins: [DrawMethods],
   data () {
     return {
       loading: true,
@@ -133,8 +133,6 @@ export default {
       mouseX: 0,
       mouseY: 0,
       mousedown: 0, // Necessary to know if user is holding left click while dragging the mouse
-      lastX: -1,
-      lastY: -1,
       unsubscribe: null,
       currentState: "",
       audioUrl: "",
@@ -208,11 +206,12 @@ export default {
   mounted () {
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
-    this.bgCanvas = document.getElementById("background-canvas");
-    this.bgCtx = this.bgCanvas.getContext("2d");
     this.rescaleCanvas(true);
     window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
     this.enableDrawing();
+
+    this.bgCanvas = document.getElementById("background-canvas");
+    this.bgCtx = this.bgCanvas.getContext("2d");
 
     // Hack to fix drawing offset bug
     this.$nextTick(() => {
@@ -629,6 +628,24 @@ export default {
       board.style.height = this.isRealtime ? realtime_height : mini_height;
       // board.style.marginTop = margin_top;
     },
+    // Blackboard specific draw methods
+    drawToPoint (x, y) {
+      // This is the start of stroke, don't connect to any previous points
+      if (this.lastX === -1) {
+        this.lastX = x;
+        this.lastY = y;
+        return;
+      }
+      this.traceLineTo(x, y);
+      this.ctx.stroke();
+      this.lastX = x;
+      this.lastY = y;
+    },
+    traceLineTo (x, y) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.lastX, this.lastY);
+      this.ctx.lineTo(x, y);
+    }
     // sortStrokesByTimestamp () {
     //   this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime));
     // },
