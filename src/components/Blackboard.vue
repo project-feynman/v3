@@ -173,11 +173,18 @@ export default {
         this.enableDrawing();
       }
       let imageSrc;
+      console.log("newVal.imageUrl =", newVal.imageUrl);
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
         imageSrc = this.imageUrl;
-      } 
-      else imageSrc = URL.createObjectURL(this.imageBlob); // Already have the image blob locally  
+      } else {
+        // Already have the image blob locally  
+        try {
+          imageSrc = URL.createObjectURL(this.imageBlob); 
+        } catch {
+          imageSrc = this.imageUrl;
+        }
+      }
       this.displayImageAsBackground(imageSrc);
     },
     currentState (oldVal, newVal) {
@@ -238,7 +245,9 @@ export default {
   },
   methods: {
     async initData () {
-      this.resetBoard();
+      // no need to reset data, just reset variables and UI as it's only useful when switching between different blackboards
+      this.resetVariables();
+      this.wipeBoard();
       this.currentState = this.recordStateEnum.PRE_RECORD;
       if (this.isRealtime) {
         this.loading = true;
@@ -271,15 +280,19 @@ export default {
       });
     },
     async resetBoard () {
+      console.log("resetBoard()")
       if (this.isRealtime) {
         this.disableDrawing();
         // Delete strokes subcollection // allStrokes is empty if the user himself initiated the deletes
-        const promises = [];
+        const strokeDeleteRequests = [];
         this.allStrokes.forEach(stroke => {
-          promises.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
+          strokeDeleteRequests.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
         })
-        await Promise.all(promises);
         console.log("Successfully wiped board");
+        const backgroundResetRequest = this.blackboardRef.update({
+          imageUrl: ""
+        });
+        await Promise.all([...strokeDeleteRequests, backgroundResetRequest]);
       }
       this.wipeBoard(); // UI
       this.resetVariables(); // local state
