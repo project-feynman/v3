@@ -1,31 +1,16 @@
-// const webpush = require("web-push");
-// const nodemailer = require("nodemailer");
 const firebase_tools = require("firebase-tools");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const config = require("./config");
+const sgMail = require('@sendgrid/mail');
 const adminCredentials = require('./feynman-mvp-firebase-adminsdk-d10vx-70c5b69675.json') // might be disactivated
 
-// const { vapidKeys } = config;
-// webpush.setVapidDetails(
-//   "mailto:hubewasi@gmail.com",
-//   vapidKeys.publicKey,
-//   vapidKeys.privateKey
-// );
-
-const sgMail = require('@sendgrid/mail');
+admin.initializeApp({
+	credential: admin.credential.cert(adminCredentials),
+	databaseUrl: "https://feynman-mvp.firebaseio.com"
+});
+const firestore = admin.firestore();
 sgMail.setApiKey('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');
-
-
-// const { gmailPass } = config;
-// const { oauth } = config;
-// const transporter = nodemailer.createTransport({
-//   host: "smtp.gmail.com",
-//   port: 465,
-//   secure: true,
-//   service: "Gmail",
-//   auth: oauth
-// });
 
 function sendEmail (email, subject, text, html) {
   const msg = {
@@ -37,34 +22,8 @@ function sendEmail (email, subject, text, html) {
   };
   console.log("message", msg);
   sgMail.send(msg);
-
-  // const message = {
-  //   from: "\"Feynman Notifications\" feynmannotif@gmail.com",
-  //   to: email,
-  //   subject,
-  //   text,
-  //   html
-  // };
-
-  // transporter.sendMail(message, (error, response) => {
-  //   console.log(error);
-  //   console.log(response);
-  // });
 }
 
-admin.initializeApp({
-	credential: admin.credential.cert(adminCredentials),
-	databaseUrl: "https://feynman-mvp.firebaseio.com"
-});
-
-
-// Since this code will be running in the Cloud Functions environment
-// we call initialize Firestore without any arguments because it
-// detects authentication from the environment.
-const firestore = admin.firestore();
-firestore.settings({ timestampsInSnapshots: true });
-
-// keep track of whether users are online or offline
 exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(
   async (change, context) => {
     // Get the data written to Realtime Database
@@ -84,7 +43,7 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(
   }
 );
 
-// updates blackboard participants when people join and leave
+// Updates blackboard participants when people join and leave
 exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{class_id}/{workspace_id}").onUpdate(
   (change, context) => {
     const userWhoLeft = change.after.val();
@@ -103,21 +62,13 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{cla
 exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async doc => {
   const post = doc.data();
   const classObj = {
-    id: post.class.id,
-    name: question.class.name,
+    id: post.mitClass.id,
+    name: post.mitClass.name,
     notifFrequency: "always"
   }
-  // Get all classmates
-  // const classmatesQuery = firestore.collection('users');
-  // classmatesQuery.get().then(querySnapshot => {
-  //   // console.log("successfully ran query, might be empty");
-  //   querySnapshot.forEach(documentSnapshot => {
-  //     // console.log(`Found document at ${documentSnapshot.ref.path}`);
-  //   });
-  // });
+  
+  // Email all classmates
   const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classObj);
-
-  // Send the emails
   const classmatesDocs = await classmatesRef.get();
   classmatesDocs.forEach(classmateDoc => {
     const { email, title, description } = classmateDoc.data();
@@ -125,181 +76,25 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
   })
 });
 
-exports.emailOnNewAnswer = functions.firestore.document("/classes/{classID}/questions/{questionID}/answers/{answerID}").onCreate(async (answerDoc, context) => {
-  const { questionID, classID } = context.params;
-  // Get original question
-  const questionRef = firestore.doc(`/classes/${classID}/questions/${questionID}`);
-  let questionDoc = await questionRef.get();
-  if (!questionDoc.exists) { return; } // TODO: throw an explicit error
-  questionDoc = questionDoc.data();
+exports.emailOnNewAnswer = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explanationDoc, context) => {
+  const { postId, classId } = context.params;
+  // Get original post
+  const postRef = firestore.doc(`/classes/${classId}/posts/${postId}`);
+  let post = await postRef.get();
+  if (!post.exists) return;  // TODO: throw an explicit error
+  post = post.data();
 
   // Get creator of original question
-  const creatorRef = firestore.doc(`/users/${questionDoc.author.UID}`);
+  const creatorRef = firestore.doc(`/users/${post.creator.uid}`);
   let creatorDoc = await creatorRef.get();
-  if (!creatorDoc.exists) { return; }
+  if (!creatorDoc.exists) return; 
   creatorDoc = creatorDoc.data();
 
-  // Send email
-  const { author, title, description } = answerDoc.data();
-  sendEmail(creatorDoc.email, `Your question was answered by ${author}`, `Answer title: ${title}`, `<h1>Description: ${description}</h1>`)
+  const subject = `Your question was answered by ${ explanationDoc.creator.firstName }`
+  const { title, description } = explanationDoc.data();
+  sendEmail(creatorDoc.email, subject, `Explanation title: ${title}`, `<p>Description: ${description}</p>`)
 });
 
-// send email to a person if his/her question got answered
-
-// exports.notificationOnNewMessage = functions.firestore.document('/workspaces/{wid}/messages/{mid}').onCreate((doc, context) => {
-// 	_updateParticipants()
-
-// 	const params = context.params;
-// 	const workspaceDocSnap = docy
-
-// 	const workspaceDocData = workspaceDocumentSnap.data()
-
-// 	const messageId = params.mid;
-// 	const chatroomId = params.wid;
-
-// 	const author = workspaceDocData.author;
-// 	const authorName = author.name;
-// 	const authorUid = author.uid
-// 	const messageContent = workspaceDocData.content
-// 	const messageTimestamp = workspaceDocData.timestamp
-
-// 	participantsDoc = firestore.doc('/workspaces/' + chatroomId + '/participants/')
-
-// 	participantsDoc.get().then(participantsDocSnap => {
-// 		const participantsDocData = participantsDocSnap.data()
-// 		const participantsUids = participantsDocData.participants
-
-// 		participantsUids.forEach(participantUid => {
-// 			if(participantUid !== authorUid) {
-// 				_sendNotificationByUid(participantUid, authorName + " sent a message...", messageContent)
-// 			}
-// 		})
-// 	})
-
-// 	return null;
-// })
-
-// exports.emailOnStudentHelp = functions.firestore.document('/workspaces/{wid}').onUpdate((change, context) => {
-// 	const workspaceDocDataBefore = change.before.data()
-// 	const workspaceDocDataAfter = change.after.data()
-// 	const params = context.params
-
-// 	const askingBefore = workspaceDocDataBefore.isAskingQuestion
-// 	const askingAfter = workspaceDocDataAfter.isAskingQuestion
-// 	// if before they werent asking and after they are, then it's the change i'm interested in
-// 	// otherwise end the execution
-// 	if(!(workspaceDocDataAfter.isAskingQuestion === true && workspaceDocDataBefore.isAskingQuestion === false)) {
-// 		return
-// 	}
-
-// 	const askerUid = workspaceDocDataBefore.ownerUid
-// 	const askerName = workspaceDocDataBefore.ownerName
-// 	const askerFirstName = askerName.split(' ')[0]
-
-// 	const workspaceOwnerUid = workspaceDocDataBefore.teacherUid
-// 	const workspaceId = params.wid
-
-// 	const workspaceUrl = "https://feynman.online/" + workspaceOwnerUid + "/workspace/" + workspaceId
-
-
-// 	firestore.collection('/workspaces/').where('teacherUid', '==', workspaceOwnerUid).where('isOffice', '==', true).get().then(assistantsQuerySnap => {
-// 		const assistantsQueryDocsSnaps = assistantsQuerySnap.docs
-// 		assistantsQueryDocsSnaps.forEach(assitantQueryDocSnap => {
-// 			const assistantQueryDocData = assitantQueryDocSnap.data()
-// 			_sendEmailByUid(
-// 				assistantQueryDocData.ownerUid,
-// 				askerFirstName + " asked a question on Feynman.",
-// 				askerName + " asked a question in a workspace you're a TA in. Here's the link to the workspace: " + workspaceUrl,
-// 				"<p>" + askerName + " asked a question in a workspace you're a TA in. Click <a href=\"" + workspaceUrl + "\">here</a> to go there. "
-// 			)
-// 		})
-// 	})
-
-// 	// SUBJECT: "{first NAME} asked a question
-// 	// BODY: "{NAME} asked a question in a workspace you're a TA in. Here's the link to the workspace: {LINK}"
-// 	// HTML: same but LINK is an href
-// })
-
-
-// exports.updateParticipants = functions.https.onCall((data, context) => {
-// 	_updateParticipants(data.workspaceid)
-// })
-
-// function _updateParticipants(workspaceId) {
-// 	//WIP
-// 	const participantsDoc = firestore.doc('/workspaces/' + workspaceId + '/participants/')
-
-// 	participantsDoc.get().then(participantsDocSnap => {
-// 		const participantsDocData = participantsDocSnap.data()
-// 		participantsDocData.participants.forEach(participant => {
-// 		})
-// 	})
-// }
-
-// exports.sendEmailByUid = functions.https.onCall((data, context) => {
-// 	_sendEmailByUid(data.uid, data.subject, data.body, data.html)
-// })
-
-// function _sendEmailByUid(uid, subject, body, html) {
-// 	admin.auth().getUser(uid).then(user => {
-// 		const userEmail = user.email
-// 		_sendEmail(userEmail, subject, body, html)
-// 	})
-// }
-
-// exports.sendNotificationByUid = functions.https.onCall((data, context) => {
-// 	_sendNotificationByUid(data.uid, data.title, data.body)
-// })
-
-// function _sendNotificationByUid(uid, title, body) {
-// 	const userDocRef = firestore.doc('/users/' + uid)
-// 	userDocRef.get().then(userDocSnap => {
-// 		if(userDocSnap.exists) {
-// 			firestore.collection('/users/' + uid + '/subscriptions/').get().then(subscriptionDocs => {
-// 				if(subscriptionDocs.docs == 0) {
-// 					return;
-// 				}
-// 				subscriptionDocs.forEach(function(subscriptionDoc) {
-// 					const subscriptionDocData = subscriptionDoc.data()
-// 					console.log(subscriptionDocData)
-// 					const subscription = subscriptionDocData.subscription
-// 					const JSONsubscription = JSON.parse(subscription)
-// 					const payload = {
-// 						title,
-// 						body,
-// 						type: "notification"
-// 					}
-// 					webpush.sendNotification(JSONsubscription, JSON.stringify(payload))
-// 					.catch((err) => {
-// 						console.log("error while sending notification to uid: " + uid + " subscription: " + subscription + "\n" + err)
-// 					})
-// 				})
-// 			})
-// 		}
-// 		else {
-// 			console.log("Uid not linked to any user or undefined\nUID: " + uid)
-// 			return null
-// 		}
-// 	})
-// }
-
-// exports.updateParticipantsForUserChatroom = functions.firestore.document('/users/{uid}/messages/{mid}').onCreate((doc, context) => {
-// 	const params = context.params;
-// 	const author = params.author;
-// 	const authorUid = author.uid;
-// 	const authorName = author.name
-
-// 	const colref = firebase.colection("/users/" + context.params.uid + "/participants");
-
-// 	colref.where("uid", "==", authorUid).then(querySnap => {
-// 		if(querySnap.empty) {
-// 			colref.add({
-// 				authorUid,
-// 				authorName
-// 			})
-// 		}
-// 	})
-// })
 // /* AUTO-CREATED FUNCTIONS */
 // /**
 //  * Callable function that creates a custom auth token with the
@@ -336,11 +131,8 @@ exports.recursiveDelete = functions
     // }
 
     const { path } = data;
-    console.log(
-      `User ${context.auth.uid} has requested to delete path ${path}`
-    );
+    console.log(`User ${context.auth.uid} has requested to delete path ${path}`);
 
-    // Run a recursive delete on the given document or collection path.
     // The 'token' must be set in the functions config, and can be generated
     // at the command line by running 'firebase login:ci'.
     return firebase_tools.firestore
