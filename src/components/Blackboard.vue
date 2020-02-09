@@ -288,11 +288,14 @@ export default {
     wipeBoard () {
       if (!this.ctx) return;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
       this.allStrokes = [];
       this.lastX = -1;
       this.currentTime = 0;
+      this.imageBlob = null;
+      this.imageUrl = "";
     },
     initCopyAndPasteImage () {
        document.onpaste = async event => {
