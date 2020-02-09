@@ -119,6 +119,8 @@ export default {
       stylus: false,
       allStrokes: [],
       currentStroke: [],
+      imageUrl: "",
+      imageBlob: null,
       timer: null,
       currentTime: 0,
       // TODO: refactor currentStroke to be an object so startTiem and endTime aren't necessary
@@ -164,10 +166,24 @@ export default {
     blackboard (newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
       const { POST_RECORD } = this.recordStateEnum;
-      if (!newVal) return;
+      // if (!newVal) return; // Why is this necessary?
+      console.log("newVal =", newVal);
       if (newVal.recordState !== POST_RECORD || this.canvas) {
         this.enableDrawing();
       }
+      if (this.imageUrl !== newVal.imageUrl) {
+        console.log("ImageURL changed, fetching image from =", newVal.imageUrl);
+        this.imageUrl = newVal.imageUrl;
+        const image = new Image();
+        image.src = this.imageUrl;
+        image.onload = () => this.ctx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
+      } else { // Just render what I have on my computer 
+        console.log("Aleady have the image locally didn't change, rendering...")
+        const image = new Image();
+        // image.src = this.imageUrl;
+        image.src = URL.createObjectURL(this.imageBlob);
+        image.onload = () => this.ctx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
+      }   
     },
     currentState (oldVal, newVal) {
       if (!newVal || oldVal) return;
@@ -183,15 +199,9 @@ export default {
         : "source-over";
       this.lineWidth = this.eraserActive ? 20 : 2;
     },
-    color () {
-      this.customCursor();
-    },
-    visible () {
-      this.blackboardSize();
-    },
-    bg () {
-      this.drawBackground(this.bg);
-    }
+    color () { this.customCursor(); },
+    visible () { this.blackboardSize(); },
+    bg () { this.drawBackground(this.bg); }
   },
   mounted () {
     // the mounted() hook is never called for subsequent switches between whiteboards
@@ -248,8 +258,7 @@ export default {
       this.unsubscribe = this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
         if (snapshot.docs.length === 0) {
           this.wipeBoard();
-          this.resetVariables();
-          // no need to wipe database again
+          this.resetVariables(); // no need to wipe database again
         }
         snapshot.docChanges().forEach(change => {
           if (change.type === "added") {
@@ -264,19 +273,17 @@ export default {
         });
         this.loading = false;
       });
-      // Listen to images as well
     },
     async resetBoard () {
       if (this.isRealtime) {
         this.disableDrawing();
-
-        // Delete strokes subcollection 
-        // allStrokes is empty if the user himself initiated the deletes
+        // Delete strokes subcollection // allStrokes is empty if the user himself initiated the deletes
         const promises = [];
-        for (let i = 1; i < this.allStrokes.length + 1; i++) {
-          promises.push(this.strokesRef.doc(`${i}`).delete());
-        }
+        this.allStrokes.forEach(stroke => {
+          promises.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
+        })
         await Promise.all(promises);
+        console.log("Successfully wiped board");
       }
       this.wipeBoard(); // UI
       this.resetVariables(); // local state
@@ -292,10 +299,10 @@ export default {
       this.currentTime = 0;
     },
     initCopyAndPasteImage () {
-       document.onpaste = event => {
+       document.onpaste = async event => {
         // use event.originalEvent.clipboard for newer chrome versions
         var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-        console.log(JSON.stringify(items)); // will give you the mime types
+        // console.log(JSON.stringify(items)); // will give you the mime types
         // Find pasted image among pasted items
         let blob = null;
         for (var i = 0; i < items.length; i++) {
@@ -303,18 +310,30 @@ export default {
             blob = items[i].getAsFile();
           }
         }
+        
         // Load image if there is a pasted image
         if (blob !== null) {
-          var reader = new FileReader();
-          reader.onload = function(event) {
-            console.log(event.target.result); // data url!
-          };
-          reader.readAsDataURL(blob);
-
-          // Set image as background
-          const image = new Image();
-          image.src = "http://i.imgur.com/yf6d9SX.jpg";
-          image.onload = () => this.ctx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
+          this.imageBlob = blob;
+          console.log("Processing pasted image...");
+          // Save image to Firebase storage 
+          const storageRef = firebase.storage().ref();
+          const imageRef = storageRef.child(`images/${this.blackboardId}`);
+          // const snapshot = await imageRef.put(blob)
+          // console.log("successfully uploaded image, snapshot =", snapshot);
+          const uploadTask = imageRef.put(blob)
+          uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
+            snapshot => {}, 
+            error => console.log('error =', error), 
+            async () => {
+              // Update blackboard doc's image reference to this new image
+              const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
+              this.blackboardRef.update({
+                imageUrl
+              });
+              // Store locally 
+              this.imageUrl = imageUrl;
+            }
+          );
         }
       }
     },
@@ -322,43 +341,8 @@ export default {
       document.getElementById("whiteboard-bg-input").value = "";
       document.getElementById("whiteboard-bg-input").click();
     },
-    handleImage (e) {
-      var file = e.target.files[0];
-      var reader = new FileReader();
-      var vue = this;
-      reader.onload = function(event) {
-        var img = event.target.result;
-        vue.drawBackground(img);
-        vue.$emit("boardImage", img);
-      };
-      if (file) reader.readAsDataURL(file); 
-    },
-    drawBackground (image) {
-      var canvas = document.getElementById("background-canvas");
-      var ctx = canvas.getContext("2d");
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (image === "") return; 
-      var img = new Image();
-      img.onload = function() {
-        var w = img.width;
-        var h = img.height;
-        var img_aspect_ratio = w / h;
-        var x,
-          y = 0;
-        if (img_aspect_ratio < canvas.width / canvas.height) {
-          h = canvas.height;
-          w = h * img_aspect_ratio;
-          x = (canvas.width - w) / 2;
-        } else {
-          w = canvas.width;
-          h = w / img_aspect_ratio;
-          y = (canvas.height - h) / 2;
-        }
-        ctx.drawImage(img, x, y, w, h);
-      };
-      img.src = image;
-    },
+    handleImage (e) {},
+    drawBackground (image) {},
     startTimer () {
       this.currentTime = 0;
       this.timer = setInterval(() => this.currentTime += 0.1, 100);
@@ -375,6 +359,7 @@ export default {
       this.removeTouchEvents();
     },
     initTouchEvents () {
+      if (!this.canvas) return;
       this.canvas.addEventListener("touchstart", this.touchStart, false);
       this.canvas.addEventListener("touchend", this.touchEnd, false);
       this.canvas.addEventListener("touchmove", this.touchMove, false);
@@ -386,7 +371,8 @@ export default {
       this.canvas.removeEventListener("touchend", this.touchEnd, false);
       this.canvas.removeEventListener("touchmove", this.touchMove, false);
     },
-    initMouseEvents() {
+    initMouseEvents () {
+      if (!this.canvas) return;
       this.canvas.addEventListener("mousedown", this.mouseDown, false);
       this.canvas.addEventListener("mouseup", this.mouseUp, false);
       this.canvas.addEventListener("mousemove", this.mouseMove, false);
