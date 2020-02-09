@@ -100,31 +100,28 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{cla
 );
 
 // Sends email to entire class whenever a new question is created
-exports.emailOnNewQuestion = functions.firestore.document("/classes/{classID}/questions/{questionID}").onCreate(async (questionDoc, context) => {
-  const question = doc.data();
+exports.emailOnNewPost = functions.firestore.document("/classes/{classID}/posts/{postId}").onCreate(async (doc, context) => {
+  const post = doc.data();
   const classObj = {
-    ID: question.class.ID,
+    id: post.class.id,
     name: question.class.name,
     notifFrequency: "always"
   }
-
-  console.log("classObj =", classObj);
   // Get all classmates
-  let classmatesQuery = firestore.collection('users');
-  classmatesQuery.get().then(querySnapshot => {
-    // console.log("successfully ran query, might be empty");
-    querySnapshot.forEach(documentSnapshot => {
-      // console.log(`Found document at ${documentSnapshot.ref.path}`);
-    });
-  });
+  // const classmatesQuery = firestore.collection('users');
+  // classmatesQuery.get().then(querySnapshot => {
+  //   // console.log("successfully ran query, might be empty");
+  //   querySnapshot.forEach(documentSnapshot => {
+  //     // console.log(`Found document at ${documentSnapshot.ref.path}`);
+  //   });
+  // });
   const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classObj);
 
   // Send the emails
-  let classmatesDocs = await classmatesRef.get();
-  classmatesDocs.forEach(doc => {
-    const { title, description }
-    const classmate = doc.data();
-    sendEmail(classmate.email, `Your classmate asked a question`, `Question title: ${title}`, "<h1>Description</h1>");
+  const classmatesDocs = await classmatesRef.get();
+  classmatesDocs.forEach(classmateDoc => {
+    const { email, title, description } = classmateDoc.data();
+    sendEmail(email, `Your classmate asked a question`, `Question title: ${title}`, `<h1>${description}</h1>`);
   })
 });
 
