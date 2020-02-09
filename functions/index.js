@@ -100,7 +100,7 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{cla
 );
 
 // Sends email to entire class whenever a new question is created
-exports.emailOnNewPost = functions.firestore.document("/classes/{classID}/posts/{postId}").onCreate(async (doc, context) => {
+exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async doc => {
   const post = doc.data();
   const classObj = {
     id: post.class.id,
