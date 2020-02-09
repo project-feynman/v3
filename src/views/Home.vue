@@ -46,9 +46,13 @@
             <div class="home-header">
               <div class="central-title d-flex justify-center align-center mb-4">
                 <img src="/logo.png" class="hero-img" />
-                <h1 class="text--primary ml-2">ExplainMIT</h1>
+                <h1 class="text--primary ml-2">
+                  ExplainMIT
+                </h1>
               </div>
-              <h3 class="headline text--primary">An efficient platform for visual explanations</h3>
+              <h3 class="headline text--primary">
+                An efficient platform for visual explanations
+              </h3>
             </div>
             <v-row class="my-5" justify="center">
               <template v-if="!user && !isFetchingUser">

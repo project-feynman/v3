@@ -13,7 +13,7 @@
       <div v-if="explanation.image" class="image-container">
         <img :src="explanation.image"/>
       </div>
-              <!-- @video-click="playGivenWhatIsAvailable()" -->
+      <!-- @video-click="playGivenWhatIsAvailable()" -->
       <DoodleVideo 
         v-if="explanation.duration"
         :blackboardRef="selfRef"
@@ -25,6 +25,7 @@
       />
     </v-container>
     <footer v-if="explanation.creator" class="explanation-footer px-4 py-3">
+      <v-btn>Upvote</v-btn>
       Created by {{ explanation.isAnonymous ? 'Anonymous' : explanation.creator.firstName }}, {{ displayDate(explanation.date) }} 
     </footer>
   </v-card>
@@ -78,12 +79,11 @@ export default {
   font-weight: 500;
   margin-bottom: 15px;
 }
-
 .image-container img {
   max-width: 100%
 }
 .explanation-footer {
   background: #f9f9f9;
-  text-align: right;
+  text-align: left;
 }
 </style>

@@ -166,20 +166,17 @@ export default {
       const { POST_RECORD } = this.recordStateEnum;
       if (!newVal) return;
       if (newVal.recordState !== POST_RECORD || this.canvas) {
-        this.initTouchEvents();
-        this.initMouseEvents();
+        this.enableDrawing();
       }
     },
     currentState (oldVal, newVal) {
       if (!newVal || oldVal) return;
       const { POST_RECORD, PRE_RECORD } = this.recordStateEnum;
       if (oldVal === POST_RECORD && newVal === PRE_RECORD) {
-        this.initTouchEvents();
-        this.initMouseEvents();
+        this.enableDrawing();
       }
     },
     eraserActive () {
-      // all these are mini
       this.customCursor();
       this.canvas.getContext("2d").globalCompositeOperation = this.eraserActive
         ? "destination-out"
@@ -202,13 +199,14 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.rescaleCanvas(true);
     window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
-    this.initTouchEvents();
-    this.initMouseEvents();
+    this.enableDrawing();
 
     // Hack to fix drawing offset bug
-    this.$root.$emit("toggle-drawer");
-    this.$nextTick(() => this.$root.$emit("toggle-drawer"));
-    
+    this.$nextTick(() => {
+      this.$root.$emit("toggle-drawer")
+      this.$nextTick(() => this.$root.$emit("toggle-drawer"));
+    })
+       
     // since cursor uses material icons font, load it after fonts are ready
     document.fonts.ready.then(() => this.customCursor());
     this.drawBackground(this.background);
@@ -247,32 +245,42 @@ export default {
       this.initCopyAndPasteImage()
     },
     keepSyncingBoardWithDb () {
-      this.unsubscribe = this.strokesRef.orderBy("strokeNumber")
-        .onSnapshot(snapshot => {
-          snapshot.docChanges().forEach(change => {
-            if (change.type === "added") {
-              const newStroke = change.doc.data();
-              // check if local strokes and db strokes are in sync
-              if (this.allStrokes.length < newStroke.strokeNumber) {
-                if (this.loading) this.drawStroke(newStroke); // initial render: catch up to current state - draw quickly
-                else this.drawStroke(newStroke, this.getPointPeriod(newStroke)); // render the new stroke smoothly
-                this.allStrokes.push(newStroke);
-              }
-            } else if (change.type === "removed") {
-              // inefficient way to clear canvas for OTHER users (since the current user's UI is already updated)
-              clearTimeout(this.clearRectTimeout);
-              this.clearRectTimeout = setTimeout(this.resetBoard, 400);
+      this.unsubscribe = this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
+        if (snapshot.docs.length === 0) {
+          this.wipeBoard();
+          this.resetVariables();
+          // no need to wipe database again
+        }
+        snapshot.docChanges().forEach(change => {
+          if (change.type === "added") {
+            const newStroke = change.doc.data();
+            // check if local strokes and db strokes are in sync
+            if (this.allStrokes.length < newStroke.strokeNumber) {
+              if (this.loading) this.drawStroke(newStroke); // initial render: catch up to current state - draw quickly
+              else this.drawStroke(newStroke, this.getPointPeriod(newStroke)); // render the new stroke smoothly
+              this.allStrokes.push(newStroke);
             }
-          });
-          this.loading = false;
+          } 
         });
+        this.loading = false;
+      });
+      // Listen to images as well
     },
-    resetBoard () {
-      this.resetVariables(); // local state
-      this.wipeBoard(); // UI
+    async resetBoard () {
       if (this.isRealtime) {
-        this.deleteStrokesSubcollection() // database
+        this.disableDrawing();
+
+        // Delete strokes subcollection 
+        // allStrokes is empty if the user himself initiated the deletes
+        const promises = [];
+        for (let i = 1; i < this.allStrokes.length + 1; i++) {
+          promises.push(this.strokesRef.doc(`${i}`).delete());
+        }
+        await Promise.all(promises);
       }
+      this.wipeBoard(); // UI
+      this.resetVariables(); // local state
+      this.enableDrawing();
     },
     wipeBoard () {
       if (!this.ctx) return;
@@ -297,7 +305,6 @@ export default {
         }
         // Load image if there is a pasted image
         if (blob !== null) {
-          console.log("blob =", blob);
           var reader = new FileReader();
           reader.onload = function(event) {
             console.log(event.target.result); // data url!
@@ -359,6 +366,14 @@ export default {
     stopTimer () {
       clearInterval(this.timer);
     },
+    enableDrawing () {
+      this.initTouchEvents();
+      this.initMouseEvents();
+    },
+    disableDrawing () {
+      this.removeMouseEvents();
+      this.removeTouchEvents();
+    },
     initTouchEvents () {
       this.canvas.addEventListener("touchstart", this.touchStart, false);
       this.canvas.addEventListener("touchend", this.touchEnd, false);
@@ -366,6 +381,7 @@ export default {
       this.setStyle(this.color, this.lineWidth); // TODO: kind of sketch
     },
     removeTouchEvents () {
+      if (!this.canvas) return;
       this.canvas.removeEventListener("touchstart", this.touchStart, false);
       this.canvas.removeEventListener("touchend", this.touchEnd, false);
       this.canvas.removeEventListener("touchmove", this.touchMove, false);
@@ -376,14 +392,10 @@ export default {
       this.canvas.addEventListener("mousemove", this.mouseMove, false);
     },
     removeMouseEvents () {
+      if (!this.canvas) return;
       this.canvas.removeEventListener("mousedown", this.mouseDown, false);
       this.canvas.removeEventListener("mouseup", this.mouseUp, false);
       this.canvas.removeEventListener("mousemove", this.mouseMove, false);
-    },
-    async deleteStrokesSubcollection () {
-      for (let i = 1; i < this.allStrokes.length + 1; i++) {
-        this.strokesRef.doc(`${i}`).delete();
-      }
     },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4);
@@ -525,8 +537,7 @@ export default {
     stopRecording () {
       this.stopTimer();
       const { POST_RECORD } = this.recordStateEnum;
-      this.removeTouchEvents();
-      this.removeMouseEvents();
+      this.disableDrawing();
       this.$refs.AudioRecorder.stopRecording();
       this.currentState = POST_RECORD;
       if (this.isRealtime) {

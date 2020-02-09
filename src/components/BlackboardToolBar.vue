@@ -110,11 +110,11 @@ export default {
       blackboardAttached: true
     }
   },
-  mounted() {
+  mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
   },
-  destroyed() {
+  destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },

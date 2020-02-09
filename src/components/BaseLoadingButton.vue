@@ -7,7 +7,7 @@
   >
     <slot>
       
-      <v-icon right dark>mdi-cloud-upload</v-icon>
+      <!-- <v-icon right dark>mdi-cloud-upload</v-icon> -->
     </slot>
   </v-btn>
 </template>

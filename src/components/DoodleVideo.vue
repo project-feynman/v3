@@ -206,7 +206,8 @@ export default {
         this.handleStop();
         animation.indexOfNextFrame = 0;
         this.handlePlay();
-      } else animation.rescaleCanvas(true); // redraw = true
+      } 
+      else animation.rescaleCanvas(true); // redraw = true
     }
   }
 }
