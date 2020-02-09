@@ -5,7 +5,7 @@
       @input="newValue => $emit('input', newValue)"
       app clipped
     >
-      <v-list>
+      <v-list class="pt-0">
         <v-list-item-group>
           <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent lighten-1">
             <v-list-item-icon>
