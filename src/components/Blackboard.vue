@@ -172,16 +172,13 @@ export default {
       if (newVal.recordState !== POST_RECORD || this.canvas) {
         this.enableDrawing();
       }
-      const image = new Image();
+      let imageSrc;
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
-        image.src = this.imageUrl;
-      } else { // Already have the image locally, display it now
-        image.src = URL.createObjectURL(this.imageBlob);
-      }   
-      this.bgCanvas.height = this.canvas.scrollHeight;
-      this.bgCanvas.width = this.canvas.scrollWidth;
-      image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+        imageSrc = this.imageUrl;
+      } 
+      else imageSrc = URL.createObjectURL(this.imageBlob); // Already have the image blob locally  
+      this.displayImageAsBackground(imageSrc);
     },
     currentState (oldVal, newVal) {
       if (!newVal || oldVal) return;
@@ -303,6 +300,7 @@ export default {
         var items = (event.clipboardData || event.originalEvent.clipboardData).items;
         // console.log(JSON.stringify(items)); // will give you the mime types
         // Find pasted image among pasted items
+        
         let blob = null;
         for (var i = 0; i < items.length; i++) {
           if (items[i].type.indexOf("image") === 0) {
@@ -313,28 +311,36 @@ export default {
         // Load image if there is a pasted image
         if (blob !== null) {
           this.imageBlob = blob;
-          // console.log("Processing pasted image...");
-          // Save image to Firebase storage 
-          const storageRef = firebase.storage().ref();
-          const imageRef = storageRef.child(`images/${this.blackboardId}`);
-          // const snapshot = await imageRef.put(blob)
-          // console.log("successfully uploaded image, snapshot =", snapshot);
-          const uploadTask = imageRef.put(blob)
-          uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
-            snapshot => {}, 
-            error => console.log('error =', error), 
-            async () => {
-              // Update blackboard doc's image reference to this new image
-              const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
-              this.blackboardRef.update({
-                imageUrl
-              });
-              // Store locally 
-              this.imageUrl = imageUrl;
-            }
-          );
+          if (!this.isRealtime) {
+            const imageUrl = URL.createObjectURL(this.imageBlob);
+            this.displayImageAsBackground(imageUrl);
+          } else {
+            const storageRef = firebase.storage().ref();
+            const imageRef = storageRef.child(`images/${this.blackboardId}`);
+            const uploadTask = imageRef.put(blob)
+            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
+              snapshot => {}, 
+              error => console.log('error =', error), 
+              async () => {
+                // Update blackboard doc's image reference to this new image
+                const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
+                this.blackboardRef.update({
+                  imageUrl
+                });
+                // Store locally 
+                this.imageUrl = imageUrl;
+              }
+            );
+          }
         }
       }
+    },
+    displayImageAsBackground (src) {
+      const image = new Image();
+      image.src = src;
+      this.bgCanvas.height = this.canvas.scrollHeight;
+      this.bgCanvas.width = this.canvas.scrollWidth;
+      image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
     },
     setImage () {
       document.getElementById("whiteboard-bg-input").value = "";
