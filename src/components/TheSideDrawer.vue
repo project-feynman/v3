@@ -5,18 +5,29 @@
       @input="newValue => $emit('input', newValue)"
       app clipped
     >
-      <v-btn @click="$router.push(`/${classId}/room/${classId}`)" outlined block color="accent lighten-1">
-        Realtime blackboard
-      </v-btn>
-      <!-- NEW post -->
-      <v-btn @click="$router.push(`/${classId}/posts`)" outlined block color="accent lighten-1">
-        New Post
-      </v-btn>
-      <v-list>
-        <v-list-item-group active-class="orange--text">
+    <v-list>
+      <v-list-item-group>
+      <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent lighten-1">
+        <v-list-item-icon>
+          <v-icon>book</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Realtime board</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item @click="$router.push(`/${classId}/posts`)" color="accent lighten-1">
+          <v-list-item-icon>
+            <v-icon>book</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>New post</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
           <template v-for="post in posts">
             <div :key="post['.key']">
-              <v-list-item @click="$router.push(`/${classId}/posts/${post['.key']}`)" :key="post['.key']">
+              <v-list-item @click="$router.push(`/${classId}/posts/${post['.key']}`)" color="accent lighten-1" :key="post['.key']">
                 <v-list-item-content>
                   <v-list-item-subtitle class="text--primary" v-text="post.title"/>
                   <v-list-item-subtitle v-text="displayDate(post.date)"/>
