@@ -3,15 +3,28 @@
     <TheAppBar/>
     <v-content>
       <v-card>      
-        <template v-for="(explanation, i) in explanations">
+        <template v-for="explanation in explanations">
           <DisplayExplanation 
-            @video-save="post => saveVideo(post)"
             :key="explanation['.key']"
             :explanation="explanation" 
             :explanationsRef="explanationsRef"
+            @video-save="post => saveVideo(post)"
           />
         </template>
+        <v-btn 
+          v-if="!isCreatingExplanation"
+          @click="isCreatingExplanation = true" block color="accent lighten-1" x-large
+        >
+          Add response
+        </v-btn>
+        <v-btn 
+          v-else
+          @click="isCreatingExplanation = false" block color="accent lighten-1" outlined x-large
+        >
+          Cancel
+        </v-btn>
         <CreateExplanation
+          v-if="isCreatingExplanation"
           :newExplanationDbRef="explanationsRef.doc()"
         />
       </v-card>
@@ -35,7 +48,8 @@ export default {
     DisplayExplanation
   },
   data: () => ({
-    explanations: []
+    explanations: [],
+    isCreatingExplanation: false
   }),
   computed: {
     user () { 

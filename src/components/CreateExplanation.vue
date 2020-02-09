@@ -13,7 +13,8 @@
     <BaseLoadingButton 
       @click="submitPost()" 
       :isLoading="isButtonDisabled" 
-      class="ma-0" color="accent lighten-1" block>
+      class="ma-0" color="accent lighten-1" block
+    >
       Submit post
       <v-icon class="pl-2">
         send

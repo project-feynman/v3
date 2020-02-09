@@ -5,7 +5,7 @@
     <!-- <p>{{ explanation }}</p>  -->
     <v-container fluid>
       <h3 class="explanation-title">
-        {{ explanation.title }}
+        {{ explanation.title }}  ({{ explanation.isAnonymous ? 'Anonymous' : explanation.creator.firstName  }}) 
       </h3>
       <div class="explanation-description mb-5">
         {{ explanation.description }}
@@ -24,10 +24,9 @@
         :hasBetaOverlay="true"
       />
     </v-container>
-    <footer v-if="explanation.creator" class="explanation-footer px-4 py-3">
-      <v-btn>Upvote</v-btn>
+    <!-- <footer v-if="explanation.creator" class="explanation-footer px-4 py-3">
       Created by {{ explanation.isAnonymous ? 'Anonymous' : explanation.creator.firstName }}, {{ displayDate(explanation.date) }} 
-    </footer>
+    </footer> -->
   </v-card>
 </template>
 
@@ -66,7 +65,7 @@ export default {
   },
   methods: {
     displayDate (date) {
-      return moment(date).format('MMM Do, h:mm a');
+      return moment(date).format('MMM D, h:mm a');
     }
   }
 }
