@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner">
+  <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner" style="zIndex:9;">
     <v-app-bar-nav-icon
       v-if="!icon && $route.path !== '/'"
       @click.stop="$root.$emit('toggle-drawer')"
