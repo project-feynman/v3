@@ -1,11 +1,10 @@
-<!-- Given a explanation, display its text and its blackboard -->
 <template>
   <v-card id="display-explanation">
     <!-- Uncomment below for MUCH easier debugging -->
     <!-- <p>{{ explanation }}</p>  -->
     <v-container fluid>
       <h3 class="explanation-title">
-        {{ explanation.title }}  ({{ explanation.isAnonymous ? 'Anonymous' : explanation.creator.firstName  }}) 
+        {{ explanation.title }} (by {{ explanation.creator.firstName }})
       </h3>
       <div class="explanation-description mb-5">
         {{ explanation.description }}
@@ -13,20 +12,15 @@
       <div v-if="explanation.image" class="image-container">
         <img :src="explanation.image"/>
       </div>
-      <!-- @video-click="playGivenWhatIsAvailable()" -->
-      <DoodleVideo 
-        v-if="explanation.duration"
+      <DoodleVideo
+        v-if="explanation.hasVisual"
         :blackboardRef="selfRef"
         ref="DoodleVideo"
-        :blackboardId="explanation['.key']" 
-        :canvasId="`${explanation}`"
+        :blackboardId="explanation['.key']"
         :audioUrl="explanation.audioUrl"
         :hasBetaOverlay="true"
       />
     </v-container>
-    <!-- <footer v-if="explanation.creator" class="explanation-footer px-4 py-3">
-      Created by {{ explanation.isAnonymous ? 'Anonymous' : explanation.creator.firstName }}, {{ displayDate(explanation.date) }} 
-    </footer> -->
   </v-card>
 </template>
 
@@ -49,19 +43,9 @@ export default {
   components: {
     DoodleVideo
   },
-  data () {
-    return {
-      video: null
-    }
-  },
   computed: {
-    DoodleVideo () { // disgintuish between the Vue component and the Firestore document
-      return this.$refs.DoodleVideo;
-    },
-    // Enables DoodleVideo to fetch the strokes subcollection
-    selfRef () {
-      return this.explanationsRef.doc(this.explanation['.key']);
-    }
+    DoodleVideo () { return this.$refs.DoodleVideo; },
+    selfRef () { return this.explanationsRef.doc(this.explanation['.key']); } // enables DoodleVideo to fetch its own strokes subcollection
   },
   methods: {
     displayDate (date) {
@@ -80,9 +64,5 @@ export default {
 }
 .image-container img {
   max-width: 100%
-}
-.explanation-footer {
-  background: #f9f9f9;
-  text-align: left;
 }
 </style>
