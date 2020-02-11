@@ -17,9 +17,9 @@
             <v-row>
               <template v-for="inputField in inputFields">
                 <v-col cols="12" :key="inputField">
-                  <v-text-field 
-                    v-model="inputValues[inputField]" 
-                    :label="inputField" 
+                  <v-text-field
+                    v-model="inputValues[inputField]"
+                    :label="inputField"
                     :type="inputField"
                     required
                   />
@@ -27,7 +27,6 @@
               </template>
             </v-row>
           </v-container>
-          <!-- <small>*indicates required field</small> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -56,9 +55,7 @@ export default {
     },
     outlined: {
       type: Boolean,
-      default () { 
-        return false; 
-      }
+      default () { return false; }
     },
     disabled: {
       type: Boolean,

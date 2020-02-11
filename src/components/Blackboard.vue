@@ -27,7 +27,7 @@
             @animation-save="handleSaving({ title: 'No title yet', description: 'No description yet' })"
           >
             <BasePopupButton
-              actionName="Save video" 
+              actionName="Save video"
               :disabled="!hasUploadedAudio"
               :inputFields="['title', 'description']"
               @action-do="payload => handleSaving(payload)"
@@ -150,7 +150,7 @@ export default {
     classRef () { return db.collection("classes").doc(this.classId); },
     blackboardRef () { return this.classRef.collection("blackboards").doc(this.blackboardId); },
     strokesRef () { return this.blackboardRef.collection("strokes"); },
-    bg () { return this.background; }// mini 
+    bg () { return this.background; }// mini
   },
   watch: {
     blackboardId: {
@@ -160,7 +160,7 @@ export default {
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
       if (this.color != "rgb(62, 66, 66)") this.lineWidth = 2;  // eraser color stroke width is larger
-      else this.lineWidth = 30; 
+      else this.lineWidth = 30;
       this.setStyle(this.color, this.lineWidth);
     },
     blackboard (newVal) {
@@ -176,9 +176,9 @@ export default {
         this.imageUrl = newVal.imageUrl;
         imageSrc = this.imageUrl;
       } else {
-        // Already have the image blob locally  
+        // Already have the image blob locally
         try {
-          imageSrc = URL.createObjectURL(this.imageBlob); 
+          imageSrc = URL.createObjectURL(this.imageBlob);
         } catch {
           imageSrc = this.imageUrl;
         }
@@ -218,7 +218,7 @@ export default {
       this.$root.$emit("toggle-drawer")
       this.$nextTick(() => this.$root.$emit("toggle-drawer"));
     })
-       
+
     // since cursor uses material icons font, load it after fonts are ready
     document.fonts.ready.then(() => this.customCursor());
     this.drawBackground(this.background);
@@ -255,7 +255,7 @@ export default {
         await this.$binding("blackboard", this.blackboardRef);
         if (this.unsubscribe) this.unsubscribe();
         this.keepSyncingBoardWithDb();
-      } 
+      }
       this.initCopyAndPasteImage()
     },
     keepSyncingBoardWithDb () {
@@ -273,13 +273,12 @@ export default {
               else this.drawStroke(newStroke, this.getPointPeriod(newStroke)); // render the new stroke smoothly
               this.allStrokes.push(newStroke);
             }
-          } 
+          }
         });
         this.loading = false;
       });
     },
     async resetBoard () {
-      console.log("resetBoard()")
       if (this.isRealtime) {
         this.disableDrawing();
         // Delete strokes subcollection // allStrokes is empty if the user himself initiated the deletes
@@ -287,7 +286,6 @@ export default {
         this.allStrokes.forEach(stroke => {
           strokeDeleteRequests.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
         })
-        console.log("Successfully wiped board");
         const backgroundResetRequest = this.blackboardRef.update({
           imageUrl: ""
         });
@@ -315,14 +313,14 @@ export default {
         var items = (event.clipboardData || event.originalEvent.clipboardData).items;
         // console.log(JSON.stringify(items)); // will give you the mime types
         // Find pasted image among pasted items
-        
+
         let blob = null;
         for (var i = 0; i < items.length; i++) {
           if (items[i].type.indexOf("image") === 0) {
             blob = items[i].getAsFile();
           }
         }
-        
+
         // Load image if there is a pasted image
         if (blob !== null) {
           this.imageBlob = blob;
@@ -333,16 +331,16 @@ export default {
             const storageRef = firebase.storage().ref();
             const imageRef = storageRef.child(`images/${this.blackboardId}`);
             const uploadTask = imageRef.put(blob)
-            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
-              snapshot => {}, 
-              error => console.log('error =', error), 
+            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
+              snapshot => {},
+              error => console.log('error =', error),
               async () => {
                 // Update blackboard doc's image reference to this new image
                 const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
                 this.blackboardRef.update({
                   imageUrl
                 });
-                // Store locally 
+                // Store locally
                 this.imageUrl = imageUrl;
               }
             );
@@ -410,20 +408,18 @@ export default {
       this.drawToPoint(x, y);
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) return; 
-      // Call preventDefault()  only if we're sure the user is drawing
-      // rather than trying to scroll
-      e.preventDefault(); // preventDefault only if it's a valid touch to enable scrolling behavior 
+      if (this.isNotValidTouch(e)) return;
+      e.preventDefault(); // preventDefault only if it's a valid touch to enable scrolling behavior
       // Automatically disable touch drawing if a stylus is detected
-      if (e.touches[0].touchType === "stylus") this.disableTouch = true; 
+      if (e.touches[0].touchType === "stylus") { this.disableTouch = true; }
       this.drawToPointAndSave(e);
-      if (this.currentState === this.recordStateEnum.MID_RECORD) { 
+      if (this.currentState === this.recordStateEnum.MID_RECORD) {
         this.startTime = this.currentTime.toFixed(1); // this.startTime keeps track of current stroke's startTime
-      } 
+      }
     },
     touchMove (e) {
       e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
-      if (this.isNotValidTouch(e)) return; 
+      if (this.isNotValidTouch(e)) { return; }
       this.drawToPointAndSave(e);
     },
     touchEnd (e) {
@@ -521,8 +517,8 @@ export default {
     },
     handleRecordStateChange (newState) {
       const { MID_RECORD, POST_RECORD } = this.recordStateEnum;
-      if (newState === MID_RECORD) this.startRecording(); 
-      else if (newState === POST_RECORD) this.stopRecording(); 
+      if (newState === MID_RECORD) this.startRecording();
+      else if (newState === POST_RECORD) this.stopRecording();
       else this.tryRecordAgain();
     },
     startRecording () {
@@ -533,7 +529,7 @@ export default {
       if (this.isRealtime) {
         this.blackboardRef.update({ recordState: MID_RECORD });
       }
-      this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button 
+      this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button
     },
     stopRecording () {
       this.stopTimer();
@@ -586,8 +582,8 @@ export default {
       // Initialize a new blackboard for the workspace
       const roomId = this.$route.params.room_id;
       const boardsRef = db.collection("classes").doc(this.classId).collection("blackboards");
-      const newBoardRef = await boardsRef.add({ 
-        recordState: this.recordStateEnum.PRE_RECORD 
+      const newBoardRef = await boardsRef.add({
+        recordState: this.recordStateEnum.PRE_RECORD
       });
       const roomsRef = db.collection("rooms").doc(roomId);
       roomsRef.update({
