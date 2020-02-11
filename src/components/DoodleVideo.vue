@@ -1,12 +1,6 @@
 <template>
   <div style="height: 100%">
-    <div 
-      @click="$emit('click')" 
-      @mouseover="mouseHover = true" 
-      @mouseleave="mouseHover = false" 
-      style="height: 100%; width: 100%;"
-    >
-      <!-- Render thumbnail on the canvas -->
+    <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <canvas
         :id="`myCanvas-${blackboardId}`"
         style="width: 100%; height: 1; background-color: rgb(62, 66, 66)"
@@ -15,11 +9,8 @@
     <AudioRecorder
       v-if="audioUrl"
       :audioUrl="audioUrl"
-      @recorder-loading="hasFetchedAudio = false"
-      @play="handlePlay()"
-      @stop="handleStop()"
-      @seeking="handleSeeking()"
-      @recorder-loaded="hasFetchedAudio = true"
+      @recorder-loading="hasFetchedAudio = false" @recorder-loaded="hasFetchedAudio = true"
+      @play="handlePlay()" @stop="handleStop()" @seeking="handleSeeking()"
       ref="audioRecorder"
     />
   </div>
@@ -48,9 +39,7 @@ export default {
     audioUrl: String,
     hasBetaOverlay: {
       type: Boolean,
-      default () {
-        return false;
-      }
+      default () { return false; }
     }
   },
   components: {
@@ -58,27 +47,25 @@ export default {
     AudioRecorder
   },
   mixins: [CanvasDrawMixin],
-  data () {
-    return {
-      canvas: null,
-      ctx: null,
-      hasFetchedStrokes: false,
-      hasFetchedAudio: false,
-      allStrokes: [],
-      hasPreparedFrames: false,
-      isQuickplaying: false,
-      recursiveSync: null,
-      mouseHover: false,
-      indexOfNextStroke: 0,
-      indexOfNextPoint: 0,
-    }
-  },
+  data: () => ({
+    canvas: null,
+    ctx: null,
+    hasFetchedStrokes: false,
+    hasFetchedAudio: false,
+    allStrokes: [],
+    hasPreparedFrames: false,
+    isQuickplaying: false,
+    recursiveSync: null,
+    mouseHover: false,
+    indexOfNextStroke: 0,
+    indexOfNextPoint: 0,
+  }),
   computed: {
     hasOverlay () {
       return this.hasLoadedAvailableResources && (!this.isSyncing && !this.isQuickplaying)
     },
     hasLoadedAvailableResources () {
-      return (this.hasFetchedAudio || !this.audioUrl) 
+      return (this.hasFetchedAudio || !this.audioUrl)
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
     hasVisualAndAudio () {
@@ -97,7 +84,7 @@ export default {
     }
   },
   async created () {
-    if (this.thumbnail) return;
+    if (this.thumbnail) { return; }
     this.fetchStrokes();  // auto-fetch strokes if no thumbnail is available
   },
   async mounted () {
@@ -113,25 +100,25 @@ export default {
   methods: {
     setCanvasHeight () {
       const setHeight = resolve => {
-        const { scrollHeight, scrollWidth } = this.canvas; 
+        const { scrollHeight, scrollWidth } = this.canvas;
         if (Math.round(scrollHeight) === Math.round(0.6*scrollWidth)) {
           return;
         }
-        this.canvas.height = 0.6*scrollWidth;
+        this.canvas.height = 9/16 * scrollWidth;
         resolve();
       }
       return new Promise(resolve => setTimeout(setHeight(resolve), 0));
     },
     async fetchStrokes () {
       const promise = new Promise(async resolve => {
-        if (!this.blackboardId) { 
-          resolve(); 
+        if (!this.blackboardId) {
+          resolve();
           return;
         }
         const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
         this.allStrokes = await helpers.getCollectionFromDB(strokesRef);
         this.$nextTick(() => {
-          if (this.allStrokes.length === 0) return;
+          if (this.allStrokes.length === 0) { return; }
           this.hasFetchedStrokes = true;
           this.rescaleCanvas(true);
           this.$emit("strokes-ready")
@@ -141,33 +128,33 @@ export default {
       return promise;
     },
     playGivenWhatIsAvailable () { // called because the video is ready to play i.e. hasOverlay === true
-      if (!this.hasLoadedAvailableResources) return;
-      else if (this.hasVisualAndAudio) this.handlePlay(); // silent animation
-      else if (this.blackboardId) this.quickplay();
+      if (!this.hasLoadedAvailableResources) { return; }
+      else if (this.hasVisualAndAudio) { this.handlePlay(); }// silent animation
+      else if (this.blackboardId) { this.quickplay(); }
     },
     async quickplay () {
-      if (!this.hasFetchedStrokes) return;
+      if (!this.hasFetchedStrokes) { return; }
       this.isQuickplaying = true;
       await this.quickplay();
       this.isQuickplaying = false;
     },
     resizeVideo () {
-      if (!this.hasFetchedStrokes) return;
+      if (!this.hasFetchedStrokes) { return; }
       // If we are in playback, just resize, stop, reset, and play. This will re-render. Otherwise, redraw everything.
       if (this.recursiveSync) {
         this.rescaleCanvas(false);
         this.handleStop();
         this.indexOfNextFrame = 0;
         this.handlePlay();
-      } 
+      }
       else this.rescaleCanvas(true); // redraw = true
     },
     handlePlay () {
       // TODO: handlePlay() is called twice because the audio player has an @play event
       const { audioRecorder } = this.$refs;
       if (!this.hasPreparedFrames) { // create the frames and order them by time
-        this.prepareFrames(audioRecorder.getAudioTime); 
-        this.hasPreparedFrames = true
+        this.prepareFrames(audioRecorder.getAudioTime);
+        this.hasPreparedFrames = true;
       }
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear the initial preview or completed video.
       if (!this.recursiveSync) { // now constantly sync against the audio player's progress
@@ -189,10 +176,7 @@ export default {
       const strokeIndex = frame[0];
       const pointIndex = frame[1];
       const stroke = this.allStrokes[strokeIndex];
-
-      // Set line style, since multiple strokes can be drawn simultaneously.
-      this.setStyle(stroke.color, stroke.lineWidth);
-      // TODO: use $_ instead of only _ or $ to avoid overwritting Vue's methods
+      this.setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
       this._stroke(stroke.points, pointIndex, stroke.isErasing);
     },
     frameStartTime(frame) {
@@ -244,7 +228,7 @@ export default {
       if (this.indexOfNextFrame !== n && !once) {
         // TODO: never catches up to n for some reason
         // The event loop takes some time, so we wait AT LEAST the timeout duraiton
-        // Recompute the current time here. 
+        // Recompute the current time here.
         let timeout = 1000 * (this.nextFrameStartTime() - this.getTimeInSeconds());
         if (timeout < 0) timeout = 0;
         // Recursively call on self. We do not use `setInterval` to prevent overlapping calls to this method.
@@ -252,7 +236,7 @@ export default {
       }
     },
     async prepareFrames (getTimeInSeconds) {
-      if (!this.allStrokes || this.allStrokes.length === 0) return;
+      if (!this.allStrokes || this.allStrokes.length === 0) { return; }
       // Create ordering of frames in `[[strokeIndex, pointIndex], ...]` format.
       this.allFrames = [];
       for (let i = 0; i < this.allStrokes.length; i++) {
@@ -262,8 +246,8 @@ export default {
       }
       this.allFrames.sort((a, b) => this.frameStartTime(a) - this.frameStartTime(b));
       // Update the shared time method.
-      this.getTimeInSeconds = getTimeInSeconds; 
-      this.indexOfNextFrame = 0; 
+      this.getTimeInSeconds = getTimeInSeconds;
+      this.indexOfNextFrame = 0;
     }
   }
 }
