@@ -2,26 +2,17 @@
   <div>
     <TheAppBar/>
     <v-content>
-      <v-card>      
-        <template v-for="explanation in explanations">
-          <DisplayExplanation 
-            :key="explanation['.key']"
-            :explanation="explanation" 
-            :explanationsRef="explanationsRef"
-            @video-save="post => saveVideo(post)"
-          />
-        </template>
-        <v-btn 
-          v-if="!isCreatingExplanation"
-          @click="isCreatingExplanation = true" block color="accent lighten-1" x-large
+      <v-card>
+        <DisplayExplanation
+          v-for="explanation in explanations"
+          :explanation="explanation" :explanationsRef="explanationsRef" :key="explanation['.key']"
+          @video-save="post => saveVideo(post)"
+        />
+        <v-btn
+          @click="isCreatingExplanation = !isCreatingExplanation"
+          block color="accent lighten-1" :outlined="isCreatingExplanation" x-large
         >
-          Add response
-        </v-btn>
-        <v-btn 
-          v-else
-          @click="isCreatingExplanation = false" block color="accent lighten-1" outlined x-large
-        >
-          Cancel
+          {{ isCreatingExplanation? 'CANCEL' : 'ADD RESPONSE' }}
         </v-btn>
         <CreateExplanation
           v-if="isCreatingExplanation"
@@ -52,24 +43,12 @@ export default {
     isCreatingExplanation: false
   }),
   computed: {
-    user () { 
-      return this.$store.state.user;
-    },
-    classId () {
-      return this.$route.params.class_id;
-    },
-    postId () {
-      return this.$route.params.post_id;
-    },
-    classRef () {
-      return db.collection("classes").doc(this.classId);
-    },
-    postRef () {
-      return this.classRef.collection("posts").doc(this.postId);
-    },
-    explanationsRef () { 
-      return this.postRef.collection("explanations");
-    }
+    user () { return this.$store.state.user; },
+    classId () { return this.$route.params.class_id; },
+    postId () { return this.$route.params.post_id; },
+    classRef () { return db.collection("classes").doc(this.classId); },
+    postRef () { return this.classRef.collection("posts").doc(this.postId); },
+    explanationsRef () { return this.postRef.collection("explanations"); }
   },
   watch: {
     postId: {
@@ -79,12 +58,10 @@ export default {
   },
   methods: {
     syncExplanationsWithDb () {
-      // onSnapshot does NOT return a promise
-      this.explanationsRef.onSnapshot(querySnapshot => {
+      this.explanationsRef.onSnapshot(querySnapshot => { // onSnapshot does NOT return a promise
         const explanations = []; // want to update this.replies at once to not confuse Vue with multiple updates
         querySnapshot.forEach(doc => explanations.push({...doc.data(), ".key": doc.id }));
-        // console.log("Current replies ", explanations.join(", "));
-        this.explanations = explanations; 
+        this.explanations = explanations;
       });
     }
   }
