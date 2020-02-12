@@ -1,6 +1,6 @@
-.DS_Store
 node_modules
 /dist
+.DS_Store
 
 # local env files
 .env.local
@@ -25,5 +25,6 @@ yarn-error.log*
 *firebase-debug.log
 
 # Sensitive data
-functions/config
-functions/feynman*
+functions/sendgrid.json
+functions/adminCredentials.json
+
