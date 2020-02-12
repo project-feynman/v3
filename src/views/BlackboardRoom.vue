@@ -1,6 +1,6 @@
 <template>
   <div id="room">
-    <v-container v-if="simpleUser && room" fluid class="pa-0">
+    <v-content v-if="simpleUser && room">
       <!-- <p>room {{ room }}</p> -->
       <!-- "v-if="...room.whiteboardID"" needed because room goes from null to {} (surprisingly), before becoming fully populated -->
       <Blackboard
@@ -9,7 +9,7 @@
         :blackboardId="room.blackboardId"
         :isRealtime="true"
       />
-    </v-container>
+    </v-content>
   </div>
 </template>
 
