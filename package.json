@@ -6,7 +6,6 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
-    "lint": "vue-cli-service lint",
     "deploy": "firebase deploy --only hosting",
     "test": "vue-cli-service test:unit"
   },
@@ -14,7 +13,6 @@
     "@google-cloud/logging": "^4.5.2",
     "firebase": "^7.5.2",
     "moment": "^2.24.0",
-    "register-service-worker": "^1.5.2",
     "sizeof": "^1.0.0",
     "vue": "^2.6.10",
     "vue-firestore": "^0.3.22",

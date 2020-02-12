@@ -69,18 +69,12 @@ export default {
     }
   },
   computed: {
-    user () {
-      return this.$store.state.user;
-    },
-    classId () {
-      return this.$route.params.class_id;
-    },
+    user () { return this.$store.state.user; },
+    classId () { return this.$route.params.class_id; },
     postsRef () {
       return db.collection("classes").doc(this.classId).collection("posts").orderBy("date");
     },
-    roomRef () {
-      return db.collection("rooms").doc(this.classId);
-    }
+    roomRef () { return db.collection("rooms").doc(this.classId); }
   },
   watch: {
     classId: {
