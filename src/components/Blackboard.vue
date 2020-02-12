@@ -206,7 +206,7 @@ export default {
   mounted () {
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
-    setTimeout(()=>this.rescaleCanvas(true),0)
+    setTimeout(()=>this.rescaleCanvas(true),0);
     window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
     this.enableDrawing();
 
