@@ -14,13 +14,12 @@
       <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank">
         GITHUB
       </v-btn>
-      <template v-if="user && $route.path == '/'">
-        <BasePopupButton
-          actionName="Create class" 
-          :inputFields="['class name', 'class description']"
-          @action-do="payload => createClass(payload)"
-        />
-      </template>
+      <!-- <BasePopupButton
+        v-if="user && $route.path === '/'"
+        actionName="Create class" 
+        :inputFields="['class name', 'class description']"
+        @action-do="payload => createClass(payload)"
+      /> -->
       <template v-if="user">
         <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
         <TheDropdownMenu
