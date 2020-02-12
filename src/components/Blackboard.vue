@@ -233,10 +233,10 @@ export default {
     }
   },
   updated () {
-    if (!this.isRealtime) this.drawBackground(this.background);
+    if (!this.isRealtime) { this.drawBackground(this.background); }
   },
   beforeDestroy() {
-    if (this.unsubscribe) this.unsubscribe();
+    if (this.unsubscribe) { this.unsubscribe(); }
   },
   destroyed () {
     // TODO: refactor this to a "resize" module
@@ -281,14 +281,11 @@ export default {
     async resetBoard () {
       if (this.isRealtime) {
         this.disableDrawing();
-        // Delete strokes subcollection // allStrokes is empty if the user himself initiated the deletes
         const strokeDeleteRequests = [];
         this.allStrokes.forEach(stroke => {
           strokeDeleteRequests.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
         })
-        const backgroundResetRequest = this.blackboardRef.update({
-          imageUrl: ""
-        });
+        const backgroundResetRequest = this.blackboardRef.update({ imageUrl: "" });
         await Promise.all([...strokeDeleteRequests, backgroundResetRequest]);
       }
       this.wipeBoard(); // UI
