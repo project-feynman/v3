@@ -5,7 +5,7 @@
       <v-card>
         <DisplayExplanation
           v-for="explanation in explanations"
-          :explanation="explanation" :explanationsRef="explanationsRef" :key="explanation['.key']"
+          :explanation="explanation" :explanationsRef="explanationsRef" :key="explanation.id"
           @video-save="post => saveVideo(post)"
         />
         <v-btn
@@ -60,7 +60,7 @@ export default {
     syncExplanationsWithDb () {
       this.explanationsRef.onSnapshot(querySnapshot => { // onSnapshot does NOT return a promise
         const explanations = []; // want to update this.replies at once to not confuse Vue with multiple updates
-        querySnapshot.forEach(doc => explanations.push({...doc.data(), ".key": doc.id }));
+        querySnapshot.forEach(doc => explanations.push({...doc.data(), "id": doc.id }));
         this.explanations = explanations;
       });
     }

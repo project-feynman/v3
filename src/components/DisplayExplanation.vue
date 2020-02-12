@@ -16,7 +16,7 @@
         v-if="explanation.hasVisual"
         :blackboardRef="selfRef"
         ref="DoodleVideo"
-        :blackboardId="explanation['.key']"
+        :blackboardId="explanation.id"
         :audioUrl="explanation.audioUrl"
         :hasBetaOverlay="true"
       />
@@ -25,8 +25,7 @@
 </template>
 
 <script>
-import DoodleVideo from "@/components/DoodleVideo.vue"
-import db from "@/database.js";
+import DoodleVideo from "@/components/DoodleVideo.vue";
 import moment from "moment";
 
 export default {
@@ -40,17 +39,13 @@ export default {
       required: true
     }
   },
-  components: {
-    DoodleVideo
-  },
+  components: { DoodleVideo },
   computed: {
     DoodleVideo () { return this.$refs.DoodleVideo; },
-    selfRef () { return this.explanationsRef.doc(this.explanation['.key']); } // enables DoodleVideo to fetch its own strokes subcollection
+    selfRef () { return this.explanationsRef.doc(this.explanation.id); } // enables DoodleVideo to fetch its own strokes subcollection
   },
   methods: {
-    displayDate (date) {
-      return moment(date).format('MMM D, h:mm a');
-    }
+    displayDate (date) { return moment(date).format('MMM D, h:mm a'); }
   }
 }
 </script>
