@@ -1,5 +1,8 @@
 node_modules
+
+# production related files
 /dist
+firestore.indexes.json
 .DS_Store
 
 # local env files
@@ -20,6 +23,8 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+.eslintrc.js
+.editorconfig
 
 *.vimrc
 *firebase-debug.log

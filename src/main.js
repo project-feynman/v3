@@ -6,13 +6,11 @@ import store from './store'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import VueFirestore from 'vue-firestore'
-import VueChatScroll from 'vue-chat-scroll'
 import VuePlyr from 'vue-plyr'
 import 'vue-plyr/dist/vue-plyr.css'
 import vuetify from './plugins/vuetify'
 
 // Plugins 
-Vue.use(VueChatScroll)
 Vue.use(VueFirestore)
 Vue.use(VuePlyr)
 

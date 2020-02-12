@@ -78,7 +78,6 @@
 <script>
 import firebase from "firebase/app";
 import "firebase/functions";
-import slugify from "slugify";
 import db from "@/database.js";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
