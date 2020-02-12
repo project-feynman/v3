@@ -270,7 +270,7 @@ export default {
             // check if local strokes and db strokes are in sync
             if (this.allStrokes.length < newStroke.strokeNumber) {
               if (this.loading) this.drawStroke(newStroke); // initial render: catch up to current state - draw quickly
-              else this.drawStroke(newStroke, this.getPointPeriod(newStroke)); // render the new stroke smoothly
+              else this.drawStroke(newStroke, this.getPointDuration(newStroke)); // render the new stroke smoothly
               this.allStrokes.push(newStroke);
             }
           }
@@ -313,9 +313,8 @@ export default {
         var items = (event.clipboardData || event.originalEvent.clipboardData).items;
         // console.log(JSON.stringify(items)); // will give you the mime types
         // Find pasted image among pasted items
-
         let blob = null;
-        for (var i = 0; i < items.length; i++) {
+        for (let i = 0; i < items.length; i++) {
           if (items[i].type.indexOf("image") === 0) {
             blob = items[i].getAsFile();
           }
