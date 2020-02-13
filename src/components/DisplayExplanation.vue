@@ -4,7 +4,9 @@
     <!-- <p>{{ explanation }}</p>  -->
     <v-container fluid>
       <h3 class="explanation-title">
-        {{ explanation.title }} (by {{ explanation.creator.firstName }})
+        {{ explanation.title }} 
+        (by {{ explanation.creator.firstName }}, 
+        {{ displayDate(explanation.date) }})
       </h3>
       <div class="explanation-description mb-5">
         {{ explanation.description }}

@@ -132,7 +132,7 @@ export default {
       else if (this.hasVisualAndAudio) { this.handlePlay(); }// silent animation
       else if (this.blackboardId) { this.quickplay(); }
     },
-    async quickplay () {
+    async playSilentAnimation () {
       if (!this.hasFetchedStrokes) { return; }
       this.isQuickplaying = true;
       await this.quickplay();

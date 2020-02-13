@@ -3,6 +3,7 @@ node_modules
 # production related files
 /dist
 firestore.indexes.json
+.firebaserc
 .DS_Store
 
 # local env files

@@ -48,7 +48,9 @@ export default {
     postId () { return this.$route.params.post_id; },
     classRef () { return db.collection("classes").doc(this.classId); },
     postRef () { return this.classRef.collection("posts").doc(this.postId); },
-    explanationsRef () { return this.postRef.collection("explanations"); }
+    explanationsRef () { 
+      return this.postRef.collection("explanations"); 
+    }
   },
   watch: {
     postId: {

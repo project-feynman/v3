@@ -14,12 +14,12 @@
       <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank">
         GITHUB
       </v-btn>
-      <!-- <BasePopupButton
+      <BasePopupButton
         v-if="user && $route.path === '/'"
         actionName="Create class" 
         :inputFields="['class name', 'class description']"
         @action-do="payload => createClass(payload)"
-      /> -->
+      />
       <template v-if="user">
         <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
         <TheDropdownMenu
@@ -92,41 +92,39 @@
         <v-container fluid class="py-5">
           <div v-if="!user && !isFetchingUser" key="loading...">
             <v-row justify="center" class="py-0 text-center">
-              <template v-for="(tutorial, i) in tutorials">
-                <v-col cols="12" sm="10" md="4" :key="tutorial.blackboardId">
-                  <v-card elevation="5">
-                    <v-card-subtitle class="black--text font-weight-medium">
-                      {{ tutorial.description }}
-                    </v-card-subtitle>
-                    <v-img :aspect-ratio="16/9">
-                      <DoodleVideo
-                        :ref="`DoodleVideo${i+1}`"
-                        :blackboardId="tutorial.blackboardId"
-                        :blackboardRef="tutorial.blackboardRef"
-                        @strokes-ready="i === 0? startDemo() : 0"
-                      />      
-                    </v-img>
-                  </v-card>
-                </v-col>
-              </template>
+              <v-col 
+                v-for="(tutorial, i) in tutorials" 
+                cols="12" sm="10" md="4" :key="tutorial.blackboardId"
+              >
+                <v-card elevation="5">
+                  <v-card-subtitle class="black--text font-weight-medium">
+                    {{ tutorial.description }}
+                  </v-card-subtitle>
+                  <v-img :aspect-ratio="16/9">
+                    <DoodleVideo
+                      :ref="`DoodleVideo${i+1}`"
+                      :blackboardId="tutorial.blackboardId"
+                      :blackboardRef="tutorial.blackboardRef"
+                      @strokes-ready="startDemo()"
+                    />      
+                  </v-img>
+                </v-card>
+              </v-col>
             </v-row>
           </div>
                             
           <!-- Display classes -->
           <div v-else-if="user" key="class-list">
             <v-row align="stretch" class="enrolled-classes">
-              <template v-for="enrolledClass in user.enrolledClasses")>
-                <v-col cols="12" sm="4" md="3" :key="enrolledClass.id">
-                  <v-card  @click="$router.push(`${enrolledClass.id}/posts/`)">
-                    <v-card-title class="title">
-                      {{ enrolledClass.name }}
-                    </v-card-title>
-                    <v-card-subtitle>
-                      No description yet
-                    </v-card-subtitle>
-                  </v-card>
-                </v-col>
-              </template>
+              <v-col 
+                v-for="enrolledClass in user.enrolledClasses" 
+                cols="12" sm="4" md="3" :key="enrolledClass.id"
+              >
+                <v-card @click="$router.push(`${enrolledClass.id}/posts/`)">
+                  <v-card-title class="title">{{ enrolledClass.name }}</v-card-title>
+                  <v-card-subtitle>No description yet</v-card-subtitle>
+                </v-card>
+              </v-col>
             </v-row>
           </div>
         </v-container>
@@ -158,9 +156,7 @@ export default {
   },
   computed: {
     ...mapState(["user", "isFetchingUser"]),
-    userRef () {
-      return db.collection("users").doc(this.user.uid);
-    }
+    userRef () { return db.collection("users").doc(this.user.uid); },
   },
   data () {
     return {
@@ -169,19 +165,19 @@ export default {
       snackbarMessage: "",
       tutorials: [
         { 
-          blackboardId: "r0rqij6hpxnx12220xf1lm",
-          blackboardRef: this.getBlackboardRef("r0rqij6hpxnx12220xf1lm"),
-          description: "We think university is fun when people help each other"
+          blackboardId: "iqd5rFyuFYL8TDlCnPfe",
+          blackboardRef: this.getBlackboardRef("iqd5rFyuFYL8TDlCnPfe"),
+          description: "We believe MIT is fun when people share knowledge"
         },
         { 
-          blackboardId: "gm0h4wqrwhnrwnpnwxclhj",
-          blackboardRef: this.getBlackboardRef("gm0h4wqrwhnrwnpnwxclhj"),
-          description: "Join your classes to ask & answer questions"
+          blackboardId: "Dl3aCLcev04pvRG4Duc2",
+          blackboardRef: this.getBlackboardRef("Dl3aCLcev04pvRG4Duc2"),
+          description: "Use text, images, drawings and/or voice to communicate"
         },
         { 
-          blackboardId: "4lx2bg9nk9glvhk68ba5n",
-          blackboardRef: this.getBlackboardRef("4lx2bg9nk9glvhk68ba5n"),
-          description: "Express ideas efficiently by drawing and talking"
+          blackboardId: "r2FWkTWgRB64MGbkQuHC",
+          blackboardRef: this.getBlackboardRef("r2FWkTWgRB64MGbkQuHC"),
+          description: "Explanations accumulate as people help each other"
         }
       ]
     }
@@ -198,18 +194,20 @@ export default {
   },
   methods: {
     getBlackboardRef (explanationId) {
-      return db.collection("classes").doc("P2NYaQfwhb1WiJAMVhJQ")
-        .collection("posts").doc(explanationId)
+      return db.collection("classes").doc("jpQFXYNXCgCScaHZPL27")
+        .collection("posts").doc("qdlx2j0j0k4lbbb6h28zo")
         .collection("explanations").doc(explanationId);
     },
     startDemo () {
       const { DoodleVideo1, DoodleVideo2, DoodleVideo3 } = this.$refs;
+      if (!DoodleVideo1[0].hasFetchedStrokes || DoodleVideo1[0].isQuickplaying) { 
+        return; 
+      }
       // need next tick so the quickplay starts after the resize event
       this.$nextTick(async () => {
-        // Don't know why DoodleVideo returns arrays
-        await DoodleVideo1[0].quickplay();
-        await DoodleVideo2[0].quickplay();
-        DoodleVideo3[0].quickplay();
+        await DoodleVideo1[0].playSilentAnimation(); // don't know why DoodleVideo returns arrays
+        await DoodleVideo2[0].playSilentAnimation();
+        DoodleVideo3[0].playSilentAnimation();
       })
     },
     async fetchClasses () {
@@ -217,20 +215,15 @@ export default {
       this.schoolClasses = await helpers.getCollectionFromDB(ref);
     },
     enrollInClass ({ name, ".key": id }) {    
-      // Abort if user is already enrolled in the class  
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
-          if (classObj.id === id) return; 
+          if (classObj.id === id) { return; } 
         }
       }
-      // Add the new class
-      const classObj = {
-        id,
-        name,
-        notifFrequency: CONSTANTS.notifFrequencyEnum.ALWAYS
-      }
+      const { ALWAYS } = CONSTANTS.notifFrequencyEnum;
+      const classSetting = { id, name, notifFrequency: ALWAYS };
       db.collection("users").doc(this.user.uid).update({
-        enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classObj)
+        enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
       });
     },
     async updateNotifSetting (payload) {
@@ -242,19 +235,16 @@ export default {
       return; // TODO
     },
     async createClass ({ "class name": name, "class description": description }) {
-      // Check if class exists already
       this.fetchClasses();
       for (const c of this.schoolClasses) {
-        if (c.name === name) return; 
+        if (c.name === name) { return; } 
       }
-      // Create it
       const classDoc = await db.collection("classes").add({
         name,
         description: description || "No description yet",
         tabs: ["New"],
         tags: [],
       });
-      // Enroll in it 
       await this.userRef.update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
           id: classDoc.id,
@@ -277,8 +267,12 @@ export default {
         });
     },
     signUp ({ "first name": firstName, "last name": lastName, email, password }) {
-      firebase.auth()
-        .createUserWithEmailAndPassword(email, password)
+      if (!firstName || !lastName) { 
+        this.snackbarMessage = "Don't forget to enter both your first name and last name!"
+        this.snackbar = true;
+        return;
+      }
+      firebase.auth().createUserWithEmailAndPassword(email, password)
         .then(async result => {
           this.snackbarMessage = `Welcome to ExplainMIT!`;
           this.snackbar = true;
@@ -294,15 +288,14 @@ export default {
         var letters = '0123456789ABCDEF'
         var color = '#'
         for (let i=0; i<6; i++) {
-          color += letters[Math.floor(Math.random() * 16)]
+          color += letters[Math.floor(Math.random() * 16)];
         }
-        return color
+        return color;
       }
       const color = getRandomColor();
       const enrolledClasses = [];
       const newUser = { uid, email, firstName, lastName, color, enrolledClasses };
-      const newUserRef = db.collection("users").doc(uid);
-      newUserRef.set(newUser);
+      db.collection("users").doc(uid).set(newUser);
     },
     signOut () {
       firebase.auth().signOut();
