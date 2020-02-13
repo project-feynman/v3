@@ -47,7 +47,7 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{fir
 });
 
 // Sends email to entire class whenever a new question is created
-exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async post => {
+exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (post, context) => {
   const { mitClass } = post.data();
   const classSetting = { id: mitClass.id, name: mitClass.name, notifFrequency: "always" };
   const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classSetting);
@@ -56,8 +56,13 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
     const { firstName, email } = classmateDoc.data();
     const recipient = email;
     const subject = `Your classmate ${firstName} posted something`;
-    const html = `<h2>Title: ${post.data().title}</h2><p>Description: ${post.data().description}</p>`;
-    sendEmail(recipient, subject, "random text", html);
+    const { classId, postId } = context.params;
+    const html = `
+      <h2>Title: ${post.data().title}</h2>
+      <p>Description: ${post.data().description}</p>
+      <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
+    `;
+    sendEmail(recipient, subject, "A new post!", html);
   })
 });
 
@@ -68,55 +73,23 @@ exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}
   const { creator: explanationCreator, title, description } = explanation.data();
   if (postCreator.email === explanationCreator.email) { return; }
   const subject = `${explanationCreator.firstName} replied to your post`;
-  const html = `<h2>Title: ${title}</h2>
-                <p>Description: ${description}</p>`;
-  sendEmail(
-    postCreator.email, 
-    subject, 
-    "This is some random text",
-    html
-  );
+  const html = `
+    <h2>Title: ${title}</h2>
+    <p>Description: ${description}</p>
+    <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
+  `;
+  sendEmail(postCreator.email, subject, "A new reply!", html);
 });
 
-exports.recursiveDelete = functions.runWith({ timeoutSeconds: 540, memory: "2GB" })
-  .https.onCall((data, context) => {
-    const { path } = data;
-    return firebase_tools.firestore
-      .delete(path, {
-        project: process.env.GCLOUD_PROJECT,
-        recursive: true,
-        yes: true,
-        token: functions.config().fb.token // 'token' must be set in the functions config, and can be generated at the command line by running 'firebase login:ci'.
-      })
-      .then(() => ({ path }));
-  });
-
-      // // Only allow admin users to execute this function.
-    // if (!(context.auth && context.auth.token && context.auth.token.admin)) {
-    //   throw new functions.https.HttpsError(
-    //     'permission-denied',
-    //     'Must be an administrative user to initiate delete.'
-    //   );
-    // }
-
-    // /* AUTO-CREATED FUNCTIONS */
-// /**
-//  * Callable function that creates a custom auth token with the
-//  * custom attribute "admin" set to true.
-//  *
-//  * See https://firebase.google.com/docs/auth/admin/create-custom-tokens
-//  * for more information on creating custom tokens.
-//  *
-//  * @param {string} data.uid the user UID to set on the token.
-//  */
-// exports.mintAdminToken = functions.https.onCall((data, context) => {
-//   const uid = data.uid;
-
-//   return admin
-//     .auth()
-//     .createCustomToken(uid, { admin: true })
-//     .then(function(token) {
-//       return { token: token };
-//     });
-// });
+exports.recursiveDelete = functions.runWith({ timeoutSeconds: 540, memory: "2GB" }).https.onCall((data, context) => {
+  const { path } = data;
+  return firebase_tools.firestore
+    .delete(path, {
+      project: process.env.GCLOUD_PROJECT,
+      recursive: true,
+      yes: true,
+      token: functions.config().fb.token // 'token' must be set in the functions config, and can be generated at the command line by running 'firebase login:ci'.
+    })
+    .then(() => ({ path }));
+});
 
