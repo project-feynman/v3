@@ -96,6 +96,7 @@ export default {
         audioUrl: Blackboard.audioUrl || "",
         duration: Blackboard.currentTime || 0,
         image: this.addedImage || 0,
+        thumbnail: Blackboard.createThumbnail() || ""
       }
       // The first explanation will create a new post
       if (this.newPostDbRef) {

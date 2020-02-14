@@ -589,7 +589,7 @@ export default {
     createThumbnail () {
       this.ctx.fillStyle = "rgb(62, 66, 66)";
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      this.drawStrokesInstantly();
+      this.$_drawMixin_drawStrokesInstantly();
       return this.canvas.toDataURL();
     },
     customCursor () {
