@@ -13,7 +13,7 @@ export default {
     async $_drawMixin_quickplay () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       for (const stroke of this.allStrokes) {
-        await this.drawStroke(stroke, 0); // draw 1 stroke per event loop
+        await this.$_drawMixin_drawStroke(stroke, 0); // draw 1 stroke per event loop
       }
     },
     $_drawMixin_drawStrokesInstantly () {
