@@ -78,7 +78,6 @@
 <script>
 import firebase from "firebase/app";
 import "firebase/functions";
-import slugify from "slugify";
 import db from "@/database.js";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
@@ -95,7 +94,7 @@ export default {
     },
     isRealtime: Boolean,
     visible: Boolean,
-    // TODO: should be encapsulated within this component
+    // TODO: background should be encapsulated within this component
     background: String
   },
   mixins: [CanvasDrawMixin],
@@ -128,6 +127,8 @@ export default {
       // TODO: refactor currentStroke to be an object so startTiem and endTime aren't necessary
       startTime: 0,
       endTime: null,
+      lastX: -1,
+      lastY: -1,
       touchX: null,
       touchY: null,
       mouseX: 0,
@@ -161,7 +162,7 @@ export default {
     color () {
       if (this.color != "rgb(62, 66, 66)") this.lineWidth = 2;  // eraser color stroke width is larger
       else this.lineWidth = 30;
-      this.setStyle(this.color, this.lineWidth);
+      this.$_drawMixin_setStyle(this.color, this.lineWidth);
     },
     blackboard (newVal) {
       // TODO: this gets triggered 2x more often than I expect, find out why
@@ -206,8 +207,8 @@ export default {
   mounted () {
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
-    this.rescaleCanvas(true);
-    window.addEventListener("resize", () => this.rescaleCanvas(true), false); // for mini blackboard
+    this.$_drawMixin_rescaleCanvas(true);
+    window.addEventListener("resize", () => this.$_drawMixin_rescaleCanvas(true), false); // for mini blackboard
     this.enableDrawing();
 
     this.bgCanvas = document.getElementById("background-canvas");
@@ -380,7 +381,7 @@ export default {
       this.canvas.addEventListener("touchstart", this.touchStart, false);
       this.canvas.addEventListener("touchend", this.touchEnd, false);
       this.canvas.addEventListener("touchmove", this.touchMove, false);
-      this.setStyle(this.color, this.lineWidth); // TODO: kind of sketch
+      this.$_drawMixin_setStyle(this.color, this.lineWidth); // TODO: kind of sketch
     },
     removeTouchEvents () {
       if (!this.canvas) return;
@@ -446,7 +447,7 @@ export default {
       this.lastX = -1;
     },
     drawToPointAndSave(e) {
-      this.setStyle(this.color, this.lineWidth); //mini
+      this.$_drawMixin_setStyle(this.color, this.lineWidth); //mini
       this.getTouchPos(e);
       // all the touchX and touchY are non-sensical to be honest - ah it's to preserve old value
       this.convertAndSavePoint(this.touchX, this.touchY);
@@ -468,7 +469,7 @@ export default {
     mouseDown (e) {
       e.preventDefault();
       this.mousedown = 1;
-      this.setStyle(this.color, this.lineWidth);
+      this.$_drawMixin_setStyle(this.color, this.lineWidth);
       this.getMousePos(e);
       this.convertAndSavePoint(this.mouseX, this.mouseY);
       this.drawToPoint(this.mouseX, this.mouseY);
