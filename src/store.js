@@ -6,7 +6,7 @@ import 'firebase/database';
 import db from '@/database.js';
 import helpers from "@/helpers.js";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 function setDisconnectHook (user) {
 	const firebaseRef = firebase.database().ref('/status/' + user.uid)
@@ -21,21 +21,21 @@ function setDisconnectHook (user) {
 
 	firebase.database().ref('.info/connected').on('value', async snapshot => {
     if (snapshot.val() === false) { return; } // copied from Firebase, no idea why it's needed  
-    await firebaseRef.onDisconnect().set(isOffline) // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
-    firebaseRef.set(isOnline)
-    // updating firestore directly is much faster
+    await firebaseRef.onDisconnect().set(isOffline); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
+    firebaseRef.set(isOnline);
+    // Updating firestore directly is much faster, don't wait for mirroring
     firebase.firestore().collection('users').doc(user.uid).update({
       isOnline: true
     });
   });
 }
 
-function syncUserWithDB (userRef, context) {
+function syncUserWithDb (userRef, context) {
   userRef.onSnapshot(user => {
-    if (!user.exists) return;
-    context.commit('SET_USER', user.data())
+    if (!user.exists) { return; }
+    context.commit('SET_USER', user.data());
     // TODO: delete previous onDisconnect() hook 
-    setDisconnectHook(user.data())
+    setDisconnectHook(user.data());
   });
 }
 
@@ -62,14 +62,9 @@ export default new Vuex.Store({
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     async fetchUser (context, { uid, email }) {
-      if (!uid) return; 
-      const simplifiedUser = { uid, email }
-      // Commit the user to avoid blocking page load first 
-      context.commit('SET_USER', simplifiedUser) 
-      
-      // Fetch additional data from the mirror doc 
-      const userRef = db.collection('users').doc(uid)
-      syncUserWithDB(userRef, context);
+      context.commit('SET_USER', { uid, email }); // commit the user as soon as basic info has been fetched to avoid blocking page load
+      const mirrorUserRef = db.collection('users').doc(uid);
+      syncUserWithDb(mirrorUserRef, context);
     }
   }
 })
