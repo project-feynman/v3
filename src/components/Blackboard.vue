@@ -57,11 +57,7 @@
         />
       </div>
       <!-- BLACKBOARD -->
-      <div
-        id="blackboard-wrapper"
-        :class="isRealtime? 'realtime-canvas':''"
-        v-resize="blackboardSize"
-      >
+      <div id="blackboard-wrapper" :class="isRealtime? 'realtime-canvas':''" v-resize="blackboardSize">
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>

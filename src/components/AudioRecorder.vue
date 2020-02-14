@@ -32,9 +32,7 @@ export default {
     this.recorderSrvc.em.addEventListener("recording", evt => this.onNewRecording(evt))
   },
   computed: {
-    player () {
-      return this.$refs.plyr.player
-    }
+    player () { return this.$refs.plyr.player }
   },
   watch: {
     audioUrl: {
@@ -42,25 +40,21 @@ export default {
       immediate: true
     },
     audio () {
-      if (this.audio) {
-        this.$nextTick(() => {
-          this.player.on('play', () => this.$emit('play'));
-          this.player.on('pause', () => this.$emit('pause'));
-          this.player.on('seeking', () => this.$emit('seeking'));
-        });
-      }
+      if (!this.audio) { return; }
+      this.$nextTick(() => {
+        this.player.on('play', () => this.$emit('play'));
+        this.player.on('pause', () => this.$emit('pause'));
+        this.player.on('seeking', () => this.$emit('seeking'));
+      });
     },
     cleanupWhenFinished (val) {
-      this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
+      this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished;
     }
   },
   methods: {
-    playAudio () {
-      this.player.play()
-    },
+    playAudio () { this.player.play(); },
     getAudioTime () {
       const audioElement = document.getElementById('audio-element')
-      if (!audioElement) return 0; 
       return audioElement.currentTime;
     },
     downloadAudioFile () {
@@ -101,14 +95,14 @@ export default {
         .catch(error => alert('Recording error: ' + error.message))
     },
     stopRecording () {
-      this.recorderSrvc.stopRecording()
-      this.recordingInProgress = false
+      this.recorderSrvc.stopRecording();
+      this.recordingInProgress = false;
     },
     // New recordings are auto-uploaded to Firebase storage
     async onNewRecording (evt) {
-      this.audio = evt.detail.recording
-      const storageRef = firebase.storage().ref()
-      const recordingRef = storageRef.child(`recordings/${this.getRandomUID()}`)
+      this.audio = evt.detail.recording;
+      const storageRef = firebase.storage().ref();
+      const recordingRef = storageRef.child(`recordings/${this.getRandomUID()}`);
       
       // Upload blob 
       const uploadTask = recordingRef.put(this.audio.blob)
@@ -119,7 +113,7 @@ export default {
           const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
           this.$emit('file-uploaded', { url: downloadURL })
         }
-      )
+      );
     }
   }
 }
