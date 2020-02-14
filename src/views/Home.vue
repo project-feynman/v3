@@ -252,7 +252,7 @@ export default {
     logIn ({ email, password }) {
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(user => {
-          this.$store.dispatch("handleUserLogic", user);
+          this.$store.dispatch("fetchUser", user);
           this.snackbarMessage = `Welcome to ExplainMIT!`;
           this.snackbar = true;
         })

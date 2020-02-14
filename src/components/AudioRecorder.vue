@@ -1,7 +1,7 @@
 <template>
   <div>
     <vue-plyr v-if="audio" ref="plyr">
-      <audio id="audio-element" :src="audio.blobURL" controls="true"/>
+      <audio :id="`audio-element--${audioUrl}`" :src="audio.blobURL" controls="true"/>
     </vue-plyr>
   </div>
 </template>
@@ -59,12 +59,12 @@ export default {
       this.player.play()
     },
     getAudioTime () {
-      const audioElement = document.getElementById('audio-element')
-      if (!audioElement) return 0; 
+      const audioElement = document.getElementById(`audio-element--${this.audioUrl}`);
+      if (!audioElement) { return 0; } // should throw an error
       return audioElement.currentTime;
     },
     downloadAudioFile () {
-      this.$emit('recorder-loading')
+      this.$emit('loading')
       if (this.audioUrl) {
         let xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
@@ -79,7 +79,7 @@ export default {
             size: blob.size,
           }
           if (!this.audio) this.audio = newRecording; // initial load or just empty local data
-          this.$emit("recorder-loaded");
+          this.$emit("loaded");
         }
         xhr.open('GET', this.audioUrl);
         xhr.send();
