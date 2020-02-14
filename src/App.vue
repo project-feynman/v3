@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     fetchMitClass () {
-      if (!this.classId) return;
+      if (!this.classId) { return; }
       this.$store.dispatch("fetchClass", this.classId);
     }
   }
