@@ -92,8 +92,6 @@ export default {
         this.roomRef.update({ // it's much faster to update Firestore directly
           members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
         });
-
-        // Reset it (otherwise setting the user is not actually triggering any changes)
         // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
         firebaseRef.set({ email: "", uid: "", firstName: "" });
       });

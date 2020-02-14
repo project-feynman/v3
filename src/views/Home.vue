@@ -6,7 +6,6 @@
       <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
 
-    <!-- APP BAR -->
     <TheAppBar>
       <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
         BLOG
@@ -14,14 +13,12 @@
       <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank">
         GITHUB
       </v-btn>
-      <BasePopupButton
-        v-if="user && $route.path === '/'"
-        actionName="Create class" 
-        :inputFields="['class name', 'class description']"
-        @action-do="payload => createClass(payload)"
-      />
       <template v-if="user">
-        <!-- PROFILE CIRCLE WITH DROPDOWN MENU -->
+        <BasePopupButton
+          actionName="Create class" 
+          :inputFields="['class name', 'class description']"
+          @action-do="payload => createClass(payload)"
+        />
         <TheDropdownMenu
           @save="payload => updateUser(payload)"
           @sign-out="signOut()"
@@ -38,7 +35,6 @@
       </template>
     </TheAppBar>
 
-    <!-- MAIN CONTENT -->
     <v-content>
       <v-card class="mx-auto text-center" fluid>
         <v-container>
@@ -87,7 +83,6 @@
         </v-container>
       </v-card>
 
-      <!-- DISPLAY CLASSES -->
       <transition name="fade" mode="out-in">
         <v-container fluid class="py-5">
           <div v-if="!user && !isFetchingUser" key="loading...">

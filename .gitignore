@@ -5,6 +5,11 @@ node_modules
 firestore.indexes.json
 .firebaserc
 .DS_Store
+firebase.json
+database.rules.json
+firestore.rules
+storage.rules
+
 
 # local env files
 .env.local
