@@ -1,150 +1,95 @@
 const firebase_tools = require("firebase-tools");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const config = require("./config");
 const sgMail = require('@sendgrid/mail');
-const adminCredentials = require('./feynman-mvp-firebase-adminsdk-d10vx-70c5b69675.json') // might be disactivated
+const adminCredentials = require("./adminCredentials.json");
+const { SENDGRID_API_KEY } = require("./sendgrid.json");
 
 admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
 	databaseUrl: "https://feynman-mvp.firebaseio.com"
 });
 const firestore = admin.firestore();
-sgMail.setApiKey('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');
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 function sendEmail (email, subject, text, html) {
-  const msg = {
-    to: email,
-    from: "feynmannotif@gmail.com",
-    subject: subject,
-    text: text,
-    html: html,
-  };
-  console.log("message", msg);
-  sgMail.send(msg);
+  sgMail.send({ to: email, from: "feynmannotif@gmail.com", subject, text, html });
 }
 
 function getDocFromDb (ref) {
-  const promise = new Promise((resolve, reject) => {
-    let doc = await ref.get();
-    if (doc.exists) resolve({"id": doc.id, ...doc.data()});  // TODO: throw an explicit error
-    else reject();
+  return new Promise(async (resolve, reject) => {
+    const doc = await ref.get();
+    if (doc.exists) { resolve({"id": doc.id, ...doc.data()}); }  // TODO: throw an explicit error
+    else { reject(); }
   })
-  return promise;
 }
 
-exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(
-  async (change, context) => {
-    // Get the data written to Realtime Database
-    const eventStatus = change.after.val(); // console.log(eventStatus) --> { isOnline: false }
-
-    // Then use other event data to create a reference to the corresponding Firestore document.
-    const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`);
-
-    // multiple requests may have been triggered, but earlier requests might not actually resolve earlier therefore it's necessary to compare the timestamps
-    const statusSnapshot = await change.after.ref.once("value");
-    const status = statusSnapshot.val();
-
-    // If the current timestamp for this data is newer than the data that triggered this event, we exit this function.
-    if (status.last_changed > eventStatus.last_changed) return null;
-    // eventStatus.last_changed = new Date(eventStatus.last_changed)
-    return firestoreUserRef.update(eventStatus);
-  }
-);
+exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(async (change, context) => {
+  const eventStatus = change.after.val(); // data written to Firebase: console.log(eventStatus) --> { isOnline: false }
+  const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`); // get associated mirror document
+  // If the current timestamp for this data is newer than the data that triggered this event, we exit this function.
+  const statusSnapshot = await change.after.ref.once("value");
+  const status = statusSnapshot.val();
+  if (status.last_changed > eventStatus.last_changed) { return null; }
+  else { firestoreUserRef.update(eventStatus); }
+});
 
 // Updates blackboard participants when people join and leave
-exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{class_id}/{workspace_id}").onUpdate(
-  (change, context) => {
-    const userWhoLeft = change.after.val();
-    if (!userWhoLeft.uid) return;
-
-    // update participants
-    const firebaseClassID = context.params.class_id.replace("-", ".");
-    const workspaceFirestoreRef = firestore.doc(`/classes/${firebaseClassID}/workspaces/${context.params.workspace_id}`);
-    workspaceFirestoreRef.update({
-      members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
-    });
-  }
-);
+exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{firebaseClassId}/{workspaceId}").onUpdate((change, context) => {
+  const userWhoLeft = change.after.val();
+  if (!userWhoLeft.uid) { return; }
+  const { workspaceId, firebaseClassId } = context.params;
+  const classId = firebaseClassId.replace("-", ".");
+  const workspaceRef = firestore.doc(`/classes/${classId}/workspaces/${workspaceId}`);
+  workspaceRef.update({
+    members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
+  });
+});
 
 // Sends email to entire class whenever a new question is created
-exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async post => {
-  const mitClass = {
-    id: post.data().mitClass.id,
-    name: post.data().mitClass.name,
-    notifFrequency: "always"
-  }
-  
-  // Email all classmates
-  const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", mitClass);
+exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (post, context) => {
+  const { mitClass } = post.data();
+  const classSetting = { id: mitClass.id, name: mitClass.name, notifFrequency: "always" };
+  const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classSetting);
   const classmatesDocs = await classmatesRef.get();
   classmatesDocs.forEach(classmateDoc => {
-    const { email, title, description } = classmateDoc.data();
-    sendEmail(email, `Your classmate asked a question`, `Question title: ${title}`, `<h1>${description}</h1>`);
+    const { firstName, email } = classmateDoc.data();
+    const recipient = email;
+    const subject = `Your classmate ${firstName} posted something`;
+    const { classId, postId } = context.params;
+    const html = `
+      <h2>Title: ${post.data().title}</h2>
+      <p>Description: ${post.data().description}</p>
+      <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
+    `;
+    sendEmail(recipient, subject, "A new post!", html);
   })
 });
 
-exports.emailOnNewAnswer = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explanationDoc, context) => {
+exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explanation, context) => {
   const { postId, classId } = context.params;
-  // Get original post
-  const postRef = firestore.doc(`/classes/${classId}/posts/${postId}`);
-  const originalPost = await getDocFromDb(postRef);
-  const creatorRef = firestore.doc(`/users/${originalPost.creator.uid}`);
-  const postCreator = await getDocFromDb(creatorRef);
-
-  const subject = `Your question was answered by ${ explanationDoc.creator.firstName }`
-  const { title, description } = explanationDoc.data();
-  sendEmail(postCreator.email, subject, `Explanation title: ${title}`, `<p>Description: ${description}</p>`)
+  const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
+  const postCreator = await getDocFromDb(firestore.doc(`/users/${originalPost.creator.uid}`));
+  const { creator: explanationCreator, title, description } = explanation.data();
+  if (postCreator.email === explanationCreator.email) { return; }
+  const subject = `${explanationCreator.firstName} replied to your post`;
+  const html = `
+    <h2>Title: ${title}</h2>
+    <p>Description: ${description}</p>
+    <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
+  `;
+  sendEmail(postCreator.email, subject, "A new reply!", html);
 });
 
-// /* AUTO-CREATED FUNCTIONS */
-// /**
-//  * Callable function that creates a custom auth token with the
-//  * custom attribute "admin" set to true.
-//  *
-//  * See https://firebase.google.com/docs/auth/admin/create-custom-tokens
-//  * for more information on creating custom tokens.
-//  *
-//  * @param {string} data.uid the user UID to set on the token.
-//  */
-// exports.mintAdminToken = functions.https.onCall((data, context) => {
-//   const uid = data.uid;
+exports.recursiveDelete = functions.runWith({ timeoutSeconds: 540, memory: "2GB" }).https.onCall((data, context) => {
+  const { path } = data;
+  return firebase_tools.firestore
+    .delete(path, {
+      project: process.env.GCLOUD_PROJECT,
+      recursive: true,
+      yes: true,
+      token: functions.config().fb.token // 'token' must be set in the functions config, and can be generated at the command line by running 'firebase login:ci'.
+    })
+    .then(() => ({ path }));
+});
 
-//   return admin
-//     .auth()
-//     .createCustomToken(uid, { admin: true })
-//     .then(function(token) {
-//       return { token: token };
-//     });
-// });
-
-exports.recursiveDelete = functions
-  .runWith({
-    timeoutSeconds: 540,
-    memory: "2GB"
-  })
-  .https.onCall((data, context) => {
-    // // Only allow admin users to execute this function.
-    // if (!(context.auth && context.auth.token && context.auth.token.admin)) {
-    //   throw new functions.https.HttpsError(
-    //     'permission-denied',
-    //     'Must be an administrative user to initiate delete.'
-    //   );
-    // }
-
-    const { path } = data;
-    console.log(`User ${context.auth.uid} has requested to delete path ${path}`);
-
-    // The 'token' must be set in the functions config, and can be generated
-    // at the command line by running 'firebase login:ci'.
-    return firebase_tools.firestore
-      .delete(path, {
-        project: process.env.GCLOUD_PROJECT,
-        recursive: true,
-        yes: true,
-        token: functions.config().fb.token
-      })
-      .then(() => ({
-        path
-      }));
-  });

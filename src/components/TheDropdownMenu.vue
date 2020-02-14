@@ -86,7 +86,7 @@ export default {
         useDarkMode: this.useDarkMode
         // color: this.color
       };
-      if (this.name) updatedUser.name = this.name;
+      if (this.name) { updatedUser.name = this.name; }
       else updatedUser.name = this.user.name;
       this.$emit("save", updatedUser);
     },
@@ -94,7 +94,7 @@ export default {
       const updateArray = this.user.enrolledClasses;
       for (let i = 0; i < updateArray.length; i++) {
         if (updateArray[i].id === id) {
-          updateArray[i] = { name, id, notifFrequency }
+          updateArray[i] = { name, id, notifFrequency };
         }
       }
       this.$emit("notif-setting-change", updateArray);

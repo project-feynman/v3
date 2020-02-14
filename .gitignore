@@ -1,6 +1,15 @@
-.DS_Store
 node_modules
+
+# production related files
 /dist
+firestore.indexes.json
+.firebaserc
+.DS_Store
+firebase.json
+database.rules.json
+firestore.rules
+storage.rules
+
 
 # local env files
 .env.local
@@ -20,10 +29,13 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+.eslintrc.js
+.editorconfig
 
 *.vimrc
 *firebase-debug.log
 
 # Sensitive data
-functions/config
-functions/feynman*
+functions/sendgrid.json
+functions/adminCredentials.json
+

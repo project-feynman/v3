@@ -76,7 +76,8 @@ export default {
       const creator = {
         uid: this.user.uid,
         firstName: this.user.firstName,
-        lastName: this.user.lastName
+        lastName: this.user.lastName,
+        email: this.user.email
       }
       const mitClass = {
         id: this.mitClass.id,

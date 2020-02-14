@@ -1,6 +1,6 @@
 <template>
   <div id="room">
-    <v-container v-if="simpleUser && room" fluid class="pa-0">
+    <v-content v-if="simpleUser && room">
       <!-- <p>room {{ room }}</p> -->
       <!-- "v-if="...room.whiteboardID"" needed because room goes from null to {} (surprisingly), before becoming fully populated -->
       <Blackboard
@@ -9,7 +9,7 @@
         :blackboardId="room.blackboardId"
         :isRealtime="true"
       />
-    </v-container>
+    </v-content>
   </div>
 </template>
 
@@ -92,8 +92,6 @@ export default {
         this.roomRef.update({ // it's much faster to update Firestore directly
           members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
         });
-
-        // Reset it (otherwise setting the user is not actually triggering any changes)
         // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
         firebaseRef.set({ email: "", uid: "", firstName: "" });
       });

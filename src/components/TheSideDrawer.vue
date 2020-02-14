@@ -33,17 +33,15 @@
             </v-list-item-content>
           </v-list-item>
 
-          <template v-for="post in posts">
-            <div :key="post['.key']">
-              <v-list-item @click="$router.push(`/${classId}/posts/${post['.key']}`)" color="accent lighten-1" :key="post['.key']">
-                <v-list-item-content>
-                  <v-list-item-subtitle class="text--primary" v-text="post.title"/>
-                  <v-list-item-subtitle v-text="displayDate(post.date)"/>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider></v-divider>
-            </div>
-          </template>
+          <div v-for="post in posts" :key="post['.key']">
+            <v-list-item @click="$router.push(`/${classId}/posts/${post['.key']}`)" color="accent lighten-1" :key="post['.key']">
+              <v-list-item-content>
+                <v-list-item-subtitle class="text--primary" v-text="post.title"/>
+                <v-list-item-subtitle v-text="displayDate(post.date)"/>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+          </div>
         </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
@@ -69,18 +67,12 @@ export default {
     }
   },
   computed: {
-    user () {
-      return this.$store.state.user;
-    },
-    classId () {
-      return this.$route.params.class_id;
-    },
+    user () { return this.$store.state.user; },
+    classId () { return this.$route.params.class_id; },
     postsRef () {
-      return db.collection("classes").doc(this.classId).collection("posts").orderBy("date");
+      return db.collection("classes").doc(this.classId).collection("posts").orderBy("date").limit(50);
     },
-    roomRef () {
-      return db.collection("rooms").doc(this.classId);
-    }
+    roomRef () { return db.collection("rooms").doc(this.classId); }
   },
   watch: {
     classId: {

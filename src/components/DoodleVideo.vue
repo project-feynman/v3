@@ -114,7 +114,7 @@ export default {
       if (this.hasVisualAndAudio) { this.$refs.audioRecorder.playAudio(); }
       else { this.$_drawMixin_quickplay(); } // silent animation
     },
-    async quickplay () {
+    async playSilentAnimation () {
       this.isQuickplaying = true;
       await this.$_drawMixin_quickplay();
       this.isQuickplaying = false;

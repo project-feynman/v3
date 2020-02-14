@@ -1,6 +1,6 @@
 <template>
   <v-app-bar dense :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime?0:1" class="blackboard-toolbar">
-    <v-container class="py-1 px-0">
+    <v-container fluid class="py-1 px-0">
       <v-row align="center" justify="space-between">
         <template v-if="currentState !== recordStateEnum.POST_RECORD">
           <v-col class="py-0">

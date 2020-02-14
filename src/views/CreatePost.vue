@@ -22,25 +22,16 @@ export default {
   },
   data () {
     return {
-      // Both newPost and newExplanation share the same newDocId for easy reference
-      id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) 
     }
   },
   computed: {
-    classId () {
-      return this.$route.params.class_id;
-    },
-    classRef () {
-      return db.collection("classes").doc(this.classId);
-    },
-    postsRef () {
-      return this.classRef.collection("posts");
-    },
-    // Specify where to create new posts
-    newPostRef () {
-      return this.postsRef.doc(this.id);
-    },
+    classId () { return this.$route.params.class_id; },
+    classRef () { return db.collection("classes").doc(this.classId); },
+    postsRef () { return this.classRef.collection("posts"); },
+    newPostRef () { return this.postsRef.doc(this.id); },
     newExplanationRef () {
+      // Both newPost and newExplanation share the same newDocId for easy reference
       return this.newPostRef.collection("explanations").doc(this.id);
     }
   }
