@@ -1,6 +1,6 @@
 node_modules
 
-# production related files
+# Production related files
 /dist
 firestore.indexes.json
 .firebaserc
@@ -9,7 +9,6 @@ firebase.json
 database.rules.json
 firestore.rules
 storage.rules
-
 
 # local env files
 .env.local
