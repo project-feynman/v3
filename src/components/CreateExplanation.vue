@@ -71,7 +71,10 @@ export default {
   methods: {
     // Uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
-      if (!this.postTitle) { return; }
+      if (!this.postTitle) { 
+        this.$root.$emit("show-snackbar", "Error: don't forget to write a title!")
+        return; 
+      }
       this.isUploadingPost = true // trigger the "submit" button to go into a loading state
       const creator = {
         uid: this.user.uid,
@@ -104,10 +107,10 @@ export default {
       }
       // Save the explanation and its strokes
       if (Blackboard.allStrokes.length > 0) {
+        explanation.hasVisual = true;
         for (let stroke of Blackboard.allStrokes) {
           this.newExplanationDbRef.collection("strokes").add(stroke);
         }
-        explanation.hasVisual = true;
       }
       this.newExplanationDbRef.set(explanation);
       // Reset component

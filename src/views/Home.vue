@@ -1,11 +1,5 @@
 <template>
   <div id="home-page">
-    <!-- TODO: move snackbar to App.vue and use root listeners to communicate with it -->
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
-    </v-snackbar>
-
     <TheAppBar>
       <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
         BLOG
@@ -20,7 +14,6 @@
           @action-do="payload => createClass(payload)"
         />
         <TheDropdownMenu
-          @save="payload => updateUser(payload)"
           @sign-out="signOut()"
           @notif-setting-change="payload => updateNotifSetting(payload)"
         >
@@ -83,6 +76,7 @@
         </v-container>
       </v-card>
 
+      <!-- Tutorial videos -->
       <transition name="fade" mode="out-in">
         <v-container fluid class="py-5">
           <div v-if="!user && !isFetchingUser" key="loading...">
@@ -156,8 +150,6 @@ export default {
   data () {
     return {
       schoolClasses: [],
-      snackbar: false,
-      snackbarMessage: "",
       tutorials: [
         { 
           blackboardId: "iqd5rFyuFYL8TDlCnPfe",
@@ -226,9 +218,6 @@ export default {
         enrolledClasses: payload
       })
     },
-    updateUser (payload) {
-      return; // TODO
-    },
     async createClass ({ "class name": name, "class description": description }) {
       this.fetchClasses();
       for (const c of this.schoolClasses) {
@@ -253,30 +242,24 @@ export default {
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(user => {
           this.$store.dispatch("fetchUser", user);
-          this.snackbarMessage = `Welcome to ExplainMIT!`;
-          this.snackbar = true;
+          this.$root.$emit("show-snackbar", "Welcome to ExplainMIT!")
         })
-        .catch(error => {
-          this.snackbarMessage = error.message;
-          this.snackbar = true;
-        });
+        .catch(error => this.$root.$emit("show-snackbar", error.message));
     },
     signUp ({ "first name": firstName, "last name": lastName, email, password }) {
       if (!firstName || !lastName) { 
-        this.snackbarMessage = "Don't forget to enter both your first name and last name!"
-        this.snackbar = true;
+        this.$root.$emit(
+          "show-snackbar", 
+          "Error: don't forget to enter your first name and last name!"
+        )
         return;
       }
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then(async result => {
-          this.snackbarMessage = `Welcome to ExplainMIT!`;
-          this.snackbar = true;
+          this.$root.$emit("show-snackbar", "Welcome to ExplainMIT!")
           this.createAccount({ ...result.user, firstName, lastName })
         })
-        .catch(error => {
-          this.snackbarMessage = error.message;
-          this.snackbar = true;
-        });
+        .catch(error => this.$root.$emit("show-snackbar", error.message));
     },
     createAccount ({ uid, email, firstName, lastName }) {
       function getRandomColor () {

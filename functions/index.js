@@ -30,7 +30,7 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(a
   // If the current timestamp for this data is newer than the data that triggered this event, we exit this function.
   const statusSnapshot = await change.after.ref.once("value");
   const status = statusSnapshot.val();
-  if (status.last_changed > eventStatus.last_changed) { return null; }
+  if (status.last_changed > eventStatus.last_changed) { return; }
   else { firestoreUserRef.update(eventStatus); }
 });
 
@@ -53,16 +53,15 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
   const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classSetting);
   const classmatesDocs = await classmatesRef.get();
   classmatesDocs.forEach(classmateDoc => {
-    const { firstName, email } = classmateDoc.data();
-    const recipient = email;
-    const subject = `Your classmate ${firstName} posted something`;
+    if (post.data().creator.email === classmateDoc.data().email) { return; }
+    const subject = `Your classmate ${classmateDoc.data().firstName} posted something`;
     const { classId, postId } = context.params;
     const html = `
       <h2>Title: ${post.data().title}</h2>
       <p>Description: ${post.data().description}</p>
       <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
     `;
-    sendEmail(recipient, subject, "A new post!", html);
+    sendEmail(classmateDoc.data().email, subject, "A new post!", html);
   })
 });
 

@@ -3,11 +3,6 @@
     <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
       <!-- Uncomment line below for an easy life debugging -->
       <!-- <p>blackboard: {{ blackboard }}</p> -->
-      <!-- TODO: refactor to App.vue -->
-      <v-snackbar v-model="snackbar">
-        {{ snackbarMessage }}
-        <v-btn @click="snackbar = false" color="accent" text>CLOSE</v-btn>
-      </v-snackbar>
 
       <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
@@ -135,10 +130,7 @@ export default {
       audioUrl: "",
       hasUploadedAudio: false,
       recordStateEnum: CONSTANTS.recordStateEnum,
-      clearRectTimeout: null,
-      // Refactor to App.vue
-      snackbar: false,
-      snackbarMessage: "",
+      clearRectTimeout: null
     }
   },
   computed: {
@@ -583,8 +575,8 @@ export default {
         blackboardId: newBoardRef.id
       });
       this.hasUploadAudio = false;
-      this.snackbar = true;
-      this.snackbarMessage = 'Successfully archived to the "Saved videos" section';
+      const messageToUser = 'Successfully archived to the "Saved videos" section';
+      this.$root.$emit("show-snackbar", messageToUser);
     },
     createThumbnail () {
       this.ctx.fillStyle = "rgb(62, 66, 66)";
