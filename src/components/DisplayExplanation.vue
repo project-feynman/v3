@@ -19,6 +19,7 @@
         :blackboardRef="selfRef"
         ref="DoodleVideo"
         :blackboardId="explanation.id"
+        :thumbnail="explanation.thumbnail"
         :audioUrl="explanation.audioUrl"
         :hasBetaOverlay="true"
       />

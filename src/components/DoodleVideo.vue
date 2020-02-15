@@ -1,5 +1,6 @@
 <template>
   <div style="height: 100%">
+    <template v-if="!thumbnail || hasLoadedAvailableResources">
     <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <canvas
         :id="`myCanvas-${blackboardId}`"
@@ -11,6 +12,7 @@
       @loading="hasFetchedAudio = false" @loaded="hasFetchedAudio = true"
       @play="playVideo()" @stop="stopSyncing()" @seeking="handleSeeking()"
     />
+    </template>
   </div>
 </template>
 
