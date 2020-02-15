@@ -1,10 +1,10 @@
 <template>
   <div id="home-page">
     <TheAppBar>
-      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
+      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
         BLOG
       </v-btn>
-      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank">
+      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> <!-- target="_blank" opens a new tab -->
         GITHUB
       </v-btn>
       <template v-if="user">
@@ -32,7 +32,7 @@
       <v-card class="mx-auto text-center" fluid>
         <v-container>
           <div class="central-title d-flex justify-center align-center mb-4">
-            <img src="/logo.png" class="hero-img" />
+            <img src="/logo.png" class="hero-img"/>
             <h1 class="text--primary ml-2">
               ExplainMIT
             </h1>
@@ -105,14 +105,15 @@
           <!-- Display classes -->
           <div v-else-if="user" key="class-list">
             <v-row align="stretch" class="enrolled-classes">
-              <v-col 
-                v-for="enrolledClass in user.enrolledClasses" 
-                cols="12" sm="4" md="3" :key="enrolledClass.id"
-              >
-                <v-card @click="$router.push(`${enrolledClass.id}/posts/`)">
-                  <v-card-title class="title">{{ enrolledClass.name }}</v-card-title>
-                  <v-card-subtitle>No description yet</v-card-subtitle>
-                </v-card>
+              <v-col v-for="enrolledClass in user.enrolledClasses" cols="12" sm="4" md="3" :key="enrolledClass.id">
+                <AsyncRenderless :dbRef="getMitClassRef(enrolledClass.id)">
+                  <template slot-scope="{ fetchedData: mitClass }">
+                    <v-card @click="$router.push(`${mitClass.id}/posts/`)">
+                      <v-card-title class="title">{{ mitClass.name }}</v-card-title>
+                      <v-card-subtitle>{{ mitClass.description }}</v-card-subtitle>
+                    </v-card>
+                  </template>
+                </AsyncRenderless>
               </v-col>
             </v-row>
           </div>
@@ -132,16 +133,18 @@ import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseSearchBar from "@/components/BaseSearchBar.vue";
 import helpers from "@/helpers.js";
+import AsyncRenderless from "@/components/AsyncRenderless.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   components: {
-    TheAppBar,
-    DoodleVideo,
+    AsyncRenderless,
+    BasePopupButton,
     BaseSearchBar,
-    TheDropdownMenu,
-    BasePopupButton
+    DoodleVideo,
+    TheAppBar,
+    TheDropdownMenu
   },
   computed: {
     ...mapState(["user", "isFetchingUser"]),
@@ -180,6 +183,9 @@ export default {
     window.removeEventListener("scroll", this.logoVisibility);
   },
   methods: {
+    getMitClassRef (classId) {
+      return db.collection("classes").doc(classId);
+    },
     getBlackboardRef (explanationId) {
       return db.collection("classes").doc("jpQFXYNXCgCScaHZPL27")
         .collection("posts").doc("qdlx2j0j0k4lbbb6h28zo")
@@ -190,8 +196,7 @@ export default {
       if (!DoodleVideo1[0].hasFetchedStrokes || DoodleVideo1[0].isQuickplaying) { 
         return; 
       }
-      // need next tick so the quickplay starts after the resize event
-      this.$nextTick(async () => {
+      this.$nextTick(async () => { // need next tick so the quickplay starts after the resize event
         await DoodleVideo1[0].playSilentAnimation(); // don't know why DoodleVideo returns arrays
         await DoodleVideo2[0].playSilentAnimation();
         DoodleVideo3[0].playSilentAnimation();
@@ -328,7 +333,6 @@ export default {
 
 .enrolled-classes .v-card__title {
   word-break: unset;
-  /* justify-content: center; */
   font-size: 1.1em;
 }
 </style>
