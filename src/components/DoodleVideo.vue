@@ -6,12 +6,12 @@
     <!-- <template v-if="!thumbnail || hasLoadedAvailableResources"> -->
       <!-- @click="$emit('click'); hasBetaOverlay=false, onClic()" -->
 
-    <div align="center" justify="center" style="height: 100%">
+    <div @click="onOverlayClick()" align="center" justify="center" style="height: 100%">
     <v-card style="height: 100%; width: 100%">
 
 
       <div  @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-      <img v-show="false" :src="thumbnail" id="Thumbnail">
+      <img v-show="false" :src="thumbnail" id="Thumbnail" :key="thumbnail">
       <canvas
         :id="`myCanvas-${blackboardId}`"
         style="width: 100%; height: 1; background-color: rgb(62, 66, 66)"
@@ -23,7 +23,7 @@
       <v-row justify="center">
         <v-overlay absolute :value="overlay" :opacity="0.1">
           <!-- @click="e => playVideo(e)" -->
-          <v-btn  @click="onOverlayClick()" large dark>
+          <v-btn @click="onOverlayClick()" large dark>
             <v-icon>play_arrow</v-icon>
           </v-btn>
         </v-overlay>
@@ -113,7 +113,7 @@ export default {
     if (!this.thumbnail) {
       this.fetchStrokes();
     } 
-    
+    this.overlay = this.hasBetaOverlay;
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
@@ -124,6 +124,7 @@ export default {
     if (this.thumbnail) {
       this.thumbnailImage = document.getElementById(`Thumbnail`);
       this.thumbnailImage.src = this.thumbnail;
+      this.$_drawMixin_rescaleCanvas(true);
       this.renderThumbnail();
     }
   },
@@ -137,7 +138,6 @@ export default {
       this.$emit("click")
     },
     renderThumbnail () {
-      this.$_drawMixin_rescaleCanvas(true);
       this.ctx.drawImage(this.thumbnailImage,0,0);
     },
     setCanvasHeight () {

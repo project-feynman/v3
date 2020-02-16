@@ -24,6 +24,7 @@
         :hasBetaOverlay="true"
         @click="handleVideoClick()"
         @available-resources-ready="playVideo()"
+        :key="explanation.id"
       />
     </v-container>
   </v-card>
