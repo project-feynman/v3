@@ -1,11 +1,10 @@
 <template>
-  <div style="height: 100%">
+  <div style="height: 100%; position: relative; z-index: 5">
     <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <div id="blackboard-wrapper">
         <canvas
           :id="`myCanvas-${blackboardId}`"
-          class="front-canvas"
-          style="width: 100%; height: 1; background-color: rgb(62, 66, 66)"
+          style="width: 100%; height: 1; background-color: transparent; display: block;"
         ></canvas>
         <canvas 
           :id="`background-canvas-${blackboardId}`"
@@ -209,29 +208,13 @@ export default {
 </script>
 
 <style>
-
-#blackboard-wrapper {
-  position: relative;
-  z-index: -1;
-}
-
 .background-canvas {
-  position: absolute;
+  /* absolute places the background relative to the parent and ignore the front canvas, thereby stacking on top of each other */
+  position: absolute; 
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-repeat: no-repeat;
-  background-color: rgb(62, 66, 66);
-  background-size: 100% 100%;
   z-index: -1;
-}
-
-.front-canvas {
-  background-size: 100% 100%;
-  background-color: transparent;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25) inset;
-  display: block;
-  z-index: 1
 }
 </style>
