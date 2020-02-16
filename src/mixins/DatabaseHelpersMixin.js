@@ -9,7 +9,7 @@ export default {
         try {
           const doc = await ref.get();
           if (!doc.exists) {
-            this.$root.$emit("show-snackbar", "Error: data doesn't exist");
+            this.$root.$emit("show-snackbar", `Error: data doesn't exist for path = ${ref.path}`);
             reject();
           } else { resolve({ id: doc.id, ...doc.data() }); } 
         } catch (error) {
