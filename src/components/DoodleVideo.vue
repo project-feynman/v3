@@ -1,7 +1,7 @@
 <template>
   <div style="height: 100%; position: relative; z-index: 5">
     <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-      <div id="blackboard-wrapper">
+      <div id="blackboard-wrapper" style="position: relative;">
         <canvas
           :id="`myCanvas-${blackboardId}`"
           style="width: 100%; height: 1; background-color: transparent; display: block;"

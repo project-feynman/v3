@@ -51,7 +51,8 @@
         />
       </div>
       <!-- BLACKBOARD -->
-      <div id="blackboard-wrapper" :class="isRealtime? 'realtime-canvas':''" v-resize="blackboardSize">
+      <!-- position relative allows the background canvas to be directly on top of the normal canvas -->
+      <div id="blackboard-wrapper" style="position: relative" :class="isRealtime? 'realtime-canvas':''">
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
@@ -160,22 +161,17 @@ export default {
         this.enableDrawing();
       }
       let imageSrc;
-      // console.log("newVal.imageUrl =", newVal.imageUrl);
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
         imageSrc = this.imageUrl;
       } else {
-        // Already have the image blob locally
-        try {
-          imageSrc = URL.createObjectURL(this.imageBlob);
-        } catch {
-          imageSrc = this.imageUrl;
-        }
+        try { imageSrc = URL.createObjectURL(this.imageBlob); } // means we already have the image blob locally
+        catch { imageSrc = this.imageUrl; }
       }
       this.displayImageAsBackground(imageSrc);
     },
     currentState (oldVal, newVal) {
-      if (!newVal || oldVal) return;
+      if (!newVal || oldVal) { return; }
       const { POST_RECORD, PRE_RECORD } = this.recordStateEnum;
       if (oldVal === POST_RECORD && newVal === PRE_RECORD) {
         this.enableDrawing();
@@ -203,10 +199,10 @@ export default {
     this.bgCtx = this.bgCanvas.getContext("2d");
 
     // Hack to fix drawing offset bug
-    this.$nextTick(() => {
-      this.$root.$emit("toggle-drawer")
-      this.$nextTick(() => this.$root.$emit("toggle-drawer"));
-    })
+    // this.$nextTick(() => {
+    //   this.$root.$emit("toggle-drawer")
+    //   this.$nextTick(() => this.$root.$emit("toggle-drawer"));
+    // })
 
     // since cursor uses material icons font, load it after fonts are ready
     document.fonts.ready.then(() => this.customCursor());
@@ -585,11 +581,11 @@ export default {
     },
     // If this works you're a genius
     blackboardSize () {
-      var board = document.getElementById("myCanvas");
-      var mini_height =
+      const board = document.getElementById("myCanvas");
+      const mini_height =
         (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +
         "px";
-      var realtime_height = window.innerHeight - 48 + "px";
+      const realtime_height = window.innerHeight - 48 + "px";
       // var margin_top = this.isRealtime ? "48px" : "";
       board.style.height = this.isRealtime ? realtime_height : mini_height;
       // board.style.marginTop = margin_top;
@@ -625,7 +621,7 @@ export default {
 <style scoped>
 #whiteboard {
   position: relative;
-  z-index: 5
+  z-index: 5;
 }
 #myCanvas {
   width: 100%;
@@ -640,5 +636,6 @@ export default {
   height: 100%;
   background-color: rgb(62, 66, 66);
   z-index: -1;
+  display: block;
 }
 </style>
