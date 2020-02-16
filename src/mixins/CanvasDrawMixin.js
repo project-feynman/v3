@@ -63,7 +63,6 @@ export default {
       this.bgCanvas.height = this.canvas.scrollHeight;
       this.bgCanvas.width = this.canvas.scrollWidth;
       image.onload = () => { 
-        console.log("image =", image);
         this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight)
       };
     }
