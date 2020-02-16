@@ -76,6 +76,7 @@ import BaseLoadingButton from "@/components/BaseLoadingButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   props: {
@@ -87,7 +88,7 @@ export default {
     // TODO: background should be encapsulated within this component
     background: String
   },
-  mixins: [CanvasDrawMixin],
+  mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
   components: {
     BlackboardToolBar,
     AudioRecorder,
@@ -228,7 +229,7 @@ export default {
   },
   destroyed () {
     // TODO: refactor this to a "resize" module
-    window.removeEventListener("resize", () => this.rescaleCanvas(true));
+    window.removeEventListener("resize", () => this.$_drawMixin_rescaleCanvas(true));
   },
   methods: {
     async initData () {
@@ -238,9 +239,9 @@ export default {
       this.currentState = this.recordStateEnum.PRE_RECORD;
       if (this.isRealtime) {
         this.loading = true;
-        if (!this.blackboardId) return;
+        if (!this.blackboardId) { return; }
         await this.$binding("blackboard", this.blackboardRef);
-        if (this.unsubscribe) this.unsubscribe();
+        if (this.unsubscribe) { this.unsubscribe(); }
         this.keepSyncingBoardWithDb();
       }
       this.initCopyAndPasteImage()
@@ -257,7 +258,7 @@ export default {
             // check if local strokes and db strokes are in sync
             if (this.allStrokes.length < newStroke.strokeNumber) {
               if (this.loading) this.$_drawMixin_drawStroke(newStroke); // initial render: catch up to current state - draw quickly
-              else this.$_drawMixin_drawStroke(newStroke, this.getPointDuration(newStroke)); // render the new stroke smoothly
+              else this.$_drawMixin_drawStroke(newStroke, this.$_drawMixin_getPointDuration(newStroke)); // render the new stroke smoothly
               this.allStrokes.push(newStroke);
             }
           }
@@ -280,7 +281,7 @@ export default {
       this.enableDrawing();
     },
     wipeBoard () {
-      if (!this.ctx) return;
+      if (!this.ctx) { return; }
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
@@ -542,7 +543,7 @@ export default {
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       };
 
-      if (this.currentTime) metadata.duration = this.currentTime;
+      if (this.currentTime) { metadata.duration = this.currentTime; }
       this.blackboardRef.update(metadata).then(() => this.isUploadingVideo = false);
       this.classRef.update({
         numOfVideos: firebase.firestore.FieldValue.increment(1)
@@ -624,22 +625,11 @@ export default {
 <style scoped>
 #whiteboard {
   position: relative;
-  z-index: 5;
-}
-#blackboard-wrapper {
-  position: relative;
-  z-index: -1;
-}
-#blackboard-wrapper.realtime-canvas {
-  z-index: 1;
+  z-index: 5
 }
 #myCanvas {
   width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
   background-color: transparent;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25) inset;
   display: block;
 }
 #background-canvas {
@@ -648,12 +638,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-repeat: no-repeat;
   background-color: rgb(62, 66, 66);
-  background-size: 100% 100%;
   z-index: -1;
-}
-#realtime-toolbar {
-  margin: -10px;
 }
 </style>
