@@ -1,19 +1,48 @@
 <template>
+  <!-- <DoodleVideoOverlay 
+    :overlay="hasBetaOverlay"
+    @play-click="onOverlayClick()"> -->
   <div style="height: 100%">
-    <template v-if="!thumbnail || hasLoadedAvailableResources">
-    <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+    <!-- <template v-if="!thumbnail || hasLoadedAvailableResources"> -->
+      <!-- @click="$emit('click'); hasBetaOverlay=false, onClic()" -->
+
+    <div align="center" justify="center" style="height: 100%">
+    <v-card style="height: 100%; width: 100%">
+
+
+      <div  @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+      <img v-show="false" :src="thumbnail" id="Thumbnail">
       <canvas
         :id="`myCanvas-${blackboardId}`"
         style="width: 100%; height: 1; background-color: rgb(62, 66, 66)"
-      ></canvas>
+      >
+      
+      </canvas>
     </div>
+
+      <v-row justify="center">
+        <v-overlay absolute :value="overlay" :opacity="0.1">
+          <!-- @click="e => playVideo(e)" -->
+          <v-btn  @click="onOverlayClick()" large dark>
+            <v-icon>play_arrow</v-icon>
+          </v-btn>
+        </v-overlay>
+      </v-row>
+    </v-card>
+  </div>
+
+
+
+    
     <AudioRecorder
-      v-if="audioUrl" :audioUrl="audioUrl" ref="audioRecorder"
+      v-if="audioUrl && this.hasFetchedStrokes" :audioUrl="audioUrl" ref="audioRecorder"
       @loading="hasFetchedAudio = false" @loaded="hasFetchedAudio = true"
       @play="playVideo()" @stop="stopSyncing()" @seeking="handleSeeking()"
     />
-    </template>
+    <!-- </template> -->
+    
   </div>
+  <!-- </DoodleVideoOverlay> -->
 </template>
 
 <script>
@@ -55,7 +84,9 @@ export default {
     mouseHover: false,
     nextFrameIdx: 0,
     recursiveSync: null,
-    getCurrentAudioTime: null
+    getCurrentAudioTime: null,
+    thumbnailImage: null,
+    overlay: true
   }),
   computed: {
     // hasOverlay () {
@@ -65,12 +96,16 @@ export default {
       return (this.hasFetchedAudio || !this.audioUrl)
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
-    hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; }
+    hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; },
   },
   watch: {
     mouseHover () { this.$emit("mouse-change", this.mouseHover); },
     hasVisualAndAudio () { this.$emit("visual-audio-ready"); },
-    hasLoadedAvailableResources () { this.$emit("available-resources-ready"); },
+    hasLoadedAvailableResources () { 
+      this.$nextTick(() => { // this waits for audioRecorder to be fully loaded
+        this.$emit("available-resources-ready"); 
+      });
+    },
     // Uncomment below for painless debugging
     // nextFrameIdx () { console.log(`nextFrameIdx = ${this.nextFrameIdx}`)}
   },
@@ -78,6 +113,7 @@ export default {
     if (!this.thumbnail) {
       this.fetchStrokes();
     } 
+    
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
@@ -85,11 +121,25 @@ export default {
     await this.setCanvasHeight(); // just for video: blackboard should fill space
     this.$_drawMixin_rescaleCanvas(false);
     window.addEventListener("resize", this.handleResize);
+    if (this.thumbnail) {
+      this.thumbnailImage = document.getElementById(`Thumbnail`);
+      this.thumbnailImage.src = this.thumbnail;
+      this.renderThumbnail();
+    }
   },
   destroyed () {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    onOverlayClick(){
+      console.log("Clicked");
+      this.overlay = false;
+      this.$emit("click")
+    },
+    renderThumbnail () {
+      this.$_drawMixin_rescaleCanvas(true);
+      this.ctx.drawImage(this.thumbnailImage,0,0);
+    },
     setCanvasHeight () {
       const setHeight = resolve => {
         const { scrollHeight, scrollWidth } = this.canvas;
@@ -102,13 +152,15 @@ export default {
     },
     async fetchStrokes () {
       return new Promise(async resolve => {
-        const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
-        this.allStrokes = await helpers.getCollectionFromDB(strokesRef);
-        this.$nextTick(() => {
-          this.hasFetchedStrokes = true;
-          this.$_drawMixin_rescaleCanvas(true);
-          this.$emit("strokes-ready")
-        });
+        if(!this.hasFetchedStrokes){
+          const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
+          this.allStrokes = await helpers.getCollectionFromDB(strokesRef);
+          this.$nextTick(() => {
+            this.hasFetchedStrokes = true;
+            this.$_drawMixin_rescaleCanvas(true);
+            this.$emit("strokes-ready")
+          });
+        }
         resolve();
       });
     },
@@ -122,13 +174,22 @@ export default {
       this.isQuickplaying = false;
     },
     handleResize () {
-      if (this.recursiveSync) {
-        this.$_drawMixin_rescaleCanvas(false); // redraw = false
-        this.stopSyncing();
-        this.nextFrameIdx = 0; // need to redraw previous progress 
-        this.syncContinuously();
-      }
-      else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
+      // if (this.hasFetchedStrokes){ // only rerender if there are actually strokes, protects thumbnail
+        if (this.recursiveSync) {
+          this.$_drawMixin_rescaleCanvas(false); // redraw = false
+          this.stopSyncing();
+          this.nextFrameIdx = 0; // need to redraw previous progress 
+          this.syncContinuously();
+        }
+        else { 
+          if (!this.hasFetchedStrokes){
+            this.renderThumbnail();
+          }
+          else {
+            this.$_drawMixin_rescaleCanvas(true); 
+          }
+        } // redraw = true
+      // }
     },
     playVideo () {
       const { audioRecorder } = this.$refs;

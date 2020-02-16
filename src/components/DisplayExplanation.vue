@@ -22,6 +22,8 @@
         :thumbnail="explanation.thumbnail"
         :audioUrl="explanation.audioUrl"
         :hasBetaOverlay="true"
+        @click="handleVideoClick()"
+        @available-resources-ready="playVideo()"
       />
     </v-container>
   </v-card>
@@ -51,7 +53,13 @@ export default {
     console.log("expl", this.explanation); 
   },
   methods: {
-    displayDate (date) { return moment(date).format('MMM D, h:mm a'); }
+    displayDate (date) { return moment(date).format('MMM D, h:mm a'); },
+    async handleVideoClick () {
+      await this.DoodleVideo.fetchStrokes(); //idk if await is necessary here
+    },
+    playVideo () {
+      this.DoodleVideo.playGivenWhatIsAvailable(); 
+    }
   }
 }
 </script>
