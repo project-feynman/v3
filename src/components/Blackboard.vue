@@ -3,7 +3,6 @@
     <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
       <!-- Uncomment line below for an easy life debugging -->
       <!-- <p>blackboard: {{ blackboard }}</p> -->
-
       <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
@@ -240,7 +239,6 @@ export default {
       if (this.isRealtime) {
         this.loading = true;
         if (!this.blackboardId) return;
-        // TODO: remove this blackboard listener
         await this.$binding("blackboard", this.blackboardRef);
         if (this.unsubscribe) this.unsubscribe();
         this.keepSyncingBoardWithDb();
@@ -258,8 +256,8 @@ export default {
             const newStroke = change.doc.data();
             // check if local strokes and db strokes are in sync
             if (this.allStrokes.length < newStroke.strokeNumber) {
-              if (this.loading) this.drawStroke(newStroke); // initial render: catch up to current state - draw quickly
-              else this.drawStroke(newStroke, this.getPointDuration(newStroke)); // render the new stroke smoothly
+              if (this.loading) this.$_drawMixin_drawStroke(newStroke); // initial render: catch up to current state - draw quickly
+              else this.$_drawMixin_drawStroke(newStroke, this.getPointDuration(newStroke)); // render the new stroke smoothly
               this.allStrokes.push(newStroke);
             }
           }
@@ -295,8 +293,7 @@ export default {
     },
     initCopyAndPasteImage () {
        document.onpaste = async event => {
-        // use event.originalEvent.clipboard for newer chrome versions
-        var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
         // console.log(JSON.stringify(items)); // will give you the mime types
         // Find pasted image among pasted items
         let blob = null;
@@ -313,22 +310,9 @@ export default {
             const imageUrl = URL.createObjectURL(this.imageBlob);
             this.displayImageAsBackground(imageUrl);
           } else {
-            const storageRef = firebase.storage().ref();
-            const imageRef = storageRef.child(`images/${this.blackboardId}`);
-            const uploadTask = imageRef.put(blob)
-            uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
-              snapshot => {},
-              error => console.log('error =', error),
-              async () => {
-                // Update blackboard doc's image reference to this new image
-                const imageUrl = await uploadTask.snapshot.ref.getDownloadURL();
-                this.blackboardRef.update({
-                  imageUrl
-                });
-                // Store locally
-                this.imageUrl = imageUrl;
-              }
-            );
+            const imageUrl = await this.$_dbMixin_saveToStorage(`images/${this.blackboardId}`, blob);
+            this.blackboardRef.update({ imageUrl });
+            this.imageUrl = imageUrl; // store locally
           }
         }
       }
@@ -340,10 +324,10 @@ export default {
       this.bgCanvas.width = this.canvas.scrollWidth;
       image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
     },
-    setImage () {
-      document.getElementById("whiteboard-bg-input").value = "";
-      document.getElementById("whiteboard-bg-input").click();
-    },
+    // setImage () {
+    //   document.getElementById("whiteboard-bg-input").value = "";
+    //   document.getElementById("whiteboard-bg-input").click();
+    // },
     handleImage (e) {},
     drawBackground (image) {},
     startTimer () {
@@ -362,26 +346,26 @@ export default {
       this.removeTouchEvents();
     },
     initTouchEvents () {
-      if (!this.canvas) return;
+      if (!this.canvas) { return; }
       this.canvas.addEventListener("touchstart", this.touchStart, false);
       this.canvas.addEventListener("touchend", this.touchEnd, false);
       this.canvas.addEventListener("touchmove", this.touchMove, false);
       this.$_drawMixin_setStyle(this.color, this.lineWidth); // TODO: kind of sketch
     },
     removeTouchEvents () {
-      if (!this.canvas) return;
+      if (!this.canvas) { return; }
       this.canvas.removeEventListener("touchstart", this.touchStart, false);
       this.canvas.removeEventListener("touchend", this.touchEnd, false);
       this.canvas.removeEventListener("touchmove", this.touchMove, false);
     },
     initMouseEvents () {
-      if (!this.canvas) return;
+      if (!this.canvas) { return; }
       this.canvas.addEventListener("mousedown", this.mouseDown, false);
       this.canvas.addEventListener("mouseup", this.mouseUp, false);
       this.canvas.addEventListener("mousemove", this.mouseMove, false);
     },
     removeMouseEvents () {
-      if (!this.canvas) return;
+      if (!this.canvas) { return; }
       this.canvas.removeEventListener("mousedown", this.mouseDown, false);
       this.canvas.removeEventListener("mouseup", this.mouseUp, false);
       this.canvas.removeEventListener("mousemove", this.mouseMove, false);
@@ -393,7 +377,7 @@ export default {
       this.drawToPoint(x, y);
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) return;
+      if (this.isNotValidTouch(e)) { return; }
       e.preventDefault(); // preventDefault only if it's a valid touch to enable scrolling behavior
       // Automatically disable touch drawing if a stylus is detected
       if (e.touches[0].touchType === "stylus") { this.disableTouch = true; }
@@ -409,7 +393,7 @@ export default {
     },
     touchEnd (e) {
       e.preventDefault();
-      if (this.currentStroke.length === 0) return;  // user is touching the screen despite that touch is disabled
+      if (this.currentStroke.length === 0) { return; }  // user is touching the screen despite that touch is disabled
       const strokeNumber = this.allStrokes.length + 1;
       // Save the stroke
       const { uid, firstName, lastName, email } = this.user;
@@ -445,7 +429,7 @@ export default {
       this.touchY = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
-      if (e.touches.length !== 1) return true;  // multiple fingers not allowed
+      if (e.touches.length !== 1) { return true; }  // multiple fingers not allowed
       return this.isFinger(e) && this.disableTouch;
     },
     isFinger (e) {

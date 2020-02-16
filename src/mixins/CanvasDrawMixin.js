@@ -4,7 +4,7 @@ export default {
       // Readjust internal coordinate system
       this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
       this.canvas.height = this.canvas.scrollHeight;
-      // Re-render drawings with scaled drawings
+      // Re-render drawings
       if (redraw) { 
         this.$_drawMixin_setStyle(this.color, this.lineWidth);
         this.$_drawMixin_drawStrokesInstantly(); 
@@ -56,6 +56,16 @@ export default {
     $_drawMixin_getPointDuration (stroke) { // measured in seconds
       const strokePeriod = (stroke.endTime - stroke.startTime);
       return strokePeriod / stroke.points.length;
+    },
+    $_drawMixin_displayImage (src) {
+      const image = new Image();
+      image.src = src;
+      this.bgCanvas.height = this.canvas.scrollHeight;
+      this.bgCanvas.width = this.canvas.scrollWidth;
+      image.onload = () => { 
+        console.log("image =", image);
+        this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight)
+      };
     }
   }
 }

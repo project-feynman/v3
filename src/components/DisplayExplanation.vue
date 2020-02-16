@@ -1,7 +1,7 @@
 <template>
   <v-card id="display-explanation">
     <!-- Uncomment below for MUCH easier debugging -->
-    <!-- <p>{{ explanation }}</p>  -->
+    <p>{{ explanation }}</p> 
     <v-container fluid>
       <h3 class="explanation-title">
         {{ explanation.title }} 
@@ -11,15 +11,16 @@
       <div class="explanation-description mb-5">
         {{ explanation.description }}
       </div>
-      <div v-if="explanation.image" class="image-container">
-        <img :src="explanation.image"/>
-      </div>
+      <!-- <div v-if="explanation.imageUrl" class="image-container">
+        <img :src="explanation.imageUrl"/>
+      </div> -->
       <DoodleVideo
         v-if="explanation.hasVisual"
-        :blackboardRef="selfRef"
         ref="DoodleVideo"
+        :blackboardRef="selfRef"
         :blackboardId="explanation.id"
         :audioUrl="explanation.audioUrl"
+        :imageUrl="explanation.imageUrl"
         :hasBetaOverlay="true"
       />
     </v-container>
