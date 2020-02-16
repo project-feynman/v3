@@ -23,8 +23,8 @@
 <script>
 import DoodleVideoOverlay from "@/components/DoodleVideoOverlay.vue";
 import AudioRecorder from "@/components/AudioRecorder.vue";
-import helpers from "@/helpers.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   props: {
@@ -48,7 +48,7 @@ export default {
     DoodleVideoOverlay,
     AudioRecorder
   },
-  mixins: [CanvasDrawMixin],
+  mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
   data: () => ({
     canvas: null,
     ctx: null,
@@ -111,7 +111,7 @@ export default {
     async fetchStrokes () {
       return new Promise(async resolve => {
         const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
-        this.allStrokes = await helpers.getCollectionFromDB(strokesRef);
+        this.allStrokes = await this.$_dbMixin_getDocs(strokesRef);
         this.$nextTick(() => {
           this.hasFetchedStrokes = true;
           this.$_drawMixin_rescaleCanvas(true);
@@ -216,5 +216,6 @@ export default {
   width: 100%;
   height: 100%;
   z-index: -1;
+  background-color: rgb(62, 66, 66);
 }
 </style>

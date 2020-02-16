@@ -1,7 +1,7 @@
 <template>
   <v-card id="display-explanation">
     <!-- Uncomment below for MUCH easier debugging -->
-    <p>{{ explanation }}</p> 
+    <!-- <p>{{ explanation }}</p>  -->
     <v-container fluid>
       <h3 class="explanation-title">
         {{ explanation.title }} 

@@ -4,7 +4,6 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/database';
 import db from '@/database.js';
-import helpers from "@/helpers.js";
 
 Vue.use(Vuex);
 
@@ -39,6 +38,15 @@ function syncUserWithDb (userRef, context) {
   });
 }
 
+async function getDocFromDb (ref) {
+  const promise = new Promise(async (resolve, reject) => {
+    let doc = await ref.get();
+    if (doc.exists) resolve({ id: doc.id, ...doc.data() });
+    else reject();
+  })
+  return promise;
+}
+
 export default new Vuex.Store({
   state: {
     user: null,
@@ -57,7 +65,7 @@ export default new Vuex.Store({
   actions: {
     async fetchClass (context, classId) {
       const ref = db.collection("classes").doc(classId);
-      const classDoc = await helpers.getDocFromDb(ref);
+      const classDoc = await getDocFromDb(ref);
       context.commit("SET_CLASS", classDoc);
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes

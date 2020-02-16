@@ -30,7 +30,6 @@ import CreateExplanation from "@/components/CreateExplanation.vue";
 import DisplayExplanation from "@/components/DisplayExplanation.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import helpers from "@/helpers.js";
 
 export default {
   components: {

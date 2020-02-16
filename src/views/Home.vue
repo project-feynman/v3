@@ -132,10 +132,11 @@ import DoodleVideo from "@/components/DoodleVideo.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseSearchBar from "@/components/BaseSearchBar.vue";
-import helpers from "@/helpers.js";
+
 import AsyncRenderless from "@/components/AsyncRenderless.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   components: {
@@ -146,6 +147,7 @@ export default {
     TheAppBar,
     TheDropdownMenu
   },
+  mixins: [DatabaseHelpersMixin],
   computed: {
     ...mapState(["user", "isFetchingUser"]),
     userRef () { return db.collection("users").doc(this.user.uid); },
@@ -204,7 +206,7 @@ export default {
     },
     async fetchClasses () {
       const ref = db.collection("classes");
-      this.schoolClasses = await helpers.getCollectionFromDB(ref);
+      this.schoolClasses = await this.$_dbMixin_getDocs(ref);
     },
     enrollInClass ({ name, ".key": id }) {    
       if (this.user.enrolledClasses) {
