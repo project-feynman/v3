@@ -5,6 +5,7 @@
       <CreateExplanation 
         :newPostDbRef="newPostRef"
         :newExplanationDbRef="newExplanationRef"
+        :newDocId="id"
       />
     </v-content>
   </div>

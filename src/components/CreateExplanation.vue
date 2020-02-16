@@ -30,6 +30,7 @@ import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import BaseLoadingButton from "@/components/BaseLoadingButton";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   props: {
@@ -42,6 +43,7 @@ export default {
     newDocId: String,
     visible: Boolean
   },
+  mixins: [DatabaseHelpersMixin],
   components: {
     Blackboard,
     BaseLoadingButton
@@ -96,9 +98,13 @@ export default {
       const { Blackboard } = this.$refs;
       const explanation = {
         ...metadata,
-        audioUrl: Blackboard.audioUrl || "",
+        audioUrl: Blackboard.audioUrl || "", // TODO: make it explicit
         duration: Blackboard.currentTime || 0,
-        image: this.addedImage || 0,
+      }
+      // Save image backgrounds if necessary
+      if (Blackboard.imageBlob) {
+        const path = `images/${this.newDocId}` // anything unique is fine here
+        explanation.imageUrl = await this.$_dbMixin_saveToStorage(path, Blackboard.imageBlob);
       }
       // The first explanation will create a new post
       if (this.newPostDbRef) {

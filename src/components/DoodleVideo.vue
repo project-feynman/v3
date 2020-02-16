@@ -1,10 +1,16 @@
 <template>
-  <div style="height: 100%">
+  <div style="height: 100%; position: relative; z-index: 5">
     <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-      <canvas
-        :id="`myCanvas-${blackboardId}`"
-        style="width: 100%; height: 1; background-color: rgb(62, 66, 66)"
-      ></canvas>
+      <div id="blackboard-wrapper" style="position: relative;">
+        <canvas
+          :id="`myCanvas-${blackboardId}`"
+          style="width: 100%; height: 1; background-color: transparent; display: block;"
+        ></canvas>
+        <canvas 
+          :id="`background-canvas-${blackboardId}`"
+          class="background-canvas"
+        ></canvas>
+      </div>
     </div>
     <AudioRecorder
       v-if="audioUrl" :audioUrl="audioUrl" ref="audioRecorder"
@@ -30,7 +36,8 @@ export default {
       type: String,
       required: true
     },
-    thumbnail: String,
+    thumbnail: String, // will soon be a required prop
+    imageUrl: String,
     audioUrl: String,
     hasBetaOverlay: {
       type: Boolean,
@@ -45,6 +52,8 @@ export default {
   data: () => ({
     canvas: null,
     ctx: null,
+    bgCanvas: null,
+    bgCtx: null,
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
     allStrokes: [],
@@ -73,15 +82,16 @@ export default {
     // nextFrameIdx () { console.log(`nextFrameIdx = ${this.nextFrameIdx}`)}
   },
   async created () {
-    if (!this.thumbnail) {
-      this.fetchStrokes();
-    } 
+    if (!this.thumbnail) { this.fetchStrokes(); } 
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
     this.ctx = this.canvas.getContext("2d");
+    this.bgCanvas = document.getElementById(`background-canvas-${this.blackboardId}`);
+    this.bgCtx = this.bgCanvas.getContext("2d");
     await this.setCanvasHeight(); // just for video: blackboard should fill space
     this.$_drawMixin_rescaleCanvas(false);
+    this.$_drawMixin_displayImage(this.imageUrl);
     window.addEventListener("resize", this.handleResize);
   },
   destroyed () {
@@ -91,8 +101,8 @@ export default {
     setCanvasHeight () {
       const setHeight = resolve => {
         const { scrollHeight, scrollWidth } = this.canvas;
-        if (Math.round(scrollHeight) !== Math.round(0.6*scrollWidth)) {
-          this.canvas.height = 9/16 * scrollWidth;
+        if (Math.round(scrollHeight) !== Math.round((9/16)*scrollWidth)) {
+          this.canvas.height = (9/16) * scrollWidth;
           resolve();
         }
       }
@@ -112,7 +122,7 @@ export default {
     },
     playGivenWhatIsAvailable () { 
       if (this.hasVisualAndAudio) { this.$refs.audioRecorder.playAudio(); }
-      else { this.$_drawMixin_quickplay(); } // silent animation
+      else { this.playSilentAnimation(); }
     },
     async playSilentAnimation () {
       this.isQuickplaying = true;
@@ -147,7 +157,7 @@ export default {
       this.syncContinuously(onlyOneFrame);
     },
     /* Converts our array of separate strokes into an array of continuous points
-    sorted by timestamp. Frames are in a `[[strokeIndex, pointIndex], ...]` format
+    sorted by timestamp. Frames are in a `[{strokeIndex, pointIndex}, ...]` format
     @params: "this.allStrokes"
     @returns: mutates "this.allFrames" 
     */
@@ -196,3 +206,15 @@ export default {
   }
 }
 </script>
+
+<style>
+.background-canvas {
+  /* absolute places the background relative to the parent and ignore the front canvas, thereby stacking on top of each other */
+  position: absolute; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+</style>
