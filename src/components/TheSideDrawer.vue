@@ -74,7 +74,7 @@ export default {
     this.$root.$emit("open-drawer");
     const roomRef = await this.$_getDocRef(`rooms/${this.classId}`)
     let postsRef = await this.$_getCollectionRef(`classes/${this.classId}/posts`);
-    postsRef = postsRef.orderBy("date").limit(50);
+    postsRef = postsRef.orderBy("date", "desc").limit(50);
     this.unsubscribeRoomListener = await this.$_dbMixin_listenToDoc(roomRef, this, "room");
     this.unsubscribePostsListener = await this.$_dbMixin_listenToDocs(postsRef, this, "posts");;
   },
