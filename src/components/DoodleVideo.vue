@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import DoodleVideoOverlay from "@/components/DoodleVideoOverlay.vue";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
@@ -49,10 +48,7 @@ export default {
       default () { return false; }
     }
   },
-  components: {
-    DoodleVideoOverlay,
-    AudioRecorder
-  },
+  components: { AudioRecorder },
   mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
   data: () => ({
     canvas: null,
