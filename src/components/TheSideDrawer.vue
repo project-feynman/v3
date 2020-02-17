@@ -33,8 +33,8 @@
             </v-list-item-content>
           </v-list-item>
 
-          <div v-for="post in posts" :key="post['.key']">
-            <v-list-item @click="$router.push(`/${classId}/posts/${post['.key']}`)" color="accent lighten-1" :key="post['.key']">
+          <div v-for="post in posts" :key="post.id">
+            <v-list-item @click="$router.push(`/${classId}/posts/${post.id}`)" color="accent lighten-1" :key="post.id">
               <v-list-item-content>
                 <v-list-item-subtitle class="text--primary" v-text="post.title"/>
                 <v-list-item-subtitle v-text="displayDate(post.date)"/>
@@ -49,43 +49,40 @@
 </template>
 
 <script>
-import db from "@/database.js";
-import firebase from "firebase/app";
-import "firebase/auth";
 import moment from "moment";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
 
 export default {
   props: {
     value: Boolean
   },
+  mixins: [DatabaseHelpersMixin],
   data () {
     return {
       posts: [],
       room: {
         members: []
-      }
+      },
+      unsubscribeRoomListener: null,
+      unsubscribePostsListener: null
     }
   },
   computed: {
-    user () { return this.$store.state.user; },
-    classId () { return this.$route.params.class_id; },
-    postsRef () {
-      return db.collection("classes").doc(this.classId).collection("posts").orderBy("date").limit(50);
-    },
-    roomRef () { return db.collection("rooms").doc(this.classId); }
+    classId () { return this.$route.params.class_id; }
   },
-  watch: {
-    classId: {
-      handler: "syncDataWithDb",
-      immediate: true
-    }
+  async created () {
+    this.$root.$emit("open-drawer");
+    const roomRef = await this.$_getDocRef(`rooms/${this.classId}`)
+    let postsRef = await this.$_getCollectionRef(`classes/${this.classId}/posts`);
+    postsRef = postsRef.orderBy("date").limit(50);
+    this.unsubscribeRoomListener = await this.$_dbMixin_listenToDoc(roomRef, this, "room");
+    this.unsubscribePostsListener = await this.$_dbMixin_listenToDocs(postsRef, this, "posts");;
+  },
+  destroyed () {
+    this.unsubscribeRoomListener();
+    this.unsubscribePostsListener();
   },
   methods: {
-    async syncDataWithDb () {
-      this.$root.$emit("open-drawer");
-      this.$binding("posts", this.postsRef);
-      this.$binding("room", this.roomRef);
-    },
     displayDate (date) {
       return moment(date).format('MMM Do, h:mm a');
     }
