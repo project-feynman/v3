@@ -4,7 +4,7 @@
     <v-content>
       <v-card>
         <DisplayExplanation
-          v-for="explanation in explanations"
+          v-for="explanation in sortedExplanations"
           :explanation="explanation" :explanationsRef="explanationsRef" :key="explanation.id"
           @video-save="post => saveVideo(post)"
         />
@@ -24,12 +24,10 @@
 </template>
 
 <script>
-import db from "@/database.js";
 import TheAppBar from "@/components/TheAppBar.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import DisplayExplanation from "@/components/DisplayExplanation.vue";
-import firebase from "firebase/app";
-import "firebase/firestore";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   components: {
@@ -37,34 +35,25 @@ export default {
     CreateExplanation,
     DisplayExplanation
   },
+  mixins: [DatabaseHelpersMixin],
   data: () => ({
     explanations: [],
-    isCreatingExplanation: false
+    explanationsRef: null,
+    isCreatingExplanation: false,
+    unsubscribeListener: null
   }),
   computed: {
-    user () { return this.$store.state.user; },
-    classId () { return this.$route.params.class_id; },
-    postId () { return this.$route.params.post_id; },
-    classRef () { return db.collection("classes").doc(this.classId); },
-    postRef () { return this.classRef.collection("posts").doc(this.postId); },
-    explanationsRef () { 
-      return this.postRef.collection("explanations"); 
+    sortedExplanations () {
+      return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
     }
   },
-  watch: {
-    postId: {
-      handler: "syncExplanationsWithDb",
-      immediate: true
-    }
+  async created () {
+    const { class_id, post_id } = this.$route.params;
+    this.explanationsRef = await this.$_getCollectionRef(`classes/${class_id}/posts/${post_id}/explanations`);
+    this.unsubscribeListener = await this.$_dbMixin_listenToDocs(this.explanationsRef, this, "explanations");
   },
-  methods: {
-    syncExplanationsWithDb () {
-      this.explanationsRef.onSnapshot(querySnapshot => { // onSnapshot does NOT return a promise
-        const explanations = []; // want to update this.replies at once to not confuse Vue with multiple updates
-        querySnapshot.forEach(doc => explanations.push({...doc.data(), "id": doc.id }));
-        this.explanations = explanations;
-      });
-    }
+  destroyed () {
+    this.unsubscribeListener();
   }
 }
 </script>
