@@ -208,7 +208,7 @@ export default {
       const ref = db.collection("classes");
       this.schoolClasses = await this.$_dbMixin_getDocs(ref);
     },
-    enrollInClass ({ name, ".key": id }) {    
+    enrollInClass ({ name, id }) {    
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
           if (classObj.id === id) { return; } 
