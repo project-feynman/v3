@@ -15,7 +15,6 @@
     "moment": "^2.24.0",
     "sizeof": "^1.0.0",
     "vue": "^2.6.10",
-    "vue-firestore": "^0.3.22",
     "vue-hot-reload-api": "^2.3.3",
     "vue-loader": "^15.7.0",
     "vue-plyr": "^5.1.0",
