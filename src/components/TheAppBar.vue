@@ -18,7 +18,7 @@
       @click="$router.push('/')"
     >
       {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${mitClass.name}` }}
-  </v-toolbar-title>
+    </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer />
     <slot>

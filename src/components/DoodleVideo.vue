@@ -26,6 +26,11 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
+// TEST:
+// 1. Onload, can directly slide the audio slider 
+// 2. Play the video normally, and drag it forward and backward.
+// 3. Skip to the end of the video.  Drag it forward and backward. 
+
 export default {
   props: {
     blackboardRef: {
@@ -57,7 +62,6 @@ export default {
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
     allStrokes: [],
-    allFrames: [],
     isQuickplaying: false,
     mouseHover: false,
     nextFrameIdx: 0,
@@ -68,6 +72,20 @@ export default {
     // hasOverlay () {
     //   return this.hasLoadedAvailableResources && (!this.recursiveSync && !this.isQuickplaying)
     // },
+    /* Converts our array of separate strokes into an array of continuous points
+      sorted by timestamp. Frames are in a `[{strokeIndex, pointIndex}, ...]` format
+      @params: "this.allStrokes"
+      @returns: mutates "this.allFrames" 
+    */
+    allFrames () {
+      const allPoints = [];
+      for (let i = 0; i < this.allStrokes.length; i++) {
+        for (let j = 1; j < this.allStrokes[i].points.length; j++) {
+          allPoints.push({ strokeIndex: i, pointIndex: j }); 
+        }
+      }
+      return allPoints.sort((p1, p2) => this.getStartTime(p1) - this.getStartTime(p2));
+    },
     hasLoadedAvailableResources () {
       return (this.hasFetchedAudio || !this.audioUrl)
         && (this.hasFetchedStrokes || !this.blackboardId)
@@ -147,7 +165,6 @@ export default {
     },
     prepareForSync () {
       const { audioRecorder } = this.$refs;
-      if (this.allFrames.length === 0) { this.prepareFrames(); }
       if (!this.getCurrentAudioTime) { this.getCurrentAudioTime = audioRecorder.getAudioTime; }
       if (!this.recursiveSync) { this.syncContinuously(); }
     },
@@ -164,19 +181,6 @@ export default {
       this.stopSyncing();
       const onlyOneFrame = true;
       this.syncContinuously(onlyOneFrame);
-    },
-    /* Converts our array of separate strokes into an array of continuous points
-    sorted by timestamp. Frames are in a `[{strokeIndex, pointIndex}, ...]` format
-    @params: "this.allStrokes"
-    @returns: mutates "this.allFrames" 
-    */
-    prepareFrames () {
-      for (let i = 0; i < this.allStrokes.length; i++) {
-        for (let j = 1; j < this.allStrokes[i].points.length; j++) {
-          this.allFrames.push({ strokeIndex: i, pointIndex: j }); 
-        }
-      }
-      this.allFrames.sort((f1, f2) => this.getStartTime(f1) - this.getStartTime(f2));
     },
     getStartTime ({ strokeIndex, pointIndex }) {
       const stroke = this.allStrokes[strokeIndex];
