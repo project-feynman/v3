@@ -19,9 +19,7 @@
         >
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
-              <v-icon large :color="user.color">
-                settings
-              </v-icon>
+              <v-icon large :color="user.color">settings</v-icon>
             </v-btn>
           </template>
         </TheDropdownMenu>
@@ -29,96 +27,98 @@
     </TheAppBar>
 
     <v-content>
-      <v-card class="mx-auto text-center" fluid>
-        <v-container>
-          <div class="central-title d-flex justify-center align-center mb-4">
-            <img src="/logo.png" class="hero-img"/>
-            <h1 class="text--primary ml-2">
-              ExplainMIT
-            </h1>
-          </div>
-          <h3 class="headline text--primary">
-            An efficient platform for visual explanations
-          </h3>
+      <transition name="fade">
+        <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
+          <v-container>
+            <div class="central-title d-flex justify-center align-center mb-4">
+              <img src="/logo.png" class="hero-img"/>
+              <h1 class="text--primary ml-2">
+                ExplainMIT
+              </h1>
+            </div>
+            <h3 class="headline text--primary">
+              An efficient platform for visual explanations
+            </h3>
 
-          <!-- Log in / Sign up -->
-          <v-row class="my-5" justify="center">
-            <template v-if="!user && !isFetchingUser">
-              <v-col cols="auto">
-                <BasePopupButton
-                  actionName="Log in" 
-                  :inputFields="['email', 'password']"
-                  @action-do="payload => logIn(payload)"
-                />
-              </v-col>
-              <v-col cols="auto">
-                <BasePopupButton
-                  actionName="Sign up" 
-                  :inputFields="['first name', 'last name', 'email', 'password']"
-                  @action-do="payload => signUp(payload)"
-                  :outlined="true"
-                />
-              </v-col>
-            </template>
+            <!-- Log in / Sign up -->
+            <v-row class="my-5" justify="center">
+              <template v-if="!user">
+                <v-col cols="auto">
+                  <BasePopupButton
+                    actionName="Log in" 
+                    :inputFields="['email', 'password']"
+                    @action-do="payload => logIn(payload)"
+                  />
+                </v-col>
+                <v-col cols="auto">
+                  <BasePopupButton
+                    actionName="Sign up" 
+                    :inputFields="['first name', 'last name', 'email', 'password']"
+                    @action-do="payload => signUp(payload)"
+                    :outlined="true"
+                  />
+                </v-col>
+              </template>
 
-            <!-- Search Bar -->
-            <template v-else-if="user">
-              <v-col cols="12" sm="6">
-                <BaseSearchBar 
-                  :items="schoolClasses"
-                  @submit="payload => enrollInClass(payload)"
-                  color="accent"
-                  label="Join an existing class"
-                />
-              </v-col>
-            </template>
-          </v-row>
-        </v-container>
-      </v-card>
+              <!-- Search Bar -->
+              <template v-else>
+                <v-col cols="12" sm="6">
+                  <BaseSearchBar 
+                    :items="schoolClasses"
+                    @submit="payload => enrollInClass(payload)"
+                    color="accent"
+                    label="Join an existing class"
+                  />
+                </v-col>
+              </template>
+            </v-row>
+          </v-container>
+        </v-card>
+      </transition>
 
       <!-- Tutorial videos -->
-      <transition name="fade" mode="out-in">
-        <v-container fluid class="py-5">
-          <div v-if="!user && !isFetchingUser" key="loading...">
-            <v-row justify="center" class="py-0 text-center">
-              <v-col 
-                v-for="(tutorial, i) in tutorials" 
-                cols="12" sm="10" md="4" :key="tutorial.blackboardId"
-              >
-                <v-card elevation="5">
-                  <v-card-subtitle class="black--text font-weight-medium">
-                    {{ tutorial.description }}
-                  </v-card-subtitle>
-                  <v-img :aspect-ratio="16/9">
-                    <DoodleVideo
-                      :ref="`DoodleVideo${i+1}`"
-                      :blackboardId="tutorial.blackboardId"
-                      :blackboardRef="tutorial.blackboardRef"
-                      @strokes-ready="startDemo()"
-                    />      
-                  </v-img>
-                </v-card>
-              </v-col>
-            </v-row>
-          </div>
-                            
-          <!-- Display classes -->
-          <div v-else-if="user" key="class-list">
-            <v-row align="stretch" class="enrolled-classes">
-              <v-col v-for="enrolledClass in user.enrolledClasses" cols="12" sm="4" md="3" :key="enrolledClass.id">
-                <AsyncRenderless :dbRef="getMitClassRef(enrolledClass.id)">
-                  <template slot-scope="{ fetchedData: mitClass }">
-                    <v-card @click="$router.push(`${mitClass.id}/posts/`)">
+      <v-container fluid class="py-5">
+        <div v-if="!user && !isFetchingUser">
+          <v-row justify="center" class="py-0 text-center">
+            <v-col 
+              v-for="(tutorial, i) in tutorials" 
+              cols="12" sm="10" md="4" :key="tutorial.blackboardId"
+            >
+              <v-card elevation="5">
+                <v-card-subtitle class="black--text font-weight-medium">
+                  {{ tutorial.description }}
+                </v-card-subtitle>
+                <v-img :aspect-ratio="16/9">
+                  <DoodleVideo
+                    :ref="`DoodleVideo${i+1}`"
+                    :blackboardId="tutorial.blackboardId"
+                    :blackboardRef="tutorial.blackboardRef"
+                    @strokes-ready="startDemo()"
+                  />      
+                </v-img>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
+                          
+        <!-- Display classes -->
+        <div v-else-if="user" key="class-list">
+          <v-row align="stretch" class="enrolled-classes">
+            <v-col v-for="enrolledClass in user.enrolledClasses" cols="12" sm="4" md="3" :key="enrolledClass.id">
+              <AsyncRenderless :dbRef="getMitClassRef(enrolledClass.id)">
+                <template slot-scope="{ fetchedData: mitClass }">
+                  <transition name="fade">
+                    <v-card v-if="mitClass.name && mitClass.description" @click="$router.push(`${mitClass.id}/posts/`)">
                       <v-card-title class="title">{{ mitClass.name }}</v-card-title>
                       <v-card-subtitle>{{ mitClass.description }}</v-card-subtitle>
                     </v-card>
-                  </template>
-                </AsyncRenderless>
-              </v-col>
-            </v-row>
-          </div>
-        </v-container>
-      </transition>             
+                  </transition>
+                </template>
+              </AsyncRenderless>
+            </v-col>
+          </v-row>
+        </div>
+      </v-container>           
     </v-content>
   </div>
 </template>
@@ -132,7 +132,6 @@ import DoodleVideo from "@/components/DoodleVideo.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseSearchBar from "@/components/BaseSearchBar.vue";
-
 import AsyncRenderless from "@/components/AsyncRenderless.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
@@ -178,7 +177,7 @@ export default {
     this.fetchClasses();
   },
   mounted () {
-    this.logoVisibility();
+    // this.logoVisibility();
     window.addEventListener("scroll", this.logoVisibility);
   },
   destroyed () {

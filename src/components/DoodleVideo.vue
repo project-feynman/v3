@@ -104,8 +104,8 @@ export default {
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
-    this.ctx = this.canvas.getContext("2d");
     this.bgCanvas = document.getElementById(`background-canvas-${this.blackboardId}`);
+    this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.setCanvasHeight(); // just for video: blackboard should fill space
     this.$_drawMixin_rescaleCanvas(false);
@@ -119,8 +119,8 @@ export default {
     setCanvasHeight () {
       const setHeight = resolve => {
         const { scrollHeight, scrollWidth } = this.canvas;
-        if (Math.round(scrollHeight) !== Math.round((9/16)*scrollWidth)) {
-          this.canvas.height = (9/16) * scrollWidth;
+        if (Math.round(scrollHeight) !== Math.round((0.6)*scrollWidth)) {
+          this.canvas.height = 0.6 * scrollWidth;
           resolve();
         }
       }

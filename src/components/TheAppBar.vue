@@ -4,9 +4,6 @@
       v-if="!icon && $route.path !== '/'"
       @click.stop="$root.$emit('toggle-drawer')"
     />
-    <!-- <v-icon v-if="this.icon==='back'" @click="$emit('icon-click')" x-large>
-      mdi-chevron-left
-    </v-icon> -->
     <img
       :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
       src="/favicon.ico"
@@ -28,8 +25,6 @@
 </template>
 
 <script>
-import db from "@/database.js";
-
 export default {
   props: {
     loading: Boolean,

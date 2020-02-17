@@ -1,6 +1,6 @@
 <template>
   <!-- <v-row justify="center"> -->
-    <v-dialog v-model="isOpen" persistent max-width="600px">
+    <v-dialog v-model="isOpen" persistent max-width="600px" @keydown.enter="doAction()">
       <template v-slot:activator="{ on }">
         <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">
           {{ actionName }}
