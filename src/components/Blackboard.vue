@@ -98,7 +98,7 @@ export default {
   data () {
     return {
       loading: true,
-      blackboard: null,
+      blackboard: {},
       canvas: null,
       ctx: null,
       bgCanvas: null,
@@ -226,7 +226,7 @@ export default {
       if (this.isRealtime) {
         this.loading = true;
         if (!this.blackboardId) { return; }
-        await this.$binding("blackboard", this.blackboardRef);
+        this.unsubscribe = await this.$_dbMixin_listenToDoc(this.blackboardRef, this, "blackboard");
         if (this.unsubscribe) { this.unsubscribe(); }
         this.keepSyncingBoardWithDb();
       }
