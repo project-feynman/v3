@@ -142,16 +142,25 @@ export default {
       const { audioRecorder } = this.$refs;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
       this.nextFrameIdx = 0;
+      this.prepareForSync();
+      audioRecorder.playAudio();
+    },
+    prepareForSync () {
+      const { audioRecorder } = this.$refs;
       if (this.allFrames.length === 0) { this.prepareFrames(); }
       if (!this.getCurrentAudioTime) { this.getCurrentAudioTime = audioRecorder.getAudioTime; }
       if (!this.recursiveSync) { this.syncContinuously(); }
-      audioRecorder.playAudio();
     },
     stopSyncing () {
       clearTimeout(this.recursiveSync); // stop recursive call
       this.recursiveSync = null;
     },
     handleSeeking () {
+      if (!this.recursiveSync) { 
+        this.prepareForSync();
+        this.nextFrameIdx = 0; 
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
       this.stopSyncing();
       const onlyOneFrame = true;
       this.syncContinuously(onlyOneFrame);
@@ -174,7 +183,6 @@ export default {
       return stroke.startTime + (pointIndex - 1) * this.$_drawMixin_getPointDuration(stroke);
     },
     // Synchronize drawings with the audio on a point-by-point basis.
-    // TODO: never catches up to n for some reason when there are multiple DoodleVIdeos
     syncContinuously (once = false) {
       const nextFrame = this.allFrames[this.nextFrameIdx];
       if (!nextFrame) { return; }

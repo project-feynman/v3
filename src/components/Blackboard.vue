@@ -26,9 +26,9 @@
               :inputFields="['title', 'description']"
               @action-do="payload => handleSaving(payload)"
             >
-              <BaseLoadingButton :isLoading="!hasUploadedAudio">
+              <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
                 Upload video
-              </BaseLoadingButton>
+              </v-btn>
             </BasePopupButton>
           </BlackboardToolBar>
         </div>
@@ -46,7 +46,7 @@
           @eraser-click="status => eraserActive = status"
           @set-image="e => handleImage(e)"
           @color-click="newColor => color = newColor"
-          @wipe-board="resetBoard"
+          @wipe-board="resetBoard()"
           @record-state-change="newState => handleRecordStateChange(newState)"
         />
       </div>
@@ -73,7 +73,6 @@ import db from "@/database.js";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
-import BaseLoadingButton from "@/components/BaseLoadingButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
@@ -94,7 +93,6 @@ export default {
     BlackboardToolBar,
     AudioRecorder,
     TheAppBar,
-    BaseLoadingButton,
     BasePopupButton
   },
   data () {
@@ -191,21 +189,13 @@ export default {
   mounted () {
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
-    this.$_drawMixin_rescaleCanvas(true);
-    window.addEventListener("resize", () => this.$_drawMixin_rescaleCanvas(true), false); // for mini blackboard
-    this.enableDrawing();
-
     this.bgCanvas = document.getElementById("background-canvas");
     this.bgCtx = this.bgCanvas.getContext("2d");
+    this.$_drawMixin_rescaleCanvas(true);
+    window.addEventListener("resize", () => this.$_drawMixin_rescaleCanvas(true), false); 
+    this.enableDrawing();
 
-    // Hack to fix drawing offset bug
-    // this.$nextTick(() => {
-    //   this.$root.$emit("toggle-drawer")
-    //   this.$nextTick(() => this.$root.$emit("toggle-drawer"));
-    // })
-
-    // since cursor uses material icons font, load it after fonts are ready
-    document.fonts.ready.then(() => this.customCursor());
+    document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
     this.drawBackground(this.background);
     this.blackboardSize();
     if (this.isRealtime) {
@@ -217,9 +207,9 @@ export default {
       });
     }
   },
-  updated () {
-    if (!this.isRealtime) { this.drawBackground(this.background); }
-  },
+  // updated () {
+  //   if (!this.isRealtime) { this.drawBackground(this.background); }
+  // },
   beforeDestroy() {
     if (this.unsubscribe) { this.unsubscribe(); }
   },
@@ -253,8 +243,10 @@ export default {
             const newStroke = change.doc.data();
             // check if local strokes and db strokes are in sync
             if (this.allStrokes.length < newStroke.strokeNumber) {
-              if (this.loading) this.$_drawMixin_drawStroke(newStroke); // initial render: catch up to current state - draw quickly
-              else this.$_drawMixin_drawStroke(newStroke, this.$_drawMixin_getPointDuration(newStroke)); // render the new stroke smoothly
+              if (this.loading) { this.$_drawMixin_drawStroke(newStroke); } // initial render: catch up to current state - draw quickly
+              else { // render the new stroke smoothly
+                this.$_drawMixin_drawStroke(newStroke, this.$_drawMixin_getPointDuration(newStroke)); 
+              } 
               this.allStrokes.push(newStroke);
             }
           }
@@ -337,6 +329,7 @@ export default {
     enableDrawing () {
       this.initTouchEvents();
       this.initMouseEvents();
+      this.$_drawMixin_rescaleCanvas(false);
     },
     disableDrawing () {
       this.removeMouseEvents();
@@ -374,6 +367,7 @@ export default {
       this.drawToPoint(x, y);
     },
     touchStart (e) {
+      this.$_drawMixin_rescaleCanvas(false); // ultra-jank
       if (this.isNotValidTouch(e)) { return; }
       e.preventDefault(); // preventDefault only if it's a valid touch to enable scrolling behavior
       // Automatically disable touch drawing if a stylus is detected
@@ -434,6 +428,7 @@ export default {
     },
     mouseDown (e) {
       e.preventDefault();
+      this.$_drawMixin_rescaleCanvas(false); // ultra-jank
       this.mousedown = 1;
       this.$_drawMixin_setStyle(this.color, this.lineWidth);
       this.getMousePos(e);
@@ -520,7 +515,9 @@ export default {
     saveFileReference ({ url }) {
       this.hasUploadedAudio = true;
       this.audioUrl = url;
-      if (this.isRealtime) this.blackboardRef.update({ audioUrl: url });
+      if (this.isRealtime) {
+        this.blackboardRef.update({ audioUrl: url })
+      }
       this.$emit("audio-upload-end");
     },
     async handleSaving ({ title, description }) {
@@ -586,9 +583,8 @@ export default {
         (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +
         "px";
       const realtime_height = window.innerHeight - 48 + "px";
-      // var margin_top = this.isRealtime ? "48px" : "";
       board.style.height = this.isRealtime ? realtime_height : mini_height;
-      // board.style.marginTop = margin_top;
+      this.$_drawMixin_rescaleCanvas(false);
     },
     // Blackboard specific draw methods
     drawToPoint (x, y) {
@@ -625,6 +621,7 @@ export default {
 }
 #myCanvas {
   width: 100%;
+  height: 1px;
   background-color: transparent;
   display: block;
 }

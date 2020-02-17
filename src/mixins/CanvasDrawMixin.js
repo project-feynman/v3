@@ -2,8 +2,11 @@ export default {
   methods: {
     $_drawMixin_rescaleCanvas (redraw) {
       // Readjust internal coordinate system
-      this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
-      this.canvas.height = this.canvas.scrollHeight;
+      if (Math.round(this.canvas.width) !== Math.round(this.canvas.scrollWidth) 
+      || Math.round(this.canvas.height) !== Math.round(this.canvas.scrollHeight)) {
+        this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
+        this.canvas.height = this.canvas.scrollHeight;
+      }
       // Re-render drawings
       if (redraw) { 
         this.$_drawMixin_setStyle(this.color, this.lineWidth);

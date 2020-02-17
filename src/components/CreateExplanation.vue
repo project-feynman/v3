@@ -7,12 +7,13 @@
       label="Description" v-model="postDescription"
       filled color="accent lighten-2" background-color="#f5f5f5"
     />
-    <BaseLoadingButton
-      @click="submitPost()" :isLoading="isButtonDisabled"
-      class="ma-0" color="accent lighten-1" block
+    <v-btn 
+      @click="submitPost()"
+      :loading="isButtonDisabled" :disabled="isButtonDisabled"
+      class="ma-0 white--text" color="accent lighten-1" block
     >
       SUBMIT POST <v-icon class="pl-2">send</v-icon>
-    </BaseLoadingButton>
+    </v-btn>
     <Blackboard
       v-show="blackboardAttached" ref="Blackboard"
       :isRealtime="false" :visible="visible" :background="addedImage" :key="changeKeyToForceReset"
@@ -29,7 +30,6 @@ import Vue from "vue";
 import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
-import BaseLoadingButton from "@/components/BaseLoadingButton";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
@@ -44,10 +44,7 @@ export default {
     visible: Boolean
   },
   mixins: [DatabaseHelpersMixin],
-  components: {
-    Blackboard,
-    BaseLoadingButton
-  },
+  components: { Blackboard },
   data: () => ({
     postTitle: "",
     postDescription: "",
