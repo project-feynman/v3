@@ -100,6 +100,7 @@ export default {
       }
       // Save image backgrounds if necessary
       if (Blackboard.imageBlob) {
+        explanation.hasVisual = true;
         const path = `images/${this.newDocId}` // anything unique is fine here
         explanation.imageUrl = await this.$_dbMixin_saveToStorage(path, Blackboard.imageBlob);
       }
