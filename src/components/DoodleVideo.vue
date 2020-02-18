@@ -12,8 +12,9 @@
         ></canvas>
       </div>
     </div>
+    <p class="text-xs-center" v-if="audioUrl && !hasFetchedAudio">Fetching audio...(this can take a while)</p>
     <AudioRecorder
-      v-if="audioUrl" :audioUrl="audioUrl" ref="audioRecorder"
+      v-if="audioUrl" v-show="hasFetchedAudio" :audioUrl="audioUrl" ref="audioRecorder"
       @loading="hasFetchedAudio = false" @loaded="hasFetchedAudio = true"
       @play="playVideo()" @stop="stopSyncing()" @seeking="handleSeeking()"
     />
