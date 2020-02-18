@@ -16,7 +16,9 @@
         </v-btn>
         <CreateExplanation
           v-if="isCreatingExplanation"
+          :postDbRef="postRef"
           :newExplanationDbRef="explanationsRef.doc()"
+          @upload-finish="isCreatingExplanation = false"
         />
       </v-card>
     </v-content>
@@ -30,15 +32,16 @@ import DisplayExplanation from "@/components/DisplayExplanation.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
+  mixins: [DatabaseHelpersMixin],
   components: {
     TheAppBar,
     CreateExplanation,
     DisplayExplanation
   },
-  mixins: [DatabaseHelpersMixin],
   data: () => ({
     explanations: [],
     explanationsRef: null,
+    postRef: null,
     isCreatingExplanation: false,
     unsubscribeListener: null
   }),
@@ -49,7 +52,8 @@ export default {
   },
   async created () {
     const { class_id, post_id } = this.$route.params;
-    this.explanationsRef = await this.$_getCollectionRef(`classes/${class_id}/posts/${post_id}/explanations`);
+    this.postRef = await this.$_getDocRef(`classes/${class_id}/posts/${post_id}`);
+    this.explanationsRef = this.postRef.collection("explanations");
     this.unsubscribeListener = await this.$_dbMixin_listenToDocs(this.explanationsRef, this, "explanations");
   },
   destroyed () {

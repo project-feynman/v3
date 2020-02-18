@@ -1,10 +1,11 @@
 <template>
   <v-container fluid>
-    <v-text-field
-      label="Title" v-model="postTitle" outlined color="accent lighten-1"
-    />
-    <v-textarea
-      label="Description" v-model="postDescription"
+    <v-textarea 
+      label="Use text, image, drawings and/or voice for any purpose e.g. ask/answer questions, form study groups, do silly doodles, etc." 
+      placeholder="Write text here..."
+      v-model="postTitle" 
+      auto-grow
+      rows="1"
       filled color="accent lighten-2" background-color="#f5f5f5"
     />
     <v-btn 
@@ -12,7 +13,11 @@
       :loading="isButtonDisabled" :disabled="isButtonDisabled"
       class="ma-0 white--text" color="accent lighten-1" block
     >
-      SUBMIT POST <v-icon class="pl-2">send</v-icon>
+      SUBMIT<v-icon class="pl-2">send</v-icon>
+      <template v-slot:loader>
+        <span v-if="isRecordingVideo">Cannot submit while recording a video...</span> 
+        <span v-else-if="isUploadingAudio">Processing your strokes and uploading the audio file...</span>
+      </template>
     </v-btn>
     <Blackboard
       v-show="blackboardAttached" ref="Blackboard"
@@ -31,15 +36,23 @@ import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import firebase from "firebase/app";
+import "firebase/firestore";
 
 export default {
   props: {
-    newPostDbRef: Object,
+    willCreateNewPost: {
+      type: Boolean,
+      default () { return false; }
+    },
+    postDbRef: {
+      type: Object,
+      required: true
+    },
     newExplanationDbRef: {
       type: Object,
       required: true
     },
-    postsDbRef: Object,
     newDocId: String,
     visible: Boolean
   },
@@ -74,8 +87,8 @@ export default {
         this.$root.$emit("show-snackbar", "Error: don't forget to write a title!")
         return; 
       }
-      this.isUploadingPost = true // trigger the "submit" button to go into a loading state
-      const creator = {
+      this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
+      const explanationCreator = {
         uid: this.user.uid,
         firstName: this.user.firstName,
         lastName: this.user.lastName,
@@ -89,7 +102,7 @@ export default {
         title: this.postTitle,
         description: this.postDescription,
         date: this.getDate(),
-        creator,
+        creator: explanationCreator,
         mitClass
       }
       const { Blackboard } = this.$refs;
@@ -104,9 +117,12 @@ export default {
         const path = `images/${this.newDocId}` // anything unique is fine here
         explanation.imageUrl = await this.$_dbMixin_saveToStorage(path, Blackboard.imageBlob);
       }
-      // The first explanation will create a new post
-      if (this.newPostDbRef) {
-        this.newPostDbRef.set(metadata);
+      if (this.willCreateNewPost) {
+        this.postDbRef.set({ ...metadata, participants: [explanationCreator]});
+      } else {
+        this.postDbRef.update({
+          participants: firebase.firestore.FieldValue.arrayUnion(explanationCreator)
+        });
       }
       // Save the explanation and its strokes
       if (Blackboard.allStrokes.length > 0) {
@@ -119,8 +135,10 @@ export default {
       // Reset component
       this.postTitle = "";
       this.postDescription = "";
-      this.changeKeyToForceReset += 1;
+      this.changeKeyToForceReset += 1; // not sure if it works
       this.isUploadingPost = false;
+      // Inform parent
+      this.$emit("upload-finish");
     },
     getDate () {
       const today = new Date();
