@@ -147,8 +147,8 @@ export default {
     },
     // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
     color () {
-      if (this.color != "rgb(62, 66, 66)") this.lineWidth = 2;  // eraser color stroke width is larger
-      else this.lineWidth = 30;
+      if (this.color != "rgb(62, 66, 66)") { this.lineWidth = 3; }  // eraser color stroke width is larger
+      else { this.lineWidth = 30; }
       this.$_drawMixin_setStyle(this.color, this.lineWidth);
     },
     blackboard (newVal) {
@@ -180,7 +180,7 @@ export default {
       this.canvas.getContext("2d").globalCompositeOperation = this.eraserActive
         ? "destination-out"
         : "source-over";
-      this.lineWidth = this.eraserActive ? 20 : 2;
+      this.lineWidth = this.eraserActive ? 20 : 3;
     },
     color () { this.customCursor(); },
     visible () { this.blackboardSize(); },
