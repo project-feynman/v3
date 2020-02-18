@@ -67,11 +67,8 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
 exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explDoc, context) => {
   const { postId, classId } = context.params;
   const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
-  // const postCreator = await getDocFromDb(firestore.doc(`/users/${originalPost.creator.uid}`));
-  // inform everyone who was in the discussion 
   originalPost.participants.forEach(participant => {
     if (participant.email === explDoc.data().creator.email) { return; }
-    // if (postCreator.email === explCreator.email) { return; }
     const subject = `${explDoc.data().creator.firstName} added something in a post you engaged in`;
     const html = `
       <p>${explDoc.data().title}</p>
