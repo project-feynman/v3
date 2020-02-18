@@ -3,7 +3,8 @@
     <TheAppBar/>
     <v-content>
       <CreateExplanation 
-        :newPostDbRef="newPostRef"
+        :willCreateNewPost="true"
+        :postDbRef="newPostRef"
         :newExplanationDbRef="newExplanationRef"
         :newDocId="id"
       />

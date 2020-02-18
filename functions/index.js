@@ -57,27 +57,25 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
     const subject = `Your classmate ${classmateDoc.data().firstName} posted something`;
     const { classId, postId } = context.params;
     const html = `
-      <h2>Title: ${post.data().title}</h2>
-      <p>Description: ${post.data().description}</p>
+      <p>${post.data().description}</p>
       <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
     `;
-    sendEmail(classmateDoc.data().email, subject, "A new post!", html);
+    sendEmail(classmateDoc.data().email, subject, "A new post :]", html);
   })
 });
 
-exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explanation, context) => {
+exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explDoc, context) => {
   const { postId, classId } = context.params;
   const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
-  const postCreator = await getDocFromDb(firestore.doc(`/users/${originalPost.creator.uid}`));
-  const { creator: explanationCreator, title, description } = explanation.data();
-  if (postCreator.email === explanationCreator.email) { return; }
-  const subject = `${explanationCreator.firstName} replied to your post`;
-  const html = `
-    <h2>Title: ${title}</h2>
-    <p>Description: ${description}</p>
-    <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
-  `;
-  sendEmail(postCreator.email, subject, "A new reply!", html);
+  originalPost.participants.forEach(participant => {
+    if (participant.email === explDoc.data().creator.email) { return; }
+    const subject = `${explDoc.data().creator.firstName} added something in a post you engaged in`;
+    const html = `
+      <p>${explDoc.data().title}</p>
+      <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
+    `;
+    sendEmail(participant.email, subject, "A new post activity :]", html);
+  })
 });
 
 exports.recursiveDelete = functions.runWith({ timeoutSeconds: 540, memory: "2GB" }).https.onCall((data, context) => {
