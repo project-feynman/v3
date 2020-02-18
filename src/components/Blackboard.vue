@@ -105,7 +105,7 @@ export default {
       bgCtx: null,
       color: "white",
       eraserActive: false,
-      lineWidth: 2,
+      lineWidth: 3,
       disableTouch: false,
       stylus: false,
       allStrokes: [],
@@ -580,7 +580,7 @@ export default {
     blackboardSize () {
       const board = document.getElementById("myCanvas");
       const mini_height =
-        (document.getElementById("blackboard-wrapper").offsetWidth * 9) / 16 +
+        (document.getElementById("blackboard-wrapper").offsetWidth * 0.6)  +
         "px";
       const realtime_height = window.innerHeight - 48 + "px";
       board.style.height = this.isRealtime ? realtime_height : mini_height;
