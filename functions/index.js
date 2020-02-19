@@ -54,7 +54,7 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
   const classmatesDocs = await classmatesRef.get();
   classmatesDocs.forEach(classmateDoc => {
     if (post.data().creator.email === classmateDoc.data().email) { return; }
-    const subject = `Your classmate ${classmateDoc.data().firstName} posted something`;
+    const subject = `${post.data().creator.firstName} posted something in ${mitClass.name}`;
     const { classId, postId } = context.params;
     const html = `
       <p>${post.data().description}</p>
