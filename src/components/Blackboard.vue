@@ -478,9 +478,9 @@ export default {
     },
     handleRecordStateChange (newState) {
       const { MID_RECORD, POST_RECORD } = this.recordStateEnum;
-      if (newState === MID_RECORD) this.startRecording();
-      else if (newState === POST_RECORD) this.stopRecording();
-      else this.tryRecordAgain();
+      if (newState === MID_RECORD) { this.startRecording(); }
+      else if (newState === POST_RECORD) { this.stopRecording(); }
+      else { this.tryRecordAgain(); }
     },
     startRecording () {
       this.startTimer();
@@ -511,6 +511,7 @@ export default {
       if (this.isRealtime) {
         this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
       }
+      this.$emit("retry-recording"); // inform CreateExplanation.vue to hide the DoodleVideo preview
     },
     saveFileReference ({ url }) {
       this.hasUploadedAudio = true;
@@ -518,7 +519,7 @@ export default {
       if (this.isRealtime) {
         this.blackboardRef.update({ audioUrl: url })
       }
-      this.$emit("audio-upload-end");
+      this.$emit("audio-upload-end", { blackboardStrokes: this.allStrokes, audioUrl: url});
     },
     async handleSaving ({ title, description }) {
       // Save the video

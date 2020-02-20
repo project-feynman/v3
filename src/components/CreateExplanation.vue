@@ -13,20 +13,34 @@
       :loading="isButtonDisabled" :disabled="isButtonDisabled"
       class="ma-0 white--text" color="accent lighten-1" block
     >
-      SUBMIT<v-icon class="pl-2">send</v-icon>
+      SUBMIT
+      <v-icon class="pl-2">send</v-icon>
       <template v-slot:loader>
-        <span v-if="isRecordingVideo">Cannot submit while recording a video...</span> 
-        <span v-else-if="isUploadingAudio">Processing your strokes and uploading the audio file...</span>
+        <span v-if="isRecordingVideo">Currently recording...</span> 
+        <span v-else-if="isUploadingAudio">Processing video...</span>
       </template>
     </v-btn>
     <Blackboard
-      v-show="blackboardAttached" ref="Blackboard"
+      v-show="blackboardAttached && !isShowingVideoPreview" ref="Blackboard"
       :isRealtime="false" :visible="visible" :background="addedImage" :key="changeKeyToForceReset"
       @boardImage="boardImage"
       @record-start="isRecordingVideo = true"
       @audio-upload-start="isRecordingVideo = false; isUploadingAudio = true"
-      @audio-upload-end="isUploadingAudio = false"
+      @audio-upload-end="strokes => handleAudioUploadEnd(strokes)"
+      @retry-recording="isShowingVideoPreview = false"
     />
+    <template v-if="isShowingVideoPreview">
+      <v-btn 
+        @click="resetRecordState()"
+        class="ma-0 white--text" color="accent lighten-1" block
+      >
+        Retry
+      </v-btn>
+      <DoodleVideo 
+        :strokes="blackboardStrokes"
+        :audioUrl="audioUrl"
+      />
+    </template>
   </v-container>
 </template>
 
@@ -38,6 +52,7 @@ import Blackboard from "@/components/Blackboard.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -57,7 +72,7 @@ export default {
     visible: Boolean
   },
   mixins: [DatabaseHelpersMixin],
-  components: { Blackboard },
+  components: { Blackboard, DoodleVideo },
   data: () => ({
     postTitle: "",
     postDescription: "",
@@ -66,7 +81,10 @@ export default {
     isUploadingAudio: false,
     isUploadingPost: false,
     isRecordingVideo: false,
+    isShowingVideoPreview: false,
     blackboardAttached: true,
+    blackboardStrokes: [],
+    audioUrl: "",
     imageAdded: false,
     addedImage: "",
     changeImage: false,
@@ -81,6 +99,16 @@ export default {
     classId () { return this.$route.params.classId; }
   },
   methods: {
+    resetRecordState () {
+      const Blackboard = this.$refs.Blackboard;
+      Blackboard.handleRecordStateChange(CONSTANTS.recordStateEnum.PRE_RECORD);
+    },
+    handleAudioUploadEnd ({ blackboardStrokes, audioUrl }) {
+      this.isUploadingAudio = false; 
+      this.isShowingVideoPreview = true
+      this.blackboardStrokes = blackboardStrokes;
+      this.audioUrl = audioUrl;
+    },
     // Uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
       if (!this.postTitle) { 

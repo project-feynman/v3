@@ -14,9 +14,15 @@
     </div>
     <p class="text-xs-center" v-if="audioUrl && !hasFetchedAudio">Fetching audio...(this can take a while)</p>
     <AudioRecorder
-      v-if="audioUrl" v-show="hasFetchedAudio" :audioUrl="audioUrl" ref="audioRecorder"
-      @loading="hasFetchedAudio = false" @loaded="hasFetchedAudio = true"
-      @play="playVideo()" @stop="stopSyncing()" @seeking="handleSeeking()"
+      v-if="audioUrl" 
+      v-show="hasFetchedAudio" 
+      ref="audioRecorder"
+      :audioUrl="audioUrl" 
+      @loading="hasFetchedAudio = false" 
+      @loaded="hasFetchedAudio = true"
+      @play="playVideo()" 
+      @stop="stopSyncing()" 
+      @seeking="handleSeeking()"
     />
   </div>
 </template>
@@ -33,14 +39,9 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   props: {
-    blackboardRef: {
-      type: Object,
-      required: true
-    },
-    blackboardId: {
-      type: String,
-      required: true
-    },
+    strokes: Array,
+    blackboardRef: Object,
+    blackboardId: String,
     thumbnail: String, // will soon be a required prop
     imageUrl: String,
     audioUrl: String,
@@ -97,7 +98,8 @@ export default {
     // nextFrameIdx () { console.log(`nextFrameIdx = ${this.nextFrameIdx}`)}
   },
   async created () {
-    if (!this.thumbnail) { this.fetchStrokes(); } 
+    if (this.strokes) { this.allStrokes = this.strokes } 
+    else if (!this.thumbnail) { this.fetchStrokes(); } 
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
@@ -105,7 +107,8 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.setCanvasHeight(); // just for video: blackboard should fill space
-    this.$_drawMixin_rescaleCanvas(false);
+    const willDisplayStrokes = this.strokes? true : false;
+    this.$_drawMixin_rescaleCanvas(willDisplayStrokes);
     this.$_drawMixin_displayImage(this.imageUrl);
     window.addEventListener("resize", this.handleResize);
   },
@@ -129,8 +132,8 @@ export default {
         this.allStrokes = await this.$_dbMixin_getDocs(strokesRef);
         this.$nextTick(() => {
           this.hasFetchedStrokes = true;
-          this.$_drawMixin_rescaleCanvas(true);
           this.$emit("strokes-ready")
+          this.$_drawMixin_rescaleCanvas(true);
         });
         resolve();
       });
