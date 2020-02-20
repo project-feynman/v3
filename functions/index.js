@@ -54,7 +54,7 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
   const classmatesDocs = await classmatesRef.get();
   classmatesDocs.forEach(classmateDoc => {
     if (post.data().creator.email === classmateDoc.data().email) { return; }
-    const subject = `${post.data().creator.firstName} posted something in ${mitClass.name}`;
+    const subject = `${post.data().creator.firstName} posted in ${mitClass.name}`;
     const { classId, postId } = context.params;
     const html = `
       <p>${post.data().description}</p>
@@ -69,7 +69,7 @@ exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}
   const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
   originalPost.participants.forEach(participant => {
     if (participant.email === explDoc.data().creator.email) { return; }
-    const subject = `${explDoc.data().creator.firstName} added something in a post you engaged in`;
+    const subject = `${explDoc.data().creator.firstName} replied in a ${explDoc.data().mitClass.name} post you engaged in`;
     const html = `
       <p>${explDoc.data().title}</p>
       <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
