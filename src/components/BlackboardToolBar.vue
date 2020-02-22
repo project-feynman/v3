@@ -1,18 +1,18 @@
 <template>
   <v-app-bar dense :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime?0:1" class="blackboard-toolbar">
-    <v-container fluid class="py-1 px-0">
+    <v-container fluid class="px-0">
       <v-row align="center" justify="space-between">
         <template v-if="currentState !== recordStateEnum.POST_RECORD">
           <v-col class="py-0">
             <v-row justify="start" align="center">
               <v-col class="px-1 py-0" cols="auto">
                 <div
-                  :class="[$vuetify.breakpoint.mdAndDown? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
+                  :class="[$vuetify.breakpoint.smAndDown? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
                   id="swatches-wrapper"
                   @click="$emit('eraser-click', false)"
                 >
-                  <v-btn
-                    :color="(!$vuetify.breakpoint.mdAndDown || palleteVisibility || eraserActive)? 'accent lighten-1':color"
+                  <!-- <v-btn
+                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent lighten-1':color"
                     @click="palleteClick()"
                     :outlined="eraserActive? true:false"
                     min-width="36px"
@@ -22,8 +22,9 @@
                   >
                     <v-icon>mdi-lead-pencil</v-icon>
                     <v-icon class="down">keyboard_arrow_down</v-icon>
-                  </v-btn>
+                  </v-btn> -->
                   <swatches
+                    v-show="!$vuetify.breakpoint.smAndDown"
                     @input="newVal => $emit('color-click', newVal)"
                     :value="color"
                     :colors="colors"
@@ -44,7 +45,8 @@
         </template>
           <template v-if="currentState === recordStateEnum.PRE_RECORD">
             <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="clickImage()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="image">
+              <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="image">
+                <input style="display: none" type="file" @change="e => onImageSelected(e)" ref="fileInput">
                 <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br> (CTRL + V)</p>
               </ButtonPrabhakar>
             </v-col>
@@ -119,6 +121,9 @@ export default {
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
+    onImageSelected (e) {
+      this.$emit("image-selected", e.target.files[0]);
+    },
     setImage () {
       document.getElementById("whiteboard-bg-input").value = "";
       document.getElementById("whiteboard-bg-input").click();
@@ -128,17 +133,14 @@ export default {
       this.$emit("eraser-click", true);
     },
     palleteClick () {
-      if (this.eraserActive) this.palleteVisibility = false;
-      else this.palleteVisibility = !this.palleteVisibility;
+      if (this.eraserActive) { this.palleteVisibility = false; }
+      else { this.palleteVisibility = !this.palleteVisibility; }
     },
     palleteClose (e) {
-      var pallete = document.getElementById("swatches-wrapper");
+      const pallete = document.getElementById("swatches-wrapper");
       if (pallete && !pallete.contains(e.target)) {
         this.palleteVisibility = false;
       }
-    },
-    clickImage (e) {
-      // TODO
     }
   }
 };
@@ -155,7 +157,7 @@ export default {
     zoom: 0.9;
   }
 }
-#swatches-wrapper {
+/* #swatches-wrapper {
   position: relative;
 }
 #swatches-wrapper .vue-swatches {
@@ -205,7 +207,7 @@ button {
 }
 .v-icon {
   font-size: 20px;
-}
+} */
 
 /* TODO: CSS leak */
 .super-small-text p {

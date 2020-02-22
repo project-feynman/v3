@@ -44,8 +44,12 @@ export default {
     audio: Object,
     blackboardRef: Object,
     blackboardId: String,
-    thumbnail: String, // will soon be a required prop
+    thumbnail: String, 
     imageUrl: String,
+    image: { 
+      type: Object,
+      default () { return { file: null }; }
+    },
     audioUrl: String,
     hasBetaOverlay: {
       type: Boolean,
@@ -95,9 +99,7 @@ export default {
   watch: {
     mouseHover () { this.$emit("mouse-change", this.mouseHover); },
     hasVisualAndAudio () { this.$emit("visual-audio-ready"); },
-    hasLoadedAvailableResources () { this.$emit("available-resources-ready"); },
-    // Uncomment below for painless debugging
-    // nextFrameIdx () { console.log(`nextFrameIdx = ${this.nextFrameIdx}`)}
+    hasLoadedAvailableResources () { this.$emit("available-resources-ready"); }
   },
   async created () {
     if (this.strokes) { this.allStrokes = this.strokes } 
@@ -110,8 +112,13 @@ export default {
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.setCanvasHeight(); // just for video: blackboard should fill space
     const willDisplayStrokes = this.strokes? true : false;
-    this.$_drawMixin_rescaleCanvas(willDisplayStrokes);
-    this.$_drawMixin_displayImage(this.imageUrl);
+    this.$_rescaleCanvas(willDisplayStrokes);
+    if (this.image.file) {
+      const imageSrc = URL.createObjectURL(this.image.file);
+      this.$_displayImage(imageSrc);
+    } else if (this.imageUrl) {
+      this.$_displayImage(this.imageUrl);
+    }
     window.addEventListener("resize", this.handleResize);
   },
   destroyed () {
@@ -137,7 +144,7 @@ export default {
         this.$nextTick(() => {
           this.hasFetchedStrokes = true;
           this.$emit("strokes-ready")
-          this.$_drawMixin_rescaleCanvas(true);
+          this.$_rescaleCanvas(true);
         });
         resolve();
       });
@@ -148,20 +155,19 @@ export default {
     },
     async playSilentAnimation () {
       this.isQuickplaying = true;
-      await this.$_drawMixin_quickplay();
+      await this.$_quickplay();
       this.isQuickplaying = false;
     },
     handleResize () {
       if (this.recursiveSync) {
-        this.$_drawMixin_rescaleCanvas(false); // redraw = false
+        this.$_rescaleCanvas(false); // redraw = false
         this.stopSyncing();
         this.nextFrameIdx = 0; // need to redraw previous progress 
         this.syncContinuously();
       }
-      else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
+      else { this.$_rescaleCanvas(true); } // redraw = true
     },
     playVideo () {
-      console.log("playVideo");
       const { audioRecorder } = this.$refs;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
       this.nextFrameIdx = 0;
@@ -189,7 +195,7 @@ export default {
     },
     getStartTime ({ strokeIndex, pointIndex }) {
       const stroke = this.allStrokes[strokeIndex];
-      return stroke.startTime + (pointIndex - 1) * this.$_drawMixin_getPointDuration(stroke);
+      return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
     // Synchronize drawings with the audio on a point-by-point basis.
     syncContinuously (once = false) {
@@ -217,8 +223,8 @@ export default {
     },
     renderFrame ({ strokeIndex, pointIndex }) {
       const stroke = this.allStrokes[strokeIndex];
-      this.$_drawMixin_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
-      this.$_drawMixin_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
+      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
+      this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
     }
   }
 }

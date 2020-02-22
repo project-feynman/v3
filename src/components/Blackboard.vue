@@ -3,7 +3,7 @@
     <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
       <!-- Uncomment line below for an easy life debugging -->
       <!-- <p>blackboard: {{ blackboard }}</p> -->
-      <TheAppBar v-if="isRealtime" :loading="loading" page="realtime">
+      <TheAppBar v-if="isRealtime" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
             ref="blackboardToolbar"
@@ -19,6 +19,7 @@
             @record-state-change="newState => handleRecordStateChange(newState)"
             @video-save="payload => handleSaving(payload)"
             @animation-save="handleSaving({ title: 'No title yet', description: 'No description yet' })"
+            @image-selected="imageFile => saveAndDisplayImage(imageFile)"
           >
             <BasePopupButton
               actionName="Save video"
@@ -48,6 +49,7 @@
           @color-click="newColor => color = newColor"
           @wipe-board="resetBoard()"
           @record-state-change="newState => handleRecordStateChange(newState)"
+          @image-selected="imageFile => saveAndDisplayImage(imageFile)"
         />
       </div>
       <!-- BLACKBOARD -->
@@ -81,9 +83,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   props: {
-    blackboardId: {
-      type: String
-    },
+    blackboardId: String,
     isRealtime: Boolean,
     visible: Boolean,
     // TODO: background should be encapsulated within this component
@@ -106,25 +106,20 @@ export default {
       bgCtx: null,
       color: "white",
       eraserActive: false,
-      lineWidth: 3,
+      lineWidth: 2.5,
       disableTouch: false,
       stylus: false,
       allStrokes: [],
-      currentStroke: [],
+      currentStroke: { points: [] },
       imageUrl: "",
       imageBlob: null,
       timer: null,
       currentTime: 0,
-      // TODO: refactor currentStroke to be an object so startTiem and endTime aren't necessary
-      startTime: 0,
-      endTime: null,
       lastX: -1,
       lastY: -1,
-      touchX: null,
-      touchY: null,
-      mouseX: 0,
-      mouseY: 0,
-      mousedown: 0, // Necessary to know if user is holding left click while dragging the mouse
+      currX: 0,
+      currY: 0,
+      mousedown: 0, // necessary to know if user is holding left click while dragging the mouse
       unsubscribe: null,
       currentState: "",
       audioUrl: "",
@@ -135,30 +130,31 @@ export default {
   },
   computed: {
     user () { return this.$store.state.user; },
+    author () {
+      if (this.user) { 
+        const { uid, firstName, lastName, email } = this.user;
+        return { uid, firstName, lastName, email };
+      } else { 
+        return { uid: "Anonymous" }; 
+      }
+    },
     classId () { return this.$route.params.class_id; },
     classRef () { return db.collection("classes").doc(this.classId); },
     blackboardRef () { return this.classRef.collection("blackboards").doc(this.blackboardId); },
     strokesRef () { return this.blackboardRef.collection("strokes"); },
-    bg () { return this.background; }// mini
+    bg () { return this.background; } // mini
   },
   watch: {
     blackboardId: {
       handler: "initData",
       immediate: true
     },
-    // detects when user switches from the eraser back to drawing (TODO: high surface area for bugs)
-    color () {
-      if (this.color != "rgb(62, 66, 66)") { this.lineWidth = 3; }  // eraser color stroke width is larger
-      else { this.lineWidth = 30; }
-      this.$_drawMixin_setStyle(this.color, this.lineWidth);
-    },
     blackboard (newVal) {
-      // TODO: this gets triggered 2x more often than I expect, find out why
-      // answer: timestamp changes on the doc;
       const { POST_RECORD } = this.recordStateEnum;
       if (newVal.recordState !== POST_RECORD || this.canvas) {
         this.enableDrawing();
       }
+      // TODO: make it more readable
       let imageSrc;
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
@@ -181,10 +177,10 @@ export default {
       this.canvas.getContext("2d").globalCompositeOperation = this.eraserActive
         ? "destination-out"
         : "source-over";
-      this.lineWidth = this.eraserActive ? 20 : 3;
+      this.lineWidth = this.eraserActive ? 25 : 2.5;
     },
     color () { this.customCursor(); },
-    visible () { this.blackboardSize(); },
+    visible () { this.adjustBlackboardHeight(); },
     bg () { this.drawBackground(this.bg); }
   },
   mounted () {
@@ -192,30 +188,18 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCanvas = document.getElementById("background-canvas");
     this.bgCtx = this.bgCanvas.getContext("2d");
-    this.$_drawMixin_rescaleCanvas(true);
-    window.addEventListener("resize", () => this.$_drawMixin_rescaleCanvas(true), false); 
+    const willRedraw = true;
+    this.$_rescaleCanvas(willRedraw);
+    window.addEventListener("resize", () => this.$_rescaleCanvas(willRedraw), false); 
     this.enableDrawing();
-
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
     this.drawBackground(this.background);
-    this.blackboardSize();
-    if (this.isRealtime) {
-      this.keepSyncingBoardWithDb();
-      // TODO: is this detectable by resize - should make blackboard change size in response to this
-      this.$root.$on("side-nav-toggled", sideNavOpened => {
-        this.canvas.width = document.documentElement.clientWidth;
-        this.rescaleCanvas(true);
-      });
-    }
+    this.adjustBlackboardHeight();
+    if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
   },
-  // updated () {
-  //   if (!this.isRealtime) { this.drawBackground(this.background); }
-  // },
-  beforeDestroy() {
-    if (this.unsubscribe) { this.unsubscribe(); }
-  },
+  beforeDestroy() { if (this.unsubscribe) { this.unsubscribe(); } },
   destroyed () {
-    window.removeEventListener("resize", () => this.$_drawMixin_rescaleCanvas(true));
+    window.removeEventListener("resize", () => this.$_rescaleCanvas(true));
   },
   methods: {
     async initData () {
@@ -241,12 +225,9 @@ export default {
         snapshot.docChanges().forEach(change => {
           if (change.type === "added") {
             const newStroke = change.doc.data();
-            // check if local strokes and db strokes are in sync
-            if (this.allStrokes.length < newStroke.strokeNumber) {
-              if (this.loading) { this.$_drawMixin_drawStroke(newStroke); } // initial render: catch up to current state - draw quickly
-              else { // render the new stroke smoothly
-                this.$_drawMixin_drawStroke(newStroke, this.$_drawMixin_getPointDuration(newStroke)); 
-              } 
+            if (this.allStrokes.length < newStroke.strokeNumber) { // check if local strokes and db strokes are in sync
+              if (this.loading) { this.$_drawStroke(newStroke); } // initial render: catch up to current state - draw quickly
+              else { this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); } 
               this.allStrokes.push(newStroke);
             }
           }
@@ -282,7 +263,7 @@ export default {
     },
     resetVariables () {
       this.allStrokes = [];
-      this.lastX = -1;
+      [this.lastX, this.lastY] = [-1, 1];
       this.currentTime = 0;
       this.imageBlob = null;
       this.imageUrl = "";
@@ -290,7 +271,6 @@ export default {
     initCopyAndPasteImage () {
        document.onpaste = async event => {
         const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
-        // console.log(JSON.stringify(items)); // will give you the mime types
         // Find pasted image among pasted items
         let blob = null;
         for (let i = 0; i < items.length; i++) {
@@ -300,18 +280,29 @@ export default {
         }
 
         // Load image if there is a pasted image
-        if (blob !== null) {
-          this.imageBlob = blob;
-          if (!this.isRealtime) {
-            const imageUrl = URL.createObjectURL(this.imageBlob);
-            this.displayImageAsBackground(imageUrl);
-          } else {
-            const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
-            this.blackboardRef.update({ imageUrl });
-            this.imageUrl = imageUrl; // store locally
-          }
-        }
+        if (blob === null) { return; }
+        this.imageBlob = blob;
+        if (!this.isRealtime) {
+          const imageUrl = URL.createObjectURL(this.imageBlob);
+          this.displayImageAsBackground(imageUrl);
+        } else {
+          const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
+          this.blackboardRef.update({ imageUrl });
+          this.imageUrl = imageUrl; // store locally
+        }     
       }
+    },
+    async saveAndDisplayImage (blob) { // TODO: this was a quick-fix for image files
+      if (blob === null) { return; }
+      this.imageBlob = blob;
+      if (!this.isRealtime) {
+        const imageUrl = URL.createObjectURL(this.imageBlob);
+        this.displayImageAsBackground(imageUrl);
+      } else {
+        const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
+        this.blackboardRef.update({ imageUrl });
+        this.imageUrl = imageUrl; // store locally
+      }     
     },
     displayImageAsBackground (src) {
       const image = new Image();
@@ -320,168 +311,90 @@ export default {
       this.bgCanvas.width = this.canvas.scrollWidth;
       image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
     },
-    // setImage () {
-    //   document.getElementById("whiteboard-bg-input").value = "";
-    //   document.getElementById("whiteboard-bg-input").click();
-    // },
     handleImage (e) {},
     drawBackground (image) {},
     startTimer () {
       this.currentTime = 0;
       this.timer = setInterval(() => this.currentTime += 0.1, 100);
     },
-    stopTimer () {
-      clearInterval(this.timer);
-    },
-    enableDrawing () {
-      this.initTouchEvents();
-      this.initMouseEvents();
-      this.$_drawMixin_rescaleCanvas(false);
-    },
-    disableDrawing () {
-      this.removeMouseEvents();
-      this.removeTouchEvents();
-    },
-    initTouchEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.addEventListener("touchstart", this.touchStart, false);
-      this.canvas.addEventListener("touchend", this.touchEnd, false);
-      this.canvas.addEventListener("touchmove", this.touchMove, false);
-      this.$_drawMixin_setStyle(this.color, this.lineWidth); // TODO: kind of sketch
-    },
-    removeTouchEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.removeEventListener("touchstart", this.touchStart, false);
-      this.canvas.removeEventListener("touchend", this.touchEnd, false);
-      this.canvas.removeEventListener("touchmove", this.touchMove, false);
-    },
-    initMouseEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.addEventListener("mousedown", this.mouseDown, false);
-      this.canvas.addEventListener("mouseup", this.mouseUp, false);
-      this.canvas.addEventListener("mousemove", this.mouseMove, false);
-    },
-    removeMouseEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.removeEventListener("mousedown", this.mouseDown, false);
-      this.canvas.removeEventListener("mouseup", this.mouseUp, false);
-      this.canvas.removeEventListener("mousemove", this.mouseMove, false);
-    },
+    stopTimer () { clearInterval(this.timer); },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4);
       const unitY = parseFloat(y / this.canvas.height).toFixed(4);
-      this.currentStroke.push({ unitX, unitY });
+      this.currentStroke.points.push({ unitX, unitY });
       this.drawToPoint(x, y);
     },
-    touchStart (e) {
-      this.$_drawMixin_rescaleCanvas(false); // ultra-jank
-      if (this.isNotValidTouch(e)) { return; }
-      e.preventDefault(); // preventDefault only if it's a valid touch to enable scrolling behavior
-      // Automatically disable touch drawing if a stylus is detected
-      if (e.touches[0].touchType === "stylus") { this.disableTouch = true; }
-      this.drawToPointAndSave(e);
+    startNewStroke (e) {
+      // set up the strokes object
+      this.currentStroke.strokeNumber = this.allStrokes.length + 1;
+      this.currentStroke.startTime = Number(this.currentTime.toFixed(1));
+      this.currentStroke.author = this.author;
+      this.currentStroke.color = this.color;
+      this.currentStroke.lineWidth = this.lineWidth;
+      this.currentStroke.isErasing = this.eraserActive;
+
+      this.$_rescaleCanvas(false);
+      e.preventDefault(); // not put in the beginning because sometimes we allow scrolling 
+      this.$_setStyle(this.color, this.lineWidth);
       if (this.currentState === this.recordStateEnum.MID_RECORD) {
-        this.startTime = this.currentTime.toFixed(1); // this.startTime keeps track of current stroke's startTime
+        this.startTime = this.currentTime.toFixed(1);
       }
+    },
+    touchStart (e) {
+      if (this.isNotValidTouch(e)) { return; }
+      if (e.touches[0].touchType === "stylus") { this.disableTouch = true; }
+      this.startNewStroke(e);
+      this.drawToPointAndSave(e);
     },
     touchMove (e) {
-      e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
       if (this.isNotValidTouch(e)) { return; }
       this.drawToPointAndSave(e);
     },
-    touchEnd (e) {
-      e.preventDefault();
-      if (this.currentStroke.length === 0) { return; }  // user is touching the screen despite that touch is disabled
-      const strokeNumber = this.allStrokes.length + 1;
-      // Save the stroke
-      const { uid, firstName, lastName, email } = this.user;
-      const stroke = {
-        points: this.currentStroke,
-        strokeNumber,
-        author: { uid, firstName, lastName, email },
-        color: this.color,
-        lineWidth: this.lineWidth,
-        startTime: Number(this.startTime),
-        endTime: Number(this.currentTime.toFixed(1)),
-        isErasing: this.eraserActive // mini
-      }
-      this.allStrokes.push(stroke);
+    touchEnd (e) { this.saveStrokeThenReset(e); },
+    saveStrokeThenReset (e) {
+      e.preventDefault()
+      if (this.currentStroke.points.length === 0) { return; }  // user is touching the screen despite that touch is disabled
+      this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
+      this.allStrokes.push(this.currentStroke);
       if (this.isRealtime) {
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
+        this.strokesRef.doc(`${strokeNumber}`).set(this.currentStroke);
       }
-      // Reset
-      this.currentStroke = [];
-      this.lastX = -1;
+      this.currentStroke = { points: [] };
+      [this.lastX, this.lastY] = [-1, -1];
     },
-    drawToPointAndSave(e) {
-      this.$_drawMixin_setStyle(this.color, this.lineWidth); //mini
-      this.getTouchPos(e);
-      // all the touchX and touchY are non-sensical to be honest - ah it's to preserve old value
-      this.convertAndSavePoint(this.touchX, this.touchY);
-      this.drawToPoint(this.touchX, this.touchY);
+    // TODO: rename this
+    drawToPointAndSave(e, isMouseDraw) {
+      e.preventDefault(); // this improves drawing performance for Microsoft Surfaces
+      if (isMouseDraw) { [this.currX, this.currY] = [e.offsetX, e.offsetY] }   // this.getMousePos(e); 
+      else { this.getTouchPos(e); }
+      this.convertAndSavePoint(this.currX, this.currY);
+      this.drawToPoint(this.currX, this.currY);
     },
     getTouchPos(e) {
       const finger1 = e.touches[0];
       const { left, top } = this.canvas.getBoundingClientRect();
-      this.touchX = finger1.pageX - left - window.scrollX;
-      this.touchY = finger1.pageY - top - window.scrollY;
+      this.currX = finger1.pageX - left - window.scrollX;
+      this.currY = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
       if (e.touches.length !== 1) { return true; }  // multiple fingers not allowed
       return this.isFinger(e) && this.disableTouch;
     },
-    isFinger (e) {
-      return e.touches[0].touchType !== "stylus"
-    },
+    isFinger (e) { return e.touches[0].touchType !== "stylus" },
     mouseDown (e) {
-      e.preventDefault();
-      this.$_drawMixin_rescaleCanvas(false); // ultra-jank
       this.mousedown = 1;
-      this.$_drawMixin_setStyle(this.color, this.lineWidth);
-      this.getMousePos(e);
-      this.convertAndSavePoint(this.mouseX, this.mouseY);
-      this.drawToPoint(this.mouseX, this.mouseY);
-      if (this.currentState === this.recordStateEnum.MID_RECORD) {
-        this.startTime = this.currentTime.toFixed(1);
-      }
+      this.startNewStroke(e);
+      const isMouseDraw = true;
+      this.drawToPointAndSave(e, isMouseDraw);
     },
     mouseMove (e) {
-      e.preventDefault(); // this line improves drawing performance for Microsoft Surfaces
-      this.getMousePos(e);
-      // Draw a pixel if the mouse button is currently being pressed
-      if (this.mousedown === 1) {
-        this.getMousePos(e);
-        this.convertAndSavePoint(this.mouseX, this.mouseY);
-        this.drawToPoint(this.mouseX, this.mouseY);
-      }
+      if (this.mousedown !== 1) { return };
+      const isMouseDraw = true;
+      this.drawToPointAndSave(e, isMouseDraw);
     },
     mouseUp (e) {
       this.mousedown = 0;
-      const strokeNumber = this.allStrokes.length + 1;
-      // Store the stroke locally
-      const stroke = {
-        points: this.currentStroke,
-        strokeNumber,
-        author: this.author || "anonymous",
-        color: this.color,
-        lineWidth: this.lineWidth,
-        startTime: Number(this.startTime),
-        endTime: Number(this.currentTime.toFixed(1)),
-        isErasing: this.eraserActive // mini
-      };
-      this.allStrokes.push(stroke);
-      // Upload it online if it's real-time
-      if (this.isRealtime) {
-        this.strokesRef.doc(`${strokeNumber}`).set(stroke);
-      }
-      // Reset current stroke
-      this.currentStroke = [];
-      this.lastX = -1;
-    },
-    getMousePos (e) {
-      // Get the current mouse position relative to the top-left of the canvas
-      this.mouseX = e.offsetX; //- window.scrollX
-      this.mouseY = e.offsetY; //- window.scrollY (in case these don't work)
+      this.saveStrokeThenReset(e);
     },
     handleRecordStateChange (newState) {
       const { PRE_RECORD, MID_RECORD, POST_RECORD } = this.recordStateEnum;
@@ -515,19 +428,18 @@ export default {
       const { AudioRecorder } = this.$refs;
       const videoData = { 
         audio: AudioRecorder.audio, 
-        strokes: this.allStrokes 
+        strokes: this.allStrokes,
+        image: this.imageBlob
       };
       this.$emit("record-end", videoData)
     },
     tryRecordAgain () {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
-      // if there are previous strokes set all the timestamp to 0 
+      // last round's strokes will persist as the initial setup of this round's recording
       for (const stroke of this.allStrokes) {
-        stroke.startTime = 0;
-        stroke.endTime = 0;
+        [stroke.startTime, stroke.endTime ] = [0, 0];
       }
-      console.log("this.allStrokes =", this.allStrokes);
       const { PRE_RECORD } = this.recordStateEnum;
       this.currentState = PRE_RECORD;
       this.enableDrawing();
@@ -535,7 +447,7 @@ export default {
         this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
       }
       const willRedraw = true;
-      this.$_drawMixin_rescaleCanvas(willRedraw);
+      this.$_rescaleCanvas(willRedraw);
     },
     saveFileReference ({ url }) {
       this.hasUploadedAudio = true;
@@ -546,18 +458,12 @@ export default {
       this.$emit("audio-upload-end", { blackboardStrokes: this.allStrokes, audioUrl: url});
     },
     async handleSaving ({ title, description }) {
-      // Save the video
       const videoThumbnail = this.createThumbnail();
       const metadata = {
-        creator: {
-          uid: this.user.uid,
-          firstName: this.user.firstName,
-          email: this.user.email
-        },
+        creator: this.author,
         title,
         description,
         isSaved: true, // marks blackboard as saved
-        tabNumber: 0,
         thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
       };
 
@@ -602,36 +508,61 @@ export default {
         "url(" + dataURL + ") 0 24, auto";
     },
     // If this works you're a genius
-    blackboardSize () {
+    adjustBlackboardHeight () {
       const board = document.getElementById("myCanvas");
       const mini_height =
         (document.getElementById("blackboard-wrapper").offsetWidth * 0.575)  +
         "px";
       const realtime_height = window.innerHeight - 48 + "px";
       board.style.height = this.isRealtime ? realtime_height : mini_height;
-      this.$_drawMixin_rescaleCanvas(false);
+      this.$_rescaleCanvas(false);
     },
     // Blackboard specific draw methods
     drawToPoint (x, y) {
-      // This is the start of stroke, don't connect to any previous points
-      if (this.lastX === -1) {
-        this.lastX = x;
-        this.lastY = y;
-        return;
+      if (this.lastX !== -1) { // start of stroke, don't connect previous points
+        this.traceLineTo(x, y);
+        this.ctx.stroke();
       }
-      this.traceLineTo(x, y);
-      this.ctx.stroke();
-      this.lastX = x;
-      this.lastY = y;
+      [this.lastX, this.lastY] = [x, y];
     },
     traceLineTo (x, y) {
       this.ctx.beginPath();
       this.ctx.moveTo(this.lastX, this.lastY);
       this.ctx.lineTo(x, y);
-    }
-    // sortStrokesByTimestamp () {
-    //   this.allStrokes.sort((a, b) => Number(a.startTime) - Number(b.startTime));
-    // },
+    },
+       enableDrawing () {
+      this.initTouchEvents();
+      this.initMouseEvents();
+    },
+    disableDrawing () {
+      this.removeMouseEvents();
+      this.removeTouchEvents();
+    },
+    initTouchEvents () {
+      if (!this.canvas) { return; }
+      this.canvas.addEventListener("touchstart", this.touchStart, false);
+      this.canvas.addEventListener("touchend", this.touchEnd, false);
+      this.canvas.addEventListener("touchmove", this.touchMove, false);
+      this.$_setStyle(this.color, this.lineWidth); // TODO: kind of sketch
+    },
+    removeTouchEvents () {
+      if (!this.canvas) { return; }
+      this.canvas.removeEventListener("touchstart", this.touchStart, false);
+      this.canvas.removeEventListener("touchend", this.touchEnd, false);
+      this.canvas.removeEventListener("touchmove", this.touchMove, false);
+    },
+    initMouseEvents () {
+      if (!this.canvas) { return; }
+      this.canvas.addEventListener("mousedown", this.mouseDown, false);
+      this.canvas.addEventListener("mouseup", this.mouseUp, false);
+      this.canvas.addEventListener("mousemove", this.mouseMove, false);
+    },
+    removeMouseEvents () {
+      if (!this.canvas) { return; }
+      this.canvas.removeEventListener("mousedown", this.mouseDown, false);
+      this.canvas.removeEventListener("mouseup", this.mouseUp, false);
+      this.canvas.removeEventListener("mousemove", this.mouseMove, false);
+    },
     // getAspectRatio () {
     //   return this.canvas.scrollHeight / this.canvas.scrollWidth;
     // },

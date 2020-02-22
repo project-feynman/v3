@@ -67,14 +67,14 @@
         </v-card>
       </transition>
 
-      <!-- Tutorial videos -->
+      <!-- Tutorial -->
       <v-container fluid>
         <div v-if="!user && !isFetchingUser">
           <v-row justify="center">
-            <v-col cols="12" md="6">
+            <v-col cols="12" lg="6">
               <DisplayExplanation :expl="demoVideo" :hasDate="false"/>
             </v-col>
-            <v-col cols="12" sm="10" md="6">
+            <v-col cols="12" lg="6">
               <CreateExplanation/>
             </v-col>
           </v-row>
@@ -139,14 +139,7 @@ export default {
   data () {
     return {
       schoolClasses: [],
-      demoVideo: { creator: {} },
-      tutorials: [
-        { 
-          blackboardId: "qt8oisoxj8ols5g0w4xr9e",
-          blackboardRef: this.getBlackboardRef("qt8oisoxj8ols5g0w4xr9e"),
-          description: "Here is a video explanation. Try dragging the slider below."
-        }
-      ]
+      demoVideo: { creator: {} }
     }
   },
   async created () { 
@@ -159,9 +152,7 @@ export default {
   methods: {
     getMitClassRef (classId) { return db.collection("classes").doc(classId); },
     getBlackboardRef (explanationId) {
-      return db.collection("classes").doc("i14as7fMqCVjI1yZbLC5")
-        .collection("posts").doc(explanationId)
-        .collection("explanations").doc(explanationId);
+      return db.doc(`classes/i14as7fMqCVjI1yZbLC5/posts/${explanationId}/explanations/${explanationId}`);
     },
     async fetchClasses () {
       const ref = db.collection("classes");
