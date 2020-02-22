@@ -7,9 +7,7 @@ export default {
         this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
         this.canvas.height = this.canvas.scrollHeight;
       }
-      // Re-render drawings
       if (redraw) { 
-        console.log("in mixin, all strokes =", this.allStrokes);
         this.$_drawMixin_setStyle(this.color, this.lineWidth);
         this.$_drawMixin_drawStrokesInstantly(); 
       }

@@ -45,9 +45,10 @@
                     :inputFields="['first name', 'last name', 'email', 'password']"
                     @action-do="user => signUp(user)"
                   >
-                    <p>Passwords are managed by Google's Firebase authentication. 
-                      When you join a class, you will receive email notifications 
-                      for new posts and replies. Notification settings is on the top right corner.
+                    <p>
+                      Sign up to interact with people in your class. 
+                      Passwords are secure and managed by Google Authentication. 
+                      You can configure email notification settings on the top right corner.
                     </p>
                   </BasePopupButton>
                 </v-col>

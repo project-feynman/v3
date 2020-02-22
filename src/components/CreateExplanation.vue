@@ -117,9 +117,11 @@ export default {
         mitClass
       };
       const { Blackboard } = this.$refs;
-      this.isUploadingAudio = true;
-      await Blackboard.uploadAudio();
-      this.isUploadingAudio = false;
+      if (Blackboard.currentState === CONSTANTS.recordStateEnum.POST_RECORD) {
+        this.isUploadingAudio = true;
+        await Blackboard.uploadAudio();
+        this.isUploadingAudio = false;
+      }
       const explanation = {
         audioUrl: Blackboard.audioUrl || "", // TODO: make it explicit
         duration: Blackboard.currentTime || 0,
