@@ -1,8 +1,6 @@
 <template>
   <div>
     <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
-      <!-- Uncomment line below for an easy life debugging -->
-      <!-- <p>blackboard: {{ blackboard }}</p> -->
       <TheAppBar v-if="isRealtime" page="realtime">
         <div id="realtime-toolbar">
           <BlackboardToolBar
@@ -86,8 +84,6 @@ export default {
     blackboardId: String,
     isRealtime: Boolean,
     visible: Boolean,
-    // TODO: background should be encapsulated within this component
-    background: String
   },
   mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
   components: {
@@ -142,7 +138,6 @@ export default {
     classRef () { return db.collection("classes").doc(this.classId); },
     blackboardRef () { return this.classRef.collection("blackboards").doc(this.blackboardId); },
     strokesRef () { return this.blackboardRef.collection("strokes"); },
-    bg () { return this.background; } // mini
   },
   watch: {
     blackboardId: {
@@ -181,7 +176,6 @@ export default {
     },
     color () { this.customCursor(); },
     visible () { this.adjustBlackboardHeight(); },
-    bg () { this.drawBackground(this.bg); }
   },
   mounted () {
     this.canvas = document.getElementById("myCanvas");
@@ -193,7 +187,6 @@ export default {
     window.addEventListener("resize", () => this.$_rescaleCanvas(willRedraw), false); 
     this.enableDrawing();
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
-    this.drawBackground(this.background);
     this.adjustBlackboardHeight();
     if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
   },
