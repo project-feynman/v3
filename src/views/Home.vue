@@ -1,27 +1,19 @@
 <template>
   <div id="home-page">
     <TheAppBar>
-      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">
+      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
         BLOG
       </v-btn>
-      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank">
+      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> <!-- target="_blank" opens a new tab -->
         GITHUB
       </v-btn>
       <template v-if="user">
-        <BasePopupButton
-          actionName="Create class" 
-          :inputFields="['class name', 'class description']"
-          @action-do="payload => createClass(payload)"
-        />
-        <TheDropdownMenu
-          @sign-out="signOut()"
-          @notif-setting-change="payload => updateNotifSetting(payload)"
-        >
+        <BasePopupButton actionName="Create class" @action-do="C => createClass(C)"
+          :inputFields="['class name', 'class description']"/>
+        <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
-              <v-icon large :color="user.color">
-                settings
-              </v-icon>
+              <v-icon large :color="user.color">settings</v-icon>
             </v-btn>
           </template>
         </TheDropdownMenu>
@@ -29,95 +21,82 @@
     </TheAppBar>
 
     <v-content>
-      <v-card class="mx-auto text-center" fluid>
-        <v-container>
-          <div class="central-title d-flex justify-center align-center mb-4">
-            <img src="/logo.png" class="hero-img" />
-            <h1 class="text--primary ml-2">
-              ExplainMIT
-            </h1>
-          </div>
-          <h3 class="headline text--primary">
-            An efficient platform for visual explanations
-          </h3>
+      <transition name="fade">
+        <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
+          <v-container>
+            <div class="central-title d-flex justify-center align-center mb-4">
+              <img src="/logo.png" class="hero-img"/>
+              <h1 class="text--primary ml-2">ExplainMIT</h1>
+            </div>
+            <h3 class="headline text--primary">
+              A website where people can help each other efficiently
+            </h3>
 
-          <!-- Log in / Sign up -->
-          <v-row class="my-5" justify="center">
-            <template v-if="!user && !isFetchingUser">
-              <v-col cols="auto">
-                <BasePopupButton
-                  actionName="Log in" 
-                  :inputFields="['email', 'password']"
-                  @action-do="payload => logIn(payload)"
-                />
-              </v-col>
-              <v-col cols="auto">
-                <BasePopupButton
-                  actionName="Sign up" 
-                  :inputFields="['first name', 'last name', 'email', 'password']"
-                  @action-do="payload => signUp(payload)"
-                  :outlined="true"
-                />
-              </v-col>
-            </template>
+            <!-- Log in / Sign up -->
+            <v-row class="my-5" justify="center">
+              <template v-if="!user">
+                <v-col cols="auto">
+                  <BasePopupButton actionName="Log in" :inputFields="['email', 'password']" 
+                    @action-do="user => logIn(user)"
+                  />
+                </v-col>
+                <v-col cols="auto">
+                  <BasePopupButton actionName="Sign up" :outlined="true"
+                    :inputFields="['first name', 'last name', 'email', 'password']"
+                    @action-do="user => signUp(user)"
+                  >
+                    <p>Passwords are managed by Google's Firebase authentication. 
+                      When you join a class, you will receive email notifications 
+                      for new posts and replies. Notification settings is on the top right corner.
+                    </p>
+                  </BasePopupButton>
+                </v-col>
+              </template>
 
-            <!-- Search Bar -->
-            <template v-else-if="user">
-              <v-col cols="12" sm="6">
-                <BaseSearchBar 
-                  :items="schoolClasses"
-                  @submit="payload => enrollInClass(payload)"
-                  color="accent"
-                  label="Join an existing class"
-                />
-              </v-col>
-            </template>
-          </v-row>
-        </v-container>
-      </v-card>
+              <!-- Search Bar -->
+              <template v-else>
+                <v-col cols="12" sm="6">
+                  <TheSearchBar label="Join an existing class" :items="schoolClasses"
+                    @submit="payload => enrollInClass(payload)" color="accent"
+                  />
+                </v-col>
+              </template>
+            </v-row>
+          </v-container>
+        </v-card>
+      </transition>
 
       <!-- Tutorial videos -->
-      <transition name="fade" mode="out-in">
-        <v-container fluid class="py-5">
-          <div v-if="!user && !isFetchingUser" key="loading...">
-            <v-row justify="center" class="py-0 text-center">
-              <v-col 
-                v-for="(tutorial, i) in tutorials" 
-                cols="12" sm="10" md="4" :key="tutorial.blackboardId"
-              >
-                <v-card elevation="5">
-                  <v-card-subtitle class="black--text font-weight-medium">
-                    {{ tutorial.description }}
-                  </v-card-subtitle>
-                  <v-img :aspect-ratio="16/9">
-                    <DoodleVideo
-                      :ref="`DoodleVideo${i+1}`"
-                      :blackboardId="tutorial.blackboardId"
-                      :blackboardRef="tutorial.blackboardRef"
-                      @strokes-ready="startDemo()"
-                    />      
-                  </v-img>
-                </v-card>
-              </v-col>
-            </v-row>
-          </div>
-                            
-          <!-- Display classes -->
-          <div v-else-if="user" key="class-list">
-            <v-row align="stretch" class="enrolled-classes">
-              <v-col 
-                v-for="enrolledClass in user.enrolledClasses" 
-                cols="12" sm="4" md="3" :key="enrolledClass.id"
-              >
-                <v-card @click="$router.push(`${enrolledClass.id}/posts/`)">
-                  <v-card-title class="title">{{ enrolledClass.name }}</v-card-title>
-                  <v-card-subtitle>No description yet</v-card-subtitle>
-                </v-card>
-              </v-col>
-            </v-row>
-          </div>
-        </v-container>
-      </transition>             
+      <v-container fluid>
+        <div v-if="!user && !isFetchingUser">
+          <v-row justify="center">
+            <v-col cols="12" md="6">
+              <DisplayExplanation :expl="demoVideo" :hasDate="false"/>
+            </v-col>
+            <v-col cols="12" sm="10" md="6">
+              <CreateExplanation/>
+            </v-col>
+          </v-row>
+        </div>
+                          
+        <!-- Display classes -->
+        <div v-else-if="user" key="class-list">
+          <v-row align="stretch" class="enrolled-classes">
+            <v-col v-for="C in user.enrolledClasses" cols="12" sm="4" md="3" :key="C.id">
+              <AsyncRenderless :dbRef="getMitClassRef(C.id)">
+                <template slot-scope="{ fetchedData: C }">
+                  <transition name="fade">
+                    <v-card v-if="C.name && C.description" @click="$router.push(`${C.id}/posts/`)">
+                      <v-card-title class="title">{{ C.name }}</v-card-title>
+                      <v-card-subtitle>{{ C.description }}</v-card-subtitle>
+                    </v-card>
+                  </transition>
+                </template>
+              </AsyncRenderless>
+            </v-col>
+          </v-row>
+        </div>
+      </v-container>           
     </v-content>
   </div>
 </template>
@@ -130,19 +109,28 @@ import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
-import BaseSearchBar from "@/components/BaseSearchBar.vue";
-import helpers from "@/helpers.js";
+import TheSearchBar from "@/components/TheSearchBar.vue";
+import AsyncRenderless from "@/components/AsyncRenderless.vue";
 import CONSTANTS from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import Blackboard from "@/components/Blackboard.vue";
+import DisplayExplanation from "@/components/DisplayExplanation.vue";
+import CreateExplanation from "@/components/CreateExplanation.vue";
 
 export default {
   components: {
-    TheAppBar,
+    AsyncRenderless, 
+    BasePopupButton,
+    TheSearchBar,
+    Blackboard,
     DoodleVideo,
-    BaseSearchBar,
-    TheDropdownMenu,
-    BasePopupButton
+    DisplayExplanation,
+    CreateExplanation,
+    TheAppBar,
+    TheDropdownMenu
   },
+  mixins: [DatabaseHelpersMixin],
   computed: {
     ...mapState(["user", "isFetchingUser"]),
     userRef () { return db.collection("users").doc(this.user.uid); },
@@ -150,58 +138,35 @@ export default {
   data () {
     return {
       schoolClasses: [],
+      demoVideo: { creator: {} },
       tutorials: [
         { 
-          blackboardId: "iqd5rFyuFYL8TDlCnPfe",
-          blackboardRef: this.getBlackboardRef("iqd5rFyuFYL8TDlCnPfe"),
-          description: "We believe MIT is fun when people share knowledge"
-        },
-        { 
-          blackboardId: "Dl3aCLcev04pvRG4Duc2",
-          blackboardRef: this.getBlackboardRef("Dl3aCLcev04pvRG4Duc2"),
-          description: "Use text, images, drawings and/or voice to communicate"
-        },
-        { 
-          blackboardId: "r2FWkTWgRB64MGbkQuHC",
-          blackboardRef: this.getBlackboardRef("r2FWkTWgRB64MGbkQuHC"),
-          description: "Explanations accumulate as people help each other"
+          blackboardId: "qt8oisoxj8ols5g0w4xr9e",
+          blackboardRef: this.getBlackboardRef("qt8oisoxj8ols5g0w4xr9e"),
+          description: "Here is a video explanation. Try dragging the slider below."
         }
       ]
     }
   },
-  created () {
-    this.fetchClasses();
+  async created () { 
+    this.fetchClasses(); 
+    const demoVideoRef = this.getBlackboardRef("qt8oisoxj8ols5g0w4xr9e");
+    this.demoVideo = await this.$_getDoc(demoVideoRef); 
   },
-  mounted () {
-    this.logoVisibility();
-    window.addEventListener("scroll", this.logoVisibility);
-  },
-  destroyed () {
-    window.removeEventListener("scroll", this.logoVisibility);
-  },
+  mounted () { window.addEventListener("scroll", this.logoVisibility); },
+  destroyed () { window.removeEventListener("scroll", this.logoVisibility); },
   methods: {
+    getMitClassRef (classId) { return db.collection("classes").doc(classId); },
     getBlackboardRef (explanationId) {
-      return db.collection("classes").doc("jpQFXYNXCgCScaHZPL27")
-        .collection("posts").doc("qdlx2j0j0k4lbbb6h28zo")
+      return db.collection("classes").doc("i14as7fMqCVjI1yZbLC5")
+        .collection("posts").doc(explanationId)
         .collection("explanations").doc(explanationId);
-    },
-    startDemo () {
-      const { DoodleVideo1, DoodleVideo2, DoodleVideo3 } = this.$refs;
-      if (!DoodleVideo1[0].hasFetchedStrokes || DoodleVideo1[0].isQuickplaying) { 
-        return; 
-      }
-      // need next tick so the quickplay starts after the resize event
-      this.$nextTick(async () => {
-        await DoodleVideo1[0].playSilentAnimation(); // don't know why DoodleVideo returns arrays
-        await DoodleVideo2[0].playSilentAnimation();
-        DoodleVideo3[0].playSilentAnimation();
-      })
     },
     async fetchClasses () {
       const ref = db.collection("classes");
-      this.schoolClasses = await helpers.getCollectionFromDB(ref);
+      this.schoolClasses = await this.$_getCollection(ref);
     },
-    enrollInClass ({ name, ".key": id }) {    
+    enrollInClass ({ name, id }) {    
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
           if (classObj.id === id) { return; } 
@@ -213,7 +178,7 @@ export default {
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
       });
     },
-    async updateNotifSetting (payload) {
+    async updateSettings (payload) {
       this.userRef.update({
         enrolledClasses: payload
       })
@@ -259,13 +224,13 @@ export default {
           this.$root.$emit("show-snackbar", "Welcome to ExplainMIT!")
           this.createAccount({ ...result.user, firstName, lastName })
         })
-        .catch(error => this.$root.$emit("show-snackbar", error.message));
+        .catch((error) => this.$root.$emit("show-snackbar", error.message));
     },
     createAccount ({ uid, email, firstName, lastName }) {
       function getRandomColor () {
         var letters = '0123456789ABCDEF'
         var color = '#'
-        for (let i=0; i<6; i++) {
+        for (let i = 0; i < 6; i++) {
           color += letters[Math.floor(Math.random() * 16)];
         }
         return color;
@@ -275,9 +240,7 @@ export default {
       const newUser = { uid, email, firstName, lastName, color, enrolledClasses };
       db.collection("users").doc(uid).set(newUser);
     },
-    signOut () {
-      firebase.auth().signOut();
-    },
+    signOut () { firebase.auth().signOut(); },
     logoVisibility () {
       const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;
       if (hero_pos < 0) {
@@ -328,7 +291,6 @@ export default {
 
 .enrolled-classes .v-card__title {
   word-break: unset;
-  /* justify-content: center; */
   font-size: 1.1em;
 }
 </style>

@@ -4,9 +4,6 @@
       v-if="!icon && $route.path !== '/'"
       @click.stop="$root.$emit('toggle-drawer')"
     />
-    <!-- <v-icon v-if="this.icon==='back'" @click="$emit('icon-click')" x-large>
-      mdi-chevron-left
-    </v-icon> -->
     <img
       :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
       src="/favicon.ico"
@@ -18,7 +15,7 @@
       @click="$router.push('/')"
     >
       {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${mitClass.name}` }}
-  </v-toolbar-title>
+    </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer />
     <slot>
@@ -28,8 +25,6 @@
 </template>
 
 <script>
-import db from "@/database.js";
-
 export default {
   props: {
     loading: Boolean,

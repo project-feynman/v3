@@ -1,13 +1,9 @@
 <template>
   <div id="room">
-    <v-content v-if="simpleUser && room">
-      <!-- <p>room {{ room }}</p> -->
+    <v-content v-if="simpleUser">
       <!-- "v-if="...room.whiteboardID"" needed because room goes from null to {} (surprisingly), before becoming fully populated -->
-      <Blackboard
-        v-if="room.blackboardId"
-        ref="whiteboard"
-        :blackboardId="room.blackboardId"
-        :isRealtime="true"
+      <Blackboard v-if="room.blackboardId" ref="whiteboard" 
+        :blackboardId="room.blackboardId" :isRealtime="true"
       />
     </v-content>
   </div>
@@ -16,20 +12,25 @@
 <script>
 import firebase from "firebase/app";
 import "firebase/firestore";
-import db from "@/database.js";
 import Blackboard from "@/components/Blackboard.vue";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import db from "@/database.js";
 
 export default {
-  components: {
-    Blackboard
+  components: { Blackboard },
+  mixins: [DatabaseHelpersMixin],
+  data () {
+    return {
+      room: {},
+      unsubscribeRoomListener: null,
+      classId: this.$route.params.class_id,
+      roomId: this.$route.params.room_id
+    }
   },
   computed: {
     user () { return this.$store.state.user; },
-    roomId () { return this.$route.params.room_id; },
-    classId () { return this.$route.params.class_id; },
-    roomRef () { return db.collection("rooms").doc(this.roomId); },
     simpleUser () {
-      if (!this.user) return; 
+      if (!this.user) { return; } 
       return {
         email: this.user.email,
         uid: this.user.uid,
@@ -37,30 +38,23 @@ export default {
       }
     }
   },
-  data () {
-    return {
-      room: null,
-      loadCanvas: false,
-      prevroomRef: null,
-    }
+  async created () {
+    this.roomRef = db.doc(`rooms/${this.roomId}`);
+    this.bindVariables();
   },
-  watch: {
-    $route: {
-      handler: "bindVariables",
-      immediate: true
-    }
-  },
-  async beforeDestroy () {
-    this.cleanUpPrevroom(); // needed when the user switches to any other place besides another blackboard
+  beforeDestroy () {
+    this.unsubscribeRoomListener();
+    this.roomRef.update({
+      members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
+    });
   },
   methods: {
     async bindVariables () {
-      if (this.prevroomRef) await this.cleanUpPrevroom();
-      // Create a new room if it doesn't exist
       const room = await this.roomRef.get();
       if (!room.exists) {
         // roomId and blackboardId will be same
-        const createNewBoard = db.collection("classes").doc(this.classId).collection("blackboards").doc(this.roomId).set({})
+        const newBoardRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
+        const createNewBoard = newBoardRef.set({})
         const createNewRoom = this.roomRef.set({
           blackboardId: this.roomId,
           members: [],
@@ -68,18 +62,8 @@ export default {
         });
         await Promise.all(createNewBoard, createNewRoom);
       }
-      await this.$binding("room", this.roomRef);
+      this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
       this.setDisconnectHook();
-      this.prevroomRef = this.roomRef;
-    },
-    async cleanUpPrevroom () {
-      const promise = new Promise(async (resolve, reject) => {
-        await this.prevroomRef.update({
-          members: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
-        });
-        resolve();
-      });
-      return promise;
     },
     setDisconnectHook () {
       const firebaseclassId = this.classId.replace(".", "-");

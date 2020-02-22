@@ -9,13 +9,14 @@
 <script>
 import RecorderService from '@/services/RecorderService.js';
 import utils from '@/services/Utils';
-import firebase from 'firebase/app';
-import 'firebase/storage';
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   props: {
     audioUrl: String, // needed when using the AudioRecorder as an AudioPlayer
+    injectedAudio: Object
   },
+  mixins: [DatabaseHelpersMixin],
   data () {
     return {
       recordingInProgress: false,
@@ -39,14 +40,6 @@ export default {
       handler: 'downloadAudioFile',
       immediate: true
     },
-    audio () {
-      if (!this.audio) { return; }
-      this.$nextTick(() => {
-        this.player.on('play', () => this.$emit('play'));
-        this.player.on('pause', () => this.$emit('pause'));
-        this.player.on('seeking', () => this.$emit('seeking'));
-      });
-    },
     cleanupWhenFinished (val) {
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished;
     }
@@ -58,9 +51,20 @@ export default {
       if (!audioElement) { return 0; } // should throw an error
       return audioElement.currentTime;
     },
+    initEventEmitters () {
+      this.$nextTick(() => {
+        this.player.on('play', () => this.$emit('play'));
+        this.player.on('pause', () => this.$emit('pause'));
+        this.player.on('seeking', () => this.$emit('seeking'));
+      });
+    },
     downloadAudioFile () {
-      this.$emit('loading')
-      if (this.audioUrl) {
+      this.$emit("loading");
+      if (this.injectedAudio) { 
+        this.audio = this.injectedAudio; 
+        this.initEventEmitters();
+        this.$emit("loaded");
+      } else if (this.audioUrl) {
         let xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
         xhr.onload = event => {
@@ -73,18 +77,13 @@ export default {
             mimeType: blob.type,
             size: blob.size,
           }
-          if (!this.audio) this.audio = newRecording; // initial load or just empty local data
+          if (!this.audio) { this.audio = newRecording; } // initial load or just empty local data
+          this.initEventEmitters();
           this.$emit("loaded");
         }
         xhr.open('GET', this.audioUrl);
         xhr.send();
       }
-    },
-    getRandomUID () {
-      function s4 () {
-        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
-      }
-      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
     },
     // Functions for recording and saving voice 
     startRecording () {
@@ -99,23 +98,25 @@ export default {
       this.recorderSrvc.stopRecording();
       this.recordingInProgress = false;
     },
-    // New recordings are auto-uploaded to Firebase storage
-    async onNewRecording (evt) {
+    // Callback for the watcher
+    onNewRecording (evt) {
       this.audio = evt.detail.recording;
-      const storageRef = firebase.storage().ref();
-      const recordingRef = storageRef.child(`recordings/${this.getRandomUID()}`);
-      
-      // Upload blob 
-      const uploadTask = recordingRef.put(this.audio.blob)
-      uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, 
-        snapshot => {}, 
-        error => console.log('error =', error), 
-        async () => {
-          const downloadURL = await uploadTask.snapshot.ref.getDownloadURL()
-          this.$emit('file-uploaded', { url: downloadURL })
-        }
-      );
-    }
+      this.$emit("audio-saved");
+    },
+    uploadRecording () {
+      return new Promise(async (resolve, reject) => {
+        if (!this.audio) { reject() }
+        const downloadUrl = await this.$_saveToStorage(this.getRandomUID(), this.audio.blob);
+        this.$emit("file-uploaded", { url: downloadUrl });
+        resolve();
+      })
+    },
+    getRandomUID () {
+      function s4 () {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
+      }
+      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
+    },
   }
 }
 </script>

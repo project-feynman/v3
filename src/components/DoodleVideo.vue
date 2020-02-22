@@ -41,6 +41,7 @@
       v-if="audioUrl && this.hasFetchedStrokes" :audioUrl="audioUrl" ref="audioRecorder"
       @loading="hasFetchedAudio = false" @loaded="hasFetchedAudio = true"
       @play="playVideo()" @stop="stopSyncing()" @seeking="handleSeeking()"
+
     />
     <!-- </template> -->
     
@@ -49,40 +50,39 @@
 </template>
 
 <script>
-import DoodleVideoOverlay from "@/components/DoodleVideoOverlay.vue";
 import AudioRecorder from "@/components/AudioRecorder.vue";
-import helpers from "@/helpers.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+
+// TEST:
+// 1. Onload, can directly slide the audio slider 
+// 2. Play the video normally, and drag it forward and backward.
+// 3. Skip to the end of the video.  Drag it forward and backward. 
 
 export default {
   props: {
-    blackboardRef: {
-      type: Object,
-      required: true
-    },
-    blackboardId: {
-      type: String,
-      required: true
-    },
-    thumbnail: String,
+    strokes: Array,
+    audio: Object,
+    blackboardRef: Object,
+    blackboardId: String,
+    thumbnail: String, // will soon be a required prop
+    imageUrl: String,
     audioUrl: String,
     hasBetaOverlay: {
       type: Boolean,
       default () { return false; }
     }
   },
-  components: {
-    DoodleVideoOverlay,
-    AudioRecorder
-  },
-  mixins: [CanvasDrawMixin],
+  components: { AudioRecorder },
+  mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
   data: () => ({
     canvas: null,
     ctx: null,
+    bgCanvas: null,
+    bgCtx: null,
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
     allStrokes: [],
-    allFrames: [],
     isQuickplaying: false,
     mouseHover: false,
     nextFrameIdx: 0,
@@ -95,8 +95,22 @@ export default {
     // hasOverlay () {
     //   return this.hasLoadedAvailableResources && (!this.recursiveSync && !this.isQuickplaying)
     // },
+    /* Converts our array of separate strokes into an array of continuous points
+      sorted by timestamp. Frames are in a `[{strokeIndex, pointIndex}, ...]` format
+      @params: "this.allStrokes"
+      @returns: mutates "this.allFrames" 
+    */
+    allFrames () {
+      const allPoints = [];
+      for (let i = 0; i < this.allStrokes.length; i++) {
+        for (let j = 1; j < this.allStrokes[i].points.length; j++) {
+          allPoints.push({ strokeIndex: i, pointIndex: j }); 
+        }
+      }
+      return allPoints.sort((p1, p2) => this.getStartTime(p1) - this.getStartTime(p2));
+    },
     hasLoadedAvailableResources () {
-      return (this.hasFetchedAudio || !this.audioUrl)
+      return (this.hasFetchedAudio || !this.audioUrl || this.audio)
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
     hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; },
@@ -114,16 +128,18 @@ export default {
     // nextFrameIdx () { console.log(`nextFrameIdx = ${this.nextFrameIdx}`)}
   },
   async created () {
-    if (!this.thumbnail) {
-      this.fetchStrokes();
-    } 
-    // this.overlay = this.hasBetaOverlay;
+    if (this.strokes) { this.allStrokes = this.strokes } 
+    else if (!this.thumbnail) { this.fetchStrokes(); } 
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
+    this.bgCanvas = document.getElementById(`background-canvas-${this.blackboardId}`);
     this.ctx = this.canvas.getContext("2d");
+    this.bgCtx = this.bgCanvas.getContext("2d");
     await this.setCanvasHeight(); // just for video: blackboard should fill space
-    this.$_drawMixin_rescaleCanvas(false);
+    const willDisplayStrokes = this.strokes? true : false;
+    this.$_drawMixin_rescaleCanvas(willDisplayStrokes);
+    this.$_drawMixin_displayImage(this.imageUrl);
     window.addEventListener("resize", this.handleResize);
     if (this.thumbnail) {
       // this.thumbnailImage = document.getElementById(`Thumbnail`);
@@ -153,8 +169,8 @@ export default {
     setCanvasHeight () {
       const setHeight = resolve => {
         const { scrollHeight, scrollWidth } = this.canvas;
-        if (Math.round(scrollHeight) !== Math.round(0.6*scrollWidth)) {
-          this.canvas.height = 9/16 * scrollWidth;
+        if (Math.round(scrollHeight) !== Math.round((0.6)*scrollWidth)) {
+          this.canvas.height = 0.6 * scrollWidth;
           resolve();
         }
       }
@@ -163,8 +179,10 @@ export default {
     async fetchStrokes () {
       return new Promise(async resolve => {
         if(!this.hasFetchedStrokes){
+          const blackboard = await this.$_getDoc(this.blackboardRef);
+          // console.log("blackboard =", blackboard);
           const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
-          this.allStrokes = await helpers.getCollectionFromDB(strokesRef);
+          this.allStrokes = await this.$_getCollection(strokesRef);
           this.$nextTick(() => {
             this.hasFetchedStrokes = true;
             this.$_drawMixin_rescaleCanvas(true);
@@ -202,42 +220,37 @@ export default {
       // }
     },
     playVideo () {
+      console.log("playVideo");
       const { audioRecorder } = this.$refs;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
       this.nextFrameIdx = 0;
-      if (this.allFrames.length === 0) { this.prepareFrames(); }
+      this.prepareForSync();
+      audioRecorder.playAudio();
+    },
+    prepareForSync () {
+      const { audioRecorder } = this.$refs;
       if (!this.getCurrentAudioTime) { this.getCurrentAudioTime = audioRecorder.getAudioTime; }
       if (!this.recursiveSync) { this.syncContinuously(); }
-      audioRecorder.playAudio();
     },
     stopSyncing () {
       clearTimeout(this.recursiveSync); // stop recursive call
       this.recursiveSync = null;
     },
     handleSeeking () {
+      if (!this.recursiveSync) { 
+        this.prepareForSync();
+        this.nextFrameIdx = 0; 
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
       this.stopSyncing();
       const onlyOneFrame = true;
       this.syncContinuously(onlyOneFrame);
-    },
-    /* Converts our array of separate strokes into an array of continuous points
-    sorted by timestamp. Frames are in a `[[strokeIndex, pointIndex], ...]` format
-    @params: "this.allStrokes"
-    @returns: mutates "this.allFrames" 
-    */
-    prepareFrames () {
-      for (let i = 0; i < this.allStrokes.length; i++) {
-        for (let j = 1; j < this.allStrokes[i].points.length; j++) {
-          this.allFrames.push({ strokeIndex: i, pointIndex: j }); 
-        }
-      }
-      this.allFrames.sort((f1, f2) => this.getStartTime(f1) - this.getStartTime(f2));
     },
     getStartTime ({ strokeIndex, pointIndex }) {
       const stroke = this.allStrokes[strokeIndex];
       return stroke.startTime + (pointIndex - 1) * this.$_drawMixin_getPointDuration(stroke);
     },
     // Synchronize drawings with the audio on a point-by-point basis.
-    // TODO: never catches up to n for some reason when there are multiple DoodleVIdeos
     syncContinuously (once = false) {
       const nextFrame = this.allFrames[this.nextFrameIdx];
       if (!nextFrame) { return; }
@@ -269,3 +282,16 @@ export default {
   }
 }
 </script>
+
+<style>
+.background-canvas {
+  /* absolute places the background relative to the parent and ignore the front canvas, thereby stacking on top of each other */
+  position: absolute; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-color: rgb(62, 66, 66);
+}
+</style>

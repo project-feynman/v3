@@ -1,8 +1,8 @@
 <template>
   <v-app>
-    <TheSideDrawer v-if="$route.path !== '/'" v-model="drawer"/>
+    <TheSideDrawer v-if="$route.path !== '/'" v-model="drawer" :key="$route.params.class_id"/>
     <!-- RouterView "becomes" different components depending on the URL, and is specified in main.js -->
-    <RouterView/>
+    <RouterView :key="$route.fullPath"/>
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
       <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>

@@ -2,10 +2,14 @@ export default {
   methods: {
     $_drawMixin_rescaleCanvas (redraw) {
       // Readjust internal coordinate system
-      this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
-      this.canvas.height = this.canvas.scrollHeight;
-      // Re-render drawings with scaled drawings
+      if (Math.round(this.canvas.width) !== Math.round(this.canvas.scrollWidth) 
+      || Math.round(this.canvas.height) !== Math.round(this.canvas.scrollHeight)) {
+        this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
+        this.canvas.height = this.canvas.scrollHeight;
+      }
+      // Re-render drawings
       if (redraw) { 
+        console.log("in mixin, all strokes =", this.allStrokes);
         this.$_drawMixin_setStyle(this.color, this.lineWidth);
         this.$_drawMixin_drawStrokesInstantly(); 
       }
@@ -56,6 +60,15 @@ export default {
     $_drawMixin_getPointDuration (stroke) { // measured in seconds
       const strokePeriod = (stroke.endTime - stroke.startTime);
       return strokePeriod / stroke.points.length;
+    },
+    $_drawMixin_displayImage (src) {
+      const image = new Image();
+      image.src = src;
+      this.bgCanvas.height = this.canvas.scrollHeight;
+      this.bgCanvas.width = this.canvas.scrollWidth;
+      image.onload = () => { 
+        this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight)
+      };
     }
   }
 }

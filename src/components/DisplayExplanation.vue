@@ -1,30 +1,14 @@
 <template>
-  <v-card id="display-explanation">
-    <!-- Uncomment below for MUCH easier debugging -->
-    <!-- <p>{{ explanation }}</p>  -->
+  <v-card>
     <v-container fluid>
-      <h3 class="explanation-title">
-        {{ explanation.title }} 
-        (by {{ explanation.creator.firstName }}, 
-        {{ displayDate(explanation.date) }})
-      </h3>
-      <div class="explanation-description mb-5">
-        {{ explanation.description }}
-      </div>
-      <div v-if="explanation.image" class="image-container">
-        <img :src="explanation.image"/>
-      </div>
-      <DoodleVideo
-        v-if="explanation.hasVisual"
-        :blackboardRef="selfRef"
-        ref="DoodleVideo"
-        :blackboardId="explanation.id"
-        :thumbnail="explanation.thumbnail"
-        :audioUrl="explanation.audioUrl"
-        :hasBetaOverlay="true"
+      <p>{{ expl.title }} 
+        {{ hasDate? ` by (${expl.creator.firstName}, ${displayDate(expl.date)})`: "" }}
+      </p>
+      <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
+        :blackboardRef="boardRef" :blackboardId="expl.id"
+        :audioUrl="expl.audioUrl" :imageUrl="expl.imageUrl" :hasBetaOverlay="true"
         @click="handleVideoClick()"
         @available-resources-ready="playVideo()"
-        :key="explanation.id"
       />
     </v-container>
   </v-card>
@@ -33,20 +17,19 @@
 <script>
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import moment from "moment";
+import db from "@/database.js";
 
 export default {
-  props: {
-    explanation: {
-      type: Object,
-      required: true
-    },
-    explanationsRef: {
-      type: Object,
-      required: true
+  props: { 
+    expl: Object, 
+    hasDate: {
+      type: Boolean, 
+      default () { return true; }
     }
   },
   components: { DoodleVideo },
   computed: {
+    boardRef () { return db.doc(this.expl.ref); },
     DoodleVideo () { return this.$refs.DoodleVideo; },
     selfRef () { return this.explanationsRef.doc(this.explanation.id); } // enables DoodleVideo to fetch its own strokes subcollection
   },
@@ -71,5 +54,8 @@ export default {
 }
 .image-container img {
   max-width: 100%
+  /* computed: { boardRef () { return db.doc(this.expl.ref); } },
+  methods: { displayDate (date) { return moment(date).format('MMM D, h:mm a'); } } */
 }
 </style>
+/* </script> */
