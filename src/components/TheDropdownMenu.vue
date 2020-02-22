@@ -39,13 +39,9 @@
               <v-list-item-title>{{ mitClass.name }}</v-list-item-title>
               <v-list-item-action>
                 <v-radio-group v-model="mitClass.notifFrequency" row>
-                  <v-radio
-                    v-for="option in notifFrequencyEnum"
-                    :key="option"
+                  <v-radio v-for="option in notifFrequencyEnum"
+                    :key="option" :label="option" :value="option" :id="option"
                     @change="classNotifChanged(mitClass, option)"
-                    :label="option"
-                    :value="option"
-                    :id="option"
                   />
                 </v-radio-group>
               </v-list-item-action>
@@ -53,8 +49,6 @@
           </v-list-item>
         </v-list>
         <v-card-actions>
-          <!-- <v-spacer></v-spacer> -->
-          <!-- <v-btn flat @click="menu = false">Cancel</v-btn> -->
           <v-btn color="primary" text @click="handleSave()">Save</v-btn>
           <v-spacer></v-spacer>
           <v-btn color="grey" text @click="$emit('sign-out')">Sign Out</v-btn>
@@ -97,7 +91,7 @@ export default {
           updateArray[i] = { name, id, notifFrequency };
         }
       }
-      this.$emit("notif-setting-change", updateArray);
+      this.$emit("settings-changed", updateArray);
     }
   }
 };

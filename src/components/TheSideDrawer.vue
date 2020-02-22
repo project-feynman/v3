@@ -1,9 +1,7 @@
 <template>
   <v-card style="zIndex:6">
     <v-navigation-drawer
-      :value="value"
-      @input="newValue => $emit('input', newValue)"
-      app clipped
+      :value="value" @input="newValue => $emit('input', newValue)" app clipped
     >
       <v-list class="pt-0">
         <v-list-item-group>
@@ -49,43 +47,34 @@
 </template>
 
 <script>
-import moment from "moment";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
+import moment from "moment";
+import db from "@/database.js";
 
 export default {
-  props: {
-    value: Boolean
-  },
+  props: { value: Boolean },
   mixins: [DatabaseHelpersMixin],
   data () {
     return {
       posts: [],
-      room: {
-        members: []
-      },
+      room: { members: [] },
       unsubscribeRoomListener: null,
       unsubscribePostsListener: null
     }
   },
-  computed: {
-    classId () { return this.$route.params.class_id; }
-  },
+  computed: { classId () { return this.$route.params.class_id; } },
   async created () {
     this.$root.$emit("open-drawer");
-    const roomRef = await this.$_getDocRef(`rooms/${this.classId}`)
-    let postsRef = await this.$_getCollectionRef(`classes/${this.classId}/posts`);
+    const roomRef = db.doc(`rooms/${this.classId}`)
+    let postsRef = db.collection(`classes/${this.classId}/posts`);
     postsRef = postsRef.orderBy("date", "desc").limit(50);
-    this.unsubscribeRoomListener = await this.$_dbMixin_listenToDoc(roomRef, this, "room");
-    this.unsubscribePostsListener = await this.$_dbMixin_listenToDocs(postsRef, this, "posts");;
+    this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
+    this.unsubscribePostsListener = await this.$_listenToCollection(postsRef, this, "posts");;
   },
   destroyed () {
     this.unsubscribeRoomListener();
     this.unsubscribePostsListener();
   },
-  methods: {
-    displayDate (date) {
-      return moment(date).format('MMM Do, h:mm a');
-    }
-  }
+  methods: { displayDate (date) { return moment(date).format('MMM Do, h:mm a'); } }
 };
 </script>

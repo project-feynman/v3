@@ -9,6 +9,7 @@ export default {
       }
       // Re-render drawings
       if (redraw) { 
+        console.log("in mixin, all strokes =", this.allStrokes);
         this.$_drawMixin_setStyle(this.color, this.lineWidth);
         this.$_drawMixin_drawStrokesInstantly(); 
       }

@@ -61,6 +61,7 @@
         ref="AudioRecorder"
         @record-start="currentState = recordStateEnum.MID_RECORD"
         @file-uploaded="audio => saveFileReference(audio)"
+        @audio-saved="handleAudioSaved()"
       />
     </div>
   </div>
@@ -214,7 +215,6 @@ export default {
     if (this.unsubscribe) { this.unsubscribe(); }
   },
   destroyed () {
-    // TODO: refactor this to a "resize" module
     window.removeEventListener("resize", () => this.$_drawMixin_rescaleCanvas(true));
   },
   methods: {
@@ -226,7 +226,7 @@ export default {
       if (this.isRealtime) {
         this.loading = true;
         if (!this.blackboardId) { return; }
-        this.unsubscribe = await this.$_dbMixin_listenToDoc(this.blackboardRef, this, "blackboard");
+        this.unsubscribe = await this.$_listenToDoc(this.blackboardRef, this, "blackboard");
         if (this.unsubscribe) { this.unsubscribe(); }
         this.keepSyncingBoardWithDb();
       }
@@ -253,6 +253,13 @@ export default {
         });
         this.loading = false;
       });
+    },
+    uploadAudio () {
+      return new Promise(async (resolve) => {
+        const { AudioRecorder } = this.$refs;
+        await AudioRecorder.uploadRecording();
+        resolve();
+      })
     },
     async resetBoard () {
       if (this.isRealtime) {
@@ -299,7 +306,7 @@ export default {
             const imageUrl = URL.createObjectURL(this.imageBlob);
             this.displayImageAsBackground(imageUrl);
           } else {
-            const imageUrl = await this.$_dbMixin_saveToStorage(`images/${this.blackboardId}`, blob);
+            const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
             this.blackboardRef.update({ imageUrl });
             this.imageUrl = imageUrl; // store locally
           }
@@ -477,10 +484,11 @@ export default {
       this.mouseY = e.offsetY; //- window.scrollY (in case these don't work)
     },
     handleRecordStateChange (newState) {
-      const { MID_RECORD, POST_RECORD } = this.recordStateEnum;
+      const { PRE_RECORD, MID_RECORD, POST_RECORD } = this.recordStateEnum;
       if (newState === MID_RECORD) { this.startRecording(); }
       else if (newState === POST_RECORD) { this.stopRecording(); }
-      else { this.tryRecordAgain(); }
+      else if (newState === PRE_RECORD) {this.tryRecordAgain(); }
+      else { throw "Error: blackboard state was set to an illegal value" }
     },
     startRecording () {
       this.startTimer();
@@ -494,24 +502,40 @@ export default {
     },
     stopRecording () {
       this.stopTimer();
+      const { AudioRecorder } = this.$refs;
       const { POST_RECORD } = this.recordStateEnum;
       this.disableDrawing();
-      this.$refs.AudioRecorder.stopRecording();
+      AudioRecorder.stopRecording();
       this.currentState = POST_RECORD;
       if (this.isRealtime) {
         this.blackboardRef.update({ recordState: POST_RECORD });
       }
-      this.$emit("audio-upload-start"); // AudioRecorder implicitly starts uploading the file to Firestore
+    },
+    handleAudioSaved () { 
+      const { AudioRecorder } = this.$refs;
+      const videoData = { 
+        audio: AudioRecorder.audio, 
+        strokes: this.allStrokes 
+      };
+      this.$emit("record-end", videoData)
     },
     tryRecordAgain () {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
+      // if there are previous strokes set all the timestamp to 0 
+      for (const stroke of this.allStrokes) {
+        stroke.startTime = 0;
+        stroke.endTime = 0;
+      }
+      console.log("this.allStrokes =", this.allStrokes);
       const { PRE_RECORD } = this.recordStateEnum;
       this.currentState = PRE_RECORD;
+      this.enableDrawing();
       if (this.isRealtime) {
         this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
       }
-      this.$emit("retry-recording"); // inform CreateExplanation.vue to hide the DoodleVideo preview
+      const willRedraw = true;
+      this.$_drawMixin_rescaleCanvas(willRedraw);
     },
     saveFileReference ({ url }) {
       this.hasUploadedAudio = true;
@@ -581,7 +605,7 @@ export default {
     blackboardSize () {
       const board = document.getElementById("myCanvas");
       const mini_height =
-        (document.getElementById("blackboard-wrapper").offsetWidth * 0.6)  +
+        (document.getElementById("blackboard-wrapper").offsetWidth * 0.575)  +
         "px";
       const realtime_height = window.innerHeight - 48 + "px";
       board.style.height = this.isRealtime ? realtime_height : mini_height;

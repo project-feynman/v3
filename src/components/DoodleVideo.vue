@@ -14,10 +14,11 @@
     </div>
     <p class="text-xs-center" v-if="audioUrl && !hasFetchedAudio">Fetching audio...(this can take a while)</p>
     <AudioRecorder
-      v-if="audioUrl" 
+      v-if="audioUrl || audio" 
       v-show="hasFetchedAudio" 
       ref="audioRecorder"
-      :audioUrl="audioUrl" 
+      :audioUrl="audioUrl || `${audio.ts}`" 
+      :injectedAudio="audio"
       @loading="hasFetchedAudio = false" 
       @loaded="hasFetchedAudio = true"
       @play="playVideo()" 
@@ -40,6 +41,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 export default {
   props: {
     strokes: Array,
+    audio: Object,
     blackboardRef: Object,
     blackboardId: String,
     thumbnail: String, // will soon be a required prop
@@ -85,7 +87,7 @@ export default {
       return allPoints.sort((p1, p2) => this.getStartTime(p1) - this.getStartTime(p2));
     },
     hasLoadedAvailableResources () {
-      return (this.hasFetchedAudio || !this.audioUrl)
+      return (this.hasFetchedAudio || !this.audioUrl || this.audio)
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
     hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; }
@@ -127,9 +129,11 @@ export default {
       return new Promise(resolve => setTimeout(setHeight(resolve), 0));
     },
     async fetchStrokes () {
-      return new Promise(async resolve => {
+      return new Promise(async (resolve) => {
+        const blackboard = await this.$_getDoc(this.blackboardRef);
+        // console.log("blackboard =", blackboard);
         const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
-        this.allStrokes = await this.$_dbMixin_getDocs(strokesRef);
+        this.allStrokes = await this.$_getCollection(strokesRef);
         this.$nextTick(() => {
           this.hasFetchedStrokes = true;
           this.$emit("strokes-ready")
@@ -157,6 +161,7 @@ export default {
       else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
     },
     playVideo () {
+      console.log("playVideo");
       const { audioRecorder } = this.$refs;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
       this.nextFrameIdx = 0;

@@ -7,12 +7,12 @@
             <v-row justify="start" align="center">
               <v-col class="px-1 py-0" cols="auto">
                 <div
-                  :class="[$vuetify.breakpoint.smAndDown? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
+                  :class="[$vuetify.breakpoint.mdAndDown? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
                   id="swatches-wrapper"
                   @click="$emit('eraser-click', false)"
                 >
                   <v-btn
-                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent lighten-1':color"
+                    :color="(!$vuetify.breakpoint.mdAndDown || palleteVisibility || eraserActive)? 'accent lighten-1':color"
                     @click="palleteClick()"
                     :outlined="eraserActive? true:false"
                     min-width="36px"
@@ -32,7 +32,7 @@
                     :swatch-style="{ margin:'0 5px', borderRadius:'50%' }"
                     inline
                     background-color="rgba(0, 0, 0, 0)"
-                    swatch-size="26"
+                    swatch-size="24"
                   />
                 </div>
               </v-col>
@@ -103,7 +103,7 @@ export default {
   },
   data () {
     return {
-      colors: ["white", "orange", "#0AF2F2", "deeppink"],
+      colors: ["white", "orange", "#0AF2F2"],
       palleteVisibility: false,
       recordStateEnum: CONSTANTS.recordStateEnum,
       imageAdded: false,

@@ -1,47 +1,34 @@
 <template>
-  <v-container fluid>
-    <v-textarea 
-      label="Use text, image, drawings and/or voice for any purpose e.g. ask/answer questions, form study groups, do silly doodles, etc." 
-      placeholder="Write text here..."
-      v-model="postTitle" 
-      auto-grow
-      rows="1"
-      filled color="accent lighten-2" background-color="#f5f5f5"
-    />
-    <v-btn 
-      @click="submitPost()"
-      :loading="isButtonDisabled" :disabled="isButtonDisabled"
-      class="ma-0 white--text" color="accent lighten-1" block
-    >
-      SUBMIT
-      <v-icon class="pl-2">send</v-icon>
-      <template v-slot:loader>
-        <span v-if="isRecordingVideo">Currently recording...</span> 
-        <span v-else-if="isUploadingAudio">Processing video...</span>
-      </template>
-    </v-btn>
-    <Blackboard
-      v-show="blackboardAttached && !isShowingVideoPreview" ref="Blackboard"
-      :isRealtime="false" :visible="visible" :background="addedImage" :key="changeKeyToForceReset"
-      @boardImage="boardImage"
-      @record-start="isRecordingVideo = true"
-      @audio-upload-start="isRecordingVideo = false; isUploadingAudio = true"
-      @audio-upload-end="strokes => handleAudioUploadEnd(strokes)"
-      @retry-recording="isShowingVideoPreview = false"
-    />
-    <template v-if="isShowingVideoPreview">
-      <v-btn 
-        @click="resetRecordState()"
-        class="ma-0 white--text" color="accent lighten-1" block
-      >
-        Retry
-      </v-btn>
-      <DoodleVideo 
-        :strokes="blackboardStrokes"
-        :audioUrl="audioUrl"
+  <v-card>
+    <v-container fluid>
+      <v-textarea 
+        label="Use text, image, drawings and/or voice for any purpose" 
+        placeholder="Write text here (press ENTER to expand)"
+        v-model="postTitle" auto-grow rows="1" hide-details filled color="accent lighten-2" background-color="#f5f5f5"
       />
-    </template>
-  </v-container>
+      <v-btn v-if="newExplanationDbRef && postDbRef" @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
+        :loading="isButtonDisabled" :disabled="isButtonDisabled"
+      >
+        SUBMIT <v-icon class="pl-2">send</v-icon>
+        <template v-slot:loader>
+          <span v-if="isRecordingVideo">Currently recording...</span> 
+          <span v-else-if="isUploadingAudio">Processing video...</span>
+        </template>
+      </v-btn>
+      <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
+        :isRealtime="false" :visible="visible" :background="addedImage" :key="changeKeyToForceReset"
+        @boardImage="boardImage" @record-start="isRecordingVideo = true"
+        @record-end="videoData => handleRecordEnd(videoData)"
+        @retry-recording="handleRetry()"
+      />
+      <template v-if="isPreviewing">
+        <v-btn @click="initRetry()" block class="white--text" outlined color="accent lighten-1">
+          Retry
+        </v-btn>
+        <DoodleVideo :strokes="blackboardStrokes" :audio="audio" :audioUrl="audioUrl"/>
+      </template>
+    </v-container>
+  </v-card>
 </template>
 
 <script>
@@ -60,14 +47,8 @@ export default {
       type: Boolean,
       default () { return false; }
     },
-    postDbRef: {
-      type: Object,
-      required: true
-    },
-    newExplanationDbRef: {
-      type: Object,
-      required: true
-    },
+    postDbRef: Object,
+    newExplanationDbRef: Object,
     newDocId: String,
     visible: Boolean
   },
@@ -81,9 +62,10 @@ export default {
     isUploadingAudio: false,
     isUploadingPost: false,
     isRecordingVideo: false,
-    isShowingVideoPreview: false,
+    isPreviewing: false,
     blackboardAttached: true,
     blackboardStrokes: [],
+    audio: null,
     audioUrl: "",
     imageAdded: false,
     addedImage: "",
@@ -99,18 +81,22 @@ export default {
     classId () { return this.$route.params.classId; }
   },
   methods: {
-    resetRecordState () {
-      const Blackboard = this.$refs.Blackboard;
-      Blackboard.handleRecordStateChange(CONSTANTS.recordStateEnum.PRE_RECORD);
+    initRetry () {
+      this.isPreviewing = false;
+      this.$nextTick(() => {
+        const { Blackboard } = this.$refs;
+        Blackboard.handleRecordStateChange(CONSTANTS.recordStateEnum.PRE_RECORD);
+      })
     },
-    handleAudioUploadEnd ({ blackboardStrokes, audioUrl }) {
-      this.isUploadingAudio = false; 
-      this.isShowingVideoPreview = true
-      this.blackboardStrokes = blackboardStrokes;
-      this.audioUrl = audioUrl;
+    handleRecordEnd ({ audio, strokes }) {
+      this.isRecordingVideo = false;
+      this.isPreviewing = true;
+      this.audio = audio;
+      this.blackboardStrokes = strokes;
     },
     // Uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
+      if (!this.newExplanationDbRef || !this.postDbRef) { return; }
       if (!this.postTitle) { 
         this.$root.$emit("show-snackbar", "Error: don't forget to write a title!")
         return; 
@@ -121,29 +107,29 @@ export default {
         firstName: this.user.firstName,
         lastName: this.user.lastName,
         email: this.user.email
-      }
-      const mitClass = {
-        id: this.mitClass.id,
-        name: this.mitClass.name
-      }
+      };
+      const mitClass = { id: this.mitClass.id, name: this.mitClass.name };
       const metadata = {
         title: this.postTitle,
         description: this.postDescription,
         date: this.getDate(),
         creator: explanationCreator,
         mitClass
-      }
+      };
       const { Blackboard } = this.$refs;
+      this.isUploadingAudio = true;
+      await Blackboard.uploadAudio();
+      this.isUploadingAudio = false;
       const explanation = {
-        ...metadata,
         audioUrl: Blackboard.audioUrl || "", // TODO: make it explicit
         duration: Blackboard.currentTime || 0,
-      }
+        ...metadata,
+      };
       // Save image backgrounds if necessary
       if (Blackboard.imageBlob) {
         explanation.hasVisual = true;
         const path = `images/${this.newDocId}` // anything unique is fine here
-        explanation.imageUrl = await this.$_dbMixin_saveToStorage(path, Blackboard.imageBlob);
+        explanation.imageUrl = await this.$_saveToStorage(path, Blackboard.imageBlob);
       }
       if (this.willCreateNewPost) {
         this.postDbRef.set({ ...metadata, participants: [explanationCreator]});

@@ -15,6 +15,9 @@
         <v-card-text>
           <v-container>
             <v-row>
+              <slot>
+
+              </slot>
               <template v-for="inputField in inputFields">
                 <v-col cols="12" :key="inputField">
                   <v-text-field
