@@ -198,14 +198,9 @@ export default {
           this.syncContinuously();
         }
         else { 
-          if (!this.hasFetchedStrokes){
-            this.renderThumbnail();
-          }
-          else {
-            this.$_drawMixin_rescaleCanvas(true); 
-          }
-        } // redraw = true
-      // }
+          if (!this.hasFetchedStrokes) { this.renderThumbnail(); }
+          else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
+        } 
     },
     playVideo () {
       console.log("playVideo");
