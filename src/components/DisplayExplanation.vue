@@ -50,9 +50,6 @@ export default {
     DoodleVideo () { return this.$refs.DoodleVideo; },
     selfRef () { return this.explanationsRef.doc(this.explanation.id); } // enables DoodleVideo to fetch its own strokes subcollection
   },
-  created ()  {
-    console.log("expl", this.explanation); 
-  },
   methods: {
     displayDate (date) { return moment(date).format('MMM D, h:mm a'); },
     async handleVideoClick () {

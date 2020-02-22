@@ -6,7 +6,7 @@
     <!-- <template v-if="!thumbnail || hasLoadedAvailableResources"> -->
       <!-- @click="$emit('click'); hasBetaOverlay=false, onClic()" -->
 
-    <div @click="onOverlayClick()" align="center" justify="center" style="height: 100%">
+    <div align="center" justify="center" style="height: 100%">
     <v-card style="height: 100%; width: 100%">
 
 
@@ -20,14 +20,17 @@
       </canvas>
     </div>
 
-      <v-row justify="center">
-        <v-overlay absolute :value="overlay" :opacity="0.1">
-          <!-- @click="e => playVideo(e)" -->
-          <v-btn @click="onOverlayClick()" large dark>
+    <div style="display:flex; align-items:center; justify-content:center">
+      <!-- <v-row justify="center"> -->
+        <!-- <v-overlay  :value="overlay" :opacity="0.1"> -->
+         <!-- <v-btn @click="e => playVideo(e)"/> -->
+          <!-- <v-btn @click="fetchStrokes()" /> -->
+        <!-- </v-overlay> -->
+      <!-- </v-row> -->
+      <v-btn @click="onOverlayClick()" large dark>
             <v-icon>play_arrow</v-icon>
           </v-btn>
-        </v-overlay>
-      </v-row>
+    </div>
     </v-card>
   </div>
 
@@ -86,7 +89,7 @@ export default {
     recursiveSync: null,
     getCurrentAudioTime: null,
     thumbnailImage: null,
-    overlay: true
+    // overlay: true
   }),
   computed: {
     // hasOverlay () {
@@ -97,6 +100,7 @@ export default {
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
     hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; },
+    overlay () {return !this.isQuickplaying && this.recursiveSync === null}
   },
   watch: {
     mouseHover () { this.$emit("mouse-change", this.mouseHover); },
@@ -113,7 +117,7 @@ export default {
     if (!this.thumbnail) {
       this.fetchStrokes();
     } 
-    this.overlay = this.hasBetaOverlay;
+    // this.overlay = this.hasBetaOverlay;
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
@@ -122,7 +126,8 @@ export default {
     this.$_drawMixin_rescaleCanvas(false);
     window.addEventListener("resize", this.handleResize);
     if (this.thumbnail) {
-      this.thumbnailImage = document.getElementById(`Thumbnail`);
+      // this.thumbnailImage = document.getElementById(`Thumbnail`);
+      this.thumbnailImage = new Image;
       this.thumbnailImage.src = this.thumbnail;
       this.$_drawMixin_rescaleCanvas(true);
       this.renderThumbnail();
@@ -132,13 +137,18 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
-    onOverlayClick(){
+    async onOverlayClick(){
       console.log("Clicked");
-      this.overlay = false;
-      this.$emit("click")
+      // this.overlay = false;
+      if (this.hasLoadedAvailableResources){
+        this.playGivenWhatIsAvailable();
+      }
+      else {
+        await this.fetchStrokes();
+      }
     },
     renderThumbnail () {
-      this.ctx.drawImage(this.thumbnailImage,0,0);
+      this.ctx.drawImage(this.thumbnailImage,0,0,this.canvas.width,this.canvas.height);
     },
     setCanvasHeight () {
       const setHeight = resolve => {
@@ -166,7 +176,7 @@ export default {
     },
     playGivenWhatIsAvailable () { 
       if (this.hasVisualAndAudio) { this.$refs.audioRecorder.playAudio(); }
-      else { this.$_drawMixin_quickplay(); } // silent animation
+      else { this.playSilentAnimation(); } // silent animation
     },
     async playSilentAnimation () {
       this.isQuickplaying = true;
