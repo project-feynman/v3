@@ -6,7 +6,7 @@
       </p>
       <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
         :blackboardRef="boardRef" :blackboardId="expl.id"
-        :audioUrl="expl.audioUrl" :imageUrl="expl.imageUrl" :hasBetaOverlay="true"
+        :audioUrl="expl.audioUrl" :imageUrl="expl.imageUrl" :hasBetaOverlay="true" :thumbnail="expl.thumbnail"
         @click="handleVideoClick()"
         @available-resources-ready="playVideo()"
       />

@@ -1,53 +1,41 @@
 <template>
-  <!-- <DoodleVideoOverlay 
-    :overlay="hasBetaOverlay"
-    @play-click="onOverlayClick()"> -->
-  <div style="height: 100%">
-    <!-- <template v-if="!thumbnail || hasLoadedAvailableResources"> -->
-      <!-- @click="$emit('click'); hasBetaOverlay=false, onClic()" -->
+  <div style="height: 100%; position: relative; z-index: 5">
+    <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+      <div id="blackboard-wrapper" style="position: relative;">
+        
+        <canvas
+          :id="`myCanvas-${blackboardId}`"
+          style="width: 100%; height: 1; background-color: transparent; display: block;"
+        ></canvas>
+        
+        <canvas 
+          :id="`background-canvas-${blackboardId}`"
+          class="background-canvas"
+        ></canvas>
 
-    <div align="center" justify="center" style="height: 100%">
-    <v-card style="height: 100%; width: 100%">
-
-
-      <div  @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-      <img v-show="false" :src="thumbnail" id="Thumbnail" :key="thumbnail">
-      <canvas
-        :id="`myCanvas-${blackboardId}`"
-        style="width: 100%; height: 1; background-color: rgb(62, 66, 66)"
-      >
-      
-      </canvas>
-    </div>
-
-    <div style="display:flex; align-items:center; justify-content:center">
-      <!-- <v-row justify="center"> -->
-        <!-- <v-overlay  :value="overlay" :opacity="0.1"> -->
-         <!-- <v-btn @click="e => playVideo(e)"/> -->
-          <!-- <v-btn @click="fetchStrokes()" /> -->
-        <!-- </v-overlay> -->
-      <!-- </v-row> -->
-      <v-btn @click="onOverlayClick()" large dark>
+          <v-btn  v-show="overlay" @click="onOverlayClick()" large dark style="position: absolute; bottom: 45%; top: 45%; left: 45%; right: 45%">
             <v-icon>play_arrow</v-icon>
           </v-btn>
+          
+      </div>
     </div>
-    </v-card>
-  </div>
-
-
-
-    
+    <p class="text-xs-center" v-if="hasFetchedStrokes && audioUrl && !hasFetchedAudio">Fetching audio...(this can take a while)</p>
     <AudioRecorder
-      v-if="audioUrl && this.hasFetchedStrokes" :audioUrl="audioUrl" ref="audioRecorder"
-      @loading="hasFetchedAudio = false" @loaded="hasFetchedAudio = true"
-      @play="playVideo()" @stop="stopSyncing()" @seeking="handleSeeking()"
-
+      v-if="( audioUrl || audio ) && this.hasFetchedStrokes" 
+      v-show="hasFetchedAudio" 
+      ref="audioRecorder"
+      :audioUrl="audioUrl || `${audio.ts}`" 
+      :injectedAudio="audio"
+      @loading="hasFetchedAudio = false" 
+      @loaded="hasFetchedAudio = true"
+      @play="playVideo()" 
+      @stop="stopSyncing()" 
+      @seeking="handleSeeking()"
     />
-    <!-- </template> -->
-    
   </div>
-  <!-- </DoodleVideoOverlay> -->
-</template>
+ </template>
+
+
 
 <script>
 import AudioRecorder from "@/components/AudioRecorder.vue";
@@ -142,7 +130,6 @@ export default {
     this.$_drawMixin_displayImage(this.imageUrl);
     window.addEventListener("resize", this.handleResize);
     if (this.thumbnail) {
-      // this.thumbnailImage = document.getElementById(`Thumbnail`);
       this.thumbnailImage = new Image;
       this.thumbnailImage.src = this.thumbnail;
       this.$_drawMixin_rescaleCanvas(true);
@@ -164,6 +151,7 @@ export default {
       }
     },
     renderThumbnail () {
+      // this.$_drawMixin_rescaleCanvas(true);
       this.ctx.drawImage(this.thumbnailImage,0,0,this.canvas.width,this.canvas.height);
     },
     setCanvasHeight () {
@@ -294,4 +282,8 @@ export default {
   z-index: -1;
   background-color: rgb(62, 66, 66);
 }
+
+/* canvas {
+  position: relative;
+} */
 </style>
