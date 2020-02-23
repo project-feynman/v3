@@ -523,7 +523,7 @@ export default {
       this.ctx.moveTo(this.lastX, this.lastY);
       this.ctx.lineTo(x, y);
     },
-       enableDrawing () {
+    enableDrawing () {
       this.initTouchEvents();
       this.initMouseEvents();
     },
