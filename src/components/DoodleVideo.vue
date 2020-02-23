@@ -281,8 +281,4 @@ export default {
   z-index: -1;
   background-color: rgb(62, 66, 66);
 }
-
-/* canvas {
-  position: relative;
-} */
 </style>
