@@ -99,13 +99,10 @@ export default {
     currentState: String,
     isRealtime: Boolean,
   },
-  components: {
-    Swatches,
-    ButtonPrabhakar
-  },
+  components: { Swatches, ButtonPrabhakar },
   data () {
     return {
-      colors: ["white", "orange", "#0AF2F2"],
+      colors: ["white", "orange", "#0AF2F2", "#ffb6c1"],
       palleteVisibility: false,
       recordStateEnum: CONSTANTS.recordStateEnum,
       imageAdded: false,

@@ -7,8 +7,7 @@
     item-text="name"
     @change="newClass => handleChange(newClass)"
     return-object
-    :label="label"
-    placeholder="Enter a class number"
+    placeholder="Search for a class to join e.g. 18.065"
     color="accent lighten-1" outlined clearable elevate="2"
   />
 </template>
@@ -16,14 +15,9 @@
 <script>
 export default {
   name: "BaseSearchBar",
-  props: {
-    label: String,
-    items: Array
-  },
+  props: { label: String, items: Array },
   data () {
-    return {
-      searchInput: "",
-    }
+    return { searchInput: "", };
   },
   methods: {
     handleChange (newClass) {

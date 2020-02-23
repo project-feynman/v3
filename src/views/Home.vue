@@ -1,13 +1,13 @@
 <template>
   <div id="home-page">
     <TheAppBar>
-      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
-        BLOG
-      </v-btn>
-      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> <!-- target="_blank" opens a new tab -->
-        GITHUB
-      </v-btn>
       <template v-if="user">
+        <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
+          BLOG
+        </v-btn>
+        <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> <!-- target="_blank" opens a new tab -->
+          GITHUB
+        </v-btn>
         <BasePopupButton actionName="Create class" @action-do="C => createClass(C)"
           :inputFields="['class name', 'class description']"/>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
@@ -46,9 +46,8 @@
                     @action-do="user => signUp(user)"
                   >
                     <p>
-                      Sign up to interact with people in your class. 
-                      Passwords are secure and managed by Google Authentication. 
-                      You can configure email notification settings on the top right corner.
+                      Sign up to join different classes. 
+                      Passwords are secure and are handled by Google Firebase Authentication.
                     </p>
                   </BasePopupButton>
                 </v-col>
@@ -57,7 +56,7 @@
               <!-- Search Bar -->
               <template v-else>
                 <v-col cols="12" sm="6">
-                  <TheSearchBar label="Join an existing class" :items="schoolClasses"
+                  <TheSearchBar :items="schoolClasses"
                     @submit="payload => enrollInClass(payload)" color="accent"
                   />
                 </v-col>
@@ -87,7 +86,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" @click="$router.push(`${C.id}/posts/`)">
+                    <v-card v-if="C.name && C.description" @click="$router.push(`${C.id}/posts/tutorial`)">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
@@ -123,13 +122,13 @@ export default {
   components: {
     AsyncRenderless, 
     BasePopupButton,
-    TheSearchBar,
     Blackboard,
     DoodleVideo,
     DisplayExplanation,
     CreateExplanation,
     TheAppBar,
-    TheDropdownMenu
+    TheDropdownMenu,
+    TheSearchBar,
   },
   mixins: [DatabaseHelpersMixin],
   computed: {
@@ -171,9 +170,7 @@ export default {
       });
     },
     async updateSettings (payload) {
-      this.userRef.update({
-        enrolledClasses: payload
-      })
+      this.userRef.update({ enrolledClasses: payload })
     },
     async createClass ({ "class name": name, "class description": description }) {
       this.fetchClasses();

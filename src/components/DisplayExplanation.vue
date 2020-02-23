@@ -2,7 +2,7 @@
   <v-card>
     <v-container fluid>
       <p>{{ expl.title }} 
-        {{ hasDate? ` by (${expl.creator.firstName}, ${displayDate(expl.date)})`: "" }}
+        {{ hasDate? `(by ${expl.creator.firstName}, ${displayDate(expl.date)})`: "" }}
       </p>
       <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
         :blackboardRef="boardRef" :blackboardId="expl.id"
