@@ -3,14 +3,18 @@
     <TheAppBar/>
     <v-content>
       <v-card>
-        <DisplayExplanation v-for="expl in sortedExplanations" :expl="expl" :key="expl.id"/>
+        <DisplayExplanation v-for="expl in sortedExplanations" 
+          :expl="expl" :key="expl.id"
+        />
         <v-btn @click="isCreatingExpl = !isCreatingExpl"
-          block color="accent lighten-1" :outlined="isCreatingExpl" x-large
+          x-large block :outlined="isCreatingExpl" color="accent lighten-1"
         >
           {{ isCreatingExpl? 'CANCEL' : 'ADD RESPONSE' }}
         </v-btn>
-        <CreateExplanation v-if="isCreatingExpl" :postDbRef="postRef"
-          :newExplanationDbRef="explanationsRef.doc()" @upload-finish="isCreatingExpl = false"
+        <CreateExplanation v-if="isCreatingExpl" 
+          :postDbRef="postRef"
+          :newExplanationDbRef="explanationsRef.doc()" 
+          @upload-finish="isCreatingExpl = false"
         />
       </v-card>
     </v-content>

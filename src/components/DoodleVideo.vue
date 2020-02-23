@@ -2,40 +2,32 @@
   <div style="height: 100%; position: relative; z-index: 5">
     <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <div id="blackboard-wrapper" style="position: relative;">
-        
-        <canvas
-          :id="`myCanvas-${blackboardId}`"
+        <canvas :id="`myCanvas-${blackboardId}`"
           style="width: 100%; height: 1; background-color: transparent; display: block;"
         ></canvas>
-        
-        <canvas 
-          :id="`background-canvas-${blackboardId}`"
+        <canvas :id="`background-canvas-${blackboardId}`"
           class="background-canvas"
         ></canvas>
-
-          <v-btn  v-show="overlay" @click="onOverlayClick()" large dark style="position: absolute; bottom: 45%; top: 45%; left: 45%; right: 45%">
-            <v-icon>play_arrow</v-icon>
-          </v-btn>
-          
+        <v-btn v-show="overlay" @click="onOverlayClick()" large dark style="position: absolute; bottom: 45%; top: 45%; left: 45%; right: 45%">
+          <v-icon>play_arrow</v-icon>
+        </v-btn>
       </div>
     </div>
-    <p class="text-xs-center" v-if="hasFetchedStrokes && audioUrl && !hasFetchedAudio">Fetching audio...(this can take a while)</p>
-    <AudioRecorder
-      v-if="( audioUrl || audio ) && this.hasFetchedStrokes" 
-      v-show="hasFetchedAudio" 
-      ref="audioRecorder"
+    <p class="text-xs-center" v-if="isFetchingAudio">
+      Fetching audio...(this can take a while)
+    </p>
+    <AudioRecorder v-if="audioUrl || audio" v-show="hasFetchedAudio" ref="audioRecorder"
       :audioUrl="audioUrl || `${audio.ts}`" 
       :injectedAudio="audio"
-      @loading="hasFetchedAudio = false" 
-      @loaded="hasFetchedAudio = true"
+      @loading="isFetchingAudio = true" 
+      @loaded="isFetchingAudio = false; hasFetchedAudio = true;"
       @play="playVideo()" 
       @stop="stopSyncing()" 
+      @ended="stopSyncing()"
       @seeking="handleSeeking()"
     />
   </div>
  </template>
-
-
 
 <script>
 import AudioRecorder from "@/components/AudioRecorder.vue";
@@ -49,7 +41,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
   props: {
-    strokes: Array,
+    injectedStrokes: Array,
     audio: Object,
     blackboardRef: Object,
     blackboardId: String,
@@ -59,11 +51,7 @@ export default {
       type: Object,
       default () { return { file: null }; }
     },
-    audioUrl: String,
-    hasBetaOverlay: {
-      type: Boolean,
-      default () { return false; }
-    }
+    audioUrl: String
   },
   components: { AudioRecorder },
   mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
@@ -72,26 +60,21 @@ export default {
     ctx: null,
     bgCanvas: null,
     bgCtx: null,
+    isFetchingAudio: false,
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
+    isStatic: false,
     allStrokes: [],
     isQuickplaying: false,
     mouseHover: false,
     nextFrameIdx: 0,
     recursiveSync: null,
     getCurrentAudioTime: null,
-    thumbnailImage: null,
-    // overlay: true
+    thumbnailImage: null
   }),
   computed: {
-    // hasOverlay () {
-    //   return this.hasLoadedAvailableResources && (!this.recursiveSync && !this.isQuickplaying)
-    // },
     /* Converts our array of separate strokes into an array of continuous points
-      sorted by timestamp. Frames are in a `[{strokeIndex, pointIndex}, ...]` format
-      @params: "this.allStrokes"
-      @returns: mutates "this.allFrames" 
-    */
+      sorted by timestamp. Frames are in a `[{strokeIndex, pointIndex}, ...]` format */
     allFrames () {
       const allPoints = [];
       for (let i = 0; i < this.allStrokes.length; i++) {
@@ -105,8 +88,12 @@ export default {
       return (this.hasFetchedAudio || !this.audioUrl || this.audio)
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
-    hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; },
-    overlay () {return !this.isQuickplaying && this.recursiveSync === null}
+    hasVisualAndAudio () { 
+      return (this.injectedStrokes || this.hasFetchedStrokes) && (this.audio || this.hasFetchedAudio); 
+    },
+    overlay () { 
+      return !this.isStatic && !this.isQuickplaying && this.recursiveSync === null
+    }
   },
   watch: {
     mouseHover () { this.$emit("mouse-change", this.mouseHover); },
@@ -118,7 +105,7 @@ export default {
     },
   },
   async created () {
-    if (this.strokes) { this.allStrokes = this.strokes } 
+    if (this.injectedStrokes) { this.allStrokes = this.injectedStrokes } 
     else if (!this.thumbnail) { this.fetchStrokes(); } 
   },
   async mounted () {
@@ -127,39 +114,41 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.setCanvasHeight(); // just for video: blackboard should fill space
-    const willDisplayStrokes = this.strokes? true : false;
-    this.$_rescaleCanvas(willDisplayStrokes);
-    if (this.image.file) {
-      const imageSrc = URL.createObjectURL(this.image.file);
-      this.$_displayImage(imageSrc);
-    } else if (this.imageUrl) {
-      this.$_displayImage(this.imageUrl);
-    }
-    window.addEventListener("resize", this.handleResize);
+    
     if (this.thumbnail) {
       this.thumbnailImage = new Image;
       this.thumbnailImage.src = this.thumbnail;
-      this.$_drawMixin_rescaleCanvas(true);
-      this.renderThumbnail();
+      this.$_rescaleCanvas(false); // don't redraw
+      this.$nextTick(this.renderThumbnail); // requires nextTick for some reason
+      if (this.imageUrl) { // URL to the saved image on Firebase hosting
+        this.$_displayImage(this.imageUrl);
+      }
+    } else {
+      const willDisplayStrokes = this.injectedStrokes? true : false;
+      this.$_rescaleCanvas(willDisplayStrokes);
+      if (this.image.file) { // image uploaded locally by the user's device
+        const imageSrc = URL.createObjectURL(this.image.file);
+        this.$_displayImage(imageSrc);
+      } 
     }
+    window.addEventListener("resize", this.handleResize);
   },
   destroyed () {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
     async onOverlayClick(){
-      console.log("Clicked");
-      // this.overlay = false;
-      if (this.hasLoadedAvailableResources){
-        this.playGivenWhatIsAvailable();
-      }
-      else {
-        await this.fetchStrokes();
+      if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
+      else { 
+        this.fetchStrokes(); 
+        if (this.audioUrl) { 
+          this.$refs.audioRecorder.downloadAudioFile();
+        }
       }
     },
     renderThumbnail () {
-      // this.$_drawMixin_rescaleCanvas(true);
-      this.ctx.drawImage(this.thumbnailImage,0,0,this.canvas.width,this.canvas.height);
+      console.log(this.thumbnailImage);
+      this.ctx.drawImage(this.thumbnailImage, 0 , 0, this.canvas.width, this.canvas.height);
     },
     setCanvasHeight () {
       const setHeight = resolve => {
@@ -171,30 +160,6 @@ export default {
       }
       return new Promise(resolve => setTimeout(setHeight(resolve), 0));
     },
-    async fetchStrokes () {
-      return new Promise(async (resolve) => {
-        if (this.hasFetchedStrokes) { return; }
-        const blackboard = await this.$_getDoc(this.blackboardRef);
-        // console.log("blackboard =", blackboard);
-        const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
-        this.allStrokes = await this.$_getCollection(strokesRef);
-        this.$nextTick(() => {
-          this.hasFetchedStrokes = true;
-          this.$emit("strokes-ready")
-          this.$_rescaleCanvas(true);
-        });
-        resolve();
-      });
-    },
-    playGivenWhatIsAvailable () { 
-      if (this.hasVisualAndAudio) { this.$refs.audioRecorder.playAudio(); }
-      else { this.playSilentAnimation(); } // silent animation
-    },
-    async playSilentAnimation () {
-      this.isQuickplaying = true;
-      await this.$_quickplay();
-      this.isQuickplaying = false;
-    },
     handleResize () {
       if (this.recursiveSync) {
         this.$_rescaleCanvas(false); // redraw = false
@@ -204,8 +169,35 @@ export default {
       }
       else { 
         if (!this.hasFetchedStrokes) { this.renderThumbnail(); }
-        else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
+        else { this.$_rescaleCanvas(true); } // redraw = true
       } 
+    },
+    async fetchStrokes () {
+      return new Promise(async (resolve) => {
+        if (this.hasFetchedStrokes) { return; }
+        const blackboard = await this.$_getDoc(this.blackboardRef);
+        const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
+        this.allStrokes = await this.$_getCollection(strokesRef);
+        this.$nextTick(() => {
+          if (this.allStrokes.length === 0) { 
+            this.isStatic = true;
+            this.$root.$emit("show-snackbar", "This is just a static image.")
+          }
+          this.hasFetchedStrokes = true;
+          this.$emit("strokes-ready")
+          this.$_rescaleCanvas(true);
+        });
+        resolve();
+      });
+    },
+    playGivenWhatIsAvailable () { 
+      if (this.hasVisualAndAudio) { this.$refs.audioRecorder.playAudio(); }
+      else { this.playSilentAnimation(); }
+    },
+    async playSilentAnimation () {
+      this.isQuickplaying = true;
+      await this.$_quickplay();
+      this.isQuickplaying = false;
     },
     playVideo () {
       const { audioRecorder } = this.$refs;
@@ -219,10 +211,6 @@ export default {
       if (!this.getCurrentAudioTime) { this.getCurrentAudioTime = audioRecorder.getAudioTime; }
       if (!this.recursiveSync) { this.syncContinuously(); }
     },
-    stopSyncing () {
-      clearTimeout(this.recursiveSync); // stop recursive call
-      this.recursiveSync = null;
-    },
     handleSeeking () {
       if (!this.recursiveSync) { 
         this.prepareForSync();
@@ -233,9 +221,9 @@ export default {
       const onlyOneFrame = true;
       this.syncContinuously(onlyOneFrame);
     },
-    getStartTime ({ strokeIndex, pointIndex }) {
-      const stroke = this.allStrokes[strokeIndex];
-      return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
+    stopSyncing () {
+      clearTimeout(this.recursiveSync); // stop recursive call
+      this.recursiveSync = null;
     },
     // Synchronize drawings with the audio on a point-by-point basis.
     syncContinuously (once = false) {
@@ -250,6 +238,10 @@ export default {
         let timeout = 1000 * (this.getStartTime(nextFrame) - this.getCurrentAudioTime()); 
         this.recursiveSync = setTimeout(this.syncContinuously, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
       } 
+    },
+    getStartTime ({ strokeIndex, pointIndex }) {
+      const stroke = this.allStrokes[strokeIndex];
+      return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
     renderFramesUntilCurrentTime () {
       for (let i = this.nextFrameIdx; i < this.allFrames.length; i += 1) {

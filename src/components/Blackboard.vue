@@ -481,23 +481,21 @@ export default {
       this.$root.$emit("show-snackbar", messageToUser);
     },
     createThumbnail () {
-      console.log("image stuff", this.imageUrl, this.imageBlob)
-      if(this.imageUrl && this.imageBlob){
+      if (this.imageUrl || this.imageBlob) {
+        this.$_drawStrokesInstantly2();
         return this.bgCanvas.toDataURL(); //this just makes the background image the thumbnail
-      }
-      else {
+      } else {
         this.ctx.fillStyle = "rgb(62, 66, 66)";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.$_drawMixin_drawStrokesInstantly();
+        this.$_drawStrokesInstantly();
         return this.canvas.toDataURL();
       }
-      
     },
     customCursor () {
-      var dummy_canvas = document.createElement("canvas");
+      const dummy_canvas = document.createElement("canvas");
       dummy_canvas.width = 24;
       dummy_canvas.height = 24;
-      var ctx = dummy_canvas.getContext("2d");
+      const ctx = dummy_canvas.getContext("2d");
       ctx.fillStyle = this.eraserActive ? "#fff" : this.color;
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";

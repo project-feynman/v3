@@ -10,14 +10,14 @@
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>Realtime board</v-list-item-title>
-              <template v-for="(member, i) in room.members">
+              <!-- <template v-for="(member, i) in room.members">
                 <div style="display: flex;" :key="i">
                   <v-icon color="orange">person</v-icon>
                   <p class="pl-4 pt-4">
                     {{ member.firstName }}
                   </p>
                 </div>
-              </template>
+              </template> -->
             </v-list-item-content>
           </v-list-item>
           <!-- New post -->

@@ -5,8 +5,11 @@
         {{ hasDate? `(by ${expl.creator.firstName}, ${displayDate(expl.date)})`: "" }}
       </p>
       <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
-        :blackboardRef="boardRef" :blackboardId="expl.id"
-        :audioUrl="expl.audioUrl" :imageUrl="expl.imageUrl" :hasBetaOverlay="true" :thumbnail="expl.thumbnail"
+        :blackboardRef="boardRef" 
+        :blackboardId="expl.id" 
+        :audioUrl="expl.audioUrl" 
+        :imageUrl="expl.imageUrl" 
+        :thumbnail="expl.thumbnail"
         @click="handleVideoClick()"
         @available-resources-ready="playVideo()"
       />
@@ -29,33 +32,22 @@ export default {
   },
   components: { DoodleVideo },
   computed: {
-    boardRef () { return db.doc(this.expl.ref); },
-    DoodleVideo () { return this.$refs.DoodleVideo; },
-    selfRef () { return this.explanationsRef.doc(this.explanation.id); } // enables DoodleVideo to fetch its own strokes subcollection
+    boardRef () { return db.doc(this.expl.ref); }
   },
   methods: {
     displayDate (date) { return moment(date).format('MMM D, h:mm a'); },
     async handleVideoClick () {
-      await this.DoodleVideo.fetchStrokes(); //idk if await is necessary here
+      await this.$refs.DoodleVideo.fetchStrokes(); //idk if await is necessary here
     },
     playVideo () {
-      this.DoodleVideo.playGivenWhatIsAvailable(); 
+      this.$refs.DoodleVideo.playGivenWhatIsAvailable(); 
     }
   }
 }
 </script>
 
 <style>
-.explanation-title {
-  line-height: 1.3;
-  font-size: 1.1em;
-  font-weight: 500;
-  margin-bottom: 15px;
-}
 .image-container img {
-  max-width: 100%
-  /* computed: { boardRef () { return db.doc(this.expl.ref); } },
-  methods: { displayDate (date) { return moment(date).format('MMM D, h:mm a'); } } */
+  max-width: 100%;
 }
 </style>
-/* </script> */

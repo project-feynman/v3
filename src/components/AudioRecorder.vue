@@ -19,27 +19,30 @@ export default {
   mixins: [DatabaseHelpersMixin],
   data () {
     return {
+      audio: null,
       recordingInProgress: false,
       supportedMimeTypes: [],
-      audio: null,
       micGain: 1.0,
       cleanupWhenFinished: true,
       addDynamicsCompressor: false
     }
   },
   created () {
+    if (this.injectedAudio) { 
+      this.$emit("loading");
+      this.audio = this.injectedAudio; 
+      this.initEventEmitters();
+      this.$emit("loaded");
+    } 
     this.recorderSrvc = new RecorderService()
-    // this is the key thing - this will trigger onNewRecording - always remember this line!
+    // event triggers when the user finishes an audio recording
     this.recorderSrvc.em.addEventListener("recording", evt => this.onNewRecording(evt))
   },
   computed: {
+    // TODO: investigate bug
     player () { return this.$refs.plyr.player }
   },
   watch: {
-    audioUrl: {
-      handler: 'downloadAudioFile',
-      immediate: true
-    },
     cleanupWhenFinished (val) {
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished;
     }
@@ -56,15 +59,13 @@ export default {
         this.player.on('play', () => this.$emit('play'));
         this.player.on('pause', () => this.$emit('pause'));
         this.player.on('seeking', () => this.$emit('seeking'));
+        this.player.on("ended", () => this.$emit("ended"));
       });
     },
     downloadAudioFile () {
-      this.$emit("loading");
-      if (this.injectedAudio) { 
-        this.audio = this.injectedAudio; 
-        this.initEventEmitters();
-        this.$emit("loaded");
-      } else if (this.audioUrl) {
+      this.$emit("loading"); 
+      // TODO: refactor this in databaseHelpersMixin.js
+      if (this.audioUrl) {
         let xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
         xhr.onload = event => {
@@ -85,7 +86,6 @@ export default {
         xhr.send();
       }
     },
-    // Functions for recording and saving voice 
     startRecording () {
       this.$emit('start-recording')
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
@@ -98,7 +98,6 @@ export default {
       this.recorderSrvc.stopRecording();
       this.recordingInProgress = false;
     },
-    // Callback for the watcher
     onNewRecording (evt) {
       this.audio = evt.detail.recording;
       this.$emit("audio-saved");
@@ -116,7 +115,7 @@ export default {
         return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
       }
       return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
-    },
+    }
   }
 }
 </script>

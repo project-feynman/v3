@@ -25,7 +25,7 @@
         <v-btn @click="initRetry()" block class="white--text" outlined color="accent lighten-1">
           Retry
         </v-btn>
-        <DoodleVideo :strokes="blackboardStrokes" :audio="audio" :audioUrl="audioUrl" :image="image"/>
+        <DoodleVideo :injectedStrokes="blackboardStrokes" :audio="audio" :audioUrl="audioUrl" :image="image"/>
       </template>
     </v-container>
   </v-card>
@@ -127,7 +127,6 @@ export default {
       const explanation = {
         audioUrl: Blackboard.audioUrl || "", // TODO: make it explicit
         duration: Blackboard.currentTime || 0,
-        // image: this.addedImage || 0,
         thumbnail: Blackboard.createThumbnail() || "",
         ...metadata,
       };
