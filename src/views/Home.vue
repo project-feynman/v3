@@ -1,13 +1,13 @@
 <template>
   <div id="home-page">
     <TheAppBar>
-      <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
-        BLOG
-      </v-btn>
-      <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> <!-- target="_blank" opens a new tab -->
-        GITHUB
-      </v-btn>
       <template v-if="user">
+        <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
+          BLOG
+        </v-btn>
+        <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> <!-- target="_blank" opens a new tab -->
+          GITHUB
+        </v-btn>
         <BasePopupButton actionName="Create class" @action-do="C => createClass(C)"
           :inputFields="['class name', 'class description']"/>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
@@ -45,9 +45,9 @@
                     :inputFields="['first name', 'last name', 'email', 'password']"
                     @action-do="user => signUp(user)"
                   >
-                    <p>Passwords are managed by Google's Firebase authentication. 
-                      When you join a class, you will receive email notifications 
-                      for new posts and replies. Notification settings is on the top right corner.
+                    <p>
+                      Sign up to join different classes. 
+                      Passwords are secure and are handled by Google Firebase Authentication.
                     </p>
                   </BasePopupButton>
                 </v-col>
@@ -56,7 +56,7 @@
               <!-- Search Bar -->
               <template v-else>
                 <v-col cols="12" sm="6">
-                  <TheSearchBar label="Join an existing class" :items="schoolClasses"
+                  <TheSearchBar :items="schoolClasses"
                     @submit="payload => enrollInClass(payload)" color="accent"
                   />
                 </v-col>
@@ -66,14 +66,14 @@
         </v-card>
       </transition>
 
-      <!-- Tutorial videos -->
+      <!-- Tutorial -->
       <v-container fluid>
         <div v-if="!user && !isFetchingUser">
           <v-row justify="center">
-            <v-col cols="12" md="6">
+            <v-col cols="12" lg="6">
               <DisplayExplanation :expl="demoVideo" :hasDate="false"/>
             </v-col>
-            <v-col cols="12" sm="10" md="6">
+            <v-col cols="12" lg="6">
               <CreateExplanation/>
             </v-col>
           </v-row>
@@ -86,7 +86,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" @click="$router.push(`${C.id}/posts/`)">
+                    <v-card v-if="C.name && C.description" @click="$router.push(`${C.id}/posts/tutorial`)">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
@@ -122,13 +122,13 @@ export default {
   components: {
     AsyncRenderless, 
     BasePopupButton,
-    TheSearchBar,
     Blackboard,
     DoodleVideo,
     DisplayExplanation,
     CreateExplanation,
     TheAppBar,
-    TheDropdownMenu
+    TheDropdownMenu,
+    TheSearchBar,
   },
   mixins: [DatabaseHelpersMixin],
   computed: {
@@ -138,14 +138,7 @@ export default {
   data () {
     return {
       schoolClasses: [],
-      demoVideo: { creator: {} },
-      tutorials: [
-        { 
-          blackboardId: "qt8oisoxj8ols5g0w4xr9e",
-          blackboardRef: this.getBlackboardRef("qt8oisoxj8ols5g0w4xr9e"),
-          description: "Here is a video explanation. Try dragging the slider below."
-        }
-      ]
+      demoVideo: { creator: {} }
     }
   },
   async created () { 
@@ -158,9 +151,7 @@ export default {
   methods: {
     getMitClassRef (classId) { return db.collection("classes").doc(classId); },
     getBlackboardRef (explanationId) {
-      return db.collection("classes").doc("i14as7fMqCVjI1yZbLC5")
-        .collection("posts").doc(explanationId)
-        .collection("explanations").doc(explanationId);
+      return db.doc(`classes/i14as7fMqCVjI1yZbLC5/posts/${explanationId}/explanations/${explanationId}`);
     },
     async fetchClasses () {
       const ref = db.collection("classes");
@@ -179,9 +170,7 @@ export default {
       });
     },
     async updateSettings (payload) {
-      this.userRef.update({
-        enrolledClasses: payload
-      })
+      this.userRef.update({ enrolledClasses: payload })
     },
     async createClass ({ "class name": name, "class description": description }) {
       this.fetchClasses();

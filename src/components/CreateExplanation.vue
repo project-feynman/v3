@@ -2,8 +2,8 @@
   <v-card>
     <v-container fluid>
       <v-textarea 
-        label="Use text, image, drawings and/or voice for any purpose" 
-        placeholder="Write text here (press ENTER to expand)"
+        label="Here's a blackboard - try playing around with it" 
+        placeholder="Type text here... (press Enter for more space)"
         v-model="postTitle" auto-grow rows="1" hide-details filled color="accent lighten-2" background-color="#f5f5f5"
       />
       <v-btn v-if="newExplanationDbRef && postDbRef" @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
@@ -25,7 +25,7 @@
         <v-btn @click="initRetry()" block class="white--text" outlined color="accent lighten-1">
           Retry
         </v-btn>
-        <DoodleVideo :strokes="blackboardStrokes" :audio="audio" :audioUrl="audioUrl"/>
+        <DoodleVideo :strokes="blackboardStrokes" :audio="audio" :audioUrl="audioUrl" :image="image"/>
       </template>
     </v-container>
   </v-card>
@@ -67,6 +67,7 @@ export default {
     blackboardStrokes: [],
     audio: null,
     audioUrl: "",
+    image: { file: null },
     imageAdded: false,
     addedImage: "",
     changeImage: false,
@@ -88,11 +89,12 @@ export default {
         Blackboard.handleRecordStateChange(CONSTANTS.recordStateEnum.PRE_RECORD);
       })
     },
-    handleRecordEnd ({ audio, strokes }) {
+    handleRecordEnd ({ audio, strokes, image }) {
       this.isRecordingVideo = false;
       this.isPreviewing = true;
       this.audio = audio;
       this.blackboardStrokes = strokes;
+      this.image = { file: image };
     },
     // Uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
@@ -150,13 +152,12 @@ export default {
         }
       }
       this.newExplanationDbRef.set(explanation);
-      // Reset component
+      // reset
       this.postTitle = "";
       this.postDescription = "";
       this.changeKeyToForceReset += 1; // not sure if it works
       this.isUploadingPost = false;
-      // Inform parent
-      this.$emit("upload-finish");
+      this.$emit("upload-finish"); // tell parent to not hide loading status
     },
     getDate () {
       const today = new Date();
@@ -167,21 +168,7 @@ export default {
       this.imageAdded = true;
       this.addedImage = boardImage;
       this.changeImage = false;
-    },
-    // clickImage () {
-    //   this.$refs.Blackboard.$refs.blackboardToolbar.$refs.background.$el.click();
-    // },
-    // addImage () {
-    //   this.imageAdded = true;
-    //   const file = document.getElementById("img-input").files[0];
-    //   const reader = new FileReader();
-    //   reader.addEventListener("load", () => this.addedImage = reader.result, false);
-    //   if (file) { reader.readAsDataURL(file); }
-    // },
-    // removeImage () {
-    //   this.imageAdded = false;
-    //   Vue.set(this, "addedImage", "");
-    // }
+    }
   }
 }
 </script>

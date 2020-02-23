@@ -16,8 +16,12 @@ export default new Router({
       component: () => import(/* webpackChunkName: "piazza" */ './views/BlackboardRoom.vue') // there are no questions to navigate to initially
     },
     {
-      path: '/:class_id/posts/',
+      path: '/:class_id/posts/new',
       component: () => import(/* webpackChunkName: "piazza" */ './views/CreatePost.vue') // there are no questions to navigate to initially
+    },
+    {
+      path: '/:class_id/posts/tutorial',
+      component: () => import(/* webpackChunkName: "piazza" */ './views/TutorialPost.vue') // there are no questions to navigate to initially
     },
     {
       path: '/:class_id/posts/:post_id',

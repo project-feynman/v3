@@ -1,10 +1,9 @@
 <template>
   <v-card style="zIndex:6">
-    <v-navigation-drawer
-      :value="value" @input="newValue => $emit('input', newValue)" app clipped
-    >
+    <v-navigation-drawer :value="value" @input="newVal => $emit('input', newVal)" app clipped>
       <v-list class="pt-0">
         <v-list-item-group>
+          <!-- Realtime board -->
           <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent lighten-1">
             <v-list-item-icon>
               <v-icon>phone_in_talk</v-icon>
@@ -21,8 +20,8 @@
               </template>
             </v-list-item-content>
           </v-list-item>
-
-          <v-list-item @click="$router.push(`/${classId}/posts`)" color="accent lighten-1">
+          <!-- New post -->
+          <v-list-item @click="$router.push(`/${classId}/posts/new`)" color="accent lighten-1">
             <v-list-item-icon>
               <v-icon>post_add</v-icon>
             </v-list-item-icon>
@@ -30,16 +29,24 @@
               <v-list-item-title>New post</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-
-          <div v-for="post in posts" :key="post.id">
-            <v-list-item @click="$router.push(`/${classId}/posts/${post.id}`)" color="accent lighten-1" :key="post.id">
-              <v-list-item-content>
-                <v-list-item-subtitle class="text--primary" v-text="post.title"/>
-                <v-list-item-subtitle v-text="displayDate(post.date)"/>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider></v-divider>
-          </div>
+          <!-- Tutorial post -->
+          <v-list-item @click="$router.push(`/${classId}/posts/tutorial`)" 
+            color="accent lighten-1" :key="tutorialPost.id"
+          >
+            <v-list-item-content>
+              <v-list-item-subtitle class="text--primary" v-text="tutorialPost.title"/>
+              <v-list-item-subtitle v-text="displayDate(tutorialPost.date)"/>
+            </v-list-item-content>
+          </v-list-item>
+          <!-- Class posts -->
+          <v-list-item v-for="(post, i) in posts" :key="post.id + i"
+            @click="$router.push(`/${classId}/posts/${post.id}`)" color="accent lighten-1"
+          >
+            <v-list-item-content>
+              <v-list-item-subtitle class="text--primary" v-text="post.title"/>
+              <v-list-item-subtitle v-text="displayDate(post.date)"/>
+            </v-list-item-content>
+          </v-list-item>
         </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
@@ -57,6 +64,7 @@ export default {
   data () {
     return {
       posts: [],
+      tutorialPost: {},
       room: { members: [] },
       unsubscribeRoomListener: null,
       unsubscribePostsListener: null
@@ -65,11 +73,13 @@ export default {
   computed: { classId () { return this.$route.params.class_id; } },
   async created () {
     this.$root.$emit("open-drawer");
-    const roomRef = db.doc(`rooms/${this.classId}`)
-    let postsRef = db.collection(`classes/${this.classId}/posts`);
-    postsRef = postsRef.orderBy("date", "desc").limit(50);
+    const roomRef = db.doc(`rooms/${this.classId}`);
+    const tutorialPostRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/r8mhnrhd9xgt0rfberrcr`);
+    const postsRef = db.collection(`classes/${this.classId}/posts`);
+    const postsQuery = postsRef.orderBy("date", "desc").limit(50);
+    this.tutorialPost = await this.$_getDoc(tutorialPostRef);
     this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
-    this.unsubscribePostsListener = await this.$_listenToCollection(postsRef, this, "posts");;
+    this.unsubscribePostsListener = await this.$_listenToCollection(postsQuery, this, "posts");;
   },
   destroyed () {
     this.unsubscribeRoomListener();

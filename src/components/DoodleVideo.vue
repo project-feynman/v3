@@ -53,8 +53,12 @@ export default {
     audio: Object,
     blackboardRef: Object,
     blackboardId: String,
-    thumbnail: String, // will soon be a required prop
+    thumbnail: String, 
     imageUrl: String,
+    image: { 
+      type: Object,
+      default () { return { file: null }; }
+    },
     audioUrl: String,
     hasBetaOverlay: {
       type: Boolean,
@@ -112,8 +116,6 @@ export default {
         this.$emit("available-resources-ready"); 
       });
     },
-    // Uncomment below for painless debugging
-    // nextFrameIdx () { console.log(`nextFrameIdx = ${this.nextFrameIdx}`)}
   },
   async created () {
     if (this.strokes) { this.allStrokes = this.strokes } 
@@ -126,8 +128,13 @@ export default {
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.setCanvasHeight(); // just for video: blackboard should fill space
     const willDisplayStrokes = this.strokes? true : false;
-    this.$_drawMixin_rescaleCanvas(willDisplayStrokes);
-    this.$_drawMixin_displayImage(this.imageUrl);
+    this.$_rescaleCanvas(willDisplayStrokes);
+    if (this.image.file) {
+      const imageSrc = URL.createObjectURL(this.image.file);
+      this.$_displayImage(imageSrc);
+    } else if (this.imageUrl) {
+      this.$_displayImage(this.imageUrl);
+    }
     window.addEventListener("resize", this.handleResize);
     if (this.thumbnail) {
       this.thumbnailImage = new Image;
@@ -165,18 +172,17 @@ export default {
       return new Promise(resolve => setTimeout(setHeight(resolve), 0));
     },
     async fetchStrokes () {
-      return new Promise(async resolve => {
-        if(!this.hasFetchedStrokes){
-          const blackboard = await this.$_getDoc(this.blackboardRef);
-          // console.log("blackboard =", blackboard);
-          const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
-          this.allStrokes = await this.$_getCollection(strokesRef);
-          this.$nextTick(() => {
-            this.hasFetchedStrokes = true;
-            this.$_drawMixin_rescaleCanvas(true);
-            this.$emit("strokes-ready")
-          });
-        }
+      return new Promise(async (resolve) => {
+        if (this.hasFetchedStrokes) { return; }
+        const blackboard = await this.$_getDoc(this.blackboardRef);
+        // console.log("blackboard =", blackboard);
+        const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
+        this.allStrokes = await this.$_getCollection(strokesRef);
+        this.$nextTick(() => {
+          this.hasFetchedStrokes = true;
+          this.$emit("strokes-ready")
+          this.$_rescaleCanvas(true);
+        });
         resolve();
       });
     },
@@ -186,24 +192,22 @@ export default {
     },
     async playSilentAnimation () {
       this.isQuickplaying = true;
-      await this.$_drawMixin_quickplay();
+      await this.$_quickplay();
       this.isQuickplaying = false;
     },
     handleResize () {
-      // if (this.hasFetchedStrokes){ // only rerender if there are actually strokes, protects thumbnail
-        if (this.recursiveSync) {
-          this.$_drawMixin_rescaleCanvas(false); // redraw = false
-          this.stopSyncing();
-          this.nextFrameIdx = 0; // need to redraw previous progress 
-          this.syncContinuously();
-        }
-        else { 
-          if (!this.hasFetchedStrokes) { this.renderThumbnail(); }
-          else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
-        } 
+      if (this.recursiveSync) {
+        this.$_rescaleCanvas(false); // redraw = false
+        this.stopSyncing();
+        this.nextFrameIdx = 0; // need to redraw previous progress 
+        this.syncContinuously();
+      }
+      else { 
+        if (!this.hasFetchedStrokes) { this.renderThumbnail(); }
+        else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
+      } 
     },
     playVideo () {
-      console.log("playVideo");
       const { audioRecorder } = this.$refs;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
       this.nextFrameIdx = 0;
@@ -231,7 +235,7 @@ export default {
     },
     getStartTime ({ strokeIndex, pointIndex }) {
       const stroke = this.allStrokes[strokeIndex];
-      return stroke.startTime + (pointIndex - 1) * this.$_drawMixin_getPointDuration(stroke);
+      return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
     // Synchronize drawings with the audio on a point-by-point basis.
     syncContinuously (once = false) {
@@ -259,8 +263,8 @@ export default {
     },
     renderFrame ({ strokeIndex, pointIndex }) {
       const stroke = this.allStrokes[strokeIndex];
-      this.$_drawMixin_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
-      this.$_drawMixin_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
+      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
+      this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
     }
   }
 }
