@@ -481,10 +481,17 @@ export default {
       this.$root.$emit("show-snackbar", messageToUser);
     },
     createThumbnail () {
-      this.ctx.fillStyle = "rgb(62, 66, 66)";
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      this.drawStrokesInstantly();
-      return this.canvas.toDataURL();
+      console.log("image stuff", this.imageUrl, this.imageBlob)
+      if(this.imageUrl && this.imageBlob){
+        return this.bgCanvas.toDataURL(); //this just makes the background image the thumbnail
+      }
+      else {
+        this.ctx.fillStyle = "rgb(62, 66, 66)";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.$_drawMixin_drawStrokesInstantly();
+        return this.canvas.toDataURL();
+      }
+      
     },
     customCursor () {
       var dummy_canvas = document.createElement("canvas");

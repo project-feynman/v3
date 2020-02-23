@@ -1,20 +1,27 @@
 <template>
   <div style="height: 100%; position: relative; z-index: 5">
-    <div @click="$emit('click')" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+    <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <div id="blackboard-wrapper" style="position: relative;">
+        
         <canvas
           :id="`myCanvas-${blackboardId}`"
           style="width: 100%; height: 1; background-color: transparent; display: block;"
         ></canvas>
+        
         <canvas 
           :id="`background-canvas-${blackboardId}`"
           class="background-canvas"
         ></canvas>
+
+          <v-btn  v-show="overlay" @click="onOverlayClick()" large dark style="position: absolute; bottom: 45%; top: 45%; left: 45%; right: 45%">
+            <v-icon>play_arrow</v-icon>
+          </v-btn>
+          
       </div>
     </div>
-    <p class="text-xs-center" v-if="audioUrl && !hasFetchedAudio">Fetching audio...(this can take a while)</p>
+    <p class="text-xs-center" v-if="hasFetchedStrokes && audioUrl && !hasFetchedAudio">Fetching audio...(this can take a while)</p>
     <AudioRecorder
-      v-if="audioUrl || audio" 
+      v-if="( audioUrl || audio ) && this.hasFetchedStrokes" 
       v-show="hasFetchedAudio" 
       ref="audioRecorder"
       :audioUrl="audioUrl || `${audio.ts}`" 
@@ -26,7 +33,9 @@
       @seeking="handleSeeking()"
     />
   </div>
-</template>
+ </template>
+
+
 
 <script>
 import AudioRecorder from "@/components/AudioRecorder.vue";
@@ -70,7 +79,9 @@ export default {
     mouseHover: false,
     nextFrameIdx: 0,
     recursiveSync: null,
-    getCurrentAudioTime: null
+    getCurrentAudioTime: null,
+    thumbnailImage: null,
+    // overlay: true
   }),
   computed: {
     // hasOverlay () {
@@ -94,12 +105,17 @@ export default {
       return (this.hasFetchedAudio || !this.audioUrl || this.audio)
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
-    hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; }
+    hasVisualAndAudio () { return this.hasFetchedStrokes && this.hasFetchedAudio; },
+    overlay () {return !this.isQuickplaying && this.recursiveSync === null}
   },
   watch: {
     mouseHover () { this.$emit("mouse-change", this.mouseHover); },
     hasVisualAndAudio () { this.$emit("visual-audio-ready"); },
-    hasLoadedAvailableResources () { this.$emit("available-resources-ready"); }
+    hasLoadedAvailableResources () { 
+      this.$nextTick(() => { // this waits for audioRecorder to be fully loaded
+        this.$emit("available-resources-ready"); 
+      });
+    },
   },
   async created () {
     if (this.strokes) { this.allStrokes = this.strokes } 
@@ -120,11 +136,31 @@ export default {
       this.$_displayImage(this.imageUrl);
     }
     window.addEventListener("resize", this.handleResize);
+    if (this.thumbnail) {
+      this.thumbnailImage = new Image;
+      this.thumbnailImage.src = this.thumbnail;
+      this.$_drawMixin_rescaleCanvas(true);
+      this.renderThumbnail();
+    }
   },
   destroyed () {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    async onOverlayClick(){
+      console.log("Clicked");
+      // this.overlay = false;
+      if (this.hasLoadedAvailableResources){
+        this.playGivenWhatIsAvailable();
+      }
+      else {
+        await this.fetchStrokes();
+      }
+    },
+    renderThumbnail () {
+      // this.$_drawMixin_rescaleCanvas(true);
+      this.ctx.drawImage(this.thumbnailImage,0,0,this.canvas.width,this.canvas.height);
+    },
     setCanvasHeight () {
       const setHeight = resolve => {
         const { scrollHeight, scrollWidth } = this.canvas;
@@ -137,6 +173,7 @@ export default {
     },
     async fetchStrokes () {
       return new Promise(async (resolve) => {
+        if (this.hasFetchedStrokes) { return; }
         const blackboard = await this.$_getDoc(this.blackboardRef);
         // console.log("blackboard =", blackboard);
         const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
@@ -151,7 +188,7 @@ export default {
     },
     playGivenWhatIsAvailable () { 
       if (this.hasVisualAndAudio) { this.$refs.audioRecorder.playAudio(); }
-      else { this.playSilentAnimation(); }
+      else { this.playSilentAnimation(); } // silent animation
     },
     async playSilentAnimation () {
       this.isQuickplaying = true;
@@ -165,7 +202,10 @@ export default {
         this.nextFrameIdx = 0; // need to redraw previous progress 
         this.syncContinuously();
       }
-      else { this.$_rescaleCanvas(true); } // redraw = true
+      else { 
+        if (!this.hasFetchedStrokes) { this.renderThumbnail(); }
+        else { this.$_drawMixin_rescaleCanvas(true); } // redraw = true
+      } 
     },
     playVideo () {
       const { audioRecorder } = this.$refs;

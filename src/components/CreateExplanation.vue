@@ -127,6 +127,8 @@ export default {
       const explanation = {
         audioUrl: Blackboard.audioUrl || "", // TODO: make it explicit
         duration: Blackboard.currentTime || 0,
+        // image: this.addedImage || 0,
+        thumbnail: Blackboard.createThumbnail() || "",
         ...metadata,
       };
       // Save image backgrounds if necessary

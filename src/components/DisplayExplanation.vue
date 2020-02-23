@@ -6,7 +6,9 @@
       </p>
       <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
         :blackboardRef="boardRef" :blackboardId="expl.id"
-        :audioUrl="expl.audioUrl" :imageUrl="expl.imageUrl" :hasBetaOverlay="true"
+        :audioUrl="expl.audioUrl" :imageUrl="expl.imageUrl" :hasBetaOverlay="true" :thumbnail="expl.thumbnail"
+        @click="handleVideoClick()"
+        @available-resources-ready="playVideo()"
       />
     </v-container>
   </v-card>
@@ -26,7 +28,34 @@ export default {
     }
   },
   components: { DoodleVideo },
-  computed: { boardRef () { return db.doc(this.expl.ref); } },
-  methods: { displayDate (date) { return moment(date).format('MMM D, h:mm a'); } }
+  computed: {
+    boardRef () { return db.doc(this.expl.ref); },
+    DoodleVideo () { return this.$refs.DoodleVideo; },
+    selfRef () { return this.explanationsRef.doc(this.explanation.id); } // enables DoodleVideo to fetch its own strokes subcollection
+  },
+  methods: {
+    displayDate (date) { return moment(date).format('MMM D, h:mm a'); },
+    async handleVideoClick () {
+      await this.DoodleVideo.fetchStrokes(); //idk if await is necessary here
+    },
+    playVideo () {
+      this.DoodleVideo.playGivenWhatIsAvailable(); 
+    }
+  }
 }
 </script>
+
+<style>
+.explanation-title {
+  line-height: 1.3;
+  font-size: 1.1em;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+.image-container img {
+  max-width: 100%
+  /* computed: { boardRef () { return db.doc(this.expl.ref); } },
+  methods: { displayDate (date) { return moment(date).format('MMM D, h:mm a'); } } */
+}
+</style>
+/* </script> */
