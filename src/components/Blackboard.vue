@@ -350,7 +350,7 @@ export default {
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
       this.allStrokes.push(this.currentStroke);
       if (this.isRealtime) {
-        this.strokesRef.doc(`${strokeNumber}`).set(this.currentStroke);
+        this.strokesRef.doc(`${this.allStrokes.length}`).set(this.currentStroke); // 1st stroke = 1
       }
       this.currentStroke = { points: [] };
       [this.lastX, this.lastY] = [-1, -1];
