@@ -14,6 +14,7 @@
 import TheAppBar from "@/components/TheAppBar.vue";
 import DisplayExplanation from "@/components/DisplayExplanation.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import { tutorial } from "@/CONSTANTS.js";
 import db from "@/database.js";
 
 export default {
@@ -30,8 +31,7 @@ export default {
     }
   },
   async created () {
-    const { class_id, post_id } = this.$route.params;
-    this.postRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/r8mhnrhd9xgt0rfberrcr`);
+    this.postRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
     this.explanationsRef = this.postRef.collection("explanations");
     this.unsubscribeListener = await this.$_listenToCollection(this.explanationsRef, this, "explanations");
   },

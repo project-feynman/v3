@@ -55,6 +55,7 @@
 
 <script>
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
+import { tutorial } from "@/CONSTANTS.js";
 import moment from "moment";
 import db from "@/database.js";
 
@@ -74,7 +75,7 @@ export default {
   async created () {
     this.$root.$emit("open-drawer");
     const roomRef = db.doc(`rooms/${this.classId}`);
-    const tutorialPostRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/r8mhnrhd9xgt0rfberrcr`);
+    const tutorialPostRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
     const postsRef = db.collection(`classes/${this.classId}/posts`);
     const postsQuery = postsRef.orderBy("date", "desc").limit(50);
     this.tutorialPost = await this.$_getDoc(tutorialPostRef);

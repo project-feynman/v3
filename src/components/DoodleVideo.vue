@@ -13,7 +13,7 @@
         </v-btn>
       </div>
     </div>
-    <p class="text-xs-center" v-if="isFetchingAudio">
+    <p v-if="isFetchingAudio" class="text-xs-center">
       Fetching audio...(this can take a while)
     </p>
     <AudioRecorder v-if="audioUrl || audio" v-show="hasFetchedAudio" ref="audioRecorder"
@@ -33,6 +33,7 @@
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import _ from "lodash";
 
 // TEST:
 // 1. Onload, can directly slide the audio slider 
@@ -60,6 +61,7 @@ export default {
     ctx: null,
     bgCanvas: null,
     bgCtx: null,
+    isPlayingAudio: false,
     isFetchingAudio: false,
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
@@ -91,8 +93,8 @@ export default {
     hasVisualAndAudio () { 
       return (this.injectedStrokes || this.hasFetchedStrokes) && (this.audio || this.hasFetchedAudio); 
     },
-    overlay () { 
-      return !this.isStatic && !this.isQuickplaying && this.recursiveSync === null
+    overlay () {
+      return !this.isStatic && !this.isQuickplaying && this.recursiveSync === null;
     }
   },
   watch: {
@@ -107,6 +109,7 @@ export default {
   async created () {
     if (this.injectedStrokes) { this.allStrokes = this.injectedStrokes } 
     else if (!this.thumbnail) { this.fetchStrokes(); } 
+    this.handleSeeking = _.debounce(this.handleSeeking, 0);
   },
   async mounted () {
     this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
@@ -119,7 +122,8 @@ export default {
       this.thumbnailImage = new Image;
       this.thumbnailImage.src = this.thumbnail;
       this.$_rescaleCanvas(false); // don't redraw
-      this.$nextTick(this.renderThumbnail); // requires nextTick for some reason
+      setTimeout(this.renderThumbnail, 1000);
+      // this.$nextTick(this.renderThumbnail); // requires nextTick for some reason
       if (this.imageUrl) { // URL to the saved image on Firebase hosting
         this.$_displayImage(this.imageUrl);
       }
@@ -133,11 +137,11 @@ export default {
     }
     window.addEventListener("resize", this.handleResize);
   },
-  destroyed () {
+  beforeDestroy () {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
-    async onOverlayClick(){
+    onOverlayClick () {
       if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
       else { 
         this.fetchStrokes(); 
@@ -147,7 +151,7 @@ export default {
       }
     },
     renderThumbnail () {
-      console.log(this.thumbnailImage);
+      if (!this.thumbnailImage) { return; } // necessary because switching between posts will trigger a resize before a destory event 
       this.ctx.drawImage(this.thumbnailImage, 0 , 0, this.canvas.width, this.canvas.height);
     },
     setCanvasHeight () {
@@ -200,6 +204,7 @@ export default {
       this.isQuickplaying = false;
     },
     playVideo () {
+      this.isPlayingAudio;
       const { audioRecorder } = this.$refs;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
       this.nextFrameIdx = 0;
@@ -222,6 +227,7 @@ export default {
       this.syncContinuously(onlyOneFrame);
     },
     stopSyncing () {
+      this.isPlayingAudio = false;
       clearTimeout(this.recursiveSync); // stop recursive call
       this.recursiveSync = null;
     },

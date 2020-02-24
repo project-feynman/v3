@@ -117,6 +117,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Blackboard from "@/components/Blackboard.vue";
 import DisplayExplanation from "@/components/DisplayExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
+import { demoVideo } from "@/CONSTANTS.js";
 
 export default {
   components: {
@@ -143,7 +144,7 @@ export default {
   },
   async created () { 
     this.fetchClasses(); 
-    const demoVideoRef = this.getBlackboardRef("qt8oisoxj8ols5g0w4xr9e");
+    const demoVideoRef = this.getBlackboardRef(demoVideo.postId);
     this.demoVideo = await this.$_getDoc(demoVideoRef); 
   },
   mounted () { window.addEventListener("scroll", this.logoVisibility); },
@@ -151,7 +152,7 @@ export default {
   methods: {
     getMitClassRef (classId) { return db.collection("classes").doc(classId); },
     getBlackboardRef (explanationId) {
-      return db.doc(`classes/i14as7fMqCVjI1yZbLC5/posts/${explanationId}/explanations/${explanationId}`);
+      return db.doc(`classes/${demoVideo.classId}/posts/${explanationId}/explanations/${explanationId}`);
     },
     async fetchClasses () {
       const ref = db.collection("classes");
@@ -180,8 +181,6 @@ export default {
       const classDoc = await db.collection("classes").add({
         name,
         description: description || "No description yet",
-        tabs: ["New"],
-        tags: [],
       });
       await this.userRef.update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
@@ -209,7 +208,7 @@ export default {
         return;
       }
       firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(async result => {
+        .then(async (result) => {
           this.$root.$emit("show-snackbar", "Welcome to ExplainMIT!")
           this.createAccount({ ...result.user, firstName, lastName })
         })

@@ -4,7 +4,8 @@
       <v-textarea 
         label="Here's a blackboard - try playing around with it" 
         placeholder="Type text here... (press Enter for more space)"
-        v-model="postTitle" auto-grow rows="1" hide-details filled color="accent lighten-2" background-color="#f5f5f5"
+        v-model="postTitle"
+        auto-grow rows="2" hide-details filled color="accent lighten-2" background-color="#f5f5f5"
       />
       <v-btn v-if="newExplanationDbRef && postDbRef" @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
         :loading="isButtonDisabled" :disabled="isButtonDisabled"

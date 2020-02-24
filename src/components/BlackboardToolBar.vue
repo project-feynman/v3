@@ -102,7 +102,7 @@ export default {
   components: { Swatches, ButtonPrabhakar },
   data () {
     return {
-      colors: ["white", "orange", "#0AF2F2", "#ffb6c1"],
+      colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
       palleteVisibility: false,
       recordStateEnum: CONSTANTS.recordStateEnum,
       imageAdded: false,

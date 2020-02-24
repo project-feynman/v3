@@ -12,6 +12,7 @@
   "dependencies": {
     "@google-cloud/logging": "^4.5.2",
     "firebase": "^7.5.2",
+    "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "sizeof": "^1.0.0",
     "vue": "^2.6.10",
