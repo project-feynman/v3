@@ -13,19 +13,19 @@ export default new Router({
     },
     {
       path: '/:class_id/room/:room_id',
-      component: () => import(/* webpackChunkName: "piazza" */ './views/BlackboardRoom.vue') // there are no questions to navigate to initially
+      component: () => import(/* webpackChunkName: "realtime-board" */ './views/BlackboardRoom.vue') 
     },
     {
       path: '/:class_id/posts/new',
-      component: () => import(/* webpackChunkName: "piazza" */ './views/CreatePost.vue') // there are no questions to navigate to initially
+      component: () => import(/* webpackChunkName: "new" */ './views/CreatePost.vue') 
     },
     {
       path: '/:class_id/posts/tutorial',
-      component: () => import(/* webpackChunkName: "piazza" */ './views/TutorialPost.vue') // there are no questions to navigate to initially
+      component: () => import(/* webpackChunkName: "tutorial" */ './views/TutorialPost.vue') 
     },
     {
       path: '/:class_id/posts/:post_id',
-      component: () => import(/* webpackChunkName: "piazza" */ './views/DisplayPost.vue')
+      component: () => import(/* webpackChunkName: "post" */ './views/DisplayPost.vue')
     }
   ]
 })
