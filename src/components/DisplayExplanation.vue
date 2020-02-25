@@ -63,7 +63,7 @@ export default {
       this.$refs.DoodleVideo.playGivenWhatIsAvailable(); 
     },
     deleteExplanation () {
-      this.explRef.delete();
+      db.doc(this.expl.ref).delete();
     }
   }
 }
