@@ -1,10 +1,11 @@
 <template>
-  <!-- Identical to DisplayPost except it's immutable -->
   <div>
     <TheAppBar/>
     <v-content>
       <v-card>
-        <DisplayExplanation v-for="expl in sortedExplanations" :expl="expl" :key="expl.id"/>
+        <DisplayExplanation v-for="expl in sortedExplanations" :key="expl.id"
+          :expl="expl"
+        />
       </v-card>
     </v-content>
   </div>

@@ -8,23 +8,13 @@ import db from '@/database.js';
 Vue.use(Vuex);
 
 function setDisconnectHook (user) {
-	const firebaseRef = firebase.database().ref('/status/' + user.uid)
-	let isOffline = {
-		isOnline: false,
-		// last_changed: firebase.database.ServerValue.TIMESTAMP
-	}
-	let isOnline = {
-		isOnline: true,
-		// last_changed: firebase.database.ServerValue.TIMESTAMP
-	}
-
+	const firebaseRef = firebase.database().ref('/status/' + user.uid);
 	firebase.database().ref('.info/connected').on('value', async snapshot => {
     if (snapshot.val() === false) { return; } // copied from Firebase, no idea why it's needed  
-    await firebaseRef.onDisconnect().set(isOffline); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
-    firebaseRef.set(isOnline);
-    // Updating firestore directly is much faster, don't wait for mirroring
+    await firebaseRef.onDisconnect().set({ isOnline: false }); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
+    firebaseRef.set({ isOnline: true });
     firebase.firestore().collection('users').doc(user.uid).update({
-      isOnline: true
+      isOnline: true // updating firestore directly is much faster, don't wait for mirroring
     });
   });
 }
@@ -40,7 +30,7 @@ function syncUserWithDb (userRef, context) {
 
 async function getDocFromDb (ref) {
   const promise = new Promise(async (resolve, reject) => {
-    let doc = await ref.get();
+    const doc = await ref.get();
     if (doc.exists) resolve({ id: doc.id, ...doc.data() });
     else reject();
   })

@@ -1,7 +1,6 @@
 <template>
   <div id="room">
-    <v-content v-if="simpleUser">
-      <!-- "v-if="...room.whiteboardID"" needed because room goes from null to {} (surprisingly), before becoming fully populated -->
+    <v-content v-if="user">
       <Blackboard v-if="room.blackboardId" ref="whiteboard" 
         :blackboardId="room.blackboardId" :isRealtime="true"
       />
@@ -76,8 +75,7 @@ export default {
         this.roomRef.update({ // it's much faster to update Firestore directly
           members: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
         });
-        // if I just reset it to a truly empty object, Firestore does not detect the change for some reason
-        firebaseRef.set({ email: "", uid: "", firstName: "" });
+        firebaseRef.set({ email: "", uid: "", firstName: "" }); // Firebase will not detect change if it's set to an empty object
       });
     },
   }
