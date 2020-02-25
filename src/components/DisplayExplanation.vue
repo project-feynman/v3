@@ -1,7 +1,6 @@
 <template>
   <v-card>
     <v-container fluid>
-      <!-- <p>{{ expl }}</p> -->
       <p>{{ expl.title }}</p>
       <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
         :blackboardRef="boardRef" 

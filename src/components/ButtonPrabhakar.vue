@@ -1,9 +1,7 @@
 <template>
-  <v-btn
-    @click="$emit('click')"
-    color="accent lighten-1" 
+  <v-btn @click="$emit('click')"
     :class="`board-action-btn ${isNormalText? 'normal-text' : ''} ${isSuperSmallText? 'super-small-text pa-1' : ''}`" 
-    :outlined="outlined"
+    :outlined="outlined" color="accent lighten-1" 
   >
     <span class="d-none d-sm-block mr-2">
       <slot>

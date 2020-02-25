@@ -14,9 +14,7 @@
 import TheSideDrawer from "@/components/TheSideDrawer.vue";
 
 export default {
-  components: {
-    TheSideDrawer,
-  },
+  components: { TheSideDrawer },
   data: () => ({
     drawer: true,
     snackbar: false,

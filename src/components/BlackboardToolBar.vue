@@ -24,7 +24,7 @@
                     <v-icon class="down">keyboard_arrow_down</v-icon>
                   </v-btn> -->
                   <swatches
-                    v-show="!$vuetify.breakpoint.smAndDown"
+                    v-show="!$vuetify.breakpoint.xsOnly"
                     @input="newVal => $emit('color-click', newVal)"
                     :value="color"
                     :colors="colors"

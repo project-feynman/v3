@@ -12,10 +12,7 @@ import utils from '@/services/Utils';
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
-  props: {
-    audioUrl: String, // needed when using the AudioRecorder as an AudioPlayer
-    injectedAudio: Object
-  },
+  props: { audioUrl: String, injectedAudio: Object },
   mixins: [DatabaseHelpersMixin],
   data () {
     return {

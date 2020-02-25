@@ -6,7 +6,7 @@
     :items="items"
     item-text="name"
     @change="newClass => handleChange(newClass)"
-    return-object
+    return-object 
     placeholder="Search for a class to join e.g. 18.065"
     color="accent lighten-1" outlined clearable elevate="2"
   />
@@ -14,7 +14,6 @@
 
 <script>
 export default {
-  name: "BaseSearchBar",
   props: { label: String, items: Array },
   data () {
     return { searchInput: "", };

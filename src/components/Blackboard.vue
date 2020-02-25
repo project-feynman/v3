@@ -190,7 +190,9 @@ export default {
     this.adjustBlackboardHeight();
     if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
   },
-  beforeDestroy() { if (this.unsubscribe) { this.unsubscribe(); } },
+  beforeDestroy() { 
+    if (this.unsubscribe) { this.unsubscribe(); } 
+  },
   destroyed () {
     window.removeEventListener("resize", () => this.$_rescaleCanvas(true));
   },
@@ -560,10 +562,7 @@ export default {
       this.canvas.removeEventListener("mousedown", this.mouseDown, false);
       this.canvas.removeEventListener("mouseup", this.mouseUp, false);
       this.canvas.removeEventListener("mousemove", this.mouseMove, false);
-    },
-    // getAspectRatio () {
-    //   return this.canvas.scrollHeight / this.canvas.scrollWidth;
-    // },
+    }
   }
 };
 </script>

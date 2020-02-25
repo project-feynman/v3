@@ -1,9 +1,9 @@
 import firebase from "firebase/app";
 import "firebase/storage";
 
+// Every CRUD operation has explicit error handling without making the codebase verbose
 export default {
   methods: {
-    // that way every CRUD operation has explicit error handling without making the codebase verbose
     async $_getDoc (ref) {
       return new Promise(async (resolve, reject) => {
         try {
@@ -49,7 +49,7 @@ export default {
       return new Promise(async (resolve) => {
         try {
           const unsubscribeListener = ref.onSnapshot(querySnapshot => { // onSnapshot does NOT return a promise
-            let resultDocs = [];
+            const resultDocs = [];
             querySnapshot.forEach((doc) => { 
               resultDocs.push({...doc.data(), "id": doc.id, "ref": doc.ref.path })
             });
