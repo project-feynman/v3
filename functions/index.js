@@ -57,7 +57,7 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
     const subject = `${post.data().creator.firstName} posted in ${mitClass.name}`;
     const { classId, postId } = context.params;
     const html = `
-      <p>${post.data().description}</p>
+      <p>${post.data().title}</p>
       <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
     `;
     sendEmail(classmateDoc.data().email, subject, "A new post :]", html);

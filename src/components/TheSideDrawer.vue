@@ -30,9 +30,7 @@
             </v-list-item-content>
           </v-list-item>
           <!-- Tutorial post -->
-          <v-list-item @click="$router.push(`/${classId}/posts/tutorial`)" 
-            color="accent lighten-1" :key="tutorialPost.id"
-          >
+          <v-list-item @click="$router.push(`/${classId}/posts/tutorial`)" color="accent lighten-1" :key="tutorialPost.id">
             <v-list-item-content>
               <v-list-item-subtitle class="text--primary" v-text="tutorialPost.title"/>
               <v-list-item-subtitle v-text="displayDate(tutorialPost.date)"/>
