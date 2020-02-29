@@ -7,32 +7,17 @@
         </slot>
       </template>
       <v-card>
-        <v-list>
-          <v-list-item>
-            <v-list-item-title>Notification settings</v-list-item-title>
-            <!-- <v-list-item-avatar>
-              <v-icon large :color="color">account_circle</v-icon>
-            </v-list-item-avatar> -->
-
-            <!-- <v-list-item-content>
-              <v-text-field
-                placeholder="Enter your name here"
-                :value="user.name"
-                @input="value => name = value"
-                single-line
-              />
-            </v-list-item-content> -->
-
-            <v-list-item-action>
-              <v-btn :class="fav ? 'red--text' : ''" icon @click="fav = !fav">
-                <!-- <v-icon>favorite</v-icon> -->
-              </v-btn>
-            </v-list-item-action>
-          </v-list-item>
-        </v-list>
-
+        <v-card-title>
+          <h3>{{ `${user.firstName} ${user.lastName}`}}</h3>
+        </v-card-title>
+        <v-card-actions>
+          <v-btn block text color="accent lighten-1" @click="$emit('sign-out')">Sign Out</v-btn>
+        </v-card-actions>
         <v-divider></v-divider>
 
+        <!-- <v-list>
+          <v-list-item-title>Email frequency</v-list-item-title>
+        </v-list> -->
         <v-list>
           <v-list-item v-for="mitClass in user.enrolledClasses" :key="mitClass.id">
             <v-container>
@@ -48,17 +33,14 @@
             </v-container>
           </v-list-item>
         </v-list>
-        <v-card-actions>
-          <v-btn color="primary" text @click="handleSave()">Save</v-btn>
-          <v-spacer></v-spacer>
-          <v-btn color="grey" text @click="$emit('sign-out')">Sign Out</v-btn>
-        </v-card-actions>
+
       </v-card>
     </v-menu>
   </div>
 </template>
 
 <script>
+// pre-condition: user is defined
 import CONSTANTS from "@/CONSTANTS.js";
 
 export default {
