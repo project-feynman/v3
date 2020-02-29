@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 100%; position: relative; z-index: 5">
+  <div style="height: 100%; position: relative; z-index: 5; margin:auto;" :id="`doodle-video-${blackboardId}`">
     <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <div id="blackboard-wrapper" style="position: relative;">
         <canvas :id="`myCanvas-${blackboardId}`"
@@ -8,7 +8,7 @@
         <canvas :id="`background-canvas-${blackboardId}`"
           class="background-canvas"
         ></canvas>
-        <v-btn v-show="overlay" @click="onOverlayClick()" large dark style="position: absolute; bottom: 45%; top: 45%; left: 45%; right: 45%">
+        <v-btn v-show="overlay" @click="onOverlayClick()" large dark class="overlay-button">
           <v-icon>play_arrow</v-icon>
         </v-btn>
       </div>
@@ -116,8 +116,7 @@ export default {
     this.bgCanvas = document.getElementById(`background-canvas-${this.blackboardId}`);
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
-    await this.setCanvasHeight(); // just for video: blackboard should fill space
-    
+    this.handleResize();
     if (this.thumbnail) {
       this.thumbnailImage = new Image;
       this.thumbnailImage.src = this.thumbnail;
@@ -141,6 +140,25 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    resizeVideo () {
+      const navbarHeight = 48;
+      const audioPlayerHeight = 52;
+      const aspectRatio = 9/16;
+      const blackboard = document.getElementById("blackboard-wrapper")
+      const doodle = document.getElementById(`doodle-video-${this.blackboardId}`)
+      doodle.style.width = "100%";
+      let offlineWidth = blackboard.offsetWidth;
+      let offlineHeight = offlineWidth * aspectRatio;
+      const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight
+      if (offlineHeight > availableHeight) {
+        offlineHeight = availableHeight; 
+        offlineWidth = offlineHeight * (1/aspectRatio);
+      }
+      const realtime_height = window.innerHeight - navbarHeight;
+      blackboard.style.height = offlineHeight + "px";
+      this.canvas.style.height = offlineHeight + "px";
+      doodle.style.width = offlineWidth + "px";
+    },
     onOverlayClick () {
       if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
       else { 
@@ -154,17 +172,8 @@ export default {
       if (!this.thumbnailImage) { return; } // necessary because switching between posts will trigger a resize before a destory event 
       this.ctx.drawImage(this.thumbnailImage, 0 , 0, this.canvas.width, this.canvas.height);
     },
-    setCanvasHeight () {
-      const setHeight = resolve => {
-        const { scrollHeight, scrollWidth } = this.canvas;
-        if (Math.round(scrollHeight) !== Math.round((0.6)*scrollWidth)) {
-          this.canvas.height = 0.6 * scrollWidth;
-          resolve();
-        }
-      }
-      return new Promise(resolve => setTimeout(setHeight(resolve), 0));
-    },
     handleResize () {
+      this.resizeVideo();
       if (this.recursiveSync) {
         this.$_rescaleCanvas(false); // redraw = false
         this.stopSyncing();
@@ -278,5 +287,14 @@ export default {
   height: 100%;
   z-index: -1;
   background-color: rgb(62, 66, 66);
+}
+
+.overlay-button {
+  position: absolute; 
+  bottom: 0;
+  top: 0; 
+  left: 0;
+  right: 0;
+  margin: auto;
 }
 </style>
