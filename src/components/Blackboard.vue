@@ -509,19 +509,15 @@ export default {
     adjustBoardSize () {
       const navbarHeight = 48; 
       const aspectRatio = 9/16;
+      const epsilon = 20;
       let offlineWidth = document.getElementById("blackboard-wrapper").offsetWidth;
       let offlineHeight = offlineWidth * aspectRatio;
       if (offlineHeight > window.innerHeight - navbarHeight) {
-        offlineHeight = window.innerHeight - navbarHeight; 
-        offlineWidth = offlineHeight * (1/aspectRatio);
+        offlineHeight = window.innerHeight - navbarHeight - epsilon; 
       }
       const realtime_height = window.innerHeight - navbarHeight;
-      if (!this.isRealtime) {
-        this.canvas.style.height = offlineHeight + "px";
-        this.canvas.style.width = offlineWidth + "px";
-      } else {
-        this.canvas.style.height = realtime_height + "px";
-      }
+      if (!this.isRealtime) { this.canvas.style.height = offlineHeight + "px"; } 
+      else { this.canvas.style.height = realtime_height + "px"; }
       const willRedraw = true;
       this.$_rescaleCanvas(willRedraw);
     },
