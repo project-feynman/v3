@@ -139,7 +139,8 @@ export default {
   data () {
     return {
       schoolClasses: [],
-      demoVideo: { creator: {} }
+      demoVideo: { creator: {} },
+      welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right."
     }
   },
   async created () { 
@@ -195,7 +196,7 @@ export default {
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(user => {
           this.$store.dispatch("fetchUser", user);
-          this.$root.$emit("show-snackbar", "Welcome to ExplainMIT!")
+          this.$root.$emit("show-snackbar", this.welcomeMessage);
         })
         .catch(error => this.$root.$emit("show-snackbar", error.message));
     },
@@ -209,7 +210,7 @@ export default {
       }
       firebase.auth().createUserWithEmailAndPassword(email, password)
         .then(async (result) => {
-          this.$root.$emit("show-snackbar", "Welcome to ExplainMIT!")
+          this.$root.$emit("show-snackbar", this.welcomeMessage);
           this.createAccount({ ...result.user, firstName, lastName })
         })
         .catch((error) => this.$root.$emit("show-snackbar", error.message));
