@@ -1,5 +1,5 @@
 <template>
-  <v-card style="zIndex:6">
+  <v-card style="zIndex:10">
     <v-navigation-drawer :value="value" @input="newVal => $emit('input', newVal)" app clipped>
       <v-list class="pt-0">
         <v-list-item-group>
