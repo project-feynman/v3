@@ -1,12 +1,13 @@
 <template>
   <v-card>
     <v-container fluid>
-      <v-textarea 
+      <TextEditor></TextEditor>
+      <!-- <v-textarea 
         label="Here's a blackboard - try playing around with it" 
         placeholder="Type text here... (press Enter for more space)"
         v-model="postTitle"
         auto-grow rows="2" hide-details filled color="accent lighten-2" background-color="#f5f5f5"
-      />
+      /> -->
       <v-btn v-if="newExplanationDbRef && postDbRef" @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
         :loading="isButtonDisabled" :disabled="isButtonDisabled"
       >
@@ -33,11 +34,11 @@
 </template>
 
 <script>
-import Vue from "vue";
 import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import TextEditor from "@/components/TextEditor.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import CONSTANTS from "@/CONSTANTS.js";
@@ -54,7 +55,7 @@ export default {
     visible: Boolean
   },
   mixins: [DatabaseHelpersMixin],
-  components: { Blackboard, DoodleVideo },
+  components: { Blackboard, DoodleVideo, TextEditor },
   data: () => ({
     postTitle: "",
     postDescription: "",
