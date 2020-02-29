@@ -11,7 +11,7 @@
                   id="swatches-wrapper"
                   @click="$emit('eraser-click', false)"
                 >
-                  <!-- <v-btn
+                  <v-btn
                     :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent lighten-1':color"
                     @click="palleteClick()"
                     :outlined="eraserActive? true:false"
@@ -22,9 +22,8 @@
                   >
                     <v-icon>mdi-lead-pencil</v-icon>
                     <v-icon class="down">keyboard_arrow_down</v-icon>
-                  </v-btn> -->
+                  </v-btn>
                   <swatches
-                    v-show="!$vuetify.breakpoint.xsOnly"
                     @input="newVal => $emit('color-click', newVal)"
                     :value="color"
                     :colors="colors"
@@ -154,7 +153,7 @@ export default {
     zoom: 0.9;
   }
 }
-/* #swatches-wrapper {
+#swatches-wrapper {
   position: relative;
 }
 #swatches-wrapper .vue-swatches {
@@ -204,7 +203,7 @@ button {
 }
 .v-icon {
   font-size: 20px;
-} */
+}
 
 /* TODO: CSS leak */
 .super-small-text p {

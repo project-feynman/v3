@@ -52,7 +52,7 @@
       </div>
       <!-- BLACKBOARD -->
       <!-- position relative allows the background canvas to be directly on top of the normal canvas -->
-      <div id="blackboard-wrapper" style="position: relative" :class="isRealtime? 'realtime-canvas':''">
+      <div id="blackboard-wrapper" style="position: relative; z-index: -1;" :class="isRealtime? 'realtime-canvas':''">
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
@@ -175,19 +175,17 @@ export default {
       this.lineWidth = this.eraserActive ? 25 : 2.5;
     },
     color () { this.customCursor(); },
-    visible () { this.adjustBlackboardHeight(); },
+    visible () { this.adjustBoardSize(); },
   },
   mounted () {
     this.canvas = document.getElementById("myCanvas");
     this.ctx = this.canvas.getContext("2d");
     this.bgCanvas = document.getElementById("background-canvas");
     this.bgCtx = this.bgCanvas.getContext("2d");
-    const willRedraw = true;
-    this.$_rescaleCanvas(willRedraw);
-    window.addEventListener("resize", () => this.$_rescaleCanvas(willRedraw), false); 
+    this.adjustBoardSize();
+    window.addEventListener("resize", () => { this.adjustBoardSize() }, false); 
     this.enableDrawing();
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
-    this.adjustBlackboardHeight();
     if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
   },
   beforeDestroy() { 
@@ -508,14 +506,24 @@ export default {
         "url(" + dataURL + ") 0 24, auto";
     },
     // If this works you're a genius
-    adjustBlackboardHeight () {
-      const board = document.getElementById("myCanvas");
-      const mini_height =
-        (document.getElementById("blackboard-wrapper").offsetWidth * 0.575)  +
-        "px";
-      const realtime_height = window.innerHeight - 48 + "px";
-      board.style.height = this.isRealtime ? realtime_height : mini_height;
-      this.$_rescaleCanvas(false);
+    adjustBoardSize () {
+      const navbarHeight = 48; 
+      const aspectRatio = 9/16;
+      let offlineWidth = document.getElementById("blackboard-wrapper").offsetWidth;
+      let offlineHeight = offlineWidth * aspectRatio;
+      if (offlineHeight > window.innerHeight - navbarHeight) {
+        offlineHeight = window.innerHeight - navbarHeight; 
+        offlineWidth = offlineHeight * (1/aspectRatio);
+      }
+      const realtime_height = window.innerHeight - navbarHeight;
+      if (!this.isRealtime) {
+        this.canvas.style.height = offlineHeight + "px";
+        this.canvas.style.width = offlineWidth + "px";
+      } else {
+        this.canvas.style.height = realtime_height + "px";
+      }
+      const willRedraw = true;
+      this.$_rescaleCanvas(willRedraw);
     },
     // Blackboard specific draw methods
     drawToPoint (x, y) {
