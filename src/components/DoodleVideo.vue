@@ -291,10 +291,8 @@ export default {
 
 .overlay-button {
   position: absolute; 
-  bottom: 0;
-  top: 0; 
-  left: 0;
-  right: 0;
-  margin: auto;
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>
