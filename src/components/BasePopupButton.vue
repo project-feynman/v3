@@ -75,6 +75,7 @@ export default {
     doAction () {
       this.$emit("action-do", this.inputValues);
       this.isOpen = false;
+      this.resetState();
     },
     resetState () {
       this.inputValues = {};

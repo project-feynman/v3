@@ -2,10 +2,11 @@
   <div id="home-page">
     <TheAppBar>
       <template v-if="user">
-        <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
+        <!-- target="_blank" opens a new tab -->
+        <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
           BLOG
-        </v-btn>
-        <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> <!-- target="_blank" opens a new tab -->
+        </v-btn> -->
+        <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> 
           GITHUB
         </v-btn>
         <BasePopupButton actionName="Create class" @action-do="C => createClass(C)"

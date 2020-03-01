@@ -1,11 +1,11 @@
 <template>
   <v-card>
     <v-container fluid>
-      <p v-if="!isEditing">{{ expl.title }}</p>
-      <template v-else>
-        <v-textarea :value="expl.title" @input="newVal => editedText = newVal"/>
-        <v-btn @click="updateExplanation()" block color="accent lighten-1">SAVE EDIT</v-btn>
-      </template>
+      <TextEditor v-if="true" key="1" ref="TextEditor"
+        :injectedHtml="expl.html" 
+        :isEditable="isEditing"
+      />
+      <v-btn v-if="isEditing" @click="updateExplanation()" block color="accent lighten-1">SAVE EDIT</v-btn>
       <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
         :blackboardRef="boardRef" 
         :blackboardId="expl.id" 
@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import BasePopupButton from "@/components/BasePopupButton";
 import moment from "moment";
@@ -62,7 +63,7 @@ export default {
       default () { return true; }
     }
   },
-  components: { DoodleVideo, BasePopupButton },
+  components: { DoodleVideo, BasePopupButton, TextEditor },
   computed: {
     boardRef () { return db.doc(this.expl.ref); },
     user () { return this.$store.state.user; }
@@ -73,19 +74,22 @@ export default {
   }),
   methods: {
     displayDate (date) { return moment(date).format('MMM D, h:mm a'); },
+    // TODO: fetchStrokes as a slot-prop
     handleVideoClick () {
       this.$refs.DoodleVideo.fetchStrokes(); 
     },
+    // TODO: playGivenWhatIsAvailable as a slot-prop
     playVideo () {
       this.$refs.DoodleVideo.playGivenWhatIsAvailable(); 
     },
     startEditing () {
-      this.editedText = this.expl.title;
       this.isEditing = true;
     },
     updateExplanation () {
+      const { TextEditor } = this.$refs;
       db.doc(this.expl.ref).update({
-        title: this.editedText
+        title: TextEditor.extractAllText(),
+        html: TextEditor.html
       })
       this.isEditing = false;
     },

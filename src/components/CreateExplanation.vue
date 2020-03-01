@@ -1,13 +1,9 @@
 <template>
   <v-card>
     <v-container fluid>
-      <v-textarea 
-        label="Here's a blackboard - try playing around with it" 
-        placeholder="Type text here... (press Enter for more space)"
-        v-model="postTitle"
-        auto-grow rows="2" hide-details filled color="accent lighten-2" background-color="#f5f5f5"
-      />
-      <v-btn v-if="newExplanationDbRef && postDbRef" @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
+      <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"></TextEditor>
+      <v-btn v-if="newExplanationDbRef && postDbRef" 
+        @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
         :loading="isButtonDisabled" :disabled="isButtonDisabled"
       >
         SUBMIT <v-icon class="pl-2">send</v-icon>
@@ -16,8 +12,12 @@
           <span v-else-if="isUploadingAudio">Processing video...</span>
         </template>
       </v-btn>
-      <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
-        :isRealtime="false" :visible="visible" :background="addedImage" :key="changeKeyToForceReset"
+      <Blackboard v-show="blackboardAttached && !isPreviewing" 
+        ref="Blackboard"
+        :isRealtime="false" 
+        :visible="visible" 
+        :background="addedImage" 
+        :key="changeKeyToForceReset"
         @boardImage="boardImage" @record-start="isRecordingVideo = true"
         @record-end="videoData => handleRecordEnd(videoData)"
         @retry-recording="handleRetry()"
@@ -33,11 +33,11 @@
 </template>
 
 <script>
-import Vue from "vue";
 import db from "@/database.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import TextEditor from "@/components/TextEditor.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import CONSTANTS from "@/CONSTANTS.js";
@@ -54,9 +54,9 @@ export default {
     visible: Boolean
   },
   mixins: [DatabaseHelpersMixin],
-  components: { Blackboard, DoodleVideo },
+  components: { Blackboard, DoodleVideo, TextEditor },
   data: () => ({
-    postTitle: "",
+    postTitle: "Default title",
     postDescription: "",
     postTags: [],
     // TODO: some variables are unnecessary
@@ -79,8 +79,7 @@ export default {
     mitClass () { return this.$store.state.mitClass; },
     isButtonDisabled () {
       return this.isUploadingPost || this.isUploadingAudio || this.isRecordingVideo;
-    },
-    classId () { return this.$route.params.classId; }
+    }
   },
   methods: {
     initRetry () {
@@ -97,11 +96,12 @@ export default {
       this.blackboardStrokes = strokes;
       this.image = { file: image };
     },
-    // Uploads the snapshot of the text, images, drawings and audio for the explanation
+    // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
       if (!this.newExplanationDbRef || !this.postDbRef) { return; }
-      if (!this.postTitle) { 
-        this.$root.$emit("show-snackbar", "Error: don't forget to write a title!")
+      const { html, extractAllText } = this.$refs.TextEditor; 
+      if (html.length == 0) {
+        this.$root.$emit("show-snackbar", "Error: don't forget to use text in your explanation!")
         return; 
       }
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
@@ -113,7 +113,8 @@ export default {
       };
       const mitClass = { id: this.mitClass.id, name: this.mitClass.name };
       const metadata = {
-        title: this.postTitle,
+        title: extractAllText(),
+        html,
         description: this.postDescription,
         date: this.getDate(),
         creator: explanationCreator,
@@ -131,7 +132,7 @@ export default {
         thumbnail: Blackboard.createThumbnail() || "",
         ...metadata,
       };
-      // Save image backgrounds if necessary
+      // save image backgrounds if necessary
       if (Blackboard.imageBlob) {
         explanation.hasVisual = true;
         const path = `images/${this.newDocId}` // anything unique is fine here
@@ -144,7 +145,7 @@ export default {
           participants: firebase.firestore.FieldValue.arrayUnion(explanationCreator)
         });
       }
-      // Save the explanation and its strokes
+      // save the explanation and its strokes
       if (Blackboard.allStrokes.length > 0) {
         explanation.hasVisual = true;
         for (let stroke of Blackboard.allStrokes) {
