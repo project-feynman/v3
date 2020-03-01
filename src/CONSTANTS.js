@@ -11,11 +11,11 @@ export default {
 }
 
 export const tutorial = {
-  classId: "FVdgjuywaFgxvyylISt2",
-  postId: "vf9ey4ozogh3ar2m3vhgk"
+  classId: "ufUXSLcpV2bNK2UOcOgz",
+  postId: "rr3m6wtumg9d0c6ye51jl"
 }
 
 export const demoVideo = {
-  classId: "i14as7fMqCVjI1yZbLC5",
-  postId: "qt8oisoxj8ols5g0w4xr9e"
+  classId: "FVdgjuywaFgxvyylISt2",
+  postId: "evutodu1tfqeajjow432n"
 }

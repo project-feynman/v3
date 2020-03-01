@@ -18,21 +18,43 @@
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer />
+      <BasePopupButton actionName="Report bug" 
+        :inputFields="['bug summary', 'bug description']"
+        @action-do="bugReport => submitBug(bugReport)"
+      >
+        We know it's takes effort to report bugs, so we very much 
+        appreciate it and will act on these reports as fast as we can.
+      </BasePopupButton>
     <slot>
       
     </slot>
+    
   </v-app-bar>
 </template>
 
 <script>
+import BasePopupButton from "@/components/BasePopupButton.vue";
+import db from "@/database.js";
+
 export default {
   props: {
     loading: Boolean,
     icon: String,
     page: String,
   },
+  components: { BasePopupButton },
   computed: {
     mitClass () { return this.$store.state.mitClass; }
+  },
+  methods: {
+    submitBug ({ "bug summary": title, "bug description": description}) {
+      if (!title || !description) {
+        this.$root.$emit("show-snackbar", "Error: don't forget to include both the a summary and a description!")
+        return 
+      }
+      const ref = db.collection("bugs");
+      ref.add({ title, description}); 
+    }
   }
 };
 </script>
