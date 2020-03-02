@@ -63,25 +63,17 @@ import {
 import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
 
 const defaultHtml = `
-          <h2>
-            Edit text here
-          </h2>
+   
           <p>
             "If you can't explain it simply, you don't understand it well enough" - <em>Albert Einstein</em> 
           </p>
-          <b>Things to try:</b>
+          <b>Try editing text:</b>
           <ul>
-            <li>
-              "Ctrl + B" to toggle bold 
-            </li>
-            <li>
-              "Ctrl + I" to toggle italicize
-            </li>
             <li>
               <pre><code>x = [0 for i in range(n)] // code blocks are supported </code></pre>
             </li>
             <li>
-              Image upload will be supported soon
+              Latex and images will be supported soon
             </li>
           </ul>
         

@@ -2,20 +2,14 @@
   <div style="height: 100%; position: relative; z-index: 5; margin:auto;" :id="`doodle-video-${blackboardId}`">
     <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <div id="blackboard-wrapper" style="position: relative;">
-        <canvas :id="`myCanvas-${blackboardId}`"
-          style="width: 100%; height: 1; background-color: transparent; display: block;"
-        ></canvas>
-        <canvas :id="`background-canvas-${blackboardId}`"
-          class="background-canvas"
-        ></canvas>
-        <v-btn v-show="overlay" @click="onOverlayClick()" large dark class="overlay-button">
+        <canvas :id="`myCanvas-${blackboardId}`" class="front-canvas"></canvas>
+        <canvas :id="`background-canvas-${blackboardId}`" class="background-canvas"></canvas>
+        <v-btn v-show="!hasLoadedAvailableResources" @click="onOverlayClick()" large dark class="overlay-button">
           <v-icon>play_arrow</v-icon>
         </v-btn>
       </div>
     </div>
-    <p v-if="isFetchingAudio" class="text-xs-center">
-      Fetching audio...(this can take a while)
-    </p>
+    <p v-if="isFetchingAudio">Fetching audio...(if this takes too long try refreshing)</p>
     <AudioRecorder v-if="audioUrl || audio" v-show="hasFetchedAudio" ref="audioRecorder"
       :audioUrl="audioUrl || `${audio.ts}`" 
       :injectedAudio="audio"
@@ -27,7 +21,7 @@
       @seeking="handleSeeking()"
     />
   </div>
- </template>
+</template>
 
 <script>
 import AudioRecorder from "@/components/AudioRecorder.vue";
@@ -278,6 +272,13 @@ export default {
 </script>
 
 <style>
+.front-canvas {
+  width: 100%; 
+  height: 1; 
+  background-color: transparent; 
+  display: block;
+}
+
 .background-canvas {
   /* absolute places the background relative to the parent and ignore the front canvas, thereby stacking on top of each other */
   position: absolute; 
