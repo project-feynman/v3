@@ -17,5 +17,5 @@ export const tutorial = {
 
 export const demoVideo = {
   classId: "FVdgjuywaFgxvyylISt2",
-  postId: "evutodu1tfqeajjow432n"
+  postId: "xut7dg7pbso4up8nb5239"
 }

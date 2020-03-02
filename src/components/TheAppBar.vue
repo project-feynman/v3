@@ -24,6 +24,7 @@
       >
         We know it's takes effort to report bugs, so we very much 
         appreciate it and will act on these reports as fast as we can.
+        Meanwhile, sometimes refreshing does the trick.
       </BasePopupButton>
     <slot>
       
