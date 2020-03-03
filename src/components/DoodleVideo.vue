@@ -141,7 +141,7 @@ export default {
       const blackboard = document.getElementById("blackboard-wrapper")
       const doodle = document.getElementById(`doodle-video-${this.blackboardId}`)
       doodle.style.width = "100%";
-      let offlineWidth = blackboard.offsetWidth;
+      let offlineWidth = doodle.offsetWidth;
       let offlineHeight = offlineWidth * aspectRatio;
       const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight
       if (offlineHeight > availableHeight) {
