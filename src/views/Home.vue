@@ -42,18 +42,15 @@
                   />
                 </v-col>
                 <v-col cols="auto">
-                  <BasePopupButton actionName="Sign up" :outlined="true"
-                    :inputFields="['first name', 'last name', 'email', 'password']"
+                  <BasePopupButton actionName="Sign up" :inputFields="['first name', 'last name', 'email', 'password']" outlined
                     @action-do="user => signUp(user)"
                   >
                     <p>
-                      Sign up to join different classes. 
-                      Passwords are secure and are handled by Google Firebase Authentication.
+                      Sign up to join different classes. Passwords are secure and are handled by Google Firebase Authentication.
                     </p>
                   </BasePopupButton>
                 </v-col>
               </template>
-
               <!-- Search Bar -->
               <template v-else>
                 <v-col cols="12" sm="6">
@@ -66,20 +63,12 @@
           </v-container>
         </v-card>
       </transition>
-
       <!-- Tutorial -->
       <v-container fluid>
         <div v-if="!user && !isFetchingUser">
-          <v-row justify="center">
-            <v-col cols="12" lg="6">
-              <DisplayExplanation :expl="demoVideo" :hasDate="false"/>
-            </v-col>
-            <v-col cols="12" lg="6">
-              <CreateExplanation/>
-            </v-col>
-          </v-row>
-        </div>
-                          
+          <DisplayExplanation :expl="demoVideo" :hasDate="false"/>
+          <CreateExplanation/>
+        </div>                    
         <!-- Display classes -->
         <div v-else-if="user" key="class-list">
           <v-row align="stretch" class="enrolled-classes">
