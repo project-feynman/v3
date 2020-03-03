@@ -510,7 +510,9 @@ export default {
       const navbarHeight = 48; 
       const aspectRatio = 9/16;
       const epsilon = 20;
-      let offlineWidth = document.getElementById("blackboard-wrapper").offsetWidth;
+      const blackboard = document.getElementById("blackboard-wrapper");
+      blackboard.style.height = "unset" // To reset the blackboard height when the user retries to make medio after previewing
+      let offlineWidth = blackboard.offsetWidth;
       let offlineHeight = offlineWidth * aspectRatio;
       if (offlineHeight > window.innerHeight - navbarHeight) {
         offlineHeight = window.innerHeight - navbarHeight - epsilon; 
