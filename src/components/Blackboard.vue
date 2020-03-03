@@ -192,7 +192,7 @@ export default {
     if (this.unsubscribe) { this.unsubscribe(); } 
   },
   destroyed () {
-    window.removeEventListener("resize", () => this.$_rescaleCanvas(true));
+    window.removeEventListener("resize", () => this.adjustBoardSize());
   },
   methods: {
     async initData () {
@@ -505,7 +505,7 @@ export default {
       document.getElementById("myCanvas").style.cursor =
         "url(" + dataURL + ") 0 24, auto";
     },
-    // If this works you're a genius
+
     adjustBoardSize () {
       const navbarHeight = 48; 
       const aspectRatio = 9/16;
