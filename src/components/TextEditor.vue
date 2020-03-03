@@ -1,6 +1,6 @@
 <template>
   <div class="editor">
-    <editor-menu-bar v-if="isEditable" :editor="editor" v-slot="{ commands, isActive }">
+    <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
       <div class="menubar">
         <v-btn @click="commands.bold" icon> 
           <v-icon>format_bold</v-icon>
@@ -83,11 +83,7 @@ const defaultHtml = `
 export default {
   components: { EditorContent, EditorMenuBar, ButtonPrabhakar },
   props: {
-    injectedHtml: String,
-    isEditable: {
-      type: Boolean,
-      default () { return true; }
-    } 
+    injectedHtml: String
   },
   data () {
     return {
@@ -131,10 +127,6 @@ export default {
     injectedHtml: {
       handler: "setContent",
       immediate: true
-    },
-    isEditable: {
-      handler: "updateEditableStatus",
-      immediate: true
     }
   },
   beforeDestroy() {
@@ -148,11 +140,6 @@ export default {
       if (!this.injectedHtml) { return; }
       this.editor.setContent(this.injectedHtml);
       this.editor.focus();
-    },
-    updateEditableStatus () {
-      this.editor.setOptions({
-        editable: this.isEditable
-      });
     },
     extractAllText () {
       const temporaryDiv = document.createElement("div");

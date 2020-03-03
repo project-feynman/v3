@@ -99,8 +99,8 @@ export default {
     // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
       if (!this.newExplanationDbRef || !this.postDbRef) { return; }
-      const { html, extractAllText } = this.$refs.TextEditor; 
-      if (html.length == 0) {
+      const { TextEditor } = this.$refs;
+      if (TextEditor.html.length == 0) {
         this.$root.$emit("show-snackbar", "Error: don't forget to use text in your explanation!")
         return; 
       }
@@ -113,8 +113,8 @@ export default {
       };
       const mitClass = { id: this.mitClass.id, name: this.mitClass.name };
       const metadata = {
-        title: extractAllText(),
-        html,
+        title: TextEditor.extractAllText(),
+        html: TextEditor.html,
         description: this.postDescription,
         date: this.getDate(),
         creator: explanationCreator,
