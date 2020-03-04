@@ -6,7 +6,7 @@
         @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
         :loading="isButtonDisabled" :disabled="isButtonDisabled"
       >
-        SUBMIT <v-icon class="pl-2">send</v-icon>
+        SUBMIT <v-icon class="pl-2">mdi-send</v-icon>
         <template v-slot:loader>
           <span v-if="isRecordingVideo">Currently recording...</span> 
           <span v-else-if="isUploadingAudio">Processing video...</span>
