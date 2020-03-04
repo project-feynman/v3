@@ -6,7 +6,7 @@
           <!-- Realtime board -->
           <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent lighten-1">
             <v-list-item-icon>
-              <v-icon>phone_in_talk</v-icon>
+              <v-icon>mdi-phone-in-talk</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>Realtime board</v-list-item-title>
@@ -23,7 +23,7 @@
           <!-- New post -->
           <v-list-item @click="$router.push(`/${classId}/posts/new`)" color="accent lighten-1">
             <v-list-item-icon>
-              <v-icon>post_add</v-icon>
+              <v-icon>mdi-plus-box</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>New post</v-list-item-title>
