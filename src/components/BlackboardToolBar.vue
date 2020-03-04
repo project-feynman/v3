@@ -11,7 +11,7 @@
                   @click="$emit('eraser-click', false)"
                 >
                   <v-btn
-                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent lighten-1':color"
+                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent' : color"
                     @click="palleteClick()"
                     :outlined="eraserActive? true:false"
                     min-width="36px"

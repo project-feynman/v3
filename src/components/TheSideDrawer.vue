@@ -4,7 +4,7 @@
       <v-list class="pt-0">
         <v-list-item-group>
           <!-- Realtime board -->
-          <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent lighten-1">
+          <v-list-item @click="$router.push(`/${classId}/room/${classId}`)" color="accent">
             <v-list-item-icon>
               <v-icon>mdi-phone-in-talk</v-icon>
             </v-list-item-icon>
@@ -21,7 +21,7 @@
             </v-list-item-content>
           </v-list-item>
           <!-- New post -->
-          <v-list-item @click="$router.push(`/${classId}/posts/new`)" color="accent lighten-1">
+          <v-list-item @click="$router.push(`/${classId}/posts/new`)" color="accent">
             <v-list-item-icon>
               <v-icon>mdi-plus-box</v-icon>
             </v-list-item-icon>
@@ -30,7 +30,7 @@
             </v-list-item-content>
           </v-list-item>
           <!-- Tutorial post -->
-          <v-list-item @click="$router.push(`/${classId}/posts/tutorial`)" color="accent lighten-1" :key="tutorialPost.id">
+          <v-list-item @click="$router.push(`/${classId}/posts/tutorial`)" color="accent" :key="tutorialPost.id">
             <v-list-item-content>
               <v-list-item-subtitle class="text--primary" v-text="tutorialPost.title"/>
               <v-list-item-subtitle v-text="displayDate(tutorialPost.date)"/>
@@ -38,7 +38,7 @@
           </v-list-item>
           <!-- Class posts -->
           <v-list-item v-for="(post, i) in posts" :key="post.id + i"
-            @click="$router.push(`/${classId}/posts/${post.id}`)" color="accent lighten-1"
+            @click="$router.push(`/${classId}/posts/${post.id}`)" color="accent"
           >
             <v-list-item-content>
               <v-list-item-subtitle class="text--primary" v-text="post.title"/>

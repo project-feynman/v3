@@ -28,10 +28,10 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="resetState()" color="accent lighten-1" text>
+        <v-btn @click="resetState()" color="accent" text>
           Cancel
         </v-btn>
-        <v-btn @click="doAction()" color="accent lighten-1" text>
+        <v-btn @click="doAction()" color="accent" text>
           {{ actionName }}
         </v-btn>
       </v-card-actions>
@@ -50,7 +50,7 @@ export default {
     color: {
       type: String,
       default () {
-        return "accent lighten-1"
+        return "accent"
       }
     },
     outlined: {

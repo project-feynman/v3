@@ -11,13 +11,9 @@
           <h3>{{ `${user.firstName} ${user.lastName}`}}</h3>
         </v-card-title>
         <v-card-actions>
-          <v-btn block text color="accent lighten-1" @click="$emit('sign-out')">Sign Out</v-btn>
+          <v-btn block text color="accent" @click="$emit('sign-out')">Sign Out</v-btn>
         </v-card-actions>
         <v-divider></v-divider>
-
-        <!-- <v-list>
-          <v-list-item-title>Email frequency</v-list-item-title>
-        </v-list> -->
         <v-list>
           <v-list-item v-for="mitClass in user.enrolledClasses" :key="mitClass.id">
             <v-container>

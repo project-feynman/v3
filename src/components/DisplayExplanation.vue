@@ -5,7 +5,7 @@
       <TextEditor v-else key="1" ref="TextEditor"
         :injectedHtml="expl.html" 
       />
-      <v-btn v-if="isEditing" @click="updateExplanation()" block color="accent lighten-1">SAVE EDIT</v-btn>
+      <v-btn v-if="isEditing" @click="updateExplanation()" block color="accent">SAVE EDIT</v-btn>
       <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
         :blackboardRef="boardRef" 
         :blackboardId="expl.id" 

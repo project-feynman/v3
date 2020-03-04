@@ -8,7 +8,7 @@
     @change="newClass => handleChange(newClass)"
     return-object 
     placeholder="Search for a class to join e.g. 18.065"
-    color="accent lighten-1" outlined clearable elevate="2"
+    color="accent" outlined clearable elevate="2"
   />
 </template>
 

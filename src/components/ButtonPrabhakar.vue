@@ -1,7 +1,8 @@
 <template>
+<!-- TODO: this button can be made obsolete by properly using Vuetify and creating CSS classes -->
   <v-btn @click="$emit('click')"
     :class="`board-action-btn ${isNormalText? 'normal-text' : ''} ${isSuperSmallText? 'super-small-text pa-1' : ''}`" 
-    :outlined="outlined" color="accent lighten-1" 
+    :outlined="outlined" color="accent" 
   >
     <span class="d-none d-sm-block mr-2">
       <slot>

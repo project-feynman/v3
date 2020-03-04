@@ -3,7 +3,7 @@
     <v-container fluid>
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"></TextEditor>
       <v-btn v-if="newExplanationDbRef && postDbRef" 
-        @click="submitPost()" block class="ma-0 white--text" color="accent lighten-1" 
+        @click="submitPost()" block class="ma-0 white--text" color="accent" 
         :loading="isButtonDisabled" :disabled="isButtonDisabled"
       >
         SUBMIT <v-icon class="pl-2">mdi-send</v-icon>
@@ -23,7 +23,7 @@
         @retry-recording="handleRetry()"
       />
       <template v-if="isPreviewing">
-        <v-btn @click="initRetry()" block class="white--text" outlined color="accent lighten-1">
+        <v-btn @click="initRetry()" block class="white--text" outlined color="accent>
           Retry
         </v-btn>
         <DoodleVideo 
