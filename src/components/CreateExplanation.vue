@@ -18,7 +18,8 @@
         :visible="visible" 
         :background="addedImage" 
         :key="changeKeyToForceReset"
-        @boardImage="boardImage" @record-start="isRecordingVideo = true"
+        @boardImage="boardImage" 
+        @record-start="isRecordingVideo = true"
         @record-end="videoData => handleRecordEnd(videoData)"
         @retry-recording="handleRetry()"
       />

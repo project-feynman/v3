@@ -104,24 +104,20 @@ export default {
       eraserActive: false,
       lineWidth: 2.5,
       disableTouch: false,
-      stylus: false,
       allStrokes: [],
       currentStroke: { points: [] },
       imageUrl: "",
       imageBlob: null,
       timer: null,
       currentTime: 0,
-      lastX: -1,
-      lastY: -1,
-      currX: 0,
-      currY: 0,
+      currPoint: { x: 0, y: 0 },
+      prevPoint: { x: -1, y: -1 },
       mousedown: 0, // necessary to know if user is holding left click while dragging the mouse
       unsubscribe: null,
       currentState: "",
       audioUrl: "",
       hasUploadedAudio: false,
-      recordStateEnum: CONSTANTS.recordStateEnum,
-      clearRectTimeout: null
+      recordStateEnum: CONSTANTS.recordStateEnum
     }
   },
   computed: {
@@ -134,8 +130,10 @@ export default {
         return { uid: "Anonymous" }; 
       }
     },
-    classId () { return this.$route.params.class_id; },
-    classRef () { return db.collection("classes").doc(this.classId); },
+    classRef () { 
+      const { class_id } = this.$route.params;
+      return db.collection("classes").doc(class_id); 
+    },
     blackboardRef () { return this.classRef.collection("blackboards").doc(this.blackboardId); },
     strokesRef () { return this.blackboardRef.collection("strokes"); },
   },
@@ -183,7 +181,7 @@ export default {
     this.bgCanvas = document.getElementById("background-canvas");
     this.bgCtx = this.bgCanvas.getContext("2d");
     this.adjustBoardSize();
-    window.addEventListener("resize", () => { this.adjustBoardSize() }, false); 
+    window.addEventListener("resize", this.adjustBoardSize, false); 
     this.enableDrawing();
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
     if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
@@ -192,7 +190,7 @@ export default {
     if (this.unsubscribe) { this.unsubscribe(); } 
   },
   destroyed () {
-    window.removeEventListener("resize", () => this.adjustBoardSize());
+    window.removeEventListener("resize", this.adjustBoardSize);
   },
   methods: {
     async initData () {
@@ -256,7 +254,7 @@ export default {
     },
     resetVariables () {
       this.allStrokes = [];
-      [this.lastX, this.lastY] = [-1, 1];
+      this.prevPoint = { x: -1, y: -1 };
       this.currentTime = 0;
       this.imageBlob = null;
       this.imageUrl = "";
@@ -315,7 +313,6 @@ export default {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4);
       const unitY = parseFloat(y / this.canvas.height).toFixed(4);
       this.currentStroke.points.push({ unitX, unitY });
-      this.drawToPoint(x, y);
     },
     startNewStroke (e) {
       // set up the strokes object
@@ -353,21 +350,20 @@ export default {
         this.strokesRef.doc(`${this.allStrokes.length}`).set(this.currentStroke); // 1st stroke = 1
       }
       this.currentStroke = { points: [] };
-      [this.lastX, this.lastY] = [-1, -1];
+      this.prevPoint = { x: -1, y: -1 };
     },
-    // TODO: rename this
     drawToPointAndSave(e, isMouseDraw) {
-      e.preventDefault(); // this improves drawing performance for Microsoft Surfaces
-      if (isMouseDraw) { [this.currX, this.currY] = [e.offsetX, e.offsetY] }   // this.getMousePos(e); 
+      e.preventDefault();
+      if (isMouseDraw) { this.currPoint = { x: e.offsetX, y: e.offsetY }; } 
       else { this.getTouchPos(e); }
-      this.convertAndSavePoint(this.currX, this.currY);
-      this.drawToPoint(this.currX, this.currY);
+      this.convertAndSavePoint(this.currPoint.x, this.currPoint.y);
+      this.drawToPoint(this.currPoint);
     },
     getTouchPos(e) {
       const finger1 = e.touches[0];
       const { left, top } = this.canvas.getBoundingClientRect();
-      this.currX = finger1.pageX - left - window.scrollX;
-      this.currY = finger1.pageY - top - window.scrollY;
+      this.currPoint.x = finger1.pageX - left - window.scrollX;
+      this.currPoint.y = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
       if (e.touches.length !== 1) { return true; }  // multiple fingers not allowed
@@ -381,7 +377,7 @@ export default {
       this.drawToPointAndSave(e, isMouseDraw);
     },
     mouseMove (e) {
-      if (this.mousedown !== 1) { return };
+      if (this.mousedown !== 1) { return; }
       const isMouseDraw = true;
       this.drawToPointAndSave(e, isMouseDraw);
     },
@@ -431,7 +427,7 @@ export default {
       this.hasUploadedAudio = false;
       // last round's strokes will persist as the initial setup of this round's recording
       for (const stroke of this.allStrokes) {
-        [stroke.startTime, stroke.endTime ] = [0, 0];
+        [stroke.startTime, stroke.endTime] = [0, 0];
       }
       const { PRE_RECORD } = this.recordStateEnum;
       this.currentState = PRE_RECORD;
@@ -467,12 +463,12 @@ export default {
       });
 
       // Initialize a new blackboard for the workspace
-      const roomId = this.$route.params.room_id;
-      const boardsRef = db.collection("classes").doc(this.classId).collection("blackboards");
+      const { room_id, class_id } = this.$route.params;
+      const boardsRef = db.collection("classes").doc(class_id).collection("blackboards");
       const newBoardRef = await boardsRef.add({
         recordState: this.recordStateEnum.PRE_RECORD
       });
-      const roomsRef = db.collection("rooms").doc(roomId);
+      const roomsRef = db.collection("rooms").doc(room_id);
       roomsRef.update({
         blackboardId: newBoardRef.id
       });
@@ -505,7 +501,6 @@ export default {
       document.getElementById("myCanvas").style.cursor =
         "url(" + dataURL + ") 0 24, auto";
     },
-
     adjustBoardSize () {
       const navbarHeight = 48; 
       const aspectRatio = 9/16;
@@ -524,16 +519,16 @@ export default {
       this.$_rescaleCanvas(willRedraw);
     },
     // Blackboard specific draw methods
-    drawToPoint (x, y) {
-      if (this.lastX !== -1) { // start of stroke, don't connect previous points
+    drawToPoint ({ x, y }) {
+      if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
         this.traceLineTo(x, y);
         this.ctx.stroke();
       }
-      [this.lastX, this.lastY] = [x, y];
+      this.prevPoint = { x, y };
     },
     traceLineTo (x, y) {
       this.ctx.beginPath();
-      this.ctx.moveTo(this.lastX, this.lastY);
+      this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
       this.ctx.lineTo(x, y);
     },
     enableDrawing () {
