@@ -27,7 +27,12 @@
         <v-btn @click="initRetry()" block class="white--text" outlined color="accent lighten-1">
           Retry
         </v-btn>
-        <DoodleVideo :injectedStrokes="blackboardStrokes" :audio="audio" :audioUrl="audioUrl" :image="image"/>
+        <DoodleVideo 
+          :injectedStrokes="blackboardStrokes" 
+          :audio="audio" 
+          :audioUrl="audioUrl" 
+          :image="image"
+        />
       </template>
     </v-container>
   </v-card>

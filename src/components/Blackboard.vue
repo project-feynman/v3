@@ -3,8 +3,7 @@
     <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
       <TheAppBar v-if="isRealtime" page="realtime">
         <div id="realtime-toolbar">
-          <BlackboardToolBar
-            ref="blackboardToolbar"
+          <BlackboardToolBar ref="blackboardToolbar"
             :currentState="blackboard.recordState"
             :eraserActive="eraserActive"
             :color="color"
@@ -35,8 +34,7 @@
 
       <!-- APP BAR -->
       <div v-if="!isRealtime" id="mini-toolbar">
-        <BlackboardToolBar
-          ref="blackboardToolbar"
+        <BlackboardToolBar ref="blackboardToolbar"
           :currentState="currentState"
           :eraserActive="eraserActive"
           :color="color"
