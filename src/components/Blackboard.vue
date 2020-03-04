@@ -1,84 +1,57 @@
 <template>
-  <div>
-    <div id="whiteboard" :outlined="!isRealtime" :elevation="isRealtime? '0' : '1'">
-      <TheAppBar v-if="isRealtime" page="realtime">
-        <div id="realtime-toolbar">
-          <BlackboardToolBar ref="blackboardToolbar"
-            :currentState="blackboard.recordState"
-            :eraserActive="eraserActive"
-            :color="color"
-            :isRealtime="isRealtime"
-            :hasUploadedAudio="hasUploadedAudio"
-            @eraser-click="newVal => eraserActive = newVal"
-            @set-image="handleImage"
-            @color-click="newColor => color = newColor"
-            @wipe-board="resetBoard()"
-            @record-state-change="newState => handleRecordStateChange(newState)"
-            @video-save="payload => handleSaving(payload)"
-            @animation-save="handleSaving({ title: 'No title yet', description: 'No description yet' })"
-            @image-selected="imageFile => saveAndDisplayImage(imageFile)"
-          >
-            <BasePopupButton
-              actionName="Save video"
-              :disabled="!hasUploadedAudio"
-              :inputFields="['title', 'description']"
-              @action-do="payload => handleSaving(payload)"
-            >
-              <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
-                Upload video
-              </v-btn>
-            </BasePopupButton>
-          </BlackboardToolBar>
-        </div>
-      </TheAppBar>
-
-      <!-- APP BAR -->
-      <div v-if="!isRealtime" id="mini-toolbar">
-        <BlackboardToolBar ref="blackboardToolbar"
-          :currentState="currentState"
-          :eraserActive="eraserActive"
-          :color="color"
-          :isRealtime="isRealtime"
-          :hasUploadedAudio="hasUploadedAudio"
-          @eraser-click="status => eraserActive = status"
-          @set-image="e => handleImage(e)"
-          @color-click="newColor => color = newColor"
-          @wipe-board="resetBoard()"
-          @record-state-change="newState => handleRecordStateChange(newState)"
-          @image-selected="imageFile => saveAndDisplayImage(imageFile)"
-        />
-      </div>
-      <!-- BLACKBOARD -->
-      <div id="blackboard-wrapper" style="position: relative; z-index: -1;" :class="isRealtime? 'realtime-canvas':''">
-        <canvas id="myCanvas" 
-          @touchstart="e => touchStart(e)"
-          @touchmove="e => touchMove(e)"
-          @touchend="e => touchEnd(e)"
-          @mousedown="e => mouseDown(e)"
-          @mousemove="e => mouseMove(e)"
-          @mouseup="e => mouseUp(e)"
-        ></canvas>
-        <canvas id="background-canvas"></canvas>
-      </div>
-      <AudioRecorder v-show="false" ref="AudioRecorder"
-        @file-uploaded="audio => saveFileReference(audio)"
-        @audio-saved="handleAudioSaved()"
-      />
+  <div class="blackboard" :elevation="isRealtime ? '0' : '1'">
+    <component :is="isRealtime ? 'TheAppBar' : 'div'">
+      <BlackboardToolBar
+        :currentState="currentState"
+        :eraserActive="eraserActive"
+        :color="color"
+        :isRealtime="isRealtime"
+        :hasUploadedAudio="hasUploadedAudio"
+        @eraser-click="status => eraserActive = status"
+        @color-click="newColor => color = newColor"
+        @wipe-board="resetBoard()"
+        @record-state-change="newState => handleRecordStateChange(newState)"
+        @image-selected="imageFile => saveAndDisplayImage(imageFile)"
+      >
+        <BasePopupButton v-if="isRealtime" 
+          actionName="Save video"
+          :disabled="!hasUploadedAudio"
+          :inputFields="['title', 'description']"
+          @action-do="payload => handleSaving(payload)"
+        >
+          <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
+            Upload video
+          </v-btn>
+        </BasePopupButton>
+      </BlackboardToolBar>
+    </component>
+    <div ref="BlackboardWrapper" class="blackboard-wrapper">
+      <canvas ref="FrontCanvas" class="front-canvas" 
+        @touchstart="e => touchStart(e)"
+        @touchmove="e => touchMove(e)"
+        @touchend="e => touchEnd(e)"
+        @mousedown="e => mouseDown(e)"
+        @mousemove="e => mouseMove(e)"
+        @mouseup="e => mouseUp(e)"
+      ></canvas>
+      <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
+    <AudioRecorder v-show="false" ref="AudioRecorder"
+      @file-uploaded="audio => saveFileReference(audio)"
+      @audio-saved="handleAudioSaved()"
+    />
   </div>
 </template>
 
 <script>
-import firebase from "firebase/app";
-import "firebase/functions";
 import db from "@/database.js";
 import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import { RecordState } from "@/CONSTANTS.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import { RecordState } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -117,20 +90,12 @@ export default {
   },
   computed: {
     user () { return this.$store.state.user; },
-    author () {
-      if (this.user) { 
-        const { uid, firstName, lastName, email } = this.user;
-        return { uid, firstName, lastName, email };
-      } else { 
-        return { uid: "Anonymous" }; 
-      }
-    },
     classRef () { 
       const { class_id } = this.$route.params;
       return db.collection("classes").doc(class_id); 
     },
     blackboardRef () { return this.classRef.collection("blackboards").doc(this.blackboardId); },
-    strokesRef () { return this.blackboardRef.collection("strokes"); },
+    strokesRef () { return this.blackboardRef.collection("strokes"); }
   },
   watch: {
     blackboardId: {
@@ -157,15 +122,15 @@ export default {
       this.lineWidth = this.eraserActive ? 25 : 2.5;
     },
     color () { this.customCursor(); },
-    visible () { this.adjustBoardSize(); },
+    visible () { this.resizeBlackboard(); },
   },
   mounted () {
-    this.canvas = document.getElementById("myCanvas");
+    this.canvas = this.$refs.FrontCanvas;
     this.ctx = this.canvas.getContext("2d");
-    this.bgCanvas = document.getElementById("background-canvas");
+    this.bgCanvas = this.$refs.BackCanvas;
     this.bgCtx = this.bgCanvas.getContext("2d");
-    this.adjustBoardSize();
-    window.addEventListener("resize", this.adjustBoardSize, false); 
+    this.resizeBlackboard();
+    window.addEventListener("resize", this.resizeBlackboard, false); 
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
     if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
   },
@@ -173,7 +138,7 @@ export default {
     if (this.unsubscribe) { this.unsubscribe(); } 
   },
   destroyed () {
-    window.removeEventListener("resize", this.adjustBoardSize);
+    window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
     async initData () {
@@ -282,8 +247,6 @@ export default {
       this.bgCanvas.width = this.canvas.scrollWidth;
       image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
     },
-    handleImage (e) {},
-    drawBackground (image) {},
     startTimer () {
       this.currentTime = 0;
       this.timer = setInterval(() => this.currentTime += 0.1, 100);
@@ -295,10 +258,8 @@ export default {
       this.currentStroke.points.push({ unitX, unitY });
     },
     startNewStroke (e) {
-      // set up the strokes object
       this.currentStroke.strokeNumber = this.allStrokes.length + 1;
       this.currentStroke.startTime = Number(this.currentTime.toFixed(1));
-      this.currentStroke.author = this.author;
       this.currentStroke.color = this.color;
       this.currentStroke.lineWidth = this.lineWidth;
       this.currentStroke.isErasing = this.eraserActive;
@@ -347,14 +308,14 @@ export default {
       this.currentStroke = { points: [] };
       this.prevPoint = { x: -1, y: -1 };
     },
-    drawToPointAndSave(e, isMouseDraw) {
+    drawToPointAndSave (e, isMouseDraw) {
       e.preventDefault();
       if (isMouseDraw) { this.currPoint = { x: e.offsetX, y: e.offsetY }; } 
       else { this.getTouchPos(e); }
       this.convertAndSavePoint(this.currPoint.x, this.currPoint.y);
       this.drawToPoint(this.currPoint);
     },
-    getTouchPos(e) {
+    getTouchPos (e) {
       const finger1 = e.touches[0];
       const { left, top } = this.canvas.getBoundingClientRect();
       this.currPoint.x = finger1.pageX - left - window.scrollX;
@@ -374,11 +335,10 @@ export default {
     },
     startRecording () {
       this.startTimer();
-      const { MID_RECORD } = RecordState;
-      this.currentState = MID_RECORD;
+      this.currentState = RecordState.MID_RECORD;
       this.$refs.AudioRecorder.startRecording();
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: MID_RECORD });
+        this.blackboardRef.update({ recordState: RecordState.MID_RECORD });
       }
       this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button
     },
@@ -425,34 +385,34 @@ export default {
       this.$emit("audio-upload-end", { blackboardStrokes: this.allStrokes, audioUrl: url});
     },
     async handleSaving ({ title, description }) {
-      const videoThumbnail = this.createThumbnail();
-      const metadata = {
-        creator: this.author,
-        title,
-        description,
-        isSaved: true, // marks blackboard as saved
-        thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
-      };
+      // const videoThumbnail = this.createThumbnail();
+      // const metadata = {
+      //   creator: this.author,
+      //   title,
+      //   description,
+      //   isSaved: true, // marks blackboard as saved
+      //   thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
+      // };
 
-      if (this.currentTime) { metadata.duration = this.currentTime; }
-      this.blackboardRef.update(metadata).then(() => this.isUploadingVideo = false);
-      this.classRef.update({
-        numOfVideos: firebase.firestore.FieldValue.increment(1)
-      });
+      // if (this.currentTime) { metadata.duration = this.currentTime; }
+      // this.blackboardRef.update(metadata).then(() => this.isUploadingVideo = false);
+      // this.classRef.update({
+      //   numOfVideos: firebase.firestore.FieldValue.increment(1)
+      // });
 
-      // Initialize a new blackboard for the workspace
-      const { room_id, class_id } = this.$route.params;
-      const boardsRef = db.collection("classes").doc(class_id).collection("blackboards");
-      const newBoardRef = await boardsRef.add({
-        recordState: RecordState.PRE_RECORD
-      });
-      const roomsRef = db.collection("rooms").doc(room_id);
-      roomsRef.update({
-        blackboardId: newBoardRef.id
-      });
-      this.hasUploadAudio = false;
-      const messageToUser = 'Successfully archived to the "Saved videos" section';
-      this.$root.$emit("show-snackbar", messageToUser);
+      // // Initialize a new blackboard for the workspace
+      // const { room_id, class_id } = this.$route.params;
+      // const boardsRef = db.collection("classes").doc(class_id).collection("blackboards");
+      // const newBoardRef = await boardsRef.add({
+      //   recordState: RecordState.PRE_RECORD
+      // });
+      // const roomsRef = db.collection("rooms").doc(room_id);
+      // roomsRef.update({
+      //   blackboardId: newBoardRef.id
+      // });
+      // this.hasUploadAudio = false;
+      // const messageToUser = 'Successfully archived to the "Saved videos" section';
+      // this.$root.$emit("show-snackbar", messageToUser);
     },
     createThumbnail () {
       if (this.imageUrl || this.imageBlob) {
@@ -465,25 +425,11 @@ export default {
         return this.canvas.toDataURL();
       }
     },
-    customCursor () {
-      const dummy_canvas = document.createElement("canvas");
-      dummy_canvas.width = 24;
-      dummy_canvas.height = 24;
-      const ctx = dummy_canvas.getContext("2d");
-      ctx.fillStyle = this.eraserActive ? "#fff" : this.color;
-      ctx.font = "24px 'Material Design Icons'";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(this.eraserActive ? "\uF1FE" : "\uF64F", 12, 12);
-      const dataURL = dummy_canvas.toDataURL("image/png");
-      document.getElementById("myCanvas").style.cursor =
-        "url(" + dataURL + ") 0 24, auto";
-    },
-    adjustBoardSize () {
+    resizeBlackboard () {
       const navbarHeight = 48; 
       const aspectRatio = 9/16;
       const epsilon = 20;
-      const blackboard = document.getElementById("blackboard-wrapper");
+      const blackboard = this.$refs.BlackboardWrapper;
       blackboard.style.height = "unset" // To reset the blackboard height when the user retries to make medio after previewing
       let offlineWidth = blackboard.offsetWidth;
       let offlineHeight = offlineWidth * aspectRatio;
@@ -496,7 +442,6 @@ export default {
       const willRedraw = true;
       this.$_rescaleCanvas(willRedraw);
     },
-    // Blackboard specific draw methods
     drawToPoint ({ x, y }) {
       if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
         this.traceLineTo(x, y);
@@ -508,23 +453,40 @@ export default {
       this.ctx.beginPath();
       this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
       this.ctx.lineTo(x, y);
+    },
+    customCursor () {
+      const dummyCanvas = document.createElement("canvas");
+      dummyCanvas.width = 24;
+      dummyCanvas.height = 24;
+      const ctx = dummyCanvas.getContext("2d");
+      ctx.fillStyle = this.eraserActive ? "#fff" : this.color;
+      ctx.font = "24px 'Material Design Icons'";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(this.eraserActive ? "\uF1FE" : "\uF64F", 12, 12);
+      const dataURL = dummyCanvas.toDataURL("image/png");
+      this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     }
   }
 };
 </script>
 
 <style scoped>
-#whiteboard {
+.blackboard {
   position: relative;
   z-index: 5;
 }
-#myCanvas {
+.blackboard-wrapper {
+  position: relative; 
+  z-index: -1;
+}
+.front-canvas {
   width: 100%;
   height: 1px;
   background-color: transparent;
   display: block;
 }
-#background-canvas {
+.back-canvas {
   position: absolute;
   top: 0;
   left: 0;
