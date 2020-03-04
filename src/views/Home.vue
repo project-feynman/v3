@@ -20,7 +20,6 @@
         </TheDropdownMenu>
       </template>
     </TheAppBar>
-
     <v-content>
       <transition name="fade">
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
@@ -61,13 +60,13 @@
           </v-container>
         </v-card>
       </transition>
-      <!-- Tutorial -->
       <v-container fluid>
+        <!-- Tutorial -->
         <div v-if="!user && !isFetchingUser">
           <DisplayExplanation :expl="demoVideo" :hasDate="false"/>
           <CreateExplanation/>
         </div>                    
-        <!-- Display classes -->
+        <!-- Classes -->
         <div v-else-if="user" key="class-list">
           <v-row align="stretch" class="enrolled-classes">
             <v-col v-for="C in user.enrolledClasses" cols="12" sm="4" md="3" :key="C.id">
