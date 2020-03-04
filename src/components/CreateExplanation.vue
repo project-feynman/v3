@@ -12,8 +12,7 @@
           <span v-else-if="isUploadingAudio">Processing video...</span>
         </template>
       </v-btn>
-      <Blackboard v-show="blackboardAttached && !isPreviewing" 
-        ref="Blackboard"
+      <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
         :isRealtime="false" 
         :visible="visible" 
         :background="addedImage" 
