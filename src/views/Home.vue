@@ -45,9 +45,7 @@
                   <BasePopupButton actionName="Sign up" :inputFields="['first name', 'last name', 'email', 'password']" outlined
                     @action-do="user => signUp(user)"
                   >
-                    <p>
-                      Sign up to join different classes. Passwords are secure and are handled by Google Firebase Authentication.
-                    </p>
+                    <p>Passwords are handled by Google Firebase Authentication.</p>
                   </BasePopupButton>
                 </v-col>
               </template>
