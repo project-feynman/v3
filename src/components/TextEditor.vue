@@ -3,10 +3,10 @@
     <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
       <div class="menubar">
         <v-btn @click="commands.bold" icon> 
-          <v-icon>format_bold</v-icon>
+          <v-icon>mdi-format-bold</v-icon>
         </v-btn>
         <v-btn @click="commands.italic" :class="{ 'is-active': isActive.italic() }" icon> 
-          <v-icon>format_italic</v-icon>
+          <v-icon>mdi-format-italic</v-icon>
         </v-btn>
         <!-- TODO: make it visible to the user that the option is currently selected -->
         <button
@@ -14,14 +14,14 @@
           :class="{ 'is-active': isActive.code_block() }"
           @click="commands.code_block"
         >
-          <v-icon>code</v-icon>
+          <v-icon>mdi-code-tags</v-icon>
         </button>
         <button
           class="menubar__button"
           :class="{ 'is-active': isActive.heading({ level: 2 }) }"
           @click="commands.heading({ level: 2 })"
         >
-          <v-icon>title</v-icon>
+          <v-icon>mdi-format-title</v-icon>
         </button>
         <!-- <v-btn @click="showImagePopup(commands.image)"></v-btn>
 

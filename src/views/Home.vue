@@ -14,7 +14,7 @@
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:default="{ on }">
             <v-btn v-on="on" icon class="ml-4">
-              <v-icon large :color="user.color">settings</v-icon>
+              <v-icon large :color="user.color">mdi-settings</v-icon>
             </v-btn>
           </template>
         </TheDropdownMenu>

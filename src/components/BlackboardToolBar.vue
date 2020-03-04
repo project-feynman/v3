@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar dense :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime?0:1" class="blackboard-toolbar">
+  <v-app-bar dense :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime ? 0 : 1" class="blackboard-toolbar">
     <v-container fluid class="px-0">
       <v-row align="center" justify="space-between">
         <template v-if="currentState !== RecordState.POST_RECORD">
@@ -42,18 +42,18 @@
         </template>
           <template v-if="currentState === RecordState.PRE_RECORD">
             <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="image">
+              <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="mdi-image">
                 <input style="display: none" type="file" @change="e => onImageSelected(e)" ref="fileInput">
                 <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br> (CTRL + V)</p>
               </ButtonPrabhakar>
             </v-col>
             <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="$emit('wipe-board')" :isSuperSmallText="true" :outlined="true" icon="delete_outline">
+              <ButtonPrabhakar @click="$emit('wipe-board')" :isSuperSmallText="true" :outlined="true" icon="mdi-delete">
                 <p>WIPE<br>BOARD</p>
               </ButtonPrabhakar>
             </v-col>
             <v-col cols="auto" class="py-0 px-0">
-              <ButtonPrabhakar @click="$emit('record-state-change', RecordState.MID_RECORD)" icon="adjust">
+              <ButtonPrabhakar @click="$emit('record-state-change', RecordState.MID_RECORD)" icon="mdi-adjust">
                 Record
               </ButtonPrabhakar>
             </v-col>
