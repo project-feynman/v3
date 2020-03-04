@@ -6,8 +6,7 @@
           <v-col class="py-0">
             <v-row justify="start" align="center">
               <v-col class="px-1 py-0" cols="auto">
-                <div
-                  :class="[$vuetify.breakpoint.smAndDown? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
+                <div :class="[$vuetify.breakpoint.smAndDown ? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
                   id="swatches-wrapper"
                   @click="$emit('eraser-click', false)"
                 >
