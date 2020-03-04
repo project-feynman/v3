@@ -51,9 +51,15 @@
         />
       </div>
       <!-- BLACKBOARD -->
-      <!-- position relative allows the background canvas to be directly on top of the normal canvas -->
       <div id="blackboard-wrapper" style="position: relative; z-index: -1;" :class="isRealtime? 'realtime-canvas':''">
-        <canvas id="myCanvas"></canvas>
+        <canvas id="myCanvas" 
+          @touchstart="e => this.touchStart(e)"
+          @touchmove="e => this.touchMove(e)"
+          @touchend="e => this.touchEnd(e)"
+          @mousedown="e => mouseDown(e)"
+          @mousemove="e => mouseMove(e)"
+          @mouseup="e => mouseUp(e)"
+        ></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
       <AudioRecorder v-show="false" ref="AudioRecorder"
@@ -83,12 +89,7 @@ export default {
     visible: Boolean,
   },
   mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
-  components: {
-    BlackboardToolBar,
-    AudioRecorder,
-    TheAppBar,
-    BasePopupButton
-  },
+  components: { BlackboardToolBar, AudioRecorder, TheAppBar, BasePopupButton },
   data () {
     return {
       loading: true,
@@ -98,8 +99,8 @@ export default {
       bgCanvas: null,
       bgCtx: null,
       color: "white",
-      eraserActive: false,
       lineWidth: 2.5,
+      eraserActive: false,
       disableTouch: false,
       allStrokes: [],
       currentStroke: { points: [] },
@@ -139,9 +140,6 @@ export default {
       immediate: true
     },
     blackboard (newVal) {
-      if (newVal.recordState !== RecordState.POST_RECORD || this.canvas) {
-        this.enableDrawing();
-      }
       // TODO: make it more readable
       let imageSrc;
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
@@ -170,7 +168,6 @@ export default {
     this.bgCtx = this.bgCanvas.getContext("2d");
     this.adjustBoardSize();
     window.addEventListener("resize", this.adjustBoardSize, false); 
-    this.enableDrawing();
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
     if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
   },
@@ -216,14 +213,12 @@ export default {
     },
     uploadAudio () {
       return new Promise(async (resolve) => {
-        const { AudioRecorder } = this.$refs;
-        await AudioRecorder.uploadRecording();
+        await this.$refs.AudioRecorder.uploadRecording();
         resolve();
       })
     },
     async resetBoard () {
       if (this.isRealtime) {
-        this.disableDrawing();
         const strokeDeleteRequests = [];
         this.allStrokes.forEach(stroke => {
           strokeDeleteRequests.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
@@ -233,7 +228,6 @@ export default {
       }
       this.wipeBoard(); // UI
       this.resetVariables(); // local state
-      this.enableDrawing();
     },
     wipeBoard () {
       if (!this.ctx) { return; }
@@ -329,6 +323,21 @@ export default {
       this.drawToPointAndSave(e);
     },
     touchEnd (e) { this.saveStrokeThenReset(e); },
+    mouseDown (e) {
+      this.mousedown = 1;
+      this.startNewStroke(e);
+      const isMouseDraw = true;
+      this.drawToPointAndSave(e, isMouseDraw);
+    },
+    mouseMove (e) {
+      if (this.mousedown !== 1) { return; }
+      const isMouseDraw = true;
+      this.drawToPointAndSave(e, isMouseDraw);
+    },
+    mouseUp (e) {
+      this.mousedown = 0;
+      this.saveStrokeThenReset(e);
+    },
     saveStrokeThenReset (e) {
       e.preventDefault()
       if (this.currentStroke.points.length === 0) { return; }  // user is touching the screen despite that touch is disabled
@@ -358,21 +367,6 @@ export default {
       return this.isFinger(e) && this.disableTouch;
     },
     isFinger (e) { return e.touches[0].touchType !== "stylus" },
-    mouseDown (e) {
-      this.mousedown = 1;
-      this.startNewStroke(e);
-      const isMouseDraw = true;
-      this.drawToPointAndSave(e, isMouseDraw);
-    },
-    mouseMove (e) {
-      if (this.mousedown !== 1) { return; }
-      const isMouseDraw = true;
-      this.drawToPointAndSave(e, isMouseDraw);
-    },
-    mouseUp (e) {
-      this.mousedown = 0;
-      this.saveStrokeThenReset(e);
-    },
     handleRecordStateChange (newState) {
       const { PRE_RECORD, MID_RECORD, POST_RECORD } = RecordState;
       if (newState === MID_RECORD) { this.startRecording(); }
@@ -394,7 +388,6 @@ export default {
       this.stopTimer();
       const { AudioRecorder } = this.$refs;
       const { POST_RECORD } = RecordState;
-      this.disableDrawing();
       AudioRecorder.stopRecording();
       this.currentState = POST_RECORD;
       if (this.isRealtime) {
@@ -419,7 +412,6 @@ export default {
       }
       const { PRE_RECORD } = RecordState;
       this.currentState = PRE_RECORD;
-      this.enableDrawing();
       if (this.isRealtime) {
         this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
       }
@@ -485,7 +477,7 @@ export default {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(this.eraserActive ? "\uF1FE" : "\uF64F", 12, 12);
-      var dataURL = dummy_canvas.toDataURL("image/png");
+      const dataURL = dummy_canvas.toDataURL("image/png");
       document.getElementById("myCanvas").style.cursor =
         "url(" + dataURL + ") 0 24, auto";
     },
@@ -518,39 +510,6 @@ export default {
       this.ctx.beginPath();
       this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
       this.ctx.lineTo(x, y);
-    },
-    enableDrawing () {
-      this.initTouchEvents();
-      this.initMouseEvents();
-    },
-    disableDrawing () {
-      this.removeMouseEvents();
-      this.removeTouchEvents();
-    },
-    initTouchEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.addEventListener("touchstart", this.touchStart, false);
-      this.canvas.addEventListener("touchend", this.touchEnd, false);
-      this.canvas.addEventListener("touchmove", this.touchMove, false);
-      this.$_setStyle(this.color, this.lineWidth); // TODO: kind of sketch
-    },
-    removeTouchEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.removeEventListener("touchstart", this.touchStart, false);
-      this.canvas.removeEventListener("touchend", this.touchEnd, false);
-      this.canvas.removeEventListener("touchmove", this.touchMove, false);
-    },
-    initMouseEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.addEventListener("mousedown", this.mouseDown, false);
-      this.canvas.addEventListener("mouseup", this.mouseUp, false);
-      this.canvas.addEventListener("mousemove", this.mouseMove, false);
-    },
-    removeMouseEvents () {
-      if (!this.canvas) { return; }
-      this.canvas.removeEventListener("mousedown", this.mouseDown, false);
-      this.canvas.removeEventListener("mouseup", this.mouseUp, false);
-      this.canvas.removeEventListener("mousemove", this.mouseMove, false);
     }
   }
 };
