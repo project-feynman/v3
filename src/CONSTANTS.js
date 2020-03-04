@@ -1,9 +1,7 @@
-export default {
-  notifFrequencyEnum: {
-    ALWAYS: "always",
-    NEVER: "never"
-  }
-}
+export const NotifFrequency = {
+  ALWAYS: "always",
+  NEVER: "never"
+};
 
 export const RecordState = {
   PRE_RECORD: "PRE_RECORD",

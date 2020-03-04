@@ -24,7 +24,7 @@
               <v-list-item-title>{{ mitClass.name }}</v-list-item-title>
               <v-list-item-action>
                 <v-radio-group v-model="mitClass.notifFrequency" row>
-                  <v-radio v-for="option in notifFrequencyEnum"
+                  <v-radio v-for="option in NotifFrequency"
                     :key="option" :label="option" :value="option" :id="option"
                     @change="classNotifChanged(mitClass, option)"
                   />
@@ -33,15 +33,13 @@
             </v-container>
           </v-list-item>
         </v-list>
-
       </v-card>
     </v-menu>
   </div>
 </template>
 
 <script>
-// pre-condition: user is defined
-import CONSTANTS from "@/CONSTANTS.js";
+import { NotifFrequency } from "@/CONSTANTS.js";
 
 export default {
   data: () => ({
@@ -50,7 +48,7 @@ export default {
     name: "",
     useDarkMode: false,
     color: "",
-    notifFrequencyEnum: CONSTANTS.notifFrequencyEnum
+    NotifFrequency
   }),
   computed: {
     user () { return this.$store.state.user; }

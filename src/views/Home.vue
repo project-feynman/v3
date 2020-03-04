@@ -99,13 +99,13 @@ import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import TheSearchBar from "@/components/TheSearchBar.vue";
 import AsyncRenderless from "@/components/AsyncRenderless.vue";
-import CONSTANTS from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Blackboard from "@/components/Blackboard.vue";
 import DisplayExplanation from "@/components/DisplayExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
-import { demoVideo } from "@/CONSTANTS.js";
+import { demoVideo, NotifFrequency } from "@/CONSTANTS.js";
+
 
 export default {
   components: {
@@ -153,7 +153,7 @@ export default {
           if (classObj.id === id) { return; } 
         }
       }
-      const { ALWAYS } = CONSTANTS.notifFrequencyEnum;
+      const { ALWAYS } = NotifFrequency;
       const classSetting = { id, name, notifFrequency: ALWAYS };
       db.collection("users").doc(this.user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
@@ -175,7 +175,7 @@ export default {
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
           id: classDoc.id,
           name,
-          notifFrequency: CONSTANTS.notifFrequencyEnum.ALWAYS
+          notifFrequency: NotifFrequency.ALWAYS
         })
       })
       this.fetchClasses();
@@ -205,8 +205,8 @@ export default {
     },
     createAccount ({ uid, email, firstName, lastName }) {
       function getRandomColor () {
-        var letters = '0123456789ABCDEF'
-        var color = '#'
+        const letters = '0123456789ABCDEF'
+        let color = '#'
         for (let i = 0; i < 6; i++) {
           color += letters[Math.floor(Math.random() * 16)];
         }
