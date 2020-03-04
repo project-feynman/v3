@@ -54,7 +54,6 @@
 <script>
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
 import { tutorial } from "@/CONSTANTS.js";
-import moment from "moment";
 import db from "@/database.js";
 
 export default {
@@ -84,6 +83,16 @@ export default {
     this.unsubscribeRoomListener();
     this.unsubscribePostsListener();
   },
-  methods: { displayDate (date) { return moment(date).format('MMM Do, h:mm a'); } }
+  methods: { 
+    displayDate (dateString) { 
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit'
+      });
+    } 
+  }
 };
 </script>

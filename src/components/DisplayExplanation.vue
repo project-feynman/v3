@@ -52,7 +52,6 @@
 import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import BasePopupButton from "@/components/BasePopupButton";
-import moment from "moment";
 import db from "@/database.js";
 
 export default {
@@ -73,7 +72,15 @@ export default {
     isShowingPopup: false
   }),
   methods: {
-    displayDate (date) { return moment(date).format('MMM D, h:mm a'); },
+    displayDate (dateString) { 
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        month: 'long',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit'
+      });
+    } ,
     // TODO: fetchStrokes as a slot-prop
     handleVideoClick () {
       this.$refs.DoodleVideo.fetchStrokes(); 
