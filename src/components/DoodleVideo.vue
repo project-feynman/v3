@@ -1,9 +1,9 @@
 <template>
-  <div style="height: 100%; position: relative; z-index: 5; margin:auto;" :id="`doodle-video-${blackboardId}`">
+  <div ref="DoodleVideo" style="height: 100%; position: relative; z-index: 5; margin:auto;" >
     <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-      <div id="blackboard-wrapper" style="position: relative;">
-        <canvas :id="`myCanvas-${blackboardId}`" class="front-canvas"></canvas>
-        <canvas :id="`background-canvas-${blackboardId}`" class="background-canvas"></canvas>
+      <div ref="BlackboardWrapper" style="position: relative;">
+        <canvas ref="FrontCanvas" class="front-canvas"></canvas>
+        <canvas ref="BackCanvas" class="background-canvas"></canvas>
         <v-btn v-show="!hasLoadedAvailableResources" @click="onOverlayClick()" large dark class="overlay-button">
           <v-icon>play_arrow</v-icon>
         </v-btn>
@@ -28,11 +28,6 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import _ from "lodash";
-
-// TEST:
-// 1. Onload, can directly slide the audio slider 
-// 2. Play the video normally, and drag it forward and backward.
-// 3. Skip to the end of the video.  Drag it forward and backward. 
 
 export default {
   props: {
@@ -106,8 +101,8 @@ export default {
     this.handleSeeking = _.debounce(this.handleSeeking, 0);
   },
   async mounted () {
-    this.canvas = document.getElementById(`myCanvas-${this.blackboardId}`);
-    this.bgCanvas = document.getElementById(`background-canvas-${this.blackboardId}`);
+    this.canvas = this.$refs.FrontCanvas;
+    this.bgCanvas = this.$refs.BackCanvas;
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     this.handleResize();
@@ -138,10 +133,9 @@ export default {
       const navbarHeight = 48;
       const audioPlayerHeight = 52;
       const aspectRatio = 9/16;
-      const blackboard = document.getElementById("blackboard-wrapper")
-      const doodle = document.getElementById(`doodle-video-${this.blackboardId}`)
-      doodle.style.width = "100%";
-      let offlineWidth = doodle.offsetWidth;
+      const { BlackboardWrapper, DoodleVideo } = this.$refs;
+      DoodleVideo.style.width = "100%";
+      let offlineWidth = DoodleVideo.offsetWidth;
       let offlineHeight = offlineWidth * aspectRatio;
       const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight
       if (offlineHeight > availableHeight) {
@@ -149,9 +143,9 @@ export default {
         offlineWidth = offlineHeight * (1/aspectRatio);
       }
       const realtime_height = window.innerHeight - navbarHeight;
-      blackboard.style.height = offlineHeight + "px";
+      BlackboardWrapper.style.height = offlineHeight + "px";
       this.canvas.style.height = offlineHeight + "px";
-      doodle.style.width = offlineWidth + "px";
+      DoodleVideo.style.width = offlineWidth + "px";
     },
     onOverlayClick () {
       if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
