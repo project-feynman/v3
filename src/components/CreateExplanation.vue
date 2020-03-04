@@ -41,7 +41,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import TextEditor from "@/components/TextEditor.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import CONSTANTS from "@/CONSTANTS.js";
+import { RecordState } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -57,7 +57,6 @@ export default {
   mixins: [DatabaseHelpersMixin],
   components: { Blackboard, DoodleVideo, TextEditor },
   data: () => ({
-    postTitle: "Default title",
     postDescription: "",
     postTags: [],
     // TODO: some variables are unnecessary
@@ -87,7 +86,7 @@ export default {
       this.isPreviewing = false;
       this.$nextTick(() => {
         const { Blackboard } = this.$refs;
-        Blackboard.handleRecordStateChange(CONSTANTS.recordStateEnum.PRE_RECORD);
+        Blackboard.handleRecordStateChange(RecordState.PRE_RECORD);
       })
     },
     handleRecordEnd ({ audio, strokes, image }) {
@@ -122,7 +121,7 @@ export default {
         mitClass
       };
       const { Blackboard } = this.$refs;
-      if (Blackboard.currentState === CONSTANTS.recordStateEnum.POST_RECORD) {
+      if (Blackboard.currentState === RecordState.POST_RECORD) {
         this.isUploadingAudio = true;
         await Blackboard.uploadAudio();
         this.isUploadingAudio = false;
@@ -155,7 +154,6 @@ export default {
       }
       this.newExplanationDbRef.set(explanation);
       // reset
-      this.postTitle = "";
       this.postDescription = "";
       this.changeKeyToForceReset += 1; // not sure if it works
       this.isUploadingPost = false;

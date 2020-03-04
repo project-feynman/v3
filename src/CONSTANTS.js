@@ -1,21 +1,22 @@
 export default {
-  recordStateEnum: {
-    PRE_RECORD: "pre-record",
-    MID_RECORD: "mid-record",
-    POST_RECORD: "post-record"
-  },
   notifFrequencyEnum: {
     ALWAYS: "always",
     NEVER: "never"
   }
 }
 
+export const RecordState = {
+  PRE_RECORD: "PRE_RECORD",
+  MID_RECORD: "MID_RECORD",
+  POST_RECORD: "POST_RECORD"
+};
+
 export const tutorial = {
   classId: "ufUXSLcpV2bNK2UOcOgz",
   postId: "rr3m6wtumg9d0c6ye51jl"
-}
+};
 
 export const demoVideo = {
   classId: "FVdgjuywaFgxvyylISt2",
   postId: "xut7dg7pbso4up8nb5239"
-}
+};

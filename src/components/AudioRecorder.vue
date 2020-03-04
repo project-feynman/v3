@@ -84,11 +84,13 @@ export default {
       }
     },
     startRecording () {
-      this.$emit('start-recording')
       this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
       this.recorderSrvc.config.createDynamicsCompressorNode = this.addDynamicsCompressor
       this.recorderSrvc.startRecording()
-        .then(() => this.recordingInProgress = true)
+        .then(() => { 
+          this.recordingInProgress = true;
+          this.$emit("start-recording");
+        })
         .catch(error => alert('Recording error: ' + error.message))
     },
     stopRecording () {

@@ -56,10 +56,7 @@
         <canvas id="myCanvas"></canvas>
         <canvas id="background-canvas"></canvas>
       </div>
-      <AudioRecorder
-        v-show="false"
-        ref="AudioRecorder"
-        @record-start="currentState = recordStateEnum.MID_RECORD"
+      <AudioRecorder v-show="false" ref="AudioRecorder"
         @file-uploaded="audio => saveFileReference(audio)"
         @audio-saved="handleAudioSaved()"
       />
@@ -75,7 +72,7 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import CONSTANTS from "@/CONSTANTS.js";
+import { RecordState } from "@/CONSTANTS.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
@@ -117,7 +114,6 @@ export default {
       currentState: "",
       audioUrl: "",
       hasUploadedAudio: false,
-      recordStateEnum: CONSTANTS.recordStateEnum
     }
   },
   computed: {
@@ -143,8 +139,7 @@ export default {
       immediate: true
     },
     blackboard (newVal) {
-      const { POST_RECORD } = this.recordStateEnum;
-      if (newVal.recordState !== POST_RECORD || this.canvas) {
+      if (newVal.recordState !== RecordState.POST_RECORD || this.canvas) {
         this.enableDrawing();
       }
       // TODO: make it more readable
@@ -157,13 +152,6 @@ export default {
         catch { imageSrc = this.imageUrl; }
       }
       this.displayImageAsBackground(imageSrc);
-    },
-    currentState (oldVal, newVal) {
-      if (!newVal || oldVal) { return; }
-      const { POST_RECORD, PRE_RECORD } = this.recordStateEnum;
-      if (oldVal === POST_RECORD && newVal === PRE_RECORD) {
-        this.enableDrawing();
-      }
     },
     eraserActive () {
       this.customCursor();
@@ -197,7 +185,7 @@ export default {
       // no need to reset data, just reset variables and UI as it's only useful when switching between different blackboards
       this.resetVariables();
       this.wipeBoard();
-      this.currentState = this.recordStateEnum.PRE_RECORD;
+      this.currentState = RecordState.PRE_RECORD;
       if (this.isRealtime) {
         this.loading = true;
         if (!this.blackboardId) { return; }
@@ -326,7 +314,7 @@ export default {
       this.$_rescaleCanvas(false);
       e.preventDefault(); // not put in the beginning because sometimes we allow scrolling 
       this.$_setStyle(this.color, this.lineWidth);
-      if (this.currentState === this.recordStateEnum.MID_RECORD) {
+      if (this.currentState === RecordState.MID_RECORD) {
         this.startTime = this.currentTime.toFixed(1);
       }
     },
@@ -386,15 +374,15 @@ export default {
       this.saveStrokeThenReset(e);
     },
     handleRecordStateChange (newState) {
-      const { PRE_RECORD, MID_RECORD, POST_RECORD } = this.recordStateEnum;
+      const { PRE_RECORD, MID_RECORD, POST_RECORD } = RecordState;
       if (newState === MID_RECORD) { this.startRecording(); }
       else if (newState === POST_RECORD) { this.stopRecording(); }
       else if (newState === PRE_RECORD) {this.tryRecordAgain(); }
-      else { throw "Error: blackboard state was set to an illegal value" }
+      else { throw `Error: blackboard state was set to an illegal value = ${newState}` }
     },
     startRecording () {
       this.startTimer();
-      const { MID_RECORD } = this.recordStateEnum;
+      const { MID_RECORD } = RecordState;
       this.currentState = MID_RECORD;
       this.$refs.AudioRecorder.startRecording();
       if (this.isRealtime) {
@@ -405,7 +393,7 @@ export default {
     stopRecording () {
       this.stopTimer();
       const { AudioRecorder } = this.$refs;
-      const { POST_RECORD } = this.recordStateEnum;
+      const { POST_RECORD } = RecordState;
       this.disableDrawing();
       AudioRecorder.stopRecording();
       this.currentState = POST_RECORD;
@@ -429,7 +417,7 @@ export default {
       for (const stroke of this.allStrokes) {
         [stroke.startTime, stroke.endTime] = [0, 0];
       }
-      const { PRE_RECORD } = this.recordStateEnum;
+      const { PRE_RECORD } = RecordState;
       this.currentState = PRE_RECORD;
       this.enableDrawing();
       if (this.isRealtime) {
@@ -466,7 +454,7 @@ export default {
       const { room_id, class_id } = this.$route.params;
       const boardsRef = db.collection("classes").doc(class_id).collection("blackboards");
       const newBoardRef = await boardsRef.add({
-        recordState: this.recordStateEnum.PRE_RECORD
+        recordState: RecordState.PRE_RECORD
       });
       const roomsRef = db.collection("rooms").doc(room_id);
       roomsRef.update({

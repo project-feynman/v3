@@ -2,7 +2,7 @@
   <v-app-bar dense :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime?0:1" class="blackboard-toolbar">
     <v-container fluid class="px-0">
       <v-row align="center" justify="space-between">
-        <template v-if="currentState !== recordStateEnum.POST_RECORD">
+        <template v-if="currentState !== RecordState.POST_RECORD">
           <v-col class="py-0">
             <v-row justify="start" align="center">
               <v-col class="px-1 py-0" cols="auto">
@@ -23,8 +23,7 @@
                     <v-icon>mdi-lead-pencil</v-icon>
                     <v-icon class="down">keyboard_arrow_down</v-icon>
                   </v-btn>
-                  <swatches
-                    @input="newVal => $emit('color-click', newVal)"
+                  <swatches @input="newVal => $emit('color-click', newVal)"
                     :value="color"
                     :colors="colors"
                     :show-border="true"
@@ -42,7 +41,7 @@
             </v-row>
           </v-col>
         </template>
-          <template v-if="currentState === recordStateEnum.PRE_RECORD">
+          <template v-if="currentState === RecordState.PRE_RECORD">
             <v-col class="py-0 px-0" cols="auto">
               <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="image">
                 <input style="display: none" type="file" @change="e => onImageSelected(e)" ref="fileInput">
@@ -55,15 +54,15 @@
               </ButtonPrabhakar>
             </v-col>
             <v-col cols="auto" class="py-0 px-0">
-              <ButtonPrabhakar @click="$emit('record-state-change', recordStateEnum.MID_RECORD)" icon="adjust">
+              <ButtonPrabhakar @click="$emit('record-state-change', RecordState.MID_RECORD)" icon="adjust">
                 Record
               </ButtonPrabhakar>
             </v-col>
           </template>
 
-          <template v-else-if="currentState === recordStateEnum.MID_RECORD">
+          <template v-else-if="currentState === RecordState.MID_RECORD">
             <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="$emit('record-state-change', recordStateEnum.POST_RECORD)">
+              <ButtonPrabhakar @click="$emit('record-state-change', RecordState.POST_RECORD)">
                 Stop
               </ButtonPrabhakar>
             </v-col>
@@ -71,7 +70,7 @@
 
         <template v-else>
           <v-col class="py-0 px-0" cols="auto">
-            <ButtonPrabhakar @click="$emit('record-state-change', recordStateEnum.PRE_RECORD)" outlined icon="mdi-undo-variant">
+            <ButtonPrabhakar @click="$emit('record-state-change', RecordState.PRE_RECORD)" outlined icon="mdi-undo-variant">
               Retry
             </ButtonPrabhakar>
           </v-col>
@@ -88,7 +87,7 @@
 <script>
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
-import CONSTANTS from "@/CONSTANTS.js";
+import { RecordState } from "@/CONSTANTS.js";
 import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue"
 
 export default {
@@ -101,9 +100,9 @@ export default {
   components: { Swatches, ButtonPrabhakar },
   data () {
     return {
+      RecordState,
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
       palleteVisibility: false,
-      recordStateEnum: CONSTANTS.recordStateEnum,
       imageAdded: false,
       blackboardAttached: true
     }
