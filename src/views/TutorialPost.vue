@@ -2,11 +2,9 @@
   <div>
     <TheAppBar/>
     <v-content>
-      <v-card>
-        <DisplayExplanation v-for="expl in sortedExplanations" :key="expl.id"
-          :expl="expl"
-        />
-      </v-card>
+      <DisplayExplanation v-for="expl in sortedExplanations" :key="expl.id"
+        :expl="expl"
+      />
     </v-content>
   </div>
 </template>
