@@ -7,7 +7,7 @@
           :expl="expl" :key="expl.id"
         />
         <v-btn @click="isCreatingExpl = !isCreatingExpl" x-large block :outlined="isCreatingExpl" color="accent lighten-1">
-          {{ isCreatingExpl? 'CANCEL' : 'ADD RESPONSE' }}
+          {{ isCreatingExpl ? 'CANCEL' : 'ADD RESPONSE' }}
         </v-btn>
         <CreateExplanation v-if="isCreatingExpl" 
           @upload-finish="isCreatingExpl = false"
