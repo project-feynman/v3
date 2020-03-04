@@ -62,21 +62,10 @@ import {
 } from 'tiptap-extensions';
 import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
 
-const defaultHtml = `
-   
+const defaultHtml = ` 
           <p>
-            "If you can't explain it simply, you don't understand it well enough" - <em>Albert Einstein</em> 
+            Write text here...
           </p>
-          <b>Try editing text:</b>
-          <ul>
-            <li>
-              <pre><code>x = [0 for i in range(n)] // code blocks are supported </code></pre>
-            </li>
-            <li>
-              Latex and images will be supported soon
-            </li>
-          </ul>
-        
         `
 // <img src="https://d384u2mq2suvbq.cloudfront.net/public/spree/products/1597/jumbo/Japanese-Cherry-Blossom-Fragrance-Oil.jpg?1529607178" />
 
