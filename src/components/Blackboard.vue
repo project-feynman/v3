@@ -53,9 +53,9 @@
       <!-- BLACKBOARD -->
       <div id="blackboard-wrapper" style="position: relative; z-index: -1;" :class="isRealtime? 'realtime-canvas':''">
         <canvas id="myCanvas" 
-          @touchstart="e => this.touchStart(e)"
-          @touchmove="e => this.touchMove(e)"
-          @touchend="e => this.touchEnd(e)"
+          @touchstart="e => touchStart(e)"
+          @touchmove="e => touchMove(e)"
+          @touchend="e => touchEnd(e)"
           @mousedown="e => mouseDown(e)"
           @mousemove="e => mouseMove(e)"
           @mouseup="e => mouseUp(e)"
