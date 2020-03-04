@@ -5,7 +5,7 @@
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>
         <canvas ref="BackCanvas" class="background-canvas"></canvas>
         <v-btn v-show="!hasLoadedAvailableResources" @click="onOverlayClick()" large dark class="overlay-button">
-          <v-icon>play_arrow</v-icon>
+          <v-icon>mdi-play</v-icon>
         </v-btn>
       </div>
     </div>
