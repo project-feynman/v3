@@ -130,10 +130,10 @@ export default {
       welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right."
     }
   },
-  async created () { 
+  created () { 
     this.fetchClasses(); 
     const demoVideoRef = this.getBlackboardRef(demoVideo.postId);
-    this.demoVideo = await this.$_getDoc(demoVideoRef); 
+    this.demoVideo = this.$_getDoc(demoVideoRef); 
   },
   mounted () { window.addEventListener("scroll", this.logoVisibility); },
   destroyed () { window.removeEventListener("scroll", this.logoVisibility); },
@@ -152,8 +152,7 @@ export default {
           if (classObj.id === id) { return; } 
         }
       }
-      const { ALWAYS } = NotifFrequency;
-      const classSetting = { id, name, notifFrequency: ALWAYS };
+      const classSetting = { id, name, notifFrequency: NotifFrequency.ALWAYS };
       db.collection("users").doc(this.user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
       });

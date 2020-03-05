@@ -9,23 +9,23 @@ export default new Router({
   routes: [
     { 
       path: '/',
-      component: () => import(/* webpackChunkName: "home" */ './views/Home.vue')
+      component: () => import(/* webpackChunkName: "home" */ './pages/Home.vue')
     },
     {
       path: '/:class_id/room/:room_id',
-      component: () => import(/* webpackChunkName: "realtime-board" */ './views/BlackboardRoom.vue') 
+      component: () => import(/* webpackChunkName: "realtime-board" */ './pages/BlackboardRoom.vue') 
     },
     {
       path: '/:class_id/posts/new',
-      component: () => import(/* webpackChunkName: "new" */ './views/CreatePost.vue') 
+      component: () => import(/* webpackChunkName: "new" */ './pages/CreatePost.vue') 
     },
     {
       path: '/:class_id/posts/tutorial',
-      component: () => import(/* webpackChunkName: "tutorial" */ './views/TutorialPost.vue') 
+      component: () => import(/* webpackChunkName: "tutorial" */ './pages/TutorialPost.vue') 
     },
     {
       path: '/:class_id/posts/:post_id',
-      component: () => import(/* webpackChunkName: "post" */ './views/DisplayPost.vue')
+      component: () => import(/* webpackChunkName: "post" */ './pages/DisplayPost.vue')
     }
   ]
 })
