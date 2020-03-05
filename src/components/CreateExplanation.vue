@@ -23,7 +23,7 @@
         @retry-recording="handleRetry()"
       />
       <template v-if="isPreviewing">
-        <v-btn @click="initRetry()" block class="white--text" outlined color="accent>
+        <v-btn @click="initRetry()" block class="white--text" outlined color="accent">
           Retry
         </v-btn>
         <DoodleVideo 

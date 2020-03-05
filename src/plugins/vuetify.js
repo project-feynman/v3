@@ -9,7 +9,6 @@ export default new Vuetify({
     iconfont: "mdi"
   },
   theme: {
-    // Configure color scheme of the website here
     themes: {
       light: {
         primary: colors.blue, // #E53935
