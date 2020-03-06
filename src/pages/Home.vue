@@ -73,7 +73,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" @click="$router.push(`${C.id}/posts/tutorial`)">
+                    <v-card v-if="C.name && C.description" @click="$router.push(`class/${C.id}`)">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>

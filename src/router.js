@@ -1,31 +1,38 @@
-import Vue from 'vue';
-import Router from 'vue-router';
+import Vue from "vue";
+import Router from "vue-router";
 
 Vue.use(Router)
 
 export default new Router({
-  mode: 'history',
+  mode: "history",
   base: process.env.BASE_URL,
   routes: [
     { 
-      path: '/',
-      component: () => import(/* webpackChunkName: "home" */ './pages/Home.vue')
+      path: "/",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
     {
-      path: '/:class_id/room/:room_id',
-      component: () => import(/* webpackChunkName: "realtime-board" */ './pages/BlackboardRoom.vue') 
-    },
-    {
-      path: '/:class_id/posts/new',
-      component: () => import(/* webpackChunkName: "new" */ './pages/CreatePost.vue') 
-    },
-    {
-      path: '/:class_id/posts/tutorial',
-      component: () => import(/* webpackChunkName: "tutorial" */ './pages/TutorialPost.vue') 
-    },
-    {
-      path: '/:class_id/posts/:post_id',
-      component: () => import(/* webpackChunkName: "post" */ './pages/DisplayPost.vue')
+      path: "/class/:class_id",
+      component: () => import(/* webpackChunkName: "class-page" */ "./pages/ClassPage.vue"),
+      children: [
+        {
+          path: "",
+          component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/ClassPageOverview.vue") 
+        },
+        {
+          path: "room/:room_id",
+          component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/ClassPageLiveBoard.vue") 
+        },
+        {
+          // when /user/:id/posts is matched
+          path: "posts/new",
+          component: () => import(/* webpackChunkName: "new" */ "./pages/ClassPageNewPost.vue") 
+        },
+        {
+          path: "posts/:post_id",
+          component: () => import(/* webpackChunkName: "post" */ "./pages/ClassPageSeePost.vue")
+        }
+      ]
     }
   ]
 })
