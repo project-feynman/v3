@@ -87,8 +87,7 @@
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
 import { RecordState } from "@/CONSTANTS.js";
-import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
-
+import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue"
 
 export default {
   props: {
@@ -101,7 +100,7 @@ export default {
   data () {
     return {
       RecordState,
-      colors: ["black", "blue", "red", "green"], // ["white", "orange", "#0AF2F2", "#ec1bf7"]
+      colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
       palleteVisibility: false,
       imageAdded: false,
       blackboardAttached: true
