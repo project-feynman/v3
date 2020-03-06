@@ -1,6 +1,6 @@
 <template>
   <v-card style="zIndex:10">
-    <v-navigation-drawer :value="value" @input="newVal => $emit('input', newVal)" app clipped>
+    <v-navigation-drawer :value="value" @input="newVal => $emit('input', newVal)" app clipped width="300">
       <v-list class="pt-0">
         <v-list-item-group>
           <!-- Overview -->
