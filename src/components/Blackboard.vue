@@ -492,7 +492,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgb(62, 66, 66);
+  background-color: white;
   z-index: -1;
   display: block;
 }

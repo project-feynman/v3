@@ -265,7 +265,14 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.overlay-button {
+  position: absolute; 
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .front-canvas {
   width: 100%; 
   height: 1; 
@@ -281,13 +288,6 @@ export default {
   width: 100%;
   height: 100%;
   z-index: -1;
-  background-color: rgb(62, 66, 66);
-}
-
-.overlay-button {
-  position: absolute; 
-  top: 50%; 
-  left: 50%;
-  transform: translate(-50%, -50%);
+  background-color: white;
 }
 </style>
