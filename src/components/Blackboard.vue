@@ -384,46 +384,16 @@ export default {
       }
       this.$emit("audio-upload-end", { blackboardStrokes: this.allStrokes, audioUrl: url});
     },
-    async handleSaving ({ title, description }) {
-      // const videoThumbnail = this.createThumbnail();
-      // const metadata = {
-      //   creator: this.author,
-      //   title,
-      //   description,
-      //   isSaved: true, // marks blackboard as saved
-      //   thumbnail: videoThumbnail // toDataURL takes a screenshot of a canvas and encodes it as an image URL
-      // };
-
-      // if (this.currentTime) { metadata.duration = this.currentTime; }
-      // this.blackboardRef.update(metadata).then(() => this.isUploadingVideo = false);
-      // this.classRef.update({
-      //   numOfVideos: firebase.firestore.FieldValue.increment(1)
-      // });
-
-      // // Initialize a new blackboard for the workspace
-      // const { room_id, class_id } = this.$route.params;
-      // const boardsRef = db.collection("classes").doc(class_id).collection("blackboards");
-      // const newBoardRef = await boardsRef.add({
-      //   recordState: RecordState.PRE_RECORD
-      // });
-      // const roomsRef = db.collection("rooms").doc(room_id);
-      // roomsRef.update({
-      //   blackboardId: newBoardRef.id
-      // });
-      // this.hasUploadAudio = false;
-      // const messageToUser = 'Successfully archived to the "Saved videos" section';
-      // this.$root.$emit("show-snackbar", messageToUser);
-    },
     createThumbnail () {
-      if (this.imageUrl || this.imageBlob) {
+      return new Promise(async (resolve) => {
+        // ensure backCanvas's internal size is the same as its display size 
+        this.bgCanvas.height = this.bgCanvas.scrollHeight;
+        this.bgCanvas.width = this.bgCanvas.scrollWidth;
         this.$_drawStrokesInstantly2();
-        return this.bgCanvas.toDataURL(); //this just makes the background image the thumbnail
-      } else {
-        this.ctx.fillStyle = "rgb(62, 66, 66)";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        this.$_drawStrokesInstantly();
-        return this.canvas.toDataURL();
-      }
+        this.bgCanvas.toBlob((thumbnail) => {
+            resolve(thumbnail);
+        });
+      })
     },
     resizeBlackboard () {
       const navbarHeight = 48; 
@@ -466,6 +436,9 @@ export default {
       ctx.fillText(this.eraserActive ? "\uF1FE" : "\uF64F", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
+    },
+    handleSaving () {
+      // to be implemented
     }
   }
 };
