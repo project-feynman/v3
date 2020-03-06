@@ -130,10 +130,10 @@ export default {
       welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right."
     }
   },
-  async created () { 
+  created () { 
     this.fetchClasses(); 
     const demoVideoRef = this.getBlackboardRef(demoVideo.postId);
-    this.demoVideo = await this.$_getDoc(demoVideoRef); 
+    this.demoVideo = this.$_getDoc(demoVideoRef); 
   },
   mounted () { window.addEventListener("scroll", this.logoVisibility); },
   destroyed () { window.removeEventListener("scroll", this.logoVisibility); },
