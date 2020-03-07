@@ -1,16 +1,15 @@
 <template>
   <div ref="DoodleVideo" style="height: 100%; position: relative; z-index: 5; margin:auto;" >
-    <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+    <div @click="onOverlayClick()" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <div ref="BlackboardWrapper" style="position: relative;">
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>
         <canvas ref="BackCanvas" class="background-canvas"></canvas>
         <div v-show="!hasLoadedAvailableResources" class="overlay-item">
-          <v-progress-circular v-if="isFetchingAudio" indeterminate="true" size="50" color="orange">
+          <v-progress-circular v-if="isFetchingAudio" :indeterminate="true" size="50" color="orange">
           </v-progress-circular>
           <v-btn v-else @click="onOverlayClick()" large dark>
             <v-icon>mdi-play</v-icon>
           </v-btn>
-          
         </div>
       </div>
     </div>
@@ -153,13 +152,16 @@ export default {
       DoodleVideo.style.width = offlineWidth + "px";
     },
     onOverlayClick () {
-      if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
-      else { 
-        this.fetchStrokes(); 
-        if (this.audioUrl) { 
-          this.$refs.audioRecorder.downloadAudioFile();
+      if (this.isQuickplaying || this.recursiveSync === null || this.isPlayingAudio) {
+          if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
+        else { 
+          this.fetchStrokes(); 
+          if (this.audioUrl) { 
+            this.$refs.audioRecorder.downloadAudioFile();
+          }
         }
       }
+      
     },
     renderThumbnail () {
       if (!this.thumbnailImage) { return; } // necessary because switching between posts will trigger a resize before a destory event 
