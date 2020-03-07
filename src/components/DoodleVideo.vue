@@ -1,6 +1,6 @@
 <template>
   <div ref="DoodleVideo" style="height: 100%; position: relative; z-index: 5; margin:auto;" >
-    <div @click="onOverlayClick()" @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
+    <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
       <div ref="BlackboardWrapper" style="position: relative;">
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>
         <canvas ref="BackCanvas" class="background-canvas"></canvas>
@@ -152,16 +152,13 @@ export default {
       DoodleVideo.style.width = offlineWidth + "px";
     },
     onOverlayClick () {
-      if (this.isQuickplaying || this.recursiveSync === null || this.isPlayingAudio) {
-          if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
-        else { 
-          this.fetchStrokes(); 
-          if (this.audioUrl) { 
-            this.$refs.audioRecorder.downloadAudioFile();
-          }
+    if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
+    else { 
+      this.fetchStrokes(); 
+      if (this.audioUrl) { 
+        this.$refs.audioRecorder.downloadAudioFile();
         }
       }
-      
     },
     renderThumbnail () {
       if (!this.thumbnailImage) { return; } // necessary because switching between posts will trigger a resize before a destory event 
