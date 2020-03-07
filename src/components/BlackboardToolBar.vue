@@ -20,7 +20,7 @@
                     max-width="64px"
                   >
                     <v-icon>mdi-lead-pencil</v-icon>
-                    <v-icon class="down">keyboard_arrow_down</v-icon>
+                    <v-icon class="down">mdi-chevron-down</v-icon>
                   </v-btn>
                   <swatches @input="newVal => $emit('color-click', newVal)"
                     :value="color"

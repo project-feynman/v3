@@ -73,7 +73,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" @click="$router.push(`${C.id}/posts/tutorial`)">
+                    <v-card v-if="C.name && C.description" @click="$router.push(`class/${C.id}`)">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
@@ -152,8 +152,7 @@ export default {
           if (classObj.id === id) { return; } 
         }
       }
-      const { ALWAYS } = NotifFrequency;
-      const classSetting = { id, name, notifFrequency: ALWAYS };
+      const classSetting = { id, name, notifFrequency: NotifFrequency.ALWAYS };
       db.collection("users").doc(this.user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
       });

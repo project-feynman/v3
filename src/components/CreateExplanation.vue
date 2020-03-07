@@ -130,11 +130,19 @@ export default {
         await Blackboard.uploadAudio();
         this.isUploadingAudio = false;
       }
+      
+      function uuidv4() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+      }
+      const thumbnail = await Blackboard.createThumbnail();
+      const thumbnailUrl = await this.$_saveToStorage(`images/${uuidv4()}`, thumbnail);
       const explanation = {
         audioUrl: Blackboard.audioUrl || "", // TODO: make it explicit
         duration: Blackboard.currentTime || 0,
-        thumbnail: Blackboard.createThumbnail() || "",
-        ...metadata,
+        thumbnail: thumbnailUrl,
+        ...metadata
       };
       // save image backgrounds if necessary
       if (Blackboard.imageBlob) {
