@@ -3,18 +3,15 @@
     <component :is="isRealtime ? 'TheAppBar' : 'div'">
       <BlackboardToolBar
         :currentState="currentState"
-        :eraserActive="eraserActive"
+        :currentTool="currentTool"
         :color="color"
         :isRealtime="isRealtime"
-        :hasUploadedAudio="hasUploadedAudio"
-        @eraser-click="status => eraserActive = status"
-        @color-click="newColor => color = newColor"
+        @tool-select="({ tool, color }) => { selectTool(tool, color) }"
         @wipe-board="resetBoard()"
         @record-state-change="newState => handleRecordStateChange(newState)"
         @image-selected="imageFile => saveAndDisplayImage(imageFile)"
       >
-        <BasePopupButton v-if="isRealtime" 
-          actionName="Save video"
+        <BasePopupButton v-if="isRealtime" actionName="Save video"
           :disabled="!hasUploadedAudio"
           :inputFields="['title', 'description']"
           @action-do="payload => handleSaving(payload)"
@@ -51,7 +48,7 @@ import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import { RecordState } from "@/CONSTANTS.js";
+import { BlackboardTools, RecordState } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -60,7 +57,12 @@ export default {
     visible: Boolean,
   },
   mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
-  components: { BlackboardToolBar, AudioRecorder, TheAppBar, BasePopupButton },
+  components: { 
+    BlackboardToolBar, 
+    AudioRecorder, 
+    TheAppBar, 
+    BasePopupButton 
+  },
   data () {
     return {
       loading: true,
@@ -71,16 +73,24 @@ export default {
       bgCtx: null,
       color: "white",
       lineWidth: 2.5,
-      eraserActive: false,
+      currentTool: BlackboardTools.PEN,
       disableTouch: false,
       allStrokes: [],
-      currentStroke: { points: [] },
+      currentStroke: { 
+        points: [] 
+      },
       imageUrl: "",
       imageBlob: null,
       timer: null,
       currentTime: 0,
-      currPoint: { x: 0, y: 0 },
-      prevPoint: { x: -1, y: -1 },
+      currPoint: { 
+        x: 0, 
+        y: 0 
+      },
+      prevPoint: { 
+        x: -1, 
+        y: -1 
+      },
       mousedown: 0, // necessary to know if user is holding left click while dragging the mouse
       unsubscribe: null,
       currentState: "",
@@ -89,13 +99,25 @@ export default {
     }
   },
   computed: {
-    user () { return this.$store.state.user; },
+    user () { 
+      return this.$store.state.user; 
+    },
     classRef () { 
       const { class_id } = this.$route.params;
       return db.collection("classes").doc(class_id); 
     },
-    blackboardRef () { return this.classRef.collection("blackboards").doc(this.blackboardId); },
-    strokesRef () { return this.blackboardRef.collection("strokes"); }
+    blackboardRef () { 
+      return this.classRef.collection("blackboards").doc(this.blackboardId); 
+    },
+    strokesRef () { 
+      return this.blackboardRef.collection("strokes"); 
+    },
+    isStrokeEraser () {
+      return this.currentTool === BlackboardTools.STROKE_ERASER;
+    },
+    isNormalEraser () {
+      return this.currentTool === BlackboardTools.NORMAL_ERASER;
+    }
   },
   watch: {
     blackboardId: {
@@ -114,15 +136,22 @@ export default {
       }
       this.displayImageAsBackground(imageSrc);
     },
-    eraserActive () {
+    currentTool () {
       this.customCursor();
-      this.canvas.getContext("2d").globalCompositeOperation = this.eraserActive
+      this.ctx.globalCompositeOperation = (this.isNormalEraser)
         ? "destination-out"
         : "source-over";
-      this.lineWidth = this.eraserActive ? 25 : 2.5;
+      this.lineWidth = (this.isNormalEraser) ? 25 : 2.5;
+      if (this.isStrokeEraser) {
+        this.$root.$emit("show-snackbar", "The stroke eraser won't be able to handle fast movements.");
+      }
     },
-    color () { this.customCursor(); },
-    visible () { this.resizeBlackboard(); },
+    color () { 
+      this.customCursor(); 
+    },
+    visible () { 
+      this.resizeBlackboard(); 
+    }
   },
   mounted () {
     this.canvas = this.$refs.FrontCanvas;
@@ -141,6 +170,10 @@ export default {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
+    selectTool (tool, color) {
+      this.currentTool = tool;
+      if (color) { this.color = color; }
+    },
     async initData () {
       // no need to reset data, just reset variables and UI as it's only useful when switching between different blackboards
       this.resetVariables();
@@ -262,7 +295,7 @@ export default {
       this.currentStroke.startTime = Number(this.currentTime.toFixed(1));
       this.currentStroke.color = this.color;
       this.currentStroke.lineWidth = this.lineWidth;
-      this.currentStroke.isErasing = this.eraserActive;
+      this.currentStroke.isErasing = this.isNormalEraser;
 
       this.$_rescaleCanvas(false);
       e.preventDefault(); // not put in the beginning because sometimes we allow scrolling 
@@ -273,25 +306,45 @@ export default {
     },
     touchStart (e) {
       if (this.isNotValidTouch(e)) { return; }
-      if (e.touches[0].touchType === "stylus") { this.disableTouch = true; }
-      this.startNewStroke(e);
-      this.drawToPointAndSave(e);
+      if (e.touches[0].touchType === "stylus") { 
+        this.disableTouch = true; 
+      }
+      if (this.isStrokeEraser) { 
+        this.eraseStrokesWithinRadius(e); 
+      } else {
+        this.startNewStroke(e);
+        this.drawToPointAndSave(e);
+      }
     },
     touchMove (e) {
       if (this.isNotValidTouch(e)) { return; }
-      this.drawToPointAndSave(e);
+      if (this.isStrokeEraser) { 
+        this.eraseStrokesWithinRadius(); 
+      } else { 
+        this.drawToPointAndSave(e); 
+      }
     },
-    touchEnd (e) { this.saveStrokeThenReset(e); },
+    touchEnd (e) { 
+      this.saveStrokeThenReset(e); 
+    },
     mouseDown (e) {
       this.mousedown = 1;
-      this.startNewStroke(e);
-      const isMouseDraw = true;
-      this.drawToPointAndSave(e, isMouseDraw);
+      if (this.isStrokeEraser) { 
+        this.eraseStrokesWithinRadius(e); 
+      } else {
+        this.startNewStroke(e);
+        const isMouse = true;
+        this.drawToPointAndSave(e, isMouse);
+      }
     },
     mouseMove (e) {
       if (this.mousedown !== 1) { return; }
-      const isMouseDraw = true;
-      this.drawToPointAndSave(e, isMouseDraw);
+      if (this.isStrokeEraser) { 
+        this.eraseStrokesWithinRadius(e); 
+      } else {
+        const isMouse = true;
+        this.drawToPointAndSave(e, isMouse);
+      }
     },
     mouseUp (e) {
       this.mousedown = 0;
@@ -308,12 +361,39 @@ export default {
       this.currentStroke = { points: [] };
       this.prevPoint = { x: -1, y: -1 };
     },
-    drawToPointAndSave (e, isMouseDraw) {
+    drawToPointAndSave (e, isMouse) {
       e.preventDefault();
-      if (isMouseDraw) { this.currPoint = { x: e.offsetX, y: e.offsetY }; } 
-      else { this.getTouchPos(e); }
+      if (isMouse) { 
+        this.currPoint = { x: e.offsetX, y: e.offsetY }; 
+      } else { 
+        this.getTouchPos(e); 
+      }
       this.convertAndSavePoint(this.currPoint.x, this.currPoint.y);
       this.drawToPoint(this.currPoint);
+    },
+    eraseStrokesWithinRadius (e) {
+      e.preventDefault();
+      const eraserCenter = { x: e.offsetX, y: e.offsetY };
+      const radius = 10;
+      const idxOfStrokesToErase = []
+      for (let i = 0; i < this.allStrokes.length; i++) {
+        const stroke = this.allStrokes[i];
+        for (let point of stroke.points) {
+          const deltaX = eraserCenter.x - point.unitX * this.canvas.width
+          const deltaY = eraserCenter.y - point.unitY * this.canvas.height
+          if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
+            idxOfStrokesToErase.push(i);
+            break; 
+          }
+        }
+      }
+      for (let i of idxOfStrokesToErase) {
+        this.allStrokes.splice(i, 1); // remove 1 element at index i
+      }
+      if (idxOfStrokesToErase.length > 0) {
+        this.wipeBoard();
+        this.$_drawStrokesInstantly();
+      }
     },
     getTouchPos (e) {
       const finger1 = e.touches[0];
@@ -429,11 +509,11 @@ export default {
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
       const ctx = dummyCanvas.getContext("2d");
-      ctx.fillStyle = this.eraserActive ? "#fff" : this.color;
+      ctx.fillStyle = this.isNormalEraser ? "#fff" : this.color;
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(this.eraserActive ? "\uF1FE" : "\uF64F", 12, 12);
+      ctx.fillText(this.isNormalEraser ? "\uF1FE" : "\uF64F", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },

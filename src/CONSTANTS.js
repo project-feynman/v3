@@ -18,3 +18,9 @@ export const demoVideo = {
   classId: "FVdgjuywaFgxvyylISt2",
   postId: "xut7dg7pbso4up8nb5239"
 };
+
+export const BlackboardTools = {
+  PEN: "PEN",
+  STROKE_ERASER: "STROKE_ERASER",
+  NORMAL_ERASER: "NORMAL_ERASER"
+}
