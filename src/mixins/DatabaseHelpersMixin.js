@@ -62,14 +62,14 @@ export default {
       });
     },
     $_saveToStorage (path, blob) {
-      return new Promise(async resolve => {
+      return new Promise(async (resolve, reject) => {
         try {
           const storageRef = firebase.storage().ref();
           const ref = storageRef.child(path);
           const uploadTask = ref.put(blob);
           uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
-            snapshot => {},
-            error => console.log('error =', error),
+            (snapshot) => {},
+            (error) => console.log('error =', error),
             async () => {
               const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
               resolve(downloadUrl);
@@ -77,7 +77,7 @@ export default {
           );
         } catch (error) {
           this.$root.$emit("snow-snackbar", error.message);
-          reject("Error: cannot save to storage");
+          reject("Error =", error);
         }
       });
     }

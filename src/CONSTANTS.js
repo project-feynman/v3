@@ -18,3 +18,8 @@ export const demoVideo = {
   classId: "FVdgjuywaFgxvyylISt2",
   postId: "xut7dg7pbso4up8nb5239"
 };
+
+export const navbarHeight = 48; 
+export const aspectRatio = 9/16;
+export const epsilon = 20;
+export const audioPlayerHeight = 52;

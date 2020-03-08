@@ -32,6 +32,7 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import _ from "lodash";
+import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -43,11 +44,16 @@ export default {
     imageUrl: String,
     image: { 
       type: Object,
-      default () { return { file: null }; }
+      default () { 
+        return { file: null }; 
+      }
     },
-    audioUrl: String
+    audioUrl: String,
+    hasStrokes: Boolean
   },
-  components: { AudioRecorder },
+  components: { 
+    AudioRecorder 
+  },
   mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
   data: () => ({
     canvas: null,
@@ -58,7 +64,6 @@ export default {
     isFetchingAudio: false,
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
-    isStatic: false,
     allStrokes: [],
     isQuickplaying: false,
     mouseHover: false,
@@ -84,15 +89,17 @@ export default {
         && (this.hasFetchedStrokes || !this.blackboardId)
     },
     hasVisualAndAudio () { 
-      return (this.injectedStrokes || this.hasFetchedStrokes) && (this.audio || this.hasFetchedAudio); 
-    },
-    overlay () {
-      return !this.isStatic && !this.isQuickplaying && this.recursiveSync === null;
+      return (this.injectedStrokes || this.hasFetchedStrokes) 
+        && (this.audio || this.hasFetchedAudio); 
     }
   },
   watch: {
-    mouseHover () { this.$emit("mouse-change", this.mouseHover); },
-    hasVisualAndAudio () { this.$emit("visual-audio-ready"); },
+    mouseHover () { 
+      this.$emit("mouse-change", this.mouseHover); 
+    },
+    hasVisualAndAudio () { 
+      this.$emit("visual-audio-ready"); 
+    },
     hasLoadedAvailableResources () { 
       this.$nextTick(() => { // this waits for audioRecorder to be fully loaded
         this.$emit("available-resources-ready"); 
@@ -100,8 +107,9 @@ export default {
     },
   },
   async created () {
-    if (this.injectedStrokes) { this.allStrokes = this.injectedStrokes } 
-    else if (!this.thumbnail) { this.fetchStrokes(); } 
+    if (this.injectedStrokes) { 
+      this.allStrokes = this.injectedStrokes 
+    } 
     this.handleSeeking = _.debounce(this.handleSeeking, 0);
   },
   async mounted () {
@@ -114,7 +122,7 @@ export default {
       this.thumbnailImage = new Image;
       this.thumbnailImage.src = this.thumbnail;
       this.$_rescaleCanvas(false); // don't redraw
-      setTimeout(this.renderThumbnail, 1000);
+      setTimeout(this.renderThumbnail, 1000); // quickfix
       // this.$nextTick(this.renderThumbnail); // requires nextTick for some reason
       if (this.imageUrl) { // URL to the saved image on Firebase hosting
         this.$_displayImage(this.imageUrl);
@@ -134,9 +142,6 @@ export default {
   },
   methods: {
     resizeVideo () {
-      const navbarHeight = 48;
-      const audioPlayerHeight = 52;
-      const aspectRatio = 9/16;
       const { BlackboardWrapper, DoodleVideo } = this.$refs;
       DoodleVideo.style.width = "100%";
       let offlineWidth = DoodleVideo.offsetWidth;
@@ -146,17 +151,18 @@ export default {
         offlineHeight = availableHeight; 
         offlineWidth = offlineHeight * (1/aspectRatio);
       }
-      const realtime_height = window.innerHeight - navbarHeight;
-      BlackboardWrapper.style.height = offlineHeight + "px";
-      this.canvas.style.height = offlineHeight + "px";
-      DoodleVideo.style.width = offlineWidth + "px";
+      BlackboardWrapper.style.height = `${offlineHeight}px`;
+      this.canvas.style.height = `${offlineHeight}px`;
+      DoodleVideo.style.width = `${offlineWidth}px`;
     },
     onOverlayClick () {
-    if (this.hasLoadedAvailableResources) { this.playGivenWhatIsAvailable(); }
-    else { 
-      this.fetchStrokes(); 
-      if (this.audioUrl) { 
-        this.$refs.audioRecorder.downloadAudioFile();
+      if (this.hasLoadedAvailableResources) { 
+        this.playGivenWhatIsAvailable(); 
+      } else { 
+        if (!this.hasStrokes) { return; }
+        this.fetchStrokes(); 
+        if (this.audioUrl) { 
+          this.$refs.audioRecorder.downloadAudioFile();
         }
       }
     },
@@ -171,10 +177,12 @@ export default {
         this.stopSyncing();
         this.nextFrameIdx = 0; // need to redraw previous progress 
         this.syncContinuously();
-      }
-      else { 
-        if (!this.hasFetchedStrokes) { this.renderThumbnail(); }
-        else { this.$_rescaleCanvas(true); } // redraw = true
+      } else { 
+        if (!this.hasFetchedStrokes) { 
+          this.renderThumbnail(); 
+        } else { 
+          this.$_rescaleCanvas(true); // separate scaling and drawing
+        } 
       } 
     },
     async fetchStrokes () {
@@ -184,10 +192,6 @@ export default {
         const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
         this.allStrokes = await this.$_getCollection(strokesRef);
         this.$nextTick(() => {
-          if (this.allStrokes.length === 0) { 
-            this.isStatic = true;
-            this.$root.$emit("show-snackbar", "This is just a static image.")
-          }
           this.hasFetchedStrokes = true;
           this.$emit("strokes-ready")
           this.$_rescaleCanvas(true);
@@ -196,8 +200,11 @@ export default {
       });
     },
     playGivenWhatIsAvailable () { 
-      if (this.hasVisualAndAudio) { this.$refs.audioRecorder.playAudio(); }
-      else { this.playSilentAnimation(); }
+      if (this.hasVisualAndAudio) { 
+        this.$refs.audioRecorder.playAudio(); 
+      } else { 
+        this.playSilentAnimation(); 
+      }
     },
     async playSilentAnimation () {
       this.isQuickplaying = true;
@@ -205,17 +212,19 @@ export default {
       this.isQuickplaying = false;
     },
     playVideo () {
-      this.isPlayingAudio;
-      const { audioRecorder } = this.$refs;
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
       this.nextFrameIdx = 0;
       this.prepareForSync();
-      audioRecorder.playAudio();
+      this.$refs.audioRecorder.playAudio();
+      this.isPlayingAudio = true;
     },
     prepareForSync () {
-      const { audioRecorder } = this.$refs;
-      if (!this.getCurrentAudioTime) { this.getCurrentAudioTime = audioRecorder.getAudioTime; }
-      if (!this.recursiveSync) { this.syncContinuously(); }
+      if (!this.getCurrentAudioTime) { 
+        this.getCurrentAudioTime = this.$refs.audioRecorder.getAudioTime; 
+      }
+      if (!this.recursiveSync) { 
+        this.syncContinuously(); 
+      }
     },
     handleSeeking () {
       if (!this.recursiveSync) { 
@@ -242,7 +251,7 @@ export default {
       }
       this.renderFramesUntilCurrentTime();
       if (!once && this.nextFrameIdx < this.allFrames.length) {
-        let timeout = 1000 * (this.getStartTime(nextFrame) - this.getCurrentAudioTime()); 
+        const timeout = 1000 * (this.getStartTime(nextFrame) - this.getCurrentAudioTime()); 
         this.recursiveSync = setTimeout(this.syncContinuously, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
       } 
     },
@@ -251,7 +260,7 @@ export default {
       return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
     renderFramesUntilCurrentTime () {
-      for (let i = this.nextFrameIdx; i < this.allFrames.length; i += 1) {
+      for (let i = this.nextFrameIdx; i < this.allFrames.length; i++) {
         const frame = this.allFrames[i];
         if (this.getStartTime(frame) > this.getCurrentAudioTime()) { 
           break; 

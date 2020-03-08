@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <TheSideDrawer v-model="drawer"/>
-    <RouterView :key="$route.fullPath"/>
+    <RouterView v-if="mitClass" :key="$route.fullPath"/>
   </v-app>
 </template>
 
@@ -9,13 +9,19 @@
 import TheSideDrawer from "@/components/TheSideDrawer.vue";
 
 export default {
-  components: { TheSideDrawer },
+  components: { 
+    TheSideDrawer 
+  },
   data: () => ({
     drawer: true
   }),
+  computed: {
+    mitClass () {
+      return this.$store.state.mitClass;
+    }
+  },
   created () {
     this.$root.$on("toggle-drawer", () => this.drawer = !this.drawer);
-    this.$root.$on("open-drawer", () => this.drawer = true);
     this.$store.dispatch("fetchClass", this.$route.params.class_id);
   }
 }

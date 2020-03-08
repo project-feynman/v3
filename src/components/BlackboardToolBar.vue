@@ -96,7 +96,10 @@ export default {
     currentState: String,
     isRealtime: Boolean,
   },
-  components: { Swatches, ButtonPrabhakar },
+  components: { 
+    Swatches, 
+    ButtonPrabhakar 
+  },
   data () {
     return {
       RecordState,

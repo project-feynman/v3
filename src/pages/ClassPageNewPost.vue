@@ -5,8 +5,6 @@
       <CreateExplanation 
         :willCreateNewPost="true"
         :postDbRef="newPostRef"
-        :newExplanationDbRef="newExplanationRef"
-        :newDocId="id"
       />
     </v-content>
   </div>
@@ -16,23 +14,19 @@
 import TheAppBar from "@/components/TheAppBar.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import db from "@/database.js";
+import { getRandomId } from "@/helpers.js";
 
 export default {
-  components: { TheAppBar, CreateExplanation },
-  data () {
-    return {
-      id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) 
-    }
+  components: { 
+    TheAppBar, 
+    CreateExplanation 
   },
   computed: {
     postsRef () {
-      const { class_id } = this.$route.params;
-      return db.collection(`classes/${class_id}/posts`);
+      return db.collection(`classes/${this.$route.params.class_id}/posts`);
     },
-    // Both newPost and newExplanation share the same newDocId for easy reference
-    newPostRef () { return this.postsRef.doc(this.id); },
-    newExplanationRef () { 
-      return this.newPostRef.collection("explanations").doc(this.id);
+    newPostRef () { 
+      return this.postsRef.doc(getRandomId()); 
     }
   }
 }

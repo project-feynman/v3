@@ -2,6 +2,7 @@
   <div>
     <TheAppBar/>
     <v-content>
+      <DisplayExplanation v-if="originalPost" :expl="originalPost"/>
       <DisplayExplanation v-for="expl in sortedExplanations" 
         :expl="expl" :key="expl.id"
       />
@@ -26,8 +27,13 @@ import db from "@/database.js";
 
 export default {
   mixins: [DatabaseHelpersMixin],
-  components: { TheAppBar, CreateExplanation, DisplayExplanation },
+  components: { 
+    TheAppBar, 
+    CreateExplanation, 
+    DisplayExplanation 
+  },
   data: () => ({
+    originalPost: null,
     explanations: [],
     explanationsRef: null,
     postRef: null,
@@ -43,8 +49,11 @@ export default {
     const { class_id, post_id } = this.$route.params;
     this.postRef = db.doc(`classes/${class_id}/posts/${post_id}`);
     this.explanationsRef = this.postRef.collection("explanations");
+    this.originalPost = await this.$_getDoc(this.postRef);
     this.unsubscribeListener = await this.$_listenToCollection(this.explanationsRef, this, "explanations");
   },
-  destroyed () { this.unsubscribeListener(); }
+  destroyed () { 
+    this.unsubscribeListener(); 
+  }
 }
 </script>
