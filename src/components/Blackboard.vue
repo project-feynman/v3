@@ -318,7 +318,7 @@ export default {
     touchMove (e) {
       if (this.isNotValidTouch(e)) { return; }
       if (this.isStrokeEraser) { 
-        this.eraseStrokesWithinRadius(); 
+        this.eraseStrokesWithinRadius(e); 
       } else { 
         this.drawToPointAndSave(e); 
       }
@@ -372,7 +372,15 @@ export default {
     },
     eraseStrokesWithinRadius (e) {
       e.preventDefault();
-      const eraserCenter = { x: e.offsetX, y: e.offsetY };
+      let eraserCenter = {};
+      if (this.mousedown === 1) {
+        eraserCenter = { x: e.offsetX, y: e.offsetY };
+      } else {
+        const finger1 = e.touches[0];
+        const { left, top } = this.canvas.getBoundingClientRect();
+        eraserCenter.x = finger1.pageX - left - window.scrollX;
+        eraserCenter.y = finger1.pageY - top - window.scrollY;
+      }
       const radius = 10;
       const idxOfStrokesToErase = []
       for (let i = 0; i < this.allStrokes.length; i++) {
