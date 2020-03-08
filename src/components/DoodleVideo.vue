@@ -4,11 +4,13 @@
       <div ref="BlackboardWrapper" style="position: relative;">
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>
         <canvas ref="BackCanvas" class="background-canvas"></canvas>
-        <v-btn v-show="!hasLoadedAvailableResources" 
-          @click="onOverlayClick()" large dark class="overlay-button"
-        >
-          <v-icon>mdi-play</v-icon>
-        </v-btn>
+        <div v-show="!hasLoadedAvailableResources" class="overlay-item">
+          <v-progress-circular v-if="isFetchingAudio" :indeterminate="true" size="50" color="orange">
+          </v-progress-circular>
+          <v-btn v-else @click="onOverlayClick()" large dark>
+            <v-icon>mdi-play</v-icon>
+          </v-btn>
+        </div>
       </div>
     </div>
     <p v-if="isFetchingAudio">Fetching audio...(if this takes too long try refreshing)</p>
@@ -295,7 +297,7 @@ export default {
   background-color: rgb(62, 66, 66);
 }
 
-.overlay-button {
+.overlay-item {
   position: absolute; 
   top: 50%; 
   left: 50%;
