@@ -1,7 +1,7 @@
 <template>
   <div>
     <vue-plyr v-if="audio" ref="plyr">
-      <audio :id="`audio-element--${audioUrl}`" :src="audio.blobURL" controls="true"/>
+      <audio ref="AudioPlayer" :src="audio.blobURL" controls="true"/>
     </vue-plyr>
   </div>
 </template>
@@ -10,9 +10,13 @@
 import RecorderService from '@/services/RecorderService.js';
 import utils from '@/services/Utils';
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import { getRandomId } from "@/helpers.js";
 
 export default {
-  props: { audioUrl: String, injectedAudio: Object },
+  props: { 
+    audioUrl: String, 
+    injectedAudio: Object 
+  },
   mixins: [DatabaseHelpersMixin],
   data () {
     return {
@@ -36,8 +40,9 @@ export default {
     this.recorderSrvc.em.addEventListener("recording", evt => this.onNewRecording(evt))
   },
   computed: {
-    // TODO: investigate bug
-    player () { return this.$refs.plyr.player }
+    player () { 
+      return this.$refs.plyr.player 
+    }
   },
   watch: {
     cleanupWhenFinished (val) {
@@ -45,11 +50,11 @@ export default {
     }
   },
   methods: {
-    playAudio () { this.player.play(); },
+    playAudio () { 
+      this.player.play(); 
+    },
     getAudioTime () {
-      const audioElement = document.getElementById(`audio-element--${this.audioUrl}`);
-      if (!audioElement) { return 0; } // should throw an error
-      return audioElement.currentTime;
+      return this.$refs.AudioPlayer.currentTime;
     },
     initEventEmitters () {
       this.$nextTick(() => {
@@ -63,9 +68,9 @@ export default {
       this.$emit("loading"); 
       // TODO: refactor this in databaseHelpersMixin.js
       if (this.audioUrl) {
-        let xhr = new XMLHttpRequest()
+        const xhr = new XMLHttpRequest()
         xhr.responseType = 'blob'
-        xhr.onload = event => {
+        xhr.onload = (event) => {
           const blob = xhr.response;
           const blobURL = URL.createObjectURL(blob)
           const newRecording = {
@@ -104,16 +109,10 @@ export default {
     uploadRecording () {
       return new Promise(async (resolve, reject) => {
         if (!this.audio) { reject() }
-        const downloadUrl = await this.$_saveToStorage(this.getRandomUID(), this.audio.blob);
+        const downloadUrl = await this.$_saveToStorage(getRandomId(), this.audio.blob);
         this.$emit("file-uploaded", { url: downloadUrl });
         resolve();
       })
-    },
-    getRandomUID () {
-      function s4 () {
-        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1)
-      }
-      return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
     }
   }
 }
