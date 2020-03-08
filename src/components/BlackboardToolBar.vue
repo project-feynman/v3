@@ -8,7 +8,7 @@
               <v-col class="px-1 py-0" cols="auto">
                 <div :class="[$vuetify.breakpoint.smAndDown ? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
                   id="swatches-wrapper"
-                  @click="$emit('eraser-click', false)"
+                  @click="$emit('tool-select', { tool: BlackboardTools.PEN })"
                 >
                   <v-btn
                     :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent' : color"
@@ -22,7 +22,7 @@
                     <v-icon>mdi-lead-pencil</v-icon>
                     <v-icon class="down">mdi-chevron-down</v-icon>
                   </v-btn>
-                  <swatches @input="newVal => $emit('color-click', newVal)"
+                  <swatches @input="newColor => $emit('tool-select', { tool: BlackboardTools.PEN, color: newColor })"
                     :value="color"
                     :colors="colors"
                     :show-border="true"
@@ -34,8 +34,15 @@
                   />
                 </div>
               </v-col>
-              <ButtonPrabhakar @click="eraserClick()" :outlined="!eraserActive" icon="mdi-eraser" :isNormalText="true">
+              <ButtonPrabhakar @click="selectNormalEraser()" 
+                :outlined="!isNormalEraser" icon="mdi-eraser" :isNormalText="true"
+              >
                 Eraser
+              </ButtonPrabhakar>
+              <ButtonPrabhakar @click="$emit('tool-select', { tool: BlackboardTools.STROKE_ERASER })" 
+                :outlined="!isStrokeEraser" icon="mdi-eraser" :isNormalText="true"
+              >
+                Stroke Eraser
               </ButtonPrabhakar>
             </v-row>
           </v-col>
@@ -86,11 +93,12 @@
 <script>
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
-import { RecordState } from "@/CONSTANTS.js";
+import { RecordState, BlackboardTools } from "@/CONSTANTS.js";
 import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue"
 
 export default {
   props: {
+    currentTool: String,
     color: String,
     eraserActive: Boolean,
     currentState: String,
@@ -98,15 +106,24 @@ export default {
   },
   components: { 
     Swatches, 
-    ButtonPrabhakar 
+    ButtonPrabhakar,
   },
   data () {
     return {
       RecordState,
+      BlackboardTools,
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
       palleteVisibility: false,
       imageAdded: false,
       blackboardAttached: true
+    }
+  },
+  computed: {
+    isStrokeEraser () {
+      return this.currentTool === BlackboardTools.STROKE_ERASER;
+    },
+    isNormalEraser () {
+      return this.currentTool === BlackboardTools.NORMAL_ERASER; 
     }
   },
   mounted () {
@@ -125,13 +142,16 @@ export default {
       document.getElementById("whiteboard-bg-input").value = "";
       document.getElementById("whiteboard-bg-input").click();
     },
-    eraserClick () {
+    selectNormalEraser () {
       this.palleteVisibility = false;
-      this.$emit("eraser-click", true);
+      this.$emit('tool-select', { tool: BlackboardTools.NORMAL_ERASER })
     },
     palleteClick () {
-      if (this.eraserActive) { this.palleteVisibility = false; }
-      else { this.palleteVisibility = !this.palleteVisibility; }
+      if (this.eraserActive) { 
+        this.palleteVisibility = false; 
+      } else { 
+        this.palleteVisibility = !this.palleteVisibility; 
+      }
     },
     palleteClose (e) {
       const pallete = document.getElementById("swatches-wrapper");

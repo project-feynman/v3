@@ -19,7 +19,14 @@ export const demoVideo = {
   postId: "xut7dg7pbso4up8nb5239"
 };
 
+export const BlackboardTools = {
+  PEN: "PEN",
+  STROKE_ERASER: "STROKE_ERASER",
+  NORMAL_ERASER: "NORMAL_ERASER"
+}
+
 export const navbarHeight = 48; 
 export const aspectRatio = 9/16;
 export const epsilon = 20;
 export const audioPlayerHeight = 52;
+
