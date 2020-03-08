@@ -1,8 +1,14 @@
 <template>
   <div>
-    <vue-plyr v-if="audio" ref="plyr">
-      <audio ref="AudioPlayer" :src="audio.blobURL" controls="true"/>
-    </vue-plyr>
+    <audio v-if="audio" ref="AudioPlayer" 
+      :src="audio.blobURL" 
+      controls="true"
+      @play="$emit('play')"
+      @pause="$emit('pause')"
+      @seeking="$emit('seeking')"
+      @ended="$emit('ended')"
+      style="width: 100%;"
+    />
   </div>
 </template>
 
@@ -32,17 +38,11 @@ export default {
     if (this.injectedAudio) { 
       this.$emit("loading");
       this.audio = this.injectedAudio; 
-      this.initEventEmitters();
       this.$emit("loaded");
     } 
     this.recorderSrvc = new RecorderService()
     // event triggers when the user finishes an audio recording
     this.recorderSrvc.em.addEventListener("recording", evt => this.onNewRecording(evt))
-  },
-  computed: {
-    player () { 
-      return this.$refs.plyr.player 
-    }
   },
   watch: {
     cleanupWhenFinished (val) {
@@ -51,18 +51,10 @@ export default {
   },
   methods: {
     playAudio () { 
-      this.player.play(); 
+      this.$refs.AudioPlayer.play();
     },
     getAudioTime () {
       return this.$refs.AudioPlayer.currentTime;
-    },
-    initEventEmitters () {
-      this.$nextTick(() => {
-        this.player.on('play', () => this.$emit('play'));
-        this.player.on('pause', () => this.$emit('pause'));
-        this.player.on('seeking', () => this.$emit('seeking'));
-        this.player.on("ended", () => this.$emit("ended"));
-      });
     },
     downloadAudioFile () {
       this.$emit("loading"); 
@@ -81,7 +73,6 @@ export default {
             size: blob.size,
           }
           if (!this.audio) { this.audio = newRecording; } // initial load or just empty local data
-          this.initEventEmitters();
           this.$emit("loaded");
         }
         xhr.open('GET', this.audioUrl);
