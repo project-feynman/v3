@@ -1,23 +1,24 @@
 <template>
   <v-card>
     <v-container fluid>
-      <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"></TextEditor>
-      <v-btn v-if="newExplanationDbRef && postDbRef" 
-        @click="submitPost()" block class="ma-0 white--text" color="accent" 
-        :loading="isButtonDisabled" :disabled="isButtonDisabled"
+      <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
+      <v-btn v-if="newExplanationDbRef || postDbRef" 
+        @click="submitPost()" 
+        :loading="isButtonDisabled" 
+        :disabled="isButtonDisabled"
+        block color="accent" class="ma-0 white--text" 
       >
-        SUBMIT <v-icon class="pl-2">mdi-send</v-icon>
+        SUBMIT 
+        <v-icon class="pl-2">mdi-send</v-icon>
         <template v-slot:loader>
           <span v-if="isRecordingVideo">Currently recording...</span> 
-          <span v-else-if="isUploadingAudio">Processing video...</span>
+          <span v-else-if="isUploadingPost">Processing video...</span>
         </template>
       </v-btn>
       <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
         :isRealtime="false" 
         :visible="visible" 
-        :background="addedImage" 
         :key="changeKeyToForceReset"
-        @boardImage="boardImage" 
         @record-start="isRecordingVideo = true"
         @record-end="videoData => handleRecordEnd(videoData)"
         @retry-recording="handleRetry()"
@@ -38,14 +39,15 @@
 </template>
 
 <script>
-import db from "@/database.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import TextEditor from "@/components/TextEditor.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import db from "@/database.js";
 import { RecordState } from "@/CONSTANTS.js";
+import { getRandomId } from "@/helpers.js";
 
 export default {
   props: {
@@ -59,30 +61,38 @@ export default {
     visible: Boolean
   },
   mixins: [DatabaseHelpersMixin],
-  components: { Blackboard, DoodleVideo, TextEditor },
+  components: { 
+    Blackboard, 
+    DoodleVideo, 
+    TextEditor 
+  },
   data: () => ({
-    postDescription: "",
-    postTags: [],
-    // TODO: some variables are unnecessary
-    isUploadingAudio: false,
     isUploadingPost: false,
     isRecordingVideo: false,
     isPreviewing: false,
     blackboardAttached: true,
+    // TODO: refactor the variables below 
     blackboardStrokes: [],
     audio: null,
     audioUrl: "",
-    image: { file: null },
-    imageAdded: false,
-    addedImage: "",
-    changeImage: false,
+    image: { 
+      file: null 
+    }, 
     changeKeyToForceReset: 0
   }),
   computed: {
-    user () { return this.$store.state.user; },
-    mitClass () { return this.$store.state.mitClass; },
+    user () { 
+      return this.$store.state.user; 
+    },
+    simplifiedUser () {
+      const { isOnline, enrolledClasses, color, ...immutableInfo } = this.user;
+      return immutableInfo;
+    },
+    mitClass () { 
+      return this.$store.state.mitClass; 
+    },
     isButtonDisabled () {
-      return this.isUploadingPost || this.isUploadingAudio || this.isRecordingVideo;
+      return this.isUploadingPost || this.isRecordingVideo;
     }
   },
   methods: {
@@ -102,84 +112,68 @@ export default {
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
-      if (!this.newExplanationDbRef || !this.postDbRef) { return; }
-      const { TextEditor } = this.$refs;
-      if (TextEditor.html.length == 0) {
-        this.$root.$emit("show-snackbar", "Error: don't forget to use text in your explanation!")
+      const { TextEditor, Blackboard } = this.$refs;
+      if (TextEditor.html.length === 0) {
+        this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
         return; 
       }
+      this.isPreviewing = false; // important: for canvas to generate a thumbnail requires it to be visible
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
-      const explanationCreator = {
-        uid: this.user.uid,
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-        email: this.user.email
-      };
-      const mitClass = { id: this.mitClass.id, name: this.mitClass.name };
       const metadata = {
         title: TextEditor.extractAllText(),
         html: TextEditor.html,
-        description: this.postDescription,
         date: this.getDate(),
-        creator: explanationCreator,
-        mitClass
+        creator: this.simplifiedUser,
+        mitClass: this.mitClass
       };
-      const { Blackboard } = this.$refs;
-      if (Blackboard.currentState === RecordState.POST_RECORD) {
-        this.isUploadingAudio = true;
-        await Blackboard.uploadAudio();
-        this.isUploadingAudio = false;
-      }
-      
-      function uuidv4() {
-        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-          (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
-      }
-      const thumbnail = await Blackboard.createThumbnail();
-      const thumbnailUrl = await this.$_saveToStorage(`images/${uuidv4()}`, thumbnail);
-      const explanation = {
-        audioUrl: Blackboard.audioUrl || "", // TODO: make it explicit
-        duration: Blackboard.currentTime || 0,
-        thumbnail: thumbnailUrl,
-        ...metadata
-      };
-      // save image backgrounds if necessary
-      if (Blackboard.imageBlob) {
-        explanation.hasVisual = true;
-        const path = `images/${this.newDocId}` // anything unique is fine here
-        explanation.imageUrl = await this.$_saveToStorage(path, Blackboard.imageBlob);
-      }
-      if (this.willCreateNewPost) {
-        this.postDbRef.set({ ...metadata, participants: [explanationCreator]});
-      } else {
-        this.postDbRef.update({
-          participants: firebase.firestore.FieldValue.arrayUnion(explanationCreator)
-        });
-      }
-      // save the explanation and its strokes
-      if (Blackboard.allStrokes.length > 0) {
-        explanation.hasVisual = true;
-        for (let stroke of Blackboard.allStrokes) {
-          this.newExplanationDbRef.collection("strokes").add(stroke);
+      const explanation = { ...metadata };
+      // TODO: optimize by resolving promises all at once
+      const { allStrokes, imageBlob, currentState, currentTime } = Blackboard;
+      if (allStrokes.length > 0 || imageBlob) {
+        await this.$nextTick();
+        const thumbnail = await Blackboard.createThumbnail();
+        const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnail);
+        explanation.thumbnail = thumbnailUrl;
+        if (allStrokes.length > 0) {
+          explanation.hasStrokes = true;
+          for (let stroke of allStrokes) {
+            if (this.willCreateNewPost) {
+              this.postDbRef.collection("strokes").add(stroke);
+            } else {
+              this.newExplanationDbRef.collection("strokes").add(stroke);
+            }
+          }
+        }
+        if (imageBlob) {
+          explanation.imageUrl = await this.$_saveToStorage(`images/${getRandomId()}`, imageBlob);
+        }
+        if (currentState === RecordState.POST_RECORD) {
+          await Blackboard.uploadAudio();
+          explanation.audioUrl = Blackboard.audioUrl;
+          explanation.duration = Blackboard.currentTime;
         }
       }
-      this.newExplanationDbRef.set(explanation);
-      // reset
-      this.postDescription = "";
+      if (this.willCreateNewPost) {
+        explanation.participants = [this.simplifiedUser]
+        explanation.hasReplies = false;
+        this.postDbRef.set(explanation);
+      } else {
+        this.newExplanationDbRef.set(explanation);
+        this.postDbRef.update({
+          participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
+          hasReplies: true
+        });
+      }
+      this.resetComponent();
+      this.$emit("upload-finish"); // tell parent to not hide loading status
+    },
+    resetComponent () {
       this.changeKeyToForceReset += 1; // not sure if it works
       this.isUploadingPost = false;
-      this.$emit("upload-finish"); // tell parent to not hide loading status
     },
     getDate () {
       const today = new Date();
       return today.toISOString();
-    },
-    boardImage (boardImage) {
-      if (!boardImage) { return; }
-      this.imageAdded = true;
-      this.addedImage = boardImage;
-      this.changeImage = false;
     }
   }
 }

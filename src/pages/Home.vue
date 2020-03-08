@@ -116,12 +116,14 @@ export default {
     CreateExplanation,
     TheAppBar,
     TheDropdownMenu,
-    TheSearchBar,
+    TheSearchBar
   },
   mixins: [DatabaseHelpersMixin],
   computed: {
     ...mapState(["user", "isFetchingUser"]),
-    userRef () { return db.collection("users").doc(this.user.uid); },
+    userRef () { 
+      return db.collection("users").doc(this.user.uid); 
+    }
   },
   data () {
     return {
@@ -138,7 +140,9 @@ export default {
   mounted () { window.addEventListener("scroll", this.logoVisibility); },
   destroyed () { window.removeEventListener("scroll", this.logoVisibility); },
   methods: {
-    getMitClassRef (classId) { return db.collection("classes").doc(classId); },
+    getMitClassRef (classId) { 
+      return db.collection("classes").doc(classId); 
+    },
     getBlackboardRef (explanationId) {
       return db.doc(`classes/${demoVideo.classId}/posts/${explanationId}/explanations/${explanationId}`);
     },
@@ -191,7 +195,7 @@ export default {
         this.$root.$emit(
           "show-snackbar", 
           "Error: don't forget to enter your first name and last name!"
-        )
+        );
         return;
       }
       firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -215,7 +219,9 @@ export default {
       const newUser = { uid, email, firstName, lastName, color, enrolledClasses };
       db.collection("users").doc(uid).set(newUser);
     },
-    signOut () { firebase.auth().signOut(); },
+    signOut () { 
+      firebase.auth().signOut(); 
+    },
     logoVisibility () {
       const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;
       if (hero_pos < 0) {

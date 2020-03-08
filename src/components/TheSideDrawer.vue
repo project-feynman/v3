@@ -1,7 +1,7 @@
 <template>
   <v-card style="zIndex:10">
     <v-navigation-drawer :value="value" @input="newVal => $emit('input', newVal)" app clipped width="300">
-      <v-list class="pt-0">
+      <v-list class="py-0">
         <v-list-item-group>
           <!-- Overview -->
           <v-list-item @click="$router.push(`/class/${classId}`)" color="accent">
@@ -45,6 +45,10 @@
               <v-list-item-subtitle v-text="displayDate(tutorialPost.date)"/>
             </v-list-item-content>
           </v-list-item> -->
+          </v-list-item-group>
+        </v-list>
+        <v-list three-line class="pt-0">
+          <v-list-item-group>
           <!-- Class posts -->
           <v-list-item v-for="(post, i) in posts" :key="post.id + i"
             @click="$router.push(`/class/${classId}/posts/${post.id}`)" color="accent"
@@ -63,10 +67,13 @@
 <script>
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
 import { tutorial } from "@/CONSTANTS.js";
+import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
 
 export default {
-  props: { value: Boolean },
+  props: { 
+    value: Boolean 
+  },
   mixins: [DatabaseHelpersMixin],
   data () {
     return {
@@ -77,14 +84,17 @@ export default {
       unsubscribePostsListener: null
     }
   },
-  computed: { classId () { return this.$route.params.class_id; } },
+  computed: { 
+    classId () { 
+      return this.$route.params.class_id; 
+    } 
+  },
   async created () {
-    this.$root.$emit("open-drawer");
     const roomRef = db.doc(`rooms/${this.classId}`);
     const tutorialPostRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
     const postsRef = db.collection(`classes/${this.classId}/posts`);
     const postsQuery = postsRef.orderBy("date", "desc").limit(50);
-    this.tutorialPost = await this.$_getDoc(tutorialPostRef);
+    // this.tutorialPost = await this.$_getDoc(tutorialPostRef);
     this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
     this.unsubscribePostsListener = await this.$_listenToCollection(postsQuery, this, "posts");;
   },
@@ -94,13 +104,7 @@ export default {
   },
   methods: { 
     displayDate (dateString) { 
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        month: 'long',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit'
-      });
+      return displayDate(dateString);
     } 
   }
 };
