@@ -1,5 +1,6 @@
 <template>
   <div id="room">
+    <!-- <LiveBoardAudio/> -->
     <v-content v-if="user">
       <Blackboard v-if="room.blackboardId" ref="whiteboard" 
         :blackboardId="room.blackboardId" :isRealtime="true"
@@ -12,11 +13,13 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
 import Blackboard from "@/components/Blackboard.vue";
+import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 
 export default {
-  components: { Blackboard },
+  components: { Blackboard,
+                LiveBoardAudio },
   mixins: [DatabaseHelpersMixin],
   data () {
     return {
