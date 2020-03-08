@@ -5,13 +5,16 @@
       <TextEditor v-else key="1" ref="TextEditor"
         :injectedHtml="expl.html" 
       />
-      <v-btn v-if="isEditing" @click="updateExplanation()" block color="accent">SAVE EDIT</v-btn>
-      <DoodleVideo v-if="expl.hasVisual" ref="DoodleVideo"
+      <v-btn v-if="isEditing" @click="updateExplanation()" block color="accent">
+        SAVE EDIT
+      </v-btn>
+      <DoodleVideo v-if="expl.thumbnail" ref="DoodleVideo"
         :blackboardRef="boardRef" 
         :blackboardId="expl.id" 
         :audioUrl="expl.audioUrl" 
         :imageUrl="expl.imageUrl" 
         :thumbnail="expl.thumbnail"
+        :hasStrokes="expl.hasStrokes"
         @click="handleVideoClick()"
         @available-resources-ready="playVideo()"
       />
@@ -53,6 +56,7 @@ import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import BasePopupButton from "@/components/BasePopupButton";
 import db from "@/database.js";
+import { displayDate } from "@/helpers.js";
 
 export default {
   props: { 
@@ -62,10 +66,18 @@ export default {
       default () { return true; }
     }
   },
-  components: { DoodleVideo, BasePopupButton, TextEditor },
+  components: { 
+    DoodleVideo, 
+    BasePopupButton, 
+    TextEditor 
+  },
   computed: {
-    boardRef () { return db.doc(this.expl.ref); },
-    user () { return this.$store.state.user; }
+    boardRef () { 
+      return db.doc(this.expl.ref); 
+    },
+    user () { 
+      return this.$store.state.user; 
+    }
   },
   data: () => ({ 
     isEditing: false,
@@ -73,14 +85,8 @@ export default {
   }),
   methods: {
     displayDate (dateString) { 
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        month: 'long',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit'
-      });
-    } ,
+      return displayDate(dateString);
+    },
     // TODO: fetchStrokes as a slot-prop
     handleVideoClick () {
       this.$refs.DoodleVideo.fetchStrokes(); 
@@ -97,7 +103,7 @@ export default {
       db.doc(this.expl.ref).update({
         title: TextEditor.extractAllText(),
         html: TextEditor.html
-      })
+      });
       this.isEditing = false;
     },
     deleteExplanation () {

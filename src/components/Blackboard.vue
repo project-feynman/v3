@@ -51,7 +51,7 @@ import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import { RecordState } from "@/CONSTANTS.js";
+import { RecordState, navbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -60,7 +60,12 @@ export default {
     visible: Boolean,
   },
   mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
-  components: { BlackboardToolBar, AudioRecorder, TheAppBar, BasePopupButton },
+  components: { 
+    AudioRecorder, 
+    BasePopupButton,
+    BlackboardToolBar, 
+    TheAppBar, 
+  },
   data () {
     return {
       loading: true,
@@ -205,7 +210,7 @@ export default {
       this.imageUrl = "";
     },
     initCopyAndPasteImage () {
-       document.onpaste = async event => {
+       document.onpaste = async (event) => {
         const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
         // Find pasted image among pasted items
         let blob = null;
@@ -214,7 +219,6 @@ export default {
             blob = items[i].getAsFile();
           }
         }
-
         // Load image if there is a pasted image
         if (blob === null) { return; }
         this.imageBlob = blob;
@@ -281,7 +285,9 @@ export default {
       if (this.isNotValidTouch(e)) { return; }
       this.drawToPointAndSave(e);
     },
-    touchEnd (e) { this.saveStrokeThenReset(e); },
+    touchEnd (e) { 
+      this.saveStrokeThenReset(e); 
+    },
     mouseDown (e) {
       this.mousedown = 1;
       this.startNewStroke(e);
@@ -344,18 +350,15 @@ export default {
     },
     stopRecording () {
       this.stopTimer();
-      const { AudioRecorder } = this.$refs;
-      const { POST_RECORD } = RecordState;
-      AudioRecorder.stopRecording();
-      this.currentState = POST_RECORD;
+      this.$refs.AudioRecorder.stopRecording();
+      this.currentState = RecordState.POST_RECORD;
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: POST_RECORD });
+        this.blackboardRef.update({ recordState: RecordState.POST_RECORD });
       }
     },
     handleAudioSaved () { 
-      const { AudioRecorder } = this.$refs;
       const videoData = { 
-        audio: AudioRecorder.audio, 
+        audio: this.$refs.AudioRecorder.audio, 
         strokes: this.allStrokes,
         image: this.imageBlob
       };
@@ -364,7 +367,7 @@ export default {
     tryRecordAgain () {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
-      // last round's strokes will persist as the initial setup of this round's recording
+      // modify timestamps so last round's strokes will persist as the initial setup of this round's recording
       for (const stroke of this.allStrokes) {
         [stroke.startTime, stroke.endTime] = [0, 0];
       }
@@ -382,7 +385,10 @@ export default {
       if (this.isRealtime) {
         this.blackboardRef.update({ audioUrl: url })
       }
-      this.$emit("audio-upload-end", { blackboardStrokes: this.allStrokes, audioUrl: url});
+      this.$emit("audio-upload-end", { 
+        blackboardStrokes: this.allStrokes, 
+        audioUrl: url
+      });
     },
     createThumbnail () {
       return new Promise(async (resolve) => {
@@ -396,21 +402,12 @@ export default {
       })
     },
     resizeBlackboard () {
-      const navbarHeight = 48; 
-      const aspectRatio = 9/16;
-      const epsilon = 20;
-      const blackboard = this.$refs.BlackboardWrapper;
-      blackboard.style.height = "unset" // To reset the blackboard height when the user retries to make medio after previewing
-      let offlineWidth = blackboard.offsetWidth;
-      let offlineHeight = offlineWidth * aspectRatio;
-      if (offlineHeight > window.innerHeight - navbarHeight) {
-        offlineHeight = window.innerHeight - navbarHeight - epsilon; 
-      }
-      const realtime_height = window.innerHeight - navbarHeight;
-      if (!this.isRealtime) { this.canvas.style.height = offlineHeight + "px"; } 
-      else { this.canvas.style.height = realtime_height + "px"; }
-      const willRedraw = true;
-      this.$_rescaleCanvas(willRedraw);
+      const { BlackboardWrapper } = this.$refs;
+      BlackboardWrapper.style.height = "unset" // To reset the blackboard height when the user retries to make video after previewing
+      const availableHeight = window.innerHeight - navbarHeight;
+      const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, availableHeight - epsilon);
+      this.canvas.style.height = this.isRealtime ? `${availableHeight}px` : `${offlineHeight}px`;
+      this.$_rescaleCanvas(true); // will redraw
     },
     drawToPoint ({ x, y }) {
       if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
