@@ -58,7 +58,7 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
     const { classId, postId } = context.params;
     const html = `
       <p>${post.data().title}</p>
-      <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
+      <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
     `;
     sendEmail(classmateDoc.data().email, subject, "A new post :]", html);
   })
@@ -72,7 +72,7 @@ exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}
     const subject = `${explDoc.data().creator.firstName} replied in a ${explDoc.data().mitClass.name} post you engaged in`;
     const html = `
       <p>${explDoc.data().title}</p>
-      <a href="https://explain.mit.edu/${classId}/posts/${postId}">Link to post</a>
+      <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
     `;
     sendEmail(participant.email, subject, "A new post activity :]", html);
   })
