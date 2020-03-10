@@ -14,7 +14,6 @@ Get them to use online blackboards so their explanations are automatically conve
 <p float="left">
   <img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/>
   <img src="documentation/Winston.jpg" alt="member photo" height="170"/>
-  <img src="documentation/Elton.png" alt="member photo" height="170"/>
 </p>
  
                                                                     
