@@ -11,7 +11,7 @@
         @record-state-change="newState => handleRecordStateChange(newState)"
         @image-selected="imageFile => saveAndDisplayImage(imageFile)"
       >
-        <BasePopupButton v-if="isRealtime" actionName="Save video"
+        <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
           :disabled="!hasUploadedAudio"
           :inputFields="['title', 'description']"
           @action-do="payload => handleSaving(payload)"
@@ -19,7 +19,7 @@
           <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
             Upload video
           </v-btn>
-        </BasePopupButton>
+        </BasePopupButton> -->
       </BlackboardToolBar>
     </component>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">

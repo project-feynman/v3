@@ -54,7 +54,6 @@
 <script>
 import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
-import BasePopupButton from "@/components/BasePopupButton";
 import db from "@/database.js";
 import { displayDate } from "@/helpers.js";
 
@@ -68,7 +67,6 @@ export default {
   },
   components: { 
     DoodleVideo, 
-    BasePopupButton, 
     TextEditor 
   },
   computed: {

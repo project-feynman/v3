@@ -6,14 +6,26 @@
         <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
           BLOG
         </v-btn> -->
+
+          <!-- <v-btn href="https://github.com/eltonlin1998/ExplainMIT" target="_blank" color="accent" tile icon>
+            <v-icon>mdi-git</v-icon>
+          </v-btn> -->
         <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> 
           GITHUB
         </v-btn>
         <BasePopupButton actionName="Create class" @action-do="C => createClass(C)"
-          :inputFields="['class name', 'class description']"/>
+          :inputFields="['class name', 'class description']"
+        >
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-on="on" tile icon color="accent">
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </template>
+          <!-- <v-btn v-slot:activator-button="{ on }">{{ on }}</v-btn> -->
+        </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <v-btn v-on="on" icon class="ml-4">
+            <v-btn v-on="on" tile icon class="ml-4">
               <v-icon large :color="user.color">mdi-settings</v-icon>
             </v-btn>
           </template>
@@ -44,7 +56,9 @@
                   <BasePopupButton actionName="Sign up" :inputFields="['first name', 'last name', 'email', 'password']" outlined
                     @action-do="user => signUp(user)"
                   >
-                    <p>Passwords are handled by Google Firebase Authentication.</p>
+                    <template v-slot:message-to-user>
+                    <p >Passwords are handled by Google Firebase Authentication.</p>
+                    </template>
                   </BasePopupButton>
                 </v-col>
               </template>

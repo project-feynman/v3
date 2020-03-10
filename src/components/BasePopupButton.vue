@@ -1,16 +1,18 @@
 <template>
   <v-dialog v-model="isOpen" persistent max-width="600px" @keydown.enter="doAction()">
     <template v-slot:activator="{ on }">
-      <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">
-        {{ actionName }}
-      </v-btn>
+      <slot name="activator-button" :on="on"> 
+        <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">
+          {{ actionName }}
+        </v-btn>
+      </slot>
     </template>
     <v-card>
       <v-card-title><span class="headline">{{ actionName }}</span></v-card-title>
       <v-card-text>
         <v-container>
           <v-row>
-            <slot>
+            <slot name="message-to-user">
 
             </slot>
             <template v-for="inputField in inputFields">
