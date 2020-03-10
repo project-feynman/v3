@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { Editor, EditorContent, EditorMenuBar } from 'tiptap';
+import { Editor, EditorContent, EditorMenuBar, Node } from 'tiptap';
 import {
   Blockquote,
   CodeBlock,
@@ -62,12 +62,24 @@ import {
 } from 'tiptap-extensions';
 import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
 
-const defaultHtml = ` 
-          <p>
-            Write text here...
-          </p>
-        `
+const defaultHtml = ``;
 // <img src="https://d384u2mq2suvbq.cloudfront.net/public/spree/products/1597/jumbo/Japanese-Cherry-Blossom-Fragrance-Oil.jpg?1529607178" />
+
+class Title extends Node {
+  get name () {
+    return "title";
+  }
+
+  get schema () {
+    return {
+      content: "inline*", 
+      parseDOM: [{
+        tag: "h1"
+      }],
+      toDOM: () => ["h1", 0]
+    }
+  }
+}
 
 export default {
   components: { EditorContent, EditorMenuBar, ButtonPrabhakar },
@@ -96,38 +108,39 @@ export default {
           new Underline(),
           new History(),
           new Image(),
+          new Title(),
           new Placeholder({
             emptyEditorClass: 'is-editor-empty',
             emptyNodeClass: 'is-empty',
-            emptyNodeText: 'Write something …',
+            emptyNodeText: node => 'Write something …',
             showOnlyWhenEditable: true,
-            showOnlyCurrent: true,
+            showOnlyCurrent: false,
           }),
         ],
-        content: defaultHtml,
+        // content: defaultHtml,
         onUpdate: ({ getHTML }) => {
           this.html = getHTML();
         }
       }),
+      content: defaultHtml,
       html: defaultHtml
     }
   },
   watch: {
     injectedHtml: {
-      handler: "setContent",
+      handler: "setup",
       immediate: true
     }
   },
   beforeDestroy() {
     this.editor.destroy()
   },
-  created () {
-    this.editor.focus();
-  },
   methods: {
-    setContent () {
-      if (!this.injectedHtml) { return; }
-      this.editor.setContent(this.injectedHtml);
+    setup () {
+      if (this.injectedHtml) {
+        this.html = this.injectedHtml;
+        this.editor.setContent(this.injectedHtml);
+      }
       this.editor.focus();
     },
     extractAllText () {
@@ -135,14 +148,6 @@ export default {
       temporaryDiv.innerHTML = this.html;
       return temporaryDiv.textContent || temporaryDiv.innerText || "";
     }
-    // onImageSelected (e, command) {
-    //   const imageFile = e.target.files[0];
-    //   this.$emit("image-selected", imageFile);
-    //   console.log("imageFile =", imageFile);
-    //   const imageUrl = URL.createObjectURL(imageFile);
-    //   console.log("imageUrl =", imageUrl);
-    //   command({ src: imageUrl });
-    // }
   }
 }
 </script>
