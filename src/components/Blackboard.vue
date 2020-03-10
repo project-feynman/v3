@@ -143,7 +143,9 @@ export default {
         : "source-over";
       this.lineWidth = (this.isNormalEraser) ? 25 : 2.5;
       if (this.isStrokeEraser) {
-        this.$root.$emit("show-snackbar", "The stroke eraser won't be able to handle fast movements.");
+        this.$root.$emit("show-snackbar", 
+          "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
+        );
       }
     },
     color () { 
