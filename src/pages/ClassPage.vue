@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <TheSideDrawer v-model="drawer"/>
-    <RouterView v-if="mitClass" :key="$route.fullPath"/>
+    <RouterView v-if="subpage" :key="$route.fullPath"/>
   </v-app>
 </template>
 
@@ -13,16 +13,18 @@ export default {
     TheSideDrawer 
   },
   data: () => ({
-    drawer: true
+    drawer: true,
+    subpage: false
   }),
   computed: {
     mitClass () {
       return this.$store.state.mitClass;
     }
   },
-  created () {
+  async created () {
     this.$root.$on("toggle-drawer", () => this.drawer = !this.drawer);
-    this.$store.dispatch("fetchClass", this.$route.params.class_id);
+    await this.$store.dispatch("fetchClass", this.$route.params.class_id);
+    this.subpage = true;
   }
 }
 </script>

@@ -53,10 +53,13 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    async fetchClass (context, classId) {
-      const ref = db.collection("classes").doc(classId);
-      const classDoc = await getDocFromDb(ref);
-      context.commit("SET_CLASS", classDoc);
+    fetchClass (context, classId) {
+      return new Promise(async (resolve) => {
+        const ref = db.collection("classes").doc(classId);
+        const classDoc = await getDocFromDb(ref);
+        context.commit("SET_CLASS", classDoc);
+        resolve();
+      });
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     async fetchUser (context, { uid, email }) {

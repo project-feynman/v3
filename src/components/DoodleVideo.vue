@@ -13,7 +13,7 @@
         </div>
       </div>
     </div>
-    <p v-if="isFetchingAudio">Fetching audio...(if this takes too long try refreshing)</p>
+    <p v-if="isFetchingAudio">Fetching audio...(should take less than 2 seconds)</p>
     <AudioRecorder v-if="audioUrl || audio" v-show="hasFetchedAudio" ref="audioRecorder"
       :audioUrl="audioUrl || `${audio.ts}`" 
       :injectedAudio="audio"
