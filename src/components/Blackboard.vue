@@ -238,27 +238,27 @@ export default {
       this.imageUrl = "";
     },
     initCopyAndPasteImage () {
-       document.onpaste = async (event) => {
-        const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
-        // Find pasted image among pasted items
-        let blob = null;
-        for (let i = 0; i < items.length; i++) {
-          if (items[i].type.indexOf("image") === 0) {
-            blob = items[i].getAsFile();
-          }
-        }
-        // Load image if there is a pasted image
-        if (blob === null) { return; }
-        this.imageBlob = blob;
-        if (!this.isRealtime) {
-          const imageUrl = URL.createObjectURL(this.imageBlob);
-          this.displayImageAsBackground(imageUrl);
-        } else {
-          const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
-          this.blackboardRef.update({ imageUrl });
-          this.imageUrl = imageUrl; // store locally
-        }     
-      }
+      //  document.onpaste = async (event) => {
+      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
+      //   // Find pasted image among pasted items
+      //   let blob = null;
+      //   for (let i = 0; i < items.length; i++) {
+      //     if (items[i].type.indexOf("image") === 0) {
+      //       blob = items[i].getAsFile();
+      //     }
+      //   }
+      //   // Load image if there is a pasted image
+      //   if (blob === null) { return; }
+      //   this.imageBlob = blob;
+      //   if (!this.isRealtime) {
+      //     const imageUrl = URL.createObjectURL(this.imageBlob);
+      //     this.displayImageAsBackground(imageUrl);
+      //   } else {
+      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
+      //     this.blackboardRef.update({ imageUrl });
+      //     this.imageUrl = imageUrl; // store locally
+      //   }     
+      // }
     },
     async saveAndDisplayImage (blob) { // TODO: this was a quick-fix for image files
       if (blob === null) { return; }
