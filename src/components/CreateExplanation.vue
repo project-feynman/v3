@@ -55,6 +55,10 @@ export default {
       type: Boolean,
       default () { return false; }
     },
+    titleRequired: {
+      type: Boolean,
+      default () { return true; }
+    },
     postDbRef: Object,
     newExplanationDbRef: Object,
     newDocId: String,
@@ -113,7 +117,7 @@ export default {
     // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
       const { TextEditor, Blackboard } = this.$refs;
-      if (TextEditor.html.length === 0) {
+      if (TextEditor.html.length === 0 && this.titleRequired) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
         return; 
       }

@@ -10,9 +10,10 @@
         {{ isCreatingExpl ? 'CANCEL' : 'ADD RESPONSE' }}
       </v-btn>
       <CreateExplanation v-if="isCreatingExpl" 
-        @upload-finish="isCreatingExpl = false"
         :postDbRef="postRef"
         :newExplanationDbRef="explanationsRef.doc()" 
+        :titleRequired="false"
+        @upload-finish="isCreatingExpl = false"
       />
     </v-content>
   </div>
