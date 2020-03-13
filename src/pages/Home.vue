@@ -21,7 +21,6 @@
               <v-icon>mdi-plus</v-icon>
             </v-btn>
           </template>
-          <!-- <v-btn v-slot:activator-button="{ on }">{{ on }}</v-btn> -->
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:default="{ on }">
@@ -57,7 +56,7 @@
                     @action-do="user => signUp(user)"
                   >
                     <template v-slot:message-to-user>
-                    <p >Passwords are handled by Google Firebase Authentication.</p>
+                      Passwords are handled by Google Firebase Authentication.
                     </template>
                   </BasePopupButton>
                 </v-col>
