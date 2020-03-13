@@ -6,10 +6,10 @@
         :currentTool="currentTool"
         :color="color"
         :isRealtime="isRealtime"
-        @tool-select="({ tool, color }) => { selectTool(tool, color) }"
+        @tool-select="({ tool, color }) => selectTool(tool, color)"
         @wipe-board="resetBoard()"
-        @record-state-change="newState => handleRecordStateChange(newState)"
-        @image-selected="imageFile => saveAndDisplayImage(imageFile)"
+        @record-state-change="(newState) => handleRecordStateChange(newState)"
+        @image-selected="(imageFile) => saveAndDisplayImage(imageFile)"
       >
         <template v-slot:initial-buttons>
           <LiveBoardAudio :roomId="blackboardId"/>
@@ -27,17 +27,17 @@
     </component>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
       <canvas ref="FrontCanvas" class="front-canvas" 
-        @touchstart="e => touchStart(e)"
-        @touchmove="e => touchMove(e)"
-        @touchend="e => touchEnd(e)"
-        @mousedown="e => mouseDown(e)"
-        @mousemove="e => mouseMove(e)"
-        @mouseup="e => mouseUp(e)"
+        @touchstart="(e) => touchStart(e)"
+        @touchmove="(e) => touchMove(e)"
+        @touchend="(e) => touchEnd(e)"
+        @mousedown="(e) => mouseDown(e)"
+        @mousemove="(e) => mouseMove(e)"
+        @mouseup="(e) => mouseUp(e)"
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
     <AudioRecorder v-show="false" ref="AudioRecorder"
-      @file-uploaded="audio => saveFileReference(audio)"
+      @file-uploaded="(audio) => saveFileReference(audio)"
       @audio-saved="handleAudioSaved()"
     />
   </div>
@@ -170,7 +170,9 @@ export default {
     this.resizeBlackboard();
     window.addEventListener("resize", this.resizeBlackboard, false); 
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
-    if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
+    if (this.isRealtime) { 
+      this.keepSyncingBoardWithDb(); 
+    }
   },
   beforeDestroy() { 
     if (this.unsubscribe) { this.unsubscribe(); } 
@@ -181,7 +183,9 @@ export default {
   methods: {
     selectTool (tool, color) {
       this.currentTool = tool;
-      if (color) { this.color = color; }
+      if (color) { 
+        this.color = color; 
+      }
     },
     async initData () {
       // no need to reset data, just reset variables and UI as it's only useful when switching between different blackboards
@@ -246,29 +250,6 @@ export default {
       this.imageBlob = null;
       this.imageUrl = "";
     },
-    initCopyAndPasteImage () {
-      //  document.onpaste = async (event) => {
-      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
-      //   // Find pasted image among pasted items
-      //   let blob = null;
-      //   for (let i = 0; i < items.length; i++) {
-      //     if (items[i].type.indexOf("image") === 0) {
-      //       blob = items[i].getAsFile();
-      //     }
-      //   }
-      //   // Load image if there is a pasted image
-      //   if (blob === null) { return; }
-      //   this.imageBlob = blob;
-      //   if (!this.isRealtime) {
-      //     const imageUrl = URL.createObjectURL(this.imageBlob);
-      //     this.displayImageAsBackground(imageUrl);
-      //   } else {
-      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
-      //     this.blackboardRef.update({ imageUrl });
-      //     this.imageUrl = imageUrl; // store locally
-      //   }     
-      // }
-    },
     async saveAndDisplayImage (blob) { // TODO: this was a quick-fix for image files
       if (blob === null) { return; }
       this.imageBlob = blob;
@@ -292,7 +273,9 @@ export default {
       this.currentTime = 0;
       this.timer = setInterval(() => this.currentTime += 0.1, 100);
     },
-    stopTimer () { clearInterval(this.timer); },
+    stopTimer () { 
+      clearInterval(this.timer); 
+    },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4);
       const unitY = parseFloat(y / this.canvas.height).toFixed(4);
@@ -366,8 +349,13 @@ export default {
       if (this.isRealtime) {
         this.strokesRef.doc(`${this.allStrokes.length}`).set(this.currentStroke); // 1st stroke = 1
       }
-      this.currentStroke = { points: [] };
-      this.prevPoint = { x: -1, y: -1 };
+      this.currentStroke = { 
+        points: [] 
+      };
+      this.prevPoint = { 
+        x: -1, 
+        y: -1 
+      };
     },
     drawToPointAndSave (e, isMouse) {
       e.preventDefault();
@@ -418,23 +406,32 @@ export default {
       this.currPoint.y = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
-      if (e.touches.length !== 1) { return true; }  // multiple fingers not allowed
+      if (e.touches.length !== 1) { return true; } // multiple fingers not allowed
       return this.isFinger(e) && this.disableTouch;
     },
-    isFinger (e) { return e.touches[0].touchType !== "stylus" },
+    isFinger (e) { 
+      return e.touches[0].touchType !== "stylus" 
+    },
     handleRecordStateChange (newState) {
       const { PRE_RECORD, MID_RECORD, POST_RECORD } = RecordState;
-      if (newState === MID_RECORD) { this.startRecording(); }
-      else if (newState === POST_RECORD) { this.stopRecording(); }
-      else if (newState === PRE_RECORD) {this.tryRecordAgain(); }
-      else { throw `Error: blackboard state was set to an illegal value = ${newState}` }
+      if (newState === MID_RECORD) { 
+        this.startRecording(); 
+      } else if (newState === POST_RECORD) { 
+        this.stopRecording(); 
+      } else if (newState === PRE_RECORD) { 
+        this.tryRecordAgain(); 
+      } else { 
+        throw `Error: blackboard state was set to an illegal value = ${newState}`;
+      }
     },
-    startRecording () {
-      this.startTimer();
+    async startRecording () {
+      await this.$refs.AudioRecorder.startRecording();
+      this.startTimer();      
       this.currentState = RecordState.MID_RECORD;
-      this.$refs.AudioRecorder.startRecording();
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: RecordState.MID_RECORD });
+        this.blackboardRef.update({ 
+          recordState: RecordState.MID_RECORD 
+        });
       }
       this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button
     },
@@ -443,7 +440,9 @@ export default {
       this.$refs.AudioRecorder.stopRecording();
       this.currentState = RecordState.POST_RECORD;
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: RecordState.POST_RECORD });
+        this.blackboardRef.update({ 
+          recordState: RecordState.POST_RECORD 
+        });
       }
     },
     handleAudioSaved () { 
@@ -464,7 +463,10 @@ export default {
       const { PRE_RECORD } = RecordState;
       this.currentState = PRE_RECORD;
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
+        this.blackboardRef.update({ 
+          recordState: PRE_RECORD, 
+          audioUrl: "" 
+        });
       }
       const willRedraw = true;
       this.$_rescaleCanvas(willRedraw);
@@ -487,7 +489,7 @@ export default {
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
         this.$_drawStrokesInstantly2();
         this.bgCanvas.toBlob((thumbnail) => {
-            resolve(thumbnail);
+          resolve(thumbnail);
         });
       })
     },
@@ -526,7 +528,30 @@ export default {
     },
     handleSaving () {
       // to be implemented
-    }
+    },
+    initCopyAndPasteImage () {
+      //  document.onpaste = async (event) => {
+      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
+      //   // Find pasted image among pasted items
+      //   let blob = null;
+      //   for (let i = 0; i < items.length; i++) {
+      //     if (items[i].type.indexOf("image") === 0) {
+      //       blob = items[i].getAsFile();
+      //     }
+      //   }
+      //   // Load image if there is a pasted image
+      //   if (blob === null) { return; }
+      //   this.imageBlob = blob;
+      //   if (!this.isRealtime) {
+      //     const imageUrl = URL.createObjectURL(this.imageBlob);
+      //     this.displayImageAsBackground(imageUrl);
+      //   } else {
+      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
+      //     this.blackboardRef.update({ imageUrl });
+      //     this.imageUrl = imageUrl; // store locally
+      //   }     
+      // }
+    },
   }
 };
 </script>

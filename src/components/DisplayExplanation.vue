@@ -15,8 +15,8 @@
         :imageUrl="expl.imageUrl" 
         :thumbnail="expl.thumbnail"
         :hasStrokes="expl.hasStrokes"
-        @click="handleVideoClick()"
-        @available-resources-ready="playVideo()"
+        @click="fetchStrokes()"
+        @available-resources-ready="playGivenWhatIsAvailable()"
       />
       <v-dialog v-model="isShowingPopup" max-width="600px">
         <v-card>
@@ -86,11 +86,11 @@ export default {
       return displayDate(dateString);
     },
     // TODO: fetchStrokes as a slot-prop
-    handleVideoClick () {
+    fetchStrokes () {
       this.$refs.DoodleVideo.fetchStrokes(); 
     },
     // TODO: playGivenWhatIsAvailable as a slot-prop
-    playVideo () {
+    playGivenWhatIsAvailable () {
       this.$refs.DoodleVideo.playGivenWhatIsAvailable(); 
     },
     startEditing () {

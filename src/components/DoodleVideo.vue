@@ -5,8 +5,7 @@
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>
         <canvas ref="BackCanvas" class="background-canvas"></canvas>
         <div v-show="!hasLoadedAvailableResources" class="overlay-item">
-          <v-progress-circular v-if="isFetchingAudio" :indeterminate="true" size="50" color="orange">
-          </v-progress-circular>
+          <v-progress-circular v-if="isFetchingAudio" :indeterminate="true" size="50" color="orange"/>
           <v-btn v-else @click="onOverlayClick()" large dark>
             <v-icon>mdi-play</v-icon>
           </v-btn>
@@ -14,15 +13,15 @@
       </div>
     </div>
     <p v-if="isFetchingAudio">Fetching audio...(should take less than 2 seconds)</p>
-    <AudioRecorder v-if="audioUrl || audio" v-show="hasFetchedAudio" ref="audioRecorder"
+    <AudioRecorder v-if="audioUrl || audio" v-show="hasFetchedAudio" ref="AudioRecorder"
       :audioUrl="audioUrl || `${audio.ts}`" 
       :injectedAudio="audio"
       @loading="isFetchingAudio = true" 
       @loaded="isFetchingAudio = false; hasFetchedAudio = true;"
-      @play="playVideo()" 
+      @play="initSyncing()" 
+      @seeking="syncOnce()"
       @stop="stopSyncing()" 
       @ended="stopSyncing()"
-      @seeking="handleSeeking()"
     />
   </div>
 </template>
@@ -60,7 +59,6 @@ export default {
     ctx: null,
     bgCanvas: null,
     bgCtx: null,
-    isPlayingAudio: false,
     isFetchingAudio: false,
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
@@ -69,7 +67,6 @@ export default {
     mouseHover: false,
     nextFrameIdx: 0,
     recursiveSync: null,
-    getCurrentAudioTime: null,
     thumbnailImage: null
   }),
   computed: {
@@ -110,7 +107,7 @@ export default {
     if (this.injectedStrokes) { 
       this.allStrokes = this.injectedStrokes 
     } 
-    this.handleSeeking = _.debounce(this.handleSeeking, 0);
+    this.syncOnce = _.debounce(this.syncOnce, 0);
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
@@ -162,7 +159,7 @@ export default {
         if (!this.hasStrokes) { return; }
         this.fetchStrokes(); 
         if (this.audioUrl) { 
-          this.$refs.audioRecorder.downloadAudioFile();
+          this.$refs.AudioRecorder.downloadAudioFile();
         }
       }
     },
@@ -187,7 +184,7 @@ export default {
     },
     async fetchStrokes () {
       return new Promise(async (resolve) => {
-        if (this.hasFetchedStrokes) { return; }
+        if (this.hasFetchedStrokes) { return; } 
         const blackboard = await this.$_getDoc(this.blackboardRef);
         const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
         this.allStrokes = await this.$_getCollection(strokesRef);
@@ -196,12 +193,12 @@ export default {
           this.$emit("strokes-ready")
           this.$_rescaleCanvas(true);
         });
-        resolve();
+        resolve(); // TODO: move inside $nextTick();
       });
     },
     playGivenWhatIsAvailable () { 
       if (this.hasVisualAndAudio) { 
-        this.$refs.audioRecorder.playAudio(); 
+        this.$refs.AudioRecorder.playAudio(); 
       } else { 
         this.playSilentAnimation(); 
       }
@@ -211,47 +208,32 @@ export default {
       await this.$_quickplay();
       this.isQuickplaying = false;
     },
-    playVideo () {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
-      this.nextFrameIdx = 0;
-      this.prepareForSync();
-      this.$refs.audioRecorder.playAudio();
-      this.isPlayingAudio = true;
-    },
-    prepareForSync () {
-      if (!this.getCurrentAudioTime) { 
-        this.getCurrentAudioTime = this.$refs.audioRecorder.getAudioTime; 
-      }
-      if (!this.recursiveSync) { 
-        this.syncContinuously(); 
+    initSyncing () {
+      if (!this.recursiveSync) {
+        this.nextFrameIdx = 0;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
+        this.syncContinuously();
       }
     },
-    handleSeeking () {
-      if (!this.recursiveSync) { 
-        this.prepareForSync();
-        this.nextFrameIdx = 0; 
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      }
-      this.stopSyncing();
+    syncOnce () {
       const onlyOneFrame = true;
       this.syncContinuously(onlyOneFrame);
     },
     stopSyncing () {
-      this.isPlayingAudio = false;
       clearTimeout(this.recursiveSync); // stop recursive call
       this.recursiveSync = null;
     },
     // Synchronize drawings with the audio on a point-by-point basis.
     syncContinuously (once = false) {
+      const { getAudioTime } = this.$refs.AudioRecorder;
       const nextFrame = this.allFrames[this.nextFrameIdx];
-      if (!nextFrame) { return; }
-      if (this.getStartTime(nextFrame) > this.getCurrentAudioTime()) {
+      if (!nextFrame || this.getStartTime(nextFrame) > getAudioTime()) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.nextFrameIdx = 0;
       }
       this.renderFramesUntilCurrentTime();
       if (!once && this.nextFrameIdx < this.allFrames.length) {
-        const timeout = 1000 * (this.getStartTime(nextFrame) - this.getCurrentAudioTime()); 
+        const timeout = 1000 * (this.getStartTime(nextFrame) - getAudioTime()); 
         this.recursiveSync = setTimeout(this.syncContinuously, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
       } 
     },
@@ -260,9 +242,10 @@ export default {
       return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
     renderFramesUntilCurrentTime () {
+      const { getAudioTime } = this.$refs.AudioRecorder;
       for (let i = this.nextFrameIdx; i < this.allFrames.length; i++) {
         const frame = this.allFrames[i];
-        if (this.getStartTime(frame) > this.getCurrentAudioTime()) { 
+        if (this.getStartTime(frame) > getAudioTime()) { 
           break; 
         }
         this.renderFrame(frame);
