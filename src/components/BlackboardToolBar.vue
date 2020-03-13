@@ -48,6 +48,9 @@
           </v-col>
         </template>
           <template v-if="currentState === RecordState.PRE_RECORD">
+            <slot name="initial-buttons">
+
+            </slot>
             <v-col class="py-0 px-0" cols="auto">
               <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="mdi-image">
                 <input style="display: none" type="file" @change="e => onImageSelected(e)" ref="fileInput">

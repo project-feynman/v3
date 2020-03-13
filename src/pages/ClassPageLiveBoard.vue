@@ -1,10 +1,9 @@
 <template>
   <div id="room">
     <v-content v-if="user">
-      <LiveBoardAudio :roomId="roomId">
-    </LiveBoardAudio>
       <Blackboard v-if="room.blackboardId" ref="whiteboard" 
-        :blackboardId="room.blackboardId" :isRealtime="true"
+        :blackboardId="room.blackboardId" 
+        :isRealtime="true"
       />
     </v-content>
   </div>
@@ -19,8 +18,10 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 
 export default {
-  components: { Blackboard,
-                LiveBoardAudio },
+  components: { 
+    Blackboard,
+    LiveBoardAudio 
+  },
   mixins: [DatabaseHelpersMixin],
   data () {
     return {

@@ -11,6 +11,9 @@
         @record-state-change="newState => handleRecordStateChange(newState)"
         @image-selected="imageFile => saveAndDisplayImage(imageFile)"
       >
+        <template v-slot:initial-buttons>
+          <LiveBoardAudio :roomId="blackboardId"/>
+        </template>
         <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
           :disabled="!hasUploadedAudio"
           :inputFields="['title', 'description']"
@@ -46,6 +49,7 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { BlackboardTools, RecordState, navbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
@@ -62,6 +66,7 @@ export default {
     BasePopupButton,
     BlackboardToolBar, 
     TheAppBar, 
+    LiveBoardAudio
   },
   data () {
     return {
@@ -125,14 +130,16 @@ export default {
       immediate: true
     },
     blackboard (newVal) {
-      // TODO: make it more readable
       let imageSrc;
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
         imageSrc = this.imageUrl;
       } else {
-        try { imageSrc = URL.createObjectURL(this.imageBlob); } // means we already have the image blob locally
-        catch { imageSrc = this.imageUrl; }
+        try { 
+          imageSrc = URL.createObjectURL(this.imageBlob); // means we already have the image blob locally
+        } catch { 
+          imageSrc = this.imageUrl; 
+        }
       }
       this.displayImageAsBackground(imageSrc);
     },

@@ -1,12 +1,10 @@
 <template>
     <div>
-
         <video v-show="false" id="yourVideo" autoplay muted playsinline></video>
-      <video v-show="false" id="friendsVideo" autoplay playsinline></video>
-        <v-btn @click="initAudioConnection()" ref="#cameraBtn">
-            openAudio
+        <video v-show="false" id="friendsVideo" autoplay playsinline></video>
+        <v-btn @click="initAudioConnection()" ref="#cameraBtn" outlined color="accent">
+            Open audio
         </v-btn>
-        
     </div>
 </template> 
 
@@ -32,10 +30,8 @@ export default {
         }
     },
     mounted () {
-        this.database = firebase.database().ref('audio');
-        this.roomRef = db.doc(`rooms/${this.roomId}`).collection("audio-collection"); // TODO : create a new room here
-        // const doc = await this.roomRef.add({ test: "Hello world" });
-
+        this.database = firebase.database().ref(`audio/${this.roomId}`);
+        // this.roomRef = db.doc(`rooms/${this.roomId}`).collection("audio-collection"); // for switching back to Firestore
         
         this.audio = document.getElementById("yourVideo");
         this.connectedAudio = document.getElementById("friendsVideo");
@@ -45,58 +41,40 @@ export default {
 
         this.pc.onicecandidate = (event => event.candidate?this.sendMessage(this.id, JSON.stringify({'ice': event.candidate})):console.log("Sent All Ice") );
         this.pc.onaddstream = (event => this.connectedAudio.srcObject = event.stream);
-        // this.roomRef.onSnapshot(async snapshot => {
-        //     // console.log("snapshot", snapshot);
-        //     if (snapshot.docs.length > 0){
-        //         var docRef = snapshot.docs[snapshot.docs.length-1].id;
-        //         // console.log("docRef", this.roomRef.doc(docRef))
-        //         const data = await this.$_getDoc(this.roomRef.doc(docRef));
-        //         // console.log('Got updated room:', data);
-        //         this.readMessage(data);
-        //         console.log("delete")
-        //         // this.roomRef.doc(docRef).delete();
-        //     }
-        // });
-
         
-
-
         this.initAudio();
-        this.database.on('child_added', this.readMessage);
-        // this.database.on('child_added', (data) => {
-        //     this.readMessage(data);
-        // });
-        // this.initAudioConnection();
-        
+        this.database.on('child_added', this.readMessage);        
         this.pc.addEventListener('connectionstatechange', () => {
+            if (this.pc.connectionState === "connected") {
+                this.$root.$emit("show-snackbar", `Now connected to the voice chat.`)
+            }
             console.log('connection state change:', this.pc.connectionState)
         });
-
     },
     methods: {
-        async sendMessage(senderId, data) {
-            var msg = this.database.push({ sender: senderId, message: data });
-            console.log("added",senderId)
+        async sendMessage (senderId, data) {
+            const msg = this.database.push({ sender: senderId, message: data });
             msg.remove();
         },
-        readMessage(data) {
-        var msg = JSON.parse(data.val().message);
-        var sender = data.val().sender;
-        if (sender != this.id) {
-            if (msg.ice != undefined)
+        readMessage (data) {
+            const msg = JSON.parse(data.val().message);
+            const sender = data.val().sender;
+            if (sender == this.id) { return; }
+            if (msg.ice != undefined) {
                 this.pc.addIceCandidate(new RTCIceCandidate(msg.ice));
-            else if (msg.sdp.type == "offer")
+            } else if (msg.sdp.type == "offer") {
                 this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp))
                 .then(() => this.pc.createAnswer())
                 .then(answer => this.pc.setLocalDescription(answer))
-                .then(() => this.sendMessage(this.id, JSON.stringify({'sdp': this.pc.localDescription})));
-            else if (msg.sdp.type == "answer")
+                .then(() => this.sendMessage(this.id, JSON.stringify({ 'sdp': this.pc.localDescription })));
+            } else if (msg.sdp.type == "answer") {
                 this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
             }
         },
         initAudio () {
-            console.log("audio",this.audio)
-            navigator.mediaDevices.getUserMedia({audio:true})
+            navigator.mediaDevices.getUserMedia({ 
+                audio: true
+            })
             .then(stream => this.audio.srcObject = stream)
             .then(stream => this.pc.addStream(stream));
         },
