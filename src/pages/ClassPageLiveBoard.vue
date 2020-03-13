@@ -1,7 +1,8 @@
 <template>
   <div id="room">
-    <!-- <LiveBoardAudio/> -->
     <v-content v-if="user">
+      <LiveBoardAudio :roomId="roomId">
+    </LiveBoardAudio>
       <Blackboard v-if="room.blackboardId" ref="whiteboard" 
         :blackboardId="room.blackboardId" :isRealtime="true"
       />
