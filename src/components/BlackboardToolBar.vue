@@ -50,14 +50,23 @@
           <template v-if="currentState === RecordState.PRE_RECORD">
             <v-col class="py-0 px-0" cols="auto">
               <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="mdi-image">
-                <input style="display: none" type="file" @change="e => onImageSelected(e)" ref="fileInput">
+                <input style="display: none" type="file" @change="(e) => { onImageSelected(e) }" ref="fileInput">
                 <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br>BACKGROUND</p>
               </ButtonPrabhakar>
             </v-col>
             <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="$emit('wipe-board')" :isSuperSmallText="true" :outlined="true" icon="mdi-delete">
-                <p>WIPE<br>BOARD</p>
-              </ButtonPrabhakar>
+              <BasePopupButton actionName="Wipe board"
+                @action-do="$emit('wipe-board')"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <ButtonPrabhakar v-on="on" :isSuperSmallText="true" :outlined="true" icon="mdi-delete">
+                    <p>WIPE<br>BOARD</p>
+                  </ButtonPrabhakar>
+                </template>
+                <template v-slot:message-to-user>
+                  Are you sure you want to wipe everything?
+                </template>
+              </BasePopupButton>
             </v-col>
             <v-col cols="auto" class="py-0 px-0">
               <ButtonPrabhakar @click="$emit('record-state-change', RecordState.MID_RECORD)" icon="mdi-adjust">
@@ -94,7 +103,8 @@
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
 import { RecordState, BlackboardTools } from "@/CONSTANTS.js";
-import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue"
+import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   props: {
@@ -107,6 +117,7 @@ export default {
   components: { 
     Swatches, 
     ButtonPrabhakar,
+    BasePopupButton
   },
   data () {
     return {

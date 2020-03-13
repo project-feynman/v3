@@ -6,15 +6,16 @@
         @click="submitPost()" 
         :loading="isButtonDisabled" 
         :disabled="isButtonDisabled"
-        block color="accent" class="ma-0 white--text" 
+        color="accent" class="ma-0 white--text" 
       >
-        SUBMIT 
+        SUBMIT AS ELTON LIN
         <v-icon class="pl-2">mdi-send</v-icon>
         <template v-slot:loader>
           <span v-if="isRecordingVideo">Currently recording...</span> 
           <span v-else-if="isUploadingPost">Processing video...</span>
         </template>
       </v-btn>
+      <v-switch></v-switch>
       <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
         :isRealtime="false" 
         :visible="visible" 
@@ -24,9 +25,18 @@
         @retry-recording="handleRetry()"
       />
       <template v-if="isPreviewing">
-        <v-btn @click="initRetry()" block class="white--text" outlined color="accent">
-          Retry
-        </v-btn>
+        <BasePopupButton actionName="Retry new recording"
+          @action-do="initRetry()">
+          <template >
+            <v-btn class="white--text" outlined color="accent">
+              Retry recording
+            </v-btn>
+          </template>
+          <template v-slot:message-to-user>
+            Your audio recording will be deleted, but you can re-use
+            your drawings as the initial setup for the new video.
+          </template>
+        </BasePopupButton>
         <DoodleVideo 
           :injectedStrokes="blackboardStrokes" 
           :audio="audio" 
@@ -43,6 +53,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import TextEditor from "@/components/TextEditor.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
@@ -53,11 +64,11 @@ export default {
   props: {
     willCreateNewPost: {
       type: Boolean,
-      default () { return false; }
+      default: () => false
     },
     titleRequired: {
       type: Boolean,
-      default () { return true; }
+      default: () => true
     },
     postDbRef: Object,
     newExplanationDbRef: Object,
@@ -68,7 +79,8 @@ export default {
   components: { 
     Blackboard, 
     DoodleVideo, 
-    TextEditor 
+    TextEditor,
+    BasePopupButton
   },
   data: () => ({
     isUploadingPost: false,

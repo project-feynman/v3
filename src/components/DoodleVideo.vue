@@ -187,7 +187,7 @@ export default {
     },
     async fetchStrokes () {
       return new Promise(async (resolve) => {
-        if (this.hasFetchedStrokes) { return; }
+        if (this.hasFetchedStrokes) return; 
         const blackboard = await this.$_getDoc(this.blackboardRef);
         const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
         this.allStrokes = await this.$_getCollection(strokesRef);
