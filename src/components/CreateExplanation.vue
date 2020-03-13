@@ -15,7 +15,6 @@
           <span v-else-if="isUploadingPost">Processing video...</span>
         </template>
       </v-btn>
-      <v-switch></v-switch>
       <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
         :isRealtime="false" 
         :visible="visible" 

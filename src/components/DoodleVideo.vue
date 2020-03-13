@@ -59,7 +59,6 @@ export default {
     ctx: null,
     bgCanvas: null,
     bgCtx: null,
-    isPlayingAudio: false,
     isFetchingAudio: false,
     hasFetchedStrokes: false,
     hasFetchedAudio: false,
@@ -210,7 +209,6 @@ export default {
       this.isQuickplaying = false;
     },
     initSyncing () {
-      this.isPlayingAudio = true;
       if (!this.recursiveSync) {
         this.nextFrameIdx = 0;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
@@ -222,7 +220,6 @@ export default {
       this.syncContinuously(onlyOneFrame);
     },
     stopSyncing () {
-      this.isPlayingAudio = false;
       clearTimeout(this.recursiveSync); // stop recursive call
       this.recursiveSync = null;
     },
@@ -230,8 +227,7 @@ export default {
     syncContinuously (once = false) {
       const { getAudioTime } = this.$refs.AudioRecorder;
       const nextFrame = this.allFrames[this.nextFrameIdx];
-      if (!nextFrame) { return; }
-      if (this.getStartTime(nextFrame) > getAudioTime()) {
+      if (!nextFrame || this.getStartTime(nextFrame) > getAudioTime()) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.nextFrameIdx = 0;
       }
