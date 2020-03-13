@@ -22,9 +22,16 @@
         :inputFields="['bug summary', 'bug description']"
         @action-do="bugReport => submitBug(bugReport)"
       >
-        We know it's takes effort to report bugs, so we very much 
-        appreciate it and will act on these reports as fast as we can.
-        Meanwhile, sometimes refreshing does the trick.
+        <template v-slot:activator-button="{ on }">
+          <v-btn v-on="on" tile icon color="accent">
+            <v-icon>mdi-bug</v-icon>
+          </v-btn>
+        </template>
+        <template v-slot:message-to-user>
+          We know it's annoying to report bugs, so we very much 
+          appreciate it and will fix it immediately!
+          Meanwhile, sometimes refreshing does the trick :)
+        </template>
       </BasePopupButton>
     <slot>
       

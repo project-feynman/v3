@@ -10,9 +10,10 @@
         {{ isCreatingExpl ? 'CANCEL' : 'ADD RESPONSE' }}
       </v-btn>
       <CreateExplanation v-if="isCreatingExpl" 
-        @upload-finish="isCreatingExpl = false"
         :postDbRef="postRef"
         :newExplanationDbRef="explanationsRef.doc()" 
+        :titleRequired="false"
+        @upload-finish="isCreatingExpl = false"
       />
     </v-content>
   </div>
@@ -49,11 +50,12 @@ export default {
     const { class_id, post_id } = this.$route.params;
     this.postRef = db.doc(`classes/${class_id}/posts/${post_id}`);
     this.explanationsRef = this.postRef.collection("explanations");
-    this.originalPost = await this.$_getDoc(this.postRef);
+    this.unsubscribeListener2 = await this.$_listenToDoc(this.postRef, this, "originalPost");
     this.unsubscribeListener = await this.$_listenToCollection(this.explanationsRef, this, "explanations");
   },
   destroyed () { 
     this.unsubscribeListener(); 
+    this.unsubscribeListener2();
   }
 }
 </script>

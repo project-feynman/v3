@@ -11,7 +11,7 @@
         @record-state-change="newState => handleRecordStateChange(newState)"
         @image-selected="imageFile => saveAndDisplayImage(imageFile)"
       >
-        <BasePopupButton v-if="isRealtime" actionName="Save video"
+        <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
           :disabled="!hasUploadedAudio"
           :inputFields="['title', 'description']"
           @action-do="payload => handleSaving(payload)"
@@ -19,7 +19,7 @@
           <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
             Upload video
           </v-btn>
-        </BasePopupButton>
+        </BasePopupButton> -->
       </BlackboardToolBar>
     </component>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
@@ -143,7 +143,9 @@ export default {
         : "source-over";
       this.lineWidth = (this.isNormalEraser) ? 25 : 2.5;
       if (this.isStrokeEraser) {
-        this.$root.$emit("show-snackbar", "The stroke eraser won't be able to handle fast movements.");
+        this.$root.$emit("show-snackbar", 
+          "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
+        );
       }
     },
     color () { 
@@ -238,27 +240,27 @@ export default {
       this.imageUrl = "";
     },
     initCopyAndPasteImage () {
-       document.onpaste = async (event) => {
-        const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
-        // Find pasted image among pasted items
-        let blob = null;
-        for (let i = 0; i < items.length; i++) {
-          if (items[i].type.indexOf("image") === 0) {
-            blob = items[i].getAsFile();
-          }
-        }
-        // Load image if there is a pasted image
-        if (blob === null) { return; }
-        this.imageBlob = blob;
-        if (!this.isRealtime) {
-          const imageUrl = URL.createObjectURL(this.imageBlob);
-          this.displayImageAsBackground(imageUrl);
-        } else {
-          const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
-          this.blackboardRef.update({ imageUrl });
-          this.imageUrl = imageUrl; // store locally
-        }     
-      }
+      //  document.onpaste = async (event) => {
+      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
+      //   // Find pasted image among pasted items
+      //   let blob = null;
+      //   for (let i = 0; i < items.length; i++) {
+      //     if (items[i].type.indexOf("image") === 0) {
+      //       blob = items[i].getAsFile();
+      //     }
+      //   }
+      //   // Load image if there is a pasted image
+      //   if (blob === null) { return; }
+      //   this.imageBlob = blob;
+      //   if (!this.isRealtime) {
+      //     const imageUrl = URL.createObjectURL(this.imageBlob);
+      //     this.displayImageAsBackground(imageUrl);
+      //   } else {
+      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
+      //     this.blackboardRef.update({ imageUrl });
+      //     this.imageUrl = imageUrl; // store locally
+      //   }     
+      // }
     },
     async saveAndDisplayImage (blob) { // TODO: this was a quick-fix for image files
       if (blob === null) { return; }

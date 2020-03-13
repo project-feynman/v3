@@ -10,8 +10,8 @@ export const RecordState = {
 };
 
 export const tutorial = {
-  classId: "ufUXSLcpV2bNK2UOcOgz",
-  postId: "rr3m6wtumg9d0c6ye51jl"
+  classId: "FVdgjuywaFgxvyylISt2",
+  postId: "88cc4187-cf85-4ee3-807d-abe6e6aacdc9"
 };
 
 export const demoVideo = {

@@ -3,6 +3,7 @@
     <TheAppBar/>
     <v-content>
       <v-card>
+        <DisplayExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
         <v-card-title>Classmates</v-card-title>
         <v-card-text>
           <p v-for="classmate in classmates" :key="classmate.id">
@@ -10,9 +11,6 @@
           </p>
         </v-card-text>
       </v-card>
-      <DisplayExplanation v-for="expl in sortedExplanations" :key="expl.id"
-        :expl="expl"
-      />
     </v-content>
   </div>
 </template>
@@ -28,23 +26,18 @@ export default {
   mixins: [DatabaseHelpersMixin],
   components: { TheAppBar, DisplayExplanation },
   data: () => ({
-    explanations: [],
-    explanationsRef: null,
-    unsubscribeListener: null,
-    classmates: []
+    tutorialExpl: null,
+    classmates: [],
+    unsubscribe: null
   }),
   computed: {
-    sortedExplanations () {
-      return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
-    },
     mitClass () {
       return this.$store.state.mitClass;
     }
   },
   async created () {
-    this.postRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
-    this.explanationsRef = this.postRef.collection("explanations");
-    this.unsubscribeListener = await this.$_listenToCollection(this.explanationsRef, this, "explanations");
+    const tutorialExplRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
+    this.unsubscribe = await this.$_listenToDoc(tutorialExplRef, this, "tutorialExpl");
     const classmatesQuery = db.collection("users").where("enrolledClasses", "array-contains", {
       id: this.mitClass.id,
       name: this.mitClass.name,
@@ -52,8 +45,8 @@ export default {
     });
     this.classmates = await this.$_getCollection(classmatesQuery);
   },
-  destroyed () { 
-    this.unsubscribeListener(); 
+  beforeDestroy () {
+    this.unsubscribe();
   }
 }
 </script>

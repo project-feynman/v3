@@ -51,7 +51,7 @@
             <v-col class="py-0 px-0" cols="auto">
               <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="mdi-image">
                 <input style="display: none" type="file" @change="e => onImageSelected(e)" ref="fileInput">
-                <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br> (CTRL + V)</p>
+                <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br>BACKGROUND</p>
               </ButtonPrabhakar>
             </v-col>
             <v-col class="py-0 px-0" cols="auto">
