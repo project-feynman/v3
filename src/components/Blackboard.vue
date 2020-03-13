@@ -22,20 +22,19 @@
         </BasePopupButton> -->
       </BlackboardToolBar>
     </component>
-    <v-btn @click="getCurrentTime()">Get current time</v-btn>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
       <canvas ref="FrontCanvas" class="front-canvas" 
-        @touchstart="e => touchStart(e)"
-        @touchmove="e => touchMove(e)"
-        @touchend="e => touchEnd(e)"
-        @mousedown="e => mouseDown(e)"
-        @mousemove="e => mouseMove(e)"
-        @mouseup="e => mouseUp(e)"
+        @touchstart="(e) => touchStart(e)"
+        @touchmove="(e) => touchMove(e)"
+        @touchend="(e) => touchEnd(e)"
+        @mousedown="(e) => mouseDown(e)"
+        @mousemove="(e) => mouseMove(e)"
+        @mouseup="(e) => mouseUp(e)"
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
     <AudioRecorder v-show="false" ref="AudioRecorder"
-      @file-uploaded="(audio) => { saveFileReference(audio) }"
+      @file-uploaded="(audio) => saveFileReference(audio)"
       @audio-saved="handleAudioSaved()"
     />
   </div>
@@ -175,11 +174,6 @@ export default {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
-    // getCurrentTime () {
-    //   console.log("this.$refs =", this.$refs);
-    //   console.log(this.$refs.AudioRecorder);
-    //   console.log("Time =", this.$refs.AudioRecorder.getAudioTime());
-    // },
     selectTool (tool, color) {
       this.currentTool = tool;
       if (color) { 
@@ -413,15 +407,20 @@ export default {
     },
     handleRecordStateChange (newState) {
       const { PRE_RECORD, MID_RECORD, POST_RECORD } = RecordState;
-      if (newState === MID_RECORD) { this.startRecording(); }
-      else if (newState === POST_RECORD) { this.stopRecording(); }
-      else if (newState === PRE_RECORD) { this.tryRecordAgain(); }
-      else { throw `Error: blackboard state was set to an illegal value = ${newState}` }
+      if (newState === MID_RECORD) { 
+        this.startRecording(); 
+      } else if (newState === POST_RECORD) { 
+        this.stopRecording(); 
+      } else if (newState === PRE_RECORD) { 
+        this.tryRecordAgain(); 
+      } else { 
+        throw `Error: blackboard state was set to an illegal value = ${newState}`;
+      }
     },
-    startRecording () {
-      this.startTimer();
+    async startRecording () {
+      await this.$refs.AudioRecorder.startRecording();
+      this.startTimer();      
       this.currentState = RecordState.MID_RECORD;
-      this.$refs.AudioRecorder.startRecording();
       if (this.isRealtime) {
         this.blackboardRef.update({ 
           recordState: RecordState.MID_RECORD 
@@ -430,7 +429,6 @@ export default {
       this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button
     },
     stopRecording () {
-      // ah because setInterval diverges
       this.stopTimer();
       this.$refs.AudioRecorder.stopRecording();
       this.currentState = RecordState.POST_RECORD;

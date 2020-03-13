@@ -82,14 +82,17 @@ export default {
       }
     },
     startRecording () {
-      this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
-      this.recorderSrvc.config.createDynamicsCompressorNode = this.addDynamicsCompressor
-      this.recorderSrvc.startRecording()
-        .then(() => { 
-          this.recordingInProgress = true;
-          this.$emit("start-recording");
-        })
-        .catch(error => alert('Recording error: ' + error.message))
+      return new Promise((resolve, reject) => {
+        this.recorderSrvc.config.stopTracksAndCloseCtxWhenFinished = this.cleanupWhenFinished
+        this.recorderSrvc.config.createDynamicsCompressorNode = this.addDynamicsCompressor
+        this.recorderSrvc.startRecording()
+          .then(() => { 
+            this.recordingInProgress = true;
+            this.$emit("start-recording");
+            resolve();
+          })
+          .catch((error) => alert('Recording error: ' + error.message))
+      });
     },
     stopRecording () {
       this.recorderSrvc.stopRecording();
