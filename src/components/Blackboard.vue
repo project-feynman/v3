@@ -12,7 +12,7 @@
         @image-selected="(imageFile) => saveAndDisplayImage(imageFile)"
       >
         <template v-slot:initial-buttons>
-          <LiveBoardAudio :roomId="blackboardId"/>
+          <!-- <LiveBoardAudio :roomId="blackboardId"/> -->
         </template>
         <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
           :disabled="!hasUploadedAudio"
