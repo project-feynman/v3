@@ -141,16 +141,22 @@ export default {
     resizeVideo () {
       const { BlackboardWrapper, DoodleVideo } = this.$refs;
       DoodleVideo.style.width = "100%";
-      let offlineWidth = DoodleVideo.offsetWidth;
-      let offlineHeight = offlineWidth * aspectRatio;
-      const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight
-      if (offlineHeight > availableHeight) {
-        offlineHeight = availableHeight; 
-        offlineWidth = offlineHeight * (1/aspectRatio);
+      const availableWidth = DoodleVideo.offsetWidth; 
+      const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight;
+
+      let videoHeight; 
+      let videoWidth; 
+      if (availableWidth * aspectRatio < availableHeight) {
+        videoHeight = availableHeight;
+        videoWidth = videoHeight * (1/aspectRatio);
+      } else {
+        videoWidth = availableWidth;
+        videoHeight = videoWidth * aspectRatio;
       }
-      BlackboardWrapper.style.height = `${offlineHeight}px`;
-      this.canvas.style.height = `${offlineHeight}px`;
-      DoodleVideo.style.width = `${offlineWidth}px`;
+      
+      BlackboardWrapper.style.height = `${videoHeight}px`;
+      this.canvas.style.height = `${videoHeight}px`;
+      DoodleVideo.style.width = `${videoWidth}px`;
     },
     onOverlayClick () {
       if (this.hasLoadedAvailableResources) { 
@@ -227,7 +233,7 @@ export default {
     syncContinuously (once = false) {
       const { getAudioTime } = this.$refs.AudioRecorder;
       const nextFrame = this.allFrames[this.nextFrameIdx];
-      if (!nextFrame || this.getStartTime(nextFrame) > getAudioTime()) {
+      if (!nextFrame || this.getStartTime(nextFrame) > getAudioTime()) { // !nextFrame: nextFrame is undefined after a video finishes
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.nextFrameIdx = 0;
       }
