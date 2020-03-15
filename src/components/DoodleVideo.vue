@@ -143,17 +143,15 @@ export default {
       DoodleVideo.style.width = "100%";
       const availableWidth = DoodleVideo.offsetWidth; 
       const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight;
-
       let videoHeight; 
       let videoWidth; 
       if (availableWidth * aspectRatio < availableHeight) {
-        videoHeight = availableHeight;
-        videoWidth = videoHeight * (1/aspectRatio);
-      } else {
         videoWidth = availableWidth;
         videoHeight = videoWidth * aspectRatio;
+      } else {
+        videoHeight = availableHeight;
+        videoWidth = videoHeight * (1/aspectRatio);
       }
-      
       BlackboardWrapper.style.height = `${videoHeight}px`;
       this.canvas.style.height = `${videoHeight}px`;
       DoodleVideo.style.width = `${videoWidth}px`;
