@@ -79,7 +79,7 @@ export default {
       color: "white",
       lineWidth: 2.5,
       currentTool: BlackboardTools.PEN,
-      disableTouch: false,
+      touchDisabled: true,
       allStrokes: [],
       currentStroke: { 
         points: [] 
@@ -298,7 +298,7 @@ export default {
     touchStart (e) {
       if (this.isNotValidTouch(e)) { return; }
       if (e.touches[0].touchType === "stylus") { 
-        this.disableTouch = true; 
+        this.touchDisabled = true; 
       }
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
@@ -407,7 +407,7 @@ export default {
     },
     isNotValidTouch (e) {
       if (e.touches.length !== 1) { return true; } // multiple fingers not allowed
-      return this.isFinger(e) && this.disableTouch;
+      return this.isFinger(e) && this.touchDisabled;
     },
     isFinger (e) { 
       return e.touches[0].touchType !== "stylus" 
