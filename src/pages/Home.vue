@@ -47,13 +47,16 @@
             <v-row class="my-5" justify="center">
               <template v-if="!user">
                 <v-col cols="auto">
-                  <BasePopupButton actionName="Log in" :inputFields="['email', 'password']" 
+                  <BasePopupButton actionName="Log in" 
+                    :inputFields="['email', 'password']" 
                     @action-do="user => logIn(user)"
                   />
                 </v-col>
                 <v-col cols="auto">
-                  <BasePopupButton actionName="Sign up" :inputFields="['first name', 'last name', 'email', 'password']" outlined
+                  <BasePopupButton actionName="Sign up" 
+                    :inputFields="['first name', 'last name', 'email', 'password']" 
                     @action-do="user => signUp(user)"
+                    outlined
                   >
                     <template v-slot:message-to-user>
                       Passwords are handled by Google Firebase Authentication.
@@ -64,8 +67,10 @@
               <!-- Search Bar -->
               <template v-else>
                 <v-col cols="12" sm="6">
-                  <TheSearchBar :items="schoolClasses"
-                    @submit="payload => enrollInClass(payload)" color="accent"
+                  <TheSearchBar 
+                    :items="schoolClasses"
+                    @submit="payload => enrollInClass(payload)" 
+                    color="accent"
                   />
                 </v-col>
               </template>
@@ -86,7 +91,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" @click="$router.push(`class/${C.id}`)">
+                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
@@ -117,7 +122,6 @@ import Blackboard from "@/components/Blackboard.vue";
 import DisplayExplanation from "@/components/DisplayExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import { demoVideo, NotifFrequency } from "@/CONSTANTS.js";
-
 
 export default {
   components: {
@@ -150,8 +154,12 @@ export default {
     const demoVideoRef = this.getBlackboardRef(demoVideo.postId);
     this.demoVideo = await this.$_getDoc(demoVideoRef); 
   },
-  mounted () { window.addEventListener("scroll", this.logoVisibility); },
-  destroyed () { window.removeEventListener("scroll", this.logoVisibility); },
+  mounted () { 
+    window.addEventListener("scroll", this.logoVisibility); 
+  },
+  destroyed () { 
+    window.removeEventListener("scroll", this.logoVisibility); 
+  },
   methods: {
     getMitClassRef (classId) { 
       return db.collection("classes").doc(classId); 
@@ -197,11 +205,11 @@ export default {
     },
     logIn ({ email, password }) {
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(user => {
+        .then((user) => {
           this.$store.dispatch("fetchUser", user);
           this.$root.$emit("show-snackbar", this.welcomeMessage);
         })
-        .catch(error => this.$root.$emit("show-snackbar", error.message));
+        .catch((error) => this.$root.$emit("show-snackbar", error.message));
     },
     signUp ({ "first name": firstName, "last name": lastName, email, password }) {
       if (!firstName || !lastName) { 

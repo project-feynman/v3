@@ -6,7 +6,8 @@
         @click="submitPost()" 
         :loading="isButtonDisabled" 
         :disabled="isButtonDisabled"
-        color="accent" class="ma-0 white--text" 
+        color="accent" 
+        class="ma-0 white--text" 
       >
         SUBMIT AS ELTON LIN
         <v-icon class="pl-2">mdi-send</v-icon>
@@ -20,7 +21,7 @@
         :visible="visible" 
         :key="changeKeyToForceReset"
         @record-start="isRecordingVideo = true"
-        @record-end="videoData => handleRecordEnd(videoData)"
+        @record-end="(videoData) => handleRecordEnd(videoData)"
         @retry-recording="handleRetry()"
       />
       <template v-if="isPreviewing">
@@ -169,7 +170,7 @@ export default {
         }
       }
       if (this.willCreateNewPost) {
-        explanation.participants = [this.simplifiedUser]
+        explanation.participants = [this.simplifiedUser];
         explanation.hasReplies = false;
         this.postDbRef.set(explanation);
       } else {
