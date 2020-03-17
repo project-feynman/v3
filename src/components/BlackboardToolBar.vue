@@ -53,7 +53,7 @@
             </slot>
             <v-col class="py-0 px-0" cols="auto">
               <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="mdi-image">
-                <input style="display: none" type="file" @change="(e) => { onImageSelected(e) }" ref="fileInput">
+                <input style="display: none" type="file" @change="(e) => onImageSelected(e)" ref="fileInput">
                 <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br>BACKGROUND</p>
               </ButtonPrabhakar>
             </v-col>
@@ -88,9 +88,9 @@
 
         <template v-else>
           <v-col class="py-0 px-0" cols="auto">
-            <ButtonPrabhakar @click="$emit('record-state-change', RecordState.PRE_RECORD)" outlined icon="mdi-undo-variant">
+            <!-- <ButtonPrabhakar @click="$emit('record-state-change', RecordState.PRE_RECORD)" outlined icon="mdi-undo-variant">
               Retry
-            </ButtonPrabhakar>
+            </ButtonPrabhakar> -->
           </v-col>
           <!-- TODO: give ability to preview -->
           <slot>

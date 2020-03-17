@@ -1,113 +1,60 @@
 <template>
-  <div ref="DoodleVideo" style="height: 100%; position: relative; z-index: 5; margin:auto;" >
-    <div @mouseover="mouseHover = true" @mouseleave="mouseHover = false" style="height: 100%; width: 100%;">
-      <div ref="BlackboardWrapper" style="position: relative;">
-        <canvas ref="FrontCanvas" class="front-canvas"></canvas>
-        <canvas ref="BackCanvas" class="background-canvas"></canvas>
-        <div v-show="!hasLoadedAvailableResources" class="overlay-item">
-          <v-progress-circular v-if="isFetchingAudio" :indeterminate="true" size="50" color="orange"/>
-          <v-btn v-else @click="onOverlayClick()" large dark>
-            <v-icon>mdi-play</v-icon>
-          </v-btn>
-        </div>
-      </div>
+  <div ref="VideoWrapper" class="video-wrapper">
+    <div ref="CanvasWrapper" style="position: relative;">
+      <canvas ref="FrontCanvas" class="front-canvas"></canvas>
+      <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
-    <p v-if="isFetchingAudio">Fetching audio...(should take less than 2 seconds)</p>
-    <AudioRecorder v-if="audioUrl || audio" v-show="hasFetchedAudio" ref="AudioRecorder"
-      :audioUrl="audioUrl || `${audio.ts}`" 
-      :injectedAudio="audio"
-      @loading="isFetchingAudio = true" 
-      @loaded="isFetchingAudio = false; hasFetchedAudio = true;"
-      @play="initSyncing()" 
-      @seeking="syncOnce()"
-      @stop="stopSyncing()" 
-      @ended="stopSyncing()"
+    <!-- load the audio, but do not let user use the slider until strokes are loaded -->
+    <audio v-if="audioUrl" v-show="strokesArray.length > 0"
+      :src="audioUrl" 
+      @play="initSyncing()"
+      @seeking="syncStrokesToAudio()"
+      ref="AudioPlayer" 
+      style="width: 100%"
+      controls="true"
     />
   </div>
 </template>
 
 <script>
-import AudioRecorder from "@/components/AudioRecorder.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import _ from "lodash";
 import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
 
 export default {
   props: {
-    injectedStrokes: Array,
-    audio: Object,
-    blackboardRef: Object,
-    blackboardId: String,
-    thumbnail: String, 
-    imageUrl: String,
-    image: { 
-      type: Object,
-      default () { 
-        return { file: null }; 
-      }
-    },
+    strokesArray: Array,
     audioUrl: String,
-    hasStrokes: Boolean
+    backgroundUrl: String,
   },
-  components: { 
-    AudioRecorder 
-  },
-  mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
+  mixins: [CanvasDrawMixin],
   data: () => ({
     canvas: null,
     ctx: null,
     bgCanvas: null,
     bgCtx: null,
-    isFetchingAudio: false,
-    hasFetchedStrokes: false,
-    hasFetchedAudio: false,
-    allStrokes: [],
-    isQuickplaying: false,
-    mouseHover: false,
-    nextFrameIdx: 0,
-    recursiveSync: null,
-    thumbnailImage: null
+    nextFrameIdx: 0, 
+    recursiveSyncer: null
   }),
   computed: {
-    /* Converts our array of separate strokes into an array of continuous points
-      sorted by timestamp. Frames are in a `[{strokeIndex, pointIndex}, ...]` format */
+    /* Converts separate strokes into continuous points */
     allFrames () {
       const allPoints = [];
-      for (let i = 0; i < this.allStrokes.length; i++) {
-        for (let j = 1; j < this.allStrokes[i].points.length; j++) {
-          allPoints.push({ strokeIndex: i, pointIndex: j }); 
+      for (let i = 0; i < this.strokesArray.length; i++) {
+        for (let j = 1; j < this.strokesArray[i].points.length; j++) {
+          const frame = { strokeIndex: i, pointIndex: j };
+          allPoints.push({ 
+            startTime: this.getStartTime(frame),
+            ...frame, 
+          }); 
         }
       }
-      return allPoints.sort((p1, p2) => this.getStartTime(p1) - this.getStartTime(p2));
-    },
-    hasLoadedAvailableResources () {
-      return (this.hasFetchedAudio || !this.audioUrl || this.audio)
-        && (this.hasFetchedStrokes || !this.blackboardId)
-    },
-    hasVisualAndAudio () { 
-      return (this.injectedStrokes || this.hasFetchedStrokes) 
-        && (this.audio || this.hasFetchedAudio); 
+      return allPoints.sort((p1, p2) => p1.startTime - p2.startTime);
     }
   },
-  watch: {
-    mouseHover () { 
-      this.$emit("mouse-change", this.mouseHover); 
-    },
-    hasVisualAndAudio () { 
-      this.$emit("visual-audio-ready"); 
-    },
-    hasLoadedAvailableResources () { 
-      this.$nextTick(() => { // this waits for audioRecorder to be fully loaded
-        this.$emit("available-resources-ready"); 
-      });
-    },
-  },
   async created () {
-    if (this.injectedStrokes) { 
-      this.allStrokes = this.injectedStrokes 
-    } 
-    this.syncOnce = _.debounce(this.syncOnce, 0);
+    this.syncStrokesToAudio = _.debounce(this.syncStrokesToAudio, 0);
+    this.handleResize = _.debounce(this.handleResize, 100);
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
@@ -115,22 +62,12 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     this.handleResize();
-    if (this.thumbnail) {
-      this.thumbnailImage = new Image;
-      this.thumbnailImage.src = this.thumbnail;
-      this.$_rescaleCanvas(false); // don't redraw
-      setTimeout(this.renderThumbnail, 1000); // quickfix
-      // this.$nextTick(this.renderThumbnail); // requires nextTick for some reason
-      if (this.imageUrl) { // URL to the saved image on Firebase hosting
-        this.$_displayImage(this.imageUrl);
-      }
+    this.$_rescaleCanvas();
+    if (this.audioUrl) {
+      await this.$nextTick(); // wait for AudioPlayer's "v-if" to render
+      this.$refs.AudioPlayer.play();
     } else {
-      const willDisplayStrokes = this.injectedStrokes? true : false;
-      this.$_rescaleCanvas(willDisplayStrokes);
-      if (this.image.file) { // image uploaded locally by the user's device
-        const imageSrc = URL.createObjectURL(this.image.file);
-        this.$_displayImage(imageSrc);
-      } 
+      this.$_quickplay();
     }
     window.addEventListener("resize", this.handleResize);
   },
@@ -138,13 +75,30 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    // TODO: touch to play or pause
+    getStartTime ({ strokeIndex, pointIndex }) {
+      const stroke = this.strokesArray[strokeIndex];
+      return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
+    },
+    async handleResize () {
+      this.resizeVideo();
+      this.$_rescaleCanvas();
+      await this.renderBackground();
+      if (this.recursiveSyncer) {
+        this.nextFrameIdx = 0; // need to redraw previous progress 
+        this.syncStrokesToAudio();
+      } else {
+        this.$_drawStrokesInstantly();
+      }
+    },
     resizeVideo () {
-      const { BlackboardWrapper, DoodleVideo } = this.$refs;
-      DoodleVideo.style.width = "100%";
-      const availableWidth = DoodleVideo.offsetWidth; 
+      const { CanvasWrapper, VideoWrapper } = this.$refs;
+      VideoWrapper.style.width = "100%";
+      const availableWidth = VideoWrapper.offsetWidth; 
       const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight;
       let videoHeight; 
       let videoWidth; 
+
       if (availableWidth * aspectRatio < availableHeight) {
         videoWidth = availableWidth;
         videoHeight = videoWidth * aspectRatio;
@@ -152,104 +106,56 @@ export default {
         videoHeight = availableHeight;
         videoWidth = videoHeight * (1/aspectRatio);
       }
-      BlackboardWrapper.style.height = `${videoHeight}px`;
+
+      CanvasWrapper.style.height = `${videoHeight}px`;
       this.canvas.style.height = `${videoHeight}px`;
-      DoodleVideo.style.width = `${videoWidth}px`;
+      this.bgCanvas.style.height = `${videoHeight}px`;
+      VideoWrapper.style.width = `${videoWidth}px`;
     },
-    onOverlayClick () {
-      if (this.hasLoadedAvailableResources) { 
-        this.playGivenWhatIsAvailable(); 
-      } else { 
-        if (!this.hasStrokes) { return; }
-        this.fetchStrokes(); 
-        if (this.audioUrl) { 
-          this.$refs.AudioRecorder.downloadAudioFile();
-        }
-      }
-    },
-    renderThumbnail () {
-      if (!this.thumbnailImage) { return; } // necessary because switching between posts will trigger a resize before a destory event 
-      this.ctx.drawImage(this.thumbnailImage, 0 , 0, this.canvas.width, this.canvas.height);
-    },
-    handleResize () {
-      this.resizeVideo();
-      if (this.recursiveSync) {
-        this.$_rescaleCanvas(false); // redraw = false
-        this.stopSyncing();
-        this.nextFrameIdx = 0; // need to redraw previous progress 
-        this.syncContinuously();
-      } else { 
-        if (!this.hasFetchedStrokes) { 
-          this.renderThumbnail(); 
-        } else { 
-          this.$_rescaleCanvas(true); // separate scaling and drawing
+    renderBackground () {
+      return new Promise((resolve) => {
+        if (!this.backgroundUrl) resolve();
+        const image = new Image();
+        image.src = this.backgroundUrl;
+        this.bgCanvas.width = this.canvas.width;
+        this.bgCanvas.height = this.canvas.height;
+        const { width, height } = this.bgCanvas;
+        image.onload = () => {
+          this.bgCtx.drawImage(image, 0, 0, width, height);
+          resolve();
         } 
-      } 
-    },
-    async fetchStrokes () {
-      return new Promise(async (resolve) => {
-        if (this.hasFetchedStrokes) { return; } 
-        const blackboard = await this.$_getDoc(this.blackboardRef);
-        const strokesRef = this.blackboardRef.collection("strokes").orderBy("strokeNumber", "asc");
-        this.allStrokes = await this.$_getCollection(strokesRef);
-        this.$nextTick(() => {
-          this.hasFetchedStrokes = true;
-          this.$emit("strokes-ready")
-          this.$_rescaleCanvas(true);
-        });
-        resolve(); // TODO: move inside $nextTick();
       });
     },
-    playGivenWhatIsAvailable () { 
-      if (this.hasVisualAndAudio) { 
-        this.$refs.AudioRecorder.playAudio(); 
-      } else { 
-        this.playSilentAnimation(); 
-      }
-    },
-    async playSilentAnimation () {
-      this.isQuickplaying = true;
-      await this.$_quickplay();
-      this.isQuickplaying = false;
-    },
     initSyncing () {
-      if (!this.recursiveSync) {
-        this.nextFrameIdx = 0;
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
-        this.syncContinuously();
+      this.nextFrameIdx = 0;
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
+      this.syncRecursively();
+    },
+    syncRecursively () {
+      this.syncStrokesToAudio();
+      if (this.nextFrameIdx < this.allFrames.length) {
+        // calculate sleep duration
+        const nextFrame = this.allFrames[this.nextFrameIdx];
+        const { currentTime } = this.$refs.AudioPlayer;
+        const timeout = 1000 * (nextFrame.startTime - currentTime); 
+        // call itself after sleeping
+        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
       }
     },
-    syncOnce () {
-      const onlyOneFrame = true;
-      this.syncContinuously(onlyOneFrame);
-    },
-    stopSyncing () {
-      clearTimeout(this.recursiveSync); // stop recursive call
-      this.recursiveSync = null;
-    },
-    // Synchronize drawings with the audio on a point-by-point basis.
-    syncContinuously (once = false) {
-      const { getAudioTime } = this.$refs.AudioRecorder;
+    syncStrokesToAudio () {
+      const { currentTime } = this.$refs.AudioPlayer;
       const nextFrame = this.allFrames[this.nextFrameIdx];
-      if (!nextFrame || this.getStartTime(nextFrame) > getAudioTime()) { // !nextFrame: nextFrame is undefined after a video finishes
+      if (!nextFrame || nextFrame.startTime > currentTime) { // !nextFrame: nextFrame is undefined after a video finishes
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.nextFrameIdx = 0;
       }
       this.renderFramesUntilCurrentTime();
-      if (!once && this.nextFrameIdx < this.allFrames.length) {
-        const timeout = 1000 * (this.getStartTime(nextFrame) - getAudioTime()); 
-        this.recursiveSync = setTimeout(this.syncContinuously, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
-      } 
-    },
-    getStartTime ({ strokeIndex, pointIndex }) {
-      const stroke = this.allStrokes[strokeIndex];
-      return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
     renderFramesUntilCurrentTime () {
-      const { getAudioTime } = this.$refs.AudioRecorder;
+      const { currentTime } = this.$refs.AudioPlayer;
       for (let i = this.nextFrameIdx; i < this.allFrames.length; i++) {
         const frame = this.allFrames[i];
-        if (this.getStartTime(frame) > getAudioTime()) { 
+        if (frame.startTime > currentTime) { 
           break; 
         }
         this.renderFrame(frame);
@@ -257,7 +163,7 @@ export default {
       }
     },
     renderFrame ({ strokeIndex, pointIndex }) {
-      const stroke = this.allStrokes[strokeIndex];
+      const stroke = this.strokesArray[strokeIndex];
       this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
       this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
     }
@@ -265,14 +171,32 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+.video-wrapper {
+  height: 100%; 
+  width: 100%; 
+  position: relative; 
+  z-index: 5; 
+  margin: auto;
+}
+.doodle-video {
+  height: 100%; 
+  width: 100%;
+  position: relative; 
+  z-index: 5; 
+  margin: auto;
+}
+.canvas-wrapper {
+  width: 100%;
+  height: 100%; 
+  position: relative;
+}
 .front-canvas {
   width: 100%; 
   height: 1; 
   background-color: transparent; 
   display: block;
 }
-
 .background-canvas {
   /* absolute places the background relative to the parent and ignore the front canvas, thereby stacking on top of each other */
   position: absolute; 
@@ -282,12 +206,5 @@ export default {
   height: 100%;
   z-index: -1;
   background-color: rgb(62, 66, 66);
-}
-
-.overlay-item {
-  position: absolute; 
-  top: 50%; 
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 </style>

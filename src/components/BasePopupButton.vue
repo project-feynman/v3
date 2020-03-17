@@ -47,21 +47,20 @@ export default {
     actionName: String,
     inputFields: {
       type: Array,
-      default () { return []; }
+      default: () => []
     },
+    // TODO: everything below should be naturally passed to the v-button
     color: {
       type: String,
-      default () {
-        return "accent"
-      }
+      default: () => "accent"
     },
     outlined: {
       type: Boolean,
-      default () { return false; }
+      default: () => false
     },
     disabled: {
       type: Boolean,
-      default () { return false; }
+      default: () => false
     }
   },
   data: () => ({

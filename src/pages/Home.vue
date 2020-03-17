@@ -13,7 +13,9 @@
         <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> 
           GITHUB
         </v-btn>
-        <BasePopupButton actionName="Create class" @action-do="C => createClass(C)"
+        <BasePopupButton 
+          actionName="Create class" 
+          @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
@@ -22,7 +24,7 @@
             </v-btn>
           </template>
         </BasePopupButton>
-        <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
+        <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
             <v-btn v-on="on" tile icon class="ml-4">
               <v-icon large :color="user.color">mdi-settings</v-icon>
@@ -47,13 +49,15 @@
             <v-row class="my-5" justify="center">
               <template v-if="!user">
                 <v-col cols="auto">
-                  <BasePopupButton actionName="Log in" 
+                  <BasePopupButton 
+                    actionName="Log in" 
                     :inputFields="['email', 'password']" 
                     @action-do="user => logIn(user)"
                   />
                 </v-col>
                 <v-col cols="auto">
-                  <BasePopupButton actionName="Sign up" 
+                  <BasePopupButton 
+                    actionName="Sign up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
                     @action-do="user => signUp(user)"
                     outlined
@@ -79,11 +83,27 @@
         </v-card>
       </transition>
       <v-container fluid>
+        <!-- Class security popup -->
+        <v-dialog v-model="classSecurityPopup" max-width="600px">
+          <v-card>
+            <v-card-title>Please enter the class password</v-card-title>
+            <v-card-text>
+              <v-text-field v-model="classPassword"/>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn @click="classSecurityPopup = false">CANCEL</v-btn>
+              <v-btn @click="handleClassPassword()">SUBMIT</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+
         <!-- Tutorial -->
         <div v-if="!user && !isFetchingUser">
-          <DisplayExplanation :expl="demoVideo" :hasDate="false"/>
+          <SeeExplanation :expl="demoVideo" :hasDate="false"/>
           <CreateExplanation/>
-        </div>                    
+        </div>
+
         <!-- Classes -->
         <div v-else-if="user" key="class-list">
           <v-row align="stretch" class="enrolled-classes">
@@ -91,7 +111,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
+                    <v-card v-if="C.name && C.description" @click="handleClassClick(C.id, C.name)">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
@@ -111,7 +131,6 @@ import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/auth";
 import db from "@/database.js";
-import DoodleVideo from "@/components/DoodleVideo.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import TheSearchBar from "@/components/TheSearchBar.vue";
@@ -119,7 +138,7 @@ import AsyncRenderless from "@/components/AsyncRenderless.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Blackboard from "@/components/Blackboard.vue";
-import DisplayExplanation from "@/components/DisplayExplanation.vue";
+import SeeExplanation from "@/components/SeeExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import { demoVideo, NotifFrequency } from "@/CONSTANTS.js";
 
@@ -128,8 +147,7 @@ export default {
     AsyncRenderless, 
     BasePopupButton,
     Blackboard,
-    DoodleVideo,
-    DisplayExplanation,
+    SeeExplanation,
     CreateExplanation,
     TheAppBar,
     TheDropdownMenu,
@@ -146,7 +164,10 @@ export default {
     return {
       schoolClasses: [],
       demoVideo: { creator: {} },
-      welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right."
+      welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right.",
+      classSecurityPopup: false,
+      classPassword: "",
+      attemptToJoinClassId: ""
     }
   },
   async created () { 
@@ -161,6 +182,24 @@ export default {
     window.removeEventListener("scroll", this.logoVisibility); 
   },
   methods: {
+    handleClassPassword () {
+      if (this.classPassword === "explainPhysics") {
+        this.$router.push(`class/${this.attemptToJoinClassId}`);
+        this.$root.$emit("show-snackbar", "Success.");
+      } else {
+        this.$root.$emit("show-snackbar", "Incorrect password.")
+      }
+      this.classPassword = "";
+      this.classSecurityPopup = false;
+    },
+    handleClassClick (classId, className) {
+      if (className === "8.02" || className === "8.011") {
+        this.attemptToJoinClassId = classId;
+        this.classSecurityPopup = true;
+      } else {
+        this.$router.push(`class/${classId}`);
+      }
+    },
     getMitClassRef (classId) { 
       return db.collection("classes").doc(classId); 
     },
@@ -174,7 +213,7 @@ export default {
     enrollInClass ({ name, id }) {    
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
-          if (classObj.id === id) { return; } 
+          if (classObj.id === id) return; 
         }
       }
       const classSetting = { id, name, notifFrequency: NotifFrequency.ALWAYS };

@@ -64,13 +64,12 @@ export default {
         xhr.responseType = 'blob'
         xhr.onload = (event) => {
           const blob = xhr.response;
-          const blobURL = URL.createObjectURL(blob)
           const newRecording = {
             blob,
             ts: new Date().getTime(),
-            blobURL,
+            blobURL: URL.createObjectURL(blob),
             mimeType: blob.type,
-            size: blob.size,
+            size: blob.size
           }
           if (!this.audio) {
             this.audio = newRecording; // initial load or just empty local data
@@ -100,15 +99,15 @@ export default {
     },
     onNewRecording (evt) {
       this.audio = evt.detail.recording;
-      this.$emit("audio-saved");
+      this.$emit("audio-recorded");
     },
     uploadRecording () {
       return new Promise(async (resolve, reject) => {
-        if (!this.audio) reject();
+        if (!this.audio) reject(); 
         const downloadUrl = await this.$_saveToStorage(getRandomId(), this.audio.blob);
         this.$emit("file-uploaded", { url: downloadUrl });
         resolve();
-      })
+      });
     }
   }
 }
