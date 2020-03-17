@@ -183,7 +183,7 @@ export default {
   },
   methods: {
     handleClassPassword () {
-      if (this.classPassword === "explainPhysics") {
+      if (["explainphysics", "physics"].includes(this.classPassword.toLowerCase())) {
         this.$router.push(`class/${this.attemptToJoinClassId}`);
         this.$root.$emit("show-snackbar", "Success.");
       } else {
