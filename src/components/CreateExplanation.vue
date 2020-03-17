@@ -6,7 +6,7 @@
         @click="submitPost()" 
         :loading="isButtonDisabled" 
         :disabled="isButtonDisabled"
-        color="accent" 
+        color="secondary" 
         class="ma-0 white--text" 
       >
         SUBMIT AS {{ `${user.firstName}  ${user.lastName}` }}
@@ -37,7 +37,7 @@
             your drawings as the initial setup for the new video.
           </template>
         </BasePopupButton>
-        <BetaDoodleVideo
+        <DoodleVideo
           :strokesArray="blackboardStrokes"
           :audioUrl="audio.blobURL"
           :backgroundUrl="imageUrl"
@@ -49,7 +49,7 @@
 
 <script>
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue";
+import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import TextEditor from "@/components/TextEditor.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
@@ -77,7 +77,7 @@ export default {
   mixins: [DatabaseHelpersMixin],
   components: { 
     Blackboard, 
-    BetaDoodleVideo,
+    DoodleVideo,
     TextEditor,
     BasePopupButton
   },
