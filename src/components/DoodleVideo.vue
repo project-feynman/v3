@@ -7,10 +7,11 @@
     <!-- load the audio, but do not let user use the slider until strokes are loaded -->
     <audio v-if="audioUrl" v-show="strokesArray.length > 0"
       :src="audioUrl" 
+      @canplay="playAudio()"
       @play="initSyncing()"
       @seeking="syncStrokesToAudio()"
       ref="AudioPlayer" 
-      style="width: 100%"
+      style="width: 100%;"
       controls="true"
     />
   </div>
@@ -53,43 +54,46 @@ export default {
     }
   },
   async created () {
-    this.syncStrokesToAudio = _.debounce(this.syncStrokesToAudio, 0);
-    this.handleResize = _.debounce(this.handleResize, 100);
+    // this.syncStrokesToAudio = _.debounce(this.syncStrokesToAudio, 0);
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
     this.bgCanvas = this.$refs.BackCanvas;
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
-    this.handleResize();
-    this.$_rescaleCanvas();
-    if (this.audioUrl) {
-      await this.$nextTick(); // wait for AudioPlayer's "v-if" to render
-      this.$refs.AudioPlayer.play();
-    } else {
+    await this.handleResize();
+    if (!this.audioUrl) {
       this.$_quickplay();
     }
+    // if I put the below line before $_quickplay then the debounce will mess up the await 
+    this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy () {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    playAudio () {
+      this.$refs.AudioPlayer.play();
+    },
     // TODO: touch to play or pause
     getStartTime ({ strokeIndex, pointIndex }) {
       const stroke = this.strokesArray[strokeIndex];
       return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
-    async handleResize () {
-      this.resizeVideo();
-      this.$_rescaleCanvas();
-      await this.renderBackground();
-      if (this.recursiveSyncer) {
-        this.nextFrameIdx = 0; // need to redraw previous progress 
-        this.syncStrokesToAudio();
-      } else {
-        this.$_drawStrokesInstantly();
-      }
+    handleResize () {
+      return new Promise(async (resolve) => {
+        this.resizeVideo();
+        this.$_rescaleCanvas();
+        await this.renderBackground();
+        if (this.recursiveSyncer) {
+          this.nextFrameIdx = 0; // need to redraw previous progress 
+          this.syncStrokesToAudio();
+        } else {
+          this.$_drawStrokesInstantly();
+        }
+        resolve();
+      })
     },
     resizeVideo () {
       const { CanvasWrapper, VideoWrapper } = this.$refs;
