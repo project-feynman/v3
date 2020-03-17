@@ -13,9 +13,25 @@
         <v-icon class="pl-2">mdi-send</v-icon>
         <template v-slot:loader>
           <span v-if="isRecordingVideo">Currently recording...</span> 
-          <span v-else-if="isUploadingPost">Processing video...</span>
+          <span v-else-if="isUploadingPost">Uploading post...</span>
         </template>
       </v-btn>
+
+       <v-btn v-if="newExplanationDbRef || postDbRef" 
+        @click="submitPost(true)" 
+        :loading="isButtonDisabled" 
+        :disabled="isButtonDisabled"
+        color="secondary" 
+        class="ma-0 white--text" 
+      >
+        SUBMIT ANONYMOUSLY
+        <v-icon class="pl-2">mdi-send</v-icon>
+        <template v-slot:loader>
+          <span v-if="isRecordingVideo">Currently recording...</span> 
+          <span v-else-if="isUploadingPost">Uploading post...</span>
+        </template>
+      </v-btn>
+
       <Blackboard v-show="blackboardAttached && !isPreviewing" 
         :isRealtime="false" 
         :visible="visible" 
@@ -124,7 +140,7 @@ export default {
       this.imageUrl = imageUrl;
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
-    async submitPost () {
+    async submitPost (anonymous = false) {
       const { TextEditor, Blackboard } = this.$refs;
       if (TextEditor.html.length === 0 && this.titleRequired) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
@@ -132,11 +148,17 @@ export default {
       }
       this.isPreviewing = false; // important: for canvas to generate a thumbnail requires it to be visible
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
+      const anonymousUser = {
+        uid: this.user.uid,
+        email: "anonymous@mit.edu",
+        firstName: "anonymous",
+        lastName: "anonymous"
+      };
       const metadata = {
         title: TextEditor.extractAllText(),
         html: TextEditor.html,
         date: this.getDate(),
-        creator: this.simplifiedUser,
+        creator: anonymous ? anonymousUser : this.simplifiedUser,
         mitClass: this.mitClass
       };
       const explanation = { ...metadata };
