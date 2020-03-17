@@ -1,29 +1,40 @@
 <template>
   <v-container fluid>
-    <p v-if="!isEditing" 
-      v-html="expl.html">
-    </p>
+    <!-- Text -->
+    <p v-if="!isEditing" v-html="expl.html"></p>
     <template v-else>
       <TextEditor :injectedHtml="expl.html" ref="TextEditor"/>
       <v-btn @click="updateExplanation()" color="accent" block>
         SAVE EDIT
       </v-btn>
     </template>
-    <RenderlessFetchStrokes
+    
+    <!-- Doodle Video -->
+    <RenderlessFetchStrokes v-if="expl.thumbnail"
       :strokesRef="strokesRef"
-      :hasStrokes="expl.hasStrokes"
       v-slot="{ fetchStrokes, strokesArray, isLoading }"
     >
-      <BetaDoodleVideo v-if="expl.thumbnail"
-        :thumbnailUrl="expl.thumbnail"
-        @play-click="fetchStrokes()"
-        :isLoading="isLoading"
-        :strokesArray="strokesArray"
-        :audioUrl="expl.audioUrl" 
-        :backgroundUrl="expl.imageUrl" 
-      />
+      <div style="height: 100%">
+        <!-- Thumbnail preview -->
+        <template v-if="strokesArray.length === 0">
+          <v-img :src="expl.thumbnail" :aspectRatio="16/9"/>
+          <div v-if="expl.hasStrokes" class="overlay-item">
+            <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
+            <v-btn v-else @click="fetchStrokes()" large dark>
+              <v-icon>mdi-play</v-icon>
+            </v-btn>
+          </div>
+        </template>
+        <!-- Loaded video -->
+        <BetaDoodleVideo v-else
+          :strokesArray="strokesArray"
+          :audioUrl="expl.audioUrl" 
+          :backgroundUrl="expl.imageUrl" 
+        />
+      </div>
     </RenderlessFetchStrokes>
 
+    <!-- Delete popup -->
     <v-dialog v-model="popup" max-width="600px">
       <v-card>
         <v-card-title>Are you sure you want to delete?</v-card-title>
@@ -35,6 +46,7 @@
       </v-card>
     </v-dialog>
 
+    <!-- Dropdown menu for editing and deleting -->
     <v-row v-if="user" justify="center">
       <v-layout align-center>
         <v-spacer></v-spacer>
@@ -120,3 +132,12 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.overlay-item {
+  position: absolute; 
+  top: 50%; 
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+</style>

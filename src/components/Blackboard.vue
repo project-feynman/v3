@@ -104,6 +104,7 @@ export default {
       currentState: "",
       audioUrl: "",
       hasUploadedAudio: false,
+      thumbnailBlob: null
     }
   },
   computed: {
@@ -456,7 +457,8 @@ export default {
         });
       }
     },
-    emitVideoData () { 
+    async emitVideoData () { 
+      this.thumbnailBlob = await this.createThumbnail();
       const videoData = { 
         audio: this.$refs.AudioRecorder.audio, 
         strokes: this.strokesArray,
@@ -495,12 +497,14 @@ export default {
     },
     createThumbnail () {
       return new Promise(async (resolve) => {
-        console.log("this.imageUrl =", this.imageUrl);
-        await this.displayImageAsBackground(this.imageUrl);
-        console.log("finished rendering background image");
-        // ensure backCanvas's internal size is the same as its display size 
+        // TODO: render the background image
+        // if (this.imageUrl) { // has a background image
+        //   await this.displayImageAsBackground(this.imageUrl);
+        // }
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
+        this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
+        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         this.$_drawStrokesInstantly2();
         this.bgCanvas.toBlob((thumbnail) => {
           resolve(thumbnail);
@@ -544,6 +548,7 @@ export default {
     handleSaving () {
       // to be implemented
     },
+    // TODO: let it be an additive component for the real-time blackboard
     initCopyAndPasteImage () {
       //  document.onpaste = async (event) => {
       //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions

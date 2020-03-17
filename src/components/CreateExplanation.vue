@@ -9,7 +9,7 @@
         color="accent" 
         class="ma-0 white--text" 
       >
-        SUBMIT AS ELTON LIN
+        SUBMIT AS {{ `${user.firstName}  ${user.lastName}` }}
         <v-icon class="pl-2">mdi-send</v-icon>
         <template v-slot:loader>
           <span v-if="isRecordingVideo">Currently recording...</span> 
@@ -28,7 +28,7 @@
       <template v-if="isPreviewing">
         <BasePopupButton actionName="Retry new recording" @action-do="initRetry()">
           <template v-slot:activator-button="{ on }">
-            <v-btn v-on="on" class="white--text" outlined color="accent">
+            <v-btn v-if="!isUploadingPost" v-on="on" class="white--text" outlined color="accent">
               Retry recording
             </v-btn>
           </template>
@@ -144,8 +144,10 @@ export default {
       const { strokesArray, imageBlob, currentState, currentTime } = Blackboard;
       if (strokesArray.length > 0 || imageBlob) {
         await this.$nextTick();
-        const thumbnail = await Blackboard.createThumbnail();
-        const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnail);
+        const thumbnailUrl = await this.$_saveToStorage(
+          `images/${getRandomId()}`, 
+          Blackboard.thumbnailBlob
+        );
         explanation.thumbnail = thumbnailUrl;
         if (strokesArray.length > 0) {
           explanation.hasStrokes = true;

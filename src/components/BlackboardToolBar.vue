@@ -88,9 +88,9 @@
 
         <template v-else>
           <v-col class="py-0 px-0" cols="auto">
-            <ButtonPrabhakar @click="$emit('record-state-change', RecordState.PRE_RECORD)" outlined icon="mdi-undo-variant">
+            <!-- <ButtonPrabhakar @click="$emit('record-state-change', RecordState.PRE_RECORD)" outlined icon="mdi-undo-variant">
               Retry
-            </ButtonPrabhakar>
+            </ButtonPrabhakar> -->
           </v-col>
           <!-- TODO: give ability to preview -->
           <slot>
