@@ -163,14 +163,16 @@ export default {
       };
       const explanation = { ...metadata };
       // TODO: optimize by resolving promises all at once
-      const { strokesArray, imageBlob, currentState, currentTime } = Blackboard;
+      const { strokesArray, currentState, imageBlob, currentTime } = Blackboard;
       if (strokesArray.length > 0 || imageBlob) {
-        await this.$nextTick();
+        await this.$nextTick(); // wait for Blackboard re-render from v-if otherwise it can't create a thumbnail
+        const thumbnailBlob = this.thumbnailBlob ? this.thumbnailBlob : await Blackboard.createThumbnail();
         const thumbnailUrl = await this.$_saveToStorage(
           `images/${getRandomId()}`, 
-          Blackboard.thumbnailBlob
+          thumbnailBlob
         );
         explanation.thumbnail = thumbnailUrl;
+  
         if (strokesArray.length > 0) {
           explanation.hasStrokes = true;
           for (let stroke of strokesArray) {
