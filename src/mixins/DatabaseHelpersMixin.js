@@ -80,6 +80,30 @@ export default {
           reject("Error =", error);
         }
       });
+    },
+    getBlobFromStorage (url) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = "blob";
+        xhr.onload = (resolve, reject) => {
+          try {
+            const blob = xhr.response;
+            const blobURL = URL.createObjectURL(blob)
+            const newRecording = {
+              blob,
+              ts: new Date().getTime(),
+              blobURL,
+              mimeType: blob.type,
+              size: blob.size,
+            }
+            resolve(newRecording);
+          } catch (error) {
+            reject(`Error: ${error}`);
+          }
+        }
+        xhr.open('GET', url);
+        xhr.send();
+      });
     }
   }
 };

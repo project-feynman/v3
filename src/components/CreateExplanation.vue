@@ -16,19 +16,19 @@
           <span v-else-if="isUploadingPost">Processing video...</span>
         </template>
       </v-btn>
-      <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
+      <Blackboard v-show="blackboardAttached && !isPreviewing" 
         :isRealtime="false" 
         :visible="visible" 
         :key="changeKeyToForceReset"
         @record-start="isRecordingVideo = true"
         @record-end="(videoData) => handleRecordEnd(videoData)"
         @retry-recording="handleRetry()"
+        ref="Blackboard"
       />
       <template v-if="isPreviewing">
-        <BasePopupButton actionName="Retry new recording"
-          @action-do="initRetry()">
-          <template >
-            <v-btn class="white--text" outlined color="accent">
+        <BasePopupButton actionName="Retry new recording" @action-do="initRetry()">
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-on="on" class="white--text" outlined color="accent">
               Retry recording
             </v-btn>
           </template>
@@ -37,11 +37,10 @@
             your drawings as the initial setup for the new video.
           </template>
         </BasePopupButton>
-        <DoodleVideo 
-          :injectedStrokes="blackboardStrokes" 
-          :audio="audio" 
-          :audioUrl="audioUrl" 
-          :image="image"
+        <BetaDoodleVideo
+          :strokesArray="blackboardStrokes"
+          :audioUrl="audio.blobURL"
+          :backgroundUrl="imageUrl"
         />
       </template>
     </v-container>
@@ -50,7 +49,7 @@
 
 <script>
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import DoodleVideo from "@/components/DoodleVideo.vue";
+import BetaDoodleVideo from "@/components/BetaDoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import TextEditor from "@/components/TextEditor.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
@@ -78,7 +77,7 @@ export default {
   mixins: [DatabaseHelpersMixin],
   components: { 
     Blackboard, 
-    DoodleVideo, 
+    BetaDoodleVideo,
     TextEditor,
     BasePopupButton
   },
@@ -91,9 +90,7 @@ export default {
     blackboardStrokes: [],
     audio: null,
     audioUrl: "",
-    image: { 
-      file: null 
-    }, 
+    imageUrl: "",
     changeKeyToForceReset: 0
   }),
   computed: {
@@ -119,12 +116,12 @@ export default {
         Blackboard.handleRecordStateChange(RecordState.PRE_RECORD);
       })
     },
-    handleRecordEnd ({ audio, strokes, image }) {
+    handleRecordEnd ({ audio, strokes, imageUrl }) {
       this.isRecordingVideo = false;
       this.isPreviewing = true;
       this.audio = audio;
       this.blackboardStrokes = strokes;
-      this.image = { file: image };
+      this.imageUrl = imageUrl;
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
@@ -144,15 +141,15 @@ export default {
       };
       const explanation = { ...metadata };
       // TODO: optimize by resolving promises all at once
-      const { allStrokes, imageBlob, currentState, currentTime } = Blackboard;
-      if (allStrokes.length > 0 || imageBlob) {
+      const { strokesArray, imageBlob, currentState, currentTime } = Blackboard;
+      if (strokesArray.length > 0 || imageBlob) {
         await this.$nextTick();
         const thumbnail = await Blackboard.createThumbnail();
         const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnail);
         explanation.thumbnail = thumbnailUrl;
-        if (allStrokes.length > 0) {
+        if (strokesArray.length > 0) {
           explanation.hasStrokes = true;
-          for (let stroke of allStrokes) {
+          for (let stroke of strokesArray) {
             if (this.willCreateNewPost) {
               this.postDbRef.collection("strokes").add(stroke);
             } else {

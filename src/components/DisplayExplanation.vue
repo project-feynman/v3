@@ -8,7 +8,7 @@
       <v-btn v-if="isEditing" @click="updateExplanation()" block color="accent">
         SAVE EDIT
       </v-btn>
-      <DoodleVideo v-if="expl.thumbnail" ref="DoodleVideo"
+      <DoodleVideo v-if="expl.thumbnail" 
         :blackboardRef="boardRef" 
         :blackboardId="expl.id" 
         :audioUrl="expl.audioUrl" 
@@ -17,6 +17,7 @@
         :hasStrokes="expl.hasStrokes"
         @click="fetchStrokes()"
         @available-resources-ready="playGivenWhatIsAvailable()"
+        ref="DoodleVideo"
       />
       <v-dialog v-model="isShowingPopup" max-width="600px">
         <v-card>

@@ -13,7 +13,9 @@
         <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> 
           GITHUB
         </v-btn>
-        <BasePopupButton actionName="Create class" @action-do="C => createClass(C)"
+        <BasePopupButton 
+          actionName="Create class" 
+          @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
@@ -22,7 +24,7 @@
             </v-btn>
           </template>
         </BasePopupButton>
-        <TheDropdownMenu @sign-out="signOut()" @settings-changed="S => updateSettings(S)">
+        <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
             <v-btn v-on="on" tile icon class="ml-4">
               <v-icon large :color="user.color">mdi-settings</v-icon>
@@ -47,13 +49,15 @@
             <v-row class="my-5" justify="center">
               <template v-if="!user">
                 <v-col cols="auto">
-                  <BasePopupButton actionName="Log in" 
+                  <BasePopupButton 
+                    actionName="Log in" 
                     :inputFields="['email', 'password']" 
                     @action-do="user => logIn(user)"
                   />
                 </v-col>
                 <v-col cols="auto">
-                  <BasePopupButton actionName="Sign up" 
+                  <BasePopupButton 
+                    actionName="Sign up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
                     @action-do="user => signUp(user)"
                     outlined

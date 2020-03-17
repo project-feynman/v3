@@ -2,9 +2,9 @@
   <div>
     <TheAppBar/>
     <v-content>
-      <DisplayExplanation v-if="originalPost" :expl="originalPost"/>
-      <DisplayExplanation v-for="expl in sortedExplanations" 
-        :expl="expl" :key="expl.id"
+      <BetaDisplayExplanation v-if="originalPost" :expl="originalPost"/>
+      <BetaDisplayExplanation v-for="expl in sortedExplanations" :key="expl.id"
+        :expl="expl" 
       />
       <v-btn @click="isCreatingExpl = !isCreatingExpl" x-large block :outlined="isCreatingExpl" color="accent">
         {{ isCreatingExpl ? 'CANCEL' : 'ADD RESPONSE' }}
@@ -22,6 +22,7 @@
 <script>
 import TheAppBar from "@/components/TheAppBar.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
+import BetaDisplayExplanation from "@/components/BetaDisplayExplanation.vue";
 import DisplayExplanation from "@/components/DisplayExplanation.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
@@ -31,6 +32,7 @@ export default {
   components: { 
     TheAppBar, 
     CreateExplanation, 
+    BetaDisplayExplanation,
     DisplayExplanation 
   },
   data: () => ({

@@ -38,7 +38,7 @@
     </div>
     <AudioRecorder v-show="false" ref="AudioRecorder"
       @file-uploaded="(audio) => saveFileReference(audio)"
-      @audio-saved="handleAudioSaved()"
+      @audio-recorded="emitVideoData()"
     />
   </div>
 </template>
@@ -60,7 +60,10 @@ export default {
     isRealtime: Boolean,
     visible: Boolean,
   },
-  mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
+  mixins: [
+    CanvasDrawMixin, 
+    DatabaseHelpersMixin
+  ],
   components: { 
     AudioRecorder, 
     BasePopupButton,
@@ -79,8 +82,8 @@ export default {
       color: "white",
       lineWidth: 2.5,
       currentTool: BlackboardTools.PEN,
-      touchDisabled: true,
-      allStrokes: [],
+      touchDisabled: false,
+      strokesArray: [],
       currentStroke: { 
         points: [] 
       },
@@ -202,18 +205,21 @@ export default {
       this.initCopyAndPasteImage()
     },
     keepSyncingBoardWithDb () {
-      this.unsubscribe = this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
+      this.unsubscribe = this.strokesRef.orderBy("strokeNumber").onSnapshot((snapshot) => {
         if (snapshot.docs.length === 0) {
           this.wipeBoard();
           this.resetVariables(); // no need to wipe database again
         }
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           if (change.type === "added") {
             const newStroke = change.doc.data();
-            if (this.allStrokes.length < newStroke.strokeNumber) { // check if local strokes and db strokes are in sync
-              if (this.loading) { this.$_drawStroke(newStroke); } // initial render: catch up to current state - draw quickly
-              else { this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); } 
-              this.allStrokes.push(newStroke);
+            if (this.strokesArray.length < newStroke.strokeNumber) { // check if local strokes and db strokes are in sync
+              if (this.loading) { 
+                this.$_drawStroke(newStroke); // initial render: catch up to current state - draw quickly
+              } else {
+                this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); 
+              } 
+              this.strokesArray.push(newStroke);
             }
           }
         });
@@ -229,7 +235,7 @@ export default {
     async resetBoard () {
       if (this.isRealtime) {
         const strokeDeleteRequests = [];
-        this.allStrokes.forEach(stroke => {
+        this.strokesArray.forEach(stroke => {
           strokeDeleteRequests.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
         })
         const backgroundResetRequest = this.blackboardRef.update({ imageUrl: "" });
@@ -244,18 +250,18 @@ export default {
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
-      this.allStrokes = [];
+      this.strokesArray = [];
       this.prevPoint = { x: -1, y: -1 };
       this.currentTime = 0;
       this.imageBlob = null;
       this.imageUrl = "";
     },
     async saveAndDisplayImage (blob) { // TODO: this was a quick-fix for image files
-      if (blob === null) { return; }
+      if (blob === null) return; 
       this.imageBlob = blob;
       if (!this.isRealtime) {
-        const imageUrl = URL.createObjectURL(this.imageBlob);
-        this.displayImageAsBackground(imageUrl);
+        this.imageUrl = URL.createObjectURL(this.imageBlob);
+        this.displayImageAsBackground(this.imageUrl);
       } else {
         const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
         this.blackboardRef.update({ imageUrl });
@@ -263,11 +269,16 @@ export default {
       }     
     },
     displayImageAsBackground (src) {
-      const image = new Image();
-      image.src = src;
-      this.bgCanvas.height = this.canvas.scrollHeight;
-      this.bgCanvas.width = this.canvas.scrollWidth;
-      image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.src = src;
+        this.bgCanvas.height = this.canvas.scrollHeight;
+        this.bgCanvas.width = this.canvas.scrollWidth;
+        image.onload = () => {
+          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+          resolve();
+        }
+      });
     },
     startTimer () {
       this.currentTime = 0;
@@ -282,13 +293,13 @@ export default {
       this.currentStroke.points.push({ unitX, unitY });
     },
     startNewStroke (e) {
-      this.currentStroke.strokeNumber = this.allStrokes.length + 1;
+      this.currentStroke.strokeNumber = this.strokesArray.length + 1;
       this.currentStroke.startTime = Number(this.currentTime.toFixed(1));
       this.currentStroke.color = this.color;
       this.currentStroke.lineWidth = this.lineWidth;
       this.currentStroke.isErasing = this.isNormalEraser;
 
-      this.$_rescaleCanvas(false);
+      this.$_rescaleCanvas();
       e.preventDefault(); // not put in the beginning because sometimes we allow scrolling 
       this.$_setStyle(this.color, this.lineWidth);
       if (this.currentState === RecordState.MID_RECORD) {
@@ -345,9 +356,9 @@ export default {
       e.preventDefault()
       if (this.currentStroke.points.length === 0) { return; }  // user is touching the screen despite that touch is disabled
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
-      this.allStrokes.push(this.currentStroke);
+      this.strokesArray.push(this.currentStroke);
       if (this.isRealtime) {
-        this.strokesRef.doc(`${this.allStrokes.length}`).set(this.currentStroke); // 1st stroke = 1
+        this.strokesRef.doc(`${this.strokesArray.length}`).set(this.currentStroke); // 1st stroke = 1
       }
       this.currentStroke = { 
         points: [] 
@@ -380,8 +391,8 @@ export default {
       }
       const radius = 10;
       const idxOfStrokesToErase = []
-      for (let i = 0; i < this.allStrokes.length; i++) {
-        const stroke = this.allStrokes[i];
+      for (let i = 0; i < this.strokesArray.length; i++) {
+        const stroke = this.strokesArray[i];
         for (let point of stroke.points) {
           const deltaX = eraserCenter.x - point.unitX * this.canvas.width
           const deltaY = eraserCenter.y - point.unitY * this.canvas.height
@@ -392,7 +403,7 @@ export default {
         }
       }
       for (let i of idxOfStrokesToErase) {
-        this.allStrokes.splice(i, 1); // remove 1 element at index i
+        this.strokesArray.splice(i, 1); // remove 1 element at index i
       }
       if (idxOfStrokesToErase.length > 0) {
         this.wipeBoard();
@@ -445,11 +456,11 @@ export default {
         });
       }
     },
-    handleAudioSaved () { 
+    emitVideoData () { 
       const videoData = { 
         audio: this.$refs.AudioRecorder.audio, 
-        strokes: this.allStrokes,
-        image: this.imageBlob
+        strokes: this.strokesArray,
+        imageUrl: this.imageUrl
       };
       this.$emit("record-end", videoData)
     },
@@ -457,7 +468,7 @@ export default {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
       // modify timestamps so last round's strokes will persist as the initial setup of this round's recording
-      for (const stroke of this.allStrokes) {
+      for (const stroke of this.strokesArray) {
         [stroke.startTime, stroke.endTime] = [0, 0];
       }
       const { PRE_RECORD } = RecordState;
@@ -468,8 +479,8 @@ export default {
           audioUrl: "" 
         });
       }
-      const willRedraw = true;
-      this.$_rescaleCanvas(willRedraw);
+      this.$_rescaleCanvas();
+      this.$_drawStrokesInstantly(); 
     },
     saveFileReference ({ url }) {
       this.hasUploadedAudio = true;
@@ -478,12 +489,15 @@ export default {
         this.blackboardRef.update({ audioUrl: url })
       }
       this.$emit("audio-upload-end", { 
-        blackboardStrokes: this.allStrokes, 
+        blackboardStrokes: this.strokesArray, 
         audioUrl: url
       });
     },
     createThumbnail () {
       return new Promise(async (resolve) => {
+        console.log("this.imageUrl =", this.imageUrl);
+        await this.displayImageAsBackground(this.imageUrl);
+        console.log("finished rendering background image");
         // ensure backCanvas's internal size is the same as its display size 
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
@@ -499,7 +513,8 @@ export default {
       const availableHeight = window.innerHeight - navbarHeight;
       const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, availableHeight - epsilon);
       this.canvas.style.height = this.isRealtime ? `${availableHeight}px` : `${offlineHeight}px`;
-      this.$_rescaleCanvas(true); // will redraw
+      this.$_rescaleCanvas();
+      this.$_drawStrokesInstantly(); 
     },
     drawToPoint ({ x, y }) {
       if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
