@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner" style="zIndex:9;">
+  <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner" style="zIndex:9;" :height="navbarHeight">
     <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'"
       @click.stop="$root.$emit('toggle-drawer')"
     />
@@ -21,9 +21,7 @@
         @action-do="bugReport => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
-          <v-btn v-on="on" tile icon color="accent">
-            <v-icon>mdi-bug</v-icon>
-          </v-btn>
+          <ButtonNew v-on="on" icon="mdi-bug">Report Bug</ButtonNew>
         </template>
         <template v-slot:message-to-user>
           Report a any bug below, and my team and I will fix it within 3 hours. <br>
@@ -40,7 +38,9 @@
 
 <script>
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
+import {navbarHeight} from "@/CONSTANTS.js"
 
 export default {
   props: {
@@ -48,8 +48,14 @@ export default {
     icon: String,
     page: String,
   },
+  data () {
+    return {
+      navbarHeight
+    }
+  },
   components: { 
-    BasePopupButton 
+    BasePopupButton,
+    ButtonNew
   },
   computed: {
     mitClass () { 
