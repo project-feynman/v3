@@ -164,15 +164,41 @@ export default {
       const explanation = { ...metadata };
       // TODO: optimize by resolving promises all at once
       const { strokesArray, currentState, imageBlob, currentTime } = Blackboard;
-      if (strokesArray.length > 0 || imageBlob) {
-        await this.$nextTick(); // wait for Blackboard re-render from v-if otherwise it can't create a thumbnail
-        const thumbnailBlob = this.thumbnailBlob ? this.thumbnailBlob : await Blackboard.createThumbnail();
-        const thumbnailUrl = await this.$_saveToStorage(
-          `images/${getRandomId()}`, 
-          thumbnailBlob
-        );
-        explanation.thumbnail = thumbnailUrl;
-  
+
+      if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
+        // accumulate promises for strokes, audio, images to process them in parallel
+        const promises = [];
+
+        if (currentState === RecordState.POST_RECORD) {
+          const audioPromise = Blackboard.uploadAudio().then(() => {
+            explanation.audioUrl = Blackboard.audioUrl;
+            explanation.duration = Blackboard.currentTime;
+          });
+          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, Blackboard.thumbnailBlob)
+          .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl);
+          promises.push(audioPromise);
+          promises.push(thumbnailPromise);
+        } else {
+          const thumbnailPromise = Blackboard.createThumbnail().then(async (thumbnailBlob) => {
+            const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
+            explanation.thumbnail = thumbnailUrl;
+          });
+          promises.push(thumbnailPromise);
+        }
+        // background image
+        if (imageBlob) {
+          const backgroundImagePromise = this.$_saveToStorage(
+            `images/${getRandomId()}`, 
+            imageBlob
+          )
+          .then((imageUrl) => explanation.imageUrl = imageUrl);
+          promises.push(backgroundImagePromise);
+        }
+
+        // RESOLVE PROMISES
+        await Promise.all(promises);
+
+        // save strokes
         if (strokesArray.length > 0) {
           explanation.hasStrokes = true;
           for (let stroke of strokesArray) {
@@ -182,14 +208,6 @@ export default {
               this.newExplanationDbRef.collection("strokes").add(stroke);
             }
           }
-        }
-        if (imageBlob) {
-          explanation.imageUrl = await this.$_saveToStorage(`images/${getRandomId()}`, imageBlob);
-        }
-        if (currentState === RecordState.POST_RECORD) {
-          await Blackboard.uploadAudio();
-          explanation.audioUrl = Blackboard.audioUrl;
-          explanation.duration = Blackboard.currentTime;
         }
       }
       if (this.willCreateNewPost) {
