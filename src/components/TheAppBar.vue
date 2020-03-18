@@ -1,7 +1,6 @@
 <template>
   <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner" style="zIndex:9;">
-    <v-app-bar-nav-icon
-      v-if="!icon && $route.path !== '/'"
+    <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'"
       @click.stop="$root.$emit('toggle-drawer')"
     />
     <img
@@ -9,15 +8,14 @@
       src="/favicon.ico"
       @click="$router.push('/')"
     />
-    <v-toolbar-title
-      v-if="$route.path === '/' || mitClass"
+    <v-toolbar-title v-if="$route.path === '/' || mitClass"
       :class="['home-logo', 'headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
       @click="$router.push('/')"
     >
       {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${mitClass.name}` }}
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
-    <v-spacer />
+    <v-spacer/>
       <BasePopupButton actionName="Report bug" 
         :inputFields="['bug summary', 'bug description']"
         @action-do="bugReport => submitBug(bugReport)"
@@ -28,9 +26,10 @@
           </v-btn>
         </template>
         <template v-slot:message-to-user>
-          We know it's annoying to report bugs, so we very much 
-          appreciate it and will fix it immediately!
-          Meanwhile, sometimes refreshing does the trick :)
+          Report a any bug below, and my team and I will fix it within 3 hours. <br>
+          Alternatively, try refreshing the page :). You can also directly contact me: <br>
+          WhatsApp: 503 250 3868 <br>
+          Email: eltonlin@mit.edu <br>
         </template>
       </BasePopupButton>
     <slot>
@@ -50,9 +49,13 @@ export default {
     icon: String,
     page: String,
   },
-  components: { BasePopupButton },
+  components: { 
+    BasePopupButton 
+  },
   computed: {
-    mitClass () { return this.$store.state.mitClass; }
+    mitClass () { 
+      return this.$store.state.mitClass; 
+    }
   },
   methods: {
     submitBug ({ "bug summary": title, "bug description": description}) {
@@ -61,7 +64,10 @@ export default {
         return 
       }
       const ref = db.collection("bugs");
-      ref.add({ title, description}); 
+      ref.add({ 
+        title, 
+        description
+      }); 
     }
   }
 };
