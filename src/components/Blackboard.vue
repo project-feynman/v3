@@ -30,9 +30,11 @@
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
-    <AudioRecorder v-show="false" ref="AudioRecorder"
+    <!-- TODO: refactor -->
+    <AudioRecorder v-show="false" 
       @file-uploaded="(audio) => saveFileReference(audio)"
       @audio-recorded="emitVideoData()"
+      ref="AudioRecorder"
     />
   </div>
 </template>
