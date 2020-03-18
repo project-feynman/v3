@@ -10,25 +10,21 @@
           <!-- <v-btn href="https://github.com/eltonlin1998/ExplainMIT" target="_blank" color="accent" tile icon>
             <v-icon>mdi-git</v-icon>
           </v-btn> -->
-        <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> 
-          GITHUB
-        </v-btn>
+        <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
+          <ButtonNew icon="mdi-git" href="https://github.com/eltonlin1998/ExplainMIT">Github</ButtonNew>
+        </a>
         <BasePopupButton 
           actionName="Create class" 
           @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
-            <v-btn v-on="on" tile icon color="accent">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
+            <ButtonNew v-on="on" icon="mdi-plus">Add Class</ButtonNew>
           </template>
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <v-btn v-on="on" tile icon class="ml-4">
-              <v-icon large :color="user.color">mdi-settings</v-icon>
-            </v-btn>
+            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
@@ -141,6 +137,7 @@ import Blackboard from "@/components/Blackboard.vue";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import { demoVideo, NotifFrequency } from "@/CONSTANTS.js";
+import ButtonNew from "@/components/ButtonNew.vue"
 
 export default {
   components: {
@@ -151,7 +148,8 @@ export default {
     CreateExplanation,
     TheAppBar,
     TheDropdownMenu,
-    TheSearchBar
+    TheSearchBar,
+    ButtonNew
   },
   mixins: [DatabaseHelpersMixin],
   computed: {

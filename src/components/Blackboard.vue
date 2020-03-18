@@ -126,6 +126,9 @@ export default {
     },
     isNormalEraser () {
       return this.currentTool === BlackboardTools.NORMAL_ERASER;
+    },
+    isPen () {
+      return this.currentTool === BlackboardTools.PEN;
     }
   },
   watch: {
@@ -536,11 +539,11 @@ export default {
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
       const ctx = dummyCanvas.getContext("2d");
-      ctx.fillStyle = this.isNormalEraser ? "#fff" : this.color;
+      ctx.fillStyle = this.isPen ? this.color: "#fff";
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(this.isNormalEraser ? "\uF1FE" : "\uF64F", 12, 12);
+      ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },

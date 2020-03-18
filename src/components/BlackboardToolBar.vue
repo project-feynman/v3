@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar dense :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime ? 0 : 1" class="blackboard-toolbar">
+  <v-app-bar :height="navbarHeight" :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime ? 0 : 1" class="blackboard-toolbar">
     <v-container fluid class="px-0">
       <v-row align="center" justify="space-between">
         <template v-if="currentState !== RecordState.POST_RECORD">
@@ -11,9 +11,9 @@
                   @click="$emit('tool-select', { tool: BlackboardTools.PEN })"
                 >
                   <v-btn
-                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent' : color"
+                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || isPen)? 'accent' : color"
                     @click="palleteClick()"
-                    :outlined="eraserActive? true:false"
+                    :outlined="isPen? false:true"
                     min-width="36px"
                     class="px-3"
                     height="38px"
@@ -34,16 +34,16 @@
                   />
                 </div>
               </v-col>
-              <ButtonPrabhakar @click="selectNormalEraser()" 
-                :outlined="!isNormalEraser" icon="mdi-eraser" :isNormalText="true"
+              <ButtonNew @click="selectNormalEraser()" 
+                :filled="isNormalEraser" icon="mdi-eraser"
               >
                 Eraser
-              </ButtonPrabhakar>
-              <ButtonPrabhakar @click="$emit('tool-select', { tool: BlackboardTools.STROKE_ERASER })" 
-                :outlined="!isStrokeEraser" icon="mdi-eraser" :isNormalText="true"
+              </ButtonNew>
+              <ButtonNew @click="$emit('tool-select', { tool: BlackboardTools.STROKE_ERASER })" 
+                :filled="isStrokeEraser" icon="mdi-eraser"
               >
                 Stroke Eraser
-              </ButtonPrabhakar>
+              </ButtonNew>
             </v-row>
           </v-col>
         </template>
@@ -52,19 +52,19 @@
 
             </slot>
             <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" :outlined="!imageAdded || blackboardAttached" icon="mdi-image">
+              <ButtonNew @click="$refs.fileInput.click()" :filled="imageAdded && !blackboardAttached" icon="mdi-image">
                 <input style="display: none" type="file" @change="(e) => onImageSelected(e)" ref="fileInput">
-                <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br>BACKGROUND</p>
-              </ButtonPrabhakar>
+                {{ imageAdded? "Change" : "Add" }} Background
+              </ButtonNew>
             </v-col>
             <v-col class="py-0 px-0" cols="auto">
               <BasePopupButton actionName="Wipe board"
                 @action-do="$emit('wipe-board')"
               >
                 <template v-slot:activator-button="{ on }">
-                  <ButtonPrabhakar v-on="on" :isSuperSmallText="true" :outlined="true" icon="mdi-delete">
-                    <p>WIPE<br>BOARD</p>
-                  </ButtonPrabhakar>
+                  <ButtonNew v-on="on" icon="mdi-delete">
+                    Wipe Board
+                  </ButtonNew>
                 </template>
                 <template v-slot:message-to-user>
                   Are you sure you want to wipe everything?
@@ -72,9 +72,9 @@
               </BasePopupButton>
             </v-col>
             <v-col cols="auto" class="py-0 px-0">
-              <ButtonPrabhakar @click="$emit('record-state-change', RecordState.MID_RECORD)" icon="mdi-adjust">
+              <ButtonNew @click="$emit('record-state-change', RecordState.MID_RECORD)" :filled="true" icon="mdi-adjust">
                 Record
-              </ButtonPrabhakar>
+              </ButtonNew>
             </v-col>
           </template>
 
@@ -105,27 +105,29 @@
 <script>
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
-import { RecordState, BlackboardTools } from "@/CONSTANTS.js";
+import { RecordState, BlackboardTools, navbarHeight } from "@/CONSTANTS.js";
 import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   props: {
     currentTool: String,
     color: String,
-    eraserActive: Boolean,
     currentState: String,
     isRealtime: Boolean,
   },
   components: { 
     Swatches, 
     ButtonPrabhakar,
-    BasePopupButton
+    BasePopupButton,
+    ButtonNew,
   },
   data () {
     return {
       RecordState,
       BlackboardTools,
+      navbarHeight,
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
       palleteVisibility: false,
       imageAdded: false,
@@ -138,6 +140,9 @@ export default {
     },
     isNormalEraser () {
       return this.currentTool === BlackboardTools.NORMAL_ERASER; 
+    },
+    isPen () {
+      return this.currentTool === BlackboardTools.PEN; 
     }
   },
   mounted () {
@@ -161,7 +166,7 @@ export default {
       this.$emit('tool-select', { tool: BlackboardTools.NORMAL_ERASER })
     },
     palleteClick () {
-      if (this.eraserActive) { 
+      if (!this.isPen) { 
         this.palleteVisibility = false; 
       } else { 
         this.palleteVisibility = !this.palleteVisibility; 
