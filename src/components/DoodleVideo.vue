@@ -5,14 +5,14 @@
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
     <!-- load the audio, but do not let user use the slider until strokes are loaded -->
-    <audio v-if="audioUrl" v-show="strokesArray.length > 0"
+    <audio v-if="audioUrl && strokesArray.length > 0"
       :src="audioUrl" 
-      @canplay="playAudio()"
       @play="initSyncing()"
       @seeking="syncStrokesToAudio()"
       ref="AudioPlayer" 
       style="width: 100%;"
-      controls="true"
+      controls
+      autoplay
     />
   </div>
 </template>
@@ -136,20 +136,22 @@ export default {
       this.syncRecursively();
     },
     syncRecursively () {
+      const { AudioPlayer } = this.$refs;
+      if (!AudioPlayer) return;
       this.syncStrokesToAudio();
       if (this.nextFrameIdx < this.allFrames.length) {
         // calculate sleep duration
         const nextFrame = this.allFrames[this.nextFrameIdx];
-        const { currentTime } = this.$refs.AudioPlayer;
-        const timeout = 1000 * (nextFrame.startTime - currentTime); 
+        const timeout = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
         // call itself after sleeping
         this.recursiveSyncer = setTimeout(this.syncRecursively, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
       }
     },
     syncStrokesToAudio () {
-      const { currentTime } = this.$refs.AudioPlayer;
+      const { AudioPlayer } = this.$refs;
+      if (!AudioPlayer) return;
       const nextFrame = this.allFrames[this.nextFrameIdx];
-      if (!nextFrame || nextFrame.startTime > currentTime) { // !nextFrame: nextFrame is undefined after a video finishes
+      if (!nextFrame || nextFrame.startTime > AudioPlayer.currentTime) { // !nextFrame: nextFrame is undefined after a video finishes
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.nextFrameIdx = 0;
       }
