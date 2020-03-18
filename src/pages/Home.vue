@@ -42,7 +42,7 @@
               <h1 class="text--primary ml-2">ExplainMIT</h1>
             </div>
             <h3 class="headline text--primary">
-              A website where people can help each other efficiently
+              A prototype for lightweight visual explanations
             </h3>
 
             <!-- Log in / Sign up -->
