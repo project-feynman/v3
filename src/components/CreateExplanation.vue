@@ -18,6 +18,7 @@
             <span v-else-if="isUploadingPost">Uploading post...</span>
           </template>
         </v-btn>
+        <v-spacer></v-spacer>
         <v-switch v-model="isAnonymous" class="mt-5"/>
         <p class="pt-4">toggle anonymous</p>
       </div>
