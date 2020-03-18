@@ -2,10 +2,12 @@
   <v-card>
     <v-container fluid>
       <!-- Text -->
-      <p v-if="!isEditing" v-html="expl.html"></p>
+      <template v-if="!isEditing"> 
+        <p v-html="expl.html"></p>
+      </template>
       <template v-else>
         <TextEditor :injectedHtml="expl.html" ref="TextEditor"/>
-        <v-btn @click="updateExplanation()" color="accent" block>
+        <v-btn @click="updateExplanation()" color="accent">
           SAVE EDIT
         </v-btn>
       </template>
@@ -50,25 +52,18 @@
       <!-- Dropdown menu for editing and deleting -->
       <v-row v-if="user" justify="center">
         <v-layout align-center>
-          <v-spacer></v-spacer>
-          <p class="pt-3">
+          <p class="pt-3 pl-3 body-2 font-weight-light">
             {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}`: "" }}
-          </p>
-          <v-menu v-if="expl.creator.uid === user.uid" bottom offset-y>
-            <template v-slot:activator="{ on: activateMenu }">
-              <v-btn v-on="activateMenu" large icon>
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="startEditing()">
-                <v-list-item-title >Edit text</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="popup = true">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          </p>          
+          <v-spacer></v-spacer>
+          <template v-if="expl.creator.uid === user.uid">
+            <v-btn @click="startEditing()">
+              Edit text
+            </v-btn>
+            <v-btn @click="popup = true">
+              Delete
+            </v-btn>
+          </template>
         </v-layout>
       </v-row>
     </v-container>
