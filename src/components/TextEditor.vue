@@ -151,3 +151,14 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.editor p.is-editor-empty:first-child::before {
+  content: attr(data-empty-text);
+  float: left;
+  color: #aaa;
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+}
+</style>
