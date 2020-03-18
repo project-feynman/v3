@@ -3,35 +3,24 @@
     <v-container fluid>
       <!-- Text editor -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
-      <v-btn v-if="newExplanationDbRef || postDbRef" 
-        @click="submitPost()" 
-        :loading="isButtonDisabled" 
-        :disabled="isButtonDisabled"
-        color="secondary" 
-        class="ma-0 white--text" 
-      >
-        SUBMIT AS {{ user.firstName }}
-        <v-icon class="pl-2">mdi-send</v-icon>
-        <template v-slot:loader>
-          <span v-if="isRecordingVideo">Currently recording...</span> 
-          <span v-else-if="isUploadingPost">Uploading post...</span>
-        </template>
-      </v-btn>
-
-       <v-btn v-if="newExplanationDbRef || postDbRef" 
-        @click="submitPost(true)" 
-        :loading="isButtonDisabled" 
-        :disabled="isButtonDisabled"
-        color="secondary" 
-        class="ma-0 white--text" 
-      >
-        SUBMIT ANONYMOUSLY
-        <v-icon class="pl-2">mdi-send</v-icon>
-        <template v-slot:loader>
-          <span v-if="isRecordingVideo">Currently recording...</span> 
-          <span v-else-if="isUploadingPost">Uploading post...</span>
-        </template>
-      </v-btn>
+      <div class="d-flex align-center">
+        <v-btn v-if="newExplanationDbRef || postDbRef" 
+          @click="submitPost()" 
+          :loading="isButtonDisabled" 
+          :disabled="isButtonDisabled"
+          color="secondary" 
+          class="ma-0 white--text" 
+        >
+          SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}`}}
+          <v-icon class="pl-2">mdi-send</v-icon>
+          <template v-slot:loader>
+            <span v-if="isRecordingVideo">Currently recording...</span> 
+            <span v-else-if="isUploadingPost">Uploading post...</span>
+          </template>
+        </v-btn>
+        <v-switch v-model="isAnonymous" class="mt-5"/>
+        <p class="pt-4">toggle anonymous</p>
+      </div>
 
       <!-- Blackboard -->
       <Blackboard v-show="blackboardAttached && !isPreviewing" 
@@ -102,6 +91,7 @@ export default {
     BasePopupButton
   },
   data: () => ({
+    isAnonymous: false,
     isUploadingPost: false,
     isRecordingVideo: false,
     isPreviewing: false,
@@ -150,7 +140,7 @@ export default {
       this.imageUrl = imageUrl;
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
-    async submitPost (anonymous = false) {
+    async submitPost () {
       const { TextEditor, Blackboard } = this.$refs;
       if (TextEditor.html.length === 0 && this.titleRequired) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
@@ -169,7 +159,7 @@ export default {
         title: TextEditor.extractAllText(),
         html: TextEditor.html,
         date: this.getDate(),
-        creator: anonymous ? anonymousUser : this.simplifiedUser,
+        creator: this.isAnonymous ? anonymousUser : this.simplifiedUser,
         mitClass: this.mitClass
       };
       const explanation = { ...metadata };
