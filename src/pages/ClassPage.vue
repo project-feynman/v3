@@ -1,9 +1,9 @@
 <template>
   <v-app>
-    <TheSideDrawer v-model="drawer"/>
-    <RouterView v-if="subpage" 
-      :key="$route.fullPath"
-    />
+    <template v-if="subpage">
+    <TheSideDrawer v-model="drawer" :mitClass="mitClass"/>
+      <RouterView :key="$route.fullPath"/>
+    </template>
   </v-app>
 </template>
 

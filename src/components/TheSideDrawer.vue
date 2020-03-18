@@ -1,6 +1,16 @@
 <template>
   <v-card style="zIndex:10">
-    <v-navigation-drawer :value="value" @input="newVal => $emit('input', newVal)" app clipped width="300">
+    <v-navigation-drawer :value="value" @input="(newVal) => $emit('input', newVal)" app clipped width="300">
+       <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="title">
+            {{ mitClass.name }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Class page
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
       <v-list class="py-0">
         <v-list-item-group>
           <!-- Overview -->
@@ -63,7 +73,8 @@ import db from "@/database.js";
 
 export default {
   props: { 
-    value: Boolean 
+    value: Boolean,
+    mitClass: Object
   },
   mixins: [DatabaseHelpersMixin],
   data () {
