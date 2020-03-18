@@ -116,7 +116,7 @@ export default {
           new Placeholder({
             emptyEditorClass: 'is-editor-empty',
             emptyNodeClass: 'is-empty',
-            emptyNodeText: (node) => 'You can type here…',
+            emptyNodeText: (node) => 'Type here…',
             showOnlyWhenEditable: true,
             showOnlyCurrent: false,
           }),
