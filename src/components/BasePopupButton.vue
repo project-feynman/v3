@@ -30,10 +30,10 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="resetState()" color="accent" text>
+        <v-btn @click="resetState()" color="secondary" text>
           Cancel
         </v-btn>
-        <v-btn @click="doAction()" color="accent" text>
+        <v-btn @click="doAction()" color="secondary" text>
           {{ actionName }}
         </v-btn>
       </v-card-actions>

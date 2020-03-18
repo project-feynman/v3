@@ -1,37 +1,29 @@
 <template>
   <v-card>
     <v-container fluid>
+      <!-- Text editor -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
-      <v-btn v-if="newExplanationDbRef || postDbRef" 
-        @click="submitPost()" 
-        :loading="isButtonDisabled" 
-        :disabled="isButtonDisabled"
-        color="secondary" 
-        class="ma-0 white--text" 
-      >
-        SUBMIT AS {{ `${user.firstName}  ${user.lastName}` }}
-        <v-icon class="pl-2">mdi-send</v-icon>
-        <template v-slot:loader>
-          <span v-if="isRecordingVideo">Currently recording...</span> 
-          <span v-else-if="isUploadingPost">Uploading post...</span>
-        </template>
-      </v-btn>
+      <div class="d-flex align-center">
+        <v-btn v-if="newExplanationDbRef || postDbRef" 
+          @click="submitPost()" 
+          :loading="isButtonDisabled" 
+          :disabled="isButtonDisabled"
+          color="secondary" 
+          class="ma-0 white--text" 
+        >
+          SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}`}}
+          <v-icon class="pl-2">mdi-send</v-icon>
+          <template v-slot:loader>
+            <span v-if="isRecordingVideo">Currently recording...</span> 
+            <span v-else-if="isUploadingPost">Uploading post...</span>
+          </template>
+        </v-btn>
+        <v-spacer></v-spacer>
+        <v-switch v-model="isAnonymous" class="mt-5"/>
+        <p class="pt-4">toggle anonymous</p>
+      </div>
 
-       <v-btn v-if="newExplanationDbRef || postDbRef" 
-        @click="submitPost(true)" 
-        :loading="isButtonDisabled" 
-        :disabled="isButtonDisabled"
-        color="secondary" 
-        class="ma-0 white--text" 
-      >
-        SUBMIT ANONYMOUSLY
-        <v-icon class="pl-2">mdi-send</v-icon>
-        <template v-slot:loader>
-          <span v-if="isRecordingVideo">Currently recording...</span> 
-          <span v-else-if="isUploadingPost">Uploading post...</span>
-        </template>
-      </v-btn>
-
+      <!-- Blackboard -->
       <Blackboard v-show="blackboardAttached && !isPreviewing" 
         :isRealtime="false" 
         :visible="visible" 
@@ -41,6 +33,8 @@
         @retry-recording="handleRetry()"
         ref="Blackboard"
       />
+
+      <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
         <BasePopupButton actionName="Retry new recording" @action-do="initRetry()">
           <template v-slot:activator-button="{ on }">
@@ -83,7 +77,7 @@ export default {
     },
     titleRequired: {
       type: Boolean,
-      default: () => true
+      default: () => false
     },
     postDbRef: Object,
     newExplanationDbRef: Object,
@@ -98,6 +92,7 @@ export default {
     BasePopupButton
   },
   data: () => ({
+    isAnonymous: false,
     isUploadingPost: false,
     isRecordingVideo: false,
     isPreviewing: false,
@@ -125,6 +120,12 @@ export default {
     }
   },
   methods: {
+    getBlackboard () {
+      return this.$refs.Blackboard;
+    },
+    getTextEditor () {
+      return this.$refs.TextEditor;
+    },
     initRetry () {
       this.isPreviewing = false;
       this.$nextTick(() => {
@@ -140,7 +141,7 @@ export default {
       this.imageUrl = imageUrl;
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
-    async submitPost (anonymous = false) {
+    async submitPost () {
       const { TextEditor, Blackboard } = this.$refs;
       if (TextEditor.html.length === 0 && this.titleRequired) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
@@ -148,6 +149,7 @@ export default {
       }
       this.isPreviewing = false; // important: for canvas to generate a thumbnail requires it to be visible
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
+
       const anonymousUser = {
         uid: this.user.uid,
         email: "anonymous@mit.edu",
@@ -158,19 +160,44 @@ export default {
         title: TextEditor.extractAllText(),
         html: TextEditor.html,
         date: this.getDate(),
-        creator: anonymous ? anonymousUser : this.simplifiedUser,
+        creator: this.isAnonymous ? anonymousUser : this.simplifiedUser,
         mitClass: this.mitClass
       };
       const explanation = { ...metadata };
-      // TODO: optimize by resolving promises all at once
-      const { strokesArray, imageBlob, currentState, currentTime } = Blackboard;
-      if (strokesArray.length > 0 || imageBlob) {
-        await this.$nextTick();
-        const thumbnailUrl = await this.$_saveToStorage(
-          `images/${getRandomId()}`, 
-          Blackboard.thumbnailBlob
-        );
-        explanation.thumbnail = thumbnailUrl;
+      const { strokesArray, currentState, imageBlob, currentTime } = Blackboard;
+
+      if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
+        // accumulate promises for strokes, audio, images to process them in parallel
+        const promises = [];
+        if (currentState === RecordState.POST_RECORD) {
+          const audioPromise = Blackboard.uploadAudio().then(() => {
+            explanation.audioUrl = Blackboard.audioUrl;
+            explanation.duration = Blackboard.currentTime;
+          });
+          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, Blackboard.thumbnailBlob)
+          .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl);
+          promises.push(audioPromise);
+          promises.push(thumbnailPromise);
+        } else {
+          const thumbnailPromise = Blackboard.createThumbnail().then(async (thumbnailBlob) => {
+            const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
+            explanation.thumbnail = thumbnailUrl;
+          });
+          promises.push(thumbnailPromise);
+        }
+        // background image
+        if (imageBlob) {
+          const backgroundImagePromise = this.$_saveToStorage(
+            `images/${getRandomId()}`, 
+            imageBlob
+          )
+          .then((imageUrl) => explanation.imageUrl = imageUrl);
+          promises.push(backgroundImagePromise);
+        }
+        // RESOLVE PROMISES
+        await Promise.all(promises);
+
+        // save strokes
         if (strokesArray.length > 0) {
           explanation.hasStrokes = true;
           for (let stroke of strokesArray) {
@@ -180,14 +207,6 @@ export default {
               this.newExplanationDbRef.collection("strokes").add(stroke);
             }
           }
-        }
-        if (imageBlob) {
-          explanation.imageUrl = await this.$_saveToStorage(`images/${getRandomId()}`, imageBlob);
-        }
-        if (currentState === RecordState.POST_RECORD) {
-          await Blackboard.uploadAudio();
-          explanation.audioUrl = Blackboard.audioUrl;
-          explanation.duration = Blackboard.currentTime;
         }
       }
       if (this.willCreateNewPost) {

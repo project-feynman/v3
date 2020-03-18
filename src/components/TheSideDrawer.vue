@@ -1,24 +1,28 @@
 <template>
   <v-card style="zIndex:10">
-    <v-navigation-drawer :value="value" @input="newVal => $emit('input', newVal)" app clipped width="300">
+    <v-navigation-drawer :value="value" @input="(newVal) => $emit('input', newVal)" app clipped width="300">
       <v-list class="py-0">
         <v-list-item-group>
-          <!-- Overview -->
-          <v-list-item :to="(`/class/${classId}`)" exact color="accent">
-            <v-list-item-icon>
-              <v-icon>mdi-view-dashboard</v-icon>
-            </v-list-item-icon>
+          <!-- Realtime board -->
+          <v-list-item disabled>
             <v-list-item-content>
-              <v-list-item-title>Overview</v-list-item-title>
+              <v-list-item-title class="title black--text">
+                Realtime Blackboards
+              </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <!-- Realtime board -->
+          <v-divider/>
+
+          <v-list-item disabled>
+            <v-btn block disabled color="secondary">
+              Create blackboard
+              <v-icon>mdi-plus</v-icon>
+            </v-btn>
+          </v-list-item>
+
           <v-list-item :to="(`/class/${classId}/room/${classId}`)" color="accent">
-            <v-list-item-icon>
-              <v-icon>mdi-phone-in-talk</v-icon>
-            </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title>Realtime board</v-list-item-title>
+              <v-list-item-title>Blackboard 1</v-list-item-title>
               <!-- <template v-for="(member, i) in room.members">
                 <div style="display: flex;" :key="i">
                   <v-icon color="orange">person</v-icon>
@@ -29,6 +33,16 @@
               </template> -->
             </v-list-item-content>
           </v-list-item>
+
+          <v-list-item :to="(`/class/${classId}`)" exact color="accent">
+            <v-list-item-content>
+              <v-list-item-title class="title">
+                Discussion Forum 
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-divider/>
+
           <!-- New post -->
           <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
             <v-list-item-icon>
@@ -40,12 +54,11 @@
           </v-list-item>
           <!-- Class posts -->
           <v-list-item v-for="(post, i) in posts" :key="post.id + i"
-        
             :to="`/class/${classId}/posts/${post.id}`"
             three-line color="accent"
           >
             <v-list-item-content>
-              <v-list-item-subtitle class="text--primary" v-text="post.title"/>
+              <v-list-item-subtitle class="text--primary" v-text="post.title || '(No title)'"/>
               <v-list-item-subtitle v-text="displayDate(post.date)"/>
             </v-list-item-content>
           </v-list-item>
@@ -63,7 +76,8 @@ import db from "@/database.js";
 
 export default {
   props: { 
-    value: Boolean 
+    value: Boolean,
+    mitClass: Object
   },
   mixins: [DatabaseHelpersMixin],
   data () {

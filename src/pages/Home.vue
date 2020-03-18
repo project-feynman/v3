@@ -10,25 +10,21 @@
           <!-- <v-btn href="https://github.com/eltonlin1998/ExplainMIT" target="_blank" color="accent" tile icon>
             <v-icon>mdi-git</v-icon>
           </v-btn> -->
-        <v-btn href="https://github.com/eltonlin1998/ExplainMIT" text color="accent" target="_blank"> 
-          GITHUB
-        </v-btn>
+        <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
+          <ButtonNew icon="mdi-git" href="https://github.com/eltonlin1998/ExplainMIT">Source Code</ButtonNew>
+        </a>
         <BasePopupButton 
           actionName="Create class" 
           @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
-            <v-btn v-on="on" tile icon color="accent">
-              <v-icon>mdi-plus</v-icon>
-            </v-btn>
+            <ButtonNew v-on="on" icon="mdi-plus">Add Class</ButtonNew>
           </template>
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <v-btn v-on="on" tile icon class="ml-4">
-              <v-icon large :color="user.color">mdi-settings</v-icon>
-            </v-btn>
+            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Email Settings</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
@@ -42,7 +38,7 @@
               <h1 class="text--primary ml-2">ExplainMIT</h1>
             </div>
             <h3 class="headline text--primary">
-              A website where people can help each other efficiently
+              A prototype for lightweight visual explanations
             </h3>
 
             <!-- Log in / Sign up -->
@@ -111,7 +107,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" @click="handleClassClick(C.id, C.name)">
+                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
@@ -141,6 +137,7 @@ import Blackboard from "@/components/Blackboard.vue";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import { demoVideo, NotifFrequency } from "@/CONSTANTS.js";
+import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   components: {
@@ -151,7 +148,8 @@ export default {
     CreateExplanation,
     TheAppBar,
     TheDropdownMenu,
-    TheSearchBar
+    TheSearchBar,
+    ButtonNew
   },
   mixins: [DatabaseHelpersMixin],
   computed: {
@@ -167,7 +165,9 @@ export default {
       welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right.",
       classSecurityPopup: false,
       classPassword: "",
-      attemptToJoinClassId: ""
+      attemptToJoinClassId: "",
+      attemptToJoinClassName: "",
+      hasEnteredPassword: false
     }
   },
   async created () { 
@@ -183,22 +183,22 @@ export default {
   },
   methods: {
     handleClassPassword () {
-      if (this.classPassword === "explainPhysics") {
-        this.$router.push(`class/${this.attemptToJoinClassId}`);
-        this.$root.$emit("show-snackbar", "Success.");
+      if (["explainphysics", "physics"].includes(this.classPassword.toLowerCase())) {
+        this.hasEnteredPassword = true;
+        this.enrollInClass({ 
+          name: this.attemptToJoinClassName,
+          id: this.attemptToJoinClassId
+        });
+        this.$root.$emit("show-snackbar", "Success. Now adding class to home page.");
       } else {
         this.$root.$emit("show-snackbar", "Incorrect password.")
       }
+      // reset everything
+      this.attemptToJoinClassName = "";
+      this.attemptToJoinClassId = "";
+      this.hasEnteredPassword = false;
       this.classPassword = "";
       this.classSecurityPopup = false;
-    },
-    handleClassClick (classId, className) {
-      if (className === "8.02" || className === "8.011") {
-        this.attemptToJoinClassId = classId;
-        this.classSecurityPopup = true;
-      } else {
-        this.$router.push(`class/${classId}`);
-      }
     },
     getMitClassRef (classId) { 
       return db.collection("classes").doc(classId); 
@@ -211,6 +211,15 @@ export default {
       this.schoolClasses = await this.$_getCollection(ref);
     },
     enrollInClass ({ name, id }) {    
+      // check if it is password protected
+      if (!this.hasEnteredPassword) {
+        if (["8.02", "8.011"].includes(name)) {
+          this.attemptToJoinClassName = name;
+          this.attemptToJoinClassId = id;
+          this.classSecurityPopup = true;
+          return;
+        }
+      }
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
           if (classObj.id === id) return; 

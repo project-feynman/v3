@@ -12,17 +12,11 @@
         @image-selected="(imageFile) => saveAndDisplayImage(imageFile)"
       >
         <template v-slot:initial-buttons>
+          <ButtonNew @click="touchDisabled = !touchDisabled" icon="mdi-fingerprint">
+            {{ touchDisabled ? "allow" : "disallow" }} touch 
+          </ButtonNew>
           <!-- <LiveBoardAudio :roomId="blackboardId"/> -->
         </template>
-        <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
-          :disabled="!hasUploadedAudio"
-          :inputFields="['title', 'description']"
-          @action-do="payload => handleSaving(payload)"
-        >
-          <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
-            Upload video
-          </v-btn>
-        </BasePopupButton> -->
       </BlackboardToolBar>
     </component>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
@@ -36,9 +30,11 @@
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
-    <AudioRecorder v-show="false" ref="AudioRecorder"
+    <!-- TODO: refactor -->
+    <AudioRecorder v-show="false" 
       @file-uploaded="(audio) => saveFileReference(audio)"
       @audio-recorded="emitVideoData()"
+      ref="AudioRecorder"
     />
   </div>
 </template>
@@ -52,6 +48,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import ButtonNew from "@/components/ButtonNew.vue";
 import { BlackboardTools, RecordState, navbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
 
 export default {
@@ -69,7 +66,8 @@ export default {
     BasePopupButton,
     BlackboardToolBar, 
     TheAppBar, 
-    LiveBoardAudio
+    LiveBoardAudio,
+    ButtonNew
   },
   data () {
     return {
@@ -126,6 +124,9 @@ export default {
     },
     isNormalEraser () {
       return this.currentTool === BlackboardTools.NORMAL_ERASER;
+    },
+    isPen () {
+      return this.currentTool === BlackboardTools.PEN;
     }
   },
   watch: {
@@ -308,7 +309,7 @@ export default {
       }
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (e.touches[0].touchType === "stylus") { 
         this.touchDisabled = true; 
       }
@@ -320,7 +321,7 @@ export default {
       }
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else { 
@@ -341,7 +342,7 @@ export default {
       }
     },
     mouseMove (e) {
-      if (this.mousedown !== 1) { return; }
+      if (this.mousedown !== 1) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else {
@@ -458,6 +459,7 @@ export default {
       }
     },
     async emitVideoData () { 
+      // TODO: refactor
       this.thumbnailBlob = await this.createThumbnail();
       const videoData = { 
         audio: this.$refs.AudioRecorder.audio, 
@@ -497,18 +499,16 @@ export default {
     },
     createThumbnail () {
       return new Promise(async (resolve) => {
-        // TODO: render the background image
-        // if (this.imageUrl) { // has a background image
-        //   await this.displayImageAsBackground(this.imageUrl);
-        // }
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
-        this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
-        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        if (this.imageUrl) { // has a background image
+          await this.displayImageAsBackground(this.imageUrl);
+        } else {
+          this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
+          this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        }
         this.$_drawStrokesInstantly2();
-        this.bgCanvas.toBlob((thumbnail) => {
-          resolve(thumbnail);
-        });
+        this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
       })
     },
     resizeBlackboard () {
@@ -537,11 +537,11 @@ export default {
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
       const ctx = dummyCanvas.getContext("2d");
-      ctx.fillStyle = this.isNormalEraser ? "#fff" : this.color;
+      ctx.fillStyle = this.isPen ? this.color: "#fff";
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(this.isNormalEraser ? "\uF1FE" : "\uF64F", 12, 12);
+      ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },

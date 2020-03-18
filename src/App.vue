@@ -22,3 +22,9 @@ export default {
   }
 }
 </script>
+<style>
+/* Global styles */
+a {
+  text-decoration: none;
+}
+</style>

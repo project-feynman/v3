@@ -53,9 +53,26 @@ export default {
     this.unsubscribeListener2 = await this.$_listenToDoc(this.postRef, this, "originalPost");
     this.unsubscribeListener = await this.$_listenToCollection(this.explanationsRef, this, "explanations");
   },
+  beforeRouteUpdate (to, from, next) {
+    this.confirmExit(next);
+  },
+  beforeRouteLeave (to, from, next) {
+    this.confirmExit(next);
+  },
   destroyed () { 
     this.unsubscribeListener(); 
     this.unsubscribeListener2();
+  },
+  methods: {
+    confirmExit (next) {
+      if (!this.isCreatingExpl) {
+        next();
+      } else {
+        const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
+        if (!wantToLeave) next(false);
+        else next();
+      }
+    }
   }
 }
 </script>

@@ -5,13 +5,14 @@
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
     <!-- load the audio, but do not let user use the slider until strokes are loaded -->
-    <audio v-if="audioUrl" v-show="strokesArray.length > 0"
+    <audio v-if="audioUrl && strokesArray.length > 0"
       :src="audioUrl" 
       @play="initSyncing()"
       @seeking="syncStrokesToAudio()"
       ref="AudioPlayer" 
-      style="width: 100%"
-      controls="true"
+      style="width: 100%;"
+      controls
+      autoplay
     />
   </div>
 </template>
@@ -53,43 +54,46 @@ export default {
     }
   },
   async created () {
-    this.syncStrokesToAudio = _.debounce(this.syncStrokesToAudio, 0);
-    this.handleResize = _.debounce(this.handleResize, 100);
+    // this.syncStrokesToAudio = _.debounce(this.syncStrokesToAudio, 0);
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
     this.bgCanvas = this.$refs.BackCanvas;
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
-    this.handleResize();
-    this.$_rescaleCanvas();
-    if (this.audioUrl) {
-      await this.$nextTick(); // wait for AudioPlayer's "v-if" to render
-      this.$refs.AudioPlayer.play();
-    } else {
+    await this.handleResize();
+    if (!this.audioUrl) {
       this.$_quickplay();
     }
+    // if I put the below line before $_quickplay then the debounce will mess up the await 
+    this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy () {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    playAudio () {
+      this.$refs.AudioPlayer.play();
+    },
     // TODO: touch to play or pause
     getStartTime ({ strokeIndex, pointIndex }) {
       const stroke = this.strokesArray[strokeIndex];
       return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
     },
-    async handleResize () {
-      this.resizeVideo();
-      this.$_rescaleCanvas();
-      await this.renderBackground();
-      if (this.recursiveSyncer) {
-        this.nextFrameIdx = 0; // need to redraw previous progress 
-        this.syncStrokesToAudio();
-      } else {
-        this.$_drawStrokesInstantly();
-      }
+    handleResize () {
+      return new Promise(async (resolve) => {
+        this.resizeVideo();
+        this.$_rescaleCanvas();
+        await this.renderBackground();
+        if (this.recursiveSyncer) {
+          this.nextFrameIdx = 0; // need to redraw previous progress 
+          this.syncStrokesToAudio();
+        } else {
+          this.$_drawStrokesInstantly();
+        }
+        resolve();
+      })
     },
     resizeVideo () {
       const { CanvasWrapper, VideoWrapper } = this.$refs;
@@ -132,20 +136,22 @@ export default {
       this.syncRecursively();
     },
     syncRecursively () {
+      const { AudioPlayer } = this.$refs;
+      if (!AudioPlayer) return;
       this.syncStrokesToAudio();
       if (this.nextFrameIdx < this.allFrames.length) {
         // calculate sleep duration
         const nextFrame = this.allFrames[this.nextFrameIdx];
-        const { currentTime } = this.$refs.AudioPlayer;
-        const timeout = 1000 * (nextFrame.startTime - currentTime); 
+        const timeout = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
         // call itself after sleeping
         this.recursiveSyncer = setTimeout(this.syncRecursively, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
       }
     },
     syncStrokesToAudio () {
-      const { currentTime } = this.$refs.AudioPlayer;
+      const { AudioPlayer } = this.$refs;
+      if (!AudioPlayer) return;
       const nextFrame = this.allFrames[this.nextFrameIdx];
-      if (!nextFrame || nextFrame.startTime > currentTime) { // !nextFrame: nextFrame is undefined after a video finishes
+      if (!nextFrame || nextFrame.startTime > AudioPlayer.currentTime) { // !nextFrame: nextFrame is undefined after a video finishes
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.nextFrameIdx = 0;
       }
