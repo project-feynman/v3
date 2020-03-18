@@ -11,7 +11,9 @@
             <v-icon>mdi-git</v-icon>
           </v-btn> -->
         <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
-          <ButtonNew icon="mdi-git" href="https://github.com/eltonlin1998/ExplainMIT">Source Code</ButtonNew>
+          <ButtonNew icon="mdi-git" href="https://github.com/eltonlin1998/ExplainMIT">
+            Source Code
+          </ButtonNew>
         </a>
         <BasePopupButton 
           actionName="Create class" 
@@ -225,7 +227,11 @@ export default {
           if (classObj.id === id) return; 
         }
       }
-      const classSetting = { id, name, notifFrequency: NotifFrequency.ALWAYS };
+      const classSetting = { 
+        id, 
+        name, 
+        notifFrequency: NotifFrequency.ALWAYS 
+      };
       db.collection("users").doc(this.user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
       });
