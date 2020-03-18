@@ -82,9 +82,13 @@ class Title extends Node {
 }
 
 export default {
-  components: { EditorContent, EditorMenuBar, ButtonPrabhakar },
   props: {
     injectedHtml: String
+  },
+  components: { 
+    EditorContent, 
+    EditorMenuBar, 
+    ButtonPrabhakar 
   },
   data () {
     return {
@@ -112,7 +116,7 @@ export default {
           new Placeholder({
             emptyEditorClass: 'is-editor-empty',
             emptyNodeClass: 'is-empty',
-            emptyNodeText: node => 'Write something …',
+            emptyNodeText: (node) => 'You can type here…',
             showOnlyWhenEditable: true,
             showOnlyCurrent: false,
           }),
