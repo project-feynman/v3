@@ -4,15 +4,14 @@
       @click.stop="$root.$emit('toggle-drawer')"
     />
     <img
-      :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
       src="/favicon.ico"
       @click="$router.push('/')"
+      :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
     />
     <v-toolbar-title v-if="$route.path === '/' || mitClass"
-      :class="['home-logo', 'headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
-      @click="$router.push('/')"
+      :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
     >
-      {{ $route.path === "/" ? "ExplainMIT" : "" }}
+      {{ $route.path === "/" ? "" : mitClass.name }}
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
