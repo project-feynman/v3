@@ -28,6 +28,11 @@ export default {
     newPostRef () { 
       return this.postsRef.doc(getRandomId()); 
     }
+  },
+  beforeRouteLeave (to, from, next) {
+    const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
+    if (wantToLeave) next();
+    else next(false);
   }
 }
 </script>
