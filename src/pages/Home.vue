@@ -11,7 +11,7 @@
             <v-icon>mdi-git</v-icon>
           </v-btn> -->
         <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
-          <ButtonNew icon="mdi-git" href="https://github.com/eltonlin1998/ExplainMIT">Github</ButtonNew>
+          <ButtonNew icon="mdi-git" href="https://github.com/eltonlin1998/ExplainMIT">Source Code</ButtonNew>
         </a>
         <BasePopupButton 
           actionName="Create class" 
@@ -24,7 +24,7 @@
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
+            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Email Settings</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
