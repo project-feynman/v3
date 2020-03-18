@@ -10,7 +10,7 @@
         color="secondary" 
         class="ma-0 white--text" 
       >
-        SUBMIT AS {{ `${user.firstName}  ${user.lastName}` }}
+        SUBMIT AS {{ user.firstName }}
         <v-icon class="pl-2">mdi-send</v-icon>
         <template v-slot:loader>
           <span v-if="isRecordingVideo">Currently recording...</span> 
