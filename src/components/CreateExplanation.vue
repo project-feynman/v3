@@ -129,6 +129,12 @@ export default {
     }
   },
   methods: {
+    getBlackboard () {
+      return this.$refs.Blackboard;
+    },
+    getTextEditor () {
+      return this.$refs.TextEditor;
+    },
     initRetry () {
       this.isPreviewing = false;
       this.$nextTick(() => {
