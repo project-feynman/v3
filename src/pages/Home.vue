@@ -107,7 +107,7 @@
               <AsyncRenderless :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" @click="handleClassClick(C.id, C.name)">
+                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
@@ -165,7 +165,9 @@ export default {
       welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right.",
       classSecurityPopup: false,
       classPassword: "",
-      attemptToJoinClassId: ""
+      attemptToJoinClassId: "",
+      attemptToJoinClassName: "",
+      hasEnteredPassword: false
     }
   },
   async created () { 
@@ -182,21 +184,21 @@ export default {
   methods: {
     handleClassPassword () {
       if (["explainphysics", "physics"].includes(this.classPassword.toLowerCase())) {
-        this.$router.push(`class/${this.attemptToJoinClassId}`);
-        this.$root.$emit("show-snackbar", "Success.");
+        this.hasEnteredPassword = true;
+        this.enrollInClass({ 
+          name: this.attemptToJoinClassName,
+          id: this.attemptToJoinClassId
+        });
+        this.$root.$emit("show-snackbar", "Success. Now adding class to home page.");
       } else {
         this.$root.$emit("show-snackbar", "Incorrect password.")
       }
+      // reset everything
+      this.attemptToJoinClassName = "";
+      this.attemptToJoinClassId = "";
+      this.hasEnteredPassword = false;
       this.classPassword = "";
       this.classSecurityPopup = false;
-    },
-    handleClassClick (classId, className) {
-      if (className === "8.02" || className === "8.011") {
-        this.attemptToJoinClassId = classId;
-        this.classSecurityPopup = true;
-      } else {
-        this.$router.push(`class/${classId}`);
-      }
     },
     getMitClassRef (classId) { 
       return db.collection("classes").doc(classId); 
@@ -209,6 +211,15 @@ export default {
       this.schoolClasses = await this.$_getCollection(ref);
     },
     enrollInClass ({ name, id }) {    
+      // check if it is password protected
+      if (!this.hasEnteredPassword) {
+        if (["8.02", "8.011"].includes(name)) {
+          this.attemptToJoinClassName = name;
+          this.attemptToJoinClassId = id;
+          this.classSecurityPopup = true;
+          return;
+        }
+      }
       if (this.user.enrolledClasses) {
         for (const classObj of this.user.enrolledClasses) {
           if (classObj.id === id) return; 
