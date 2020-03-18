@@ -503,12 +503,11 @@ export default {
         // }
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
+        // apply the blackish background color before drawing strokes
         this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
         this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         this.$_drawStrokesInstantly2();
-        this.bgCanvas.toBlob((thumbnail) => {
-          resolve(thumbnail);
-        });
+        this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
       })
     },
     resizeBlackboard () {
