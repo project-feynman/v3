@@ -38,7 +38,7 @@
               <h1 class="text--primary ml-2">ExplainMIT</h1>
             </div>
             <h3 class="headline text--primary">
-              A prototype for lightweight visual explanations
+              A lightweight platform for visual explanations
             </h3>
 
             <!-- Log in / Sign up -->
