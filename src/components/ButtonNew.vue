@@ -1,5 +1,6 @@
 <template>
-  <v-btn @click="$emit('click')"
+  <v-btn 
+    @click="$emit('click')"
     class="button-custom" 
     :outlined="outlined" color="accent" :text="!outlined && !filled"
   >
