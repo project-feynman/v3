@@ -14,6 +14,8 @@ export default {
         await this.$_drawStroke(stroke, 0); // draw 1 stroke per event loop
       }
     },
+
+
     $_drawStrokesInstantly () {
       this.strokesArray.forEach(stroke => this.$_drawStroke(stroke));
     },
@@ -51,6 +53,8 @@ export default {
       this.ctx.lineWidth = lineWidth;
       this.ctx.lineCap = "round"; // lines at different angles can join into each other
     },
+
+
     $_drawStrokesInstantly2 () {
       this.strokesArray.forEach((stroke) => this.$_drawStroke2(stroke));
     },
@@ -88,6 +92,48 @@ export default {
       this.bgCtx.lineWidth = lineWidth;
       this.bgCtx.lineCap = "round"; // lines at different angles can join into each other
     },
+
+
+
+    $_drawStrokesInstantly3 (canvasCtx) {
+      this.strokesArray.forEach((stroke) => this.$_drawStroke2(stroke, canvasCtx));
+    },
+    $_drawStroke3 ({ points, color, lineWidth, isErasing }, canvasCtx, pointPeriod = null) {
+      return new Promise(async (resolve) => {
+        let newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
+        this.$_setStyle2(canvasCtx, color, newLineWidth);
+        for (let i = 1; i < points.length; i++) {
+          this.$_connectTwoPoints2(points, i, isErasing, canvasCtx);
+          if (pointPeriod !== null) { // delay for a duration of pointPeriod
+            await new Promise(resolve => setTimeout(resolve, pointPeriod));
+          }
+        }
+        resolve();
+      });
+    },
+    $_connectTwoPoints3 (points, i, isErasing, canvasCtx) {
+      // TODO: this silently fails for edge case if a stroke only has 1 point
+      const prevPoint = points[i - 1]; // this fails silently for the first point of the stroke i = 0
+      const prevX = prevPoint.unitX * this.canvas.width; //are we supposed to be using this.canvas here or the passed in canvas?
+      const prevY = prevPoint.unitY * this.canvas.height;
+
+      const curPoint = points[i];
+      const curX = curPoint.unitX * this.canvas.width;
+      const curY = curPoint.unitY * this.canvas.height;
+
+      canvasCtx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
+      canvasCtx.beginPath();
+      canvasCtx.moveTo(prevX, prevY);
+      canvasCtx.lineTo(curX, curY);
+      canvasCtx.stroke();
+    },
+    $_setStyle3 (canvasCtx, color = "white", lineWidth = 2) {
+      canvasCtx.strokeStyle = color;
+      canvasCtx.lineWidth = lineWidth;
+      canvasCtx.lineCap = "round"; // lines at different angles can join into each other
+    },
+
+
     $_getPointDuration (stroke) { // measured in seconds
       const strokePeriod = (stroke.endTime - stroke.startTime);
       return strokePeriod / stroke.points.length;
