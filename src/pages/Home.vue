@@ -137,7 +137,7 @@ import Blackboard from "@/components/Blackboard.vue";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import { demoVideo, NotifFrequency } from "@/CONSTANTS.js";
-import ButtonNew from "@/components/ButtonNew.vue"
+import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   components: {
