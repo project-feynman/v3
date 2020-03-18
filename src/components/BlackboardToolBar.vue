@@ -11,9 +11,9 @@
                   @click="$emit('tool-select', { tool: BlackboardTools.PEN })"
                 >
                   <v-btn
-                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || eraserActive)? 'accent' : color"
+                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || isPen)? 'accent' : color"
                     @click="palleteClick()"
-                    :outlined="eraserActive? true:false"
+                    :outlined="isPen? false:true"
                     min-width="36px"
                     class="px-3"
                     height="38px"
@@ -113,7 +113,6 @@ export default {
   props: {
     currentTool: String,
     color: String,
-    eraserActive: Boolean,
     currentState: String,
     isRealtime: Boolean,
   },
@@ -138,6 +137,9 @@ export default {
     },
     isNormalEraser () {
       return this.currentTool === BlackboardTools.NORMAL_ERASER; 
+    },
+    isPen () {
+      return this.currentTool === BlackboardTools.PEN; 
     }
   },
   mounted () {
@@ -161,7 +163,7 @@ export default {
       this.$emit('tool-select', { tool: BlackboardTools.NORMAL_ERASER })
     },
     palleteClick () {
-      if (this.eraserActive) { 
+      if (!this.isPen) { 
         this.palleteVisibility = false; 
       } else { 
         this.palleteVisibility = !this.palleteVisibility; 
