@@ -12,17 +12,11 @@
         @image-selected="(imageFile) => saveAndDisplayImage(imageFile)"
       >
         <template v-slot:initial-buttons>
+          <ButtonNew @click="touchDisabled = !touchDisabled" icon="mdi-fingerprint">
+            {{ touchDisabled ? "allow" : "disallow" }} touch 
+          </ButtonNew>
           <!-- <LiveBoardAudio :roomId="blackboardId"/> -->
         </template>
-        <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
-          :disabled="!hasUploadedAudio"
-          :inputFields="['title', 'description']"
-          @action-do="payload => handleSaving(payload)"
-        >
-          <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
-            Upload video
-          </v-btn>
-        </BasePopupButton> -->
       </BlackboardToolBar>
     </component>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
@@ -52,6 +46,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import ButtonNew from "@/components/ButtonNew.vue";
 import { BlackboardTools, RecordState, navbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
 
 export default {
@@ -69,7 +64,8 @@ export default {
     BasePopupButton,
     BlackboardToolBar, 
     TheAppBar, 
-    LiveBoardAudio
+    LiveBoardAudio,
+    ButtonNew
   },
   data () {
     return {
