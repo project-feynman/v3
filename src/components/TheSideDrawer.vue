@@ -58,7 +58,7 @@
             three-line color="accent"
           >
             <v-list-item-content>
-              <v-list-item-subtitle class="text--primary" v-text="post.title"/>
+              <v-list-item-subtitle class="text--primary" v-text="post.title || '(No title)'"/>
               <v-list-item-subtitle v-text="displayDate(post.date)"/>
             </v-list-item-content>
           </v-list-item>

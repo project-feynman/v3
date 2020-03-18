@@ -77,7 +77,7 @@ export default {
     },
     titleRequired: {
       type: Boolean,
-      default: () => true
+      default: () => false
     },
     postDbRef: Object,
     newExplanationDbRef: Object,
