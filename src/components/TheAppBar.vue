@@ -35,7 +35,6 @@
     <slot>
       
     </slot>
-    
   </v-app-bar>
 </template>
 
