@@ -1,6 +1,7 @@
 <template>
   <v-card>
     <v-container fluid>
+      <!-- Text editor -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
       <v-btn v-if="newExplanationDbRef || postDbRef" 
         @click="submitPost()" 
@@ -32,6 +33,7 @@
         </template>
       </v-btn>
 
+      <!-- Blackboard -->
       <Blackboard v-show="blackboardAttached && !isPreviewing" 
         :isRealtime="false" 
         :visible="visible" 
@@ -41,6 +43,8 @@
         @retry-recording="handleRetry()"
         ref="Blackboard"
       />
+
+      <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
         <BasePopupButton actionName="Retry new recording" @action-do="initRetry()">
           <template v-slot:activator-button="{ on }">
@@ -148,6 +152,7 @@ export default {
       }
       this.isPreviewing = false; // important: for canvas to generate a thumbnail requires it to be visible
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
+
       const anonymousUser = {
         uid: this.user.uid,
         email: "anonymous@mit.edu",
@@ -162,13 +167,11 @@ export default {
         mitClass: this.mitClass
       };
       const explanation = { ...metadata };
-      // TODO: optimize by resolving promises all at once
       const { strokesArray, currentState, imageBlob, currentTime } = Blackboard;
 
       if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
         // accumulate promises for strokes, audio, images to process them in parallel
         const promises = [];
-
         if (currentState === RecordState.POST_RECORD) {
           const audioPromise = Blackboard.uploadAudio().then(() => {
             explanation.audioUrl = Blackboard.audioUrl;
@@ -194,7 +197,6 @@ export default {
           .then((imageUrl) => explanation.imageUrl = imageUrl);
           promises.push(backgroundImagePromise);
         }
-
         // RESOLVE PROMISES
         await Promise.all(promises);
 
