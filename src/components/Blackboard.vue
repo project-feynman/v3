@@ -309,7 +309,7 @@ export default {
       }
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (e.touches[0].touchType === "stylus") { 
         this.touchDisabled = true; 
       }
@@ -321,7 +321,7 @@ export default {
       }
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else { 
@@ -342,7 +342,7 @@ export default {
       }
     },
     mouseMove (e) {
-      if (this.mousedown !== 1) { return; }
+      if (this.mousedown !== 1) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else {
@@ -459,6 +459,7 @@ export default {
       }
     },
     async emitVideoData () { 
+      // TODO: refactor
       this.thumbnailBlob = await this.createThumbnail();
       const videoData = { 
         audio: this.$refs.AudioRecorder.audio, 
@@ -498,15 +499,14 @@ export default {
     },
     createThumbnail () {
       return new Promise(async (resolve) => {
-        // TODO: render the background image
-        // if (this.imageUrl) { // has a background image
-        //   await this.displayImageAsBackground(this.imageUrl);
-        // }
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
-        // apply the blackish background color before drawing strokes
-        this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
-        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        if (this.imageUrl) { // has a background image
+          await this.displayImageAsBackground(this.imageUrl);
+        } else {
+          this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
+          this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        }
         this.$_drawStrokesInstantly2();
         this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
       })
