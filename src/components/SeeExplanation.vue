@@ -57,12 +57,8 @@
           </p>          
           <v-spacer></v-spacer>
           <template v-if="expl.creator.uid === user.uid">
-            <v-btn @click="startEditing()">
-              Edit text
-            </v-btn>
-            <v-btn @click="popup = true">
-              Delete
-            </v-btn>
+            <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
+            <ButtonNew @click="popup = true" icon="mdi-delete">Delete</ButtonNew>
           </template>
         </v-layout>
       </v-row>
@@ -75,6 +71,7 @@ import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes";
+import ButtonNew from "@/components/ButtonNew.vue"
 import db from "@/database.js";
 import { displayDate } from "@/helpers.js";
 
@@ -90,7 +87,8 @@ export default {
     DoodleVideo,
     TextEditor,
     BasePopupButton,
-    RenderlessFetchStrokes
+    RenderlessFetchStrokes,
+    ButtonNew
   },
   computed: {
     strokesRef () {
