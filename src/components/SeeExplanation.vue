@@ -17,7 +17,7 @@
         :strokesRef="strokesRef"
         v-slot="{ fetchStrokes, strokesArray, isLoading }"
       >
-        <div style="height: 100%">
+        <div style="height: 100%; position: relative;">
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0">
             <v-img :src="expl.thumbnail" :aspectRatio="16/9"/>
