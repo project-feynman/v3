@@ -21,7 +21,7 @@
         <div style="height: 100%; position: relative;">
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0 || isLoading">
-            <v-img :src="expl.thumbnail"/>
+            <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
             <div v-if="expl.hasStrokes" class="overlay-item">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
               <v-btn v-else @click="fetchStrokes()" large dark>
