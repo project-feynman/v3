@@ -4,16 +4,41 @@
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
-    <!-- load the audio, but do not let user use the slider until strokes are loaded -->
-    <audio v-if="audioUrl && strokesArray.length > 0"
-      :src="audioUrl" 
-      @play="initSyncing()"
-      @seeking="syncStrokesToAudio()"
-      ref="AudioPlayer" 
-      style="width: 100%;"
-      controls
-      autoplay
-    />
+    <div class="d-flex animation-controls">
+      <v-col cols="auto" class="px-1">
+        <v-btn @click="pausePlay" color="accent" text>
+          <v-icon>{{isPlaying ? 'mdi-pause' : 'mdi-play'}}</v-icon>
+        </v-btn>
+      </v-col>
+      <v-col class="px-1">
+        <v-slider
+          color="accent"
+          track-color="rgba(0,0,0,0.30)"
+          :value="currentFrameIdx" 
+          :max="allFrames.length"
+          @input="(newVal) => seek(newVal)"
+          @change="(newVal) => finishSeek(newVal)"
+          :hide-details="true"
+        />
+      </v-col>
+      <v-col cols="auto" class="px-1">
+        <v-select
+         :items="speedOptions"
+         v-model="playbackSpeed"
+         dense
+         solo
+         background-color="#f5f5f5"
+         flat
+         :hide-details="true"
+         class="my-0"
+         menu-props="top"
+         color="accent"
+         item-color="accent"
+        >
+          <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
+        </v-select>
+      </v-col>
+    </div>
   </div>
 </template>
 
@@ -25,17 +50,19 @@ import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
 export default {
   props: {
     strokesArray: Array,
-    audioUrl: String,
-    backgroundUrl: String,
+    backgroundUrl: String
   },
   mixins: [CanvasDrawMixin],
   data: () => ({
+    currentFrameIdx: -1,
+    isPlaying: true,
+    isSeeking: false,
+    playbackSpeed: 1,
+    speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'4x', value: 4}],
     canvas: null,
     ctx: null,
     bgCanvas: null,
     bgCtx: null,
-    nextFrameIdx: 0, 
-    recursiveSyncer: null
   }),
   computed: {
     /* Converts separate strokes into continuous points */
@@ -44,13 +71,10 @@ export default {
       for (let i = 0; i < this.strokesArray.length; i++) {
         for (let j = 1; j < this.strokesArray[i].points.length; j++) {
           const frame = { strokeIndex: i, pointIndex: j };
-          allPoints.push({ 
-            startTime: this.getStartTime(frame),
-            ...frame, 
-          }); 
+          allPoints.push(frame);
         }
       }
-      return allPoints.sort((p1, p2) => p1.startTime - p2.startTime);
+      return allPoints;
     }
   },
   async mounted () {
@@ -59,10 +83,8 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.handleResize();
-    if (!this.audioUrl) {
-      this.$_quickplay();
-    }
-    // if I put the below line before $_quickplay then the debounce will mess up the await 
+    this.$_playAnimation();
+    // if I put the below line before $_playAnimation then the debounce will mess up the await 
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
@@ -70,14 +92,6 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
-    playAudio () {
-      this.$refs.AudioPlayer.play();
-    },
-    // TODO: touch to play or pause
-    getStartTime ({ strokeIndex, pointIndex }) {
-      const stroke = this.strokesArray[strokeIndex];
-      return stroke.startTime + (pointIndex - 1) * this.$_getPointDuration(stroke);
-    },
     handleResize () {
       return new Promise(async (resolve) => {
         this.resizeVideo();
@@ -127,48 +141,29 @@ export default {
         } 
       });
     },
-    initSyncing () {
-      this.nextFrameIdx = 0;
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // video could already be rendered as an initial preview or completed video
-      this.syncRecursively();
+    seek (frameIndex) {
+      this.currentFrameIdx = frameIndex;
+      this.isSeeking = true;
+      this.$_syncAnimation();
+      // just preview the canvas upto frame frameIndex without playing as the user seeks through before releasing the mouse button
     },
-    syncRecursively () {
-      const { AudioPlayer } = this.$refs;
-      if (!AudioPlayer) return;
-      this.syncStrokesToAudio();
-      if (this.nextFrameIdx < this.allFrames.length) {
-        // calculate sleep duration
-        const nextFrame = this.allFrames[this.nextFrameIdx];
-        const timeout = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
-        // call itself after sleeping
-        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
-      }
+    finishSeek (frameIndex) {
+      // start playing after the user releases the mouse button after seeking
+      this.isSeeking = true;
+      setTimeout(()=> {
+        this.currentFrameIdx = frameIndex;
+        this.isSeeking = false;
+        this.$_playAnimation(this.currentFrameIdx);
+        }, 0
+      )
     },
-    syncStrokesToAudio () {
-      const { AudioPlayer } = this.$refs;
-      if (!AudioPlayer) return;
-      const nextFrame = this.allFrames[this.nextFrameIdx];
-      if (!nextFrame || nextFrame.startTime > AudioPlayer.currentTime) { // !nextFrame: nextFrame is undefined after a video finishes
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.nextFrameIdx = 0;
-      }
-      this.renderFramesUntilCurrentTime();
+    pausePlay () {
+      this.isPlaying = !this.isPlaying;
+      if (this.isPlaying) this.$_playAnimation();
     },
-    renderFramesUntilCurrentTime () {
-      const { currentTime } = this.$refs.AudioPlayer;
-      for (let i = this.nextFrameIdx; i < this.allFrames.length; i++) {
-        const frame = this.allFrames[i];
-        if (frame.startTime > currentTime) { 
-          break; 
-        }
-        this.renderFrame(frame);
-        this.nextFrameIdx += 1;
-      }
-    },
-    renderFrame ({ strokeIndex, pointIndex }) {
-      const stroke = this.strokesArray[strokeIndex];
-      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
-      this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
+    speedChange (newSpeed) {
+      console.log(newSpeed);
+      this.playbackSpeed = newSpeed;
     }
   }
 }
@@ -209,5 +204,15 @@ export default {
   height: 100%;
   z-index: -1;
   background-color: rgb(62, 66, 66);
+}
+.animation-controls {
+  background: #eee;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+</style>
+<style>
+.v-select .v-select__selections input {
+  width: 0;
 }
 </style>

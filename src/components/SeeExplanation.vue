@@ -27,10 +27,14 @@
             </div>
           </template>
           <!-- Loaded video -->
-          <DoodleVideo v-else
+          <DoodleVideo v-else-if="expl.audioUrl"
             :strokesArray="strokesArray"
             :audioUrl="expl.audioUrl" 
             :backgroundUrl="expl.imageUrl" 
+          />
+          <DoodleAnimation v-else
+            :strokesArray="strokesArray"
+            :backgroundUrl="expl.imageUrl"
           />
         </div>
       </RenderlessFetchStrokes>
@@ -78,6 +82,7 @@
 <script>
 import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
+import DoodleAnimation from "@/components/DoodleAnimation.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes";
 import db from "@/database.js";
@@ -92,7 +97,7 @@ export default {
     }
   },
   components: { 
-    DoodleVideo,
+    DoodleAnimation,
     TextEditor,
     BasePopupButton,
     RenderlessFetchStrokes
