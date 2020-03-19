@@ -61,8 +61,8 @@ export default {
   },
   methods: {
     submitBug ({ "summary": title, description }) {
-      if (!title || !description) {
-        this.$root.$emit("show-snackbar", "Error: don't forget to include both the a summary and a description!")
+      if (!title) {
+        this.$root.$emit("show-snackbar", "Error: don't forget to write the summary!")
         return 
       }
       db.collection("bugs").add({ 
