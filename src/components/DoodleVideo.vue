@@ -4,15 +4,20 @@
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
-    <audio v-if="audioUrl && strokesArray.length > 0"
-      :src="audioUrl" 
-      @play="initSyncing()"
-      @seeking="syncStrokesToAudio()"
-      ref="AudioPlayer" 
-      style="width: 100%;"
-      controls
-      autoplay
-    />
+    <v-row>
+      <audio v-if="audioUrl && strokesArray.length > 0"
+        :src="audioUrl" 
+        @play="initSyncing()"
+        @seeking="syncStrokesToAudio()"
+        ref="AudioPlayer" 
+        style="width: 90%;"
+        controls
+        autoplay
+      />
+      <v-btn @click="togglePlaybackSpeed()" class="mt-2">
+        {{ this.playbackSpeed === 1 ? 2 : 1 }}x speed
+      </v-btn>
+    </v-row>
   </div>
 </template>
 
@@ -29,6 +34,7 @@ export default {
   },
   mixins: [CanvasDrawMixin],
   data: () => ({
+    playbackSpeed: 1,
     canvas: null,
     ctx: null,
     bgCanvas: null,
@@ -74,6 +80,11 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    togglePlaybackSpeed () {
+      if (this.playbackSpeed === 1) this.playbackSpeed = 2;
+      else if (this.playbackSpeed === 2) this.playbackSpeed = 1;
+      this.$refs.AudioPlayer.playbackRate = this.playbackSpeed;
+    },
     playAudio () {
       this.$refs.AudioPlayer.play();
     },
@@ -144,8 +155,8 @@ export default {
         // calculate sleep duration
         const nextFrame = this.allFrames[this.nextFrameIdx];
         const timeout = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
-        // call itself after sleeping
-        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
+        // sleep for half the duration to handle 2x speed
+        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout/2); // use recursion instead of `setInterval` to prevent overlapping calls
       }
     },
     syncStrokesToAudio () {
