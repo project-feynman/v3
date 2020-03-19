@@ -81,27 +81,19 @@ export default {
         }
       });
     },
-    getBlobFromStorage (url) {
+    $_getBlobFromStorage (downloadUrl) {
       return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.responseType = "blob";
-        xhr.onload = (resolve, reject) => {
+        xhr.onload = () => {
           try {
             const blob = xhr.response;
-            const blobURL = URL.createObjectURL(blob)
-            const newRecording = {
-              blob,
-              ts: new Date().getTime(),
-              blobURL,
-              mimeType: blob.type,
-              size: blob.size,
-            }
-            resolve(newRecording);
+            resolve(blob);
           } catch (error) {
-            reject(`Error: ${error}`);
+            reject(`Error downloading blob from Firebase storage: ${error}`);
           }
         }
-        xhr.open('GET', url);
+        xhr.open('GET', downloadUrl);
         xhr.send();
       });
     }

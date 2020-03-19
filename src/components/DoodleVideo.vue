@@ -4,7 +4,6 @@
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
-    <!-- load the audio, but do not let user use the slider until strokes are loaded -->
     <audio v-if="audioUrl && strokesArray.length > 0"
       :src="audioUrl" 
       @play="initSyncing()"
@@ -26,7 +25,7 @@ export default {
   props: {
     strokesArray: Array,
     audioUrl: String,
-    backgroundUrl: String,
+    imageBlob: Blob
   },
   mixins: [CanvasDrawMixin],
   data: () => ({
@@ -38,6 +37,9 @@ export default {
     recursiveSyncer: null
   }),
   computed: {
+    imageBlobUrl () {
+      return URL.createObjectURL(this.imageBlob);
+    },
     /* Converts separate strokes into continuous points */
     allFrames () {
       const allPoints = [];
@@ -54,7 +56,7 @@ export default {
     }
   },
   async created () {
-    // this.syncStrokesToAudio = _.debounce(this.syncStrokesToAudio, 0);
+    // this.handleResize = _.debounce(this.handleResize, 100); 
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
@@ -65,7 +67,6 @@ export default {
     if (!this.audioUrl) {
       this.$_quickplay();
     }
-    // if I put the below line before $_quickplay then the debounce will mess up the await 
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
@@ -87,7 +88,8 @@ export default {
         this.$_rescaleCanvas();
         await this.renderBackground();
         if (this.recursiveSyncer) {
-          this.nextFrameIdx = 0; // need to redraw previous progress 
+          // video was playing: resume to previous progress
+          this.nextFrameIdx = 0;
           this.syncStrokesToAudio();
         } else {
           this.$_drawStrokesInstantly();
@@ -118,14 +120,13 @@ export default {
     },
     renderBackground () {
       return new Promise((resolve) => {
-        if (!this.backgroundUrl) resolve();
+        if (!this.imageBlob) resolve();
         const image = new Image();
-        image.src = this.backgroundUrl;
+        image.src = this.imageBlobUrl;
         this.bgCanvas.width = this.canvas.width;
         this.bgCanvas.height = this.canvas.height;
-        const { width, height } = this.bgCanvas;
         image.onload = () => {
-          this.bgCtx.drawImage(image, 0, 0, width, height);
+          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
           resolve();
         } 
       });

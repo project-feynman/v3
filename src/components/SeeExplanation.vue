@@ -15,12 +15,13 @@
       <!-- Doodle Video -->
       <RenderlessFetchStrokes v-if="expl.thumbnail"
         :strokesRef="strokesRef"
-        v-slot="{ fetchStrokes, strokesArray, isLoading }"
+        :imageDownloadUrl="expl.imageUrl"
+        v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
       >
         <div style="height: 100%; position: relative;">
           <!-- Thumbnail preview -->
-          <template v-if="strokesArray.length === 0">
-            <v-img :src="expl.thumbnail" :aspectRatio="16/9"/>
+          <template v-if="strokesArray.length === 0 || isLoading">
+            <v-img :src="expl.thumbnail"/>
             <div v-if="expl.hasStrokes" class="overlay-item">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
               <v-btn v-else @click="fetchStrokes()" large dark>
@@ -31,8 +32,8 @@
           <!-- Loaded video -->
           <DoodleVideo v-else
             :strokesArray="strokesArray"
+            :imageBlob="imageBlob" 
             :audioUrl="expl.audioUrl" 
-            :backgroundUrl="expl.imageUrl" 
           />
         </div>
       </RenderlessFetchStrokes>
