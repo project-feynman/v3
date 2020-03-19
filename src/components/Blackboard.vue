@@ -150,7 +150,7 @@ export default {
     },
     currentTool () {
       this.customCursor();
-      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) //TO erase in the back like a normal eraser
+      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) // isStrokeEraser now erases in the back like a normal eraser
         ? "destination-out"
         : "source-over";
       this.lineWidth = (this.isNormalEraser) ? 25 : 2.5;
@@ -392,7 +392,6 @@ export default {
         eraserCenter.y = finger1.pageY - top - window.scrollY;
       }
       const radius = 10;
-      const idxOfStrokesToErase = []
       for (let i = 0; i < this.strokesArray.length; i++) {
         const stroke = this.strokesArray[i];
         if (stroke.wasErased || stroke.isErasing) {  // we don't need to erase strokes that are eraser strokes or were previously erased
@@ -402,35 +401,24 @@ export default {
           const deltaX = eraserCenter.x - point.unitX * this.canvas.width
           const deltaY = eraserCenter.y - point.unitY * this.canvas.height
           if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
-            idxOfStrokesToErase.push(i);
+            this.eraseSingleStroke(stroke);
             break; 
           }
         }
-        
       }
-      console.log("allstrokesInd:", idxOfStrokesToErase)
-      for (let i of idxOfStrokesToErase) {
-        // this.strokesArray.splice(i, 1); // remove 1 element at index i
-        
-        let currStroke = this.strokesArray[i];
-        currStroke.wasErased = true;
-        // if (!currStroke.isErasing){  
-        console.log("stroke at i:", this.strokesArray[i]);
-        var newStroke = {};
-        newStroke.strokeNumber = this.strokesArray.length + 1;
-        newStroke.startTime = Number(this.currentTime.toFixed(1));
-        newStroke.endTime = Number(this.currentTime.toFixed(1));
-        newStroke.color = this.color;
-        newStroke.lineWidth = this.lineWidth+2;
-        newStroke.isErasing = true;
-        newStroke.points = currStroke.points;
-        this.strokesArray.push(newStroke);
-        // }
-      }
-      if (idxOfStrokesToErase.length > 0) {
-        this.wipeBoard();
-        this.$_drawStrokesInstantly();
-      }
+    },
+    eraseSingleStroke (stroke){
+      stroke.wasErased = true;
+      var newStroke = {};
+      newStroke.strokeNumber = this.strokesArray.length + 1;
+      newStroke.startTime = Number(this.currentTime.toFixed(1));
+      newStroke.endTime = Number(this.currentTime.toFixed(1));
+      newStroke.color = this.color;
+      newStroke.lineWidth = this.lineWidth+2;
+      newStroke.isErasing = true;
+      newStroke.points = stroke.points;
+      this.strokesArray.push(newStroke);
+      this.$_drawStroke(newStroke);
     },
     getTouchPos (e) {
       const finger1 = e.touches[0];

@@ -52,9 +52,9 @@ export default {
       this.ctx.lineCap = "round"; // lines at different angles can join into each other
     },
     $_drawStrokesInstantly2 () {
-      this.strokesArray.forEach((stroke) => this.$_drawStroke2(stroke));
+      this.strokesArray.forEach((stroke) => !(stroke.isErasing || stroke.wasErased) ? this.$_drawStroke2(stroke) : {});
     },
-    $_drawStroke2 ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
+    $_drawStroke2 ({ points, color, lineWidth, isErasing}, pointPeriod = null) {
       return new Promise(async (resolve) => {
         let newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
         this.$_setStyle2(color, newLineWidth);
