@@ -16,17 +16,15 @@
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
       <BasePopupButton actionName="Report bug" 
-        :inputFields="['bug summary', 'bug description']"
+        :inputFields="['summary', 'description']"
         @action-do="bugReport => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
-          <ButtonNew v-on="on" icon="mdi-bug">Report Bug</ButtonNew>
+          <ButtonNew v-on="on" icon="mdi-bug">Bugs/Features</ButtonNew>
         </template>
         <template v-slot:message-to-user>
-          Report a any bug below, and my team and I will fix it within 3 hours. <br>
-          Alternatively, try refreshing the page :). You can also directly contact me: <br>
-          WhatsApp: 503 250 3868 <br>
-          Email: eltonlin@mit.edu <br>
+          Report an existing bug or suggest a new feature!
+          We will read what you write and update you by email. 
         </template>
       </BasePopupButton>
     <slot>
@@ -62,13 +60,12 @@ export default {
     }
   },
   methods: {
-    submitBug ({ "bug summary": title, "bug description": description}) {
+    submitBug ({ "summary": title, description }) {
       if (!title || !description) {
         this.$root.$emit("show-snackbar", "Error: don't forget to include both the a summary and a description!")
         return 
       }
-      const ref = db.collection("bugs");
-      ref.add({ 
+      db.collection("bugs").add({ 
         title, 
         description
       }); 
