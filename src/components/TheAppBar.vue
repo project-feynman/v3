@@ -15,16 +15,16 @@
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
-      <BasePopupButton actionName="Report bug" 
+      <BasePopupButton actionName="Give feedback" 
         :inputFields="['summary', 'description']"
         @action-do="bugReport => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
-          <ButtonNew v-on="on" icon="mdi-bug">Bugs/Features</ButtonNew>
+          <ButtonNew v-on="on" icon="mdi-bug">Give feedback</ButtonNew>
         </template>
         <template v-slot:message-to-user>
-          Report an existing bug or suggest a new feature!
-          We will read what you write and update you by email. 
+          Report a bug, suggest a feature, etc.
+          We will be excited to read what you write and update you by email. 
         </template>
       </BasePopupButton>
     <slot>
