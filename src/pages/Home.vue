@@ -6,12 +6,8 @@
         <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
           BLOG
         </v-btn> -->
-
-          <!-- <v-btn href="https://github.com/eltonlin1998/ExplainMIT" target="_blank" color="accent" tile icon>
-            <v-icon>mdi-git</v-icon>
-          </v-btn> -->
         <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
-          <ButtonNew icon="mdi-git" href="https://github.com/eltonlin1998/ExplainMIT">Source Code</ButtonNew>
+          <ButtonNew icon="mdi-git">Source Code</ButtonNew>
         </a>
         <BasePopupButton 
           actionName="Create class" 
@@ -38,9 +34,8 @@
               <h1 class="text--primary ml-2">ExplainMIT</h1>
             </div>
             <h3 class="headline text--primary">
-              A prototype for lightweight visual explanations
+              A lightweight platform for visual explanations
             </h3>
-
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="!user">
@@ -95,10 +90,10 @@
         </v-dialog>
 
         <!-- Tutorial -->
-        <div v-if="!user && !isFetchingUser">
+        <template v-if="!user && !isFetchingUser">
           <SeeExplanation :expl="demoVideo" :hasDate="false"/>
           <CreateExplanation/>
-        </div>
+        </template>
 
         <!-- Classes -->
         <div v-else-if="user" key="class-list">
@@ -225,7 +220,11 @@ export default {
           if (classObj.id === id) return; 
         }
       }
-      const classSetting = { id, name, notifFrequency: NotifFrequency.ALWAYS };
+      const classSetting = { 
+        id, 
+        name, 
+        notifFrequency: NotifFrequency.ALWAYS 
+      };
       db.collection("users").doc(this.user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
       });

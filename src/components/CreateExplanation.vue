@@ -3,8 +3,8 @@
     <v-container fluid>
       <!-- Text editor -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
-      <div class="d-flex align-center">
-        <v-btn v-if="newExplanationDbRef || postDbRef" 
+      <div v-if="newExplanationDbRef || postDbRef" class="d-flex align-center">
+        <v-btn  
           @click="submitPost()" 
           :loading="isButtonDisabled" 
           :disabled="isButtonDisabled"
