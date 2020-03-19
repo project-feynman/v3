@@ -99,16 +99,16 @@
         <div v-else-if="user" key="class-list">
           <v-row align="stretch" class="enrolled-classes">
             <v-col v-for="C in user.enrolledClasses" cols="12" sm="4" md="3" :key="C.id">
-              <!-- <AsyncRenderless :dbRef="getMitClassRef(C.id)"> -->
-                <!-- <template slot-scope="{ fetchedData: C }"> -->
-                  <!-- <transition name="fade"> -->
-                    <v-card v-if="C.name" :to="`class/${C.id}`">
+              <AsyncRenderless :dbRef="getMitClassRef(C.id)">
+                <template slot-scope="{ fetchedData: C }">
+                  <transition name="fade">
+                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
-                      <!-- <v-card-subtitle>{{ C.description }}</v-card-subtitle> -->
+                      <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>
-                  <!-- </transition> -->
-                <!-- </template> -->
-              <!-- </AsyncRenderless> -->
+                  </transition>
+                </template>
+              </AsyncRenderless>
             </v-col>
           </v-row>
         </div>
