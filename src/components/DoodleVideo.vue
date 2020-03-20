@@ -4,20 +4,31 @@
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
-    <v-row>
-      <audio v-if="audioUrl && strokesArray.length > 0"
-        :src="audioUrl" 
-        @play="initSyncing()"
-        @seeking="syncStrokesToAudio()"
-        ref="AudioPlayer" 
-        style="width: 90%;"
-        controls
-        autoplay
-      />
-      <v-btn @click="togglePlaybackSpeed()" class="mt-2">
-        {{ this.playbackSpeed === 1 ? 2 : 1 }}x speed
-      </v-btn>
-    </v-row>
+    <audio v-if="audioUrl && strokesArray.length > 0"
+      :src="audioUrl" 
+      @play="initSyncing()"
+      @seeking="syncStrokesToAudio()"
+      ref="AudioPlayer" 
+      style="width: 100%;"
+      controls
+      autoplay
+    />
+    <div id="speed-control">
+      <v-select
+        :items="speedOptions"
+        :value="playbackSpeed"
+        @input="changePlaybackSpeed"
+        dense
+        solo
+        background-color="rgba(0,0,0,0.5)"
+        :hide-details="true"
+        class="my-0"
+        color="white"
+        item-color="accent"
+      >
+        <v-icon slot="append" color="white" small>mdi-fast-forward</v-icon>
+      </v-select>
+    </div>
   </div>
 </template>
 
@@ -35,6 +46,7 @@ export default {
   mixins: [CanvasDrawMixin],
   data: () => ({
     playbackSpeed: 1,
+    speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'3x', value: 3}],
     canvas: null,
     ctx: null,
     bgCanvas: null,
@@ -80,10 +92,9 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
-    togglePlaybackSpeed () {
-      if (this.playbackSpeed === 1) this.playbackSpeed = 2;
-      else if (this.playbackSpeed === 2) this.playbackSpeed = 1;
-      this.$refs.AudioPlayer.playbackRate = this.playbackSpeed;
+    changePlaybackSpeed (speed) {
+      this.playbackSpeed = speed
+      this.$refs.AudioPlayer.playbackRate = speed;
     },
     playAudio () {
       this.$refs.AudioPlayer.play();
@@ -224,5 +235,21 @@ export default {
   height: 100%;
   z-index: -1;
   background-color: rgb(62, 66, 66);
+}
+#speed-control {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0.75;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+#speed-control:hover {
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+</style>
+<style>
+#speed-control .v-select__selections {
+  color: white;
 }
 </style>
