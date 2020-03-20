@@ -12,6 +12,11 @@ export default new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
     {
+      path: "/liveaudio",
+      component: () => import(/* webpackChunkName: "live-audio" */ "./pages/LiveAudio.vue")
+      },
+    {
+      
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-page" */ "./pages/ClassPage.vue"),
       children: [
