@@ -91,6 +91,7 @@ export default {
   },
   components: { 
     DoodleAnimation,
+    DoodleVideo,
     TextEditor,
     BasePopupButton,
     RenderlessFetchStrokes,
