@@ -2,10 +2,12 @@
   <v-card>
     <v-container fluid>
       <!-- Text -->
-      <p v-if="!isEditing" v-html="expl.html"></p>
+      <template v-if="!isEditing"> 
+        <p v-html="expl.html"></p>
+      </template>
       <template v-else>
         <TextEditor :injectedHtml="expl.html" ref="TextEditor"/>
-        <v-btn @click="updateExplanation()" color="accent" block>
+        <v-btn @click="updateExplanation()" color="accent">
           SAVE EDIT
         </v-btn>
       </template>
@@ -13,12 +15,13 @@
       <!-- Doodle Video -->
       <RenderlessFetchStrokes v-if="expl.thumbnail"
         :strokesRef="strokesRef"
-        v-slot="{ fetchStrokes, strokesArray, isLoading }"
+        :imageDownloadUrl="expl.imageUrl"
+        v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
       >
-        <div style="height: 100%">
+        <div style="height: 100%; position: relative;">
           <!-- Thumbnail preview -->
-          <template v-if="strokesArray.length === 0">
-            <v-img :src="expl.thumbnail" :aspectRatio="16/9"/>
+          <template v-if="strokesArray.length === 0 || isLoading">
+            <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
             <div v-if="expl.hasStrokes" class="overlay-item">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
               <v-btn v-else @click="fetchStrokes()" large dark>
@@ -29,8 +32,8 @@
           <!-- Loaded video -->
           <DoodleVideo v-else-if="expl.audioUrl"
             :strokesArray="strokesArray"
+            :imageBlob="imageBlob" 
             :audioUrl="expl.audioUrl" 
-            :backgroundUrl="expl.imageUrl" 
           />
           <DoodleAnimation v-else
             :strokesArray="strokesArray"
@@ -54,25 +57,14 @@
       <!-- Dropdown menu for editing and deleting -->
       <v-row v-if="user" justify="center">
         <v-layout align-center>
-          <v-spacer></v-spacer>
-          <p class="pt-3">
+          <p class="pt-3 pl-3 body-2 font-weight-light">
             {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}`: "" }}
-          </p>
-          <v-menu v-if="expl.creator.uid === user.uid" bottom offset-y>
-            <template v-slot:activator="{ on: activateMenu }">
-              <v-btn v-on="activateMenu" large icon>
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item @click="startEditing()">
-                <v-list-item-title >Edit text</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="popup = true">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          </p>          
+          <v-spacer></v-spacer>
+          <template v-if="expl.creator.uid === user.uid">
+            <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
+            <ButtonNew @click="popup = true" icon="mdi-delete">Delete</ButtonNew>
+          </template>
         </v-layout>
       </v-row>
     </v-container>
@@ -85,6 +77,7 @@ import DoodleVideo from "@/components/DoodleVideo.vue";
 import DoodleAnimation from "@/components/DoodleAnimation.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes";
+import ButtonNew from "@/components/ButtonNew.vue"
 import db from "@/database.js";
 import { displayDate } from "@/helpers.js";
 
@@ -100,7 +93,8 @@ export default {
     DoodleAnimation,
     TextEditor,
     BasePopupButton,
-    RenderlessFetchStrokes
+    RenderlessFetchStrokes,
+    ButtonNew
   },
   computed: {
     strokesRef () {

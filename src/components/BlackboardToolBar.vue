@@ -73,7 +73,7 @@
             </v-col>
             <v-col cols="auto" class="py-0 px-0">
               <ButtonNew @click="$emit('record-state-change', RecordState.MID_RECORD)" :filled="true" icon="mdi-adjust">
-                Record
+                Record Audio
               </ButtonNew>
             </v-col>
           </template>

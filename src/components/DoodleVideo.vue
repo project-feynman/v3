@@ -4,16 +4,20 @@
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
-    <!-- load the audio, but do not let user use the slider until strokes are loaded -->
-    <audio v-if="audioUrl && strokesArray.length > 0"
-      :src="audioUrl" 
-      @play="initSyncing()"
-      @seeking="syncStrokesToAudio()"
-      ref="AudioPlayer" 
-      style="width: 100%;"
-      controls
-      autoplay
-    />
+    <v-row>
+      <audio v-if="audioUrl && strokesArray.length > 0"
+        :src="audioUrl" 
+        @play="initSyncing()"
+        @seeking="syncStrokesToAudio()"
+        ref="AudioPlayer" 
+        style="width: 90%;"
+        controls
+        autoplay
+      />
+      <v-btn @click="togglePlaybackSpeed()" class="mt-2">
+        {{ this.playbackSpeed === 1 ? 2 : 1 }}x speed
+      </v-btn>
+    </v-row>
   </div>
 </template>
 
@@ -26,10 +30,11 @@ export default {
   props: {
     strokesArray: Array,
     audioUrl: String,
-    backgroundUrl: String,
+    imageBlob: Blob
   },
   mixins: [CanvasDrawMixin],
   data: () => ({
+    playbackSpeed: 1,
     canvas: null,
     ctx: null,
     bgCanvas: null,
@@ -38,6 +43,9 @@ export default {
     recursiveSyncer: null
   }),
   computed: {
+    imageBlobUrl () {
+      return URL.createObjectURL(this.imageBlob);
+    },
     /* Converts separate strokes into continuous points */
     allFrames () {
       const allPoints = [];
@@ -53,6 +61,9 @@ export default {
       return allPoints.sort((p1, p2) => p1.startTime - p2.startTime);
     }
   },
+  async created () {
+    // this.handleResize = _.debounce(this.handleResize, 100); 
+  },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
     this.bgCanvas = this.$refs.BackCanvas;
@@ -62,7 +73,6 @@ export default {
     if (!this.audioUrl) {
       this.$_quickplay();
     }
-    // if I put the below line before $_quickplay then the debounce will mess up the await 
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
@@ -70,6 +80,11 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
+    togglePlaybackSpeed () {
+      if (this.playbackSpeed === 1) this.playbackSpeed = 2;
+      else if (this.playbackSpeed === 2) this.playbackSpeed = 1;
+      this.$refs.AudioPlayer.playbackRate = this.playbackSpeed;
+    },
     playAudio () {
       this.$refs.AudioPlayer.play();
     },
@@ -84,7 +99,8 @@ export default {
         this.$_rescaleCanvas();
         await this.renderBackground();
         if (this.recursiveSyncer) {
-          this.nextFrameIdx = 0; // need to redraw previous progress 
+          // video was playing: resume to previous progress
+          this.nextFrameIdx = 0;
           this.syncStrokesToAudio();
         } else {
           this.$_drawStrokesInstantly();
@@ -115,14 +131,13 @@ export default {
     },
     renderBackground () {
       return new Promise((resolve) => {
-        if (!this.backgroundUrl) resolve();
+        if (!this.imageBlob) resolve();
         const image = new Image();
-        image.src = this.backgroundUrl;
+        image.src = this.imageBlobUrl;
         this.bgCanvas.width = this.canvas.width;
         this.bgCanvas.height = this.canvas.height;
-        const { width, height } = this.bgCanvas;
         image.onload = () => {
-          this.bgCtx.drawImage(image, 0, 0, width, height);
+          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
           resolve();
         } 
       });
@@ -140,8 +155,8 @@ export default {
         // calculate sleep duration
         const nextFrame = this.allFrames[this.nextFrameIdx];
         const timeout = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
-        // call itself after sleeping
-        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout); // use recursion instead of `setInterval` to prevent overlapping calls
+        // sleep for half the duration to handle 2x speed
+        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout/2); // use recursion instead of `setInterval` to prevent overlapping calls
       }
     },
     syncStrokesToAudio () {

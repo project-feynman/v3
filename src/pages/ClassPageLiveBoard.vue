@@ -32,7 +32,9 @@ export default {
     }
   },
   computed: {
-    user () { return this.$store.state.user; },
+    user () { 
+      return this.$store.state.user; 
+    },
     simpleUser () {
       if (!this.user) { return; } 
       return {

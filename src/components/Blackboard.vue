@@ -12,17 +12,11 @@
         @image-selected="(imageFile) => saveAndDisplayImage(imageFile)"
       >
         <template v-slot:initial-buttons>
+          <ButtonNew @click="touchDisabled = !touchDisabled" icon="mdi-fingerprint">
+            {{ touchDisabled ? "allow" : "disallow" }} touch 
+          </ButtonNew>
           <!-- <LiveBoardAudio :roomId="blackboardId"/> -->
         </template>
-        <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
-          :disabled="!hasUploadedAudio"
-          :inputFields="['title', 'description']"
-          @action-do="payload => handleSaving(payload)"
-        >
-          <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
-            Upload video
-          </v-btn>
-        </BasePopupButton> -->
       </BlackboardToolBar>
     </component>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
@@ -36,9 +30,11 @@
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
-    <AudioRecorder v-show="false" ref="AudioRecorder"
+    <!-- TODO: refactor -->
+    <AudioRecorder v-show="false" 
       @file-uploaded="(audio) => saveFileReference(audio)"
       @audio-recorded="emitVideoData()"
+      ref="AudioRecorder"
     />
   </div>
 </template>
@@ -52,6 +48,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import ButtonNew from "@/components/ButtonNew.vue";
 import { BlackboardTools, RecordState, navbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
 
 export default {
@@ -69,7 +66,8 @@ export default {
     BasePopupButton,
     BlackboardToolBar, 
     TheAppBar, 
-    LiveBoardAudio
+    LiveBoardAudio,
+    ButtonNew
   },
   data () {
     return {
@@ -152,7 +150,7 @@ export default {
     },
     currentTool () {
       this.customCursor();
-      this.ctx.globalCompositeOperation = (this.isNormalEraser)
+      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) // isStrokeEraser now erases in the back like a normal eraser
         ? "destination-out"
         : "source-over";
       this.lineWidth = (this.isNormalEraser) ? 25 : 2.5;
@@ -311,7 +309,7 @@ export default {
       }
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (e.touches[0].touchType === "stylus") { 
         this.touchDisabled = true; 
       }
@@ -323,7 +321,7 @@ export default {
       }
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else { 
@@ -344,7 +342,7 @@ export default {
       }
     },
     mouseMove (e) {
-      if (this.mousedown !== 1) { return; }
+      if (this.mousedown !== 1) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else {
@@ -394,25 +392,33 @@ export default {
         eraserCenter.y = finger1.pageY - top - window.scrollY;
       }
       const radius = 10;
-      const idxOfStrokesToErase = []
       for (let i = 0; i < this.strokesArray.length; i++) {
         const stroke = this.strokesArray[i];
+        if (stroke.wasErased || stroke.isErasing) {  // we don't need to erase strokes that are eraser strokes or were previously erased
+          continue;
+        }
         for (let point of stroke.points) {
           const deltaX = eraserCenter.x - point.unitX * this.canvas.width
           const deltaY = eraserCenter.y - point.unitY * this.canvas.height
           if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
-            idxOfStrokesToErase.push(i);
+            this.eraseSingleStroke(stroke);
             break; 
           }
         }
       }
-      for (let i of idxOfStrokesToErase) {
-        this.strokesArray.splice(i, 1); // remove 1 element at index i
-      }
-      if (idxOfStrokesToErase.length > 0) {
-        this.wipeBoard();
-        this.$_drawStrokesInstantly();
-      }
+    },
+    eraseSingleStroke (stroke){
+      stroke.wasErased = true;
+      var newStroke = {};
+      newStroke.strokeNumber = this.strokesArray.length + 1;
+      newStroke.startTime = Number(this.currentTime.toFixed(1));
+      newStroke.endTime = Number(this.currentTime.toFixed(1));
+      newStroke.color = this.color;
+      newStroke.lineWidth = this.lineWidth+2;
+      newStroke.isErasing = true;
+      newStroke.points = stroke.points;
+      this.strokesArray.push(newStroke);
+      this.$_drawStroke(newStroke);
     },
     getTouchPos (e) {
       const finger1 = e.touches[0];
@@ -461,6 +467,7 @@ export default {
       }
     },
     async emitVideoData () { 
+      // TODO: refactor
       this.thumbnailBlob = await this.createThumbnail();
       const videoData = { 
         audio: this.$refs.AudioRecorder.audio, 
@@ -500,15 +507,14 @@ export default {
     },
     createThumbnail () {
       return new Promise(async (resolve) => {
-        // TODO: render the background image
-        // if (this.imageUrl) { // has a background image
-        //   await this.displayImageAsBackground(this.imageUrl);
-        // }
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
-        // apply the blackish background color before drawing strokes
-        this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
-        this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        if (this.imageUrl) { // has a background image
+          await this.displayImageAsBackground(this.imageUrl);
+        } else {
+          this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
+          this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        }
         this.$_drawStrokesInstantly2();
         this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
       })

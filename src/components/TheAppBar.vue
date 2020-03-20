@@ -4,30 +4,27 @@
       @click.stop="$root.$emit('toggle-drawer')"
     />
     <img
-      :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
       src="/favicon.ico"
       @click="$router.push('/')"
+      :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
     />
     <v-toolbar-title v-if="$route.path === '/' || mitClass"
-      :class="['home-logo', 'headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
-      @click="$router.push('/')"
+      :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
     >
-      {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${mitClass.name}` }}
+      {{ $route.path === "/" ? "" : mitClass.name }}
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
-      <BasePopupButton actionName="Report bug" 
-        :inputFields="['bug summary', 'bug description']"
+      <BasePopupButton actionName="Give feedback" 
+        :inputFields="['summary', 'description']"
         @action-do="bugReport => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
-          <ButtonNew v-on="on" icon="mdi-bug">Report Bug</ButtonNew>
+          <ButtonNew v-on="on" icon="mdi-bug">Give feedback</ButtonNew>
         </template>
         <template v-slot:message-to-user>
-          Report a any bug below, and my team and I will fix it within 3 hours. <br>
-          Alternatively, try refreshing the page :). You can also directly contact me: <br>
-          WhatsApp: 503 250 3868 <br>
-          Email: eltonlin@mit.edu <br>
+          Report a bug, suggest a feature, etc.
+          We will be excited to read what you write and update you by email. 
         </template>
       </BasePopupButton>
     <slot>
@@ -63,13 +60,12 @@ export default {
     }
   },
   methods: {
-    submitBug ({ "bug summary": title, "bug description": description}) {
-      if (!title || !description) {
-        this.$root.$emit("show-snackbar", "Error: don't forget to include both the a summary and a description!")
+    submitBug ({ "summary": title, description }) {
+      if (!title) {
+        this.$root.$emit("show-snackbar", "Error: don't forget to write the summary!")
         return 
       }
-      const ref = db.collection("bugs");
-      ref.add({ 
+      db.collection("bugs").add({ 
         title, 
         description
       }); 

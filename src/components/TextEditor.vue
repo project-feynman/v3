@@ -82,9 +82,13 @@ class Title extends Node {
 }
 
 export default {
-  components: { EditorContent, EditorMenuBar, ButtonPrabhakar },
   props: {
     injectedHtml: String
+  },
+  components: { 
+    EditorContent, 
+    EditorMenuBar, 
+    ButtonPrabhakar 
   },
   data () {
     return {
@@ -112,7 +116,7 @@ export default {
           new Placeholder({
             emptyEditorClass: 'is-editor-empty',
             emptyNodeClass: 'is-empty',
-            emptyNodeText: node => 'Write something …',
+            emptyNodeText: (node) => 'Type here…',
             showOnlyWhenEditable: true,
             showOnlyCurrent: false,
           }),
@@ -151,3 +155,14 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+.editor p.is-editor-empty:first-child::before {
+  content: attr(data-empty-text);
+  float: left;
+  color: #aaa;
+  pointer-events: none;
+  height: 0;
+  font-style: italic;
+}
+</style>
