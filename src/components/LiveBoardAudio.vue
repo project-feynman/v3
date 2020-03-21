@@ -6,6 +6,9 @@
         <v-btn @click="initAudioConnection()" ref="#cameraBtn">
             openAudio
         </v-btn>
+        <div>
+            {{ x }}
+        </div>
         
     </div>
 </template> 
@@ -28,7 +31,8 @@ export default {
             servers: null,
             pc: null,
             roomRef: null,
-            database: null
+            database: null,
+            x: ""
         }
     },
     mounted () {
@@ -40,7 +44,8 @@ export default {
         this.audio = document.getElementById("yourVideo");
         this.connectedAudio = document.getElementById("friendsVideo");
         this.id = Math.floor(Math.random()*1000000000);
-        this.servers = {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}, {'urls': 'stun:stun.l.google.com:19302'}, {'urls': 'turn:numb.viagenie.ca','credential': 'winston.f.321','username': 'winston.f.321@gmail.com'}]};
+        this.servers = {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}, {'urls': 'stun:stun.l.google.com:19302'}, {'urls': 'turn:numb.viagenie.ca','credential': 'winstonfe','username': 'winston.f.321@gmail.com'}]};
+        this.servers = {};
         this.pc = new RTCPeerConnection(this.servers);
 
         this.pc.onicecandidate = (event => event.candidate?this.sendMessage(this.id, JSON.stringify({'ice': event.candidate})):console.log("Sent All Ice") );
@@ -57,8 +62,8 @@ export default {
         //         // this.roomRef.doc(docRef).delete();
         //     }
         // });
-
-        
+        // this.x = this.pc;
+        this.registerPeerConnectionListeners(this.pc);
 
 
         this.initAudio();
@@ -68,15 +73,15 @@ export default {
         // });
         // this.initAudioConnection();
         
-        this.pc.addEventListener('connectionstatechange', () => {
-            console.log('connection state change:', this.pc.connectionState)
-        });
+        // this.pc.addEventListener('connectionstatechange', () => {
+        //     console.log('connection state change:', this.pc.connectionState)
+        // });
 
     },
     methods: {
         async sendMessage(senderId, data) {
             var msg = this.database.push({ sender: senderId, message: data });
-            console.log("added",senderId)
+            // console.log("added",senderId)
             msg.remove();
         },
         readMessage(data) {
@@ -104,6 +109,38 @@ export default {
             this.pc.createOffer()
             .then(offer => this.pc.setLocalDescription(offer) )
             .then(() => this.sendMessage(this.id, JSON.stringify({'sdp': this.pc.localDescription})) );
+        },
+        registerPeerConnectionListeners(pc) {
+            pc.addEventListener('icegatheringstatechange', () => {
+                console.log(
+                    `ICE gathering state changed: ${pc.iceGatheringState}`);
+                    this.x = this.x + '\n' + `ICE gathering state changed: ${pc.iceGatheringState}`
+            });
+
+            pc.addEventListener('connectionstatechange', () => {
+                // console.log("connect: Peer:", peerConnection.tracks);
+                console.log(`Connection state change: ${pc.connectionState}`);
+                this.x = this.x + '\n' + `Connection state change: ${pc.connectionState}`
+                if (pc.connectionState === "connected"){
+                // peerConnection.createDataChannel("");
+                // localStream.getTracks().forEach(track => {
+                //   console.log("adding track", track);
+                //   peerConnection.addTrack(track, localStream);
+                //   // remoteStream.addTrack(track);
+                // });
+                }
+            });
+
+            pc.addEventListener('signalingstatechange', () => {
+                console.log(`Signaling state change: ${pc.signalingState}`);
+                this.x = this.x + '\n' + `Signaling state change: ${pc.signalingState}`
+            });
+
+            pc.addEventListener('iceconnectionstatechange ', () => {
+                console.log(
+                    `ICE connection state change: ${pc.iceConnectionState}`);
+                    this.x = this.x + '\n' + `ICE connection state change: ${pc.iceConnectionState}`
+            });
         }
     }
 }
