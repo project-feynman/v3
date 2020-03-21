@@ -14,32 +14,6 @@ export default {
         await this.$_drawStroke(stroke, 0); // draw 1 stroke per event loop
       }
     },
-    async $_playAnimation (test=0) {
-      await this.$_syncAnimation();
-      for (let i = this.currentFrameIdx+1; i < this.allFrames.length; i++) {
-        if (!this.isPlaying || this.isSeeking || (i!==this.currentFrameIdx+1)) { break; }
-        this.currentFrameIdx = i;
-        await this.$_renderFrame(this.allFrames[i], false); // draw 1 stroke per event loop
-      }
-      if (this.currentFrameIdx===this.allFrames.length-1) {
-        this.currentFrameIdx = 0;
-        this.isPlaying = false;
-      }
-    },
-    async $_syncAnimation () {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      for (let i = 0; i <= this.currentFrameIdx; i++) {
-        await this.$_renderFrame(this.allFrames[i], true); // draw 1 stroke per event loop
-      }
-    },
-    async $_renderFrame ({ strokeIndex, pointIndex }, instantly=false) {
-      const stroke = this.strokesArray[strokeIndex];
-      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
-      this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
-      if (!instantly) {
-        await new Promise(resolve => setTimeout(resolve, 25/this.playbackSpeed));
-      }
-    },
     $_drawStrokesInstantly () {
       this.strokesArray.forEach((stroke) => this.$_drawStroke(stroke));
     },

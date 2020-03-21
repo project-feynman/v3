@@ -58,7 +58,8 @@ export default {
     isPlaying: true,
     isSeeking: false,
     playbackSpeed: 1,
-    speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'3x', value: 3}],
+    speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'2x', value: 2},{text:'4x', value: 4},{text:'8x', value: 8}],
+    playerCount: 0, // Tracks the number of players existing concurrently to remove all previous instance of players
     canvas: null,
     ctx: null,
     bgCanvas: null,
@@ -83,8 +84,8 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.handleResize();
-    this.$_playAnimation();
-    // if I put the below line before $_playAnimation then the debounce will mess up the await 
+    this.playAnimation();
+    // if I put the below line before playAnimation then the debounce will mess up the await 
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
@@ -144,7 +145,7 @@ export default {
     seek (frameIndex) {
       this.currentFrameIdx = frameIndex;
       this.isSeeking = true;
-      this.$_syncAnimation();
+      this.syncAnimation();
       // just preview the canvas upto frame frameIndex without playing as the user seeks through before releasing the mouse button
     },
     finishSeek (frameIndex) {
@@ -153,18 +154,55 @@ export default {
       setTimeout(()=> {
         this.currentFrameIdx = frameIndex;
         this.isSeeking = false;
-        this.$_playAnimation(this.currentFrameIdx);
+        this.playAnimation();
         }, 0
       )
     },
     pausePlay () {
       this.isPlaying = !this.isPlaying;
-      if (this.isPlaying) this.$_playAnimation();
+      if (this.isPlaying) this.playAnimation();
     },
     speedChange (newSpeed) {
       console.log(newSpeed);
       this.playbackSpeed = newSpeed;
-    }
+    },
+    async playAnimation () {
+      if (this.isPlaying) {
+        this.playerCount+=1 // Increase the total count of the instances of players
+      }
+      const currentPlayer = this.playerCount; // The ID of the current instance of the player
+      let playBreak = false; // If the current instance of player breaks out of loop before completion
+      await this.syncAnimation();
+      for (let i = this.currentFrameIdx+1; i < this.allFrames.length; i++) {
+        if (!this.isPlaying || this.isSeeking || this.playerCount!==currentPlayer) {
+          // Break the loops i.e., don't play the current instance when paused, or user is seeking, 
+          // or when the instance of the player is not the latest
+          playBreak = true;
+          break;
+        }
+        if (i%10===0) { this.currentFrameIdx = i; }
+        await this.renderFrame(this.allFrames[i], false); // draw 1 stroke per event loop
+      }
+      if (!playBreak) { // We can't check if the currentFrameIdx is the last last frame as we increment it only every 10 frames
+        // Initialize the player to the initial state when finished
+        this.currentFrameIdx = 0;
+        this.isPlaying = false;
+      }
+    },
+    async syncAnimation () {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      for (let i = 0; i <= this.currentFrameIdx; i++) {
+        await this.renderFrame(this.allFrames[i], true); // draw 1 stroke per event loop
+      }
+    },
+    async renderFrame ({ strokeIndex, pointIndex }, instantly=false) {
+      const stroke = this.strokesArray[strokeIndex];
+      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
+      this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
+      if (!instantly) {
+        await new Promise(resolve => setTimeout(resolve, 10/this.playbackSpeed)); // Here the second parameter 10/this.playbackSpeed determines the number of frames rendered per second
+      }
+    },
   }
 }
 </script>
