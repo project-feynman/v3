@@ -27,7 +27,9 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 
 export default {
-  mixins: [DatabaseHelpersMixin],
+  mixins: [
+    DatabaseHelpersMixin
+  ],
   components: { 
     TheAppBar, 
     CreateExplanation, 

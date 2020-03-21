@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :height="navbarHeight" :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime ? 0 : 1" class="blackboard-toolbar">
+  <v-app-bar :height="navbarHeight" :color="'#eee'" :elevation="1" class="blackboard-toolbar">
     <v-container fluid class="px-0">
       <v-row align="center" justify="space-between">
         <template v-if="currentState !== RecordState.POST_RECORD">
@@ -13,7 +13,7 @@
                   <v-btn
                     :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || isPen)? 'accent' : color"
                     @click="palleteClick()"
-                    :outlined="isPen? false:true"
+                    :outlined="isPen ? false : true"
                     min-width="36px"
                     class="px-3"
                     height="38px"
@@ -34,13 +34,17 @@
                   />
                 </div>
               </v-col>
-              <ButtonNew @click="selectNormalEraser()" 
-                :filled="isNormalEraser" icon="mdi-eraser"
+              <ButtonNew 
+                :filled="isNormalEraser"
+                @click="selectNormalEraser()"  
+                icon="mdi-eraser"
               >
                 Eraser
               </ButtonNew>
-              <ButtonNew @click="$emit('tool-select', { tool: BlackboardTools.STROKE_ERASER })" 
-                :filled="isStrokeEraser" icon="mdi-eraser"
+              <ButtonNew 
+                :filled="isStrokeEraser" 
+                @click="$emit('tool-select', { tool: BlackboardTools.STROKE_ERASER })" 
+                icon="mdi-eraser"
               >
                 Stroke Eraser
               </ButtonNew>
@@ -72,7 +76,11 @@
               </BasePopupButton>
             </v-col>
             <v-col cols="auto" class="py-0 px-0">
-              <ButtonNew @click="$emit('record-state-change', RecordState.MID_RECORD)" :filled="true" icon="mdi-adjust">
+              <ButtonNew 
+                @click="$emit('record-state-change', RecordState.MID_RECORD)" 
+                filled
+                icon="mdi-adjust"
+              >
                 Record Audio
               </ButtonNew>
             </v-col>
@@ -80,19 +88,13 @@
 
           <template v-else-if="currentState === RecordState.MID_RECORD">
             <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="$emit('record-state-change', RecordState.POST_RECORD)">
+              <ButtonNew @click="$emit('record-state-change', RecordState.POST_RECORD)">
                 Stop
-              </ButtonPrabhakar>
+              </ButtonNew>
             </v-col>
           </template>
 
         <template v-else>
-          <v-col class="py-0 px-0" cols="auto">
-            <!-- <ButtonPrabhakar @click="$emit('record-state-change', RecordState.PRE_RECORD)" outlined icon="mdi-undo-variant">
-              Retry
-            </ButtonPrabhakar> -->
-          </v-col>
-          <!-- TODO: give ability to preview -->
           <slot>
 
           </slot>
@@ -106,7 +108,6 @@
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
 import { RecordState, BlackboardTools, navbarHeight } from "@/CONSTANTS.js";
-import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 
@@ -115,11 +116,9 @@ export default {
     currentTool: String,
     color: String,
     currentState: String,
-    isRealtime: Boolean,
   },
   components: { 
     Swatches, 
-    ButtonPrabhakar,
     BasePopupButton,
     ButtonNew,
   },
