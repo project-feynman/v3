@@ -165,9 +165,8 @@ export default {
       if (this.nextFrameIdx < this.allFrames.length) {
         // calculate sleep duration
         const nextFrame = this.allFrames[this.nextFrameIdx];
-        const timeout = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
-        // sleep for half the duration to handle 2x speed
-        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout/2); // use recursion instead of `setInterval` to prevent overlapping calls
+        const timeTilNextStroke = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
+        this.recursiveSyncer = setTimeout(this.syncRecursively, timeTilNextStroke/this.playbackSpeed); // use recursion instead of `setInterval` to prevent overlapping calls
       }
     },
     syncStrokesToAudio () {
