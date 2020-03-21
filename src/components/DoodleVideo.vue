@@ -20,13 +20,13 @@
         @input="changePlaybackSpeed"
         dense
         solo
-        background-color="rgba(0,0,0,0.5)"
+        background-color="rgba(255,255,255,0.75)"
         :hide-details="true"
         class="my-0"
-        color="white"
+        color="accent"
         item-color="accent"
       >
-        <v-icon slot="append" color="white" small>mdi-fast-forward</v-icon>
+        <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
       </v-select>
     </div>
   </div>
@@ -250,6 +250,6 @@ export default {
 </style>
 <style>
 #speed-control .v-select__selections {
-  color: white;
+  color: accent;
 }
 </style>
