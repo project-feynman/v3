@@ -2,7 +2,7 @@
   <div>
     <TheAppBar/>
     <v-content>
-      <CreateExplanation 
+      <BetaCreateExplanation 
         :willCreateNewPost="true"
         :postDbRef="newPostRef"
         ref="CreateExplanation"
@@ -13,14 +13,14 @@
 
 <script>
 import TheAppBar from "@/components/TheAppBar.vue";
-import CreateExplanation from "@/components/CreateExplanation.vue";
+import BetaCreateExplanation from "@/components/BetaCreateExplanation.vue";
 import db from "@/database.js";
 import { getRandomId } from "@/helpers.js";
 
 export default {
   components: { 
     TheAppBar, 
-    CreateExplanation 
+    BetaCreateExplanation,
   },
   computed: {
     postsRef () {
@@ -29,6 +29,9 @@ export default {
     newPostRef () { 
       return this.postsRef.doc(getRandomId()); 
     }
+  },
+  created () {
+    console.log("hello")
   },
   beforeRouteLeave (to, from, next) {
     const Blackboard = this.$refs.CreateExplanation.getBlackboard();

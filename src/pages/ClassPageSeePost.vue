@@ -6,10 +6,10 @@
       <SeeExplanation v-for="expl in sortedExplanations" :key="expl.id"
         :expl="expl" 
       />
-      <v-btn @click="isCreatingExpl = !isCreatingExpl" x-large block :outlined="isCreatingExpl" color="accent">
+      <!-- <v-btn @click="isCreatingExpl = !isCreatingExpl" x-large :outlined="isCreatingExpl" color="secondary">
         {{ isCreatingExpl ? 'CANCEL' : 'ADD RESPONSE' }}
-      </v-btn>
-      <CreateExplanation v-if="isCreatingExpl" 
+      </v-btn> -->
+      <CreateExplanation 
         :postDbRef="postRef"
         :newExplanationDbRef="explanationsRef.doc()" 
         :titleRequired="false"
@@ -66,6 +66,7 @@ export default {
     this.unsubscribeListener2();
   },
   methods: {
+    // TODO: check if there is text or strokes
     confirmExit (next) {
       if (!this.isCreatingExpl) {
         next();

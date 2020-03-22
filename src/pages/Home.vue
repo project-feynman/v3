@@ -20,7 +20,7 @@
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Email Settings</ButtonNew>
+            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
@@ -44,6 +44,7 @@
                     actionName="Log in" 
                     :inputFields="['email', 'password']" 
                     @action-do="user => logIn(user)"
+                    color="secondary"
                   />
                 </v-col>
                 <v-col cols="auto">
@@ -52,6 +53,7 @@
                     :inputFields="['first name', 'last name', 'email', 'password']" 
                     @action-do="user => signUp(user)"
                     outlined
+                    color="secondary"
                   >
                     <template v-slot:message-to-user>
                       Passwords are handled by Google Firebase Authentication.

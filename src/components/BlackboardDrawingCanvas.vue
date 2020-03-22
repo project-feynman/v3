@@ -1,22 +1,12 @@
 <template>
   <div class="blackboard" elevation="1">
-    <div>
-      <BlackboardToolBar
-        :currentState="currentState"
-        :currentTool="currentTool"
-        :color="color"
-        @tool-select="({ tool, color }) => selectTool(tool, color)"
-        @wipe-board="resetBoard()"
-        @record-state-change="(newState) => handleRecordStateChange(newState)"
-        @image-selected="(imageFile) => saveAndDisplayImage(imageFile)"
-      >
-        <template v-slot:initial-buttons>
-          <ButtonNew @click="touchDisabled = !touchDisabled" icon="mdi-fingerprint">
-            {{ touchDisabled ? "allow" : "disallow" }} touch 
-          </ButtonNew>
-        </template>
-      </BlackboardToolBar>
-    </div>
+    <slot name="canvas-toolbar"
+      :changeTool="changeTool"
+      :displayImageFile="displayImageFile"
+      :wipeBoard="wipeBoard"
+    >
+
+    </slot>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
       <canvas ref="FrontCanvas" class="front-canvas" 
         @touchstart="(e) => touchStart(e)"
@@ -32,7 +22,7 @@
 </template>
 
 <script>
-import TheAppBar from "@/components/TheAppBar.vue";
+/* A HTML canvas that supports drawing with stylus/touch/mouse. */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
@@ -40,16 +30,14 @@ import { BlackboardTools, RecordState, navbarHeight, aspectRatio, epsilon } from
 
 export default {
   props: {
-    blackboardId: String,
-    isRealtime: Boolean,
-    visible: Boolean,
+    currentTime: Number,
+    default: () => 0
   },
   mixins: [
     CanvasDrawMixin
   ],
   components: { 
     BlackboardToolBar, 
-    TheAppBar, 
     ButtonNew
   },
   data () {
@@ -58,17 +46,10 @@ export default {
       ctx: null,
       bgCanvas: null,
       bgCtx: null,
-      color: "white",
-      lineWidth: 2.5,
-      currentTool: BlackboardTools.PEN,
-      touchDisabled: false,
+      strokesArray: [],
       currentStroke: { 
         points: [] 
       },
-      // TODO: what's the difference between imageUrl and imageBlob
-      imageUrl: "",
-      imageBlob: null,
-      thumbnailBlob: null,
       currPoint: { 
         x: 0, 
         y: 0 
@@ -77,39 +58,28 @@ export default {
         x: -1, 
         y: -1 
       },
-      mousedown: 0, // necessary to know if user is holding left click while dragging the mouse
-      currentState: "",
+      currentTool: { 
+        type: BlackboardTools.PEN,
+        color: "white",
+        lineWidth: 2.5
+      },
+      isHoldingLeftClick: false,
+      touchDisabled: false,
+      // TODO: what's the difference between imageUrl and imageBlob
+      imageUrl: "",
+      imageBlob: null,
+      thumbnailBlob: null,
     }
   },
   computed: {
     isStrokeEraser () {
-      return this.currentTool === BlackboardTools.STROKE_ERASER;
+      return this.currentTool.type === BlackboardTools.STROKE_ERASER;
     },
     isNormalEraser () {
-      return this.currentTool === BlackboardTools.NORMAL_ERASER;
+      return this.currentTool.type === BlackboardTools.NORMAL_ERASER;
     },
     isPen () {
-      return this.currentTool === BlackboardTools.PEN;
-    }
-  },
-  watch: {
-    currentTool () {
-      this.customCursor();
-      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) // isStrokeEraser now erases in the back like a normal eraser
-        ? "destination-out"
-        : "source-over";
-      this.lineWidth = (this.isNormalEraser) ? 25 : 2.5;
-      if (this.isStrokeEraser) {
-        this.$root.$emit("show-snackbar", 
-          "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
-        );
-      }
-    },
-    color () { 
-      this.customCursor(); 
-    },
-    visible () { 
-      this.resizeBlackboard(); 
+      return this.currentTool.type === BlackboardTools.PEN;
     }
   },
   mounted () {
@@ -119,26 +89,28 @@ export default {
     this.bgCtx = this.bgCanvas.getContext("2d");
     this.resizeBlackboard();
     window.addEventListener("resize", this.resizeBlackboard, false); 
-    document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
-  },
-  beforeDestroy() { 
-    if (this.unsubscribe) { this.unsubscribe(); } 
+    document.fonts.ready.then(() => this.createCustomCusor()); // since cursor uses material icons font, load it after fonts are ready
   },
   destroyed () {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
     // exposed methods 
-    renderBoard (strokesArray) {
+    renderBoard () {
       this.$_rescaleCanvas();
-      for (let stroke of strokesArray) {
+      for (let stroke of this.strokesArray) {
         this.$_drawStroke(stroke);
       }
     },
-    selectTool (tool, color) {
+    changeTool (tool) {
       this.currentTool = tool;
-      if (color) { 
-        this.color = color; 
+      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) // isStrokeEraser now erases in the back like a normal eraser
+        ? "destination-out"
+        : "source-over";
+      if (this.isStrokeEraser) {
+        this.$root.$emit("show-snackbar", 
+          "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
+        );
       }
     },
     async resetBoard () {
@@ -146,14 +118,20 @@ export default {
       this.resetVariables(); // local state
     },
     wipeBoard () {
-      if (!this.ctx) { return; }
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
-      this.prevPoint = { x: -1, y: -1 };
+      this.prevPoint = { 
+        x: -1, 
+        y: -1 
+      };
       this.imageBlob = null;
       this.imageUrl = "";
+    },
+    displayImageFile (imageFile) {
+      const src = URL.createObjectURL(imageFile);
+      this.displayImageAsBackground(src);
     },
     displayImageAsBackground (src) {
       return new Promise((resolve) => {
@@ -168,18 +146,23 @@ export default {
       });
     },
     startNewStroke (e) {
+      this.$emit("stroke-start");
       e.preventDefault(); 
-      this.currentStroke.strokeNumber = this.strokesArray.length + 1;
-      this.currentStroke.startTime = Number(this.currentTime.toFixed(1));
-      this.currentStroke.color = this.color;
-      this.currentStroke.lineWidth = this.lineWidth;
-      this.currentStroke.isErasing = this.isNormalEraser;
+      
+      this.currentStroke = {
+        strokeNumber: this.strokesArray.length + 1,
+        startTime: this.currentTime.toFixed(1),
+        color: this.currentTool.color,
+        lineWidth: this.currentTool.lineWidth,
+        isErasing: this.isNormalEraser,
+        points: []
+      };
 
       this.$_rescaleCanvas();
-      this.$_setStyle(this.color, this.lineWidth);
+      this.$_setStyle(this.currentTool.color, this.currentTool.lineWidth);
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) return; 
+      if (this.isNotValidTouch(e)) { return; } 
       if (e.touches[0].touchType === "stylus") { 
         this.touchDisabled = true; 
       }
@@ -202,7 +185,7 @@ export default {
       this.saveStrokeThenReset(e); 
     },
     mouseDown (e) {
-      this.mousedown = 1;
+      this.isHoldingLeftClick = true;
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else {
@@ -212,7 +195,7 @@ export default {
       }
     },
     mouseMove (e) {
-      if (this.mousedown !== 1) { return; } 
+      if (!this.isHoldingLeftClick) { return; } 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else {
@@ -221,15 +204,15 @@ export default {
       }
     },
     mouseUp (e) {
-      this.mousedown = 0;
+      this.isHoldingLeftClick = false;
       this.saveStrokeThenReset(e);
     },
     saveStrokeThenReset (e) {
       e.preventDefault()
       if (this.currentStroke.points.length === 0) { return; }  // user is touching the screen despite that touch is disabled
-      this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
       this.strokesArray.push(this.currentStroke);
       this.$emit("stroke-drawn", this.currentStroke);
+      // reset 
       this.currentStroke = { 
         points: [] 
       };
@@ -259,7 +242,7 @@ export default {
     eraseStrokesWithinRadius (e) {
       e.preventDefault();
       let eraserCenter = {};
-      if (this.mousedown === 1) {
+      if (this.isHoldingLeftClick) {
         eraserCenter = { x: e.offsetX, y: e.offsetY };
       } else {
         const finger1 = e.touches[0];
@@ -270,31 +253,34 @@ export default {
       const radius = 10;
       for (let i = 0; i < this.strokesArray.length; i++) {
         const stroke = this.strokesArray[i];
-        if (stroke.wasErased || stroke.isErasing) {  // we don't need to erase strokes that are eraser strokes or were previously erased
+        // don't undo eraser strokes
+        if (stroke.wasErased || stroke.isErasing) {  
           continue;
         }
         for (let point of stroke.points) {
           const deltaX = eraserCenter.x - point.unitX * this.canvas.width
           const deltaY = eraserCenter.y - point.unitY * this.canvas.height
           if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
-            this.eraseSingleStroke(stroke);
+            this.eraseStroke(stroke);
             break; 
           }
         }
       }
     },
-    eraseSingleStroke (stroke){
+    eraseStroke (stroke) {
       stroke.wasErased = true;
-      var newStroke = {};
-      newStroke.strokeNumber = this.strokesArray.length + 1;
-      newStroke.startTime = Number(this.currentTime.toFixed(1));
-      newStroke.endTime = Number(this.currentTime.toFixed(1));
-      newStroke.color = this.color;
-      newStroke.lineWidth = this.lineWidth+2;
-      newStroke.isErasing = true;
-      newStroke.points = stroke.points;
-      this.strokesArray.push(newStroke);
-      this.$_drawStroke(newStroke);
+      this.$emit("stroke-start");
+
+      const antiStroke = {
+        strokeNumber: this.strokesArray.length + 1,
+        isErasing: true,
+        lineWidth: this.currentTool.lineWidth,
+        points: stroke.points
+      };
+
+      this.$_drawStroke(antiStroke);
+      this.strokesArray.push(antiStroke);
+      this.$emit("stroke-end", antiStroke);
     },
     getTouchPos (e) {
       const finger1 = e.touches[0];
@@ -306,10 +292,25 @@ export default {
       if (e.touches.length !== 1) { return true; } // multiple fingers not allowed
       return this.isFinger(e) && this.touchDisabled;
     },
-    isFinger (e) { 
+    isApplePencil (e) {
+      return e.touches[0].touchType === "stylus";
+    },
+    isFinger (e) { // not true: could be Surface pen
       return e.touches[0].touchType !== "stylus" 
     },
-    createThumbnail () {
+    drawToPoint ({ x, y }) {
+      if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
+        this.traceLineTo(x, y);
+        this.ctx.stroke();
+      }
+      this.prevPoint = { x, y };
+    },
+    traceLineTo (x, y) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
+      this.ctx.lineTo(x, y);
+    },
+    getThumbnail () {
       return new Promise(async (resolve) => {
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
@@ -332,55 +333,19 @@ export default {
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly(); 
     },
-    drawToPoint ({ x, y }) {
-      if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
-        this.traceLineTo(x, y);
-        this.ctx.stroke();
-      }
-      this.prevPoint = { x, y };
-    },
-    traceLineTo (x, y) {
-      this.ctx.beginPath();
-      this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
-      this.ctx.lineTo(x, y);
-    },
-    customCursor () {
+    createCustomCusor () {
       const dummyCanvas = document.createElement("canvas");
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
       const ctx = dummyCanvas.getContext("2d");
-      ctx.fillStyle = this.isPen ? this.color: "#fff";
+      ctx.fillStyle = this.isPen ? this.currentTool.color: "#fff";
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
-    },
-    // TODO: open a popup, THEN allow the copy and pasting of images
-    initCopyAndPasteImage () {
-      //  document.onpaste = async (event) => {
-      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
-      //   // Find pasted image among pasted items
-      //   let blob = null;
-      //   for (let i = 0; i < items.length; i++) {
-      //     if (items[i].type.indexOf("image") === 0) {
-      //       blob = items[i].getAsFile();
-      //     }
-      //   }
-      //   // Load image if there is a pasted image
-      //   if (blob === null) { return; }
-      //   this.imageBlob = blob;
-      //   if (!this.isRealtime) {
-      //     const imageUrl = URL.createObjectURL(this.imageBlob);
-      //     this.displayImageAsBackground(imageUrl);
-      //   } else {
-      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
-      //     this.blackboardRef.update({ imageUrl });
-      //     this.imageUrl = imageUrl; // store locally
-      //   }     
-      // }
-    },
+    }
   }
 };
 </script>

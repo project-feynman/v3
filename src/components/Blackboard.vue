@@ -4,7 +4,6 @@
       <BlackboardToolBar
         :currentState="currentState"
         :currentTool="currentTool"
-        :color="color"
         :isRealtime="isRealtime"
         @tool-select="({ tool, color }) => selectTool(tool, color)"
         @wipe-board="resetBoard()"
@@ -41,7 +40,7 @@
 
 <script>
 import db from "@/database.js";
-import AudioRecorder from "@/components/AudioRecorder.vue";
+import AudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
@@ -77,7 +76,6 @@ export default {
       ctx: null,
       bgCanvas: null,
       bgCtx: null,
-      color: "white",
       lineWidth: 2.5,
       currentTool: BlackboardTools.PEN,
       touchDisabled: false,

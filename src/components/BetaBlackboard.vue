@@ -1,57 +1,66 @@
 <template>
   <div>
-    <BlackboardCanvasDrawing
-      @stroke-drawn="(stroke) => save(stroke)"
-      ref="BlackboardCanvasDrawing"
+    <BlackboardDrawingCanvas 
+      :currentTime="currentTime"
+      @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
+      ref="BlackboardDrawingCanvas"
     >
-      <template v-slot:toolbar-buttons>
-        <ButtonNew>Start Recording</ButtonNew>
+      <template v-slot:canvas-toolbar="{ changeTool, displayImageFile, wipeBoard }">
+        <BlackboardToolBar
+          @tool-select="(newTool) => changeTool(newTool)"
+          @image-select="(imageFile) => displayImageFile(imageFile)"
+          @wipe-board="wipeBoard()"
+        >
+          <ButtonNew v-if="currentState === RecordState.PRE_RECORD"
+            @click="startRecording()" 
+            icon="mdi-adjust"
+          >
+            Record video
+          </ButtonNew>
+          <ButtonNew v-else-if="currentState === RecordState.MID_RECORD"
+            @click="stopRecording()"
+            icon="mdi-stop"
+          >
+            Finish recording
+          </ButtonNew>
+        </BlackboardToolBar>
       </template>
-    </BlackboardCanvasDrawing>
-    <AudioRecorder v-show="false" 
-      @file-uploaded="(audio) => saveFileReference(audio)"
-      @audio-recorded="emitVideoData()"
+    </BlackboardDrawingCanvas>
+
+    <BlackboardAudioRecorder
+      @audio-recorded=""
       ref="AudioRecorder"
     />
   </div>
 </template>
 
 <script>
-/* A functional blackboard that supports saving:
-    1. At any point in time, the user can save the blackboard as a replayable silent animation. 
-    2. By pressing "record", the user can record a voiced video explanation. 
-  This component keeps track of its state i.e. currentTime, strokesArray, audioBlob and imageBlob
+/* A functional blackboard that supports saving and recording:
+    - Saving: The user can save the state of the blackboard as a replayable animation. 
+    - Recording: By pressing "record", the user can record a voiced video explanation. 
+  This component manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob
 */
-import AudioRecorder from "@/components/AudioRecorder.vue";
+import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
+import BlackboardDrawingCanvas from "@/components/BlackboardDrawingCanvas.vue";
+import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
-import BlackboardCanvasDrawing from "@/components/BlackboardCanvasDrawing.vue";
 import { RecordState } from "@/CONSTANTS.js";
 
 export default {
-  props: {
-    blackboardId: String,
-    visible: Boolean,
-  },
-  mixins: [
-    CanvasDrawMixin, 
-    DatabaseHelpersMixin
-  ],
   components: { 
-    AudioRecorder, 
+    BlackboardToolBar,
+    BlackboardAudioRecorder, 
+    BlackboardDrawingCanvas,
     BasePopupButton,
     ButtonNew
   },
   data () {
     return {
-      strokesArray: [],
       timer: null,
       currentTime: 0,
-      currentState: "",
-      audioUrl: "",
-      hasUploadedAudio: false,
-      thumbnailBlob: null
+      currentState: RecordState.PRE_RECORD,
+      RecordState
     }
   },
   computed: {
@@ -60,90 +69,51 @@ export default {
     }
   },
   methods: {
-    save (stroke) {
-      this.strokesArray.push({
-        
-      });
-    },
-    handleRecordStateChange (newState) {
-      const { PRE_RECORD, MID_RECORD, POST_RECORD } = RecordState;
-      if (newState === MID_RECORD) { 
-        this.startRecording(); 
-      } else if (newState === POST_RECORD) { 
-        this.stopRecording(); 
-      } else if (newState === PRE_RECORD) { 
-        this.tryRecordAgain(); 
-      } else { 
-        throw `Error: blackboard state was set to an illegal value = ${newState}`;
-      }
-    },
     async startRecording () {
       await this.$refs.AudioRecorder.startRecording();
-      this.startTimer();      
+      this.currentTime = 0;
+      this.timer = setInterval(() => this.currentTime += 0.1, 100);   
       this.currentState = RecordState.MID_RECORD;
       this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button
     },
     stopRecording () {
-      this.stopTimer();
+      clearInterval(this.timer); 
+      // TODO: make this a promise
       this.$refs.AudioRecorder.stopRecording();
       this.currentState = RecordState.POST_RECORD;
+      this.$emit("record-end");
     },
-    tryRecordAgain () {
-      this.currentTime = 0;
-      this.hasUploadedAudio = false;
-      // modify timestamps so last round's strokes will persist as the initial setup of this round's recording
-      for (const stroke of this.strokesArray) {
-        [stroke.startTime, stroke.endTime] = [0, 0];
+    getAllData () {
+      const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
+      return {
+        strokesArray: BlackboardDrawingCanvas.strokesArray,
+        imageBlob: BlackboardDrawingCanvas.getImage(),
+        thumbnailBlob: BlackboardDrawingCanvas.getThumbnail(),
+        audioBlob: AudioRecorder.audio.blob
       }
-      const { PRE_RECORD } = RecordState;
-      this.currentState = PRE_RECORD;
-      this.$refs.BlackboardCanvasDrawing.renderBoard(this.strokesArray);
     },
     // TODO: refactor
     async emitVideoData () { 
-      this.thumbnailBlob = await this.createThumbnail();
+      const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
+      this.thumbnailBlob = await BlackboardDrawingCanvas.createThumbnail();
       const videoData = { 
-        audio: this.$refs.AudioRecorder.audio, 
-        strokes: this.strokesArray,
+        audioBlob: AudioRecorder.audio.blob, 
+        strokesArray: this.strokesArray,
         imageUrl: this.imageUrl
       };
       this.$emit("record-end", videoData)
     },
-    saveFileReference ({ url }) {
-      this.hasUploadedAudio = true;
-      this.audioUrl = url;
-      if (this.isRealtime) {
-        this.blackboardRef.update({ audioUrl: url })
+    tryRecordAgain () {
+      this.currentTime = 0;
+      // modify timestamps so last round's strokes will persist as the initial setup of this round's recording
+      for (const stroke of this.strokesArray) {
+        [stroke.startTime, stroke.endTime] = [0, 0];
       }
-      this.$emit("audio-upload-end", { 
-        blackboardStrokes: this.strokesArray, 
-        audioUrl: url
-      });
+      this.currentState = RecordState.PRE_RECORD;
+      const { BlackboardDrawingCanvas } = this.$refs;
+      BlackboardDrawingCanvas.strokesArray = this.strokesArray;
+      BlackboardDrawingCanvas.renderInitialStrokes();
     },
-    uploadAudio () {
-      return new Promise(async (resolve) => {
-        await this.$refs.AudioRecorder.uploadRecording();
-        resolve();
-      })
-    },
-    async resetBoard () {
-      this.wipeBoard(); // UI
-      this.resetVariables(); // local state
-    },
-    wipeBoard () {
-      this.$refs.BlackboardCanvasDrawing.wipeBoard();
-    },
-    resetVariables () {
-      this.strokesArray = [];
-      this.currentTime = 0;
-    },
-    startTimer () {
-      this.currentTime = 0;
-      this.timer = setInterval(() => this.currentTime += 0.1, 100);
-    },
-    stopTimer () { 
-      clearInterval(this.timer); 
-    }
   }
 };
 </script>
