@@ -14,8 +14,8 @@
           SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}`}}
           <v-icon class="pl-2">mdi-send</v-icon>
           <template v-slot:loader>
-            <span v-if="isRecordingVideo">Currently recording...</span> 
-            <span v-else-if="isUploadingPost">Uploading post...</span>
+            <span v-if="isRecordingVideo">Recording...</span> 
+            <span v-else-if="isUploadingPost">Uploading...</span>
           </template>
         </v-btn>
         <v-spacer></v-spacer>
@@ -26,7 +26,7 @@
       <!-- Blackboard -->
       <BetaBlackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
-        @record-end="(videoData) => showPreview(videoData)"
+        @record-end="(getBlackboardData) => showPreview(getBlackboardData)"
         ref="Blackboard"
         :key="changeKeyToForceReset"
       />
@@ -45,9 +45,9 @@
           </template>
         </BasePopupButton>
         <DoodleVideo
-          :strokesArray="blackboardStrokes"
-          :audioUrl="audio.blobURL"
-          :backgroundUrl="imageUrl"
+          :strokesArray="previewVideo.strokesArray"
+          :audioUrl="previewVideo.audio.blobURL"
+          :imageBlob="previewVideo.imageBlob"
         />
       </template>
     </v-container>
@@ -92,20 +92,15 @@ export default {
     BasePopupButton
   },
   data: () => ({
-    isAnonymous: false,
-    isUploadingPost: false,
     isRecordingVideo: false,
     isPreviewing: false,
     previewVideo: {
       strokesArray: [],
       audioBlob: null,
-      imageUrl: ""
+      imageBlob: ""
     },
-    // for previewing
-    blackboardStrokes: [],
-    audio: null,
-    imageUrl: "",
-    // 
+    isAnonymous: false,
+    isUploadingPost: false,
     changeKeyToForceReset: 0
   }),
   computed: {
@@ -135,11 +130,8 @@ export default {
       await this.$nextTick();
       this.$refs.Blackboard.tryRecordAgain();
     },
-    showPreview ({ audio, strokes, imageUrl }) {
-      this.audio = audio;
-      this.blackboardStrokes = strokes;
-      this.imageUrl = imageUrl;
-
+    async showPreview (getBlackboardData) {
+      this.previewVideo = await getBlackboardData();
       this.isRecordingVideo = false;
       this.isPreviewing = true;
     },
@@ -167,41 +159,33 @@ export default {
         mitClass: this.mitClass
       };
       const explanation = { ...metadata };
-      const { currentState, currentTime } = Blackboard;
-      const { strokesArray, imageBlob, thumbnailBlob, audioBlob } = Blackboard.getAllData();
-
-      // const { strokesArray, currentState, imageBlob, currentTime } = Blackboard;
-
+      const strokesArray = Blackboard.getStrokesArray();
+      const imageBlob = Blackboard.getImageBlob();
       if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
         // accumulate promises for strokes, audio, images to process them in parallel
         const promises = [];
-        if (currentState === RecordState.POST_RECORD) {
-          explanation.duration = Blackboard.currentTIme;
+        if (Blackboard.currentState === RecordState.POST_RECORD) {
+          const { imageBlob, thumbnailBlob, audio } = this.previewVideo; 
+          explanation.duration = Blackboard.currentTime;
+    
+          const audioBlob = audio.blob;
           const audioPromise = this.$_saveToStorage(`audio/${getRandomId()}`, audioBlob)
-          .then((downloadUrl) => {
-            explanation.audioUrl = downloadUrl; 
-          })
-          // const audioPromise = Blackboard.uploadAudio().then(() => {
-          //   explanation.audioUrl = Blackboard.audioUrl;
-          //   explanation.duration = Blackboard.currentTime;
-          // });
-          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, Blackboard.thumbnailBlob)
+          .then((downloadUrl) => explanation.audioUrl = downloadUrl);
+
+          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob)
           .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl);
+
           promises.push(audioPromise);
           promises.push(thumbnailPromise);
         } else {
-          const thumbnailPromise = Blackboard.createThumbnail().then(async (thumbnailBlob) => {
+          const thumbnailPromise = Blackboard.getThumbnail().then(async (thumbnailBlob) => {
             const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
             explanation.thumbnail = thumbnailUrl;
           });
           promises.push(thumbnailPromise);
         }
-        // TODO: fix background image 
         if (imageBlob) {
-          const backgroundImagePromise = this.$_saveToStorage(
-            `images/${getRandomId()}`, 
-            imageBlob
-          )
+          const backgroundImagePromise = this.$_saveToStorage(`images/${getRandomId()}`, imageBlob)
           .then((imageUrl) => explanation.imageUrl = imageUrl);
           promises.push(backgroundImagePromise);
         }

@@ -39,9 +39,15 @@ import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
 
 export default {
   props: {
-    strokesArray: Array,
-    audioUrl: String,
-    imageBlob: Blob
+    strokesArray: {
+      type: Array,
+      required: true
+    },
+    audioUrl: {
+      type: String,
+      required: true
+    },
+    imageBlob: Blob // a File is also a Blob
   },
   mixins: [CanvasDrawMixin],
   data: () => ({

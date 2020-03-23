@@ -30,13 +30,10 @@ export default {
       return this.postsRef.doc(getRandomId()); 
     }
   },
-  created () {
-    console.log("hello")
-  },
   beforeRouteLeave (to, from, next) {
     const Blackboard = this.$refs.CreateExplanation.getBlackboard();
     const TextEditor = this.$refs.CreateExplanation.getTextEditor();
-    if (Blackboard.strokesArray.length > 0 || TextEditor.extractAllText().length > 0) {
+    if (Blackboard.getStrokesArray().length > 0 || TextEditor.extractAllText().length > 0) {
       const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
       if (wantToLeave) next();
       else next(false);

@@ -1,10 +1,24 @@
 <template>
   <div id="room">
     <v-content v-if="user">
-      <Blackboard v-if="room.blackboardId" ref="whiteboard" 
+      <Blackboard
+        v-slot="{
+          drawStroke, 
+          wipeBoard
+        }"
+      >
+        <RenderlessListenToBlackboard
+          @new-stroke-from-db="(newStroke) => drawStroke(newStroke)"
+          @db-wiped="wipeBoard()"
+        >
+        </RenderlessListenToBlackboard>
+      </Blackboard> 
+
+      <!-- <Blackboard v-if="room.blackboardId" 
+        ref="whiteboard" 
         :blackboardId="room.blackboardId" 
         :isRealtime="true"
-      />
+      /> -->
     </v-content>
   </div>
 </template>

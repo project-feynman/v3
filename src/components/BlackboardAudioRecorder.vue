@@ -9,7 +9,7 @@ import utils from '@/services/Utils';
 export default {
   data () {
     return {
-      audio: null,
+      audio: {},
       recordingInProgress: false,
       supportedMimeTypes: [],
       micGain: 1.0,
@@ -47,15 +47,7 @@ export default {
     },
     onNewRecording (evt) {
       this.audio = evt.detail.recording; // returns an object = { blob, ts, blobURL, mimeType, size }}
-      this.$emit("audio-recorded", this.audio.blob);
-    },
-    uploadRecording () {
-      return new Promise(async (resolve, reject) => {
-        if (!this.audio) reject(); 
-        const downloadUrl = await this.$_saveToStorage(getRandomId(), this.audio.blob);
-        this.$emit("file-uploaded", { url: downloadUrl });
-        resolve();
-      });
+      this.$emit("audio-recorded", this.audio);
     }
   }
 }

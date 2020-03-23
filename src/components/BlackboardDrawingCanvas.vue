@@ -46,6 +46,13 @@ export default {
       ctx: null,
       bgCanvas: null,
       bgCtx: null,
+      currentTool: { 
+        type: BlackboardTools.PEN,
+        color: "white",
+        lineWidth: 2.5
+      },
+      isHoldingLeftClick: false,
+      touchDisabled: false,
       strokesArray: [],
       currentStroke: { 
         points: [] 
@@ -58,17 +65,7 @@ export default {
         x: -1, 
         y: -1 
       },
-      currentTool: { 
-        type: BlackboardTools.PEN,
-        color: "white",
-        lineWidth: 2.5
-      },
-      isHoldingLeftClick: false,
-      touchDisabled: false,
-      // TODO: what's the difference between imageUrl and imageBlob
-      imageUrl: "",
-      imageBlob: null,
-      thumbnailBlob: null,
+      imageBlob: null
     }
   },
   computed: {
@@ -80,7 +77,7 @@ export default {
     },
     isPen () {
       return this.currentTool.type === BlackboardTools.PEN;
-    }
+    },
   },
   mounted () {
     this.canvas = this.$refs.FrontCanvas;
@@ -95,11 +92,9 @@ export default {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
-    // exposed methods 
-    renderBoard () {
-      this.$_rescaleCanvas();
-      for (let stroke of this.strokesArray) {
-        this.$_drawStroke(stroke);
+    convertAllStrokesToBeInitialStrokes () {
+      for (const stroke of this.strokesArray) {
+        [stroke.startTime, stroke.endTime] = [0, 0];
       }
     },
     changeTool (tool) {
@@ -127,11 +122,11 @@ export default {
         y: -1 
       };
       this.imageBlob = null;
-      this.imageUrl = "";
     },
     displayImageFile (imageFile) {
       const src = URL.createObjectURL(imageFile);
       this.displayImageAsBackground(src);
+      this.imageBlob = imageFile; 
     },
     displayImageAsBackground (src) {
       return new Promise((resolve) => {
@@ -151,7 +146,7 @@ export default {
       
       this.currentStroke = {
         strokeNumber: this.strokesArray.length + 1,
-        startTime: this.currentTime.toFixed(1),
+        startTime: Number(this.currentTime.toFixed(1)),
         color: this.currentTool.color,
         lineWidth: this.currentTool.lineWidth,
         isErasing: this.isNormalEraser,
@@ -210,6 +205,7 @@ export default {
     saveStrokeThenReset (e) {
       e.preventDefault()
       if (this.currentStroke.points.length === 0) { return; }  // user is touching the screen despite that touch is disabled
+      this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
       this.strokesArray.push(this.currentStroke);
       this.$emit("stroke-drawn", this.currentStroke);
       // reset 
@@ -314,8 +310,9 @@ export default {
       return new Promise(async (resolve) => {
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
-        if (this.imageUrl) { // has a background image
-          await this.displayImageAsBackground(this.imageUrl);
+        if (this.imageBlob) { // has a background image
+          const src = URL.createObjectURL(this.imageBlob);
+          await this.displayImageAsBackground(src);
         } else {
           this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);

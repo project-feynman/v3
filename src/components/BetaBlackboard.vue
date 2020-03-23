@@ -5,7 +5,12 @@
       @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
       ref="BlackboardDrawingCanvas"
     >
-      <template v-slot:canvas-toolbar="{ changeTool, displayImageFile, wipeBoard }">
+      <template v-slot:canvas-toolbar="{ 
+        changeTool, 
+        displayImageFile, 
+        wipeBoard 
+      }"
+      >
         <BlackboardToolBar
           @tool-select="(newTool) => changeTool(newTool)"
           @image-select="(imageFile) => displayImageFile(imageFile)"
@@ -28,7 +33,7 @@
     </BlackboardDrawingCanvas>
 
     <BlackboardAudioRecorder
-      @audio-recorded=""
+      @audio-recorded="(audioObj) => handleNewRecording(audioObj)"
       ref="AudioRecorder"
     />
   </div>
@@ -74,46 +79,45 @@ export default {
       this.currentTime = 0;
       this.timer = setInterval(() => this.currentTime += 0.1, 100);   
       this.currentState = RecordState.MID_RECORD;
-      this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button
+      this.$emit("record-start"); // inform the parent to disable the "submit post" button
     },
     stopRecording () {
       clearInterval(this.timer); 
-      // TODO: make this a promise
-      this.$refs.AudioRecorder.stopRecording();
+      // after calling `stopRecording()`, some time is needed before
+      // the new recording is ready, and we'll handle it in `handleNewRecording()`
+      this.$refs.AudioRecorder.stopRecording(); 
+    },
+    handleNewRecording (audioObj) {
       this.currentState = RecordState.POST_RECORD;
-      this.$emit("record-end");
+      this.$emit("record-end", this.getBlackboardData);
     },
-    getAllData () {
-      const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
-      return {
-        strokesArray: BlackboardDrawingCanvas.strokesArray,
-        imageBlob: BlackboardDrawingCanvas.getImage(),
-        thumbnailBlob: BlackboardDrawingCanvas.getThumbnail(),
-        audioBlob: AudioRecorder.audio.blob
-      }
+    async getBlackboardData () {
+      return new Promise(async (resolve) => {
+        const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
+        const thumbnailBlob = await BlackboardDrawingCanvas.getThumbnail();
+        resolve({
+          strokesArray: BlackboardDrawingCanvas.strokesArray,
+          imageBlob: BlackboardDrawingCanvas.imageBlob,
+          audio: AudioRecorder.audio,
+          thumbnailBlob
+        });
+      });
     },
-    // TODO: refactor
-    async emitVideoData () { 
-      const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
-      this.thumbnailBlob = await BlackboardDrawingCanvas.createThumbnail();
-      const videoData = { 
-        audioBlob: AudioRecorder.audio.blob, 
-        strokesArray: this.strokesArray,
-        imageUrl: this.imageUrl
-      };
-      this.$emit("record-end", videoData)
+    getStrokesArray () {
+      return this.$refs.BlackboardDrawingCanvas.strokesArray;
+    },
+    getImageBlob () {
+      return this.$refs.BlackboardDrawingCanvas.imageBlob;
+    },
+    getThumbnail () {
+      return this.$refs.BlackboardDrawingCanvas.getThumbnail();
     },
     tryRecordAgain () {
       this.currentTime = 0;
-      // modify timestamps so last round's strokes will persist as the initial setup of this round's recording
-      for (const stroke of this.strokesArray) {
-        [stroke.startTime, stroke.endTime] = [0, 0];
-      }
-      this.currentState = RecordState.PRE_RECORD;
       const { BlackboardDrawingCanvas } = this.$refs;
-      BlackboardDrawingCanvas.strokesArray = this.strokesArray;
-      BlackboardDrawingCanvas.renderInitialStrokes();
-    },
+      BlackboardDrawingCanvas.convertAllStrokesToBeInitialStrokes();
+      this.currentState = RecordState.PRE_RECORD;
+    }
   }
 };
 </script>
