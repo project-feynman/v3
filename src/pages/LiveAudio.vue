@@ -1,6 +1,6 @@
 <template>
     <div>
-        <LiveBoardAudio roomId="123"/>
+        <LiveBoardAudio roomName="my-room"/>
         <h1>
             Hello world
         </h1>
@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
+import LiveBoardAudio from "@/components/LiveBoardAudio2.vue";
 
 export default {
     components: {
