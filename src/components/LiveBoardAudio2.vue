@@ -61,7 +61,7 @@ export default {
                   "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTS2E1OTBjNzk4ZTUwMmViM2Y5NjJjMjliMzJmNjIxNDVmLTE1ODUwMDUxNTIiLCJpc3MiOiJTS2E1OTBjNzk4ZTUwMmViM2Y5NjJjMjliMzJmNjIxNDVmIiwic3ViIjoiQUNhNGQyMjY2MjhlZjIyZjRjNzQ0YTc2MzUxN2U5MDgzNiIsImV4cCI6MTU4NTAwODc1MiwiZ3JhbnRzIjp7ImlkZW50aXR5IjoiVTMiLCJ2aWRlbyI6eyJyb29tIjoibXktcm9vbSJ9fX0.igQi3ho8O6gsr4YtSG0ZmDkd2MQhwz_KVSY3qEj9cN4",
                   ""
                   ]
-    this.userInd = Math.floor(Math.random() * 2);
+    this.userInd = Math.floor(Math.random() * 3);
     this.token = tokens[this.userInd];
     console.log("ind", this.userInd);
  },
@@ -209,7 +209,7 @@ export default {
               name: room_name,
               // logLevel: 'debug',
               audio: true,
-            //   video: { width: 400 }
+              video: { width: 400 }
           };
           // before a user enters a new room,
           // disconnect the user from they joined already
