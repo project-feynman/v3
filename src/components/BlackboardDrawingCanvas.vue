@@ -3,7 +3,7 @@
     <slot name="canvas-toolbar"
       :changeTool="changeTool"
       :displayImageFile="displayImageFile"
-      :wipeBoard="wipeBoard"
+      :resetBoard="resetBoard"
     >
 
     </slot>
@@ -109,8 +109,9 @@ export default {
       }
     },
     async resetBoard () {
-      this.wipeBoard(); // UI
-      this.resetVariables(); // local state
+      this.wipeBoard();
+      this.resetVariables(); 
+      this.$emit("board-reset");
     },
     wipeBoard () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -254,8 +255,8 @@ export default {
           continue;
         }
         for (let point of stroke.points) {
-          const deltaX = eraserCenter.x - point.unitX * this.canvas.width
-          const deltaY = eraserCenter.y - point.unitY * this.canvas.height
+          const deltaX = eraserCenter.x - point.unitX * this.canvas.width;
+          const deltaY = eraserCenter.y - point.unitY * this.canvas.height;
           if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
             this.eraseStroke(stroke);
             break; 

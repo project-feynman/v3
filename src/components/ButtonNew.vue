@@ -1,22 +1,24 @@
 <template>
   <v-btn 
     @click="$emit('click')"
+    v-bind="$attrs"
     class="button-custom" 
     :outlined="outlined" color="accent" :text="!outlined && !filled"
   >
     <div class="d-flex flex-column">
-        <v-icon>{{ icon }}</v-icon>
-        <span class="d-none d-sm-block">
+      <v-icon>{{ icon }}</v-icon>
+      <span class="d-none d-sm-block">
         <slot>
 
         </slot>
-        </span>
+      </span>
     </div>
   </v-btn>
 </template>
 
 <script>
 export default {
+  inheritAttrs: false,
   props: {
     icon: String,
     outlined: {
@@ -37,7 +39,7 @@ export default {
 
 <style scoped>
 .button-custom:not(.v-btn--round) {
-  font-size: 0.75em;
+  font-size: 0.7em;
   letter-spacing: unset;
   text-transform: unset;
   height: unset !important;

@@ -101,7 +101,7 @@
         <div v-else-if="user" key="class-list">
           <v-row align="stretch" class="enrolled-classes">
             <v-col v-for="C in user.enrolledClasses" cols="12" sm="4" md="3" :key="C.id">
-              <AsyncRenderless :dbRef="getMitClassRef(C.id)">
+              <RenderlessAsync :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
                     <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
@@ -110,7 +110,7 @@
                     </v-card>
                   </transition>
                 </template>
-              </AsyncRenderless>
+              </RenderlessAsync>
             </v-col>
           </v-row>
         </div>
@@ -127,7 +127,7 @@ import db from "@/database.js";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import TheSearchBar from "@/components/TheSearchBar.vue";
-import AsyncRenderless from "@/components/AsyncRenderless.vue";
+import RenderlessAsync from "@/components/RenderlessAsync.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Blackboard from "@/components/Blackboard.vue";
@@ -138,7 +138,7 @@ import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   components: {
-    AsyncRenderless, 
+    RenderlessAsync, 
     BasePopupButton,
     Blackboard,
     SeeExplanation,

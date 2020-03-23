@@ -1,21 +1,16 @@
 <template>
   <div>
-    <TheAppBar/>
-    <v-content>
-      <SeeExplanation v-if="originalPost" :expl="originalPost"/>
-      <SeeExplanation v-for="expl in sortedExplanations" :key="expl.id"
-        :expl="expl" 
-      />
-      <!-- <v-btn @click="isCreatingExpl = !isCreatingExpl" x-large :outlined="isCreatingExpl" color="secondary">
-        {{ isCreatingExpl ? 'CANCEL' : 'ADD RESPONSE' }}
-      </v-btn> -->
-      <CreateExplanation 
-        :postDbRef="postRef"
-        :newExplanationDbRef="explanationsRef.doc()" 
-        :titleRequired="false"
-        @upload-finish="isCreatingExpl = false"
-      />
-    </v-content>
+    <SeeExplanation v-if="originalPost" :expl="originalPost"/>
+    <SeeExplanation v-for="expl in sortedExplanations" :key="expl.id"
+      :expl="expl" 
+    />
+    <CreateExplanation 
+      :postDbRef="postRef"
+      :newExplanationDbRef="explanationsRef.doc()" 
+      :titleRequired="false"
+      @upload-finish="isCreatingExpl = false"
+      ref="CreateExplanation"
+    />
   </div>
 </template>
 
@@ -68,12 +63,16 @@ export default {
   methods: {
     // TODO: check if there is text or strokes
     confirmExit (next) {
-      if (!this.isCreatingExpl) {
-        next();
-      } else {
+      const { CreateExplanation } = this.$refs;
+      const Blackboard = CreateExplanation.getBlackboard();
+      const TextEditor = CreateExplanation.getTextEditor();
+
+      if (Blackboard.getStrokesArray().length > 0 || TextEditor.extractAllText().length > 0) {
         const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
-        if (!wantToLeave) next(false);
-        else next();
+        if (!wantToLeave) { next(false); }
+        else { next(); }
+      } else {
+        next();
       }
     }
   }

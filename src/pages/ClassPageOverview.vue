@@ -1,18 +1,13 @@
 <template>
-  <div>
-    <TheAppBar/>
-    <v-content>
-      <v-card>
-        <SeeExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
-        <v-card-title>Classmates</v-card-title>
-        <v-card-text>
-          <p v-for="classmate in classmates" :key="classmate.id">
-            {{ `${classmate.firstName} ${classmate.lastName}` }}: {{ classmate.lastName === "Strang" ? "professor" : "student" }}
-          </p>
-        </v-card-text>
-      </v-card>
-    </v-content>
-  </div>
+  <v-card>
+    <SeeExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
+    <v-card-title>Classmates</v-card-title>
+    <v-card-text>
+      <p v-for="classmate in classmates" :key="classmate.id">
+        {{ `${classmate.firstName} ${classmate.lastName}` }}: {{ classmate.lastName === "Strang" ? "professor" : "student" }}
+      </p>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>

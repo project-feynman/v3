@@ -34,7 +34,7 @@ export default {
       }
     }
   },
-  render() {
+  render () {
     return this.$scopedSlots.default({
       fetchStrokes: this.fetchStrokes,
       strokesArray: this.strokesArray,

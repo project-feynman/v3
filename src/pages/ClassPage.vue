@@ -1,18 +1,24 @@
 <template>
   <v-app>
+    <!-- TODO: rename `subpage` -->
     <template v-if="subpage">
-    <TheSideDrawer v-model="drawer" :mitClass="mitClass"/>
-      <RouterView :key="$route.fullPath"/>
+      <TheAppBar/>
+      <TheSideDrawer v-model="drawer" :mitClass="mitClass"/>
+      <v-content>
+        <RouterView :key="$route.fullPath"/>
+      </v-content>
     </template>
   </v-app>
 </template>
 
 <script>
 import TheSideDrawer from "@/components/TheSideDrawer.vue";
+import TheAppBar from "@/components/TheAppBar.vue";
 
 export default {
   components: { 
-    TheSideDrawer 
+    TheSideDrawer,
+    TheAppBar
   },
   data: () => ({
     drawer: true,

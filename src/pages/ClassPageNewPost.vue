@@ -1,26 +1,21 @@
 <template>
-  <div>
-    <TheAppBar/>
-    <v-content>
-      <BetaCreateExplanation 
-        :willCreateNewPost="true"
-        :postDbRef="newPostRef"
-        ref="CreateExplanation"
-      />
-    </v-content>
-  </div>
+  <CreateExplanation 
+    :willCreateNewPost="true"
+    :postDbRef="newPostRef"
+    ref="CreateExplanation"
+  />
 </template>
 
 <script>
 import TheAppBar from "@/components/TheAppBar.vue";
-import BetaCreateExplanation from "@/components/BetaCreateExplanation.vue";
+import CreateExplanation from "@/components/CreateExplanation.vue";
 import db from "@/database.js";
 import { getRandomId } from "@/helpers.js";
 
 export default {
   components: { 
     TheAppBar, 
-    BetaCreateExplanation,
+    CreateExplanation,
   },
   computed: {
     postsRef () {
