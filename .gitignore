@@ -37,4 +37,5 @@ yarn-error.log*
 # Sensitive data
 functions/sendgrid.json
 functions/adminCredentials.json
+src/twiliocreds.js
 
