@@ -6,36 +6,35 @@
         :currentTool="currentTool"
         :color="color"
         :isRealtime="isRealtime"
-        @tool-select="({ tool, color }) => { selectTool(tool, color) }"
+        @tool-select="({ tool, color }) => selectTool(tool, color)"
         @wipe-board="resetBoard()"
-        @record-state-change="newState => handleRecordStateChange(newState)"
-        @image-selected="imageFile => saveAndDisplayImage(imageFile)"
+        @record-state-change="(newState) => handleRecordStateChange(newState)"
+        @image-selected="(imageFile) => saveAndDisplayImage(imageFile)"
       >
-        <!-- <BasePopupButton v-if="isRealtime" actionName="Save video"
-          :disabled="!hasUploadedAudio"
-          :inputFields="['title', 'description']"
-          @action-do="payload => handleSaving(payload)"
-        >
-          <v-btn :loading="!hasUploadedAudio" :disabled="!hasUploadedAudio" class="white--text">
-            Upload video
-          </v-btn>
-        </BasePopupButton> -->
+        <template v-slot:initial-buttons>
+          <ButtonNew @click="touchDisabled = !touchDisabled" icon="mdi-fingerprint">
+            {{ touchDisabled ? "allow" : "disallow" }} touch 
+          </ButtonNew>
+          <!-- <LiveBoardAudio :roomId="blackboardId"/> -->
+        </template>
       </BlackboardToolBar>
     </component>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
       <canvas ref="FrontCanvas" class="front-canvas" 
-        @touchstart="e => touchStart(e)"
-        @touchmove="e => touchMove(e)"
-        @touchend="e => touchEnd(e)"
-        @mousedown="e => mouseDown(e)"
-        @mousemove="e => mouseMove(e)"
-        @mouseup="e => mouseUp(e)"
+        @touchstart="(e) => touchStart(e)"
+        @touchmove="(e) => touchMove(e)"
+        @touchend="(e) => touchEnd(e)"
+        @mousedown="(e) => mouseDown(e)"
+        @mousemove="(e) => mouseMove(e)"
+        @mouseup="(e) => mouseUp(e)"
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
-    <AudioRecorder v-show="false" ref="AudioRecorder"
-      @file-uploaded="audio => saveFileReference(audio)"
-      @audio-saved="handleAudioSaved()"
+    <!-- TODO: refactor -->
+    <AudioRecorder v-show="false" 
+      @file-uploaded="(audio) => saveFileReference(audio)"
+      @audio-recorded="emitVideoData()"
+      ref="AudioRecorder"
     />
   </div>
 </template>
@@ -46,8 +45,10 @@ import AudioRecorder from "@/components/AudioRecorder.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import ButtonNew from "@/components/ButtonNew.vue";
 import { BlackboardTools, RecordState, navbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
 
 export default {
@@ -56,12 +57,17 @@ export default {
     isRealtime: Boolean,
     visible: Boolean,
   },
-  mixins: [CanvasDrawMixin, DatabaseHelpersMixin],
+  mixins: [
+    CanvasDrawMixin, 
+    DatabaseHelpersMixin
+  ],
   components: { 
     AudioRecorder, 
     BasePopupButton,
     BlackboardToolBar, 
     TheAppBar, 
+    LiveBoardAudio,
+    ButtonNew
   },
   data () {
     return {
@@ -74,8 +80,8 @@ export default {
       color: "white",
       lineWidth: 2.5,
       currentTool: BlackboardTools.PEN,
-      disableTouch: false,
-      allStrokes: [],
+      touchDisabled: false,
+      strokesArray: [],
       currentStroke: { 
         points: [] 
       },
@@ -96,6 +102,7 @@ export default {
       currentState: "",
       audioUrl: "",
       hasUploadedAudio: false,
+      thumbnailBlob: null
     }
   },
   computed: {
@@ -117,6 +124,9 @@ export default {
     },
     isNormalEraser () {
       return this.currentTool === BlackboardTools.NORMAL_ERASER;
+    },
+    isPen () {
+      return this.currentTool === BlackboardTools.PEN;
     }
   },
   watch: {
@@ -125,20 +135,22 @@ export default {
       immediate: true
     },
     blackboard (newVal) {
-      // TODO: make it more readable
       let imageSrc;
       if (this.imageUrl !== newVal.imageUrl) { // ImageURL changed, so fetch the image
         this.imageUrl = newVal.imageUrl;
         imageSrc = this.imageUrl;
       } else {
-        try { imageSrc = URL.createObjectURL(this.imageBlob); } // means we already have the image blob locally
-        catch { imageSrc = this.imageUrl; }
+        try { 
+          imageSrc = URL.createObjectURL(this.imageBlob); // means we already have the image blob locally
+        } catch { 
+          imageSrc = this.imageUrl; 
+        }
       }
       this.displayImageAsBackground(imageSrc);
     },
     currentTool () {
       this.customCursor();
-      this.ctx.globalCompositeOperation = (this.isNormalEraser)
+      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) // isStrokeEraser now erases in the back like a normal eraser
         ? "destination-out"
         : "source-over";
       this.lineWidth = (this.isNormalEraser) ? 25 : 2.5;
@@ -163,7 +175,9 @@ export default {
     this.resizeBlackboard();
     window.addEventListener("resize", this.resizeBlackboard, false); 
     document.fonts.ready.then(() => this.customCursor()); // since cursor uses material icons font, load it after fonts are ready
-    if (this.isRealtime) { this.keepSyncingBoardWithDb(); }
+    if (this.isRealtime) { 
+      this.keepSyncingBoardWithDb(); 
+    }
   },
   beforeDestroy() { 
     if (this.unsubscribe) { this.unsubscribe(); } 
@@ -174,7 +188,9 @@ export default {
   methods: {
     selectTool (tool, color) {
       this.currentTool = tool;
-      if (color) { this.color = color; }
+      if (color) { 
+        this.color = color; 
+      }
     },
     async initData () {
       // no need to reset data, just reset variables and UI as it's only useful when switching between different blackboards
@@ -191,18 +207,21 @@ export default {
       this.initCopyAndPasteImage()
     },
     keepSyncingBoardWithDb () {
-      this.unsubscribe = this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
+      this.unsubscribe = this.strokesRef.orderBy("strokeNumber").onSnapshot((snapshot) => {
         if (snapshot.docs.length === 0) {
           this.wipeBoard();
           this.resetVariables(); // no need to wipe database again
         }
-        snapshot.docChanges().forEach(change => {
+        snapshot.docChanges().forEach((change) => {
           if (change.type === "added") {
             const newStroke = change.doc.data();
-            if (this.allStrokes.length < newStroke.strokeNumber) { // check if local strokes and db strokes are in sync
-              if (this.loading) { this.$_drawStroke(newStroke); } // initial render: catch up to current state - draw quickly
-              else { this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); } 
-              this.allStrokes.push(newStroke);
+            if (this.strokesArray.length < newStroke.strokeNumber) { // check if local strokes and db strokes are in sync
+              if (this.loading) { 
+                this.$_drawStroke(newStroke); // initial render: catch up to current state - draw quickly
+              } else {
+                this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); 
+              } 
+              this.strokesArray.push(newStroke);
             }
           }
         });
@@ -218,7 +237,7 @@ export default {
     async resetBoard () {
       if (this.isRealtime) {
         const strokeDeleteRequests = [];
-        this.allStrokes.forEach(stroke => {
+        this.strokesArray.forEach(stroke => {
           strokeDeleteRequests.push(this.strokesRef.doc(`${stroke.strokeNumber}`).delete());
         })
         const backgroundResetRequest = this.blackboardRef.update({ imageUrl: "" });
@@ -233,41 +252,18 @@ export default {
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
-      this.allStrokes = [];
+      this.strokesArray = [];
       this.prevPoint = { x: -1, y: -1 };
       this.currentTime = 0;
       this.imageBlob = null;
       this.imageUrl = "";
     },
-    initCopyAndPasteImage () {
-      //  document.onpaste = async (event) => {
-      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
-      //   // Find pasted image among pasted items
-      //   let blob = null;
-      //   for (let i = 0; i < items.length; i++) {
-      //     if (items[i].type.indexOf("image") === 0) {
-      //       blob = items[i].getAsFile();
-      //     }
-      //   }
-      //   // Load image if there is a pasted image
-      //   if (blob === null) { return; }
-      //   this.imageBlob = blob;
-      //   if (!this.isRealtime) {
-      //     const imageUrl = URL.createObjectURL(this.imageBlob);
-      //     this.displayImageAsBackground(imageUrl);
-      //   } else {
-      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
-      //     this.blackboardRef.update({ imageUrl });
-      //     this.imageUrl = imageUrl; // store locally
-      //   }     
-      // }
-    },
     async saveAndDisplayImage (blob) { // TODO: this was a quick-fix for image files
-      if (blob === null) { return; }
+      if (blob === null) return; 
       this.imageBlob = blob;
       if (!this.isRealtime) {
-        const imageUrl = URL.createObjectURL(this.imageBlob);
-        this.displayImageAsBackground(imageUrl);
+        this.imageUrl = URL.createObjectURL(this.imageBlob);
+        this.displayImageAsBackground(this.imageUrl);
       } else {
         const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
         this.blackboardRef.update({ imageUrl });
@@ -275,30 +271,37 @@ export default {
       }     
     },
     displayImageAsBackground (src) {
-      const image = new Image();
-      image.src = src;
-      this.bgCanvas.height = this.canvas.scrollHeight;
-      this.bgCanvas.width = this.canvas.scrollWidth;
-      image.onload = () => this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.src = src;
+        this.bgCanvas.height = this.canvas.scrollHeight;
+        this.bgCanvas.width = this.canvas.scrollWidth;
+        image.onload = () => {
+          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+          resolve();
+        }
+      });
     },
     startTimer () {
       this.currentTime = 0;
       this.timer = setInterval(() => this.currentTime += 0.1, 100);
     },
-    stopTimer () { clearInterval(this.timer); },
+    stopTimer () { 
+      clearInterval(this.timer); 
+    },
     convertAndSavePoint (x, y) {
       const unitX = parseFloat(x / this.canvas.width).toFixed(4);
       const unitY = parseFloat(y / this.canvas.height).toFixed(4);
       this.currentStroke.points.push({ unitX, unitY });
     },
     startNewStroke (e) {
-      this.currentStroke.strokeNumber = this.allStrokes.length + 1;
+      this.currentStroke.strokeNumber = this.strokesArray.length + 1;
       this.currentStroke.startTime = Number(this.currentTime.toFixed(1));
       this.currentStroke.color = this.color;
       this.currentStroke.lineWidth = this.lineWidth;
       this.currentStroke.isErasing = this.isNormalEraser;
 
-      this.$_rescaleCanvas(false);
+      this.$_rescaleCanvas();
       e.preventDefault(); // not put in the beginning because sometimes we allow scrolling 
       this.$_setStyle(this.color, this.lineWidth);
       if (this.currentState === RecordState.MID_RECORD) {
@@ -306,9 +309,9 @@ export default {
       }
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (e.touches[0].touchType === "stylus") { 
-        this.disableTouch = true; 
+        this.touchDisabled = true; 
       }
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
@@ -318,7 +321,7 @@ export default {
       }
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) { return; }
+      if (this.isNotValidTouch(e)) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else { 
@@ -339,7 +342,7 @@ export default {
       }
     },
     mouseMove (e) {
-      if (this.mousedown !== 1) { return; }
+      if (this.mousedown !== 1) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else {
@@ -355,12 +358,17 @@ export default {
       e.preventDefault()
       if (this.currentStroke.points.length === 0) { return; }  // user is touching the screen despite that touch is disabled
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
-      this.allStrokes.push(this.currentStroke);
+      this.strokesArray.push(this.currentStroke);
       if (this.isRealtime) {
-        this.strokesRef.doc(`${this.allStrokes.length}`).set(this.currentStroke); // 1st stroke = 1
+        this.strokesRef.doc(`${this.strokesArray.length}`).set(this.currentStroke); // 1st stroke = 1
       }
-      this.currentStroke = { points: [] };
-      this.prevPoint = { x: -1, y: -1 };
+      this.currentStroke = { 
+        points: [] 
+      };
+      this.prevPoint = { 
+        x: -1, 
+        y: -1 
+      };
     },
     drawToPointAndSave (e, isMouse) {
       e.preventDefault();
@@ -384,25 +392,33 @@ export default {
         eraserCenter.y = finger1.pageY - top - window.scrollY;
       }
       const radius = 10;
-      const idxOfStrokesToErase = []
-      for (let i = 0; i < this.allStrokes.length; i++) {
-        const stroke = this.allStrokes[i];
+      for (let i = 0; i < this.strokesArray.length; i++) {
+        const stroke = this.strokesArray[i];
+        if (stroke.wasErased || stroke.isErasing) {  // we don't need to erase strokes that are eraser strokes or were previously erased
+          continue;
+        }
         for (let point of stroke.points) {
           const deltaX = eraserCenter.x - point.unitX * this.canvas.width
           const deltaY = eraserCenter.y - point.unitY * this.canvas.height
           if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
-            idxOfStrokesToErase.push(i);
+            this.eraseSingleStroke(stroke);
             break; 
           }
         }
       }
-      for (let i of idxOfStrokesToErase) {
-        this.allStrokes.splice(i, 1); // remove 1 element at index i
-      }
-      if (idxOfStrokesToErase.length > 0) {
-        this.wipeBoard();
-        this.$_drawStrokesInstantly();
-      }
+    },
+    eraseSingleStroke (stroke){
+      stroke.wasErased = true;
+      var newStroke = {};
+      newStroke.strokeNumber = this.strokesArray.length + 1;
+      newStroke.startTime = Number(this.currentTime.toFixed(1));
+      newStroke.endTime = Number(this.currentTime.toFixed(1));
+      newStroke.color = this.color;
+      newStroke.lineWidth = this.lineWidth+2;
+      newStroke.isErasing = true;
+      newStroke.points = stroke.points;
+      this.strokesArray.push(newStroke);
+      this.$_drawStroke(newStroke);
     },
     getTouchPos (e) {
       const finger1 = e.touches[0];
@@ -411,23 +427,32 @@ export default {
       this.currPoint.y = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
-      if (e.touches.length !== 1) { return true; }  // multiple fingers not allowed
-      return this.isFinger(e) && this.disableTouch;
+      if (e.touches.length !== 1) { return true; } // multiple fingers not allowed
+      return this.isFinger(e) && this.touchDisabled;
     },
-    isFinger (e) { return e.touches[0].touchType !== "stylus" },
+    isFinger (e) { 
+      return e.touches[0].touchType !== "stylus" 
+    },
     handleRecordStateChange (newState) {
       const { PRE_RECORD, MID_RECORD, POST_RECORD } = RecordState;
-      if (newState === MID_RECORD) { this.startRecording(); }
-      else if (newState === POST_RECORD) { this.stopRecording(); }
-      else if (newState === PRE_RECORD) {this.tryRecordAgain(); }
-      else { throw `Error: blackboard state was set to an illegal value = ${newState}` }
+      if (newState === MID_RECORD) { 
+        this.startRecording(); 
+      } else if (newState === POST_RECORD) { 
+        this.stopRecording(); 
+      } else if (newState === PRE_RECORD) { 
+        this.tryRecordAgain(); 
+      } else { 
+        throw `Error: blackboard state was set to an illegal value = ${newState}`;
+      }
     },
-    startRecording () {
-      this.startTimer();
+    async startRecording () {
+      await this.$refs.AudioRecorder.startRecording();
+      this.startTimer();      
       this.currentState = RecordState.MID_RECORD;
-      this.$refs.AudioRecorder.startRecording();
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: RecordState.MID_RECORD });
+        this.blackboardRef.update({ 
+          recordState: RecordState.MID_RECORD 
+        });
       }
       this.$emit("record-start"); // let's Piazza know so it can disable the "submit post" button
     },
@@ -436,14 +461,18 @@ export default {
       this.$refs.AudioRecorder.stopRecording();
       this.currentState = RecordState.POST_RECORD;
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: RecordState.POST_RECORD });
+        this.blackboardRef.update({ 
+          recordState: RecordState.POST_RECORD 
+        });
       }
     },
-    handleAudioSaved () { 
+    async emitVideoData () { 
+      // TODO: refactor
+      this.thumbnailBlob = await this.createThumbnail();
       const videoData = { 
         audio: this.$refs.AudioRecorder.audio, 
-        strokes: this.allStrokes,
-        image: this.imageBlob
+        strokes: this.strokesArray,
+        imageUrl: this.imageUrl
       };
       this.$emit("record-end", videoData)
     },
@@ -451,16 +480,19 @@ export default {
       this.currentTime = 0;
       this.hasUploadedAudio = false;
       // modify timestamps so last round's strokes will persist as the initial setup of this round's recording
-      for (const stroke of this.allStrokes) {
+      for (const stroke of this.strokesArray) {
         [stroke.startTime, stroke.endTime] = [0, 0];
       }
       const { PRE_RECORD } = RecordState;
       this.currentState = PRE_RECORD;
       if (this.isRealtime) {
-        this.blackboardRef.update({ recordState: PRE_RECORD, audioUrl: "" });
+        this.blackboardRef.update({ 
+          recordState: PRE_RECORD, 
+          audioUrl: "" 
+        });
       }
-      const willRedraw = true;
-      this.$_rescaleCanvas(willRedraw);
+      this.$_rescaleCanvas();
+      this.$_drawStrokesInstantly(); 
     },
     saveFileReference ({ url }) {
       this.hasUploadedAudio = true;
@@ -469,19 +501,22 @@ export default {
         this.blackboardRef.update({ audioUrl: url })
       }
       this.$emit("audio-upload-end", { 
-        blackboardStrokes: this.allStrokes, 
+        blackboardStrokes: this.strokesArray, 
         audioUrl: url
       });
     },
     createThumbnail () {
       return new Promise(async (resolve) => {
-        // ensure backCanvas's internal size is the same as its display size 
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
+        if (this.imageUrl) { // has a background image
+          await this.displayImageAsBackground(this.imageUrl);
+        } else {
+          this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
+          this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        }
         this.$_drawStrokesInstantly2();
-        this.bgCanvas.toBlob((thumbnail) => {
-            resolve(thumbnail);
-        });
+        this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
       })
     },
     resizeBlackboard () {
@@ -490,7 +525,8 @@ export default {
       const availableHeight = window.innerHeight - navbarHeight;
       const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, availableHeight - epsilon);
       this.canvas.style.height = this.isRealtime ? `${availableHeight}px` : `${offlineHeight}px`;
-      this.$_rescaleCanvas(true); // will redraw
+      this.$_rescaleCanvas();
+      this.$_drawStrokesInstantly(); 
     },
     drawToPoint ({ x, y }) {
       if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
@@ -509,17 +545,41 @@ export default {
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
       const ctx = dummyCanvas.getContext("2d");
-      ctx.fillStyle = this.isNormalEraser ? "#fff" : this.color;
+      ctx.fillStyle = this.isPen ? this.color: "#fff";
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(this.isNormalEraser ? "\uF1FE" : "\uF64F", 12, 12);
+      ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },
     handleSaving () {
       // to be implemented
-    }
+    },
+    // TODO: let it be an additive component for the real-time blackboard
+    initCopyAndPasteImage () {
+      //  document.onpaste = async (event) => {
+      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
+      //   // Find pasted image among pasted items
+      //   let blob = null;
+      //   for (let i = 0; i < items.length; i++) {
+      //     if (items[i].type.indexOf("image") === 0) {
+      //       blob = items[i].getAsFile();
+      //     }
+      //   }
+      //   // Load image if there is a pasted image
+      //   if (blob === null) { return; }
+      //   this.imageBlob = blob;
+      //   if (!this.isRealtime) {
+      //     const imageUrl = URL.createObjectURL(this.imageBlob);
+      //     this.displayImageAsBackground(imageUrl);
+      //   } else {
+      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
+      //     this.blackboardRef.update({ imageUrl });
+      //     this.imageUrl = imageUrl; // store locally
+      //   }     
+      // }
+    },
   }
 };
 </script>

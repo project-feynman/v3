@@ -1,25 +1,21 @@
 export default {
   methods: {
-    $_rescaleCanvas (redraw) {
+    $_rescaleCanvas () {
       // Re-adjust internal coordinate system
-      if (Math.round(this.canvas.width) !== Math.round(this.canvas.scrollWidth) 
-      || Math.round(this.canvas.height) !== Math.round(this.canvas.scrollHeight)) {
+      if (Math.round(this.canvas.width) !== Math.round(this.canvas.scrollWidth) || 
+        Math.round(this.canvas.height) !== Math.round(this.canvas.scrollHeight)) {
         this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
         this.canvas.height = this.canvas.scrollHeight;
-      }
-      if (redraw) { 
-        this.$_setStyle(this.color, this.lineWidth);
-        this.$_drawStrokesInstantly(); 
       }
     },
     async $_quickplay () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      for (const stroke of this.allStrokes) {
+      for (const stroke of this.strokesArray) {
         await this.$_drawStroke(stroke, 0); // draw 1 stroke per event loop
       }
     },
     $_drawStrokesInstantly () {
-      this.allStrokes.forEach(stroke => this.$_drawStroke(stroke));
+      this.strokesArray.forEach((stroke) => this.$_drawStroke(stroke));
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
       return new Promise(async resolve => {
@@ -56,10 +52,10 @@ export default {
       this.ctx.lineCap = "round"; // lines at different angles can join into each other
     },
     $_drawStrokesInstantly2 () {
-      this.allStrokes.forEach(stroke => this.$_drawStroke2(stroke));
+      this.strokesArray.forEach((stroke) => !(stroke.isErasing || stroke.wasErased) ? this.$_drawStroke2(stroke) : {});
     },
-    $_drawStroke2 ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
-      return new Promise(async resolve => {
+    $_drawStroke2 ({ points, color, lineWidth, isErasing}, pointPeriod = null) {
+      return new Promise(async (resolve) => {
         let newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
         this.$_setStyle2(color, newLineWidth);
         for (let i = 1; i < points.length; i++) {

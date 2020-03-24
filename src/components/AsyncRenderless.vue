@@ -10,9 +10,15 @@
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 export default {
-  props: { dbRef: Object },
+  props: { 
+    dbRef: Object 
+  },
   mixins: [DatabaseHelpersMixin],
-  data: () => ({ fetchedData: [] }),
-  async created () { this.fetchedData = await this.$_getDoc(this.dbRef); }
+  data: () => ({ 
+    fetchedData: [] 
+  }),
+  async created () { 
+    this.fetchedData = await this.$_getDoc(this.dbRef); 
+  }
 }
 </script>

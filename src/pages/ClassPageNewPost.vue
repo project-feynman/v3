@@ -5,6 +5,7 @@
       <CreateExplanation 
         :willCreateNewPost="true"
         :postDbRef="newPostRef"
+        ref="CreateExplanation"
       />
     </v-content>
   </div>
@@ -27,6 +28,17 @@ export default {
     },
     newPostRef () { 
       return this.postsRef.doc(getRandomId()); 
+    }
+  },
+  beforeRouteLeave (to, from, next) {
+    const Blackboard = this.$refs.CreateExplanation.getBlackboard();
+    const TextEditor = this.$refs.CreateExplanation.getTextEditor();
+    if (Blackboard.strokesArray.length > 0 || TextEditor.extractAllText().length > 0) {
+      const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
+      if (wantToLeave) next();
+      else next(false);
+    } else {
+      next();
     }
   }
 }

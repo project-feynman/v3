@@ -80,6 +80,22 @@ export default {
           reject("Error =", error);
         }
       });
+    },
+    $_getBlobFromStorage (downloadUrl) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = "blob";
+        xhr.onload = () => {
+          try {
+            const blob = xhr.response;
+            resolve(blob);
+          } catch (error) {
+            reject(`Error downloading blob from Firebase storage: ${error}`);
+          }
+        }
+        xhr.open('GET', downloadUrl);
+        xhr.send();
+      });
     }
   }
 };

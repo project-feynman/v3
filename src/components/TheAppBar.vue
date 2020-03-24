@@ -1,48 +1,43 @@
 <template>
-  <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner" style="zIndex:9;">
-    <v-app-bar-nav-icon
-      v-if="!icon && $route.path !== '/'"
+  <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner" style="zIndex:9;" :height="navbarHeight">
+    <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'"
       @click.stop="$root.$emit('toggle-drawer')"
     />
     <img
-      :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
       src="/favicon.ico"
       @click="$router.push('/')"
+      :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
     />
-    <v-toolbar-title
-      v-if="$route.path === '/' || mitClass"
-      :class="['home-logo', 'headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
-      @click="$router.push('/')"
+    <v-toolbar-title v-if="$route.path === '/' || mitClass"
+      :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
     >
-      {{ $route.path === "/" ? "ExplainMIT" : `ExplainMIT/${mitClass.name}` }}
+      {{ $route.path === "/" ? "" : mitClass.name }}
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
-    <v-spacer />
-      <BasePopupButton actionName="Report bug" 
-        :inputFields="['bug summary', 'bug description']"
+    <v-spacer/>
+      <BasePopupButton actionName="Give feedback" 
+        :inputFields="['summary', 'description']"
         @action-do="bugReport => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
-          <v-btn v-on="on" tile icon color="accent">
-            <v-icon>mdi-bug</v-icon>
-          </v-btn>
+          <ButtonNew v-on="on" icon="mdi-bug">Give feedback</ButtonNew>
         </template>
         <template v-slot:message-to-user>
-          We know it's annoying to report bugs, so we very much 
-          appreciate it and will fix it immediately!
-          Meanwhile, sometimes refreshing does the trick :)
+          Report a bug, suggest a feature, etc.
+          We will be excited to read what you write and update you by email. 
         </template>
       </BasePopupButton>
     <slot>
       
     </slot>
-    
   </v-app-bar>
 </template>
 
 <script>
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
+import {navbarHeight} from "@/CONSTANTS.js"
 
 export default {
   props: {
@@ -50,18 +45,30 @@ export default {
     icon: String,
     page: String,
   },
-  components: { BasePopupButton },
+  data () {
+    return {
+      navbarHeight
+    }
+  },
+  components: { 
+    BasePopupButton,
+    ButtonNew
+  },
   computed: {
-    mitClass () { return this.$store.state.mitClass; }
+    mitClass () { 
+      return this.$store.state.mitClass; 
+    }
   },
   methods: {
-    submitBug ({ "bug summary": title, "bug description": description}) {
-      if (!title || !description) {
-        this.$root.$emit("show-snackbar", "Error: don't forget to include both the a summary and a description!")
+    submitBug ({ "summary": title, description }) {
+      if (!title) {
+        this.$root.$emit("show-snackbar", "Error: don't forget to write the summary!")
         return 
       }
-      const ref = db.collection("bugs");
-      ref.add({ title, description}); 
+      db.collection("bugs").add({ 
+        title, 
+        description
+      }); 
     }
   }
 };

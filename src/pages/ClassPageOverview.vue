@@ -3,7 +3,7 @@
     <TheAppBar/>
     <v-content>
       <v-card>
-        <DisplayExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
+        <SeeExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
         <v-card-title>Classmates</v-card-title>
         <v-card-text>
           <p v-for="classmate in classmates" :key="classmate.id">
@@ -17,14 +17,17 @@
 
 <script>
 import TheAppBar from "@/components/TheAppBar.vue";
-import DisplayExplanation from "@/components/DisplayExplanation.vue";
+import SeeExplanation from "@/components/SeeExplanation.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial, NotifFrequency } from "@/CONSTANTS.js";
 import db from "@/database.js";
 
 export default {
   mixins: [DatabaseHelpersMixin],
-  components: { TheAppBar, DisplayExplanation },
+  components: { 
+    TheAppBar, 
+    SeeExplanation 
+  },
   data: () => ({
     tutorialExpl: null,
     classmates: [],

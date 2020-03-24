@@ -30,10 +30,10 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn @click="resetState()" color="accent" text>
+        <v-btn @click="resetState()" color="secondary" text>
           Cancel
         </v-btn>
-        <v-btn @click="doAction()" color="accent" text>
+        <v-btn @click="doAction()" color="secondary" text>
           {{ actionName }}
         </v-btn>
       </v-card-actions>
@@ -47,21 +47,20 @@ export default {
     actionName: String,
     inputFields: {
       type: Array,
-      default () { return []; }
+      default: () => []
     },
+    // TODO: everything below should be naturally passed to the v-button
     color: {
       type: String,
-      default () {
-        return "accent"
-      }
+      default: () => "accent"
     },
     outlined: {
       type: Boolean,
-      default () { return false; }
+      default: () => false
     },
     disabled: {
       type: Boolean,
-      default () { return false; }
+      default: () => false
     }
   },
   data: () => ({

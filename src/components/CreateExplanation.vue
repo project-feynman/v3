@@ -1,37 +1,56 @@
 <template>
   <v-card>
     <v-container fluid>
+      <!-- Text editor -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
-      <v-btn v-if="newExplanationDbRef || postDbRef" 
-        @click="submitPost()" 
-        :loading="isButtonDisabled" 
-        :disabled="isButtonDisabled"
-        block color="accent" class="ma-0 white--text" 
-      >
-        SUBMIT 
-        <v-icon class="pl-2">mdi-send</v-icon>
-        <template v-slot:loader>
-          <span v-if="isRecordingVideo">Currently recording...</span> 
-          <span v-else-if="isUploadingPost">Processing video...</span>
-        </template>
-      </v-btn>
-      <Blackboard v-show="blackboardAttached && !isPreviewing" ref="Blackboard"
+      <div v-if="newExplanationDbRef || postDbRef" class="d-flex align-center">
+        <v-btn  
+          @click="submitPost()" 
+          :loading="isButtonDisabled" 
+          :disabled="isButtonDisabled"
+          color="secondary" 
+          class="ma-0 white--text" 
+        >
+          SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}`}}
+          <v-icon class="pl-2">mdi-send</v-icon>
+          <template v-slot:loader>
+            <span v-if="isRecordingVideo">Currently recording...</span> 
+            <span v-else-if="isUploadingPost">Uploading post...</span>
+          </template>
+        </v-btn>
+        <v-spacer></v-spacer>
+        <v-switch v-model="isAnonymous" class="mt-5"/>
+        <p class="pt-4">toggle anonymous</p>
+      </div>
+
+      <!-- Blackboard -->
+      <Blackboard v-show="blackboardAttached && !isPreviewing" 
         :isRealtime="false" 
         :visible="visible" 
         :key="changeKeyToForceReset"
         @record-start="isRecordingVideo = true"
-        @record-end="videoData => handleRecordEnd(videoData)"
+        @record-end="(videoData) => handleRecordEnd(videoData)"
         @retry-recording="handleRetry()"
+        ref="Blackboard"
       />
+
+      <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
-        <v-btn @click="initRetry()" block class="white--text" outlined color="accent">
-          Retry
-        </v-btn>
-        <DoodleVideo 
-          :injectedStrokes="blackboardStrokes" 
-          :audio="audio" 
-          :audioUrl="audioUrl" 
-          :image="image"
+        <BasePopupButton actionName="Retry new recording" @action-do="initRetry()">
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-if="!isUploadingPost" v-on="on" class="white--text" outlined color="accent">
+              Retry recording
+            </v-btn>
+          </template>
+          <template v-slot:message-to-user>
+            Your audio recording will be deleted, but you can re-use
+            your drawings as the initial setup for the new video.
+          </template>
+        </BasePopupButton>
+        <DoodleVideo
+          :strokesArray="blackboardStrokes"
+          :audioUrl="audio.blobURL"
+          :backgroundUrl="imageUrl"
         />
       </template>
     </v-container>
@@ -43,6 +62,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import Blackboard from "@/components/Blackboard.vue";
 import TextEditor from "@/components/TextEditor.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
@@ -53,11 +73,11 @@ export default {
   props: {
     willCreateNewPost: {
       type: Boolean,
-      default () { return false; }
+      default: () => false
     },
     titleRequired: {
       type: Boolean,
-      default () { return true; }
+      default: () => false
     },
     postDbRef: Object,
     newExplanationDbRef: Object,
@@ -67,10 +87,12 @@ export default {
   mixins: [DatabaseHelpersMixin],
   components: { 
     Blackboard, 
-    DoodleVideo, 
-    TextEditor 
+    DoodleVideo,
+    TextEditor,
+    BasePopupButton
   },
   data: () => ({
+    isAnonymous: false,
     isUploadingPost: false,
     isRecordingVideo: false,
     isPreviewing: false,
@@ -79,9 +101,7 @@ export default {
     blackboardStrokes: [],
     audio: null,
     audioUrl: "",
-    image: { 
-      file: null 
-    }, 
+    imageUrl: "",
     changeKeyToForceReset: 0
   }),
   computed: {
@@ -100,6 +120,12 @@ export default {
     }
   },
   methods: {
+    getBlackboard () {
+      return this.$refs.Blackboard;
+    },
+    getTextEditor () {
+      return this.$refs.TextEditor;
+    },
     initRetry () {
       this.isPreviewing = false;
       this.$nextTick(() => {
@@ -107,12 +133,12 @@ export default {
         Blackboard.handleRecordStateChange(RecordState.PRE_RECORD);
       })
     },
-    handleRecordEnd ({ audio, strokes, image }) {
+    handleRecordEnd ({ audio, strokes, imageUrl }) {
       this.isRecordingVideo = false;
       this.isPreviewing = true;
       this.audio = audio;
       this.blackboardStrokes = strokes;
-      this.image = { file: image };
+      this.imageUrl = imageUrl;
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
@@ -123,24 +149,58 @@ export default {
       }
       this.isPreviewing = false; // important: for canvas to generate a thumbnail requires it to be visible
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
+
+      const anonymousUser = {
+        uid: this.user.uid,
+        email: "anonymous@mit.edu",
+        firstName: "anonymous",
+        lastName: "anonymous"
+      };
       const metadata = {
         title: TextEditor.extractAllText(),
         html: TextEditor.html,
         date: this.getDate(),
-        creator: this.simplifiedUser,
+        creator: this.isAnonymous ? anonymousUser : this.simplifiedUser,
         mitClass: this.mitClass
       };
       const explanation = { ...metadata };
-      // TODO: optimize by resolving promises all at once
-      const { allStrokes, imageBlob, currentState, currentTime } = Blackboard;
-      if (allStrokes.length > 0 || imageBlob) {
-        await this.$nextTick();
-        const thumbnail = await Blackboard.createThumbnail();
-        const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnail);
-        explanation.thumbnail = thumbnailUrl;
-        if (allStrokes.length > 0) {
+      const { strokesArray, currentState, imageBlob, currentTime } = Blackboard;
+
+      if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
+        // accumulate promises for strokes, audio, images to process them in parallel
+        const promises = [];
+        if (currentState === RecordState.POST_RECORD) {
+          const audioPromise = Blackboard.uploadAudio().then(() => {
+            explanation.audioUrl = Blackboard.audioUrl;
+            explanation.duration = Blackboard.currentTime;
+          });
+          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, Blackboard.thumbnailBlob)
+          .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl);
+          promises.push(audioPromise);
+          promises.push(thumbnailPromise);
+        } else {
+          const thumbnailPromise = Blackboard.createThumbnail().then(async (thumbnailBlob) => {
+            const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
+            explanation.thumbnail = thumbnailUrl;
+          });
+          promises.push(thumbnailPromise);
+        }
+        // background image
+        if (imageBlob) {
+          const backgroundImagePromise = this.$_saveToStorage(
+            `images/${getRandomId()}`, 
+            imageBlob
+          )
+          .then((imageUrl) => explanation.imageUrl = imageUrl);
+          promises.push(backgroundImagePromise);
+        }
+        // RESOLVE PROMISES
+        await Promise.all(promises);
+
+        // save strokes
+        if (strokesArray.length > 0) {
           explanation.hasStrokes = true;
-          for (let stroke of allStrokes) {
+          for (let stroke of strokesArray) {
             if (this.willCreateNewPost) {
               this.postDbRef.collection("strokes").add(stroke);
             } else {
@@ -148,17 +208,9 @@ export default {
             }
           }
         }
-        if (imageBlob) {
-          explanation.imageUrl = await this.$_saveToStorage(`images/${getRandomId()}`, imageBlob);
-        }
-        if (currentState === RecordState.POST_RECORD) {
-          await Blackboard.uploadAudio();
-          explanation.audioUrl = Blackboard.audioUrl;
-          explanation.duration = Blackboard.currentTime;
-        }
       }
       if (this.willCreateNewPost) {
-        explanation.participants = [this.simplifiedUser]
+        explanation.participants = [this.simplifiedUser];
         explanation.hasReplies = false;
         this.postDbRef.set(explanation);
       } else {

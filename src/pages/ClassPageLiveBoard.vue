@@ -3,7 +3,8 @@
     <v-content v-if="user">
       <LiveBoardAudio :roomId="roomId" />
       <Blackboard v-if="room.blackboardId" ref="whiteboard" 
-        :blackboardId="room.blackboardId" :isRealtime="true"
+        :blackboardId="room.blackboardId" 
+        :isRealtime="true"
       />
     </v-content>
   </div>
@@ -18,8 +19,10 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 
 export default {
-  components: { Blackboard,
-                LiveBoardAudio },
+  components: { 
+    Blackboard,
+    LiveBoardAudio 
+  },
   mixins: [DatabaseHelpersMixin],
   data () {
     return {
@@ -30,7 +33,9 @@ export default {
     }
   },
   computed: {
-    user () { return this.$store.state.user; },
+    user () { 
+      return this.$store.state.user; 
+    },
     simpleUser () {
       if (!this.user) { return; } 
       return {

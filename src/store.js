@@ -9,7 +9,7 @@ Vue.use(Vuex);
 
 function setDisconnectHook (user) {
 	const firebaseRef = firebase.database().ref('/status/' + user.uid);
-	firebase.database().ref('.info/connected').on('value', async snapshot => {
+	firebase.database().ref('.info/connected').on('value', async (snapshot) => {
     if (snapshot.val() === false) { return; } // copied from Firebase, no idea why it's needed  
     await firebaseRef.onDisconnect().set({ isOnline: false }); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
     firebaseRef.set({ isOnline: true });
@@ -20,7 +20,7 @@ function setDisconnectHook (user) {
 }
 
 function syncUserWithDb (userRef, context) {
-  userRef.onSnapshot(user => {
+  userRef.onSnapshot((user) => {
     if (!user.exists) { return; }
     context.commit('SET_USER', user.data());
     // TODO: delete previous onDisconnect() hook 

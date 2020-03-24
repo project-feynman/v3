@@ -49,7 +49,7 @@ export default class RecorderService {
 
     // This is the case on ios/chrome, when clicking links from within ios/slack (sometimes), etc.
     if (!navigator || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert('Missing support for navigator.mediaDevices.getUserMedia') // temp: helps when testing for strange issues on ios/safari
+      alert('Missing support for web audio recording: try Safari instead') // temp: helps when testing for strange issues on ios/safari
       return
     }
 
