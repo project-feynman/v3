@@ -90,3 +90,16 @@ exports.recursiveDelete = functions.runWith({ timeoutSeconds: 540, memory: "2GB"
     .then(() => ({ path }));
 });
 
+exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
+  const ourEmails = [
+    "eltonlin@mit.edu",
+    "wfee@mit.edu",
+    "pkafle@mit.edu"
+  ];
+  const subject = `NEW FEEDBACK FROM USER ${data.userEmail}! REPLY QUICKLY!`;
+  for (let email of ourEmails) {
+    sendEmail(email, subject, "New feedback", `<h1>${data.userEmail} said ${data.userFeedback}</h1>`);
+    console.log("called sendEmail");
+  }
+});
+

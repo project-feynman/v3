@@ -17,7 +17,7 @@
     <v-spacer/>
       <BasePopupButton 
         actionName="Give feedback" 
-        :inputFields="['summary', 'description']"
+        :inputFields="['summary']"
         @action-do="(bugReport) => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
@@ -38,7 +38,9 @@
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
-import { navbarHeight } from "@/CONSTANTS.js"
+import { navbarHeight } from "@/CONSTANTS.js";
+import firebase from "firebase/app";
+import "firebase/functions";
 
 export default {
   props: {
@@ -46,29 +48,37 @@ export default {
     icon: String,
     page: String
   },
+  components: { 
+    BasePopupButton,
+    ButtonNew
+  },
   data () {
     return {
       navbarHeight
     }
   },
-  components: { 
-    BasePopupButton,
-    ButtonNew
-  },
   computed: {
     mitClass () { 
       return this.$store.state.mitClass; 
+    },
+    user () {
+      return this.$store.state.user;
     }
   },
   methods: {
-    submitBug ({ "summary": title, description }) {
+    submitBug ({ "summary": title }) {
       if (!title) {
-        this.$root.$emit("show-snackbar", "Error: don't forget to write the summary!")
+        this.$root.$emit("show-snackbar", "Error: don't forget to write something")
         return;
       }
+      const sendEmailToTeam = firebase.functions().httpsCallable("sendEmailToCoreTeam");
+      sendEmailToTeam({ 
+        userEmail: this.user ? this.user.email : "anonymous@mit.edu",
+        userFeedback: title  
+      });
       db.collection("bugs").add({ 
-        title, 
-        description
+        title,
+        email: this.user ? this.user.email : "anonymous@mit.edu"
       }); 
     }
   }
