@@ -156,7 +156,6 @@ export default {
       }
     },
     fullScreen () {
-      console.log('clicked', this.isFullScreen);
       this.$emit('toggle-fullScreen');
     },
     // TODO: open a popup, THEN allow the copy and pasting of images

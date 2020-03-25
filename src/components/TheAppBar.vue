@@ -6,7 +6,7 @@
     <img
       src="/favicon.ico"
       @click="$router.push('/')"
-      :class="['home-logo',page === 'realtime'?'d-none d-sm-block':'']"
+      :class="['home-logo', page === 'realtime' ? 'd-none d-sm-block' : '']"
     />
     <v-toolbar-title v-if="$route.path === '/' || mitClass"
       :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
@@ -44,7 +44,7 @@ export default {
   props: {
     loading: Boolean,
     icon: String,
-    page: String,
+    page: String
   },
   data () {
     return {
