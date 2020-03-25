@@ -19,7 +19,7 @@ export default {
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
       return new Promise(async resolve => {
-        let newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
+        const newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
         this.$_setStyle(color, newLineWidth);
         for (let i = 1; i < points.length; i++) {
           this.$_connectTwoPoints(points, i, isErasing);

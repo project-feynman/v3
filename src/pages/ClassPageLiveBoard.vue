@@ -2,21 +2,22 @@
   <div id="room">
     <template v-if="user">
       <LiveBoardAudio :roomId="roomId" />
-      <Blackboard v-if="room.blackboardId" ref="whiteboard" 
-        :blackboardId="room.blackboardId" 
-        :isRealtime="true"
+      <Blackboard 
+        @stroke-drawn="(stroke) => uploadToDb(stroke)"
+        @board-reset="deleteAllStrokesFromDb()"
+        ref="Blackboard"
       >
         <template v-slot:blackboard-toolbar>
           <ButtonNew icon="mdi-upload" disabled>
             Save Board
           </ButtonNew>
         </template>
-        <template v-slot:database-listener="{ drawStrokeOnCanvas, wipeBoard }">
+        <template v-slot:database-listener="{ drawStrokeOnCanvas, resetBoard }">
           <RenderlessListenToBlackboard
             :blackboardId="roomId"
             @initial-strokes-fetched="(initialStrokes) => renderOnCanvas(initialStrokes, drawStrokeOnCanvas)"
             @new-stroke-from-db="(stroke) => renderIfNotByMe(stroke, drawStrokeOnCanvas)"
-            @db-wiped="wipeBoard()"
+            @db-wiped="resetBoard()"
             ref="RenderlessListener"
           >
           </RenderlessListenToBlackboard>
@@ -91,27 +92,28 @@ export default {
       }
     },
     async uploadToDb (stroke) {
+      const timestamp = firebase.firestore.FieldValue.serverTimestamp();
       const strokesRef = this.roomRef.collection("strokes");
-      const id = `${stroke.strokeNumber}`;
       try {
-        strokesRef.doc(id).set(stroke);
+        strokesRef.add({
+          timestamp,
+          ...stroke
+        });
       } catch (error) {
-        this.$root.$emit("snow-snackbar", `Failed to upload stroke to database.`)
+        this.$root.$emit("snow-snackbar", "Failed to upload stroke to database.");
       }
     },
     renderIfNotByMe (newStroke, drawStrokeOnCanvas) {
+      // TODO: don't duplicate the drawings
       const localStrokes = this.$refs.Blackboard.getStrokesArray();
-      if (newStroke.strokeNumber > localStrokes.length) {
-        drawStrokeOnCanvas(newStroke, false); // dont' draw
-      }
+      drawStrokeOnCanvas(newStroke, false); // not an instant stroke
     },
     async deleteAllStrokesFromDb () {
-      const strokesArray = this.$refs.Blackboard.getStrokesArray();
+      const strokesArray = this.$refs.RenderlessListener.getStrokesArray();
       const strokeDeleteRequests = [];
 
       for (let stroke of strokesArray) {
-        const id = `${stroke.strokeNumber}`;
-        const ref = this.roomRef.collection("strokes").doc(id);
+        const ref = this.roomRef.collection("strokes").doc(stroke.id);
         strokeDeleteRequests.push(ref.delete());
       }
       const backgroundResetRequest = this.roomRef.update({ imageUrl: "" });

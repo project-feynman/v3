@@ -83,7 +83,7 @@ import ButtonNew from "@/components/ButtonNew.vue";
 export default {
   props: {
     currentTool: String,
-    isFullScreen: Boolean,
+    isFullScreen: Boolean
   },
   components: { 
     Swatches, 
@@ -96,7 +96,7 @@ export default {
       toolbarHeight,
       color: "white",
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
-      colorPaletteExpanded: false,
+      colorPaletteExpanded: false
     }
   },
   computed: {
@@ -131,13 +131,15 @@ export default {
       this.colorPaletteExpanded = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.NORMAL_ERASER,
+        color: this.color,
         lineWidth: 25
       });
     },
     selectStrokeEraser () {
       this.$emit('tool-select', { 
         type: BlackboardTools.STROKE_ERASER,
-        lineWidth: 4.5
+        color: this.color,
+        lineWidth: 5
       });
     },
     palleteClick () {

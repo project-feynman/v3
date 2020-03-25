@@ -1,7 +1,5 @@
 <template>
-  <div>
-
-  </div>
+  <div></div>
 </template>
 
 <script>
@@ -51,7 +49,7 @@ export default {
           const newStroke = {
             id: change.doc.id,
             ...change.doc.data()
-          }
+          };
           this.strokesArray.push(newStroke);
           if (!this.isInitialFetch) {
             this.$emit("new-stroke-from-db", newStroke);

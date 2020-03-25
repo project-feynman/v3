@@ -3,6 +3,7 @@
     <slot name="database-listener"
       :drawStrokeOnCanvas="drawStrokeOnCanvas"
       :wipeBoard="wipeBoard"
+      :resetBoard="resetBoard"
     >
 
     </slot>
@@ -18,6 +19,7 @@
         displayImageFile, 
         resetBoard,
         toggleFullScreen,
+        touchDisabled
       }"
       >
         <BlackboardToolBar
@@ -29,6 +31,9 @@
           <slot name="blackboard-toolbar"> 
 
           </slot> 
+          <ButtonNew @click="toggleTouchDrawing()" icon="mdi-fingerprint">
+            {{ touchDisabled ? "allow" : "disallow" }} touch 
+          </ButtonNew>
           <ButtonNew v-if="currentState === RecordState.PRE_RECORD"
             @click="startRecording()" 
             icon="mdi-adjust"
@@ -138,8 +143,9 @@ export default {
       this.currentState = RecordState.PRE_RECORD;
     },
     drawStrokeOnCanvas (stroke, drawInstantly = true) {
+      // TODO: add timestamp so recording does work 
       const { BlackboardDrawingCanvas } = this.$refs;
-      BlackboardDrawingCanvas.strokesArray.push(stroke);
+      BlackboardDrawingCanvas.appendToStrokesArray(stroke);
       if (drawInstantly) {
         BlackboardDrawingCanvas.$_drawStroke(stroke); 
       } else {
@@ -153,10 +159,9 @@ export default {
     wipeBoard () {
       this.$refs.BlackboardDrawingCanvas.wipeBoard();
     },
-    // toggleFullScreen () {
-    //   console.log("Full Screen", this.isFullScreen);
-    //   this.isFullScreen = !this.isFullScreen;
-    // }
+    toggleTouchDrawing () {
+      this.$refs.BlackboardDrawingCanvas.touchDisabled = !this.$refs.BlackboardDrawingCanvas.touchDisabled;
+    }
   }
 };
 </script>
