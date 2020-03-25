@@ -14,7 +14,12 @@
           <v-divider/>
 
           <v-list-item>
-            <v-btn block @click="createBlackboard()" color="secondary">
+            <v-btn 
+              :disabled="blackboards.length > 5" 
+              @click="createBlackboard()"
+              block  
+              color="secondary"
+            >
               Create blackboard
               <v-icon>mdi-plus</v-icon>
             </v-btn>
