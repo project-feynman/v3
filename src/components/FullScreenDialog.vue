@@ -1,5 +1,5 @@
 <template>
-	<v-dialog v-model="show" fullscreen hide-overlay transition="dialog-bottom-transition">
+	<v-dialog :value="true" fullscreen hide-overlay :persistent="true" transition="slide-y-transition">
 		<v-card>
 			<slot>
 			</slot>

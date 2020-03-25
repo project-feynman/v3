@@ -359,6 +359,14 @@ export default {
   position: relative;
   z-index: 5;
 }
+.blackboard.blackboard-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+}
 .blackboard-wrapper {
   position: relative; 
   z-index: -1;
