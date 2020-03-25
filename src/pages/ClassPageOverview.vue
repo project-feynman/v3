@@ -1,10 +1,10 @@
 <template>
   <v-card>
     <SeeExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
-    <v-card-title>Classmates</v-card-title>
+    <v-card-title>Class</v-card-title>
     <v-card-text>
       <p v-for="classmate in classmates" :key="classmate.id">
-        {{ `${classmate.firstName} ${classmate.lastName}` }}: {{ classmate.lastName === "Strang" ? "professor" : "student" }}
+        {{ `${classmate.firstName} ${classmate.lastName}` }}
       </p>
     </v-card-text>
   </v-card>
