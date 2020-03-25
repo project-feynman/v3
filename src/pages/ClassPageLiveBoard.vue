@@ -1,6 +1,7 @@
 <template>
   <div id="room">
     <template v-if="user">
+      <LiveBoardAudio :roomId="roomId" />
       <Blackboard 
         @stroke-drawn="(stroke) => uploadToDb(stroke)"
         @board-reset="deleteAllStrokesFromDb()"
