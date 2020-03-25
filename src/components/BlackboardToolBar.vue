@@ -1,102 +1,70 @@
 <template>
-  <v-app-bar :height="navbarHeight" :color="isRealtime?'#fff':'#eee'" :elevation="isRealtime ? 0 : 1" class="blackboard-toolbar">
+  <v-app-bar :height="navbarHeight" :color="'#eee'" :elevation="1" class="blackboard-toolbar">
     <v-container fluid class="px-0">
       <v-row align="center" justify="space-between">
-        <template v-if="currentState !== RecordState.POST_RECORD">
-          <v-col class="py-0">
-            <v-row justify="start" align="center">
-              <v-col class="px-1 py-0" cols="auto">
-                <div :class="[$vuetify.breakpoint.smAndDown ? 'dropdown ':'', palleteVisibility? 'active ':'', 'd-flex',]"
-                  id="swatches-wrapper"
-                  @click="$emit('tool-select', { tool: BlackboardTools.PEN })"
+        <v-col class="py-0">
+          <v-row justify="start" align="center">
+            <v-col class="px-1 py-0" cols="auto">
+              <!-- <div 
+                :class="[$vuetify.breakpoint.smAndDown ? 'dropdown ':'', colorPaletteExpanded ? 'active ':'', 'd-flex',]"
+                id="swatches-wrapper"
+                @click.self="$emit('tool-select', { tool: BlackboardTools.PEN, color: 'white' })"
+              > -->
+                <!-- <v-btn
+                  :color="(!$vuetify.breakpoint.smAndDown || colorPaletteExpanded || isPen) ? 'accent' : color"
+                  @click="palleteClick()"
+                  :outlined="!isPen"
+                  min-width="36px"
+                  class="px-3"
+                  height="38px"
+                  max-width="64px"
                 >
-                  <v-btn
-                    :color="(!$vuetify.breakpoint.smAndDown || palleteVisibility || isPen)? 'accent' : color"
-                    @click="palleteClick()"
-                    :outlined="isPen? false:true"
-                    min-width="36px"
-                    class="px-3"
-                    height="38px"
-                    max-width="64px"
-                  >
-                    <v-icon>mdi-lead-pencil</v-icon>
-                    <v-icon class="down">mdi-chevron-down</v-icon>
-                  </v-btn>
-                  <swatches @input="newColor => $emit('tool-select', { tool: BlackboardTools.PEN, color: newColor })"
-                    :value="color"
-                    :colors="colors"
-                    :show-border="true"
-                    :wrapper-style="{ padding:'0px', maxHeight:'26px', display:'flex'}"
-                    :swatch-style="{ margin:'0 5px', borderRadius:'50%' }"
-                    inline
-                    background-color="rgba(0, 0, 0, 0)"
-                    swatch-size="24"
-                  />
-                </div>
-              </v-col>
-              <ButtonNew @click="selectNormalEraser()" 
-                :filled="isNormalEraser" icon="mdi-eraser"
-              >
-                Eraser
-              </ButtonNew>
-              <ButtonNew @click="$emit('tool-select', { tool: BlackboardTools.STROKE_ERASER })" 
-                :filled="isStrokeEraser" icon="mdi-eraser"
-              >
-                Stroke Eraser
-              </ButtonNew>
-            </v-row>
-          </v-col>
-        </template>
-          <template v-if="currentState === RecordState.PRE_RECORD">
-            <slot name="initial-buttons">
-
-            </slot>
-            <v-col class="py-0 px-0" cols="auto">
-              <ButtonNew @click="$refs.fileInput.click()" :filled="imageAdded && !blackboardAttached" icon="mdi-image">
-                <input style="display: none" type="file" @change="(e) => onImageSelected(e)" ref="fileInput">
-                {{ imageAdded? "Change" : "Add" }} Background
-              </ButtonNew>
+                  <v-icon>mdi-lead-pencil</v-icon>
+                  <v-icon class="down">mdi-chevron-down</v-icon>
+                </v-btn> -->
+                <swatches 
+                  @input="(newColor) => changePenColor(newColor)"
+                  :value="color"
+                  :colors="colors"
+                  :show-border="true"
+                  :wrapper-style="{ padding:'0px', maxHeight:'26px', display:'flex'}"
+                  :swatch-style="{ margin:'0 5px', borderRadius:'50%' }"
+                  inline
+                  background-color="rgba(0, 0, 0, 0)"
+                  swatch-size="24"
+                />
+              <!-- </div> -->
             </v-col>
-            <v-col class="py-0 px-0" cols="auto">
-              <BasePopupButton actionName="Wipe board"
-                @action-do="$emit('wipe-board')"
-              >
-                <template v-slot:activator-button="{ on }">
-                  <ButtonNew v-on="on" icon="mdi-delete">
-                    Wipe Board
-                  </ButtonNew>
-                </template>
-                <template v-slot:message-to-user>
-                  Are you sure you want to wipe everything?
-                </template>
-              </BasePopupButton>
-            </v-col>
-            <v-col cols="auto" class="py-0 px-0">
-              <ButtonNew @click="$emit('record-state-change', RecordState.MID_RECORD)" :filled="true" icon="mdi-adjust">
-                Record Audio
-              </ButtonNew>
-            </v-col>
-          </template>
+            <ButtonNew :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser">
+              Eraser
+            </ButtonNew>
+            <ButtonNew :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser">
+              Stroke Eraser
+            </ButtonNew>
+            <BasePopupButton @action-do="$emit('wipe-board')" actionName="Reset board">
+              <template v-slot:activator-button="{ on }">
+                <ButtonNew v-on="on" icon="mdi-delete">
+                  Wipe Board
+                </ButtonNew>
+              </template>
+              <template v-slot:message-to-user>
+                Are you sure you want to wipe everything?
+              </template>
+            </BasePopupButton>
+          </v-row>
+        </v-col>
+        <ButtonNew @click="$refs.fileInput.click()" icon="mdi-image">
+          <input 
+            @change="(e) => $emit('image-select', e.target.files[0])" 
+            style="display: none" 
+            type="file" 
+            ref="fileInput"
+          >
+          Add Background
+        </ButtonNew>
+        <slot>
 
-          <template v-else-if="currentState === RecordState.MID_RECORD">
-            <v-col class="py-0 px-0" cols="auto">
-              <ButtonPrabhakar @click="$emit('record-state-change', RecordState.POST_RECORD)">
-                Stop
-              </ButtonPrabhakar>
-            </v-col>
-          </template>
-
-        <template v-else>
-          <v-col class="py-0 px-0" cols="auto">
-            <!-- <ButtonPrabhakar @click="$emit('record-state-change', RecordState.PRE_RECORD)" outlined icon="mdi-undo-variant">
-              Retry
-            </ButtonPrabhakar> -->
-          </v-col>
-          <!-- TODO: give ability to preview -->
-          <slot>
-
-          </slot>
-        </template>
+        </slot>
       </v-row>
     </v-container>
   </v-app-bar>
@@ -105,33 +73,26 @@
 <script>
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
-import { RecordState, BlackboardTools, navbarHeight } from "@/CONSTANTS.js";
-import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
+import { BlackboardTools, navbarHeight } from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   props: {
-    currentTool: String,
-    color: String,
-    currentState: String,
-    isRealtime: Boolean,
+    currentTool: String
   },
   components: { 
     Swatches, 
-    ButtonPrabhakar,
     BasePopupButton,
-    ButtonNew,
+    ButtonNew
   },
   data () {
     return {
-      RecordState,
       BlackboardTools,
       navbarHeight,
+      color: "white",
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
-      palleteVisibility: false,
-      imageAdded: false,
-      blackboardAttached: true
+      colorPaletteExpanded: false
     }
   },
   computed: {
@@ -154,33 +115,70 @@ export default {
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
-    onImageSelected (e) {
-      this.$emit("image-selected", e.target.files[0]);
-    },
-    setImage () {
-      document.getElementById("whiteboard-bg-input").value = "";
-      document.getElementById("whiteboard-bg-input").click();
+    changePenColor (newColor) {
+      this.color = newColor;
+      this.$emit('tool-select', { 
+        type: BlackboardTools.PEN, 
+        color: newColor,
+        lineWidth: 2.5
+      });
     },
     selectNormalEraser () {
-      this.palleteVisibility = false;
-      this.$emit('tool-select', { tool: BlackboardTools.NORMAL_ERASER })
+      this.colorPaletteExpanded = false;
+      this.$emit('tool-select', { 
+        type: BlackboardTools.NORMAL_ERASER,
+        color: this.color,
+        lineWidth: 25
+      });
+    },
+    selectStrokeEraser () {
+      this.$emit('tool-select', { 
+        type: BlackboardTools.STROKE_ERASER,
+        color: this.color,
+        lineWidth: 5
+      });
     },
     palleteClick () {
       if (!this.isPen) { 
-        this.palleteVisibility = false; 
+        this.colorPaletteExpanded = false; 
       } else { 
-        this.palleteVisibility = !this.palleteVisibility; 
+        this.colorPaletteExpanded = !this.colorPaletteExpanded; 
       }
     },
     palleteClose (e) {
       const pallete = document.getElementById("swatches-wrapper");
       if (pallete && !pallete.contains(e.target)) {
-        this.palleteVisibility = false;
+        this.colorPaletteExpanded = false;
       }
+    },
+    // TODO: open a popup, THEN allow the copy and pasting of images
+    initCopyAndPasteImage () {
+      //  document.onpaste = async (event) => {
+      //   const items = (event.clipboardData || event.originalEvent.clipboardData).items; // use event.originalEvent.clipboard for newer chrome versions
+      //   // Find pasted image among pasted items
+      //   let blob = null;
+      //   for (let i = 0; i < items.length; i++) {
+      //     if (items[i].type.indexOf("image") === 0) {
+      //       blob = items[i].getAsFile();
+      //     }
+      //   }
+      //   // Load image if there is a pasted image
+      //   if (blob === null) { return; }
+      //   this.imageBlob = blob;
+      //   if (!this.isRealtime) {
+      //     const imageUrl = URL.createObjectURL(this.imageBlob);
+      //     this.displayImageAsBackground(imageUrl);
+      //   } else {
+      //     const imageUrl = await this.$_saveToStorage(`images/${this.blackboardId}`, blob);
+      //     this.blackboardRef.update({ imageUrl });
+      //     this.imageUrl = imageUrl; // store locally
+      //   }     
+      // }
     }
   }
 };
 </script>
+
 <style>
 @media (min-width: 600px) and (max-width: 670px),
   (min-width: 1264px) and (max-width: 1300px) {

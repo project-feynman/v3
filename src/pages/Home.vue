@@ -20,7 +20,7 @@
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Email Settings</ButtonNew>
+            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
@@ -44,6 +44,7 @@
                     actionName="Log in" 
                     :inputFields="['email', 'password']" 
                     @action-do="user => logIn(user)"
+                    color="secondary"
                   />
                 </v-col>
                 <v-col cols="auto">
@@ -52,6 +53,7 @@
                     :inputFields="['first name', 'last name', 'email', 'password']" 
                     @action-do="user => signUp(user)"
                     outlined
+                    color="secondary"
                   >
                     <template v-slot:message-to-user>
                       Passwords are handled by Google Firebase Authentication.
@@ -99,7 +101,7 @@
         <div v-else-if="user" key="class-list">
           <v-row align="stretch" class="enrolled-classes">
             <v-col v-for="C in user.enrolledClasses" cols="12" sm="4" md="3" :key="C.id">
-              <AsyncRenderless :dbRef="getMitClassRef(C.id)">
+              <RenderlessAsync :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
                     <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
@@ -108,7 +110,7 @@
                     </v-card>
                   </transition>
                 </template>
-              </AsyncRenderless>
+              </RenderlessAsync>
             </v-col>
           </v-row>
         </div>
@@ -125,7 +127,7 @@ import db from "@/database.js";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import TheSearchBar from "@/components/TheSearchBar.vue";
-import AsyncRenderless from "@/components/AsyncRenderless.vue";
+import RenderlessAsync from "@/components/RenderlessAsync.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Blackboard from "@/components/Blackboard.vue";
@@ -136,7 +138,7 @@ import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   components: {
-    AsyncRenderless, 
+    RenderlessAsync, 
     BasePopupButton,
     Blackboard,
     SeeExplanation,

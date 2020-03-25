@@ -23,13 +23,6 @@
         >
           <v-icon>mdi-format-title</v-icon>
         </button>
-        <!-- <v-btn @click="showImagePopup(commands.image)"></v-btn>
-
-        <ButtonPrabhakar @click="$refs.fileInput.click()" :isSuperSmallText="true" outlined icon="image">
-          <input style="display: none" type="file" @change="e => onImageSelected(e, commands.image)" ref="fileInput">
-          <p>{{ imageAdded? "Change" : "Add" }} IMAGE<br> (CTRL + V)</p>
-        </ButtonPrabhakar> -->
-
       </div>
     </editor-menu-bar>
 
@@ -60,10 +53,8 @@ import {
   Image,
   Placeholder
 } from 'tiptap-extensions';
-import ButtonPrabhakar from "@/components/ButtonPrabhakar.vue";
 
 const defaultHtml = ``;
-// <img src="https://d384u2mq2suvbq.cloudfront.net/public/spree/products/1597/jumbo/Japanese-Cherry-Blossom-Fragrance-Oil.jpg?1529607178" />
 
 class Title extends Node {
   get name () {
@@ -87,8 +78,7 @@ export default {
   },
   components: { 
     EditorContent, 
-    EditorMenuBar, 
-    ButtonPrabhakar 
+    EditorMenuBar
   },
   data () {
     return {

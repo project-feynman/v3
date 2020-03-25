@@ -15,9 +15,10 @@
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
-      <BasePopupButton actionName="Give feedback" 
+      <BasePopupButton 
+        actionName="Give feedback" 
         :inputFields="['summary', 'description']"
-        @action-do="bugReport => submitBug(bugReport)"
+        @action-do="(bugReport) => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
           <ButtonNew v-on="on" icon="mdi-bug">Give feedback</ButtonNew>
@@ -27,9 +28,9 @@
           We will be excited to read what you write and update you by email. 
         </template>
       </BasePopupButton>
-    <slot>
-      
-    </slot>
+      <slot>
+        
+      </slot>
   </v-app-bar>
 </template>
 
@@ -37,7 +38,7 @@
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
-import {navbarHeight} from "@/CONSTANTS.js"
+import { navbarHeight } from "@/CONSTANTS.js"
 
 export default {
   props: {
@@ -63,7 +64,7 @@ export default {
     submitBug ({ "summary": title, description }) {
       if (!title) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write the summary!")
-        return 
+        return;
       }
       db.collection("bugs").add({ 
         title, 

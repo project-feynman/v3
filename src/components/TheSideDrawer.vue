@@ -13,16 +13,19 @@
           </v-list-item>
           <v-divider/>
 
-          <v-list-item disabled>
-            <v-btn block disabled color="secondary">
+          <v-list-item>
+            <v-btn block @click="createBlackboard()" color="secondary">
               Create blackboard
               <v-icon>mdi-plus</v-icon>
             </v-btn>
           </v-list-item>
 
-          <v-list-item :to="(`/class/${classId}/room/${classId}`)" color="accent">
+          <v-list-item v-for="(blackboard, i) in blackboards" :key="blackboard.id"
+            :to="(`/class/${classId}/room/${blackboard.id}`)" 
+            color="accent"
+          >
             <v-list-item-content>
-              <v-list-item-title>Blackboard 1</v-list-item-title>
+              <v-list-item-title>Blackboard {{ i }}</v-list-item-title>
               <!-- <template v-for="(member, i) in room.members">
                 <div style="display: flex;" :key="i">
                   <v-icon color="orange">person</v-icon>
@@ -55,7 +58,8 @@
           <!-- Class posts -->
           <v-list-item v-for="(post, i) in posts" :key="post.id + i"
             :to="`/class/${classId}/posts/${post.id}`"
-            three-line color="accent"
+            three-line 
+            color="accent"
           >
             <v-list-item-content>
               <v-list-item-subtitle class="text--primary" v-text="post.title || '(No title)'"/>
@@ -83,8 +87,11 @@ export default {
   data () {
     return {
       posts: [],
+      blackboards: [],
       tutorialPost: {},
-      room: { members: [] },
+      room: { 
+        members: [] 
+      },
       unsubscribeRoomListener: null,
       unsubscribePostsListener: null
     }
@@ -100,7 +107,10 @@ export default {
     const postsRef = db.collection(`classes/${this.classId}/posts`);
     const postsQuery = postsRef.orderBy("date", "desc").limit(50);
     // this.tutorialPost = await this.$_getDoc(tutorialPostRef);
+    
+    const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
     this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
+    this.unsusbcribeBlackboardsListener = await this.$_listenToCollection(blackboardsRef, this, "blackboards");
     this.unsubscribePostsListener = await this.$_listenToCollection(postsQuery, this, "posts");;
   },
   destroyed () {
@@ -108,6 +118,12 @@ export default {
     this.unsubscribePostsListener();
   },
   methods: { 
+    async createBlackboard () {
+      const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
+      const newBlackboard = await blackboardsRef.add({
+        participants: []
+      })
+    },
     displayDate (dateString) { 
       return displayDate(dateString);
     } 
