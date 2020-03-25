@@ -14,8 +14,8 @@
           SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}`}}
           <v-icon class="pl-2">mdi-send</v-icon>
           <template v-slot:loader>
-            <span v-if="isRecordingVideo">Currently recording...</span> 
-            <span v-else-if="isUploadingPost">Uploading post...</span>
+            <span v-if="isRecordingVideo">Recording...</span> 
+            <span v-else-if="isUploadingPost">Uploading...</span>
           </template>
         </v-btn>
         <v-spacer></v-spacer>
@@ -23,15 +23,12 @@
         <p class="pt-4">toggle anonymous</p>
       </div>
 
-      <!-- Blackboard -->
-      <Blackboard v-show="blackboardAttached && !isPreviewing" 
-        :isRealtime="false" 
-        :visible="visible" 
-        :key="changeKeyToForceReset"
+      <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
+      <Blackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
-        @record-end="(videoData) => handleRecordEnd(videoData)"
-        @retry-recording="handleRetry()"
+        @record-end="(getBlackboardData) => showPreview(getBlackboardData)"
         ref="Blackboard"
+        :key="changeKeyToForceReset"
       />
 
       <!-- Preview the video after recording -->
@@ -48,9 +45,9 @@
           </template>
         </BasePopupButton>
         <DoodleVideo
-          :strokesArray="blackboardStrokes"
-          :audioUrl="audio.blobURL"
-          :backgroundUrl="imageUrl"
+          :strokesArray="previewVideo.strokesArray"
+          :audioUrl="previewVideo.audio.blobURL"
+          :imageBlob="previewVideo.imageBlob"
         />
       </template>
     </v-container>
@@ -58,9 +55,9 @@
 </template>
 
 <script>
+import Blackboard from "@/components/Blackboard.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
-import Blackboard from "@/components/Blackboard.vue";
 import TextEditor from "@/components/TextEditor.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import firebase from "firebase/app";
@@ -82,9 +79,10 @@ export default {
     postDbRef: Object,
     newExplanationDbRef: Object,
     newDocId: String,
-    visible: Boolean
   },
-  mixins: [DatabaseHelpersMixin],
+  mixins: [
+    DatabaseHelpersMixin
+  ],
   components: { 
     Blackboard, 
     DoodleVideo,
@@ -92,16 +90,15 @@ export default {
     BasePopupButton
   },
   data: () => ({
-    isAnonymous: false,
-    isUploadingPost: false,
     isRecordingVideo: false,
     isPreviewing: false,
-    blackboardAttached: true,
-    // TODO: refactor the variables below 
-    blackboardStrokes: [],
-    audio: null,
-    audioUrl: "",
-    imageUrl: "",
+    previewVideo: {
+      strokesArray: [],
+      audioBlob: null,
+      imageBlob: ""
+    },
+    isAnonymous: false,
+    isUploadingPost: false,
     changeKeyToForceReset: 0
   }),
   computed: {
@@ -126,19 +123,15 @@ export default {
     getTextEditor () {
       return this.$refs.TextEditor;
     },
-    initRetry () {
+    async initRetry () {
       this.isPreviewing = false;
-      this.$nextTick(() => {
-        const { Blackboard } = this.$refs;
-        Blackboard.handleRecordStateChange(RecordState.PRE_RECORD);
-      })
+      await this.$nextTick();
+      this.$refs.Blackboard.tryRecordAgain();
     },
-    handleRecordEnd ({ audio, strokes, imageUrl }) {
+    async showPreview (getBlackboardData) {
+      this.previewVideo = await getBlackboardData();
       this.isRecordingVideo = false;
       this.isPreviewing = true;
-      this.audio = audio;
-      this.blackboardStrokes = strokes;
-      this.imageUrl = imageUrl;
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
@@ -164,33 +157,33 @@ export default {
         mitClass: this.mitClass
       };
       const explanation = { ...metadata };
-      const { strokesArray, currentState, imageBlob, currentTime } = Blackboard;
-
+      const strokesArray = Blackboard.getStrokesArray();
+      const imageBlob = Blackboard.getImageBlob();
       if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
         // accumulate promises for strokes, audio, images to process them in parallel
         const promises = [];
-        if (currentState === RecordState.POST_RECORD) {
-          const audioPromise = Blackboard.uploadAudio().then(() => {
-            explanation.audioUrl = Blackboard.audioUrl;
-            explanation.duration = Blackboard.currentTime;
-          });
-          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, Blackboard.thumbnailBlob)
+        if (Blackboard.currentState === RecordState.POST_RECORD) {
+          const { imageBlob, thumbnailBlob, audio } = this.previewVideo; 
+          explanation.duration = Blackboard.currentTime;
+    
+          const audioBlob = audio.blob;
+          const audioPromise = this.$_saveToStorage(`audio/${getRandomId()}`, audioBlob)
+          .then((downloadUrl) => explanation.audioUrl = downloadUrl);
+
+          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob)
           .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl);
+
           promises.push(audioPromise);
           promises.push(thumbnailPromise);
         } else {
-          const thumbnailPromise = Blackboard.createThumbnail().then(async (thumbnailBlob) => {
+          const thumbnailPromise = Blackboard.getThumbnail().then(async (thumbnailBlob) => {
             const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
             explanation.thumbnail = thumbnailUrl;
           });
           promises.push(thumbnailPromise);
         }
-        // background image
         if (imageBlob) {
-          const backgroundImagePromise = this.$_saveToStorage(
-            `images/${getRandomId()}`, 
-            imageBlob
-          )
+          const backgroundImagePromise = this.$_saveToStorage(`images/${getRandomId()}`, imageBlob)
           .then((imageUrl) => explanation.imageUrl = imageUrl);
           promises.push(backgroundImagePromise);
         }
@@ -220,12 +213,10 @@ export default {
           hasReplies: true
         });
       }
-      this.resetComponent();
-      this.$emit("upload-finish"); // tell parent to not hide loading status
-    },
-    resetComponent () {
       this.changeKeyToForceReset += 1; // not sure if it works
       this.isUploadingPost = false;
+      this.$emit("upload-finish"); 
+      this.$root.$emit("show-snackbar", "Successfully uploaded.");
     },
     getDate () {
       const today = new Date();
