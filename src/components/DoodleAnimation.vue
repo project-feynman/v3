@@ -158,12 +158,11 @@ export default {
       if (this.isPlaying) this.playAnimation();
     },
     speedChange (newSpeed) {
-      console.log(newSpeed);
       this.playbackSpeed = newSpeed;
     },
     async playAnimation () {
       if (this.isPlaying) {
-        this.playerCount+=1 // Increase the total count of the instances of players
+        this.playerCount += 1 // Increase the total count of the instances of players
       }
       const currentPlayer = this.playerCount; // The ID of the current instance of the player
       let playBreak = false; // If the current instance of player breaks out of loop before completion
@@ -175,7 +174,7 @@ export default {
           playBreak = true;
           break;
         }
-        if (i%10===0) { this.currentFrameIdx = i; }
+        if (i % 10 === 0) { this.currentFrameIdx = i; }
         await this.renderFrame(this.allFrames[i], false); // draw 1 stroke per event loop
       }
       if (!playBreak) { // We can't check if the currentFrameIdx is the last last frame as we increment it only every 10 frames
