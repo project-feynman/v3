@@ -1,9 +1,12 @@
 <template>
   <v-btn 
     @click="$emit('click')"
+    v-on="on"
     v-bind="$attrs"
     class="button-custom" 
-    :outlined="outlined" color="accent" :text="!outlined && !filled"
+    :outlined="outlined" 
+    color="accent" 
+    :text="!outlined && !filled"
   >
     <div class="d-flex flex-column">
       <v-icon>{{ icon }}</v-icon>
@@ -20,6 +23,7 @@
 export default {
   inheritAttrs: false,
   props: {
+    on: Object,
     icon: String,
     outlined: {
       type: Boolean,
@@ -33,6 +37,9 @@ export default {
         return false
       }
     }
+  },
+  created () {
+    console.log("on =", this.on);
   }
 }
 </script>

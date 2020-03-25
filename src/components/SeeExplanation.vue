@@ -75,7 +75,6 @@
 import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import DoodleAnimation from "@/components/DoodleAnimation.vue";
-import BasePopupButton from "@/components/BasePopupButton.vue";
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes";
 import ButtonNew from "@/components/ButtonNew.vue"
 import db from "@/database.js";
@@ -93,7 +92,6 @@ export default {
     DoodleAnimation,
     DoodleVideo,
     TextEditor,
-    BasePopupButton,
     RenderlessFetchStrokes,
     ButtonNew
   },

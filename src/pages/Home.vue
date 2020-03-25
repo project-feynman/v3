@@ -15,12 +15,12 @@
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew v-on="on" icon="mdi-plus">Add Class</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-plus">Add Class</ButtonNew>
           </template>
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <ButtonNew v-on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
+            <ButtonNew :on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>

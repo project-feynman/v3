@@ -43,7 +43,7 @@
             </ButtonNew>
             <BasePopupButton @action-do="$emit('wipe-board')" actionName="Reset board">
               <template v-slot:activator-button="{ on }">
-                <ButtonNew v-on="on" icon="mdi-delete">
+                <ButtonNew :on="on" icon="mdi-delete">
                   Wipe Board
                 </ButtonNew>
               </template>
