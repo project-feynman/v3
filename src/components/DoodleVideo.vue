@@ -20,13 +20,13 @@
         @input="changePlaybackSpeed"
         dense
         solo
-        background-color="rgba(0,0,0,0.5)"
+        background-color="rgba(255,255,255,0.75)"
         :hide-details="true"
         class="my-0"
-        color="white"
+        color="accent"
         item-color="accent"
       >
-        <v-icon slot="append" color="white" small>mdi-fast-forward</v-icon>
+        <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
       </v-select>
     </div>
   </div>
@@ -171,9 +171,8 @@ export default {
       if (this.nextFrameIdx < this.allFrames.length) {
         // calculate sleep duration
         const nextFrame = this.allFrames[this.nextFrameIdx];
-        const timeout = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
-        // sleep for half the duration to handle 2x speed
-        this.recursiveSyncer = setTimeout(this.syncRecursively, timeout/2); // use recursion instead of `setInterval` to prevent overlapping calls
+        const timeTilNextStroke = 1000 * (nextFrame.startTime - AudioPlayer.currentTime); 
+        this.recursiveSyncer = setTimeout(this.syncRecursively, timeTilNextStroke/this.playbackSpeed); // use recursion instead of `setInterval` to prevent overlapping calls
       }
     },
     syncStrokesToAudio () {
@@ -256,6 +255,6 @@ export default {
 </style>
 <style>
 #speed-control .v-select__selections {
-  color: white;
+  color: accent;
 }
 </style>

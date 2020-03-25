@@ -1,10 +1,9 @@
 <template>
   <div id="room">
-    <template v-if="user">
-      <Blackboard 
-        @stroke-drawn="(stroke) => uploadToDb(stroke)"
-        @board-reset="deleteAllStrokesFromDb()"
-        ref="Blackboard"
+    <v-content v-if="user">
+      <LiveBoardAudio :roomId="roomId" />
+      <Blackboard v-if="room.blackboardId" ref="whiteboard" 
+        :blackboardId="room.blackboardId" 
         :isRealtime="true"
       >
         <template v-slot:blackboard-toolbar>

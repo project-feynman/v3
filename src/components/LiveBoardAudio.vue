@@ -1,88 +1,215 @@
 <template>
-    <div>
-        <video v-show="false" id="yourVideo" autoplay muted playsinline></video>
-        <video v-show="false" id="friendsVideo" autoplay playsinline></video>
-        <v-btn @click="initAudioConnection()" ref="#cameraBtn" outlined color="accent">
-            Open audio
+    
+    <div >
+        <v-btn @click="enterAudioChat()">
+            Connect Audio
         </v-btn>
-    </div>
+        <!-- <div class="row remote_video_container"> -->
+           <div id="remote-media"></div>
+        <!-- </div> -->
+        <!-- <div class="spacing"></div> -->
+        <div class="row">
+           <div id="local-media"></div>
+        </div>
+   </div>
 </template> 
 
 <script>
 import firebase from "firebase/app";
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
+import { twilioCreds } from "@/twiliocreds.js";
+
 
 export default {
     props: {
         roomId: String,
     },
-    mixins: [DatabaseHelpersMixin],
-    data () {
-        return {
-            audio: null,
-            connectedAudio: null,
-            id: null,
-            servers: null,
-            pc: null,
-            roomRef: null,
-            database: null
+    data() {
+    return {
+            loading: false,
+            activeRoom: '',
+            token: null,
         }
     },
-    mounted () {
-        this.database = firebase.database().ref(`audio/${this.roomId}`);
-        // this.roomRef = db.doc(`rooms/${this.roomId}`).collection("audio-collection"); // for switching back to Firestore
-        
-        this.audio = document.getElementById("yourVideo");
-        this.connectedAudio = document.getElementById("friendsVideo");
-        this.id = Math.floor(Math.random()*1000000000);
-        this.servers = {'iceServers': [{'urls': 'stun:stun.services.mozilla.com'}, {'urls': 'stun:stun.l.google.com:19302'}, {'urls': 'turn:numb.viagenie.ca','credential': 'winston.f.321','username': 'winston.f.321@gmail.com'}]};
-        this.pc = new RTCPeerConnection(this.servers);
-
-        this.pc.onicecandidate = (event => event.candidate?this.sendMessage(this.id, JSON.stringify({'ice': event.candidate})):console.log("Sent All Ice") );
-        this.pc.onaddstream = (event => this.connectedAudio.srcObject = event.stream);
-        
-        this.initAudio();
-        this.database.on('child_added', this.readMessage);        
-        this.pc.addEventListener('connectionstatechange', () => {
-            if (this.pc.connectionState === "connected") {
-                this.$root.$emit("show-snackbar", `Now connected to the voice chat.`)
-            }
-            console.log('connection state change:', this.pc.connectionState)
-        });
+    computed: {
+        user () { return this.$store.state.user;}
+    },
+    created() {
+        this.token = this.getAccessToken();
     },
     methods: {
-        async sendMessage (senderId, data) {
-            const msg = this.database.push({ sender: senderId, message: data });
-            msg.remove();
+        getAccessToken() {
+            var AccessToken = require('twilio').jwt.AccessToken;
+            var VideoGrant = AccessToken.VideoGrant;
+
+            // Substitute your Twilio AccountSid and ApiKey details
+            var ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
+            var API_KEY_SID = twilioCreds.API_KEY_SID;
+            var API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
+
+            // Create an Access Token
+            var accessToken = new AccessToken(
+                ACCOUNT_SID,
+                API_KEY_SID,
+                API_KEY_SECRET
+            );
+
+            // Set the Identity of this token
+            // let ids = ["Winston1", "Winston2", "Winston3"]
+            // let id = ids[Math.floor(Math.random()*3)];
+            // console.log(id);
+            // accessToken.identity = id;
+            accessToken.identity = this.user.uid;
+
+            // Grant access to Video
+            var grant = new VideoGrant();
+            grant.room = this.roomId;
+            accessToken.addGrant(grant);
+
+            // Serialize the token as a JWT
+            var jwt = accessToken.toJwt();
+            return jwt;
         },
-        readMessage (data) {
-            const msg = JSON.parse(data.val().message);
-            const sender = data.val().sender;
-            if (sender == this.id) { return; }
-            if (msg.ice != undefined) {
-                this.pc.addIceCandidate(new RTCIceCandidate(msg.ice));
-            } else if (msg.sdp.type == "offer") {
-                this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp))
-                .then(() => this.pc.createAnswer())
-                .then(answer => this.pc.setLocalDescription(answer))
-                .then(() => this.sendMessage(this.id, JSON.stringify({ 'sdp': this.pc.localDescription })));
-            } else if (msg.sdp.type == "answer") {
-                this.pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+        // Trigger log events 
+        attachTrack(track, container) {
+            container.appendChild(track.attach());
+        },
+        attachTracks(tracks, container) {
+            tracks.forEach((track) => {
+                this.attachTrack(track, container);
+            });
+        },
+        detachTrack(track) {
+            track.detach().forEach((element) => {
+                element.remove();
+            });
+        },
+        trackPublished(publication, container) {
+            if (publication.isSubscribed) {
+                this.attachTrack(publication.track, container);
             }
+            publication.on('subscribed', (track) => {
+                console.log('Subscribed to ' + publication.kind + ' track');
+                this.attachTrack(track, container);
+            });
+            publication.on('unsubscribed', this.detachTrack);
         },
-        initAudio () {
-            navigator.mediaDevices.getUserMedia({ 
-                audio: true
-            })
-            .then(stream => this.audio.srcObject = stream)
-            .then(stream => this.pc.addStream(stream));
+        trackUnpublished(publication) {
+            console.log(publication.kind + ' track was unpublished.');
         },
-        initAudioConnection () {
-            this.pc.createOffer()
-            .then(offer => this.pc.setLocalDescription(offer) )
-            .then(() => this.sendMessage(this.id, JSON.stringify({'sdp': this.pc.localDescription})) );
+        participantConnected(participant, container) {
+            let selfContainer = document.createElement('div');
+            selfContainer.id = `participantContainer-${participant.identity}`;
+
+            container.appendChild(selfContainer);
+
+            participant.tracks.forEach((publication) => {
+                this.trackPublished(publication, selfContainer);
+            });
+            participant.on('trackPublished', (publication) => {
+                this.trackPublished(publication, selfContainer);
+            });
+            participant.on('trackUnpublished', this.trackUnpublished);
+        },
+        detachParticipantTracks(participant) {
+            var tracks = this.getTracks(participant);
+            tracks.forEach(this.detachTrack);
+        },
+        getTracks(participant) {
+            return Array.from(participant.tracks.values()).filter((publication) => {
+                return publication.track;
+                }).map((publication) => {
+                return publication.track;
+                });
+        },
+        leaveRoomIfJoined() {
+        if (this.activeRoom) {
+            this.activeRoom.disconnect();
+            console.log("disconnecting");
+        }
+        },
+        log(message){
+        this.x = this.x + message + '\r\n'
+        }, 
+        enterAudioChat() {
+            this.loading = true;
+
+            let connectOptions = {
+                name: this.roomId,
+                // logLevel: 'debug',
+                audio: true,
+                // video: { width: 400 }
+            };
+            // before a user enters a new room,
+            // disconnect the user from they joined already
+            this.leaveRoomIfJoined();
+            
+            // remove any remote track when joining a new room
+            console.log('About to connect: ');
+            Twilio.connect(this.token , connectOptions).then(
+                (room) => { this.onTwilioConnect(room) }, 
+                (error) => { console.log(error.message) }
+                );
+        },
+        onTwilioConnect(room) {
+            console.log('Successfully joined a Room: '+ room);
+            this.log('Successfully joined a Room: '+ room);
+            // set active toom
+            this.activeRoom = room;
+            this.loading = false;
+            var previewContainer = document.getElementById('local-media');
+            this.attachTracks(this.getTracks(room.localParticipant), previewContainer);
+            
+            var remoteMediaContainer = document.getElementById('remote-media');
+
+            room.participants.forEach((participant) => {
+                console.log("Already in Room: '" + participant.identity + "'");
+                this.participantConnected(participant, remoteMediaContainer);
+            });
+
+            room.on('participantConnected', (participant) => {
+                console.log("Joining: '" + participant.identity + "'");
+                this.participantConnected(participant, remoteMediaContainer);
+            });
+
+            room.on('participantDisconnected', (participant) => {
+                console.log("RemoteParticipant '" + participant.identity + "' left the room");
+                this.detachParticipantTracks(participant);
+                // removeName(participant);
+            });
+
+            room.on('disconnected', () => {
+                console.log('Left the rooom');
+                this.detachParticipantTracks(room.localParticipant);
+                room.participants.forEach(this.detachParticipantTracks);
+                this.activeRoom = null;
+            });
         }
     }
 }
 </script>
+
+<style >
+   /* .remote_video_container {
+     left: 0;
+     margin: 0;
+     border: 1px solid rgb(124, 129, 124);
+   }
+   #localTrack video {
+       border: 3px solid rgb(124, 129, 124);
+       margin: 0px;
+       max-width: 50% !important;
+       background-repeat: no-repeat;
+   }
+   .spacing {
+     padding: 20px;
+     width: 100%;
+   }
+   .roomTitle {
+       border: 1px solid rgb(124, 129, 124);
+       padding: 4px;
+       color: dodgerblue;
+   } */
+</style>
