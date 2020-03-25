@@ -1,9 +1,10 @@
 <template>
-  <div class="blackboard" elevation="1">
+  <div :class="['blackboard', isFullScreen ? 'blackboard-fullscreen' : '']" id="blackboard" elevation="1">
     <slot name="canvas-toolbar"
       :changeTool="changeTool"
       :displayImageFile="displayImageFile"
       :resetBoard="resetBoard"
+      :toggleFullScreen="toggleFullScreen"
       :touchDisabled="touchDisabled"
     >
 
@@ -27,10 +28,12 @@
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
-import { BlackboardTools, RecordState, navbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
+import FullScreenDialog from "@/components/FullScreenDialog.vue";
+import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
 
 export default {
   props: {
+    isRealtime: Boolean,
     currentTime: Number,
     default: () => 0
   },
@@ -39,7 +42,8 @@ export default {
   ],
   components: { 
     BlackboardToolBar, 
-    ButtonNew
+    ButtonNew,
+    FullScreenDialog
   },
   data () {
     return {
@@ -66,7 +70,8 @@ export default {
         x: -1, 
         y: -1 
       },
-      imageBlob: null
+      imageBlob: null,
+      isFullScreen: false
     }
   },
   computed: {
@@ -334,9 +339,10 @@ export default {
     resizeBlackboard () {
       const { BlackboardWrapper } = this.$refs;
       BlackboardWrapper.style.height = "unset" // To reset the blackboard height when the user retries to make video after previewing
-      const availableHeight = window.innerHeight - navbarHeight;
-      const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, availableHeight - epsilon);
-      this.canvas.style.height = this.isRealtime ? `${availableHeight}px` : `${offlineHeight}px`;
+      const fullScreenHeight = window.innerHeight - toolbarHeight;
+      const realtimeHeight = fullScreenHeight - navbarHeight;
+      const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, realtimeHeight - epsilon);
+      this.canvas.style.height = this.isFullScreen ? `${fullScreenHeight}px` : (this.isRealtime ? `${realtimeHeight}px` : `${offlineHeight}px`);
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly(); 
     },
@@ -352,6 +358,10 @@ export default {
       ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
+    },
+    toggleFullScreen () {
+      this.isFullScreen = !this.isFullScreen;
+      this.resizeBlackboard();
     }
   }
 };
@@ -361,6 +371,14 @@ export default {
 .blackboard {
   position: relative;
   z-index: 5;
+}
+.blackboard.blackboard-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
 }
 .blackboard-wrapper {
   position: relative; 

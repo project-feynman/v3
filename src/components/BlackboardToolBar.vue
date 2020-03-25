@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :height="navbarHeight" :color="'#eee'" :elevation="1" class="blackboard-toolbar">
+  <v-app-bar :height="toolbarHeight" :color="'#eee'" :elevation="1" class="blackboard-toolbar">
     <v-container fluid class="px-0">
       <v-row align="center" justify="space-between">
         <v-col class="py-0">
@@ -65,6 +65,9 @@
         <slot>
 
         </slot>
+        <ButtonNew @click="fullScreen()" :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
+          {{isFullScreen ? 'Exit ' : ''}}Full Screen
+        </ButtonNew>
       </v-row>
     </v-container>
   </v-app-bar>
@@ -73,13 +76,14 @@
 <script>
 import "vue-swatches/dist/vue-swatches.min.css";
 import Swatches from "vue-swatches";
-import { BlackboardTools, navbarHeight } from "@/CONSTANTS.js";
+import { BlackboardTools, toolbarHeight } from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   props: {
-    currentTool: String
+    currentTool: String,
+    isFullScreen: Boolean
   },
   components: { 
     Swatches, 
@@ -89,7 +93,7 @@ export default {
   data () {
     return {
       BlackboardTools,
-      navbarHeight,
+      toolbarHeight,
       color: "white",
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
       colorPaletteExpanded: false
@@ -150,6 +154,10 @@ export default {
       if (pallete && !pallete.contains(e.target)) {
         this.colorPaletteExpanded = false;
       }
+    },
+    fullScreen () {
+      console.log('clicked', this.isFullScreen);
+      this.$emit('toggle-fullScreen');
     },
     // TODO: open a popup, THEN allow the copy and pasting of images
     initCopyAndPasteImage () {

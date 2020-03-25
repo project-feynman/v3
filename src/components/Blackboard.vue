@@ -12,18 +12,21 @@
       @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
       @board-reset="$emit('board-reset')"
       ref="BlackboardDrawingCanvas"
+      :isRealtime="isRealtime"
     >
       <template v-slot:canvas-toolbar="{ 
         changeTool, 
         displayImageFile, 
-        touchDisabled,
-        resetBoard 
+        resetBoard,
+        toggleFullScreen,
+        touchDisabled
       }"
       >
         <BlackboardToolBar
           @tool-select="(newTool) => changeTool(newTool)"
           @image-select="(imageFile) => displayImageFile(imageFile)"
           @wipe-board="resetBoard()"
+          @toggle-fullScreen="toggleFullScreen()"
         >
           <slot name="blackboard-toolbar"> 
 
@@ -65,22 +68,28 @@ import BlackboardDrawingCanvas from "@/components/BlackboardDrawingCanvas.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
+import FullScreenDialog from "@/components/FullScreenDialog.vue";
 import { RecordState } from "@/CONSTANTS.js";
 
 export default {
+  props: {
+    isRealtime: Boolean,
+  },
   components: { 
     BlackboardToolBar,
     BlackboardAudioRecorder, 
     BlackboardDrawingCanvas,
     BasePopupButton,
-    ButtonNew
+    ButtonNew,
+    FullScreenDialog,
   },
   data () {
     return {
       timer: null,
       currentTime: 0,
       currentState: RecordState.PRE_RECORD,
-      RecordState
+      RecordState,
+      isFullScreen: false,
     }
   },
   computed: {

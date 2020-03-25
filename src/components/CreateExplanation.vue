@@ -29,6 +29,7 @@
         @record-end="(getBlackboardData) => showPreview(getBlackboardData)"
         ref="Blackboard"
         :key="changeKeyToForceReset"
+        :isRealtime="false"
       />
 
       <!-- Preview the video after recording -->
