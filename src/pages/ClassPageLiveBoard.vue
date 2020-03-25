@@ -5,6 +5,7 @@
         @stroke-drawn="(stroke) => uploadToDb(stroke)"
         @board-reset="deleteAllStrokesFromDb()"
         ref="Blackboard"
+        :isRealtime="true"
       >
         <template v-slot:blackboard-toolbar>
           <ButtonNew icon="mdi-upload" disabled>

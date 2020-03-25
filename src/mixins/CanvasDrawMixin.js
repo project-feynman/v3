@@ -4,8 +4,8 @@ export default {
       // Re-adjust internal coordinate system
       if (Math.round(this.canvas.width) !== Math.round(this.canvas.scrollWidth) || 
         Math.round(this.canvas.height) !== Math.round(this.canvas.scrollHeight)) {
-        this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
-        this.canvas.height = this.canvas.scrollHeight;
+          this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
+          this.canvas.height = this.canvas.scrollHeight;
       }
     },
     async $_quickplay () {

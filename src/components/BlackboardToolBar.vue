@@ -65,6 +65,9 @@
         <slot>
 
         </slot>
+        <ButtonNew @click="fullScreen()" :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
+          {{isFullScreen ? 'Exit ' : ''}}Full Screen
+        </ButtonNew>
       </v-row>
     </v-container>
   </v-app-bar>
@@ -79,7 +82,8 @@ import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   props: {
-    currentTool: String
+    currentTool: String,
+    isFullScreen: Boolean,
   },
   components: { 
     Swatches, 
@@ -148,6 +152,10 @@ export default {
       if (pallete && !pallete.contains(e.target)) {
         this.colorPaletteExpanded = false;
       }
+    },
+    fullScreen () {
+      console.log('clicked', this.isFullScreen);
+      this.$emit('toggle-fullScreen');
     },
     // TODO: open a popup, THEN allow the copy and pasting of images
     initCopyAndPasteImage () {
