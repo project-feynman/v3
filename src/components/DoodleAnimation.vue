@@ -98,12 +98,7 @@ export default {
         this.resizeVideo();
         this.$_rescaleCanvas();
         await this.renderBackground();
-        if (this.recursiveSyncer) {
-          this.nextFrameIdx = 0; // need to redraw previous progress 
-          this.syncStrokesToAudio();
-        } else {
-          this.$_drawStrokesInstantly();
-        }
+        this.syncAnimation();
         resolve();
       })
     },
