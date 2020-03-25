@@ -16,6 +16,7 @@
       <template v-slot:canvas-toolbar="{ 
         changeTool, 
         displayImageFile, 
+        touchDisabled,
         resetBoard 
       }"
       >
@@ -27,6 +28,9 @@
           <slot name="blackboard-toolbar"> 
 
           </slot> 
+          <ButtonNew @click="toggleTouchDrawing()" icon="mdi-fingerprint">
+            {{ touchDisabled ? "allow" : "disallow" }} touch 
+          </ButtonNew>
           <ButtonNew v-if="currentState === RecordState.PRE_RECORD"
             @click="startRecording()" 
             icon="mdi-adjust"
@@ -145,6 +149,9 @@ export default {
     },
     wipeBoard () {
       this.$refs.BlackboardDrawingCanvas.wipeBoard();
+    },
+    toggleTouchDrawing () {
+      this.$refs.BlackboardDrawingCanvas.touchDisabled = !this.$refs.BlackboardDrawingCanvas.touchDisabled;
     }
   }
 };

@@ -4,6 +4,7 @@
       :changeTool="changeTool"
       :displayImageFile="displayImageFile"
       :resetBoard="resetBoard"
+      :touchDisabled="touchDisabled"
     >
 
     </slot>
@@ -279,7 +280,7 @@ export default {
       const antiStroke = {
         strokeNumber: this.strokesArray.length + 1,
         isErasing: true,
-        lineWidth: stroke.lineWidth,
+        lineWidth: stroke.lineWidth + 2,
         points: stroke.points
       };
 
