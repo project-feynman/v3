@@ -1,9 +1,10 @@
 <template>
-  <div class="blackboard" elevation="1">
+  <div :class="['blackboard', isFullScreen ? 'blackboard-fullscreen' : '']" id="blackboard" elevation="1">
     <slot name="canvas-toolbar"
       :changeTool="changeTool"
       :displayImageFile="displayImageFile"
       :resetBoard="resetBoard"
+      :toggleFullScreen="toggleFullScreen"
     >
 
     </slot>
@@ -32,7 +33,6 @@ import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio,
 export default {
   props: {
     isRealtime: Boolean,
-    isFullScreen: Boolean,
     currentTime: Number,
     default: () => 0
   },
@@ -70,6 +70,7 @@ export default {
         y: -1 
       },
       imageBlob: null,
+      isFullScreen: false,
     }
   },
   computed: {
@@ -349,6 +350,10 @@ export default {
       ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
+    },
+    toggleFullScreen () {
+      this.isFullScreen = !this.isFullScreen;
+      this.resizeBlackboard();
     }
   }
 };

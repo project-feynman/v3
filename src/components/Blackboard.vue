@@ -1,5 +1,5 @@
 <template>
-  <component :is="isFullScreen ? 'FullScreenDialog':'div'">
+  <div>
     <slot name="database-listener"
       :drawStrokeOnCanvas="drawStrokeOnCanvas"
       :wipeBoard="wipeBoard"
@@ -12,12 +12,12 @@
       @board-reset="$emit('board-reset')"
       ref="BlackboardDrawingCanvas"
       :isRealtime="isRealtime"
-      :isFullScreen="isFullScreen"
     >
       <template v-slot:canvas-toolbar="{ 
         changeTool, 
         displayImageFile, 
         resetBoard,
+        toggleFullScreen,
       }"
       >
         <BlackboardToolBar
@@ -49,7 +49,7 @@
       @audio-recorded="(audioObj) => handleNewRecording(audioObj)"
       ref="AudioRecorder"
     />
-  </component>
+  </div>
 </template>
 
 <script>
@@ -153,11 +153,10 @@ export default {
     wipeBoard () {
       this.$refs.BlackboardDrawingCanvas.wipeBoard();
     },
-    toggleFullScreen () {
-      console.log("Full Screen", this.isFullScreen);
-      this.isFullScreen = !this.isFullScreen;
-
-    }
+    // toggleFullScreen () {
+    //   console.log("Full Screen", this.isFullScreen);
+    //   this.isFullScreen = !this.isFullScreen;
+    // }
   }
 };
 </script>
