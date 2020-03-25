@@ -92,6 +92,13 @@ export default {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
+    appendToStrokesArray (stroke) {
+      this.strokesArray.push({
+        startTime: this.currentTime,
+        endTime: this.currentTime, // TODO: of course this is not correct
+        ...stroke
+      });
+    },
     convertAllStrokesToBeInitialStrokes () {
       for (const stroke of this.strokesArray) {
         [stroke.startTime, stroke.endTime] = [0, 0];
@@ -118,6 +125,7 @@ export default {
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
+      this.strokesArray = [];
       this.prevPoint = { 
         x: -1, 
         y: -1 
@@ -271,13 +279,13 @@ export default {
       const antiStroke = {
         strokeNumber: this.strokesArray.length + 1,
         isErasing: true,
-        lineWidth: this.currentTool.lineWidth,
+        lineWidth: stroke.lineWidth,
         points: stroke.points
       };
 
       this.$_drawStroke(antiStroke);
       this.strokesArray.push(antiStroke);
-      this.$emit("stroke-end", antiStroke);
+      this.$emit("stroke-drawn", antiStroke);
     },
     getTouchPos (e) {
       const finger1 = e.touches[0];

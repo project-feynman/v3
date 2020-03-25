@@ -3,6 +3,7 @@
     <slot name="database-listener"
       :drawStrokeOnCanvas="drawStrokeOnCanvas"
       :wipeBoard="wipeBoard"
+      :resetBoard="resetBoard"
     >
 
     </slot>
@@ -129,8 +130,9 @@ export default {
       this.currentState = RecordState.PRE_RECORD;
     },
     drawStrokeOnCanvas (stroke, drawInstantly = true) {
+      // TODO: add timestamp so recording does work 
       const { BlackboardDrawingCanvas } = this.$refs;
-      BlackboardDrawingCanvas.strokesArray.push(stroke);
+      BlackboardDrawingCanvas.appendToStrokesArray(stroke);
       if (drawInstantly) {
         BlackboardDrawingCanvas.$_drawStroke(stroke); 
       } else {

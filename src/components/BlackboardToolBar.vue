@@ -127,13 +127,15 @@ export default {
       this.colorPaletteExpanded = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.NORMAL_ERASER,
+        color: this.color,
         lineWidth: 25
       });
     },
     selectStrokeEraser () {
       this.$emit('tool-select', { 
         type: BlackboardTools.STROKE_ERASER,
-        lineWidth: 4.5
+        color: this.color,
+        lineWidth: 5
       });
     },
     palleteClick () {
