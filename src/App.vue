@@ -18,7 +18,7 @@ export default {
     this.$root.$on("show-snackbar", message => {
       this.snackbar = true;
       this.snackbarMessage = message;
-    })
+    });
   }
 }
 </script>

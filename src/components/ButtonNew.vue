@@ -37,9 +37,6 @@ export default {
         return false
       }
     }
-  },
-  created () {
-    console.log("on =", this.on);
   }
 }
 </script>
