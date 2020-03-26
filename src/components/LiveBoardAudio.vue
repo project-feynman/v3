@@ -38,7 +38,7 @@ export default {
         isMicOn () {
             if (this.isMicOn){
                 this.unMuteAudio();
-            },
+            }
             else {
                 this.muteAudio();
             }
