@@ -31,7 +31,7 @@ export default {
             loading: false,
             activeRoom: '',
             token: null,
-            isMicOn: null
+            isMicOn: false
         }
     },
     watch : {
@@ -51,7 +51,7 @@ export default {
         this.token = this.getAccessToken();
         this.enterAudioChat();
         
-        this.$root.$on('toggleMic', () => this.isMicOn = !this.isMicOn);
+        this.$root.$on('toggleMic', (micStatus) => this.isMicOn = micStatus);
     },
     methods: {
         getAccessToken() {

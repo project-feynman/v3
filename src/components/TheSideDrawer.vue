@@ -38,7 +38,7 @@
                   <div class="d-flex align-center py-2" :key="i">
                     <v-icon>mdi-account</v-icon>
                     <div :class="['pl-1', 'col', 'py-0', member==='user' ? 'font-weight-bold':'']">{{ member.firstName }}</div>
-                    <v-btn @click="toggleMic"><v-icon class="">mdi-microphone</v-icon></v-btn>
+                    <v-btn v-if="user.uid===member.uid" @click="toggleMic" text color="accent"><v-icon class="">{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
                   </div>
                 </template>
               </div>
@@ -98,7 +98,8 @@ export default {
       blackboards: [],
       tutorialPost: {},
       unsubscribeRoomListener: null,
-      unsubscribePostsListener: null
+      unsubscribePostsListener: null,
+      isMicOn: false
     }
   },
   computed: { 
@@ -134,7 +135,9 @@ export default {
       return displayDate(dateString);
     } ,
     toggleMic () {
-      this.$root.$emit('toggleMic');
+      console.log(this.user)
+      this.isMicOn = !this.isMicOn
+      this.$root.$emit('toggleMic', this.isMicOn);
     }
   }
 };
