@@ -29,7 +29,7 @@ import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 import FullScreenDialog from "@/components/FullScreenDialog.vue";
-import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio, epsilon } from "@/CONSTANTS.js";
+import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -341,7 +341,7 @@ export default {
       BlackboardWrapper.style.height = "unset" // To reset the blackboard height when the user retries to make video after previewing
       const fullScreenHeight = window.innerHeight - toolbarHeight;
       const realtimeHeight = fullScreenHeight - navbarHeight;
-      const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, realtimeHeight - epsilon);
+      const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, realtimeHeight);
       this.canvas.style.height = this.isFullScreen ? `${fullScreenHeight}px` : (this.isRealtime ? `${realtimeHeight}px` : `${offlineHeight}px`);
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly(); 

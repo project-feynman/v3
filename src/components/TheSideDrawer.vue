@@ -26,7 +26,7 @@
           </v-list-item>
 
           <v-list-item v-for="(blackboard, i) in blackboards" :key="blackboard.id"
-            :to="(`/class/${classId}/room/${blackboard.id}`)" 
+            :to="(`/class/${classId}/room/${blackboard.id}`)"
             color="accent"
             class="blackboard-item"
             active-class="active-blackboard"
@@ -37,8 +37,8 @@
                 <template v-for="(member, i) in blackboard.participants">
                   <div class="d-flex align-center py-2" :key="i">
                     <v-icon>mdi-account</v-icon>
-                    <div :class="['pl-1', 'col', 'py-0', member==='user' ? 'font-weight-bold':'']">{{ member.firstName }}</div>
-                    <v-btn v-if="user.uid===member.uid" @click="toggleMic" text color="accent"><v-icon class="">{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+                    <div :class="['pl-1', 'col', 'py-0', member.uid===user.uid ? 'font-weight-bold':'']">{{ member.firstName }}</div>
+                    <v-btn v-if="user.uid===member.uid" @click="toggleMic" :color="isMicOn ? 'accent' : 'accent lighten-1'" :outlined="isMicOn" rounded><v-icon class="">{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
                   </div>
                 </template>
               </div>
@@ -119,6 +119,7 @@ export default {
     this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
     this.unsusbcribeBlackboardsListener = await this.$_listenToCollection(blackboardsRef, this, "blackboards");
     this.unsubscribePostsListener = await this.$_listenToCollection(postsQuery, this, "posts");;
+    this.$root.$on('leftRoom', ()=> {this.isMicOn=false});
   },
   destroyed () {
     this.unsubscribeRoomListener();
@@ -135,7 +136,6 @@ export default {
       return displayDate(dateString);
     } ,
     toggleMic () {
-      console.log(this.user)
       this.isMicOn = !this.isMicOn
       this.$root.$emit('toggleMic', this.isMicOn);
     }
