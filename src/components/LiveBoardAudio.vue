@@ -31,13 +31,27 @@ export default {
             loading: false,
             activeRoom: '',
             token: null,
+            isMicOn: null
         }
     },
+    watch : {
+        isMicOn () {
+            if (this.isMicOn){
+                this.unMuteAudio();
+            },
+            else {
+                this.muteAudio();
+            }
+        }
+    }
     computed: {
         user () { return this.$store.state.user;}
     },
     created() {
         this.token = this.getAccessToken();
+        this.enterAudioChat();
+        this.isMicOn = false;
+        this.$root.$on('toggleMic', () => this.isMicOn = !this.isMicOn);
     },
     methods: {
         getAccessToken() {
@@ -116,6 +130,17 @@ export default {
         detachParticipantTracks(participant) {
             var tracks = this.getTracks(participant);
             tracks.forEach(this.detachTrack);
+        },
+        muteAudio () {
+            this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
+                track.disable();
+            });
+        },
+        unMuteAudio () {
+            this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
+                console.log(track);
+                track.enable();
+            });
         },
         getTracks(participant) {
             return Array.from(participant.tracks.values()).filter((publication) => {

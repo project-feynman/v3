@@ -28,17 +28,20 @@
           <v-list-item v-for="(blackboard, i) in blackboards" :key="blackboard.id"
             :to="(`/class/${classId}/room/${blackboard.id}`)" 
             color="accent"
+            class="blackboard-item"
+            active-class="active-blackboard"
           >
             <v-list-item-content>
-              <v-list-item-title>Blackboard {{ i }}</v-list-item-title>
-              <!-- <template v-for="(member, i) in room.members">
-                <div style="display: flex;" :key="i">
-                  <v-icon color="orange">person</v-icon>
-                  <p class="pl-4 pt-4">
-                    {{ member.firstName }}
-                  </p>
-                </div>
-              </template> -->
+              <v-list-item-title>Blackboard {{ i }} <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span></v-list-item-title>
+              <div class="active-blackboard-users pl-4 pt-2">
+                <template v-for="(member, i) in blackboard.participants">
+                  <div class="d-flex align-center py-2" :key="i">
+                    <v-icon>mdi-account</v-icon>
+                    <div :class="['pl-1', 'col', 'py-0', member==='user' ? 'font-weight-bold':'']">{{ member.firstName }}</div>
+                    <v-btn @click="toggleMic"><v-icon class="">mdi-microphone</v-icon></v-btn>
+                  </div>
+                </template>
+              </div>
             </v-list-item-content>
           </v-list-item>
 
@@ -94,9 +97,6 @@ export default {
       posts: [],
       blackboards: [],
       tutorialPost: {},
-      room: { 
-        members: [] 
-      },
       unsubscribeRoomListener: null,
       unsubscribePostsListener: null
     }
@@ -104,7 +104,8 @@ export default {
   computed: { 
     classId () { 
       return this.$route.params.class_id; 
-    } 
+    },
+    user () { return this.$store.state.user;}
   },
   async created () {
     const roomRef = db.doc(`rooms/${this.classId}`);
@@ -131,7 +132,25 @@ export default {
     },
     displayDate (dateString) { 
       return displayDate(dateString);
-    } 
+    } ,
+    toggleMic () {
+      this.$root.$emit('toggleMic');
+    }
   }
 };
 </script>
+
+<style scoped>
+.blackboard-item .active-count {
+  font-size:0.85em;
+}
+.blackboard-item .active-blackboard-users {
+  display:none;
+}
+.blackboard-item.active-blackboard .active-count {
+  display:none;
+}
+.blackboard-item.active-blackboard .active-blackboard-users {
+  display:block;
+}
+</style>
