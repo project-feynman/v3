@@ -43,7 +43,6 @@ export default {
 	},
 	destroyed() {
 		this.leaveRoomIfJoined();
-		this.$root.$emit('leftRoom');
 	},
 	methods: {
 		getAccessToken() {
@@ -124,15 +123,15 @@ export default {
 				tracks.forEach(this.detachTrack);
 		},
 		muteAudio () {
-				this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
-						track.disable();
-				});
+			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
+				track.disable();
+			});
 		},
 		unMuteAudio () {
-				this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
-						console.log(track);
-						track.enable();
-				});
+			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
+				console.log(track);
+				track.enable();
+			});
 		},
 		getTracks(participant) {
 				return Array.from(participant.tracks.values()).filter((publication) => {
@@ -143,8 +142,8 @@ export default {
 		},
 		leaveRoomIfJoined() {
 		if (this.activeRoom) {
-				this.activeRoom.disconnect();
-				console.log("disconnecting");
+			this.activeRoom.disconnect();
+			console.log("disconnecting");
 		}
 		},
 		log(message){
@@ -202,10 +201,11 @@ export default {
 				});
 
 				room.on('disconnected', () => {
-						console.log('Left the rooom');
-						this.detachParticipantTracks(room.localParticipant);
-						room.participants.forEach(this.detachParticipantTracks);
-						this.activeRoom = null;
+					console.log('Left the rooom');
+					this.$root.$emit('leftRoom');
+					this.detachParticipantTracks(room.localParticipant);
+					room.participants.forEach(this.detachParticipantTracks);
+					this.activeRoom = null;
 				});
 		},
 		toggleMic (micStatus) {
