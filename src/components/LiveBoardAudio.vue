@@ -43,7 +43,7 @@ export default {
                 this.muteAudio();
             }
         }
-    }
+    },
     computed: {
         user () { return this.$store.state.user;}
     },
