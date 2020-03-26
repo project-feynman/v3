@@ -3,15 +3,16 @@
     <v-container fluid>
       <!-- Text editor -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
-      <div v-if="newExplanationDbRef || postDbRef" class="d-flex align-center">
+      <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
         <v-btn  
+          v-if="user"
           @click="submitPost()" 
           :loading="isButtonDisabled" 
           :disabled="isButtonDisabled"
           color="secondary" 
           class="ma-0 white--text" 
         >
-          SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}`}}
+          SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
           <v-icon class="pl-2">mdi-send</v-icon>
           <template v-slot:loader>
             <span v-if="isRecordingVideo">Recording...</span> 
