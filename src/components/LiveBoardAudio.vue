@@ -50,7 +50,7 @@ export default {
     created() {
         this.token = this.getAccessToken();
         this.enterAudioChat();
-        this.isMicOn = false;
+        
         this.$root.$on('toggleMic', () => this.isMicOn = !this.isMicOn);
     },
     methods: {
@@ -197,6 +197,7 @@ export default {
             room.on('participantConnected', (participant) => {
                 console.log("Joining: '" + participant.identity + "'");
                 this.participantConnected(participant, remoteMediaContainer);
+                this.isMicOn = false;
             });
 
             room.on('participantDisconnected', (participant) => {
