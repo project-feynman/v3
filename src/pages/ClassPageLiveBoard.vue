@@ -137,10 +137,6 @@ export default {
         });
         firebaseRef.set({ email: "", uid: "", firstName: "" }); // Firebase will not detect change if it's set to an empty object
       });
-    },
-    toggleMic () {
-
-      console.log('toggled');
     }
   }
 };
