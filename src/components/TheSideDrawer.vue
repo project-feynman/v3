@@ -13,7 +13,7 @@
           </v-list-item>
           <v-divider/>
 
-          <v-list-item>
+          <v-list-item v-if="blackboards">
             <v-btn 
               :disabled="blackboards.length > 5" 
               @click="createBlackboard()"
@@ -31,7 +31,7 @@
             class="blackboard-item"
             active-class="active-blackboard"
           >
-            <v-list-item-content>
+            <v-list-item-content v-if="blackboard.participants">
               <v-list-item-title>Blackboard {{ i }} <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span></v-list-item-title>
               <div class="active-blackboard-users pl-4 pt-2">
                 <template v-for="(member, i) in blackboard.participants">
@@ -106,7 +106,9 @@ export default {
     classId () { 
       return this.$route.params.class_id; 
     },
-    user () { return this.$store.state.user;}
+    user () { 
+      return this.$store.state.user;
+    }
   },
   async created () {
     const roomRef = db.doc(`rooms/${this.classId}`);
