@@ -13,13 +13,24 @@ const firestore = admin.firestore();
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 function sendEmail (email, subject, text, html) {
-  sgMail.send({ to: email, from: "feynmannotif@gmail.com", subject, text, html });
+  sgMail.send({ 
+    to: email, 
+    from: "feynmannotif@gmail.com", 
+    subject, 
+    text, 
+    html 
+  });
 }
 
 function getDocFromDb (ref) {
   return new Promise(async (resolve, reject) => {
     const doc = await ref.get();
-    if (doc.exists) { resolve({"id": doc.id, ...doc.data()}); }  // TODO: throw an explicit error
+    if (doc.exists) { 
+      resolve({ 
+        "id": doc.id, 
+        ...doc.data() 
+      }); 
+    }  // TODO: throw an explicit error
     else { reject(); }
   })
 }
@@ -35,14 +46,13 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(a
 });
 
 // Updates blackboard participants when people join and leave
-exports.onWorkspaceParticipantsChanged = functions.database.ref("/workspace/{firebaseClassId}/{workspaceId}").onUpdate((change, context) => {
+exports.onWorkspaceParticipantsChanged = functions.database.ref("/room/{classId}/{roomId}").onWrite((change, context) => {
   const userWhoLeft = change.after.val();
   if (!userWhoLeft.uid) { return; }
-  const { workspaceId, firebaseClassId } = context.params;
-  const classId = firebaseClassId.replace("-", ".");
-  const workspaceRef = firestore.doc(`/classes/${classId}/workspaces/${workspaceId}`);
+  const { roomId, classId } = context.params;
+  const workspaceRef = firestore.doc(`/classes/${classId}/blackboards/${roomId}`);
   workspaceRef.update({
-    members: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
+    participants: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
   });
 });
 

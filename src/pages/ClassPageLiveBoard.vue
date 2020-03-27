@@ -12,7 +12,10 @@
             Save Board
           </ButtonNew>
         </template>
-        <template v-slot:database-listener="{ drawStrokeOnCanvas, resetBoard }">
+        <template v-slot:database-listener="{ 
+          drawStrokeOnCanvas, 
+          resetBoard 
+        }">
           <RenderlessListenToBlackboard
             :blackboardId="roomId"
             @initial-strokes-fetched="(initialStrokes) => renderOnCanvas(initialStrokes, drawStrokeOnCanvas)"
@@ -125,17 +128,32 @@ export default {
       this.$root.$emit("show-snackbar", "Successfully reset blackboard.");
     },
     setUserDisconnectHook () {
-      const firebaseclassId = this.classId.replace(".", "-");
-      const firebaseRef = firebase.database().ref(`/room/${firebaseclassId}/${this.roomId}`);
-      // Mirror the Firebase room with the Firestore room
+      /*
+        Firebase Realtime Database provides a special location at /.info/connected 
+        which is updated every time the Firebase Realtime Database client's connection state changes. 
+        https://firebase.google.com/docs/database/web/offline-capabilities
+      */
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
-        if (snapshot.val() === false) { return; } 
-        // Wait till server successfully processes the onDisconnectHook()
+        const isUserConnected = snapshot.val(); 
+        if (isUserConnected === false) { return; }
+        // first ensure `onDisconnect` hook is successfully processed 
+        const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
+        // 1. User leaves, and his/her identity is saved to Firebase
+        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
+
+        // step 1 (step 2 is executed in Cloud Functions)
         await firebaseRef.onDisconnect().set(this.simpleUser);
+        
+        // now join the room 
         this.roomRef.update({ // it's much faster to update Firestore directly
           participants: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
         });
-        firebaseRef.set({ email: "", uid: "", firstName: "" }); // Firebase will not detect change if it's set to an empty object
+        firebaseRef.set({ 
+          email: "", 
+          uid: "", 
+          firstName: "" 
+        }); 
+        // Firebase will not detect change if it's set to an empty object
       });
     }
   }
