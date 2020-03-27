@@ -26,19 +26,22 @@
           </v-list-item>
 
           <v-list-item v-for="(blackboard, i) in blackboards" :key="blackboard.id"
-            :to="(`/class/${classId}/room/${blackboard.id}`)" 
+            :to="(`/class/${classId}/room/${blackboard.id}`)"
             color="accent"
+            class="blackboard-item"
+            active-class="active-blackboard"
           >
             <v-list-item-content>
-              <v-list-item-title>Blackboard {{ i }}</v-list-item-title>
-              <!-- <template v-for="(member, i) in room.members">
-                <div style="display: flex;" :key="i">
-                  <v-icon color="orange">person</v-icon>
-                  <p class="pl-4 pt-4">
-                    {{ member.firstName }}
-                  </p>
-                </div>
-              </template> -->
+              <v-list-item-title>Blackboard {{ i }} <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span></v-list-item-title>
+              <div class="active-blackboard-users pl-4 pt-2">
+                <template v-for="(member, i) in blackboard.participants">
+                  <div class="d-flex align-center py-2" :key="i">
+                    <v-icon>mdi-account</v-icon>
+                    <div :class="['pl-1', 'col', 'py-0', member.uid===user.uid ? 'font-weight-bold':'']">{{ member.firstName }}</div>
+                    <v-btn v-if="user.uid===member.uid" @click="toggleMic" :color="isMicOn ? 'accent' : 'accent lighten-1'" :outlined="isMicOn" rounded><v-icon class="">{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+                  </div>
+                </template>
+              </div>
             </v-list-item-content>
           </v-list-item>
 
@@ -94,17 +97,16 @@ export default {
       posts: [],
       blackboards: [],
       tutorialPost: {},
-      room: { 
-        members: [] 
-      },
       unsubscribeRoomListener: null,
-      unsubscribePostsListener: null
+      unsubscribePostsListener: null,
+      isMicOn: false
     }
   },
   computed: { 
     classId () { 
       return this.$route.params.class_id; 
-    } 
+    },
+    user () { return this.$store.state.user;}
   },
   async created () {
     const roomRef = db.doc(`rooms/${this.classId}`);
@@ -117,6 +119,7 @@ export default {
     this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
     this.unsusbcribeBlackboardsListener = await this.$_listenToCollection(blackboardsRef, this, "blackboards");
     this.unsubscribePostsListener = await this.$_listenToCollection(postsQuery, this, "posts");;
+    this.$root.$on('leftRoom', ()=> {this.isMicOn=false});
   },
   destroyed () {
     this.unsubscribeRoomListener();
@@ -131,7 +134,26 @@ export default {
     },
     displayDate (dateString) { 
       return displayDate(dateString);
-    } 
+    } ,
+    toggleMic () {
+      this.isMicOn = !this.isMicOn
+      this.$root.$emit('toggleMic', this.isMicOn);
+    }
   }
 };
 </script>
+
+<style scoped>
+.blackboard-item .active-count {
+  font-size:0.85em;
+}
+.blackboard-item .active-blackboard-users {
+  display:none;
+}
+.blackboard-item.active-blackboard .active-count {
+  display:none;
+}
+.blackboard-item.active-blackboard .active-blackboard-users {
+  display:block;
+}
+</style>
