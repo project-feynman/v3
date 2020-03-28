@@ -1,81 +1,96 @@
 <template>
   <v-card style="zIndex:10">
     <v-navigation-drawer :value="value" @input="(newVal) => $emit('input', newVal)" app clipped width="300">
-      <v-list class="py-0">
-        <v-list-item-group>
-          <!-- Realtime board -->
-          <v-list-item disabled>
-            <v-list-item-content>
-              <v-list-item-title class="title black--text">
-                Realtime Blackboards
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider/>
-
-          <v-list-item v-if="blackboards">
-            <v-btn 
+      <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
+        <v-icon class="pr-2">mdi-home</v-icon> Home
+      </v-btn>
+      <v-tabs
+        v-model="activeTab"
+        background-color="accent"
+        dark
+        grow
+        class="side-tabs"
+      >
+        <v-tab key="Forum">Forum</v-tab>
+        <v-tab key="Blackboard">Blackboard</v-tab>
+      </v-tabs>
+      <v-tabs-items v-model="activeTab">
+        <v-tab-item key="Forum">
+          <div class="text-center">
+            <v-btn
+              outlined
+              :to="(`/class/${classId}/posts/new`)"
+              large
+              color="accent"
+              class="mt-1 mx-1"
+            >
+              <v-icon class="pr-2">mdi-plus</v-icon> Add New Post
+            </v-btn>
+          </div>
+          <v-list>
+            <template v-for="(post, i) in posts">
+              <v-list-item 
+                :key="post.id + i"
+                :to="`/class/${classId}/posts/${post.id}`"
+                three-line 
+                color="accent"
+              >
+                <v-list-item-content>
+                  <v-list-item-subtitle class="text--primary" v-text="post.title || '(No title)'"/>
+                  <v-list-item-subtitle v-text="displayDate(post.date)"/>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider
+                v-if="i + 1 < posts.length"
+                :key="i"
+              ></v-divider>
+            </template>
+          </v-list>
+        </v-tab-item>
+        <v-tab-item key="Blackboard">
+          <div class="text-center">
+            <v-btn
+              v-if="blackboards"
+              outlined 
               :disabled="blackboards.length > 5" 
               @click="createBlackboard()"
-              block  
-              color="secondary"
+              large
+              color="accent"
+              class="py-3 mt-1 mx-1"
             >
-              Create blackboard
-              <v-icon>mdi-plus</v-icon>
+              <v-icon class="pr-2">mdi-plus</v-icon> Create Blackboard
             </v-btn>
-          </v-list-item>
-
-          <v-list-item v-for="(blackboard, i) in blackboards" :key="blackboard.id"
-            :to="(`/class/${classId}/room/${blackboard.id}`)"
-            color="accent"
-            class="blackboard-item"
-            active-class="active-blackboard"
-          >
-            <v-list-item-content v-if="blackboard.participants">
-              <v-list-item-title>Blackboard {{ i }} <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span></v-list-item-title>
-              <div class="active-blackboard-users pl-4 pt-2">
-                <template v-for="(member, i) in blackboard.participants">
-                  <div class="d-flex align-center py-2" :key="i">
-                    <v-icon>mdi-account</v-icon>
-                    <div :class="['pl-1', 'col', 'py-0', member.uid===user.uid ? 'font-weight-bold':'']">{{ member.firstName }}</div>
-                    <v-btn v-if="user.uid===member.uid" @click="toggleMic" :color="isMicOn ? 'accent' : 'accent lighten-1'" :outlined="isMicOn" rounded><v-icon class="">{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+          </div>
+          <v-list>
+            <template  v-for="(blackboard, i) in blackboards">
+              <v-list-item
+                :key="blackboard.id"
+                :to="(`/class/${classId}/room/${blackboard.id}`)"
+                color="accent"
+                class="blackboard-item"
+                active-class="active-blackboard"
+              >
+                <v-list-item-content v-if="blackboard.participants">
+                  <v-list-item-title>Blackboard {{ i }} <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span></v-list-item-title>
+                  <div class="active-blackboard-users pl-4 pt-2">
+                    <template v-for="(member, i) in blackboard.participants">
+                      <div class="d-flex align-center py-2" :key="i">
+                        <v-icon>mdi-account</v-icon>
+                        <div :class="['pl-1', 'col', 'py-0', member.uid===user.uid ? 'font-weight-bold':'']">{{ member.firstName }}</div>
+                        <v-btn v-if="user.uid===member.uid" @click="toggleMic" :color="isMicOn ? 'accent' : 'accent lighten-1'" :outlined="isMicOn" rounded><v-icon class="">{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+                      </div>
+                    </template>
                   </div>
-                </template>
-              </div>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item :to="(`/class/${classId}`)" exact color="accent">
-            <v-list-item-content>
-              <v-list-item-title class="title">
-                Discussion Forum 
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider/>
-
-          <!-- New post -->
-          <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
-            <v-list-item-icon>
-              <v-icon>mdi-plus-box</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>New post</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <!-- Class posts -->
-          <v-list-item v-for="(post, i) in posts" :key="post.id + i"
-            :to="`/class/${classId}/posts/${post.id}`"
-            three-line 
-            color="accent"
-          >
-            <v-list-item-content>
-              <v-list-item-subtitle class="text--primary" v-text="post.title || '(No title)'"/>
-              <v-list-item-subtitle v-text="displayDate(post.date)"/>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list-item-group>
-      </v-list>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider
+                v-if="i + 1 < blackboards.length"
+                :key="i"
+              ></v-divider>
+            </template>
+          </v-list>
+        </v-tab-item>
+      </v-tabs-items>
     </v-navigation-drawer>
   </v-card>
 </template>
@@ -87,7 +102,7 @@ import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
 
 export default {
-  props: { 
+  props: {
     value: Boolean,
     mitClass: Object
   },
@@ -99,7 +114,8 @@ export default {
       tutorialPost: {},
       unsubscribeRoomListener: null,
       unsubscribePostsListener: null,
-      isMicOn: false
+      isMicOn: false,
+      activeTab: "forum"
     }
   },
   computed: { 
@@ -157,5 +173,10 @@ export default {
 }
 .blackboard-item.active-blackboard .active-blackboard-users {
   display:block;
+}
+.side-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 </style>

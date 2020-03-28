@@ -15,6 +15,8 @@
       :isRealtime="isRealtime"
     >
       <template v-slot:canvas-toolbar="{ 
+        currentTool,
+        isFullScreen,
         changeTool, 
         displayImageFile, 
         resetBoard,
@@ -23,6 +25,8 @@
       }"
       >
         <BlackboardToolBar
+          :currentTool="currentTool.type"
+          :isFullScreen="isFullScreen"
           @tool-select="(newTool) => changeTool(newTool)"
           @image-select="(imageFile) => displayImageFile(imageFile)"
           @wipe-board="resetBoard()"
@@ -87,7 +91,6 @@ export default {
       currentTime: 0,
       currentState: RecordState.PRE_RECORD,
       RecordState,
-      isFullScreen: false,
     }
   },
   computed: {
