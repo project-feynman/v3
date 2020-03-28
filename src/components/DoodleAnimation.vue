@@ -6,8 +6,8 @@
     </div>
     <div class="d-flex animation-controls">
       <v-col cols="auto" class="px-1">
-        <v-btn @click="pausePlay" color="accent" text>
-          <v-icon>{{isPlaying ? 'mdi-pause' : 'mdi-play'}}</v-icon>
+        <v-btn @click="pausePlay()" color="accent" text>
+          <v-icon>{{ isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
         </v-btn>
       </v-col>
       <v-col class="px-1">
@@ -29,7 +29,7 @@
          solo
          background-color="#f5f5f5"
          flat
-         :hide-details="true"
+         hide-details
          class="my-0"
          menu-props="top"
          color="accent"
