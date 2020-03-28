@@ -5,7 +5,7 @@
       <TheAppBar>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:default="{ on }">
-            <ButtonNew :on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
+            <ButtonNew :on="on" filled icon="mdi-settings">Settings</ButtonNew>
           </template>
         </TheDropdownMenu>
       </TheAppBar>
