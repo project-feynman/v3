@@ -161,6 +161,7 @@ export default {
       const explanation = { ...metadata };
       const strokesArray = Blackboard.getStrokesArray();
       const imageBlob = Blackboard.getImageBlob();
+
       if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
         // accumulate promises for strokes, audio, images to process them in parallel
         const promises = [];
@@ -184,6 +185,7 @@ export default {
           });
           promises.push(thumbnailPromise);
         }
+        
         if (imageBlob) {
           const backgroundImagePromise = this.$_saveToStorage(`images/${getRandomId()}`, imageBlob)
           .then((imageUrl) => explanation.imageUrl = imageUrl);
