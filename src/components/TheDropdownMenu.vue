@@ -47,7 +47,9 @@ export default {
     NotifFrequency
   }),
   computed: {
-    user () { return this.$store.state.user; }
+    user () { 
+      return this.$store.state.user; 
+    }
   },
   methods: {
     handleSave () {
@@ -57,7 +59,7 @@ export default {
         // color: this.color
       };
       if (this.name) { updatedUser.name = this.name; }
-      else updatedUser.name = this.user.name;
+      else { updatedUser.name = this.user.name; }
       this.$emit("save", updatedUser);
     },
     classNotifChanged ({ name, id }, notifFrequency) {

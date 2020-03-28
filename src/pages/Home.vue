@@ -159,7 +159,7 @@ export default {
     return {
       schoolClasses: [],
       demoVideo: { creator: {} },
-      welcomeMessage: "Welcome to ExplainMIT! You can configure email settings on the top right.",
+      welcomeMessage: "Welcome to ExplainMIT!",
       classSecurityPopup: false,
       classPassword: "",
       attemptToJoinClassId: "",
