@@ -17,19 +17,15 @@
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
-          <div class="text-center">
-            <v-btn
-              large
-              block
-              outlined
-              :to="(`/class/${classId}/posts/new`)"
-              color="secondary"
-            >
-              <v-icon class="pr-2 mb-0 pb-0">mdi-plus</v-icon> 
-              NEW POST
-            </v-btn>
-          </div>
           <v-list class="pt-0">
+                 <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
+            <v-list-item-icon>
+              <v-icon>mdi-plus-box</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>Start a new post</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
             <template v-for="(post, i) in posts">
               <v-list-item 
                 :key="post.id + i"
@@ -51,15 +47,15 @@
         </v-tab-item>
         <v-tab-item key="Blackboard">
           <v-btn v-if="blackboards"
+            outlined
             large
             block
-            outlined 
             :disabled="blackboards.length > 5" 
             @click="createBlackboard()"
             color="secondary"
           >
             <v-icon class="pr-2">mdi-plus</v-icon>
-            NEW BOARD
+            CREATE BLACKBOARD
           </v-btn>
           <v-list class="pt-0">
             <template v-for="(blackboard, i) in blackboards">
