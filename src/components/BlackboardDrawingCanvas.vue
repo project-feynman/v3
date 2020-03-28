@@ -1,6 +1,8 @@
 <template>
   <div :class="['blackboard', isFullScreen ? 'blackboard-fullscreen' : '']" id="blackboard" elevation="1">
     <slot name="canvas-toolbar"
+      :currentTool="currentTool"
+      :isFullScreen="isFullScreen"
       :changeTool="changeTool"
       :displayImageFile="displayImageFile"
       :resetBoard="resetBoard"
@@ -120,6 +122,7 @@ export default {
           "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
         );
       }
+      this.createCustomCusor();
     },
     async resetBoard () {
       this.wipeBoard();
