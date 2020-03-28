@@ -7,7 +7,7 @@
       </template>
       <template v-else>
         <TextEditor :injectedHtml="expl.html" ref="TextEditor"/>
-        <v-btn @click="updateExplanation()" color="accent">
+        <v-btn @click="updateExplanation()" color="secondary">
           SAVE EDIT
         </v-btn>
       </template>
