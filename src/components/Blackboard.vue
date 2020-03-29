@@ -36,19 +36,23 @@
 
           </slot> 
           <ButtonNew @click="toggleTouchDrawing()" icon="mdi-fingerprint">
-            {{ touchDisabled ? "allow" : "disallow" }} touch 
+            {{ touchDisabled ? "Enable" : "Disable" }} Touch
           </ButtonNew>
+
           <ButtonNew v-if="currentState === RecordState.PRE_RECORD"
             @click="startRecording()" 
             icon="mdi-adjust"
+            filled
           >
             Record Video
           </ButtonNew>
+
           <ButtonNew v-else-if="currentState === RecordState.MID_RECORD"
             @click="stopRecording()"
             icon="mdi-stop"
+            filled
           >
-            Finish recording
+            Finish Recording
           </ButtonNew>
         </BlackboardToolBar>
       </template>
@@ -76,7 +80,7 @@ import { RecordState } from "@/CONSTANTS.js";
 
 export default {
   props: {
-    isRealtime: Boolean,
+    isRealtime: Boolean
   },
   components: { 
     BlackboardToolBar,
@@ -90,7 +94,7 @@ export default {
       timer: null,
       currentTime: 0,
       currentState: RecordState.PRE_RECORD,
-      RecordState,
+      RecordState
     }
   },
   computed: {
