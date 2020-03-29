@@ -150,8 +150,6 @@ export default {
       return new Promise((resolve) => {
         const image = new Image();
         image.src = src;
-        this.bgCanvas.height = this.canvas.scrollHeight;
-        this.bgCanvas.width = this.canvas.scrollWidth;
         image.onload = () => {
           this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
           resolve();
@@ -171,7 +169,8 @@ export default {
         points: []
       };
 
-      this.$_rescaleCanvas();
+      // TODO: ensure commenting out the below does not re-introduce the pencil offset bug
+      // this.$_rescaleCanvas();
       this.$_setStyle(this.currentTool.color, this.currentTool.lineWidth);
     },
     touchStart (e) {
@@ -326,8 +325,9 @@ export default {
     },
     getThumbnail () {
       return new Promise(async (resolve) => {
-        this.bgCanvas.height = this.bgCanvas.scrollHeight;
-        this.bgCanvas.width = this.bgCanvas.scrollWidth;
+        // below is a quickfix for a double offset drawing bug
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
         if (this.imageBlob) { // has a background image
           const src = URL.createObjectURL(this.imageBlob);
           await this.displayImageAsBackground(src);
@@ -340,6 +340,7 @@ export default {
       })
     },
     resizeBlackboard () {
+      console.log("resizeBlackboard()");
       const { BlackboardWrapper } = this.$refs;
       BlackboardWrapper.style.height = "unset" // To reset the blackboard height when the user retries to make video after previewing
       const fullScreenHeight = window.innerHeight - toolbarHeight;

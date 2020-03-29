@@ -1,11 +1,15 @@
 export default {
   methods: {
     $_rescaleCanvas () {
+      console.log("rescaleCanvas()");
       // Re-adjust internal coordinate system
       if (Math.round(this.canvas.width) !== Math.round(this.canvas.scrollWidth) || 
         Math.round(this.canvas.height) !== Math.round(this.canvas.scrollHeight)) {
           this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
           this.canvas.height = this.canvas.scrollHeight;
+          // TODO: find a way for CSS to naturally sync both canvas' scrollHeight and scrollWidth (this will currently be different)
+          this.bgCanvas.height = this.bgCanvas.scrollHeight;
+          this.bgCanvas.width = this.bgCanvas.scrollWidth;
       }
     },
     async $_quickplay () {
@@ -15,6 +19,7 @@ export default {
       }
     },
     $_drawStrokesInstantly () {
+      console.log("drawStrokesInstantly()");
       this.strokesArray.forEach((stroke) => this.$_drawStroke(stroke));
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
@@ -95,8 +100,6 @@ export default {
     $_displayImage (src) {
       const image = new Image();
       image.src = src;
-      this.bgCanvas.height = this.canvas.scrollHeight;
-      this.bgCanvas.width = this.canvas.scrollWidth;
       image.onload = () => { 
         this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight)
       };
