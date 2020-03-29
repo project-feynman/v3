@@ -55,7 +55,7 @@
         </v-col>
         <ButtonNew @click="$refs.fileInput.click()" icon="mdi-image">
           <input 
-            @change="(e) => $emit('image-select', e.target.files[0])" 
+            @change="(e) => handleImageSelection(e)" 
             style="display: none" 
             type="file" 
             ref="fileInput"
@@ -66,7 +66,7 @@
 
         </slot>
         <ButtonNew @click="fullScreen()" :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
-          {{isFullScreen ? 'Exit ' : ''}}Full Screen
+          {{ isFullScreen ? 'Exit ' : '' }}Full Screen
         </ButtonNew>
       </v-row>
     </v-container>
@@ -119,6 +119,16 @@ export default {
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
+    handleImageSelection (e) {
+      const imageFile = e.target.files[0];
+      // check the file type and only emit the event if it is valid
+      if (!imageFile) { return; } // user pressed cancel 
+      else if (imageFile.type.split("/")[0] !== "image") { 
+        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.")
+      } else {
+        this.$emit('image-select', imageFile);
+      }
+    },
     changePenColor (newColor) {
       this.color = newColor;
       this.$emit('tool-select', { 

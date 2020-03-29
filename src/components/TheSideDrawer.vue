@@ -8,7 +8,7 @@
       <v-tabs
         v-model="activeTab"
         grow
-        active-class="orange--text"
+        active-class="accent--text"
         class="side-tabs"
         slider-color="accent"
       >
