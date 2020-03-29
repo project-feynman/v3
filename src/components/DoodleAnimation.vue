@@ -14,7 +14,7 @@
         <v-slider
           color="accent"
           track-color="rgba(0,0,0,0.30)"
-          :value="currentFrameIdx" 
+          :value="Math.max(currentFrameIdx,0)" 
           :max="allFrames.length"
           @input="(newVal) => seek(newVal)"
           @change="(newVal) => finishSeek(newVal)"
