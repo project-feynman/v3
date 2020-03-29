@@ -34,7 +34,7 @@
               <h1 class="text--primary ml-2">ExplainMIT</h1>
             </div>
             <h3 class="headline text--primary">
-              A lightweight platform for visual explanations
+              The most efficient platform for sharing explanations
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
