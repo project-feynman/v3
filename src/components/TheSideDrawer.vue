@@ -1,6 +1,6 @@
 <template>
   <v-card style="zIndex:10">
-    <v-navigation-drawer :value="value" @input="(newVal) => $emit('input', newVal)" app clipped width="350">
+    <v-navigation-drawer :value="value" @input="(newVal) => $emit('input', newVal)" app clipped width="325">
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
         <v-icon class="pr-2">mdi-home</v-icon> 
         Overview
