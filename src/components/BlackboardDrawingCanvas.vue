@@ -36,8 +36,10 @@ import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio 
 export default {
   props: {
     isRealtime: Boolean,
-    currentTime: Number,
-    default: () => 0
+    currentTime: {
+      type: Number,
+      default: () => 0
+    }
   },
   mixins: [
     CanvasDrawMixin
@@ -77,6 +79,13 @@ export default {
     }
   },
   computed: {
+    imageBlobUrl () {
+      if (this.imageBlob) {
+        return URL.createObjectURL(this.imageBlob);
+      } else {
+        return "";
+      }
+    },
     isStrokeEraser () {
       return this.currentTool.type === BlackboardTools.STROKE_ERASER;
     },
@@ -85,7 +94,7 @@ export default {
     },
     isPen () {
       return this.currentTool.type === BlackboardTools.PEN;
-    },
+    }
   },
   mounted () {
     this.canvas = this.$refs.FrontCanvas;
@@ -142,19 +151,8 @@ export default {
       this.imageBlob = null;
     },
     displayImageFile (imageFile) {
-      const src = URL.createObjectURL(imageFile);
-      this.displayImageAsBackground(src);
       this.imageBlob = imageFile; 
-    },
-    displayImageAsBackground (src) {
-      return new Promise((resolve) => {
-        const image = new Image();
-        image.src = src;
-        image.onload = () => {
-          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
-          resolve();
-        }
-      });
+      this.$_renderBackground(this.imageBlobUrl);
     },
     startNewStroke (e) {
       this.$emit("stroke-start");
@@ -168,9 +166,10 @@ export default {
         isErasing: this.isNormalEraser,
         points: []
       };
-
       // TODO: ensure commenting out the below does not re-introduce the pencil offset bug
-      // this.$_rescaleCanvas();
+      if (this.$_rescaleCanvas()) {
+        this.$_drawStrokesInstantly();
+      }
       this.$_setStyle(this.currentTool.color, this.currentTool.lineWidth);
     },
     touchStart (e) {
@@ -325,12 +324,8 @@ export default {
     },
     getThumbnail () {
       return new Promise(async (resolve) => {
-        // below is a quickfix for a double offset drawing bug
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
         if (this.imageBlob) { // has a background image
-          const src = URL.createObjectURL(this.imageBlob);
-          await this.displayImageAsBackground(src);
+          await this.$_renderBackground(this.imageBlobUrl);
         } else {
           this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
@@ -340,13 +335,15 @@ export default {
       })
     },
     resizeBlackboard () {
-      console.log("resizeBlackboard()");
       const { BlackboardWrapper } = this.$refs;
       BlackboardWrapper.style.height = "unset" // To reset the blackboard height when the user retries to make video after previewing
       const fullScreenHeight = window.innerHeight - toolbarHeight;
       const realtimeHeight = fullScreenHeight - navbarHeight;
       const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, realtimeHeight);
       this.canvas.style.height = this.isFullScreen ? `${fullScreenHeight}px` : (this.isRealtime ? `${realtimeHeight}px` : `${offlineHeight}px`);
+
+      // below is necessary even though the same rescale logic resides in "startNewStroke()"
+      // otherwise the existing strokes will be out of scale until the another stroke is drawn
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly(); 
     },

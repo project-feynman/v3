@@ -35,7 +35,10 @@
 
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
-        <BasePopupButton actionName="Retry new recording" @action-do="initRetry()">
+        <BasePopupButton v-if="!isUploadingPost"
+          actionName="Retry new recording" 
+          @action-do="initRetry()"
+        >
           <template v-slot:activator-button="{ on }">
             <v-btn v-if="!isUploadingPost" v-on="on" class="white--text" outlined color="accent">
               Retry recording
@@ -119,6 +122,15 @@ export default {
     }
   },
   methods: {
+    /* Always call `resizeBlackboard` if `isPreviewing` is set to false.
+      If the window is resized while Blackboard.vue is hidden with `v-show`, the blackboard's display size will become 0 
+      therefore, when the user press presses "retry", the Blackboard will reappear with 0 width. A similar case happens 
+      with submiting a post. */
+    resizeBlackboard () {
+      const { Blackboard } = this.$refs;
+      const { BlackboardDrawingCanvas } = Blackboard.$refs; 
+      BlackboardDrawingCanvas.resizeBlackboard();
+    },
     getBlackboard () {
       return this.$refs.Blackboard;
     },
@@ -127,8 +139,9 @@ export default {
     },
     async initRetry () {
       this.isPreviewing = false;
-      await this.$nextTick();
+      await this.$nextTick(); // wait for v-if to mount Blackboard 
       this.$refs.Blackboard.tryRecordAgain();
+      this.resizeBlackboard(); // see edge case explanation above
     },
     async showPreview (getBlackboardData) {
       this.previewVideo = await getBlackboardData();
@@ -142,9 +155,8 @@ export default {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
         return; 
       }
-      this.isPreviewing = false; // important: for canvas to generate a thumbnail requires it to be visible
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
-
+      
       const anonymousUser = {
         uid: this.user.uid,
         email: "anonymous@mit.edu",
@@ -185,7 +197,7 @@ export default {
           });
           promises.push(thumbnailPromise);
         }
-        
+
         if (imageBlob) {
           const backgroundImagePromise = this.$_saveToStorage(`images/${getRandomId()}`, imageBlob)
           .then((imageUrl) => explanation.imageUrl = imageUrl);
@@ -219,6 +231,7 @@ export default {
       }
       this.changeKeyToForceReset += 1; // not sure if it works
       this.isUploadingPost = false;
+      this.isPreviewing = false;
       this.$emit("upload-finish"); 
       this.$root.$emit("show-snackbar", "Successfully uploaded.");
     },

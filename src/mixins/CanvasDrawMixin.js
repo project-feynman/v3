@@ -1,16 +1,39 @@
 export default {
   methods: {
+    /*
+      Adjust the internal dimensions of the canvas to match its external display dimensions 
+      Assumes there is a back canvas, and will redraw the background but not the strokes
+    */
     $_rescaleCanvas () {
-      console.log("rescaleCanvas()");
-      // Re-adjust internal coordinate system
-      if (Math.round(this.canvas.width) !== Math.round(this.canvas.scrollWidth) || 
-        Math.round(this.canvas.height) !== Math.round(this.canvas.scrollHeight)) {
-          this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
-          this.canvas.height = this.canvas.scrollHeight;
-          // TODO: find a way for CSS to naturally sync both canvas' scrollHeight and scrollWidth (this will currently be different)
-          this.bgCanvas.height = this.bgCanvas.scrollHeight;
-          this.bgCanvas.width = this.bgCanvas.scrollWidth;
+      const { width, scrollWidth, height, scrollHeight } = this.canvas; 
+      if (Math.round(width) !== Math.round(scrollWidth) || Math.round(height) !== Math.round(scrollHeight)) {
+        this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
+        this.canvas.height = this.canvas.scrollHeight;
+        // Note: for the time being the scrollHeights and scrollWidths seem to be synced
+        // TODO: find a way for CSS to naturally sync both canvas' scrollHeight and scrollWidth (this will currently be different)
+        this.bgCanvas.height = this.bgCanvas.scrollHeight;
+        this.bgCanvas.width = this.bgCanvas.scrollWidth;
+
+        this.$_renderBackground(this.imageBlobUrl);
+        return true
       }
+      return false
+    },
+    /*
+      Renders a background if one exists
+    */
+    $_renderBackground (imageBlobUrl) {
+      return new Promise((resolve) => {
+        if (!imageBlobUrl) { resolve(); }
+        const image = new Image();
+        image.src = imageBlobUrl; 
+        this.bgCanvas.width = this.canvas.width;
+        this.bgCanvas.height = this.canvas.height;
+        image.onload = () => {
+          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
+          resolve();
+        } 
+      });
     },
     async $_quickplay () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -19,7 +42,6 @@ export default {
       }
     },
     $_drawStrokesInstantly () {
-      console.log("drawStrokesInstantly()");
       this.strokesArray.forEach((stroke) => this.$_drawStroke(stroke));
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null) {

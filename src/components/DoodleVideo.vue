@@ -62,7 +62,11 @@ export default {
   }),
   computed: {
     imageBlobUrl () {
-      return URL.createObjectURL(this.imageBlob);
+      if (this.imageBlob) {
+        return URL.createObjectURL(this.imageBlob);
+      } else {
+        return "";
+      }
     },
     /* Converts separate strokes into continuous points */
     allFrames () {
@@ -114,7 +118,6 @@ export default {
       return new Promise(async (resolve) => {
         this.resizeVideo();
         this.$_rescaleCanvas();
-        await this.renderBackground();
         if (this.recursiveSyncer) {
           // video was playing: resume to previous progress
           this.nextFrameIdx = 0;
@@ -145,19 +148,6 @@ export default {
       this.canvas.style.height = `${videoHeight}px`;
       this.bgCanvas.style.height = `${videoHeight}px`;
       VideoWrapper.style.width = `${videoWidth}px`;
-    },
-    renderBackground () {
-      return new Promise((resolve) => {
-        if (!this.imageBlob) resolve();
-        const image = new Image();
-        image.src = this.imageBlobUrl;
-        this.bgCanvas.width = this.canvas.width;
-        this.bgCanvas.height = this.canvas.height;
-        image.onload = () => {
-          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
-          resolve();
-        } 
-      });
     },
     initSyncing () {
       this.nextFrameIdx = 0;
