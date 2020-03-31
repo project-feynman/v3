@@ -5,7 +5,7 @@
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
       <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
-        <v-btn v-if="user"
+        <v-btn v-if="user && !isUploadingPost"
           @click="submitPost()" 
           :loading="isButtonDisabled" 
           :disabled="isButtonDisabled"
@@ -23,7 +23,16 @@
         <v-switch v-model="isAnonymous" class="mt-5"/>
         <p class="pt-4">toggle anonymous</p>
       </div>
-
+      <v-progress-linear
+        :active="isUploadingPost"
+        height="20"
+        striped
+        :value="uploadProgress"
+        color="accent"
+        rounded
+        class="font-italic text-small"
+        style="font-size: 0.8em;"
+      >Uploading...</v-progress-linear>
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
@@ -101,6 +110,7 @@ export default {
   },
   data: () => ({
     messageToUser: "",
+    uploadProgress: 0,
     isRecordingVideo: false,
     isPreviewing: false,
     previewVideo: {
@@ -167,11 +177,12 @@ export default {
 
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
       const secondInMilliseconds = 1000;
+      // Check if the firestore upload API has any way to detect an error or something because longer videos will obviously take much more time.
       const uploadTimeout = setTimeout(() => { 
         this.isUploadingPost = false;
         this.messageToUser = "Uploading has exceeded 10 seconds...trying again might help."
       }, 
-      10 * secondInMilliseconds);
+      180 * secondInMilliseconds);
 
       const anonymousUser = {
         uid: this.user.uid,

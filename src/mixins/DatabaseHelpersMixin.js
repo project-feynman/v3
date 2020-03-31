@@ -71,10 +71,12 @@ export default {
             (snapshot) => {
               if (showProgress) {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                this.messageToUser = `${progress.toFixed(2)}%`;
+                this.uploadProgress = progress.toFixed(2);
               }
             },
             (error) => { 
+              this.isUploadingPost = false;
+              this.messageToUser = "Uploading has exceeded 10 seconds...trying again might help."
               console.log("Error while uploading: ", error);
             },
             async () => {
