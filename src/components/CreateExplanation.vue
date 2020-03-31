@@ -3,9 +3,9 @@
     <v-container fluid>
       <!-- Text editor -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
+      <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
-        <v-btn  
-          v-if="user"
+        <v-btn v-if="user"
           @click="submitPost()" 
           :loading="isButtonDisabled" 
           :disabled="isButtonDisabled"
@@ -35,20 +35,23 @@
 
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
-        <BasePopupButton v-if="!isUploadingPost"
-          actionName="Retry new recording" 
-          @action-do="initRetry()"
-        >
-          <template v-slot:activator-button="{ on }">
-            <v-btn v-if="!isUploadingPost" v-on="on" class="white--text" outlined color="accent">
-              Retry recording
-            </v-btn>
-          </template>
-          <template v-slot:message-to-user>
-            Your audio recording will be deleted, but you can re-use
-            your drawings as the initial setup for the new video.
-          </template>
-        </BasePopupButton>
+        <v-row>
+          <v-spacer></v-spacer>
+          <BasePopupButton v-if="!isUploadingPost"
+            actionName="Retry new recording" 
+            @action-do="initRetry()"
+          >
+            <template v-slot:activator-button="{ on }">
+              <ButtonNew :on="on" icon="mdi-keyboard-return">
+                Retry Recording
+              </ButtonNew>
+            </template>
+            <template v-slot:message-to-user>
+              Your audio recording will be deleted, but you can re-use
+              your drawings as the initial setup for the new video.
+            </template>
+          </BasePopupButton>
+        </v-row>
         <DoodleVideo
           :strokesArray="previewVideo.strokesArray"
           :audioUrl="previewVideo.audio.blobURL"
@@ -70,6 +73,7 @@ import "firebase/firestore";
 import db from "@/database.js";
 import { RecordState } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js";
+import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   props: {
@@ -92,9 +96,11 @@ export default {
     Blackboard, 
     DoodleVideo,
     TextEditor,
-    BasePopupButton
+    BasePopupButton,
+    ButtonNew
   },
   data: () => ({
+    messageToUser: "",
     isRecordingVideo: false,
     isPreviewing: false,
     previewVideo: {
@@ -155,8 +161,15 @@ export default {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
         return; 
       }
-      this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
       
+      this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
+      const secondInMilliseconds = 1000;
+      const uploadTimeout = setTimeout(() => { 
+        this.isUploadingPost = false;
+        this.messageToUser = "Uploading has exceeded 10 seconds...consider submitting again."
+      }, 
+      10 * secondInMilliseconds);
+
       const anonymousUser = {
         uid: this.user.uid,
         email: "anonymous@mit.edu",
@@ -174,7 +187,8 @@ export default {
       const strokesArray = Blackboard.getStrokesArray();
       const imageBlob = Blackboard.getImageBlob();
 
-      if (strokesArray.length > 0 || imageBlob) { // means the Blackboard was used
+      // Check if the user used the Blackboard
+      if (strokesArray.length > 0 || imageBlob) { 
         // accumulate promises for strokes, audio, images to process them in parallel
         const promises = [];
         if (Blackboard.currentState === RecordState.POST_RECORD) {
@@ -182,30 +196,51 @@ export default {
           explanation.duration = Blackboard.currentTime;
     
           const audioBlob = audio.blob;
-          const audioPromise = this.$_saveToStorage(`audio/${getRandomId()}`, audioBlob)
-          .then((downloadUrl) => explanation.audioUrl = downloadUrl);
+          const audioPromise = this.$_saveToStorage(`audio/${getRandomId()}`, audioBlob, true) // show upload percentage
+          .then((downloadUrl) => explanation.audioUrl = downloadUrl)
+          .catch((error) => { 
+            console.log("I should catch the error here");
+            throw new Error("Audio failed to upload.") 
+            console.log("this means catch will return an unexpected promise")
+            // reject("Audio failed to upload");
+          });
 
           const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob)
-          .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl);
+          .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl)
+          .catch((error) => { 
+            throw new Error("Thumbnail failed to upload.") 
+            reject("Thumbnail failed to upload");
+          });
 
           promises.push(audioPromise);
           promises.push(thumbnailPromise);
         } else {
-          const thumbnailPromise = Blackboard.getThumbnail().then(async (thumbnailBlob) => {
+          const thumbnailPromise = Blackboard.getThumbnail()
+          .then(async (thumbnailBlob) => {
             const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
             explanation.thumbnail = thumbnailUrl;
+          })
+          .catch((error) => {
+            // throw new Error("Thumbnail failed to upload.")
+            reject("Thumbnail failed to upload");
           });
           promises.push(thumbnailPromise);
         }
 
+        // If there is a background image
         if (imageBlob) {
           const backgroundImagePromise = this.$_saveToStorage(`images/${getRandomId()}`, imageBlob)
-          .then((imageUrl) => explanation.imageUrl = imageUrl);
+          .then((imageUrl) => explanation.imageUrl = imageUrl)
+          .catch((error) => { 
+            // throw new Error("Background image failed to upload.")
+            reject("Background failed to upload");
+          });
           promises.push(backgroundImagePromise);
         }
         
         // RESOLVE PROMISES
         try {
+          console.log("trying to resolve promises");
           await Promise.all(promises);
         } catch (error) {
           this.$root.$emit("show-snackbar", "Failed to upload explanation, error message =", error);
@@ -223,7 +258,6 @@ export default {
           }
         }
       }
-      // 
       if (this.willCreateNewPost) {
         explanation.participants = [this.simplifiedUser];
         explanation.hasReplies = false;
@@ -235,9 +269,14 @@ export default {
           hasReplies: true
         });
       }
+      // reset variables
+      clearInterval(uploadTimeout);
+      this.messageToUser = "";
       this.changeKeyToForceReset += 1; // not sure if it works
       this.isUploadingPost = false;
       this.isPreviewing = false;
+
+      // emit events
       this.$emit("upload-finish"); 
       this.$root.$emit("show-snackbar", "Successfully uploaded.");
     },
