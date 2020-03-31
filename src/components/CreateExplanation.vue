@@ -166,7 +166,7 @@ export default {
       const secondInMilliseconds = 1000;
       const uploadTimeout = setTimeout(() => { 
         this.isUploadingPost = false;
-        this.messageToUser = "Uploading has exceeded 10 seconds...consider submitting again."
+        this.messageToUser = "Uploading has exceeded 10 seconds...trying again might help."
       }, 
       10 * secondInMilliseconds);
 
@@ -190,61 +190,70 @@ export default {
       // Check if the user used the Blackboard
       if (strokesArray.length > 0 || imageBlob) { 
         // accumulate promises for strokes, audio, images to process them in parallel
-        const promises = [];
+        const uploadTasks = [];
         if (Blackboard.currentState === RecordState.POST_RECORD) {
           const { imageBlob, thumbnailBlob, audio } = this.previewVideo; 
           explanation.duration = Blackboard.currentTime;
-    
-          const audioBlob = audio.blob;
-          const audioPromise = this.$_saveToStorage(`audio/${getRandomId()}`, audioBlob, true) // show upload percentage
-          .then((downloadUrl) => explanation.audioUrl = downloadUrl)
-          .catch((error) => { 
-            console.log("I should catch the error here");
-            throw new Error("Audio failed to upload.") 
-            console.log("this means catch will return an unexpected promise")
-            // reject("Audio failed to upload");
+
+          const audioUpload = new Promise(async (resolve, reject) => {
+            try {
+              const downloadUrl = await this.$_saveToStorage(`audio/${getRandomId()}`, audio.blob, true); 
+              explanation.audioUrl = downloadUrl;
+              resolve();
+            } catch (reason) {
+              reject("Audio failed to upload.");
+            }
           });
 
-          const thumbnailPromise = this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob)
-          .then((thumbnailUrl) => explanation.thumbnail = thumbnailUrl)
-          .catch((error) => { 
-            throw new Error("Thumbnail failed to upload.") 
-            reject("Thumbnail failed to upload");
+          const thumbnailUpload = new Promise(async (resolve, reject) => {
+            try {
+              const downloadUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
+              explanation.thumbnail = downloadUrl; 
+              resolve();
+            } catch (reason) {
+              reject("Thumbnail failed to upload.");
+            }
           });
 
-          promises.push(audioPromise);
-          promises.push(thumbnailPromise);
+          uploadTasks.push(audioUpload);
+          uploadTasks.push(thumbnailUpload);
+
         } else {
-          const thumbnailPromise = Blackboard.getThumbnail()
-          .then(async (thumbnailBlob) => {
-            const thumbnailUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
-            explanation.thumbnail = thumbnailUrl;
-          })
-          .catch((error) => {
-            // throw new Error("Thumbnail failed to upload.")
-            reject("Thumbnail failed to upload");
+          const thumbnailUpload = new Promise(async (resolve, reject) => {
+            try {
+              const thumbnailBlob = await Blackboard.getThumbnail();
+              const downloadUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
+              explanation.thumbnail = downloadUrl; 
+              resolve();
+            } catch (reason) {
+              reject("Thumbnail failed to upload.");
+            }
           });
-          promises.push(thumbnailPromise);
+
+          uploadTasks.push(thumbnailUpload);
         }
 
         // If there is a background image
         if (imageBlob) {
-          const backgroundImagePromise = this.$_saveToStorage(`images/${getRandomId()}`, imageBlob)
-          .then((imageUrl) => explanation.imageUrl = imageUrl)
-          .catch((error) => { 
-            // throw new Error("Background image failed to upload.")
-            reject("Background failed to upload");
+          const backgroundUpload = new Promise(async (resolve, reject) => {
+            try {
+              const downloadUrl = await this.$_saveToStorage(`images/${getRandomId()}`, imageBlob);
+              explanation.imageUrl = downloadUrl; 
+              resolve();
+            } catch (reason) {
+              reject("Background image failed to upload.");
+            }
           });
-          promises.push(backgroundImagePromise);
+          uploadTasks.push(backgroundUpload);
         }
         
         // RESOLVE PROMISES
         try {
-          console.log("trying to resolve promises");
-          await Promise.all(promises);
-        } catch (error) {
-          this.$root.$emit("show-snackbar", "Failed to upload explanation, error message =", error);
+          await Promise.all(uploadTasks);
+        } catch (reason) {
+          this.$root.$emit("show-snackbar", `Failed to upload explanation, reason: ${reason}`);
           this.isUploadingPost = false;
+          return; 
         }
         // save strokes
         if (strokesArray.length > 0) {
@@ -269,10 +278,11 @@ export default {
           hasReplies: true
         });
       }
+
       // reset variables
       clearInterval(uploadTimeout);
       this.messageToUser = "";
-      this.changeKeyToForceReset += 1; // not sure if it works
+      this.changeKeyToForceReset += 1;
       this.isUploadingPost = false;
       this.isPreviewing = false;
 

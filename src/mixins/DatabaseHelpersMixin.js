@@ -66,26 +66,18 @@ export default {
         try {
           const storageRef = firebase.storage().ref();
           const ref = storageRef.child(path);
-          if (showProgress) {
-            const uploadTask = ref.put("123");
-          } else {
-            const uploadTask = ref.put(blob);
-          }
+          const uploadTask = ref.put(blob);
           uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
             (snapshot) => {
               if (showProgress) {
-                console.log("total bytes =", snapshot.totalBytes);
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                 this.messageToUser = `${progress.toFixed(2)}%`;
-                console.log('Upload is ' + progress + '% done');
               }
             },
             (error) => { 
-              console.log("Error while uploading.");
-              console.log('error =', error);
+              console.log("Error while uploading: ", error);
             },
             async () => {
-              console.log("successful upload")
               const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
               resolve(downloadUrl);
             }
@@ -94,7 +86,6 @@ export default {
           console.log("Error initiating the upload =", error);
           this.$root.$emit("snow-snackbar", error.message);
           throw new Error(error);
-          reject(error);
         }
       });
     },
