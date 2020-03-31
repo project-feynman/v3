@@ -9,10 +9,10 @@
     </slot>
     <BlackboardDrawingCanvas 
       :currentTime="currentTime"
+      :isRealtime="isRealtime"
       @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
       @board-reset="$emit('board-reset')"
       ref="BlackboardDrawingCanvas"
-      :isRealtime="isRealtime"
     >
       <template v-slot:canvas-toolbar="{ 
         currentTool,
@@ -148,7 +148,7 @@ export default {
       this.currentState = RecordState.PRE_RECORD;
     },
     drawStrokeOnCanvas (stroke, drawInstantly = true) {
-      // TODO: add timestamp so recording does work 
+      // TODO: add timestamp so online recording also works
       const { BlackboardDrawingCanvas } = this.$refs;
       BlackboardDrawingCanvas.appendToStrokesArray(stroke);
       if (drawInstantly) {

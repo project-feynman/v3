@@ -61,23 +61,31 @@ export default {
         } 
       });
     },
-    $_saveToStorage (path, blob) {
-      return new Promise(async (resolve, reject) => {
+    $_saveToStorage (path, blob, showProgress = false) {
+      return new Promise((resolve, reject) => {
         try {
           const storageRef = firebase.storage().ref();
           const ref = storageRef.child(path);
           const uploadTask = ref.put(blob);
           uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
-            (snapshot) => {},
-            (error) => console.log('error =', error),
+            (snapshot) => {
+              if (showProgress) {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                this.messageToUser = `${progress.toFixed(2)}%`;
+              }
+            },
+            (error) => { 
+              console.log("Error while uploading: ", error);
+            },
             async () => {
               const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
               resolve(downloadUrl);
             }
           );
         } catch (error) {
+          console.log("Error initiating the upload =", error);
           this.$root.$emit("snow-snackbar", error.message);
-          reject("Error =", error);
+          throw new Error(error);
         }
       });
     },
