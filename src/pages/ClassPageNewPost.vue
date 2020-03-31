@@ -2,6 +2,8 @@
   <CreateExplanation 
     :willCreateNewPost="true"
     :postDbRef="newPostRef"
+    :key="updateKeyToResetComponent"
+    @upload-finish="updateKeyToResetComponent += 1"
     ref="CreateExplanation"
   />
 </template>
@@ -17,12 +19,21 @@ export default {
     TheAppBar, 
     CreateExplanation,
   },
+  data () {
+    return {
+      updateKeyToResetComponent: 0,
+      newPostRef: null
+    }
+  },
   computed: {
     postsRef () {
       return db.collection(`classes/${this.$route.params.class_id}/posts`);
-    },
-    newPostRef () { 
-      return this.postsRef.doc(getRandomId()); 
+    }
+  },
+  watch: {
+    updateKeyToResetComponent: {
+      handler: "resetExplanationComponent",
+      immediate: true
     }
   },
   beforeRouteLeave (to, from, next) {
@@ -34,6 +45,11 @@ export default {
       else next(false);
     } else {
       next();
+    }
+  },
+  methods: {
+    resetExplanationComponent () {
+      this.newPostRef = this.postsRef.doc(getRandomId());
     }
   }
 }

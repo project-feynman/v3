@@ -47,8 +47,9 @@
               </ButtonNew>
             </template>
             <template v-slot:message-to-user>
-              Your audio recording will be deleted, but you can re-use
-              your drawings as the initial setup for the new video.
+              Everything will be deleted so you can start fresh again.
+              <!-- Your audio recording will be deleted, but you can re-use
+              your drawings as the initial setup for the new video. -->
             </template>
           </BasePopupButton>
         </v-row>
@@ -86,8 +87,7 @@ export default {
       default: () => false
     },
     postDbRef: Object,
-    newExplanationDbRef: Object,
-    newDocId: String,
+    newExplanationDbRef: Object
   },
   mixins: [
     DatabaseHelpersMixin
@@ -145,9 +145,12 @@ export default {
     },
     async initRetry () {
       this.isPreviewing = false;
-      await this.$nextTick(); // wait for v-if to mount Blackboard 
-      this.$refs.Blackboard.tryRecordAgain();
-      this.resizeBlackboard(); // see edge case explanation above
+      this.changeKeyToForceReset += 1;
+      // QUICKFIX: Dourmashkin
+
+      // await this.$nextTick(); // wait for v-if to mount Blackboard 
+      // this.$refs.Blackboard.tryRecordAgain();
+      // this.resizeBlackboard(); // see edge case explanation above
     },
     async showPreview (getBlackboardData) {
       this.previewVideo = await getBlackboardData();
@@ -161,7 +164,7 @@ export default {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
         return; 
       }
-      
+
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
       const secondInMilliseconds = 1000;
       const uploadTimeout = setTimeout(() => { 
@@ -246,7 +249,9 @@ export default {
           });
           uploadTasks.push(backgroundUpload);
         }
-        
+
+
+
         // RESOLVE PROMISES
         try {
           await Promise.all(uploadTasks);

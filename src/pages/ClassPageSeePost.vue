@@ -7,8 +7,6 @@
     <CreateExplanation 
       :postDbRef="postRef"
       :newExplanationDbRef="explanationsRef.doc()" 
-      :titleRequired="false"
-      @upload-finish="isCreatingExpl = false"
       ref="CreateExplanation"
     />
   </div>
@@ -35,7 +33,6 @@ export default {
     explanations: [],
     explanationsRef: null,
     postRef: null,
-    isCreatingExpl: false,
     unsubscribeListener: null
   }),
   computed: {

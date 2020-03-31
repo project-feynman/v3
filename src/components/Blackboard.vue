@@ -9,10 +9,10 @@
     </slot>
     <BlackboardDrawingCanvas 
       :currentTime="currentTime"
+      :isRealtime="isRealtime"
       @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
       @board-reset="$emit('board-reset')"
       ref="BlackboardDrawingCanvas"
-      :isRealtime="isRealtime"
     >
       <template v-slot:canvas-toolbar="{ 
         currentTool,
