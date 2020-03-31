@@ -5,12 +5,13 @@
     v-bind="$attrs"
     class="button-custom" 
     :outlined="outlined" 
-    color="accent" 
+    :color="color" 
     :text="!outlined && !filled"
+    :class="small ? 'small-btn':''"
   >
     <div class="d-flex flex-column">
-      <v-icon>{{ icon }}</v-icon>
-      <span class="d-none d-sm-block">
+      <v-icon v-if="icon!=='none'">{{ icon }}</v-icon>
+      <span :class="icon!=='none' ? 'd-none d-sm-block':''">
         <slot>
 
         </slot>
@@ -24,7 +25,12 @@ export default {
   inheritAttrs: false,
   props: {
     on: Object,
-    icon: String,
+    icon: {
+      type: String,
+      default () {
+        return 'none'
+      }
+    },
     outlined: {
       type: Boolean,
       default () {
@@ -32,6 +38,18 @@ export default {
       }
     },
     filled: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
+    color: {
+      type: String,
+      default () {
+        return 'accent'
+      }
+    },
+    small: {
       type: Boolean,
       default () {
         return false
@@ -51,5 +69,8 @@ export default {
   font-weight: 400;
   max-width: 90px;
   padding: 8px 16px;
+}
+.button-custom.small-btn:not(.v-btn--round) {
+  padding: 4px 8px;
 }
 </style>

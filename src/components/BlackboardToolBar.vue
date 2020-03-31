@@ -21,7 +21,7 @@
                 >
                   <v-icon>mdi-lead-pencil</v-icon>
                   <v-icon class="down">mdi-chevron-down</v-icon>
-                </v-btn> -->
+                </v-btn>
                 <swatches 
                   @input="(newColor) => changePenColor(newColor)"
                   :value="color"
@@ -33,7 +33,8 @@
                   background-color="rgba(0, 0, 0, 0)"
                   swatch-size="24"
                 />
-              <!-- </div> -->
+              </div> -->
+              <PenSwatch :colors="colors" @select-color="(newColor) => changePenColor(newColor)" :isPenActive="isPen" />
             </v-col>
             <ButtonNew :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser">
               Eraser
@@ -79,6 +80,7 @@ import Swatches from "vue-swatches";
 import { BlackboardTools, toolbarHeight } from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
+import PenSwatch from "@/components/PenSwatch.vue";
 
 export default {
   props: {
@@ -88,7 +90,8 @@ export default {
   components: { 
     Swatches, 
     BasePopupButton,
-    ButtonNew
+    ButtonNew,
+    PenSwatch
   },
   data () {
     return {
