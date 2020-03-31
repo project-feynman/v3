@@ -148,7 +148,7 @@ export default {
       this.currentState = RecordState.PRE_RECORD;
     },
     drawStrokeOnCanvas (stroke, drawInstantly = true) {
-      // TODO: add timestamp so recording does work 
+      // TODO: add timestamp so online recording also works
       const { BlackboardDrawingCanvas } = this.$refs;
       BlackboardDrawingCanvas.appendToStrokesArray(stroke);
       if (drawInstantly) {

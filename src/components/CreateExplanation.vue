@@ -203,9 +203,14 @@ export default {
           .then((imageUrl) => explanation.imageUrl = imageUrl);
           promises.push(backgroundImagePromise);
         }
+        
         // RESOLVE PROMISES
-        await Promise.all(promises);
-
+        try {
+          await Promise.all(promises);
+        } catch (error) {
+          this.$root.$emit("show-snackbar", "Failed to upload explanation, error message =", error);
+          this.isUploadingPost = false;
+        }
         // save strokes
         if (strokesArray.length > 0) {
           explanation.hasStrokes = true;
@@ -218,6 +223,7 @@ export default {
           }
         }
       }
+      // 
       if (this.willCreateNewPost) {
         explanation.participants = [this.simplifiedUser];
         explanation.hasReplies = false;
