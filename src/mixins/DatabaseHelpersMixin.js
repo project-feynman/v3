@@ -67,11 +67,22 @@ export default {
           const storageRef = firebase.storage().ref();
           const ref = storageRef.child(path);
           const uploadTask = ref.put(blob);
+          let uploadTimeout = null;
           uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
             (snapshot) => {
+              // TODO: refactor
               if (showProgress) {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                this.messageToUser = `${progress.toFixed(2)}%`;
+                this.uploadProgress = progress.toFixed(2);
+                const secondInMilliseconds = 1000;
+                clearInterval(uploadTimeout);
+                if (this.uploadProgress !== "100.00") {
+                  uploadTimeout = setTimeout(() => { 
+                    this.messageToUser = "Failing to upload for some reason...try again.";
+                    this.isUploadingPost = false; 
+                  }, 
+                  10 * secondInMilliseconds);
+                }
               }
             },
             (error) => { 
