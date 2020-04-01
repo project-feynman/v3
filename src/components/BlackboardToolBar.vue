@@ -34,7 +34,11 @@
                   swatch-size="24"
                 />
               </div> -->
-              <PenSwatch :colors="colors" @select-color="(newColor) => changePenColor(newColor)" :isPenActive="isPen" />
+              <PenSwatch 
+                :colors="colors" 
+                :isPenActive="isPen"
+                @select-color="(newColor) => changePenColor(newColor)" 
+              />
             </v-col>
             <ButtonNew :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser">
               Eraser
