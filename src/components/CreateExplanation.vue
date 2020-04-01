@@ -185,7 +185,6 @@ export default {
       const secondInMilliseconds = 1000;
       // Check if the firestore upload API has any way to detect an error or something because longer videos will obviously take much more time.
       const uploadTimeout = setTimeout(() => { 
-        this.isUploadingPost = false;
         this.messageToUser = "Still uploading...hang in there."
       }, 
       10 * secondInMilliseconds);
