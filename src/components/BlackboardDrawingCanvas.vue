@@ -61,7 +61,7 @@ export default {
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
-      touchDisabled: false,
+      touchDisabled: true,
       strokesArray: [],
       currentStroke: { 
         points: [] 
