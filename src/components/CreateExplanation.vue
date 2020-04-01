@@ -24,15 +24,17 @@
         <p class="pt-4">toggle anonymous</p>
       </div>
       <v-progress-linear
+        :value="uploadProgress"
         :active="isUploadingPost"
         height="20"
-        striped
-        :value="uploadProgress"
         color="accent"
+        striped
         rounded
         class="font-italic text-small"
         style="font-size: 0.8em;"
-      >Uploading...</v-progress-linear>
+      >
+        Uploading...
+      </v-progress-linear>
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
@@ -180,9 +182,9 @@ export default {
       // Check if the firestore upload API has any way to detect an error or something because longer videos will obviously take much more time.
       const uploadTimeout = setTimeout(() => { 
         this.isUploadingPost = false;
-        this.messageToUser = "Uploading has exceeded 10 seconds...trying again might help."
+        this.messageToUser = "Still uploading...hang in there."
       }, 
-      180 * secondInMilliseconds);
+      10 * secondInMilliseconds);
 
       const anonymousUser = {
         uid: this.user.uid,
