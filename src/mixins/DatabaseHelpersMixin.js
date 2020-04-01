@@ -76,11 +76,13 @@ export default {
                 this.uploadProgress = progress.toFixed(2);
                 const secondInMilliseconds = 1000;
                 clearInterval(uploadTimeout);
-                uploadTimeout = setTimeout(() => { 
-                  this.messageToUser = "No upload progress has been made for 10 seconds, try again.";
-                  this.isUploadingPost = false; 
-                }, 
-                10 * secondInMilliseconds);
+                if (this.uploadProgress !== "100.00") {
+                  uploadTimeout = setTimeout(() => { 
+                    this.messageToUser = "Failing to upload for some reason...try again.";
+                    this.isUploadingPost = false; 
+                  }, 
+                  10 * secondInMilliseconds);
+                }
               }
             },
             (error) => { 

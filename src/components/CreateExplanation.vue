@@ -26,15 +26,19 @@
       <v-progress-linear
         :value="uploadProgress"
         :active="isUploadingPost"
-        height="20"
+        height="30"
+        color="green"
+        class="white--text text-small"
+      >
+        Uploading...
+      </v-progress-linear>
+      <!-- I made modifications to your changes, here's your old code -->
+        <!-- height="20"
         color="accent"
         striped
         rounded
         class="font-italic text-small"
-        style="font-size: 0.8em;"
-      >
-        Uploading...
-      </v-progress-linear>
+        style="font-size: 0.8em;" -->
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
