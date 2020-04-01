@@ -29,6 +29,7 @@ export default {
         };
         this.$emit("audio-recorded", audioPayload);
         this.audio = audioPayload; // TODO: for legacy purposes so Blackboard.vue works 
+        this.recorder = null; // quickfix for Safari multiple files playing uncontrollably bug
       });
 
       // Start recording
