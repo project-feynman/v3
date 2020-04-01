@@ -42,7 +42,7 @@
             @action-do="initRetry()"
           >
             <template v-slot:activator-button="{ on }">
-              <ButtonNew :on="on" icon="mdi-keyboard-return">
+              <ButtonNew :on="on" filled icon="mdi-keyboard-return">
                 Retry Recording
               </ButtonNew>
             </template>
