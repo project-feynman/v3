@@ -55,7 +55,7 @@
         </v-row>
         <DoodleVideo
           :strokesArray="previewVideo.strokesArray"
-          :audioUrl="previewVideo.audio.blobURL"
+          :audioUrl="previewVideo.audio.blobUrl"
           :imageBlob="previewVideo.imageBlob"
         />
       </template>

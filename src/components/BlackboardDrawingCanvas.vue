@@ -32,6 +32,7 @@ import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 import FullScreenDialog from "@/components/FullScreenDialog.vue";
 import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
+import { isIosSafari } from "@/helpers.js";
 
 export default {
   props: {
@@ -61,7 +62,7 @@ export default {
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
-      touchDisabled: true,
+      touchDisabled: isIosSafari(), // assume iPad users use Safari 
       strokesArray: [],
       currentStroke: { 
         points: [] 

@@ -13,3 +13,9 @@ export const getRandomId = function () {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
+
+export function isIosSafari () {
+  return navigator.userAgent.match(/iP(od|hone|ad)/) &&
+    navigator.userAgent.match(/AppleWebKit/) &&
+    !navigator.userAgent.match(/(Cr|Fx|OP)iOS/)
+}
