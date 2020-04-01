@@ -28,9 +28,9 @@
       <Blackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
         @record-end="(getBlackboardData) => showPreview(getBlackboardData)"
-        ref="Blackboard"
         :key="changeKeyToForceReset"
         :isRealtime="false"
+        ref="Blackboard"
       />
 
       <!-- Preview the video after recording -->
@@ -55,7 +55,7 @@
         </v-row>
         <DoodleVideo
           :strokesArray="previewVideo.strokesArray"
-          :audioUrl="previewVideo.audio.blobURL"
+          :audioUrl="previewVideo.audio.blobUrl"
           :imageBlob="previewVideo.imageBlob"
         />
       </template>

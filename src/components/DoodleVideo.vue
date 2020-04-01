@@ -11,7 +11,6 @@
       ref="AudioPlayer" 
       style="width: 100%;"
       controls
-      autoplay
     />
     <div id="speed-control">
       <v-select
@@ -49,7 +48,9 @@ export default {
     },
     imageBlob: Blob // a File is also a Blob
   },
-  mixins: [CanvasDrawMixin],
+  mixins: [
+    CanvasDrawMixin
+  ],
   data: () => ({
     playbackSpeed: 1,
     speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'3x', value: 3}],
@@ -92,13 +93,13 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.handleResize();
-    if (!this.audioUrl) {
-      this.$_quickplay();
-    }
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy () {
+    // quickfix for the previous recordings playing bug on iOS
+    const { AudioPlayer } = this.$refs;
+    AudioPlayer.src = "";
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
