@@ -265,9 +265,7 @@ export default {
           });
           uploadTasks.push(backgroundUpload);
         }
-
-
-
+        
         // RESOLVE PROMISES
         try {
           await Promise.all(uploadTasks);

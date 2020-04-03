@@ -332,6 +332,9 @@ export default {
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         }
         this.$_drawStrokesInstantly2();
+        // TODO: remove this quickfix to avoid the double drawing thumbnail 
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
         this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
       })
     },
