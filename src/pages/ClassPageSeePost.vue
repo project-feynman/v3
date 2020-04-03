@@ -54,8 +54,12 @@ export default {
     this.confirmExit(next);
   },
   destroyed () { 
-    this.unsubscribeListener(); 
-    this.unsubscribeListener2();
+    if (this.unsubscribeListener) {
+      this.unsubscribeListener(); 
+    }
+    if (this.unsubscribeListener2) {
+      this.unsubscribeListener2();
+    }
   },
   methods: {
     // TODO: check if there is text or strokes

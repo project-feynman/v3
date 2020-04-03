@@ -1,19 +1,22 @@
 <template>
   <v-app>
-    <!-- TODO: rename `subpage` -->
-    <template v-if="subpage">
-      <TheAppBar>
-        <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
-          <template v-slot:default="{ on }">
-            <ButtonNew :on="on" filled icon="mdi-settings">Settings</ButtonNew>
-          </template>
-        </TheDropdownMenu>
-      </TheAppBar>
-      <TheSideDrawer v-model="drawer" :mitClass="mitClass"/>
-      <v-content>
-        <RouterView :key="$route.fullPath"/>
-      </v-content>
-    </template>
+    <TheAppBar 
+      :key="$route.name + ($route.params.class_id || '')" 
+      @toggle-drawer="drawer = !drawer"
+    >
+      <TheDropdownMenu 
+        @sign-out="signOut()" 
+        @settings-changed="(S) => updateSettings(S)"
+      >
+        <template v-slot:default="{ on }">
+          <ButtonNew :on="on" filled icon="mdi-settings">Settings</ButtonNew>
+        </template>
+      </TheDropdownMenu>
+    </TheAppBar>
+    <TheSideDrawer v-model="drawer"/>
+    <v-content>
+      <RouterView :key="$route.fullPath"/>
+    </v-content>
   </v-app>
 </template>
 
@@ -32,26 +35,19 @@ export default {
     ButtonNew
   },
   data: () => ({
-    drawer: true,
-    subpage: false
+    drawer: true
   }),
   computed: {
-    mitClass () {
-      return this.$store.state.mitClass;
-    },
     user () {
       return this.$store.state.user;
     }
   },
-  async created () {
-    this.$root.$on("toggle-drawer", () => this.drawer = !this.drawer);
-    await this.$store.dispatch("fetchClass", this.$route.params.class_id);
-    this.subpage = true;
-  },
   methods: {
     async updateSettings (payload) {
       const userRef = db.doc(`users/${this.user.uid}`);
-      userRef.update({ enrolledClasses: payload })
+      userRef.update({ 
+        enrolledClasses: payload 
+      });
     }
   }
 }

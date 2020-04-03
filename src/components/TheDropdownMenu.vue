@@ -6,7 +6,7 @@
 
         </slot>
       </template>
-      <v-card>
+      <v-card v-if="user">
         <v-card-title>
           <h3>{{ `${user.firstName} ${user.lastName}`}}</h3>
         </v-card-title>

@@ -28,6 +28,12 @@ export default {
     classmates: [],
     unsubscribe: null
   }),
+  watch: {
+    mitClass: {
+      handler: "fetchClassmates",
+      immediate: true
+    }
+  },
   computed: {
     mitClass () {
       return this.$store.state.mitClass;
@@ -36,15 +42,20 @@ export default {
   async created () {
     const tutorialExplRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
     this.unsubscribe = await this.$_listenToDoc(tutorialExplRef, this, "tutorialExpl");
-    const classmatesQuery = db.collection("users").where("enrolledClasses", "array-contains", {
-      id: this.mitClass.id,
-      name: this.mitClass.name,
-      notifFrequency: NotifFrequency.ALWAYS
-    });
-    this.classmates = await this.$_getCollection(classmatesQuery);
   },
   beforeDestroy () {
     this.unsubscribe();
+  },
+  methods: {
+    async fetchClassmates () {
+      if (!this.mitClass) { return; } 
+      const classmatesQuery = db.collection("users").where("enrolledClasses", "array-contains", {
+        id: this.mitClass.id,
+        name: this.mitClass.name,
+        notifFrequency: NotifFrequency.ALWAYS
+      });
+      this.classmates = await this.$_getCollection(classmatesQuery);
+    }
   }
 }
 </script>

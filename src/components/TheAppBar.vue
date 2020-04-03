@@ -1,7 +1,15 @@
 <template>
-  <v-app-bar app clipped-left color="white" dense elevate-on-scroll class="app-banner" style="zIndex:9;" :height="navbarHeight">
+  <v-app-bar 
+    app 
+    clipped-left 
+    color="white" 
+    elevate-on-scroll 
+    class="app-banner" 
+    style="zIndex:9;" 
+    :height="navbarHeight"
+  >
     <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'"
-      @click.stop="$root.$emit('toggle-drawer')"
+      @click.stop="$emit('toggle-drawer')"
     />
     <img
       src="/favicon.ico"
@@ -63,6 +71,13 @@ export default {
     },
     user () {
       return this.$store.state.user;
+    }
+  },
+  created () {
+    const { class_id } = this.$route.params; 
+    if (class_id) {
+      this.$store.commit("SET_CLASS", null);
+      this.$store.dispatch("fetchClass", class_id);  
     }
   },
   methods: {
