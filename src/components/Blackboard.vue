@@ -75,7 +75,6 @@ import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BlackboardDrawingCanvas from "@/components/BlackboardDrawingCanvas.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
-import FullScreenDialog from "@/components/FullScreenDialog.vue";
 import { RecordState } from "@/CONSTANTS.js";
 
 export default {
@@ -87,7 +86,6 @@ export default {
     BlackboardAudioRecorder, 
     BlackboardDrawingCanvas,
     ButtonNew,
-    FullScreenDialog,
   },
   data () {
     return {
