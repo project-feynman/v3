@@ -63,7 +63,7 @@ export default {
     name: "",
     useDarkMode: false,
     color: "",
-    showDialog: true,
+    showDialog: false,
     NotifFrequency
   }),
   computed: {
