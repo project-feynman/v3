@@ -256,12 +256,17 @@ export default {
       e.preventDefault();
       let eraserCenter = {};
       if (this.isHoldingLeftClick) {
-        eraserCenter = { x: e.offsetX, y: e.offsetY };
+        eraserCenter = { 
+          x: e.offsetX, 
+          y: e.offsetY 
+        };
       } else {
         const finger1 = e.touches[0];
         const { left, top } = this.canvas.getBoundingClientRect();
-        eraserCenter.x = finger1.pageX - left - window.scrollX;
-        eraserCenter.y = finger1.pageY - top - window.scrollY;
+        eraseCenter = {
+          x: finger1.pageX - left - window.scrollX,
+          y: finger1.pageY - top - window.scrollY
+        };
       }
       const radius = 10;
       for (let i = 0; i < this.strokesArray.length; i++) {
