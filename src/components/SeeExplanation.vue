@@ -58,13 +58,18 @@
       <v-row v-if="user" justify="center">
         <v-layout align-center>
           <p class="pt-3 pl-3 body-2 font-weight-light">
-            {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}`: "" }}
+            {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}` : "" }}
             (video views: {{ expl.views ? expl.views : 0 }})
           </p>         
           <v-spacer></v-spacer>
           <template v-if="expl.creator.uid === user.uid">
             <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
             <ButtonNew @click="popup = true" icon="mdi-delete">Delete</ButtonNew>
+          </template>
+          <template v-else>
+            <ButtonNew @click="upvoteExpl()">
+              Thanks! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
+            </ButtonNew>
           </template>
         </v-layout>
       </v-row>
@@ -111,6 +116,23 @@ export default {
     popup: false
   }),
   methods: {
+    upvoteExpl () {
+      const ref = db.doc(`${this.expl.ref}`);
+      if (!this.userHasUpvoted()) {
+        ref.update({
+          upvotersIds: firebase.firestore.FieldValue.arrayUnion(this.user.uid)
+        });
+      } else {
+        ref.update({
+          upvotersIds: firebase.firestore.FieldValue.arrayRemove(this.user.uid)
+        });
+      }
+    },
+    userHasUpvoted () {
+      if (this.expl.upvotersIds === null) { return false; }
+      if (this.expl.upvotersIds === []) { return false; }
+      return this.expl.upvotersIds.includes(this.user.uid);
+    },
     handlePlayClick (fetchStrokes) {
       fetchStrokes();
       // update view count 
