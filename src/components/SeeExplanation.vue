@@ -24,7 +24,7 @@
             <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
             <div v-if="expl.hasStrokes" class="overlay-item">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
-              <v-btn v-else @click="fetchStrokes()" large dark>
+              <v-btn v-else @click="handlePlayClick(fetchStrokes)" large dark>
                 <v-icon>mdi-play</v-icon>
               </v-btn>
             </div>
@@ -59,7 +59,8 @@
         <v-layout align-center>
           <p class="pt-3 pl-3 body-2 font-weight-light">
             {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}`: "" }}
-          </p>          
+            (video views: {{ expl.views ? expl.views : 0 }})
+          </p>         
           <v-spacer></v-spacer>
           <template v-if="expl.creator.uid === user.uid">
             <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
@@ -79,6 +80,8 @@ import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes";
 import ButtonNew from "@/components/ButtonNew.vue"
 import db from "@/database.js";
 import { displayDate } from "@/helpers.js";
+import firebase from "firebase/app";
+import "firebase/firestore";
 
 export default {
   props: { 
@@ -108,6 +111,14 @@ export default {
     popup: false
   }),
   methods: {
+    handlePlayClick (fetchStrokes) {
+      fetchStrokes();
+      // update view count 
+      const ref = db.doc(`${this.expl.ref}`);
+      ref.update({
+        views: firebase.firestore.FieldValue.increment(1)
+      });
+    },
     displayDate (dateString) { 
       return displayDate(dateString);
     },

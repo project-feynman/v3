@@ -329,7 +329,6 @@ export default {
       this.ctx.lineTo(x, y);
     },
     getThumbnail () {
-      console.log("getThumbnail()");
       return new Promise(async (resolve) => {
         if (this.imageBlob) { // has a background image
           await this.$_renderBackground(this.imageBlobUrl);
