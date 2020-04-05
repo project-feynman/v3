@@ -326,6 +326,10 @@ export default {
       this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
       this.ctx.lineTo(x, y);
     },
+    // this implementation suffers from edge cases: 
+    // if eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
+    // I tried not using a background color, but then the white strokes will be invisible
+    // I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
     getThumbnail () {
       return new Promise(async (resolve) => {
         if (this.imageBlob) { // has a background image
