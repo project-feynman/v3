@@ -4,6 +4,7 @@
       :key="$route.name + ($route.params.class_id || '')" 
       @toggle-drawer="drawer = !drawer"
     >
+      <ButtonNew :icon="isUserEnrolled ? 'mdi-logout' : 'mdi-login'" @click="leaveClass">{{isUserEnrolled ? 'Leave' : 'Join'}} Class</ButtonNew>
       <TheDropdownMenu 
         @sign-out="signOut()" 
         @settings-changed="(S) => updateSettings(S)"
@@ -40,6 +41,9 @@ export default {
   computed: {
     user () {
       return this.$store.state.user;
+    },
+    isUserEnrolled () {
+      return this.user.enrolledClasses.filter(course=>course.id===this.$route.params.class_id).length>0
     }
   },
   methods: {
@@ -48,6 +52,13 @@ export default {
       userRef.update({ 
         enrolledClasses: payload 
       });
+    },
+    leaveClass () {
+      const updatedEnroll = this.user.enrolledClasses.filter(course=>course.id!==this.$route.params.class_id);
+      db.collection("users").doc(this.user.uid).update({
+        enrolledClasses: updatedEnroll
+      });
+      this.$router.push({path: '/'})
     }
   }
 }
