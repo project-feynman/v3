@@ -9,7 +9,7 @@
         @settings-changed="(S) => updateSettings(S)"
       >
         <template v-slot:activator="{ on }">
-          <ButtonNew :on="on" filled icon="mdi-settings">Settings</ButtonNew>
+          <ButtonNew :on="on" icon="mdi-settings">Settings</ButtonNew>
         </template>
         <template v-slot:menu-buttons>
           <v-btn @click="leaveClass()" block text color="accent">

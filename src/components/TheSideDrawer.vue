@@ -24,14 +24,37 @@
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
           <v-list class="pt-0">
-                 <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
-            <v-list-item-icon>
-              <v-icon>mdi-plus-box</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>Start a new post</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
+            <!-- Search bar -->
+            <v-list-item> 
+              <div style="display: flex;">
+                <v-autocomplete
+                  style="zIndex:11"
+                  :items="posts"
+                  :search-input.sync="search"
+                  color="white"
+                  hide-no-data
+                  hide-selected
+                  item-text="title"
+                  item-value="title"
+                  placeholder="Search posts"
+                  prepend-inner-icon="mdi-magnify"
+                  return-object
+                  @change="(selectedPost) => displayFullPost(selectedPost)"
+                  ref="SearchBar"
+                />
+                <v-btn>New Post</v-btn>
+              </div>
+         
+            </v-list-item>
+
+            <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
+              <v-list-item-icon>
+                <v-icon>mdi-plus-box</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>Start a new post</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
             <template v-for="(post, i) in posts">
               <v-list-item 
                 :key="post.id + i"
@@ -107,7 +130,8 @@
 </template>
 
 <script>
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import TheSearchBar from "@/components/TheSearchBar.vue";
 import { tutorial } from "@/CONSTANTS.js";
 import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
@@ -116,7 +140,12 @@ export default {
   props: {
     value: Boolean
   },
-  mixins: [DatabaseHelpersMixin],
+  mixins: [
+    DatabaseHelpersMixin
+  ],
+  components: {
+    TheSearchBar
+  },
   data () {
     return {
       posts: [],
@@ -147,7 +176,7 @@ export default {
     this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
     this.unsusbcribeBlackboardsListener = await this.$_listenToCollection(blackboardsRef, this, "blackboards");
     this.unsubscribePostsListener = await this.$_listenToCollection(postsQuery, this, "posts");;
-    this.$root.$on('leftRoom', ()=> {this.isMicOn=false});
+    this.$root.$on('leftRoom', () => { this.isMicOn = false });
   },
   destroyed () {
     if (this.unsubscribeRoomListener) {
@@ -158,6 +187,12 @@ export default {
     }
   },
   methods: { 
+    displayFullPost (post) {
+      const { SearchBar } = this.$refs;
+      this.$router.push(`/class/${this.classId}/posts/${post.id}`);
+      SearchBar.reset();
+      SearchBar.blur();
+    },
     createBlackboard () {
       const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
       const newBlackboard = blackboardsRef.add({
