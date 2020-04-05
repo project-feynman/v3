@@ -263,7 +263,7 @@ export default {
       } else {
         const finger1 = e.touches[0];
         const { left, top } = this.canvas.getBoundingClientRect();
-        eraseCenter = {
+        eraserCenter = {
           x: finger1.pageX - left - window.scrollX,
           y: finger1.pageY - top - window.scrollY
         };
@@ -329,6 +329,7 @@ export default {
       this.ctx.lineTo(x, y);
     },
     getThumbnail () {
+      console.log("getThumbnail()");
       return new Promise(async (resolve) => {
         if (this.imageBlob) { // has a background image
           await this.$_renderBackground(this.imageBlobUrl);
