@@ -153,7 +153,7 @@ export default {
     ...mapState(["user", "isFetchingUser"]),
     userRef () { 
       return db.collection("users").doc(this.user.uid); 
-    }
+    },
   },
   data () {
     return {

@@ -30,7 +30,6 @@
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
-import FullScreenDialog from "@/components/FullScreenDialog.vue";
 import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
 import { isIosSafari } from "@/helpers.js";
 
@@ -48,7 +47,6 @@ export default {
   components: { 
     BlackboardToolBar, 
     ButtonNew,
-    FullScreenDialog
   },
   data () {
     return {

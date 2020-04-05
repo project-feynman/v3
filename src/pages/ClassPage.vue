@@ -8,8 +8,13 @@
         @sign-out="signOut()" 
         @settings-changed="(S) => updateSettings(S)"
       >
-        <template v-slot:default="{ on }">
+        <template v-slot:activator="{ on }">
           <ButtonNew :on="on" filled icon="mdi-settings">Settings</ButtonNew>
+        </template>
+        <template v-slot:menu-buttons>
+          <v-btn @click="leaveClass()" block text color="accent">
+            {{ isUserEnrolled ? 'UN-ENROLL' : 'ENROLL' }} Class
+          </v-btn>
         </template>
       </TheDropdownMenu>
     </TheAppBar>
@@ -40,6 +45,11 @@ export default {
   computed: {
     user () {
       return this.$store.state.user;
+    },
+    isUserEnrolled () {
+      if (!this.user) { return; }
+      if (!this.user.enrolledClasses) { return; }
+      return this.user.enrolledClasses.filter((course) => course.id === this.$route.params.class_id).length === 1;
     }
   },
   methods: {
@@ -48,6 +58,13 @@ export default {
       userRef.update({ 
         enrolledClasses: payload 
       });
+    },
+    leaveClass () {
+      const updatedEnroll = this.user.enrolledClasses.filter((course) => course.id !== this.$route.params.class_id);
+      db.collection("users").doc(this.user.uid).update({
+        enrolledClasses: updatedEnroll
+      });
+      this.$router.push({path: '/'})
     }
   }
 }

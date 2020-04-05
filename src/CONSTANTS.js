@@ -1,6 +1,7 @@
 export const NotifFrequency = {
   ALWAYS: "always",
-  NEVER: "never"
+  DAILY: "daily",
+  NEVER: "never",
 };
 
 export const RecordState = {

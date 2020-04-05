@@ -79,7 +79,7 @@ export default {
       this.ctx.lineCap = "round"; // lines at different angles can join into each other
     },
     $_drawStrokesInstantly2 () {
-      this.strokesArray.forEach((stroke) => !(stroke.isErasing || stroke.wasErased) ? this.$_drawStroke2(stroke) : {});
+      this.strokesArray.forEach((stroke) => this.$_drawStroke2(stroke));
     },
     $_drawStroke2 ({ points, color, lineWidth, isErasing}, pointPeriod = null) {
       return new Promise(async (resolve) => {
