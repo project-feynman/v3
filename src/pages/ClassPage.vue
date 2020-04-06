@@ -9,7 +9,7 @@
         @settings-changed="(S) => updateSettings(S)"
       >
         <template v-slot:activator="{ on }">
-          <ButtonNew :on="on" filled icon="mdi-settings">Settings</ButtonNew>
+          <ButtonNew :on="on" icon="mdi-settings">Settings</ButtonNew>
         </template>
         <template v-slot:menu-buttons>
           <v-btn @click="leaveClass()" block text color="accent">
@@ -31,6 +31,8 @@ import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 export default {
   components: { 
@@ -65,6 +67,10 @@ export default {
         enrolledClasses: updatedEnroll
       });
       this.$router.push({path: '/'})
+    },
+    signOut () { 
+      firebase.auth().signOut(); 
+      this.$router.push("/");
     }
   }
 }

@@ -66,11 +66,9 @@
             <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
             <ButtonNew @click="popup = true" icon="mdi-delete">Delete</ButtonNew>
           </template>
-          <template v-else>
-            <ButtonNew @click="upvoteExpl()">
-              Thanks! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
-            </ButtonNew>
-          </template>
+          <ButtonNew @click="upvoteExpl()" :disabled="expl.creator.uid === user.uid">
+            Thanks! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
+          </ButtonNew>
         </v-layout>
       </v-row>
     </v-container>

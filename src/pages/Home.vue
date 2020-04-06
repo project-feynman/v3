@@ -15,7 +15,7 @@
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-plus">Add Class</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-plus">Create Class</ButtonNew>
           </template>
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
@@ -288,9 +288,6 @@ export default {
       const enrolledClasses = [];
       const newUser = { uid, email, firstName, lastName, color, enrolledClasses };
       db.collection("users").doc(uid).set(newUser);
-    },
-    signOut () { 
-      firebase.auth().signOut(); 
     },
     logoVisibility () {
       const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;

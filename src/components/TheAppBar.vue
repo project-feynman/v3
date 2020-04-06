@@ -16,20 +16,18 @@
       @click="$router.push('/')"
       :class="['home-logo', page === 'realtime' ? 'd-none d-sm-block' : '']"
     />
-    <v-toolbar-title v-if="$route.path === '/' || mitClass"
-      :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
-    >
-      {{ $route.path === "/" ? "" : mitClass.name }}
+    <v-toolbar-title v-if="mitClass && $route.path !== '/'" :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']">
+      {{ mitClass.name }}
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
       <BasePopupButton 
-        actionName="Give feedback" 
+        actionName="Give Feedback" 
         :inputFields="['summary']"
         @action-do="(bugReport) => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
-          <ButtonNew :on="on" icon="mdi-bug">Give feedback</ButtonNew>
+          <ButtonNew :on="on" icon="mdi-bug">Give Feedback</ButtonNew>
         </template>
         <template v-slot:message-to-user>
           Report a bug, suggest a feature, etc.
