@@ -24,29 +24,6 @@
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
           <v-list class="pt-0">
-            <!-- Search bar -->
-            <v-list-item> 
-              <div style="display: flex;">
-                <v-autocomplete
-                  style="zIndex:11"
-                  :items="posts"
-                  :search-input.sync="search"
-                  color="white"
-                  hide-no-data
-                  hide-selected
-                  item-text="title"
-                  item-value="title"
-                  placeholder="Search posts"
-                  prepend-inner-icon="mdi-magnify"
-                  return-object
-                  @change="(selectedPost) => displayFullPost(selectedPost)"
-                  ref="SearchBar"
-                />
-                <v-btn>New Post</v-btn>
-              </div>
-         
-            </v-list-item>
-
             <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
               <v-list-item-icon>
                 <v-icon>mdi-plus-box</v-icon>
@@ -54,6 +31,23 @@
               <v-list-item-content>
                 <v-list-item-title>Start a new post</v-list-item-title>
               </v-list-item-content>
+            </v-list-item> 
+
+            <v-list-item>
+              <v-autocomplete
+                height="10px"
+                :items="posts"
+                item-text="title"
+                @change="(selectedPost) => displayFullPost(selectedPost)"
+                color="accent"
+                outlined
+                hide-details
+                placeholder="Search existing posts..."
+                prepend-inner-icon="mdi-magnify"
+                return-object
+                ref="SearchBar"
+                style="zIndex:11"
+              />
             </v-list-item>
             <template v-for="(post, i) in posts">
               <v-list-item 
@@ -169,7 +163,7 @@ export default {
     const roomRef = db.doc(`rooms/${this.classId}`);
     const tutorialPostRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
     const postsRef = db.collection(`classes/${this.classId}/posts`);
-    const postsQuery = postsRef.orderBy("date", "desc").limit(50);
+    const postsQuery = postsRef.orderBy("date", "desc").limit(100);
     // this.tutorialPost = await this.$_getDoc(tutorialPostRef);
     
     const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);

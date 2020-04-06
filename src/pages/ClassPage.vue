@@ -31,6 +31,8 @@ import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
+import firebase from "firebase/app";
+import "firebase/auth";
 
 export default {
   components: { 
@@ -65,6 +67,10 @@ export default {
         enrolledClasses: updatedEnroll
       });
       this.$router.push({path: '/'})
+    },
+    signOut () { 
+      firebase.auth().signOut(); 
+      this.$router.push("/");
     }
   }
 }
