@@ -2,7 +2,7 @@
   <div class="text-xs-center">
     <v-menu
       v-model="menu" 
-      :close-on-content-click="false" 
+      close-on-content-click 
       :nudge-width="200" 
       offset-x
     >
@@ -12,36 +12,9 @@
         </slot>
       </template>
       <v-card>
-        <v-card-title>
-          <h3 v-if="user">{{ `${user.firstName} ${user.lastName}`}}</h3>
-        </v-card-title>
-        <!-- <v-card-actions>
-          <v-btn block text color="accent" @click="showDialog=true">Email Settings</v-btn>
-        </v-card-actions> -->
-        <v-divider></v-divider>
-        <slot name="menu-buttons">
-
-        </slot>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-btn block text color="accent" @click="$emit('sign-out')">Sign Out</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-menu>
-
-    <!-- Email settings popup -->
-    <v-dialog v-model="showDialog" scrollable transition="slide-y-transition" max-width="500">
-      <v-card>
-        <v-card-title>
-          Email Settings
-          <v-spacer/>
-          <v-btn icon outlined @click="showDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text> 
-          <v-list v-if="user">
-            <v-list-item v-for="mitClass in user.enrolledClasses" :key="mitClass.id">
+        <v-list v-if="user">
+          <template v-for="mitClass in user.enrolledClasses">
+            <v-list-item v-if="mitClass.id === $store.state.mitClass.id" :key="mitClass.id">
               <v-container class="px-0">
                 <v-list-item-title class="font-weight-bold pr-0">{{ mitClass.name }}</v-list-item-title>
                 <v-list-item-action>
@@ -58,10 +31,10 @@
                 </v-list-item-action>
               </v-container>
             </v-list-item>
-          </v-list>
-        </v-card-text>
+          </template>
+        </v-list>
       </v-card>
-    </v-dialog>
+    </v-menu>
   </div>
 </template>
 
@@ -81,19 +54,12 @@ export default {
   computed: {
     user () { 
       return this.$store.state.user; 
+    },
+    mitClass () {
+      return this.$store.state.mitClass;
     }
   },
   methods: {
-    handleSave () {
-      this.menu = false;
-      const updatedUser = {
-        useDarkMode: this.useDarkMode
-        // color: this.color
-      };
-      if (this.name) { updatedUser.name = this.name; }
-      else { updatedUser.name = this.user.name; }
-      this.$emit("save", updatedUser);
-    },
     classNotifChanged ({ name, id }, notifFrequency) {
       const updateArray = this.user.enrolledClasses;
       for (let i = 0; i < updateArray.length; i++) {

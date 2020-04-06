@@ -4,16 +4,23 @@
       :key="$route.name + ($route.params.class_id || '')" 
       @toggle-drawer="drawer = !drawer"
     >
+      <!-- Email notifications -->
+      <MenuEmailSettings>
+        <template v-slot:activator="{ on }">
+          <ButtonNew :on="on" icon="mdi-bell">Email Settings</ButtonNew>
+        </template>
+      </MenuEmailSettings>
+
       <TheDropdownMenu 
         @sign-out="signOut()" 
         @settings-changed="(S) => updateSettings(S)"
       >
         <template v-slot:activator="{ on }">
-          <ButtonNew :on="on" icon="mdi-settings">Settings</ButtonNew>
+          <ButtonNew :on="on" icon="mdi-account-circle">Account</ButtonNew>
         </template>
         <template v-slot:menu-buttons>
           <v-btn @click="leaveClass()" block text color="accent">
-            {{ isUserEnrolled ? 'UN-ENROLL' : 'ENROLL' }} Class
+            {{ isUserEnrolled ? 'DROP' : 'JOIN' }} Class
           </v-btn>
         </template>
       </TheDropdownMenu>
@@ -26,6 +33,7 @@
 </template>
 
 <script>
+import MenuEmailSettings from "@/components/MenuEmailSettings.vue";
 import TheSideDrawer from "@/components/TheSideDrawer.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
@@ -39,6 +47,7 @@ export default {
     TheSideDrawer,
     TheAppBar,
     TheDropdownMenu,
+    MenuEmailSettings,
     ButtonNew
   },
   data: () => ({

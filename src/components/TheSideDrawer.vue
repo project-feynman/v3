@@ -26,7 +26,7 @@
           <v-list class="pt-0">
             <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
               <v-list-item-icon>
-                <v-icon>mdi-plus-box</v-icon>
+                <v-icon>mdi-plus</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title>Start a new post</v-list-item-title>
