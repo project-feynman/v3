@@ -34,6 +34,7 @@
             </v-list-item> 
 
             <v-list-item>
+              <!-- TODO: re-use BaseSearchBar -->
               <v-autocomplete
                 height="10px"
                 :items="posts"
@@ -125,7 +126,6 @@
 
 <script>
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import TheSearchBar from "@/components/TheSearchBar.vue";
 import { tutorial } from "@/CONSTANTS.js";
 import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
@@ -137,9 +137,6 @@ export default {
   mixins: [
     DatabaseHelpersMixin
   ],
-  components: {
-    TheSearchBar
-  },
   data () {
     return {
       posts: [],
