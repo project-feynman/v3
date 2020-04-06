@@ -36,16 +36,16 @@
             <v-list-item>
               <!-- TODO: re-use BaseSearchBar -->
               <v-autocomplete
-                height="10px"
+                placeholder="Search existing posts..."
                 :items="posts"
                 item-text="title"
                 @change="(selectedPost) => displayFullPost(selectedPost)"
-                color="accent"
                 outlined
+                clearable
                 hide-details
-                placeholder="Search existing posts..."
                 prepend-inner-icon="mdi-magnify"
                 return-object
+                color="accent"
                 ref="SearchBar"
                 style="zIndex:11"
               />
