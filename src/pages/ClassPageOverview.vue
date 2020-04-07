@@ -47,15 +47,16 @@ export default {
     this.unsubscribe();
   },
   methods: {
-    async fetchClassmates () {
-      if (!this.mitClass) { return; } 
-      const classmatesQuery = db.collection("users").where("enrolledClasses", "array-contains", {
-        id: this.mitClass.id,
-        name: this.mitClass.name,
-        notifFrequency: NotifFrequency.ALWAYS
-      });
-      this.classmates = await this.$_getCollection(classmatesQuery);
-    }
+    fetchClassmates () {}
+    // async fetchClassmates () {
+    //   if (!this.mitClass) { return; } 
+    //   const classmatesQuery = db.collection("users").where("enrolledClasses", "array-contains", {
+    //     id: this.mitClass.id,
+    //     name: this.mitClass.name,
+    //     notifFrequency: NotifFrequency.ALWAYS
+    //   });
+    //   this.classmates = await this.$_getCollection(classmatesQuery);
+    // }
   }
 }
 </script>
