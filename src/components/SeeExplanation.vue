@@ -127,9 +127,7 @@ export default {
       }
     },
     userHasUpvoted () {
-      if (!this.expl.upvotersIds || this.expl.upvotersIds === []) {
-        return false;
-      }
+      if (!this.expl.upvotersIds) { return false; }
       return this.expl.upvotersIds.includes(this.user.uid);
     },
     handlePlayClick (fetchStrokes) {
