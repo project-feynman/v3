@@ -198,7 +198,7 @@ export default {
       const metadata = {
         title: TextEditor.extractAllText(),
         html: TextEditor.html,
-        date: this.getDate(),
+        date: new Date().toISOString(),
         creator: this.isAnonymous ? anonymousUser : this.simplifiedUser,
         mitClass: this.mitClass
       };
@@ -308,10 +308,6 @@ export default {
       // emit events
       this.$emit("upload-finish"); 
       this.$root.$emit("show-snackbar", "Successfully uploaded.");
-    },
-    getDate () {
-      const today = new Date();
-      return today.toISOString();
     }
   }
 }

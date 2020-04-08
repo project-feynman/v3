@@ -255,7 +255,7 @@ export default {
           name,
           notifFrequency: NotifFrequency.ALWAYS
         })
-      })
+      });
       this.fetchClasses();
     },
     logIn ({ email, password }) {
