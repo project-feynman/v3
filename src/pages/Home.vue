@@ -19,8 +19,8 @@
           </template>
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
-          <template v-slot:default="{ on }">
-            <ButtonNew :on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
+          <template v-slot:activator="{ on }">
+            <ButtonNew :on="on" icon="mdi-account-circle">Account</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
@@ -294,6 +294,10 @@ export default {
       const enrolledClasses = [];
       const newUser = { uid, email, firstName, lastName, color, enrolledClasses };
       db.collection("users").doc(uid).set(newUser);
+    },
+    signOut () { 
+      firebase.auth().signOut(); 
+      this.$router.push("/");
     },
     logoVisibility () {
       const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;
