@@ -11,6 +11,8 @@
         </slot>
       </template>
       <v-card>
+        <v-card-title>Email Settings</v-card-title>
+        <v-divider/>
         <v-list v-if="user && $store.state.mitClass">
           <template v-for="mitClass in user.enrolledClasses">
             <v-list-item v-if="mitClass.id === $store.state.mitClass.id" :key="mitClass.id">
@@ -18,24 +20,21 @@
                 <v-list-item-action>
                   <template v-for="(isEnabled, option) in DefaultEmailSettings">
                     <v-row :key="option">
-                      <p>{{ convertToSentenceCase(option) }}</p>
-                      <v-switch 
-                        v-model="emailSettings[option]"
-                        :label="`${emailSettings[option]}`"
-                        :key="option"
-                      >
-                      </v-switch>
+                      <p class="pl-5">{{ convertToSentenceCase(option) }}</p>
+                      <v-switch v-model="emailSettings[option]" :key="option" class="ml-5"/>
                     </v-row>
                   </template>
-                  <v-row>
-                    <v-btn @click="saveSettings()" color="secondary">Save Settings</v-btn>
-                    <v-btn @click="menu = false" color="secondary">Cancel</v-btn>
-                  </v-row>
                 </v-list-item-action>
               </v-container>
             </v-list-item>
           </template>
         </v-list>
+        <v-card-actions>
+          <v-row align="center" justify="center">
+            <v-btn @click="saveSettings()" text color="secondary">Save Settings</v-btn>
+            <v-btn @click="menu = false" text color="secondary">Cancel</v-btn>
+          </v-row>
+        </v-card-actions>
       </v-card>
     </v-menu>
   </div>
