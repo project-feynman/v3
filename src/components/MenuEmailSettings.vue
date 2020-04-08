@@ -86,7 +86,6 @@ export default {
           updatePayload[key] = firebase.firestore.FieldValue.arrayRemove(this.mitClass.id);
         }
       }
-      console.log("updatePayload =", updatePayload);
       const userRef = db.collection("users").doc(this.user.uid);
       await userRef.update(updatePayload);
       this.menu = false; 
