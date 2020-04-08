@@ -1,7 +1,6 @@
 <template>
   <div class="text-xs-center">
-    <v-menu
-      v-model="menu" 
+    <v-menu v-model="menu" 
       :close-on-content-click="false"
       :nudge-width="200" 
       offset-x
@@ -12,14 +11,13 @@
         </slot>
       </template>
       <v-card>
-        <v-list v-if="user">
+        <v-list v-if="user && $store.state.mitClass">
           <template v-for="mitClass in user.enrolledClasses">
             <v-list-item v-if="mitClass.id === $store.state.mitClass.id" :key="mitClass.id">
               <v-container class="px-0">
-                <!-- <v-list-item-title class="font-weight-bold pr-0">{{ mitClass.name }}</v-list-item-title> -->
                 <v-list-item-action>
-                  <template v-for="option in emailOptions">
-                    <v-row>
+                  <template v-for="(isEnabled, option) in DefaultEmailSettings">
+                    <v-row :key="option">
                       <p>{{ convertToSentenceCase(option) }}</p>
                       <v-switch 
                         v-model="emailSettings[option]"
@@ -30,8 +28,8 @@
                     </v-row>
                   </template>
                   <v-row>
-                    <v-btn @click="saveSettings()">Save Settings</v-btn>
-                    <v-btn @click="menu = false">Cancel</v-btn>
+                    <v-btn @click="saveSettings()" color="secondary">Save Settings</v-btn>
+                    <v-btn @click="menu = false" color="secondary">Cancel</v-btn>
                   </v-row>
                 </v-list-item-action>
               </v-container>
@@ -44,7 +42,7 @@
 </template>
 
 <script>
-import { NotifFrequency } from "@/CONSTANTS.js";
+import { NotifFrequency, DefaultEmailSettings } from "@/CONSTANTS.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
@@ -52,21 +50,9 @@ import db from "@/database.js";
 export default {
   data: () => ({
     menu: false,
-    showDialog: false,
     NotifFrequency,
-    emailSettings: {
-      emailOnNewPost: false,
-      emailOnNewReply: false,
-      emailDailySummary: false,
-      emailWeeklySummary: false
-    },
-    // TODO: make it an enumeration
-    emailOptions: [
-      "emailOnNewPost", 
-      "emailOnNewReply", 
-      "emailDailySummary", 
-      "emailWeeklySummary"
-    ]
+    DefaultEmailSettings,
+    emailSettings: { ...DefaultEmailSettings }
   }),
   computed: {
     dataReady () {
@@ -82,11 +68,8 @@ export default {
   watch: {
     dataReady: {
       handler () {
-        // TODO: despite of what's been done, sometimes `mitClass` is still undefined
         if (!this.dataReady) { return; }
-        console.log("this.mitClass =", this.mitClass);
-        console.log("this.user =", this.user);
-        for (let option of this.emailOptions) {
+        for (let option of Object.keys(this.emailSettings)) {
           if (!this.user[option]) { continue; }
           this.emailSettings[option] = this.user[option].includes(this.mitClass.id);
         }
@@ -114,15 +97,6 @@ export default {
       // Refer to https://stackoverflow.com/questions/7225407/convert-camelcasetext-to-sentence-case-text
       const result = text.replace( /([A-Z])/g, " $1" );
       return result.charAt(0).toUpperCase() + result.slice(1);
-    },
-    classNotifChanged ({ name, id }, notifFrequency) {
-      const updateArray = this.user.enrolledClasses;
-      for (let i = 0; i < updateArray.length; i++) {
-        if (updateArray[i].id === id) {
-          updateArray[i] = { name, id, notifFrequency };
-        }
-      }
-      this.$emit("settings-changed", updateArray);
     }
   }
 };
