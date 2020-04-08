@@ -9,27 +9,23 @@ admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
 	databaseUrl: "https://feynman-mvp.firebaseio.com"
 });
+
 const firestore = admin.firestore();
 sgMail.setApiKey(SENDGRID_API_KEY);
 
-function sendEmail (email, subject, text, html) {
-  sgMail.send({ 
-    to: email, 
-    from: "feynmannotif@gmail.com", 
-    subject, 
-    text, 
-    html 
-  });
-}
-
-function sendEmail2 (to, subject, body) {
-  sgMail.send({
-    to,
-    subject,
-    html: body,
-    from: "no-reply@explain.mit.edu",
-    text: subject,
-  });
+function sendEmail (to, subject, body) {
+  try {
+    sgMail.send({
+      to,
+      subject,
+      html: body,
+      from: "feynmannotif@gmail.com", // "no-reply@explain.mit.edu"
+      text: subject,
+    });
+  } catch (reason) {
+    console.log("SendGrid failed to send email, reason =", reason);
+    throw new Error(reason);
+  }
 }
 
 function getDocFromDb (ref) {
@@ -41,7 +37,9 @@ function getDocFromDb (ref) {
         ...doc.data() 
       }); 
     }  // TODO: throw an explicit error
-    else { reject(); }
+    else { 
+      reject(); 
+    }
   })
 }
 
@@ -66,70 +64,52 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/room/{classId}
   });
 });
 
-// Sends email to entire class whenever a new question is created
-// exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (post, context) => {
-//   const { mitClass } = post.data();
-//   const classSetting = { id: mitClass.id, name: mitClass.name, notifFrequency: "always" };
-//   const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classSetting);
-//   const classmatesDocs = await classmatesRef.get();
-//   classmatesDocs.forEach(classmateDoc => {
-//     if (post.data().creator.email === classmateDoc.data().email) { return; }
-//     const subject = `${post.data().creator.firstName} posted in ${mitClass.name}`;
-//     const { classId, postId } = context.params;
-//     const html = `
-//       <p>${post.data().title}</p>
-//       <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
-//     `;
-//     sendEmail(classmateDoc.data().email, subject, "A new post :]", html);
-//   })
-// });
+function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already
+  return `
+    <h3>${explDoc.title}</h3>
+    <p>${explDoc.description ? explDoc.description : "" }</p>
+    <img src="${explDoc.thumbnail ? explDoc.thumbnail : "" }"></img>
+    <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Click here to view.</a>
+  `; 
+}
 
-exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (post, context) => {
-  // const { mitClass } = post.data();
-  // const classSetting = { id: mitClass.id, name: mitClass.name, notifFrequency: "always" };
-  const classmatesRef = firestore.collection("users").where("emailOnNewPost", "array-contains", context.params.classId);
+exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (newPostDoc, context) => {
+  const { classId, postId } = context.params;
+  const classmatesRef = firestore.collection("users").where("emailOnNewPost", "array-contains", classId);
   const classmatesDocs = await classmatesRef.get();
-  classmatesDocs.forEach(classmateDoc => {
-    if (post.data().creator.email === classmateDoc.data().email) { return; }
-    const subject = `${post.data().creator.firstName} posted in ${mitClass.name}`;
-    const { classId, postId } = context.params;
-    const html = `
-      <p>${post.data().title}</p>
-      <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
-    `;
-    sendEmail(classmateDoc.data().email, subject, "A new post :]", html);
-  })
+  classmatesDocs.forEach((classmateDoc) => {
+    const newPost = newPostDoc.data();
+    const classmate = classmateDoc.data();
+    if (newPost.creator.email === classmate.email) { 
+      return; 
+    }
+    console.log("sending to classmate =", classmate.email);
+    sendEmail(
+      classmate.email, 
+      `${newPost.creator.firstName} posted in ${newPost.mitClass.name}`,
+      getEmailBody(newPost, classId, postId)
+    );
+  });
 });
 
-// exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explDoc, context) => {
-//   const { postId, classId } = context.params;
-//   const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
-//   originalPost.participants.forEach(participant => {
-//     if (participant.email === explDoc.data().creator.email) { return; }
-//     const subject = `${explDoc.data().creator.firstName} replied in a ${explDoc.data().mitClass.name} post you engaged in`;
-//     const html = `
-//       <p>${explDoc.data().title}</p>
-//       <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
-//     `;
-//     sendEmail(participant.email, subject, "A new post activity :]", html);
-//   })
-// });
-
-exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explDoc, context) => {
-  const { postId, classId } = context.params;
+exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (newReplyDoc, context) => {
+  const { classId, postId } = context.params;
   const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
-  originalPost.participants.forEach((participant) => {
-    if (participant.email === explDoc.data().creator.email) { return; }
-    if (participant.emailOnNewReply.filter((id) => id === classId).length === 0) { 
-      return;
+  for (let participant of originalPost.participants) {
+    const newReply = newReplyDoc.data(); 
+    console.log("classId =", classId);
+    console.log("participant.email =", participant.email);
+    console.log("newReply.creator.email =", newReply.creator.email);
+    if (participant.email === newReply.creator.email) { 
+      continue; 
+    } else if (participant.emailOnNewReply.includes(classId)) { 
+      sendEmail(
+        participant.email, 
+        `${newReply.creator.firstName} replied in a ${newReply.mitClass.name} post you engaged in`,
+        getEmailBody(newReply, classId, postId)
+      );
     }
-    const subject = `${explDoc.data().creator.firstName} replied in a ${explDoc.data().mitClass.name} post you engaged in`;
-    const html = `
-      <p>${explDoc.data().title}</p>
-      <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
-    `;
-    sendEmail(participant.email, subject, "A new post activity :]", html);
-  })
+  }
 });
 
 const emailSummaryFrequencyEnum = {
@@ -149,7 +129,7 @@ async function sendEmailToSubscribers (context, frequency) { // frequency can be
     for (let user of subscribedUsers) {
       const subject = `${mitClass.name}'s ${frequency} Summary from ExplainMIT`;
       const body = `<h1>Testing the ${frequency} summary at the moment</h1>`;
-      sendEmail2(user.email, subject, body);
+      sendEmail(user.email, subject, body);
     }     
   }
 }
@@ -183,10 +163,12 @@ exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
     "wfee@mit.edu",
     "pkafle@mit.edu"
   ];
-  const subject = `NEW FEEDBACK FROM USER ${data.userEmail}! REPLY QUICKLY!`;
   for (let email of ourEmails) {
-    sendEmail(email, subject, "New feedback", `<h1>${data.userEmail} said ${data.userFeedback}</h1>`);
-    console.log("called sendEmail");
+    sendEmail(
+      email, 
+      `New feedback from a user!`,
+      `<h1>${data.userEmail} said ${data.userFeedback}</h1>`
+    );
   }
 });
 
