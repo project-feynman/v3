@@ -1,3 +1,10 @@
+export const DefaultEmailSettings = {
+  emailOnNewPost: false,
+  emailOnNewReply: true,
+  emailDailySummary: false,
+  emailWeeklySummary: true
+}
+
 export const NotifFrequency = {
   REAL_TIME: "Real Time",
   WEEKLY: "Weekly",
