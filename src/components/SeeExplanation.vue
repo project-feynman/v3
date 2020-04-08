@@ -59,8 +59,10 @@
         <v-layout align-center>
           <p class="pt-3 pl-3 body-2 font-weight-light">
             {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}` : "" }}
-            (video views: {{ expl.views ? expl.views : 0 }})
-          </p>         
+          </p>      
+          <p v-if="expl.thumbnail" class="pt-3 pl-2 body-2 font-weight-light">
+            (video views: {{ expl.views ? expl.views : 0 }}) 
+          </p> 
           <v-spacer></v-spacer>
           <template v-if="expl.creator.uid === user.uid">
             <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>

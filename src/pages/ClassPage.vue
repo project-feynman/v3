@@ -4,16 +4,23 @@
       :key="$route.name + ($route.params.class_id || '')" 
       @toggle-drawer="drawer = !drawer"
     >
+      <!-- Email notifications -->
+      <MenuEmailSettings>
+        <template v-slot:activator="{ on }">
+          <ButtonNew :on="on" icon="mdi-bell">Email Settings</ButtonNew>
+        </template>
+      </MenuEmailSettings>
+
       <TheDropdownMenu 
         @sign-out="signOut()" 
         @settings-changed="(S) => updateSettings(S)"
       >
         <template v-slot:activator="{ on }">
-          <ButtonNew :on="on" icon="mdi-settings">Settings</ButtonNew>
+          <ButtonNew :on="on" icon="mdi-account-circle">Account</ButtonNew>
         </template>
         <template v-slot:menu-buttons>
           <v-btn @click="leaveClass()" block text color="accent">
-            {{ isUserEnrolled ? 'UN-ENROLL' : 'ENROLL' }} Class
+            {{ isUserEnrolled ? 'DROP' : 'JOIN' }} Class
           </v-btn>
         </template>
       </TheDropdownMenu>
@@ -26,19 +33,23 @@
 </template>
 
 <script>
+import MenuEmailSettings from "@/components/MenuEmailSettings.vue";
 import TheSideDrawer from "@/components/TheSideDrawer.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
+import "firebase/firestore";
 import "firebase/auth";
+import { DefaultEmailSettings } from "@/CONSTANTS.js";
 
 export default {
   components: { 
     TheSideDrawer,
     TheAppBar,
     TheDropdownMenu,
+    MenuEmailSettings,
     ButtonNew
   },
   data: () => ({
@@ -47,6 +58,9 @@ export default {
   computed: {
     user () {
       return this.$store.state.user;
+    },
+    mitClass () {
+      return this.$store.state.mitClass;
     },
     isUserEnrolled () {
       if (!this.user) { return; }
@@ -61,12 +75,18 @@ export default {
         enrolledClasses: payload 
       });
     },
-    leaveClass () {
+    async leaveClass () {
+      const emailSettingsUpdate = {};
+      for (let emailOption of Object.keys(DefaultEmailSettings)) {
+        emailSettingsUpdate[emailOption] = firebase.firestore.FieldValue.arrayRemove(this.mitClass.id);
+      }
       const updatedEnroll = this.user.enrolledClasses.filter((course) => course.id !== this.$route.params.class_id);
-      db.collection("users").doc(this.user.uid).update({
-        enrolledClasses: updatedEnroll
+      await db.collection("users").doc(this.user.uid).update({
+        enrolledClasses: updatedEnroll,
+        ...emailSettingsUpdate
       });
-      this.$router.push({path: '/'})
+      this.$router.push({path: '/'});
+      this.$root.$emit("show-snackbar", "Successfully dropped class.")
     },
     signOut () { 
       firebase.auth().signOut(); 

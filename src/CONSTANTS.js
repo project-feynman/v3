@@ -1,7 +1,14 @@
+export const DefaultEmailSettings = {
+  emailOnNewPost: false,
+  emailOnNewReply: true,
+  emailDailySummary: false,
+  emailWeeklySummary: true
+}
+
 export const NotifFrequency = {
-  ALWAYS: "always",
-  DAILY: "daily",
-  NEVER: "never",
+  REAL_TIME: "Real Time",
+  WEEKLY: "Weekly",
+  NEVER: "Never",
 };
 
 export const RecordState = {

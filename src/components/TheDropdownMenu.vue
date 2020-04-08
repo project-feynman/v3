@@ -12,12 +12,14 @@
         </slot>
       </template>
       <v-card>
-        <v-card-title>
-          <h3 v-if="user">{{ `${user.firstName} ${user.lastName}`}}</h3>
-        </v-card-title>
-        <v-card-actions>
-          <v-btn block text color="accent" @click="showDialog=true">Email Settings</v-btn>
-        </v-card-actions>
+        <template v-if="user">
+          <v-card-title v-if="user">
+            {{ `${user.firstName} ${user.lastName}` }}
+          </v-card-title>
+          <v-card-subtitle>
+            <p>{{ user.email }}</p>
+          </v-card-subtitle>
+        </template>
         <v-divider></v-divider>
         <slot name="menu-buttons">
 
