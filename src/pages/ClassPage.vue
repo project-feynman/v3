@@ -40,7 +40,9 @@ import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
+import "firebase/firestore";
 import "firebase/auth";
+import { DefaultEmailSettings } from "@/CONSTANTS.js";
 
 export default {
   components: { 
@@ -57,6 +59,9 @@ export default {
     user () {
       return this.$store.state.user;
     },
+    mitClass () {
+      return this.$store.state.mitClass;
+    },
     isUserEnrolled () {
       if (!this.user) { return; }
       if (!this.user.enrolledClasses) { return; }
@@ -70,12 +75,18 @@ export default {
         enrolledClasses: payload 
       });
     },
-    leaveClass () {
+    async leaveClass () {
+      const emailSettingsUpdate = {};
+      for (let emailOption of Object.keys(DefaultEmailSettings)) {
+        emailSettingsUpdate[emailOption] = firebase.firestore.FieldValue.arrayRemove(this.mitClass.id);
+      }
       const updatedEnroll = this.user.enrolledClasses.filter((course) => course.id !== this.$route.params.class_id);
-      db.collection("users").doc(this.user.uid).update({
-        enrolledClasses: updatedEnroll
+      await db.collection("users").doc(this.user.uid).update({
+        enrolledClasses: updatedEnroll,
+        ...emailSettingsUpdate
       });
-      this.$router.push({path: '/'})
+      this.$router.push({path: '/'});
+      this.$root.$emit("show-snackbar", "Successfully dropped class.")
     },
     signOut () { 
       firebase.auth().signOut(); 
