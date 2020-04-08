@@ -118,24 +118,62 @@ const emailSummaryFrequencyEnum = {
 }
 
 async function sendEmailToSubscribers (context, frequency) { // frequency can be `Weekly` or `Daily` 
-  console.log('This will be run every Monday 09:00!');
-  const classesRef = db.collection("classes");
-  let classesDocs = await classesRef.get();
-  classesDocs = classesDocs.data();
-  for (let mitClass of classesDocs) {
-    const subscribedUsersQuery = db.collection("users").where(`email${frequency}Summary`, "array-contains", mitClass.id);
-    let subscribedUsers = await subscribedUsersQuery.get();
-    subscribedUsers = subscribedUsers.data();
-    for (let user of subscribedUsers) {
-      const subject = `${mitClass.name}'s ${frequency} Summary from ExplainMIT`;
-      const body = `<h1>Testing the ${frequency} summary at the moment</h1>`;
-      sendEmail(user.email, subject, body);
-    }     
+  const classesRef = firestore.collection("classes");
+  const classesDocs = await classesRef.get();
+  classesDocs.forEach(async (mitClassDoc) => {
+    const subscribedUsersQuery = firestore.collection("users").where(`email${frequency}Summary`, "array-contains", mitClassDoc.id);
+    const subscribedUsersDocs = await subscribedUsersQuery.get();
+    const summaryEmail = await createDailySummaryEmail(frequency);
+    subscribedUsersDocs.forEach((userDoc) => {
+      sendEmail(
+        userDoc.data().email, 
+        `${mitClassDoc.data().name}'s ${frequency} Summary from ExplainMIT`,
+        summaryEmail
+      );  
+    });
+  }); 
+}
+
+function getYesterday () {
+  const d = new Date();
+  d.setDate(d.getDate() - 1); // `date` := day of the month e.g. 23
+  return d.toISOString(); // .toISOString standardizes to UTC
+}
+
+function getLastWeek () {
+  const d = new Date();
+  d.setDate(d.getDate() - 7); // `date` := day of the month e.g. 23
+  return d.toISOString(); // .toISOString standardizes to UTC
+}
+
+async function createSummaryEmail (dailyOrWeekly) {
+  // const mostViewedExplQuery = db.collectionGroup("explanations").orderBy("views").limit(3);
+  // const repliesRef = firestore.collectionGroup("explanations").where("date", ">=", yesterday);
+  // const repliesDocs = await repliesRef.get();
+  // repliesDocs.forEach((replyDoc) => allExplanations.push({ id: replyDoc.id, ...replyDoc.data() }));
+  const allExplanations = [];
+  let postsRef; 
+  if (dailyOrWeekly === emailSummaryFrequencyEnum.DAILY) {
+    postsRef = firestore.collectionGroup("posts").where("date", ">", getYesterday());
+  } else if (dailyOrWeely === emailSummaryFrequencyEnum.WEEKLY) {
+    postsRef = firestore.collectionGroup("posts").where("date", ">", getLastWeek());
   }
+  const postsDocs = await postsRef.get();
+  postsDocs.forEach((postDoc) => allExplanations.push({ id: postDoc.id, ...postDoc.data() }));
+  allExplanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
+  console.log("allExplanations =", allExplanations);
+  const topExpl = allExplanations[0];
+  return `
+    <h1>Most viewed post: ${topExpl.title}</h1> 
+    <p>${topExpl.description ? topExpl.description : ""}</p>
+    ${ topExpl.thumbnail ? `<img src="${topExpl.thumbnail}"></img>` : "" }
+    <a href="https://explain.mit.edu/class/${topExpl.mitClass.id}/posts/${topExpl.id}">Click here to view.</a>
+  `;
 }
 
 // Daily Summary
-exports.emailDailySummary = functions.pubsub.schedule('5 7 * * *')
+exports.emailDailySummary = functions.pubsub
+  .schedule("5 7 * * *") // every day at 7:05
   .timeZone('America/New_York') // Users can choose timezone - default is America/Los_Angeles
   .onRun(async (context) => sendEmailToSubscribers(context, emailSummaryFrequencyEnum.DAILY));
 
