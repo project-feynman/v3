@@ -44,6 +44,7 @@
                     actionName="Log in" 
                     :inputFields="['email', 'password']" 
                     @action-do="user => logIn(user)"
+                    outlined
                     color="secondary"
                   />
                 </v-col>
