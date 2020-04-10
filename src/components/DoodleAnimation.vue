@@ -1,5 +1,5 @@
 <template>
-  <div ref="VideoWrapper" class="video-wrapper">
+  <div ref="VideoWrapper" class="video-container">
     <div ref="CanvasWrapper" style="position: relative;">
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
@@ -21,7 +21,7 @@
           :hide-details="true"
         />
       </v-col>
-      <v-col cols="auto" class="px-1">
+      <v-col cols="auto" class="px-0">
         <v-select
          :items="speedOptions"
          v-model="playbackSpeed"
@@ -37,6 +37,9 @@
         >
           <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
         </v-select>
+      </v-col>
+      <v-col cols="auto" class="px-1">
+        <v-btn text @click="$emit('toggle-fullscreen')" color="accent"><v-icon>mdi-fullscreen</v-icon></v-btn>
       </v-col>
     </div>
   </div>
@@ -202,12 +205,9 @@ export default {
 </script>
 
 <style scoped>
-.video-wrapper {
-  height: 100%; 
-  width: 100%; 
-  position: relative; 
-  z-index: 5; 
+.video-container {
   margin: auto;
+  position: relative;
 }
 .doodle-video {
   height: 100%; 
