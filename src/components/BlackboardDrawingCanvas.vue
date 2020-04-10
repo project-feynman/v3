@@ -356,7 +356,7 @@ export default {
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
       this.$_rescaleCanvas();
-      this.$_drawStrokesInstantly(); 
+      this.$_drawStrokesInstantly();
     },
     createCustomCusor () {
       const dummyCanvas = document.createElement("canvas");
@@ -371,9 +371,11 @@ export default {
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },
-    toggleFullScreen () {
+    async toggleFullScreen () {
       this.isFullScreen = !this.isFullScreen;
+      await this.$nextTick();
       this.resizeBlackboard();
+      window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
     }
   }
 };

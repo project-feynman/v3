@@ -18,28 +18,32 @@
         :imageDownloadUrl="expl.imageUrl"
         v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
       >
-        <div style="height: 100%; position: relative;">
-          <!-- Thumbnail preview -->
-          <template v-if="strokesArray.length === 0 || isLoading">
-            <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
-            <div v-if="expl.hasStrokes" class="overlay-item">
-              <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
-              <v-btn v-else @click="handlePlayClick(fetchStrokes)" large dark>
-                <v-icon>mdi-play</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <!-- Loaded video -->
-          <DoodleVideo v-else-if="expl.audioUrl"
-            :strokesArray="strokesArray"
-            :imageBlob="imageBlob" 
-            :audioUrl="expl.audioUrl" 
-          />
-          <DoodleAnimation v-else
-            :strokesArray="strokesArray"
-            :backgroundUrl="expl.imageUrl"
-          />
-        </div>
+        <div id="doodle-wrapper" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+            <!-- Thumbnail preview -->
+            <template v-if="strokesArray.length === 0 || isLoading">
+              <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
+              <div v-if="expl.hasStrokes" class="overlay-item">
+                <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
+                <v-btn v-else @click="handlePlayClick(fetchStrokes)" large dark>
+                  <v-icon>mdi-play</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <!-- Loaded video -->
+            <DoodleVideo v-else-if="expl.audioUrl"
+              :strokesArray="strokesArray"
+              :imageBlob="imageBlob" 
+              :audioUrl="expl.audioUrl" 
+              @toggle-fullscreen="toggleFullscreen"
+              ref="Doodle"
+            />
+            <DoodleAnimation v-else
+              :strokesArray="strokesArray"
+              :backgroundUrl="expl.imageUrl"
+              @toggle-fullscreen="toggleFullscreen"
+              ref="Doodle"
+            />
+      </div>
       </RenderlessFetchStrokes>
 
       <!-- Delete popup -->
@@ -113,8 +117,12 @@ export default {
   },
   data: () => ({ 
     isEditing: false,
-    popup: false
+    popup: false,
+    isFullScreen: false
   }),
+  mounted () {
+    document.getElementById('doodle-wrapper').addEventListener("click", e=>this.clickOutsideDoodle(e));
+  },
   methods: {
     upvoteExpl () {
       const ref = db.doc(`${this.expl.ref}`);
@@ -158,6 +166,21 @@ export default {
     deleteExplanation () {
       db.doc(this.expl.ref).delete();
       this.popup = false;
+    },
+    toggleFullscreen () {
+      this.isFullScreen = !this.isFullScreen;
+      const { Doodle } = this.$refs;
+      Doodle.handleResize();
+      if (this.isFullScreen) {
+        document.documentElement.style.overflowY = "hidden";
+      } else {
+        document.documentElement.style.overflowY = "auto";
+      }
+    },
+    clickOutsideDoodle (e) {
+      if (e.target.id==='doodle-wrapper' && this.isFullScreen) {
+        this.toggleFullscreen()
+      }
     }
   }
 }
@@ -169,5 +192,24 @@ export default {
   top: 50%; 
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.video-wrapper {
+  height: 100%; 
+  width: 100%; 
+  position: relative; 
+  z-index: 5; 
+  margin: auto;
+}
+.fullscreen-video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.5);
 }
 </style>
