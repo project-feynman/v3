@@ -1,5 +1,5 @@
 <template>
-  <div ref="VideoWrapper" class="video-wrapper">
+  <div ref="VideoWrapper" class="video-container">
     <div ref="CanvasWrapper" style="position: relative;">
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
@@ -11,23 +11,25 @@
       ref="AudioPlayer" 
       style="width: 100%;"
       controls
-      autoplay
     />
-    <div id="speed-control">
-      <v-select
-        :items="speedOptions"
-        :value="playbackSpeed"
-        @input="changePlaybackSpeed"
-        dense
-        solo
-        background-color="rgba(255,255,255,0.75)"
-        :hide-details="true"
-        class="my-0"
-        color="accent"
-        item-color="accent"
-      >
-        <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
-      </v-select>
+    <div id="extra-controls">
+      <v-btn @click="$emit('toggle-fullscreen')"><v-icon>mdi-fullscreen</v-icon></v-btn>
+      <v-col cols="auto" class="px-0 py-0">
+        <v-select
+          :items="speedOptions"
+          :value="playbackSpeed"
+          @input="changePlaybackSpeed"
+          dense
+          solo
+          background-color="rgba(255,255,255,0.75)"
+          :hide-details="true"
+          class="my-0"
+          color="accent"
+          item-color="accent"
+        >
+          <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
+        </v-select>
+      </v-col>
     </div>
   </div>
 </template>
@@ -49,7 +51,9 @@ export default {
     },
     imageBlob: Blob // a File is also a Blob
   },
-  mixins: [CanvasDrawMixin],
+  mixins: [
+    CanvasDrawMixin
+  ],
   data: () => ({
     playbackSpeed: 1,
     speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'3x', value: 3}],
@@ -92,13 +96,13 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.handleResize();
-    if (!this.audioUrl) {
-      this.$_quickplay();
-    }
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy () {
+    // quickfix for the previous recordings playing bug on iOS
+    const { AudioPlayer } = this.$refs;
+    AudioPlayer.src = "";
     window.removeEventListener("resize", this.handleResize);
   },
   methods: {
@@ -196,12 +200,9 @@ export default {
 </script>
 
 <style scoped>
-.video-wrapper {
-  height: 100%; 
-  width: 100%; 
-  position: relative; 
-  z-index: 5; 
+.video-container {
   margin: auto;
+  position: relative;
 }
 .doodle-video {
   height: 100%; 
@@ -231,20 +232,24 @@ export default {
   z-index: -1;
   background-color: rgb(62, 66, 66);
 }
-#speed-control {
+#extra-controls {
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
   opacity: 0.75;
-  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-between;
 }
-#speed-control:hover {
+#extra-controls > * {
+  opacity: 0.8;
+}
+#extra-controls > *:hover {
   opacity: 1;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 </style>
 <style>
-#speed-control .v-select__selections {
+#extra-controls .v-select__selections {
   color: accent;
 }
 </style>

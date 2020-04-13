@@ -31,8 +31,14 @@ function syncUserWithDb (userRef, context) {
 async function getDocFromDb (ref) {
   const promise = new Promise(async (resolve, reject) => {
     const doc = await ref.get();
-    if (doc.exists) resolve({ id: doc.id, ...doc.data() });
-    else reject();
+    if (doc.exists) {
+      resolve({ 
+        id: doc.id, 
+        ...doc.data() 
+      });
+    } else { 
+      reject(); 
+    }
   })
   return promise;
 }

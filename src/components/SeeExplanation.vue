@@ -20,28 +20,32 @@
         :imageDownloadUrl="expl.imageUrl"
         v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
       >
-        <div style="height: 100%; position: relative;">
-          <!-- Thumbnail preview -->
-          <template v-if="strokesArray.length === 0 || isLoading">
-            <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
-            <div v-if="expl.hasStrokes" class="overlay-item">
-              <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
-              <v-btn v-else @click="fetchStrokes()" large dark>
-                <v-icon>mdi-play</v-icon>
-              </v-btn>
-            </div>
-          </template>
-          <!-- Loaded video -->
-          <DoodleVideo v-else-if="expl.audioUrl"
-            :strokesArray="strokesArray"
-            :imageBlob="imageBlob" 
-            :audioUrl="expl.audioUrl" 
-          />
-          <DoodleAnimation v-else
-            :strokesArray="strokesArray"
-            :backgroundUrl="expl.imageUrl"
-          />
-        </div>
+        <div id="doodle-wrapper" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+            <!-- Thumbnail preview -->
+            <template v-if="strokesArray.length === 0 || isLoading">
+              <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
+              <div v-if="expl.hasStrokes" class="overlay-item">
+                <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
+                <v-btn v-else @click="handlePlayClick(fetchStrokes)" large dark>
+                  <v-icon>mdi-play</v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <!-- Loaded video -->
+            <DoodleVideo v-else-if="expl.audioUrl"
+              :strokesArray="strokesArray"
+              :imageBlob="imageBlob" 
+              :audioUrl="expl.audioUrl" 
+              @toggle-fullscreen="toggleFullscreen"
+              ref="Doodle"
+            />
+            <DoodleAnimation v-else
+              :strokesArray="strokesArray"
+              :backgroundUrl="expl.imageUrl"
+              @toggle-fullscreen="toggleFullscreen"
+              ref="Doodle"
+            />
+      </div>
       </RenderlessFetchStrokes>
 
       <!-- Delete popup -->
@@ -60,13 +64,19 @@
       <v-row v-if="user" justify="center">
         <v-layout align-center>
           <p class="pt-3 pl-3 body-2 font-weight-light">
-            {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}`: "" }}
-          </p>          
+            {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}` : "" }}
+          </p>      
+          <p v-if="expl.thumbnail" class="pt-3 pl-2 body-2 font-weight-light">
+            (video views: {{ expl.views ? expl.views : 0 }}) 
+          </p> 
           <v-spacer></v-spacer>
           <template v-if="expl.creator.uid === user.uid">
             <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
             <ButtonNew @click="popup = true" icon="mdi-delete">Delete</ButtonNew>
           </template>
+          <ButtonNew @click="upvoteExpl()" :disabled="expl.creator.uid === user.uid">
+            Thanks! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
+          </ButtonNew>
         </v-layout>
       </v-row>
     </v-container>
@@ -81,6 +91,8 @@ import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes";
 import ButtonNew from "@/components/ButtonNew.vue"
 import db from "@/database.js";
 import { displayDate } from "@/helpers.js";
+import firebase from "firebase/app";
+import "firebase/firestore";
 
 export default {
   props: { 
@@ -111,9 +123,37 @@ export default {
   },
   data: () => ({ 
     isEditing: false,
-    popup: false
+    popup: false,
+    isFullScreen: false
   }),
+  mounted () {
+    document.getElementById('doodle-wrapper').addEventListener("click", e=>this.clickOutsideDoodle(e));
+  },
   methods: {
+    upvoteExpl () {
+      const ref = db.doc(`${this.expl.ref}`);
+      if (!this.userHasUpvoted()) {
+        ref.update({
+          upvotersIds: firebase.firestore.FieldValue.arrayUnion(this.user.uid)
+        });
+      } else {
+        ref.update({
+          upvotersIds: firebase.firestore.FieldValue.arrayRemove(this.user.uid)
+        });
+      }
+    },
+    userHasUpvoted () {
+      if (!this.expl.upvotersIds) { return false; }
+      return this.expl.upvotersIds.includes(this.user.uid);
+    },
+    handlePlayClick (fetchStrokes) {
+      fetchStrokes();
+      // update view count 
+      const ref = db.doc(`${this.expl.ref}`);
+      ref.update({
+        views: firebase.firestore.FieldValue.increment(1)
+      });
+    },
     displayDate (dateString) { 
       return displayDate(dateString);
     },
@@ -132,6 +172,21 @@ export default {
     deleteExplanation () {
       db.doc(this.expl.ref).delete();
       this.popup = false;
+    },
+    toggleFullscreen () {
+      this.isFullScreen = !this.isFullScreen;
+      const { Doodle } = this.$refs;
+      Doodle.handleResize();
+      if (this.isFullScreen) {
+        document.documentElement.style.overflowY = "hidden";
+      } else {
+        document.documentElement.style.overflowY = "auto";
+      }
+    },
+    clickOutsideDoodle (e) {
+      if (e.target.id==='doodle-wrapper' && this.isFullScreen) {
+        this.toggleFullscreen()
+      }
     }
   }
 }
@@ -143,5 +198,24 @@ export default {
   top: 50%; 
   left: 50%;
   transform: translate(-50%, -50%);
+}
+.video-wrapper {
+  height: 100%; 
+  width: 100%; 
+  position: relative; 
+  z-index: 5; 
+  margin: auto;
+}
+.fullscreen-video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.5);
 }
 </style>

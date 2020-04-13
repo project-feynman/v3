@@ -30,8 +30,8 @@
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
-import FullScreenDialog from "@/components/FullScreenDialog.vue";
 import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
+import { isIosSafari } from "@/helpers.js";
 
 export default {
   props: {
@@ -47,7 +47,6 @@ export default {
   components: { 
     BlackboardToolBar, 
     ButtonNew,
-    FullScreenDialog
   },
   data () {
     return {
@@ -61,7 +60,7 @@ export default {
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
-      touchDisabled: false,
+      touchDisabled: isIosSafari(), // assume iPad users use Safari 
       strokesArray: [],
       currentStroke: { 
         points: [] 
@@ -255,12 +254,17 @@ export default {
       e.preventDefault();
       let eraserCenter = {};
       if (this.isHoldingLeftClick) {
-        eraserCenter = { x: e.offsetX, y: e.offsetY };
+        eraserCenter = { 
+          x: e.offsetX, 
+          y: e.offsetY 
+        };
       } else {
         const finger1 = e.touches[0];
         const { left, top } = this.canvas.getBoundingClientRect();
-        eraserCenter.x = finger1.pageX - left - window.scrollX;
-        eraserCenter.y = finger1.pageY - top - window.scrollY;
+        eraserCenter = {
+          x: finger1.pageX - left - window.scrollX,
+          y: finger1.pageY - top - window.scrollY
+        };
       }
       const radius = 10;
       for (let i = 0; i < this.strokesArray.length; i++) {
@@ -322,6 +326,10 @@ export default {
       this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
       this.ctx.lineTo(x, y);
     },
+    // this implementation suffers from edge cases: 
+    // if eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
+    // I tried not using a background color, but then the white strokes will be invisible
+    // I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
     getThumbnail () {
       return new Promise(async (resolve) => {
         if (this.imageBlob) { // has a background image
@@ -331,6 +339,9 @@ export default {
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         }
         this.$_drawStrokesInstantly2();
+        // TODO: remove this quickfix to avoid the double drawing thumbnail 
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
         this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
       })
     },
@@ -345,7 +356,7 @@ export default {
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
       this.$_rescaleCanvas();
-      this.$_drawStrokesInstantly(); 
+      this.$_drawStrokesInstantly();
     },
     createCustomCusor () {
       const dummyCanvas = document.createElement("canvas");
@@ -360,9 +371,11 @@ export default {
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },
-    toggleFullScreen () {
+    async toggleFullScreen () {
       this.isFullScreen = !this.isFullScreen;
+      await this.$nextTick();
       this.resizeBlackboard();
+      window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
     }
   }
 };

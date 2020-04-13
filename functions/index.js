@@ -9,17 +9,23 @@ admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
 	databaseUrl: "https://feynman-mvp.firebaseio.com"
 });
+
 const firestore = admin.firestore();
 sgMail.setApiKey(SENDGRID_API_KEY);
 
-function sendEmail (email, subject, text, html) {
-  sgMail.send({ 
-    to: email, 
-    from: "feynmannotif@gmail.com", 
-    subject, 
-    text, 
-    html 
-  });
+function sendEmail (to, subject, body) {
+  try {
+    sgMail.send({
+      to,
+      subject,
+      html: body,
+      from: "feynmannotif@gmail.com", // "no-reply@explain.mit.edu"
+      text: subject,
+    });
+  } catch (reason) {
+    console.log("SendGrid failed to send email, reason =", reason);
+    throw new Error(reason);
+  }
 }
 
 function getDocFromDb (ref) {
@@ -31,7 +37,9 @@ function getDocFromDb (ref) {
         ...doc.data() 
       }); 
     }  // TODO: throw an explicit error
-    else { reject(); }
+    else { 
+      reject(); 
+    }
   })
 }
 
@@ -56,37 +64,124 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/room/{classId}
   });
 });
 
-// Sends email to entire class whenever a new question is created
-exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (post, context) => {
-  const { mitClass } = post.data();
-  const classSetting = { id: mitClass.id, name: mitClass.name, notifFrequency: "always" };
-  const classmatesRef = firestore.collection("users").where("enrolledClasses", "array-contains", classSetting);
+function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already
+  return `
+    <h3>${explDoc.title}</h3>
+    <p>${explDoc.description ? explDoc.description : "" }</p>
+    <img src="${explDoc.thumbnail ? explDoc.thumbnail : "" }"></img>
+    <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Click here to view.</a>
+  `; 
+}
+
+exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (newPostDoc, context) => {
+  const { classId, postId } = context.params;
+  const classmatesRef = firestore.collection("users").where("emailOnNewPost", "array-contains", classId);
   const classmatesDocs = await classmatesRef.get();
-  classmatesDocs.forEach(classmateDoc => {
-    if (post.data().creator.email === classmateDoc.data().email) { return; }
-    const subject = `${post.data().creator.firstName} posted in ${mitClass.name}`;
-    const { classId, postId } = context.params;
-    const html = `
-      <p>${post.data().title}</p>
-      <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
-    `;
-    sendEmail(classmateDoc.data().email, subject, "A new post :]", html);
-  })
+  classmatesDocs.forEach((classmateDoc) => {
+    const newPost = newPostDoc.data();
+    const classmate = classmateDoc.data();
+    if (newPost.creator.email === classmate.email) { 
+      return; 
+    }
+    console.log("sending to classmate =", classmate.email);
+    sendEmail(
+      classmate.email, 
+      `${newPost.creator.firstName} posted in ${newPost.mitClass.name}`,
+      getEmailBody(newPost, classId, postId)
+    );
+  });
 });
 
-exports.emailOnNewExplanation = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (explDoc, context) => {
-  const { postId, classId } = context.params;
+exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (newReplyDoc, context) => {
+  const { classId, postId } = context.params;
   const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
-  originalPost.participants.forEach(participant => {
-    if (participant.email === explDoc.data().creator.email) { return; }
-    const subject = `${explDoc.data().creator.firstName} replied in a ${explDoc.data().mitClass.name} post you engaged in`;
-    const html = `
-      <p>${explDoc.data().title}</p>
-      <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Link to post</a>
-    `;
-    sendEmail(participant.email, subject, "A new post activity :]", html);
-  })
+  for (let participant of originalPost.participants) {
+    const newReply = newReplyDoc.data(); 
+    console.log("classId =", classId);
+    console.log("participant.email =", participant.email);
+    console.log("newReply.creator.email =", newReply.creator.email);
+    if (participant.email === newReply.creator.email) { 
+      continue; 
+    } else if (participant.emailOnNewReply.includes(classId)) { 
+      sendEmail(
+        participant.email, 
+        `${newReply.creator.firstName} replied in a ${newReply.mitClass.name} post you engaged in`,
+        getEmailBody(newReply, classId, postId)
+      );
+    }
+  }
 });
+
+const emailSummaryFrequencyEnum = {
+  WEEKLY: "Weekly",
+  DAILY: "Daily"
+}
+
+async function sendEmailToSubscribers (context, frequency) { // frequency can be `Weekly` or `Daily` 
+  const classesRef = firestore.collection("classes");
+  const classesDocs = await classesRef.get();
+  classesDocs.forEach(async (mitClassDoc) => {
+    const subscribedUsersQuery = firestore.collection("users").where(`email${frequency}Summary`, "array-contains", mitClassDoc.id);
+    const subscribedUsersDocs = await subscribedUsersQuery.get();
+    const summaryEmail = await createDailySummaryEmail(frequency);
+    subscribedUsersDocs.forEach((userDoc) => {
+      sendEmail(
+        userDoc.data().email, 
+        `${mitClassDoc.data().name}'s ${frequency} Summary from ExplainMIT`,
+        summaryEmail
+      );  
+    });
+  }); 
+}
+
+function getYesterday () {
+  const d = new Date();
+  d.setDate(d.getDate() - 1); // `date` := day of the month e.g. 23
+  return d.toISOString(); // .toISOString standardizes to UTC
+}
+
+function getLastWeek () {
+  const d = new Date();
+  d.setDate(d.getDate() - 7); // `date` := day of the month e.g. 23
+  return d.toISOString(); // .toISOString standardizes to UTC
+}
+
+async function createSummaryEmail (dailyOrWeekly) {
+  // const mostViewedExplQuery = db.collectionGroup("explanations").orderBy("views").limit(3);
+  // const repliesRef = firestore.collectionGroup("explanations").where("date", ">=", yesterday);
+  // const repliesDocs = await repliesRef.get();
+  // repliesDocs.forEach((replyDoc) => allExplanations.push({ id: replyDoc.id, ...replyDoc.data() }));
+  const allExplanations = [];
+  let postsRef; 
+  if (dailyOrWeekly === emailSummaryFrequencyEnum.DAILY) {
+    postsRef = firestore.collectionGroup("posts").where("date", ">", getYesterday());
+  } else if (dailyOrWeely === emailSummaryFrequencyEnum.WEEKLY) {
+    postsRef = firestore.collectionGroup("posts").where("date", ">", getLastWeek());
+  }
+  const postsDocs = await postsRef.get();
+  postsDocs.forEach((postDoc) => allExplanations.push({ id: postDoc.id, ...postDoc.data() }));
+  allExplanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
+  console.log("allExplanations =", allExplanations);
+  const topExpl = allExplanations[0];
+  return `
+    <h1>Most viewed post: ${topExpl.title}</h1> 
+    <p>${topExpl.description ? topExpl.description : ""}</p>
+    ${ topExpl.thumbnail ? `<img src="${topExpl.thumbnail}"></img>` : "" }
+    <a href="https://explain.mit.edu/class/${topExpl.mitClass.id}/posts/${topExpl.id}">Click here to view.</a>
+  `;
+}
+
+// Daily Summary
+exports.emailDailySummary = functions.pubsub
+  .schedule("5 7 * * *") // every day at 7:05
+  .timeZone('America/New_York') // Users can choose timezone - default is America/Los_Angeles
+  .onRun(async (context) => sendEmailToSubscribers(context, emailSummaryFrequencyEnum.DAILY));
+
+// Weekly Summary
+exports.emailWeeklySummary = functions.pubsub
+  .schedule("every monday 07:05")
+  .timeZone("America/New_York")
+  .onRun((context) => sendEmailToSubscribers(context, emailSummaryFrequencyEnum.WEEKLY));
 
 exports.recursiveDelete = functions.runWith({ timeoutSeconds: 540, memory: "2GB" }).https.onCall((data, context) => {
   const { path } = data;
@@ -106,10 +201,12 @@ exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
     "wfee@mit.edu",
     "pkafle@mit.edu"
   ];
-  const subject = `NEW FEEDBACK FROM USER ${data.userEmail}! REPLY QUICKLY!`;
   for (let email of ourEmails) {
-    sendEmail(email, subject, "New feedback", `<h1>${data.userEmail} said ${data.userFeedback}</h1>`);
-    console.log("called sendEmail");
+    sendEmail(
+      email, 
+      `New feedback from a user!`,
+      `<h1>${data.userEmail} said ${data.userFeedback}</h1>`
+    );
   }
 });
 

@@ -6,7 +6,7 @@
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
       <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
-        <v-btn v-if="user"
+        <v-btn v-if="user && !isUploadingPost"
           @click="submitPost()" 
           :loading="isButtonDisabled" 
           :disabled="isButtonDisabled"
@@ -24,14 +24,29 @@
         <v-switch v-model="isAnonymous" class="mt-5"/>
         <p class="pt-4">toggle anonymous</p>
       </div>
-
+      <v-progress-linear
+        :value="uploadProgress"
+        :active="isUploadingPost"
+        height="30"
+        color="green"
+        class="white--text text-small"
+      >
+        Uploading...
+      </v-progress-linear>
+      <!-- I made modifications to your changes, here's your old code -->
+        <!-- height="20"
+        color="accent"
+        striped
+        rounded
+        class="font-italic text-small"
+        style="font-size: 0.8em;" -->
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
         @record-end="(getBlackboardData) => showPreview(getBlackboardData)"
-        ref="Blackboard"
         :key="changeKeyToForceReset"
         :isRealtime="false"
+        ref="Blackboard"
       />
 
       <!-- Preview the video after recording -->
@@ -43,7 +58,7 @@
             @action-do="initRetry()"
           >
             <template v-slot:activator-button="{ on }">
-              <ButtonNew :on="on" icon="mdi-keyboard-return">
+              <ButtonNew :on="on" filled icon="mdi-keyboard-return">
                 Retry Recording
               </ButtonNew>
             </template>
@@ -54,11 +69,15 @@
             </template>
           </BasePopupButton>
         </v-row>
-        <DoodleVideo
-          :strokesArray="previewVideo.strokesArray"
-          :audioUrl="previewVideo.audio.blobURL"
-          :imageBlob="previewVideo.imageBlob"
-        />
+        <div id="doodle-wrapper" :class="isFullScreenDoodle ? 'fullscreen-video' : 'video-wrapper'" @click="e=>this.clickOutsideDoodle(e)">
+          <DoodleVideo
+            :strokesArray="previewVideo.strokesArray"
+            :audioUrl="previewVideo.audio.blobUrl"
+            :imageBlob="previewVideo.imageBlob"
+            @toggle-fullscreen="toggleFullscreenDoodle"
+            ref="Doodle"
+          />
+        </div>
       </template>
     </v-container>
   </v-card>
@@ -102,6 +121,7 @@ export default {
   },
   data: () => ({
     messageToUser: "",
+    uploadProgress: 0,
     isRecordingVideo: false,
     isPreviewing: false,
     previewVideo: {
@@ -112,7 +132,8 @@ export default {
     isAnonymous: false,
     isUploadingPost: false,
     changeKeyToForceReset: 0,
-    postTitle: ""
+    postTitle: "",
+    isFullScreenDoodle: false
   }),
   computed: {
     user () { 
@@ -169,9 +190,9 @@ export default {
 
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
       const secondInMilliseconds = 1000;
+      // Check if the firestore upload API has any way to detect an error or something because longer videos will obviously take much more time.
       const uploadTimeout = setTimeout(() => { 
-        this.isUploadingPost = false;
-        this.messageToUser = "Uploading has exceeded 10 seconds...trying again might help."
+        this.messageToUser = "Still uploading...hang in there."
       }, 
       10 * secondInMilliseconds);
 
@@ -185,7 +206,7 @@ export default {
         // title: TextEditor.extractTitle(),
         title: this.postTitle,
         html: TextEditor.html,
-        date: this.getDate(),
+        date: new Date().toISOString(),
         creator: this.isAnonymous ? anonymousUser : this.simplifiedUser,
         mitClass: this.mitClass
       };
@@ -252,9 +273,7 @@ export default {
           });
           uploadTasks.push(backgroundUpload);
         }
-
-
-
+        
         // RESOLVE PROMISES
         try {
           await Promise.all(uploadTasks);
@@ -298,10 +317,43 @@ export default {
       this.$emit("upload-finish"); 
       this.$root.$emit("show-snackbar", "Successfully uploaded.");
     },
-    getDate () {
-      const today = new Date();
-      return today.toISOString();
+    toggleFullscreenDoodle () {
+      this.isFullScreenDoodle = !this.isFullScreenDoodle;
+      const { Doodle } = this.$refs;
+      Doodle.handleResize();
+      if (this.isFullScreenDoodle) {
+        document.documentElement.style.overflowY = "hidden";
+      } else {
+        document.documentElement.style.overflowY = "auto";
+        window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
+      }
+    },
+    clickOutsideDoodle (e) {
+      if (e.target.id==='doodle-wrapper' && this.isFullScreenDoodle) {
+        this.toggleFullscreenDoodle()
+      }
     }
   }
 }
 </script>
+<style scoped>
+.video-wrapper {
+  height: 100%; 
+  width: 100%; 
+  position: relative; 
+  z-index: 5; 
+  margin: auto;
+}
+.fullscreen-video {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.5);
+}
+</style>

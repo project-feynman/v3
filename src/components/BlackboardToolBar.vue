@@ -5,36 +5,11 @@
         <v-col class="py-0">
           <v-row justify="start" align="center">
             <v-col class="px-1 py-0" cols="auto">
-              <!-- <div 
-                :class="[$vuetify.breakpoint.smAndDown ? 'dropdown ':'', colorPaletteExpanded ? 'active ':'', 'd-flex',]"
-                id="swatches-wrapper"
-                @click.self="$emit('tool-select', { tool: BlackboardTools.PEN, color: 'white' })"
-              > -->
-                <!-- <v-btn
-                  :color="(!$vuetify.breakpoint.smAndDown || colorPaletteExpanded || isPen) ? 'accent' : color"
-                  @click="palleteClick()"
-                  :outlined="!isPen"
-                  min-width="36px"
-                  class="px-3"
-                  height="38px"
-                  max-width="64px"
-                >
-                  <v-icon>mdi-lead-pencil</v-icon>
-                  <v-icon class="down">mdi-chevron-down</v-icon>
-                </v-btn>
-                <swatches 
-                  @input="(newColor) => changePenColor(newColor)"
-                  :value="color"
-                  :colors="colors"
-                  :show-border="true"
-                  :wrapper-style="{ padding:'0px', maxHeight:'26px', display:'flex'}"
-                  :swatch-style="{ margin:'0 5px', borderRadius:'50%' }"
-                  inline
-                  background-color="rgba(0, 0, 0, 0)"
-                  swatch-size="24"
-                />
-              </div> -->
-              <PenSwatch :colors="colors" @select-color="(newColor) => changePenColor(newColor)" :isPenActive="isPen" />
+              <PenSwatch 
+                :colors="colors" 
+                :isPenActive="isPen"
+                @select-color="(newColor) => changePenColor(newColor)" 
+              />
             </v-col>
             <ButtonNew :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser">
               Eraser
@@ -67,7 +42,7 @@
 
         </slot>
         <ButtonNew @click="fullScreen()" :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
-          {{ isFullScreen ? 'Exit ' : '' }}Full Screen
+          {{ isFullScreen ? 'Exit' : '' }} Full Screen
         </ButtonNew>
       </v-row>
     </v-container>

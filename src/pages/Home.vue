@@ -15,12 +15,12 @@
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-plus">Add Class</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-plus">Create Class</ButtonNew>
           </template>
         </BasePopupButton>
         <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
-          <template v-slot:default="{ on }">
-            <ButtonNew :on="on" :filled="true" icon="mdi-settings">Settings</ButtonNew>
+          <template v-slot:activator="{ on }">
+            <ButtonNew :on="on" icon="mdi-account-circle">Account</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
@@ -44,6 +44,7 @@
                     actionName="Log in" 
                     :inputFields="['email', 'password']" 
                     @action-do="user => logIn(user)"
+                    outlined
                     color="secondary"
                   />
                 </v-col>
@@ -133,7 +134,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Blackboard from "@/components/Blackboard.vue";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
-import { demoVideo, NotifFrequency } from "@/CONSTANTS.js";
+import { demoVideo, NotifFrequency, DefaultEmailSettings } from "@/CONSTANTS.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
@@ -186,7 +187,7 @@ export default {
           name: this.attemptToJoinClassName,
           id: this.attemptToJoinClassId
         });
-        this.$root.$emit("show-snackbar", "Success. Now adding class to home page.");
+        this.$root.$emit("show-snackbar", "Password is correct, joining...");
       } else {
         this.$root.$emit("show-snackbar", "Incorrect password.")
       }
@@ -207,7 +208,7 @@ export default {
       const ref = db.collection("classes");
       this.schoolClasses = await this.$_getCollection(ref);
     },
-    enrollInClass ({ name, id }) {    
+    async enrollInClass ({ name, id }) {    
       // check if it is password protected
       if (!this.hasEnteredPassword) {
         if (["8.02", "8.011"].includes(name)) {
@@ -222,14 +223,20 @@ export default {
           if (classObj.id === id) return; 
         }
       }
-      const classSetting = { 
+
+      // update the user document to reflect the class enrollment
+      const userUpdateObject = {};
+      userUpdateObject.enrolledClasses = firebase.firestore.FieldValue.arrayUnion({
         id, 
-        name, 
-        notifFrequency: NotifFrequency.ALWAYS 
-      };
-      db.collection("users").doc(this.user.uid).update({
-        enrolledClasses: firebase.firestore.FieldValue.arrayUnion(classSetting)
+        name
       });
+      for (let [emailOption, isEnabled] of Object.entries(DefaultEmailSettings)) {
+        if (isEnabled) {
+          userUpdateObject[emailOption] = firebase.firestore.FieldValue.arrayUnion(id);
+        }
+      }
+      await db.collection("users").doc(this.user.uid).update(userUpdateObject);
+      this.$root.$emit("show-snackbar", "Successfully added the class to the home page.");
     },
     async updateSettings (payload) {
       this.userRef.update({ enrolledClasses: payload })
@@ -249,7 +256,7 @@ export default {
           name,
           notifFrequency: NotifFrequency.ALWAYS
         })
-      })
+      });
       this.fetchClasses();
     },
     logIn ({ email, password }) {
@@ -291,6 +298,7 @@ export default {
     },
     signOut () { 
       firebase.auth().signOut(); 
+      this.$router.push("/");
     },
     logoVisibility () {
       const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;
