@@ -1,12 +1,15 @@
 <template>
   <div>
-    <SeeExplanation v-if="originalPost" :expl="originalPost"/>
+    <SeeExplanation v-if="originalPost" 
+      :expl="originalPost"
+      :hasTitle="true"/>
     <SeeExplanation v-for="expl in sortedExplanations" :key="expl.id"
       :expl="expl" 
     />
     <CreateExplanation 
       :postDbRef="postRef"
-      :newExplanationDbRef="explanationsRef.doc()" 
+      :newExplanationDbRef="explanationsRef.doc()"
+      :titleRequired="!originalPost" 
       ref="CreateExplanation"
     />
   </div>

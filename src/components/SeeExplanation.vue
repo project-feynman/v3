@@ -3,6 +3,8 @@
     <v-container fluid>
       <!-- Text -->
       <template v-if="!isEditing"> 
+        <div v-if="hasTitle" v-text="expl.title">
+        </div>
         <p v-html="expl.html"></p>
       </template>
       <template v-else>
@@ -86,6 +88,10 @@ export default {
     hasDate: {
       type: Boolean, 
       default: () => true
+    },
+    hasTitle : {
+      type:Boolean,
+      default: () => false
     }
   },
   components: { 
@@ -117,7 +123,7 @@ export default {
     updateExplanation () {
       const { TextEditor } = this.$refs;
       db.doc(this.expl.ref).update({
-        title: TextEditor.extractAllText(),
+        title: TextEditor.extractTitle(),
         html: TextEditor.html
       });
       this.isEditing = false;
