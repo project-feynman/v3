@@ -131,7 +131,6 @@ import TheSearchBar from "@/components/TheSearchBar.vue";
 import RenderlessAsync from "@/components/RenderlessAsync.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import Blackboard from "@/components/Blackboard.vue";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import { demoVideo, NotifFrequency, DefaultEmailSettings } from "@/CONSTANTS.js";
@@ -141,7 +140,6 @@ export default {
   components: {
     RenderlessAsync, 
     BasePopupButton,
-    Blackboard,
     SeeExplanation,
     CreateExplanation,
     TheAppBar,
@@ -249,6 +247,7 @@ export default {
       const classDoc = await db.collection("classes").add({
         name,
         description: description || "No description yet",
+        tags: []
       });
       await this.userRef.update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion({

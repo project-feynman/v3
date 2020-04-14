@@ -19,27 +19,31 @@
             <slot name="message-to-user">
 
             </slot>
-            <template v-for="inputField in inputFields">
-              <v-col cols="12" :key="inputField">
-                <v-text-field
-                  v-model="inputValues[inputField]"
-                  :label="inputField"
-                  :type="inputField"
-                  required
-                />
-              </v-col>
-            </template>
+            <slot name="popup-content" :closePopup="resetState">
+              <template v-for="inputField in inputFields">
+                <v-col cols="12" :key="inputField">
+                  <v-text-field
+                    v-model="inputValues[inputField]"
+                    :label="inputField"
+                    :type="inputField"
+                    required
+                  />
+                </v-col>
+              </template>
+            </slot>
           </v-row>
         </v-container>
       </v-card-text>
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn @click="resetState()" color="secondary" text>
-          Cancel
-        </v-btn>
-        <v-btn @click="doAction()" color="secondary" text>
-          {{ actionName }}
-        </v-btn>
+        <v-spacer/>
+          <v-btn @click="resetState()" color="secondary" text>
+            Cancel
+          </v-btn>
+          <slot name="popup-action-buttons">
+            <v-btn v-if="actionName" @click="doAction()" color="secondary" text>
+              {{ actionName }}
+            </v-btn>
+          </slot>
       </v-card-actions>
     </v-card>
   </v-dialog>
