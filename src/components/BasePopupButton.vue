@@ -19,9 +19,7 @@
             <slot name="message-to-user">
 
             </slot>
-            <slot name="popup-content" 
-              :closePopup="resetState"
-            >
+            <slot name="popup-content" :closePopup="resetState">
               <template v-for="inputField in inputFields">
                 <v-col cols="12" :key="inputField">
                   <v-text-field

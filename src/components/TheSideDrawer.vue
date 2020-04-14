@@ -5,7 +5,7 @@
       @input="(newVal) => $emit('input', newVal)" 
       app 
       clipped 
-      width="325"
+      width="400"
     >
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
         <v-icon class="pr-2">mdi-home</v-icon> 

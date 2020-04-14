@@ -16,14 +16,16 @@
       <v-treeview
         :items="organizedPosts"
         :search="search"
+        :open="openedFoldersIndices"
         :load-children="(folder) => fetchRelevantPosts(folder)"
+        open-on-click
         :key="incrementKeyToDestroy"
       >
         <template v-slot:prepend="{ item, open }">
           <v-icon v-if="item.isFolder">
             {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
           </v-icon> 
-          <v-menu v-else bottom>
+          <v-menu v-else bottom right>
             <template v-slot:activator="{ on }">
               <v-btn icon v-on="on">
                 <v-icon>mdi-dots-vertical</v-icon>
@@ -35,7 +37,7 @@
                 <BasePopupButton>
                   <template v-slot:activator-button="{ on }">
                     <v-btn v-on="on" color="secondary" text>
-                      Move
+                      MOVE
                     </v-btn>
                   </template>
                   <template v-slot:popup-content="{ closePopup }">
@@ -45,26 +47,26 @@
                         <v-chip v-for="tagName in mitClass.tags" 
                           @click="movePostToFolder(item, tagName, closePopup)"
                           :key="tagName" 
-                          large
                           color="accent" 
-                          class="mx-2">
+                          class="ma-2">
                           {{ tagName }}
                         </v-chip>
                       </div>
                     </template>
                   </template>
-                  <!-- <template v-slot:popup-action-buttons>
-                    <v-btn @click="" color="secondary" text>Confirm Move</v-btn>
-                  </template> -->
                 </BasePopupButton>
               </v-list-item>
-              <!-- <v-list-item>
-                <BasePopupButton>
+              <v-list-item>
+                <BasePopupButton 
+                  actionName="Rename Post" 
+                  :inputFields="['New Name']"
+                  @action-do="(payload) => renamePost(payload, item)"
+                >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" color="secondary" text>Delete</v-btn>
+                    <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
                   </template>
                 </BasePopupButton>
-              </v-list-item> -->
+              </v-list-item>
             </v-list>
           </v-menu>
         </template>
@@ -108,7 +110,8 @@ export default {
   data: () => ({
     organizedPosts: [],
     search: null,
-    incrementKeyToDestroy: 0
+    incrementKeyToDestroy: 0,
+    openedFoldersIndices: []
   }),
   watch: {
     mitClass: {
@@ -131,14 +134,32 @@ export default {
     }
   },
   methods: {
+    async renamePost (payload, post) {
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${post.id}`);
+      await postRef.update({
+        title: payload["New Name"]
+      });
+      this.$root.$emit("show-snackbar", "Successfully renamed the post.");
+    },
     async fetchPostsWithNoTags () {
       const query = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "==", []);
       this.bindUntaggedPostsToDatabase(query);
     },
     async fetchRelevantPosts (item) {
-      const { class_id }  = this.$route.params; 
-      const postsQuery = db.collection(`classes/${class_id}/posts`).where("tags", "array-contains", item.name);
+      const postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "array-contains", item.name);
+
+      /* check if the query results is non-empty, otherwise `onSnapshot` will never trigger 
+        and the promise will never be resolved (and the browser freezes)*/
+      const results = await postsQuery.get();
+      if (results.empty) return;
       await this.bindArrayToDatabase(item.children, postsQuery);
+
+      // because we destroy the tree everytime the data updates, we need to ensure the opened folders stay open
+      this.mitClass.tags.forEach((tag, i) => {
+        if (item.name === tag) { 
+          this.openedFoldersIndices.push(i);
+        }
+      });
     },
     async movePostToFolder (post, folder, closePopup) {
       const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${post.id}`);
@@ -150,52 +171,37 @@ export default {
     },
     bindUntaggedPostsToDatabase (queryRef) {
       queryRef.onSnapshot((snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          if (change.type === "added") {
-            const post = {
-              id: change.doc.id,
-              name: change.doc.data().title,
-              date: change.doc.data().date
-            };
-            this.organizedPosts.push(post);
-            this.organizedPosts.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
-          } else if (change.type === "removed") {
-            for (let i = 0; i < this.organizedPosts.length; i++) {
-              const post = this.organizedPosts[i];
-              if (post.id === change.doc.id) {
-                this.organizedPosts.splice(i, 1); // removes `1` element from position `i`
-                this.incrementKeyToDestroy += 1; // re-render the tree
-              }
-            }
-          }
+        // clear previous data (but don't clear the folders)
+        this.organizedPosts.length = this.mitClass.tags.length; 
+        snapshot.forEach((doc) => {
+          this.organizedPosts.push({
+            id: doc.id,
+            name: doc.data().title,
+            date: doc.data().date
+          });
         });
+        this.organizedPosts.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
+        this.incrementKeyToDestroy += 1;
       });
     },
     bindArrayToDatabase (array, queryRef) {
       return new Promise((resolve) => {
         queryRef.onSnapshot((snapshot) => {
-          const temporaryArray = []; // so we hydrate `array` all at once after we collected each "added" document
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === "added") {
-              temporaryArray.push({
-                id: change.doc.id,
-                name: change.doc.data().title,
-                date: change.doc.data().date 
-              });
-            } else if (change.type === "removed") {
-              // below hack is necessary because <treeview> only reacts to `.push()` and not removal operations
-              let arrayCopy = [...array];
-              arrayCopy = arrayCopy.filter((post) => post.id !== change.doc.id);
-              array.length = 0; // empty the array
-              array.push(...arrayCopy);
-              this.incrementKeyToDestroy += 1;
-            }
+          /* we cannot use `array = [];` to reset the array 
+             see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
+          array.length = 0; 
+          snapshot.forEach((doc) => {
+            array.push({
+              id: doc.id,
+              name: doc.data().title,
+              date: doc.data().date
+            });
           });
-          array.push(...temporaryArray);
           array.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
+          this.incrementKeyToDestroy += 1;
           resolve();
         });
-      })
+      });
     },
     displayDate (date) {
       return displayDate(date);
