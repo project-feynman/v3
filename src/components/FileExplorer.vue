@@ -111,7 +111,8 @@ export default {
     organizedPosts: [],
     search: null,
     incrementKeyToDestroy: 0,
-    openedFoldersIndices: []
+    openedFoldersIndices: [],
+    snapshotListeners: []
   }),
   watch: {
     mitClass: {
@@ -131,6 +132,11 @@ export default {
         }
         this.fetchPostsWithNoTags(); 
       }
+    }
+  },
+  beforeDestroy () {
+    for (const detachListener of this.snapshotListeners) {
+      detachListener();
     }
   },
   methods: {
@@ -170,7 +176,7 @@ export default {
       closePopup();
     },
     bindUntaggedPostsToDatabase (queryRef) {
-      queryRef.onSnapshot((snapshot) => {
+      const snapshotListener = queryRef.onSnapshot((snapshot) => {
         // clear previous data (but don't clear the folders)
         this.organizedPosts.length = this.mitClass.tags.length; 
         snapshot.forEach((doc) => {
@@ -183,10 +189,11 @@ export default {
         this.organizedPosts.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
         this.incrementKeyToDestroy += 1;
       });
+      this.snapshotListeners.push(snapshotListener);
     },
     bindArrayToDatabase (array, queryRef) {
       return new Promise((resolve) => {
-        queryRef.onSnapshot((snapshot) => {
+        const snapshotListener = queryRef.onSnapshot((snapshot) => {
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
           array.length = 0; 
@@ -201,6 +208,7 @@ export default {
           this.incrementKeyToDestroy += 1;
           resolve();
         });
+        this.snapshotListeners.push(snapshotListener);
       });
     },
     displayDate (date) {
