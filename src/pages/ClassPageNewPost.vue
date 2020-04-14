@@ -9,14 +9,12 @@
 </template>
 
 <script>
-import TheAppBar from "@/components/TheAppBar.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
 import db from "@/database.js";
 import { getRandomId } from "@/helpers.js";
 
 export default {
   components: { 
-    TheAppBar, 
     CreateExplanation,
   },
   data () {
@@ -42,10 +40,9 @@ export default {
     if (Blackboard.getStrokesArray().length > 0 || TextEditor.extractAllText().length > 0) {
       const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
       if (wantToLeave) next();
-      else next(false);
-    } else {
-      next();
-    }
+      else next(false); 
+    } 
+    else next(); 
   },
   methods: {
     resetExplanationComponent () {

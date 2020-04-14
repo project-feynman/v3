@@ -1,5 +1,5 @@
 <template>
-  <v-card style="zIndex:10">
+  <v-card>
     <v-navigation-drawer 
       :value="value" 
       @input="(newVal) => $emit('input', newVal)" 
@@ -11,8 +11,7 @@
         <v-icon class="pr-2">mdi-home</v-icon> 
         Overview
       </v-btn> -->
-      <v-tabs
-        v-model="activeTab"
+      <v-tabs v-model="activeTab"
         grow
         active-class="accent--text"
         class="side-tabs"
@@ -23,51 +22,18 @@
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
-          <v-list class="pt-0">
+          <v-list class="py-0">
             <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
               <v-list-item-icon>
                 <v-icon>mdi-plus</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title>Start a new post</v-list-item-title>
+                <v-list-item-title>New Post</v-list-item-title>
               </v-list-item-content>
             </v-list-item> 
-
-            <v-list-item>
-              <!-- TODO: re-use BaseSearchBar -->
-              <v-autocomplete
-                placeholder="Search existing posts..."
-                :items="posts"
-                item-text="title"
-                @change="(selectedPost) => displayFullPost(selectedPost)"
-                outlined
-                clearable
-                hide-details
-                prepend-inner-icon="mdi-magnify"
-                return-object
-                color="accent"
-                ref="SearchBar"
-                style="zIndex:11"
-              />
-            </v-list-item>
-            <template v-for="(post, i) in posts">
-              <v-list-item 
-                :key="post.id + i"
-                :to="`/class/${classId}/posts/${post.id}`"
-                three-line 
-                color="accent"
-              >
-                <v-list-item-content>
-                  <v-list-item-subtitle class="text--primary" v-text="post.title || '(No title)'"/>
-                  <v-list-item-subtitle v-text="displayDate(post.date)"/>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider
-                v-if="i + 1 < posts.length"
-                :key="i"
-              ></v-divider>
-            </template>
           </v-list>
+          <!-- File Explorer -->
+          <FileExplorer/>
         </v-tab-item>
         <v-tab-item key="Blackboard">
           <v-btn v-if="blackboards"
@@ -125,6 +91,7 @@
 </template>
 
 <script>
+import FileExplorer from "@/components/FileExplorer.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial } from "@/CONSTANTS.js";
 import { displayDate } from "@/helpers.js";
@@ -137,6 +104,9 @@ export default {
   mixins: [
     DatabaseHelpersMixin
   ],
+  components: {
+    FileExplorer,
+  },
   data () {
     return {
       posts: [],

@@ -18,31 +18,31 @@
         :imageDownloadUrl="expl.imageUrl"
         v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
       >
-        <div id="doodle-wrapper" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
-            <!-- Thumbnail preview -->
-            <template v-if="strokesArray.length === 0 || isLoading">
-              <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
-              <div v-if="expl.hasStrokes" class="overlay-item">
-                <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
-                <v-btn v-else @click="handlePlayClick(fetchStrokes)" large dark>
-                  <v-icon>mdi-play</v-icon>
-                </v-btn>
-              </div>
-            </template>
-            <!-- Loaded video -->
-            <DoodleVideo v-else-if="expl.audioUrl"
-              :strokesArray="strokesArray"
-              :imageBlob="imageBlob" 
-              :audioUrl="expl.audioUrl" 
-              @toggle-fullscreen="toggleFullscreen"
-              ref="Doodle"
-            />
-            <DoodleAnimation v-else
-              :strokesArray="strokesArray"
-              :backgroundUrl="expl.imageUrl"
-              @toggle-fullscreen="toggleFullscreen"
-              ref="Doodle"
-            />
+        <div id="doodle-wrapper" @click="(e) => clickOutsideDoodle(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+          <!-- Thumbnail preview -->
+          <template v-if="strokesArray.length === 0 || isLoading">
+            <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
+            <div v-if="expl.hasStrokes" class="overlay-item">
+              <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
+              <v-btn v-else @click="handlePlayClick(fetchStrokes)" large dark>
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+            </div>
+          </template>
+          <!-- Loaded video -->
+          <DoodleVideo v-else-if="expl.audioUrl"
+            :strokesArray="strokesArray"
+            :imageBlob="imageBlob" 
+            :audioUrl="expl.audioUrl" 
+            @toggle-fullscreen="toggleFullscreen"
+            ref="Doodle"
+          />
+          <DoodleAnimation v-else
+            :strokesArray="strokesArray"
+            :backgroundUrl="expl.imageUrl"
+            @toggle-fullscreen="toggleFullscreen"
+            ref="Doodle"
+          />
       </div>
       </RenderlessFetchStrokes>
 
@@ -61,14 +61,15 @@
       <!-- Dropdown menu for editing and deleting -->
       <v-row v-if="user" justify="center">
         <v-layout align-center>
-          <p class="pt-3 pl-3 body-2 font-weight-light">
-            {{ hasDate ? `By ${expl.creator.firstName}, ${displayDate(expl.date)}` : "" }}
+          <p v-if="hasDate" class="pt-3 pl-3 body-2 font-weight-light">
+            By {{ expl.creator.firstName }}, {{ displayDate(expl.date) }}
           </p>      
           <p v-if="expl.thumbnail" class="pt-3 pl-2 body-2 font-weight-light">
             (video views: {{ expl.views ? expl.views : 0 }}) 
           </p> 
           <v-spacer></v-spacer>
           <template v-if="expl.creator.uid === user.uid">
+            <!-- <ButtonNew @click="" -->
             <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
             <ButtonNew @click="popup = true" icon="mdi-delete">Delete</ButtonNew>
           </template>
@@ -120,9 +121,6 @@ export default {
     popup: false,
     isFullScreen: false
   }),
-  mounted () {
-    document.getElementById('doodle-wrapper').addEventListener("click", e=>this.clickOutsideDoodle(e));
-  },
   methods: {
     upvoteExpl () {
       const ref = db.doc(`${this.expl.ref}`);
@@ -163,9 +161,11 @@ export default {
       this.isEditing = false;
     },
     // TODO: should be a recursive deletion
-    deleteExplanation () {
-      db.doc(this.expl.ref).delete();
+    async deleteExplanation () {
+      await db.doc(this.expl.ref).delete();
+      // this.$router.push(`/class/${this.$route.params.class_id}`);
       this.popup = false;
+      this.$root.$emit("show-snackbar", "Successfully deleted post, you might have to leave the page though");
     },
     toggleFullscreen () {
       this.isFullScreen = !this.isFullScreen;
@@ -178,7 +178,7 @@ export default {
       }
     },
     clickOutsideDoodle (e) {
-      if (e.target.id==='doodle-wrapper' && this.isFullScreen) {
+      if (e.target.id === "doodle-wrapper" && this.isFullScreen) {
         this.toggleFullscreen()
       }
     }

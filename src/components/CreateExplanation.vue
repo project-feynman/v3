@@ -32,13 +32,6 @@
       >
         Uploading...
       </v-progress-linear>
-      <!-- I made modifications to your changes, here's your old code -->
-        <!-- height="20"
-        color="accent"
-        striped
-        rounded
-        class="font-italic text-small"
-        style="font-size: 0.8em;" -->
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
         @record-start="isRecordingVideo = true"
@@ -47,7 +40,6 @@
         :isRealtime="false"
         ref="Blackboard"
       />
-
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
         <v-row>
@@ -138,8 +130,20 @@ export default {
       return this.$store.state.user; 
     },
     simplifiedUser () {
-      const { isOnline, enrolledClasses, color, ...immutableInfo } = this.user;
-      return immutableInfo;
+      return {
+        uid: this.user.uid,
+        email: this.user.email,
+        firstName: this.user.firstName,
+        lastName: this.user.lastName,
+      };
+    },
+    anonymousUser () {
+      return {
+        uid: this.user.uid,
+        email: "anonymous@mit.edu",
+        firstName: "anonymous",
+        lastName: "anonymous"
+      };
     },
     mitClass () { 
       return this.$store.state.mitClass; 
@@ -180,7 +184,11 @@ export default {
     },
     // uploads the snapshot of the text, images, drawings and audio for the explanation
     async submitPost () {
+      // STAGE 1/3: setup variables
       const { TextEditor, Blackboard } = this.$refs;
+      const strokesArray = Blackboard.getStrokesArray();
+      const backgroundImageBlob = Blackboard.getImageBlob();
+
       if (TextEditor.html.length === 0 && this.titleRequired) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
         return; 
@@ -194,125 +202,143 @@ export default {
       }, 
       10 * secondInMilliseconds);
 
-      const anonymousUser = {
-        uid: this.user.uid,
-        email: "anonymous@mit.edu",
-        firstName: "anonymous",
-        lastName: "anonymous"
-      };
-      const metadata = {
+      const explanation = {
         title: TextEditor.extractAllText(),
         html: TextEditor.html,
         date: new Date().toISOString(),
-        creator: this.isAnonymous ? anonymousUser : this.simplifiedUser,
-        mitClass: this.mitClass
+        creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
+        mitClass: this.mitClass,
+        tags: [],
+        duration: Blackboard.currentTime,
+        hasStrokes: strokesArray.length > 0
       };
-      const explanation = { ...metadata };
-      const strokesArray = Blackboard.getStrokesArray();
-      const imageBlob = Blackboard.getImageBlob();
 
-      // Check if the user used the Blackboard
-      if (strokesArray.length > 0 || imageBlob) { 
-        // accumulate promises for strokes, audio, images to process them in parallel
-        const uploadTasks = [];
-        if (Blackboard.currentState === RecordState.POST_RECORD) {
-          const { imageBlob, thumbnailBlob, audio } = this.previewVideo; 
-          explanation.duration = Blackboard.currentTime;
-
-          const audioUpload = new Promise(async (resolve, reject) => {
-            try {
-              const downloadUrl = await this.$_saveToStorage(`audio/${getRandomId()}`, audio.blob, true); 
-              explanation.audioUrl = downloadUrl;
-              resolve();
-            } catch (reason) {
-              reject("Audio failed to upload.");
-            }
-          });
-
-          const thumbnailUpload = new Promise(async (resolve, reject) => {
-            try {
-              const downloadUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
-              explanation.thumbnail = downloadUrl; 
-              resolve();
-            } catch (reason) {
-              reject("Thumbnail failed to upload.");
-            }
-          });
-
-          uploadTasks.push(audioUpload);
-          uploadTasks.push(thumbnailUpload);
-
-        } else {
-          const thumbnailUpload = new Promise(async (resolve, reject) => {
-            try {
-              const thumbnailBlob = await Blackboard.getThumbnail();
-              const downloadUrl = await this.$_saveToStorage(`images/${getRandomId()}`, thumbnailBlob);
-              explanation.thumbnail = downloadUrl; 
-              resolve();
-            } catch (reason) {
-              reject("Thumbnail failed to upload.");
-            }
-          });
-
-          uploadTasks.push(thumbnailUpload);
-        }
-
-        // If there is a background image
-        if (imageBlob) {
-          const backgroundUpload = new Promise(async (resolve, reject) => {
-            try {
-              const downloadUrl = await this.$_saveToStorage(`images/${getRandomId()}`, imageBlob);
-              explanation.imageUrl = downloadUrl; 
-              resolve();
-            } catch (reason) {
-              reject("Background image failed to upload.");
-            }
-          });
-          uploadTasks.push(backgroundUpload);
-        }
-        
-        // RESOLVE PROMISES
+      // STAGE 2/3: upload data to Firebase storage
         try {
-          await Promise.all(uploadTasks);
+          // accumulate promises for strokes, audio, images to process them in parallel
+          const promises = [];
+          // check if blackboard was used or not
+          if (strokesArray.length > 0 || backgroundImageBlob) { 
+            // audio
+            if (Blackboard.currentState === RecordState.POST_RECORD) {
+              explanation.audioUrl = await this.$_saveToStorage(
+                `audio/${getRandomId()}`, 
+                this.previewVideo.audio.blob, 
+                true
+              ); // true means loading bar will be indicated
+              promises.push(explanation.audioUrl);
+            } 
+
+            // thumbnail 
+            let thumbnailBlob; 
+            if (this.previewVideo.thumbnailBlob) {
+              thumbnailBlob = this.previewVideo.thumbnailBlob
+            } else {
+              thumbnailBlob = await Blackboard.getThumbnail();
+            }
+            explanation.thumbnail = await this.$_saveToStorage(
+              `images/${getRandomId()}`, 
+              thumbnailBlob
+            );
+            promises.push(explanation.thumbnail);
+
+            // background image
+            if (backgroundImageBlob) {
+              explanation.imageUrl = await this.$_saveToStorage(
+                `images/${getRandomId()}`, 
+                backgroundImageBlob
+              );
+              promises.push(explanation.imageUrl);
+            }
+          }
+          
+          // upload the explanation document itself
+          if (this.willCreateNewPost) {
+            explanation.participants = [this.simplifiedUser];
+            explanation.hasReplies = false;
+            promises.push(this.postDbRef.set(explanation));
+            if (explanation.hasStrokes) {
+              promises.push(
+                this.uploadStrokesToDatabase(
+                  strokesArray, 
+                  this.postDbRef.collection("strokes")
+                )
+              );
+            }
+          } else {
+            this.postDbRef.update({
+              participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
+              hasReplies: true
+            });
+            const newExplId = getRandomId();
+            promises.push(
+              this.newExplanationDbRef.doc(newExplId).set(explanation)
+            );
+            if (explanation.hasStrokes) {
+              promises.push(
+                this.uploadStrokesToDatabase(
+                  strokesArray, 
+                  this.newExplanationDbRef.doc(newExplId).collection("strokes")
+                )
+              );
+            }
+          }
+          await Promise.all(promises);
+
+          // STAGE 3/3: reset variables
+          clearInterval(uploadTimeout);
+          this.messageToUser = "";
+          this.changeKeyToForceReset += 1;
+          this.isUploadingPost = false;
+          this.isPreviewing = false;
+          this.previewVideo = {};
+
+          // emit events
+          this.$emit("upload-finish"); 
+          this.$root.$emit("show-snackbar", "Successfully uploaded.");
         } catch (reason) {
-          this.$root.$emit("show-snackbar", `Failed to upload explanation, reason: ${reason}`);
+          this.$root.$emit("show-snackbar", `Upload failed, reason: ${reason}`);
+          this.messageToUser = "Upload failed for some reason. Try again."
           this.isUploadingPost = false;
           return; 
         }
-        // save strokes
-        if (strokesArray.length > 0) {
-          explanation.hasStrokes = true;
-          for (let stroke of strokesArray) {
-            if (this.willCreateNewPost) {
-              this.postDbRef.collection("strokes").add(stroke);
-            } else {
-              this.newExplanationDbRef.collection("strokes").add(stroke);
+    },
+    uploadStrokesToDatabase (strokesArray, databaseRef) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const promises = [];
+          const n = strokesArray.length;
+          if (n > 1000) {
+            throw new Error("Cannot handle more than 1000 strokes");
+          } 
+
+          else if (n > 500) {
+            const batch1 = db.batch();
+            for (let i = 0; i < 500; i++) {
+              batch.set(databaseRef.doc(getRandomId()), strokesArray[i]);
             }
+            promises.push(batch1.commit());
+            const batch2 = db.batch(); 
+            for (let i = 500; i < 1000; i++) {
+              batch.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            promises.push(batch2.commit());
+          } 
+        
+          else {
+            const batch = db.batch();
+            for (let stroke of strokesArray) {
+              batch.set(databaseRef.doc(getRandomId()), stroke); 
+            }
+            promises.push(batch.commit());
           }
+          await Promise.all(promises);
+          resolve();
+        } catch (reason) {
+          console.log("failed, reason =", reason);
+          reject(reason);
         }
-      }
-      if (this.willCreateNewPost) {
-        explanation.participants = [this.simplifiedUser];
-        explanation.hasReplies = false;
-        this.postDbRef.set(explanation);
-      } else {
-        this.newExplanationDbRef.set(explanation);
-        this.postDbRef.update({
-          participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
-          hasReplies: true
-        });
-      }
-
-      // reset variables
-      clearInterval(uploadTimeout);
-      this.messageToUser = "";
-      this.changeKeyToForceReset += 1;
-      this.isUploadingPost = false;
-      this.isPreviewing = false;
-
-      // emit events
-      this.$emit("upload-finish"); 
-      this.$root.$emit("show-snackbar", "Successfully uploaded.");
+      });
     },
     toggleFullscreenDoodle () {
       this.isFullScreenDoodle = !this.isFullScreenDoodle;
@@ -326,13 +352,14 @@ export default {
       }
     },
     clickOutsideDoodle (e) {
-      if (e.target.id==='doodle-wrapper' && this.isFullScreenDoodle) {
+      if (e.target.id === "doodle-wrapper" && this.isFullScreenDoodle) {
         this.toggleFullscreenDoodle()
       }
     }
   }
 }
 </script>
+
 <style scoped>
 .video-wrapper {
   height: 100%; 

@@ -6,7 +6,7 @@
     />
     <CreateExplanation 
       :postDbRef="postRef"
-      :newExplanationDbRef="explanationsRef.doc()" 
+      :newExplanationDbRef="explanationsRef" 
       ref="CreateExplanation"
     />
   </div>
@@ -72,9 +72,8 @@ export default {
         const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
         if (!wantToLeave) { next(false); }
         else { next(); }
-      } else {
-        next();
-      }
+      } 
+      else { next(); }
     }
   }
 }
