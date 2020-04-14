@@ -1,4 +1,5 @@
 <template>
+  <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
   <v-card>
     <v-navigation-drawer 
       :value="value" 
