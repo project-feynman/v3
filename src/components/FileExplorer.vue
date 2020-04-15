@@ -155,7 +155,7 @@ export default {
       const postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "array-contains", item.name);
 
       /* check if the query results is non-empty, otherwise `onSnapshot` will never trigger 
-        and the promise will never be resolved (and the browser freezes)*/
+        and the promise will never be resolved (and the browser freezes) */
       const results = await postsQuery.get();
       if (results.empty) return;
       await this.bindArrayToDatabase(item.children, postsQuery);

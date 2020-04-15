@@ -314,14 +314,14 @@ export default {
 
           else if (n > 500) {
             const batch1 = db.batch();
+            const batch2 = db.batch(); 
             for (let i = 0; i < 500; i++) {
-              batch.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            for (let i = 500; i < 1000; i++) {
+              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
             }
             promises.push(batch1.commit());
-            const batch2 = db.batch(); 
-            for (let i = 500; i < 1000; i++) {
-              batch.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
             promises.push(batch2.commit());
           } 
         
