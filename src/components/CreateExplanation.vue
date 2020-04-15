@@ -308,8 +308,46 @@ export default {
         try {
           const promises = [];
           const n = strokesArray.length;
-          if (n > 1000) {
-            throw new Error("Cannot handle more than 1000 strokes");
+
+          if (n > 1500) {
+            const batch1 = db.batch();
+            const batch2 = db.batch(); 
+            const batch3 = db.batch();
+            const batch4 = db.batch();
+            for (let i = 0; i < 500; i++) {
+              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            for (let i = 500; i < 1000; i++) {
+              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            for (let i = 1000; i < 1500; i++) {
+              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            for (let i = 1500; i < n; i++) {
+              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            promises.push(batch1.commit());
+            promises.push(batch2.commit());
+            promises.push(batch3.commit());
+            promises.push(batch4.commit());
+          }
+
+          else if (n > 1000) {
+            const batch1 = db.batch();
+            const batch2 = db.batch(); 
+            const batch3 = db.batch();
+            for (let i = 0; i < 500; i++) {
+              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            for (let i = 500; i < 1000; i++) {
+              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            for (let i = 1000; i < n; i++) {
+              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
+            }
+            promises.push(batch1.commit());
+            promises.push(batch2.commit());
+            promises.push(batch3.commit());
           } 
 
           else if (n > 500) {
@@ -318,7 +356,7 @@ export default {
             for (let i = 0; i < 500; i++) {
               batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
             }
-            for (let i = 500; i < 1000; i++) {
+            for (let i = 500; i < n; i++) {
               batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
             }
             promises.push(batch1.commit());
