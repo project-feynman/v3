@@ -7,9 +7,8 @@
       :expl="expl" 
     />
     <CreateExplanation 
-      :postDbRef="postRef"
-      :newExplanationDbRef="explanationsRef.doc()"
-      :titleRequired="!originalPost" 
+      :postDbRef="postRef" 
+      :newExplanationDbRef="explanationsRef" 
       ref="CreateExplanation"
     />
   </div>
@@ -73,11 +72,10 @@ export default {
 
       if (Blackboard.getStrokesArray().length > 0 || TextEditor.extractAllText().length > 0) {
         const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
-        if (!wantToLeave) { next(false); }
-        else { next(); }
-      } else {
-        next();
-      }
+        if (!wantToLeave) next(false);
+        else next(); 
+      } 
+      else next(); 
     }
   }
 }

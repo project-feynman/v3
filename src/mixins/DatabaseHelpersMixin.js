@@ -1,7 +1,6 @@
 import firebase from "firebase/app";
 import "firebase/storage";
 
-// Every CRUD operation has explicit error handling without making the codebase verbose
 export default {
   methods: {
     async $_getDoc (ref) {
@@ -11,7 +10,13 @@ export default {
           if (!doc.exists) {
             this.$root.$emit("show-snackbar", `Error: data doesn't exist for path = ${ref.path}`);
             reject();
-          } else { resolve({ "id": doc.id, "ref": doc.ref.path, ...doc.data() }); } 
+          } else { 
+            resolve({ 
+              id: doc.id, 
+              ref: doc.ref.path, 
+              ...doc.data() 
+            }); 
+          } 
         } catch (error) {
           this.$root.$emit("show-snackbar", error.message);
           reject("Error: cannot fetch doc");
@@ -24,11 +29,16 @@ export default {
           const results = [];
           const collectionSnapshot = await ref.get();
           collectionSnapshot.forEach(doc => {
-            results.push({ "id": doc.id, "ref": doc.ref.path, ...doc.data() });
+            results.push({ 
+              id: doc.id, 
+              ref: doc.ref.path, 
+              ...doc.data() 
+            });
           });
           resolve(results);
         } catch (error) {
           this.$root.$emit("show-snackbar", error.message);
+          console.log("error =", error);
           reject();
         }
       });
@@ -37,7 +47,11 @@ export default {
       return new Promise(async (resolve) => {
         try {
           const unsubscribeListener = ref.onSnapshot((doc) => { // onSnapshot does NOT return a promise
-            obj[val] = { "id": doc.id, "ref": doc.ref.path, ...doc.data(), }
+            obj[val] = { 
+              id: doc.id, 
+              ref: doc.ref.path, 
+              ...doc.data(), 
+            };
             resolve(unsubscribeListener);
           });
         } catch (error) {
