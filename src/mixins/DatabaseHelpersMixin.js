@@ -28,7 +28,7 @@ export default {
         try {
           const results = [];
           const collectionSnapshot = await ref.get();
-          collectionSnapshot.forEach(doc => {
+          collectionSnapshot.forEach((doc) => {
             results.push({ 
               id: doc.id, 
               ref: doc.ref.path, 

@@ -41,39 +41,37 @@
 </template>
 
 <script>
-import { NotifFrequency, DefaultEmailSettings } from "@/CONSTANTS.js";
+import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
+import { mapState } from "vuex";
 
 export default {
   data: () => ({
     menu: false,
-    NotifFrequency,
     DefaultEmailSettings,
     emailSettings: { ...DefaultEmailSettings }
   }),
   computed: {
+    ...mapState([
+      "user",
+      "mitClass"
+    ]),
     dataReady () {
       return this.user && this.mitClass
-    },
-    user () { 
-      return this.$store.state.user; 
-    },
-    mitClass () {
-      return this.$store.state.mitClass;
     }
   },
   watch: {
     dataReady: {
+      immediate: true,
       handler () {
-        if (!this.dataReady) { return; }
+        if (!this.dataReady) return; 
         for (let option of Object.keys(this.emailSettings)) {
-          if (!this.user[option]) { continue; }
+          if (!this.user[option]) continue;
           this.emailSettings[option] = this.user[option].includes(this.mitClass.id);
         }
-      },
-      immediate: true
+      }
     },
   },
   methods: {
