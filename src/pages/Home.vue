@@ -6,11 +6,10 @@
         <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
           BLOG
         </v-btn> -->
-        <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
+        <!-- <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
           <ButtonNew icon="mdi-git">Source Code</ButtonNew>
-        </a>
-        <BasePopupButton 
-          actionName="Create class" 
+        </a> -->
+        <BasePopupButton actionName="Create class" 
           @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
         >
@@ -18,11 +17,23 @@
             <ButtonNew :on="on" icon="mdi-plus">Create Class</ButtonNew>
           </template>
         </BasePopupButton>
-        <TheDropdownMenu @sign-out="signOut()" @settings-changed="(S) => updateSettings(S)">
+        <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:activator="{ on }">
             <ButtonNew :on="on" icon="mdi-account-circle">Account</ButtonNew>
           </template>
         </TheDropdownMenu>
+      </template>
+      <template v-else>
+        <BasePopupButton actionName="Log in" 
+          :inputFields="['email', 'password']" 
+          @action-do="user => $_logIn(user)"
+          outlined
+          color="secondary"
+        >
+          <template v-slot:activator-button="{ on }">
+            <ButtonNew :on="on" icon="mdi-account-circle">Log In</ButtonNew>
+          </template>
+        </BasePopupButton>
       </template>
     </TheAppBar>
     <v-content>
@@ -31,32 +42,44 @@
           <v-container>
             <div class="central-title d-flex justify-center align-center mb-4">
               <img src="/logo.png" class="hero-img"/>
-              <h1 class="text--primary ml-2">ExplainMIT</h1>
+              <h1 class="text--primary ml-2">
+                ExplainMIT
+              </h1>
             </div>
             <h3 class="headline text--primary">
-              The most efficient platform for sharing explanations
+              An efficient platform for visual explanations
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="!user">
                 <v-col cols="auto">
-                  <BasePopupButton 
-                    actionName="Log in" 
-                    :inputFields="['email', 'password']" 
-                    @action-do="user => logIn(user)"
-                    outlined
-                    color="secondary"
-                  />
+                  <BasePopupButton actionName="Explore" outlined color="secondary">
+                    <template v-slot:popup-content>
+                      <!-- Privacy issues: we shouldn't expose 8.02 -->
+                      <!-- <div>
+                        <a @click="signInAnonymouslyThenRedirectTo('class/oQV3TgY3OrvE93lAT7sx')" color="purple">8.02</a>
+                      </div>
+                      <p>Professor Dourmashkin use animations to help students in 8.02</p> -->
+                      <div>
+                        <a @click="signInAnonymouslyThenRedirectTo('class/mDbUrvjy4pe8Q5s5wyoD')" color="purple">Core Team</a>
+                      </div>
+                      <p>Our internal developer team use the platform to architect the software itself</p>
+                    </template>
+                    <template v-slot:popup-action-buttons>
+                      <!-- A hack to not display the action button -->
+                      <div></div>
+                    </template>
+                  </BasePopupButton>
                 </v-col>
                 <v-col cols="auto">
-                  <BasePopupButton 
-                    actionName="Sign up" 
+                  <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
-                    @action-do="user => signUp(user)"
+                    @action-do="user => $_signUp(user)"
                     outlined
                     color="secondary"
                   >
                     <template v-slot:message-to-user>
+                      Sign up for an account to ask questions and create explanations. 
                       Passwords are handled by Google Firebase Authentication.
                     </template>
                   </BasePopupButton>
@@ -94,8 +117,17 @@
 
         <!-- Tutorial -->
         <template v-if="!user && !isFetchingUser">
-          <SeeExplanation :expl="demoVideo" :hasDate="false"/>
-          <CreateExplanation/>
+          <v-row>
+            <v-col cols="12" md="6">
+              <SeeExplanation v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+            </v-col>
+            <v-col cols="12" md="6">
+              <SeeExplanation v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
+            </v-col>
+            <v-col cols="12" md="12">
+              <CreateExplanation/>
+            </v-col>
+          </v-row>
         </template>
 
         <!-- Classes -->
@@ -123,7 +155,7 @@
 <script>
 import { mapState } from "vuex";
 import firebase from "firebase/app";
-import "firebase/auth";
+import "firebase/firestore";
 import db from "@/database.js";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
@@ -131,9 +163,10 @@ import TheSearchBar from "@/components/TheSearchBar.vue";
 import RenderlessAsync from "@/components/RenderlessAsync.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import CreateExplanation from "@/components/CreateExplanation.vue";
-import { demoVideo, NotifFrequency, DefaultEmailSettings } from "@/CONSTANTS.js";
+import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
@@ -147,9 +180,15 @@ export default {
     TheSearchBar,
     ButtonNew
   },
-  mixins: [DatabaseHelpersMixin],
+  mixins: [
+    AuthHelpers,
+    DatabaseHelpersMixin
+  ],
   computed: {
-    ...mapState(["user", "isFetchingUser"]),
+    ...mapState([
+      "user", 
+      "isFetchingUser"
+    ]),
     userRef () { 
       return db.collection("users").doc(this.user.uid); 
     }
@@ -157,7 +196,8 @@ export default {
   data () {
     return {
       schoolClasses: [],
-      demoVideo: { creator: {} },
+      demoVideo: null,
+      demoVideo2: null,
       welcomeMessage: "Welcome to ExplainMIT!",
       classSecurityPopup: false,
       classPassword: "",
@@ -168,8 +208,10 @@ export default {
   },
   async created () { 
     this.fetchClasses(); 
-    const demoVideoRef = this.getBlackboardRef(demoVideo.postId);
-    this.demoVideo = await this.$_getDoc(demoVideoRef); 
+    const demoVideoRef = db.doc(`classes/${demoVideo.classId}/posts/${demoVideo.postId}`);
+    const demoVideoRef2 = db.doc(`classes/${demoVideo2.classId}/posts/${demoVideo2.postId}/explanations/${demoVideo2.postId}`);
+    this.$_getDoc(demoVideoRef).then((demoVideo) => this.demoVideo = demoVideo);
+    this.$_getDoc(demoVideoRef2).then((demoVideo2) => this.demoVideo2 = demoVideo2);
   },
   mounted () { 
     window.addEventListener("scroll", this.logoVisibility); 
@@ -178,6 +220,9 @@ export default {
     window.removeEventListener("scroll", this.logoVisibility); 
   },
   methods: {
+    signInAnonymouslyThenRedirectTo (targetRoute) {
+      this.$router.push(targetRoute);
+    },
     handleClassPassword () {
       if (["explainphysics", "physics"].includes(this.classPassword.toLowerCase())) {
         this.hasEnteredPassword = true;
@@ -198,9 +243,6 @@ export default {
     },
     getMitClassRef (classId) { 
       return db.collection("classes").doc(classId); 
-    },
-    getBlackboardRef (explanationId) {
-      return db.doc(`classes/${demoVideo.classId}/posts/${explanationId}/explanations/${explanationId}`);
     },
     async fetchClasses () {
       const ref = db.collection("classes");
@@ -242,7 +284,7 @@ export default {
     async createClass ({ "class name": name, "class description": description }) {
       this.fetchClasses();
       for (const c of this.schoolClasses) {
-        if (c.name === name) { return; } 
+        if (c.name === name) return; 
       }
       const classDoc = await db.collection("classes").add({
         name,
@@ -252,52 +294,10 @@ export default {
       await this.userRef.update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
           id: classDoc.id,
-          name,
-          notifFrequency: NotifFrequency.ALWAYS
+          name
         })
       });
       this.fetchClasses();
-    },
-    logIn ({ email, password }) {
-      firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((user) => {
-          this.$store.dispatch("fetchUser", user);
-          this.$root.$emit("show-snackbar", this.welcomeMessage);
-        })
-        .catch((error) => this.$root.$emit("show-snackbar", error.message));
-    },
-    signUp ({ "first name": firstName, "last name": lastName, email, password }) {
-      if (!firstName || !lastName) { 
-        this.$root.$emit(
-          "show-snackbar", 
-          "Error: don't forget to enter your first name and last name!"
-        );
-        return;
-      }
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(async (result) => {
-          this.$root.$emit("show-snackbar", this.welcomeMessage);
-          this.createAccount({ ...result.user, firstName, lastName })
-        })
-        .catch((error) => this.$root.$emit("show-snackbar", error.message));
-    },
-    createAccount ({ uid, email, firstName, lastName }) {
-      function getRandomColor () {
-        const letters = '0123456789ABCDEF'
-        let color = '#'
-        for (let i = 0; i < 6; i++) {
-          color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-      }
-      const color = getRandomColor();
-      const enrolledClasses = [];
-      const newUser = { uid, email, firstName, lastName, color, enrolledClasses };
-      db.collection("users").doc(uid).set(newUser);
-    },
-    signOut () { 
-      firebase.auth().signOut(); 
-      this.$router.push("/");
     },
     logoVisibility () {
       const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;
@@ -333,25 +333,21 @@ export default {
   text-decoration: underline;
   text-decoration-color: #eee;
 }
-
 @media (max-width: 400px) {
   .central-title h1 {
     font-size: 2.5em;
   }
 }
-
 #home-page .app-banner .home-logo {
   display: none;
 }
 #home-page.scrolled .app-banner .home-logo {
   display: unset;
 }
-
 .enrolled-classes .v-card__title {
   word-break: unset;
   font-size: 1.1em;
 }
-
 /* latin-ext */
 @font-face {
   font-family: 'Raleway';

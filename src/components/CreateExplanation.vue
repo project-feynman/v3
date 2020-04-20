@@ -2,27 +2,37 @@
   <v-card>
     <v-container fluid>
       <!-- Text editor -->
-      <v-text-field v-if="titleRequired" label="Post Title" v-model="postTitle"/>
+      <v-col cols="12" md="6" class="pa-0">
+        <v-text-field v-if="titleRequired" 
+          placeholder="Type the title here."
+          v-model="postTitle"
+          color="accent"
+          hide-details
+          class="mb-5"
+        />
+      </v-col>
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
       <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
-        <v-btn v-if="user && !isUploadingPost"
-          @click="submitPost()" 
-          :loading="isButtonDisabled" 
-          :disabled="isButtonDisabled"
-          color="secondary" 
-          class="ma-0 white--text" 
-        >
-          SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
-          <v-icon class="pl-2">mdi-send</v-icon>
-          <template v-slot:loader>
-            <span v-if="isRecordingVideo">Recording...</span> 
-            <span v-else-if="isUploadingPost">Uploading...</span>
-          </template>
-        </v-btn>
-        <v-spacer></v-spacer>
-        <v-switch v-model="isAnonymous" class="mt-5"/>
-        <p class="pt-4">toggle anonymous</p>
+        <template v-if="user">
+          <v-btn v-if="!isUploadingPost"
+            @click="submitPost()" 
+            :loading="isButtonDisabled" 
+            :disabled="isButtonDisabled"
+            color="secondary" 
+            class="ma-0 white--text" 
+          >
+            SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
+            <v-icon class="pl-2">mdi-send</v-icon>
+            <template v-slot:loader>
+              <span v-if="isRecordingVideo">Recording...</span> 
+              <span v-else-if="isUploadingPost">Uploading...</span>
+            </template>
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-switch v-model="isAnonymous" class="mt-5"/>
+          <p class="pt-4">toggle anonymous</p>
+        </template>
       </div>
       <v-progress-linear
         :value="uploadProgress"
@@ -96,7 +106,7 @@ export default {
     },
     titleRequired: {
       type: Boolean,
-      default: () => true
+      default: () => false
     },
     postDbRef: Object,
     newExplanationDbRef: Object
@@ -174,7 +184,6 @@ export default {
       this.isPreviewing = false;
       this.changeKeyToForceReset += 1;
       // QUICKFIX: Dourmashkin
-
       // await this.$nextTick(); // wait for v-if to mount Blackboard 
       // this.$refs.Blackboard.tryRecordAgain();
       // this.resizeBlackboard(); // see edge case explanation above
@@ -190,10 +199,9 @@ export default {
       const { TextEditor, Blackboard } = this.$refs;
       const strokesArray = Blackboard.getStrokesArray();
       const backgroundImageBlob = Blackboard.getImageBlob();
-
-      if (TextEditor.html.length === 0 && this.titleRequired) {
-        this.$root.$emit("show-snackbar", "Error: don't forget to write some text!")
-        return; 
+      
+      if (this.postTitle.length === 0 && this.titleRequired) {
+        this.postTitle = `Untitled (${new Date().toDateString()})`; 
       }
 
       this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
@@ -204,20 +212,8 @@ export default {
       }, 
       10 * secondInMilliseconds);
 
-<<<<<<< HEAD
-      const anonymousUser = {
-        uid: this.user.uid,
-        email: "anonymous@mit.edu",
-        firstName: "anonymous",
-        lastName: "anonymous"
-      };
-      const metadata = {
-        // title: TextEditor.extractTitle(),
-        title: this.postTitle,
-=======
       const explanation = {
-        title: TextEditor.extractAllText(),
->>>>>>> master
+        title: this.postTitle,
         html: TextEditor.html,
         date: new Date().toISOString(),
         creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
@@ -413,6 +409,9 @@ export default {
 </script>
 
 <style scoped>
+.v-text-field {
+  font-size: 1.6em;
+}
 .video-wrapper {
   height: 100%; 
   width: 100%; 

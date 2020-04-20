@@ -6,7 +6,8 @@
     <SeeExplanation v-for="expl in sortedExplanations" :key="expl.id"
       :expl="expl" 
     />
-    <CreateExplanation 
+    <!-- Need to be logged-in to reply to existing posts -->
+    <CreateExplanation v-if="user" 
       :postDbRef="postRef" 
       :newExplanationDbRef="explanationsRef" 
       ref="CreateExplanation"
@@ -20,6 +21,7 @@ import CreateExplanation from "@/components/CreateExplanation.vue";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
+import { mapState } from "vuex";
 
 export default {
   mixins: [
@@ -35,9 +37,12 @@ export default {
     explanations: [],
     explanationsRef: null,
     postRef: null,
-    unsubscribeListener: null
+    databaseListeners: [],
   }),
   computed: {
+    ...mapState([
+      "user"
+    ]),
     sortedExplanations () {
       return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
     }
@@ -46,8 +51,13 @@ export default {
     const { class_id, post_id } = this.$route.params;
     this.postRef = db.doc(`classes/${class_id}/posts/${post_id}`);
     this.explanationsRef = this.postRef.collection("explanations");
-    this.unsubscribeListener2 = await this.$_listenToDoc(this.postRef, this, "originalPost");
-    this.unsubscribeListener = await this.$_listenToCollection(this.explanationsRef, this, "explanations");
+    
+    this.$_listenToDoc(this.postRef, this, "originalPost").then((listener) => {
+      this.databaseListeners.push(listener);
+    });
+    this.$_listenToCollection(this.explanationsRef, this, "explanations").then((listener) => {
+      this.databaseListeners.push(listener);
+    });
   },
   beforeRouteUpdate (to, from, next) {
     this.confirmExit(next);
@@ -56,17 +66,17 @@ export default {
     this.confirmExit(next);
   },
   destroyed () { 
-    if (this.unsubscribeListener) {
-      this.unsubscribeListener(); 
-    }
-    if (this.unsubscribeListener2) {
-      this.unsubscribeListener2();
+    for (let unsubscribeListener of this.databaseListeners) {
+      unsubscribeListener();
     }
   },
   methods: {
-    // TODO: check if there is text or strokes
     confirmExit (next) {
       const { CreateExplanation } = this.$refs;
+      if (!CreateExplanation) {
+        next();
+        return;
+      }
       const Blackboard = CreateExplanation.getBlackboard();
       const TextEditor = CreateExplanation.getTextEditor();
 

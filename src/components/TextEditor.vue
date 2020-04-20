@@ -8,6 +8,7 @@
         <v-btn @click="commands.italic" :class="{ 'is-active': isActive.italic() }" icon> 
           <v-icon>mdi-format-italic</v-icon>
         </v-btn>
+
         <!-- TODO: make it visible to the user that the option is currently selected -->
         <button
           class="menubar__button"
@@ -107,7 +108,7 @@ export default {
           new Placeholder({
             emptyEditorClass: 'is-editor-empty',
             emptyNodeClass: 'is-empty',
-            emptyNodeText: (node) => 'Type here…',
+            emptyNodeText: (node) => 'Press ENTER for more typing space. Draw on the blackboard below to create an animation/video.',
             showOnlyWhenEditable: true,
             showOnlyCurrent: false,
           }),

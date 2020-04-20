@@ -25,7 +25,8 @@
           <v-icon v-if="item.isFolder">
             {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
           </v-icon> 
-          <v-menu v-else bottom right>
+          <!-- cannot move/edit posts if not logged in -->
+          <v-menu v-else-if="user" bottom right>
             <template v-slot:activator="{ on }">
               <v-btn icon v-on="on">
                 <v-icon>mdi-dots-vertical</v-icon>
@@ -57,8 +58,7 @@
                 </BasePopupButton>
               </v-list-item>
               <v-list-item>
-                <BasePopupButton 
-                  actionName="Rename Post" 
+                <BasePopupButton actionName="Rename Post" 
                   :inputFields="['New Name']"
                   @action-do="(payload) => renamePost(payload, item)"
                 >
@@ -94,6 +94,7 @@ import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import { mapState } from "vuex";
 
 export default {
   mixins: [
@@ -102,11 +103,10 @@ export default {
   components: {
     BasePopupButton
   },
-  computed: {
-    mitClass () {
-      return this.$store.state.mitClass;
-    }
-  },
+  computed: mapState([
+    "user",
+    "mitClass"
+  ]),
   data: () => ({
     organizedPosts: [],
     search: null,

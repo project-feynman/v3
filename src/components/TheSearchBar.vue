@@ -7,7 +7,7 @@
     @change="(newClass) => handleChange(newClass)"
     return-object 
     prepend-inner-icon="mdi-magnify"
-    placeholder="Search for a class to join e.g. 18.065"
+    placeholder="Search for a class to join e.g. 8.02"
     color="accent" 
     outlined 
     clearable 

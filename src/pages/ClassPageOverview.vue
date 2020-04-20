@@ -14,7 +14,7 @@
 import TheAppBar from "@/components/TheAppBar.vue";
 import SeeExplanation from "@/components/SeeExplanation.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import { tutorial, NotifFrequency } from "@/CONSTANTS.js";
+import { tutorial } from "@/CONSTANTS.js";
 import db from "@/database.js";
 
 export default {

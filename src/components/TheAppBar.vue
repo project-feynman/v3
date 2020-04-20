@@ -23,7 +23,7 @@
     <v-spacer/>
       <BasePopupButton 
         actionName="Give Feedback" 
-        :inputFields="['summary']"
+        :inputFields="['Feedback']"
         @action-do="(bugReport) => submitBug(bugReport)"
       >
         <template v-slot:activator-button="{ on }">
@@ -79,7 +79,7 @@ export default {
     }
   },
   methods: {
-    submitBug ({ "summary": title }) {
+    async submitBug ({ "Feedback": title }) {
       if (!title) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write something")
         return;
@@ -89,10 +89,11 @@ export default {
         userEmail: this.user ? this.user.email : "anonymous@mit.edu",
         userFeedback: title  
       });
-      db.collection("bugs").add({ 
+      await db.collection("bugs").add({ 
         title,
         email: this.user ? this.user.email : "anonymous@mit.edu"
       }); 
+      this.$root.$emit("show-snackbar", "Successfully sent feedback.");
     }
   }
 };

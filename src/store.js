@@ -10,9 +10,11 @@ Vue.use(Vuex);
 function setDisconnectHook (user) {
 	const firebaseRef = firebase.database().ref('/status/' + user.uid);
 	firebase.database().ref('.info/connected').on('value', async (snapshot) => {
-    if (snapshot.val() === false) { return; } // copied from Firebase, no idea why it's needed  
+    if (snapshot.val() === false) return; // copied from Firebase, no idea why it's needed  
     await firebaseRef.onDisconnect().set({ isOnline: false }); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
-    firebaseRef.set({ isOnline: true });
+    firebaseRef.set({ 
+      isOnline: true 
+    });
     firebase.firestore().collection('users').doc(user.uid).update({
       isOnline: true // updating firestore directly is much faster, don't wait for mirroring
     });
@@ -21,7 +23,7 @@ function setDisconnectHook (user) {
 
 function syncUserWithDb (userRef, context) {
   userRef.onSnapshot((user) => {
-    if (!user.exists) { return; }
+    if (!user.exists) return; 
     context.commit('SET_USER', user.data());
     // TODO: delete previous onDisconnect() hook 
     setDisconnectHook(user.data());
@@ -36,10 +38,9 @@ async function getDocFromDb (ref) {
         id: doc.id, 
         ...doc.data() 
       });
-    } else { 
-      reject(); 
-    }
-  })
+    } 
+    else reject(); 
+  });
   return promise;
 }
 
@@ -69,7 +70,7 @@ export default new Vuex.Store({
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     async fetchUser (context, { uid, email }) {
-      if (!uid) { return; }
+      if (!uid) return;
       context.commit('SET_USER', { uid, email }); // commit the user as soon as basic info has been fetched to avoid blocking page load
       const mirrorUserRef = db.collection('users').doc(uid);
       syncUserWithDb(mirrorUserRef, context);

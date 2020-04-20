@@ -19,12 +19,17 @@
         slider-color="accent"
       >
         <v-tab key="Forum">Q&A Forum</v-tab>
-        <v-tab key="Blackboard">Realtime Boards</v-tab>
+        <!-- Require log-in to use real-time boards -->
+        <v-tab :disabled="!user" key="Blackboard">Realtime Boards</v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
           <v-list class="py-0">
-            <v-list-item :to="(`/class/${classId}/posts/new`)" color="accent">
+            <!-- Requrie log-in to create new posts -->
+            <v-list-item 
+              :disabled="!user"
+              :to="(`/class/${classId}/posts/new`)" 
+            >
               <v-list-item-icon>
                 <v-icon>mdi-plus</v-icon>
               </v-list-item-icon>
@@ -35,8 +40,10 @@
           </v-list>
           <!-- File Explorer -->
           <FileExplorer/>
+
         </v-tab-item>
-        <v-tab-item key="Blackboard">
+        <!-- Can't use real-time blackboards unless user is logged in -->
+        <v-tab-item v-if="user" key="Blackboard">
           <v-btn v-if="blackboards"
             outlined
             large
@@ -63,13 +70,13 @@
                     <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
                   </v-list-item-title>
                   <div class="active-blackboard-users pl-4 pt-2">
-                    <template v-for="(member, i) in blackboard.participants">
+                    <template v-for="(participant, i) in blackboard.participants">
                       <div class="d-flex align-center py-2" :key="i">
                         <v-icon>mdi-account</v-icon>
-                        <div :class="['pl-1', 'col', 'py-0', member.uid === user.uid ? 'font-weight-bold':'']">
-                          {{ member.firstName }}
+                        <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
+                          {{ participant.firstName }}
                         </div>
-                        <v-btn v-if="user.uid === member.uid" 
+                        <v-btn v-if="user.uid === participant.uid" 
                           @click="toggleMic()" 
                           :color="isMicOn ? 'accent' : 'accent lighten-1'" 
                           :outlined="isMicOn" 
@@ -97,6 +104,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial } from "@/CONSTANTS.js";
 import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
+import { mapState } from "vuex";
 
 export default {
   props: {
@@ -106,46 +114,42 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    FileExplorer,
+    FileExplorer
   },
   data () {
     return {
       posts: [],
       blackboards: [],
-      tutorialPost: {},
-      unsubscribeRoomListener: null,
-      unsubscribePostsListener: null,
+      snapshotListeners: [],
       isMicOn: false,
       activeTab: "forum"
     }
   },
   computed: { 
+    ...mapState([
+      "user"
+    ]),
     classId () { 
       return this.$route.params.class_id; 
-    },
-    user () { 
-      return this.$store.state.user;
     }
   },
   async created () {
-    const roomRef = db.doc(`rooms/${this.classId}`);
-    const tutorialPostRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
     const postsRef = db.collection(`classes/${this.classId}/posts`);
     const postsQuery = postsRef.orderBy("date", "desc").limit(100);
-    // this.tutorialPost = await this.$_getDoc(tutorialPostRef);
-    
     const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
-    this.unsubscribeRoomListener = await this.$_listenToDoc(roomRef, this, "room");
-    this.unsusbcribeBlackboardsListener = await this.$_listenToCollection(blackboardsRef, this, "blackboards");
-    this.unsubscribePostsListener = await this.$_listenToCollection(postsQuery, this, "posts");;
-    this.$root.$on('leftRoom', () => { this.isMicOn = false });
+
+    this.$_listenToCollection(blackboardsRef, this, "blackboards").then((snapshotListener) => {
+      this.snapshotListeners.push(snapshotListener);
+    });
+    // this.$_listenToCollection(postsQuery, this, "posts").then((snapshotListener) => {
+    //   this.snapshotListeners.push(snapshotListener);
+    // });
+
+    this.$root.$on("leftRoom", () => this.isMicOn = false);
   },
   destroyed () {
-    if (this.unsubscribeRoomListener) {
-      this.unsubscribeRoomListener();
-    }
-    if (this.unsubscribePostsListener) {
-      this.unsubscribePostsListener();
+    for (const detachListener of this.snapshotListeners) {
+      detachListener();
     }
   },
   methods: { 

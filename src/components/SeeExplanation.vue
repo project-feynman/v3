@@ -3,8 +3,7 @@
     <v-container fluid>
       <!-- Text -->
       <template v-if="!isEditing"> 
-        <div v-if="hasTitle" v-text="expl.title">
-        </div>
+        <h2 v-if="expl.title">{{ expl.title }}</h2>
         <p v-html="expl.html"></p>
       </template>
       <template v-else>
@@ -48,7 +47,7 @@
       </div>
       </RenderlessFetchStrokes>
 
-      <!-- Delete popup -->
+      <!-- Delete popup TODO: refactor -->
       <v-dialog v-model="popup" max-width="600px">
         <v-card>
           <v-card-title>Are you sure you want to delete?</v-card-title>
@@ -101,10 +100,6 @@ export default {
     hasDate: {
       type: Boolean, 
       default: () => true
-    },
-    hasTitle : {
-      type:Boolean,
-      default: () => false
     }
   },
   components: { 
@@ -141,7 +136,7 @@ export default {
       }
     },
     userHasUpvoted () {
-      if (!this.expl.upvotersIds) { return false; }
+      if (!this.expl.upvotersIds) return false;
       return this.expl.upvotersIds.includes(this.user.uid);
     },
     handlePlayClick (fetchStrokes) {
@@ -161,7 +156,6 @@ export default {
     updateExplanation () {
       const { TextEditor } = this.$refs;
       db.doc(this.expl.ref).update({
-        title: TextEditor.extractTitle(),
         html: TextEditor.html
       });
       this.isEditing = false;

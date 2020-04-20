@@ -15,23 +15,21 @@
       </v-card-title>
       <v-card-text>
         <v-container>
-          <v-row>
-            <slot name="message-to-user">
+          <slot name="message-to-user">
 
-            </slot>
+          </slot>
             <slot name="popup-content" :closePopup="resetState">
-              <template v-for="inputField in inputFields">
-                <v-col cols="12" :key="inputField">
+              <v-row>
+                <v-col v-for="field in inputFields" cols="12" :key="field">
                   <v-text-field
-                    v-model="inputValues[inputField]"
-                    :label="inputField"
-                    :type="inputField"
+                    v-model="inputValues[field]"
+                    :label="field"
+                    :type="field"
                     required
                   />
                 </v-col>
-              </template>
+              </v-row>
             </slot>
-          </v-row>
         </v-container>
       </v-card-text>
       <v-card-actions>

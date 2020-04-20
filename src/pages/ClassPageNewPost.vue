@@ -1,5 +1,6 @@
 <template>
   <CreateExplanation 
+    titleRequired
     :willCreateNewPost="true"
     :postDbRef="newPostRef"
     :key="updateKeyToResetComponent"
