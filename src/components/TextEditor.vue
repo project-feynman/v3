@@ -27,6 +27,7 @@
     </editor-menu-bar>
 
     <editor-content class="editor__content" :editor="editor"/>
+    <!-- <v-btn @click="extractTitle()"/> -->
   </div>
 </template>
 
@@ -117,7 +118,7 @@ export default {
         }
       }),
       content: defaultHtml,
-      html: defaultHtml
+      html: defaultHtml,
     }
   },
   watch: {
@@ -141,6 +142,19 @@ export default {
       const temporaryDiv = document.createElement("div");
       temporaryDiv.innerHTML = this.html;
       return temporaryDiv.textContent || temporaryDiv.innerText || "";
+    },
+    extractTitle () {
+      const temporaryDiv = document.createElement("div");
+      temporaryDiv.innerHTML = this.html;
+      let output = ""
+      for (let child of temporaryDiv.children){
+        output += child.textContent || child.innerText || "";
+        // if (child !== temporaryDiv.lastChild) {
+          output += "\n";
+        // }
+      }
+      console.log(output)
+      return output;
     }
   }
 }

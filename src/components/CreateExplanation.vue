@@ -2,6 +2,7 @@
   <v-card>
     <v-container fluid>
       <!-- Text editor -->
+      <v-text-field v-if="titleRequired" label="Post Title" v-model="postTitle"/>
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
       <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
@@ -95,7 +96,7 @@ export default {
     },
     titleRequired: {
       type: Boolean,
-      default: () => false
+      default: () => true
     },
     postDbRef: Object,
     newExplanationDbRef: Object
@@ -123,6 +124,7 @@ export default {
     isAnonymous: false,
     isUploadingPost: false,
     changeKeyToForceReset: 0,
+    postTitle: "",
     isFullScreenDoodle: false
   }),
   computed: {
@@ -202,8 +204,20 @@ export default {
       }, 
       10 * secondInMilliseconds);
 
+<<<<<<< HEAD
+      const anonymousUser = {
+        uid: this.user.uid,
+        email: "anonymous@mit.edu",
+        firstName: "anonymous",
+        lastName: "anonymous"
+      };
+      const metadata = {
+        // title: TextEditor.extractTitle(),
+        title: this.postTitle,
+=======
       const explanation = {
         title: TextEditor.extractAllText(),
+>>>>>>> master
         html: TextEditor.html,
         date: new Date().toISOString(),
         creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
