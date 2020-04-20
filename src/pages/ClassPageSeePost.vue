@@ -2,7 +2,8 @@
   <div>
     <SeeExplanation v-if="originalPost" 
       :expl="originalPost"
-      :hasTitle="true"/>
+      hasTitle
+    />
     <SeeExplanation v-for="expl in sortedExplanations" :key="expl.id"
       :expl="expl" 
     />

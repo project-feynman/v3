@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card v-if="expl">
     <v-container fluid>
       <!-- Text -->
       <template v-if="!isEditing"> 
@@ -53,8 +53,8 @@
           <v-card-title>Are you sure you want to delete?</v-card-title>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn @click="popup = false">CANCEL</v-btn>
-            <v-btn @click="deleteExplanation()">DELETE</v-btn>
+            <v-btn text color="secondary" @click="popup = false">CANCEL</v-btn>
+            <v-btn text color="secondary" @click="deleteExplanation()">DELETE</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -162,9 +162,9 @@ export default {
     },
     // TODO: should be a recursive deletion
     async deleteExplanation () {
+      this.popup = false;
       await db.doc(this.expl.ref).delete();
       // this.$router.push(`/class/${this.$route.params.class_id}`);
-      this.popup = false;
       this.$root.$emit("show-snackbar", "Successfully deleted post, you might have to leave the page though");
     },
     toggleFullscreen () {

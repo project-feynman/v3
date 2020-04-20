@@ -43,10 +43,19 @@ export default {
         }
       });
     },
+    /* 
+      `obj[val]` will be the latest doc snapshot from Firestore
+      TODO: throw a checked exception if`!doc.exists`
+      (otherwise the client has to check for existence himself)
+    */
     async $_listenToDoc (ref, obj, val) {
       return new Promise(async (resolve) => {
         try {
           const unsubscribeListener = ref.onSnapshot((doc) => { // onSnapshot does NOT return a promise
+            if (!doc.exists) {
+              obj[val] = undefined;
+              throw new Error("Document doesn't exist");
+            }
             obj[val] = { 
               id: doc.id, 
               ref: doc.ref.path, 
