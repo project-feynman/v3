@@ -6,13 +6,13 @@
     </div>
     <div class="d-flex animation-controls">
       <v-col cols="auto" class="px-1">
-        <v-btn @click="pausePlay()" color="accent" text>
+        <v-btn @click="pausePlay()" color="#333" text>
           <v-icon>{{ isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
         </v-btn>
       </v-col>
       <v-col class="px-1">
         <v-slider
-          color="accent"
+          color="#333"
           track-color="rgba(0,0,0,0.30)"
           :value="Math.max(currentFrameIdx,0)" 
           :max="allFrames.length"
@@ -21,25 +21,25 @@
           :hide-details="true"
         />
       </v-col>
-      <v-col cols="auto" class="px-0">
+    </div>
+    <div id="extra-controls">
+      <v-btn @click="$emit('toggle-fullscreen')"><v-icon>mdi-fullscreen</v-icon></v-btn>
+      <v-col cols="auto" class="px-0 py-0">
         <v-select
-         :items="speedOptions"
-         v-model="playbackSpeed"
-         dense
-         solo
-         background-color="#f5f5f5"
-         flat
-         hide-details
-         class="my-0"
-         menu-props="top"
-         color="accent"
-         item-color="accent"
+        :items="speedOptions"
+        v-model="playbackSpeed"
+        dense
+        solo
+        background-color="#f5f5f5"
+        flat
+        hide-details
+        class="my-0"
+        menu-props="top"
+        color="accent"
+        item-color="accent"
         >
           <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
         </v-select>
-      </v-col>
-      <v-col cols="auto" class="px-1">
-        <v-btn text @click="$emit('toggle-fullscreen')" color="accent"><v-icon>mdi-fullscreen</v-icon></v-btn>
       </v-col>
     </div>
   </div>
@@ -241,6 +241,21 @@ export default {
   background: #eee;
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
+}
+#extra-controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
+  opacity: 0.75;
+  display: flex;
+  justify-content: space-between;
+}
+#extra-controls > * {
+  opacity: 0.8;
+}
+#extra-controls > *:hover {
+  opacity: 1;
 }
 </style>
 <style>
