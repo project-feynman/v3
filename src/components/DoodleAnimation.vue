@@ -61,7 +61,7 @@ export default {
     isPlaying: true,
     isSeeking: false,
     playbackSpeed: 1,
-    speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'2x', value: 2},{text:'4x', value: 4},{text:'8x', value: 8}],
+    speedOptions: [{text:'.25x', value: 0.25},{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'2x', value: 2},{text:'4x', value: 4}],
     playerCount: 0, // Tracks the number of players existing concurrently to remove all previous instance of players
     canvas: null,
     ctx: null,
