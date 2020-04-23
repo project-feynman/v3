@@ -8,13 +8,22 @@ People explain things to each other all the time
 * **[Solution:](https://www.youtube.com/watch?v=POis_ihKexo)**
 Get them to use online blackboards so their explanations are automatically converted to visual explanations
 
-## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
-- **Technologies:** Vue.js frontend, Firebase backend
-- **Core-team:** Prabhakar Kafle, Winston Fey, Elton Lin
+## TEAM
+ExplainMIT is a school project with the goal to make every class at MIT more fun and efficient. The day that becomes reality, we will consider transitioning into a startup.
+
+Current members: 
+- Prabhakar Kafle
+- Winston Fee
+- Elton Lin
+
 <p float="left">
   <img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/>
   <img src="documentation/Winston.jpg" alt="member photo" height="170"/>
 </p>
+
+## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
+- **Technologies:** Vue.js frontend, Firebase for everything else
+
  
                                                                     
 
