@@ -1,5 +1,5 @@
 # ExplainMIT
-Our goal is to create the most efficient explanation platform for MIT, so that no one has to stay up late and study alone.
+Our goal is to create a student-driven explanation platform for MIT, so that no one has to stay up late and study alone.
 
 ## Technology
 Explanation videos are 10-50x lighter because we represent them with sparse blackboard strokes rather than exhaustive pixel colors. 
