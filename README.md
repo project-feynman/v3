@@ -1,5 +1,5 @@
 # ExplainMIT
-The Explain Project is a conspiracy to make the most efficient explanation platform for MIT, so that no one is forced to study alone and sleep late. 
+The Explain Project will create the most efficient explanation platform for MIT, so that no one has to stay up late and study alone.
 
 ## Technology
 We achieved a 10x reduction in video compression by representing videos with sparse blackboard strokes rather than exhaustive pixel colors. Here are some consequences: 
