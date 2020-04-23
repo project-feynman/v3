@@ -44,7 +44,7 @@
             icon="mdi-adjust"
             filled
           >
-            Record
+            Record Audio
           </ButtonNew>
 
           <ButtonNew v-else-if="currentState === RecordState.MID_RECORD"

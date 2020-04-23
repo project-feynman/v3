@@ -11,8 +11,7 @@
     <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'"
       @click.stop="$emit('toggle-drawer')"
     />
-    <img
-      src="/favicon.ico"
+    <img src="/favicon.ico"
       @click="$router.push('/')"
       :class="['home-logo', page === 'realtime' ? 'd-none d-sm-block' : '']"
     />
@@ -21,6 +20,12 @@
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
+      <router-link to="/class/mDbUrvjy4pe8Q5s5wyoD/posts/y16PFhzal9SNKcT48voj">
+        <ButtonNew icon="mdi-lightbulb-on">Our Mission</ButtonNew>
+      </router-link>
+      <router-link to="/class/mDbUrvjy4pe8Q5s5wyoD/posts/VUPlJW7t1N3mJiWEFY8z">
+        <ButtonNew icon="mdi-git">Source Code</ButtonNew>
+      </router-link>
       <BasePopupButton 
         actionName="Give Feedback" 
         :inputFields="['Feedback']"

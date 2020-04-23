@@ -1,3 +1,6 @@
+const CORE_TEAM_ID = "mDbUrvjy4pe8Q5s5wyoD";
+const PHYSICS_ID = "oQV3TgY3OrvE93lAT7sx";
+
 export const DefaultEmailSettings = {
   emailOnNewPost: false,
   emailOnNewReply: true,
@@ -19,12 +22,12 @@ export const tutorial = {
 
 // for the home page
 export const demoVideo = {
-  classId: "oQV3TgY3OrvE93lAT7sx", // 8.02 
-  postId: "40077a7d-8022-48d5-ac23-3ef17c517679" // Basic ampere law cases and solenoid
+  classId: CORE_TEAM_ID, // 8.02 
+  postId: "12QC9D3yAh2TLJafGj94" // Website introduction
 };
 
 export const demoVideo2 = {
-  classId: "FVdgjuywaFgxvyylISt2",
+  classId: "FVdgjuywaFgxvyylISt2", 
   postId: "xut7dg7pbso4up8nb5239"
 };
 
