@@ -7,6 +7,7 @@
       app 
       clipped 
       width="400"
+      class="the-side-drawer"
     >
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
         <v-icon class="pr-2">mdi-home</v-icon> 
@@ -193,5 +194,9 @@ export default {
   position: sticky;
   top: 0;
   z-index: 1;
+}
+.the-side-drawer {
+  z-index: 10;
+  max-width: 75%;
 }
 </style>
