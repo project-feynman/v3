@@ -1,20 +1,21 @@
-# [ExplainMIT](https://medium.com/@eltonlin1998/feynman-overview-338034dcb426) 
-We want to bring a visual revolution to education
+# ExplainMIT
+The Explain Project is a conspiracy to make the most efficient explanation platform for MIT, so that no one is forced to study alone and sleep late. 
 
-* **[Problem:](https://medium.com/@eltonlin1998/look-and-youll-see-71cb92125baa)** 
-Visual explanations are scarce because people don't have time to make them
-* **[Insight:](https://medium.com/@eltonlin1998/how-explainmit-optimizes-efficiency-for-content-creation-b0162895ff81)** 
-People explain things to each other all the time
-* **[Solution:](https://www.youtube.com/watch?v=POis_ihKexo)**
-Get them to use online blackboards so their explanations are automatically converted to visual explanations
+## Technology
+We achieved a 10x reduction in video compression by representing videos with sparse blackboard strokes rather than exhaustive pixel colors. Here are some consequences: 
+- Upload time is 10x faster 
+- Sliding to any part of a video requires no buffering
+- Visual explanations is a first-class citizen of the website's structure, and is just as easy to create and share as text
 
-## TEAM
-ExplainMIT is a school project with the goal to make every class at MIT more fun and efficient. The day that becomes reality, we will consider transitioning into a startup.
+## Team
+ExplainMIT is a school project with the goal to make every class at MIT more fun and efficient. The day that becomes reality, we will consider transitioning into a startup. 
 
 Current members: 
 - Prabhakar Kafle
 - Winston Fee
 - Elton Lin
+
+We are recruiting (email eltonlin@mit.edu)!
 
 <p float="left">
   <img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/>
@@ -23,8 +24,6 @@ Current members:
 
 ## [CONTRIBUTING.md](documentation/CONTRIBUTING.md)
 - **Technologies:** Vue.js frontend, Firebase for everything else
-
- 
                                                                     
 
                                                                     
