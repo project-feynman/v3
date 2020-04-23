@@ -46,8 +46,8 @@
                 ExplainMIT
               </h1>
             </div>
-            <h3 class="headline text--primary">
-              An efficient platform for visual explanations
+            <h3 class="headline font-weight-light">
+              A place where people help each other efficiently
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
@@ -74,7 +74,7 @@
                 <v-col cols="auto">
                   <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
-                    @action-do="user => $_signUp(user)"
+                    @action-do="(user) => $_signUp(user)"
                     outlined
                     color="secondary"
                   >
@@ -90,7 +90,7 @@
                 <v-col cols="12" sm="6">
                   <TheSearchBar 
                     :items="schoolClasses"
-                    @submit="payload => enrollInClass(payload)" 
+                    @submit="(payload) => enrollInClass(payload)" 
                     color="accent"
                   />
                 </v-col>
@@ -327,7 +327,7 @@ export default {
   width: 90px;
 }
 .central-title h1 {
-  font-size: 3em;
+  font-size: 3.4em;
   font-weight: 600;
   font-family: "Raleway", sans-serif;
   text-decoration: underline;
