@@ -23,7 +23,6 @@
       </v-col>
     </div>
     <div id="extra-controls">
-      <v-btn @click="$emit('toggle-fullscreen')"><v-icon>mdi-fullscreen</v-icon></v-btn>
       <v-col cols="auto" class="px-0 py-0">
         <v-select
         :items="speedOptions"
@@ -41,6 +40,7 @@
           <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
         </v-select>
       </v-col>
+      <v-btn @click="$emit('toggle-fullscreen')"><v-icon>mdi-fullscreen</v-icon></v-btn>
     </div>
   </div>
 </template>
@@ -249,10 +249,11 @@ export default {
   width: calc(100% - 20px);
   opacity: 0.75;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 #extra-controls > * {
   opacity: 0.8;
+  margin: 0 5px;
 }
 #extra-controls > *:hover {
   opacity: 1;
