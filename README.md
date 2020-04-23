@@ -8,7 +8,7 @@ Explanation videos are 10-50x lighter (https://explain.mit.edu) because we repre
 - Visual explanations is a first-class citizen of the website's structure, and is just as easy to create and share as text
 
 ## Team
-We are students with the goal to achieve MIT-wide adoption of explain.mit.edu. The day that becomes reality, we plan to create a separate codebase and transition into a startup. 
+Our goal is to make learning fun and efficient for students. Everything else is secondary. We aim to achieve MIT-wide adoption of explain.mit.edu, and when that becomes reality, we might create a startup based on this proof-of-concept. 
 
 Current members: 
 - Prabhakar Kafle
