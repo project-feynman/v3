@@ -2,7 +2,7 @@
 The Explain Project will create the most efficient explanation platform for MIT, so that no one has to stay up late and study alone.
 
 ## Technology
-We achieved a 10x reduction in video compression by representing videos with sparse blackboard strokes rather than exhaustive pixel colors. Here are some consequences: 
+Explanation videos are 10x lighter (https://explain.mit.edu) because we represent them with sparse blackboard strokes rather than exhaustive pixel colors. Here are some consequences: 
 - Upload time is 10x faster 
 - Sliding to any part of a video requires no buffering
 - Visual explanations is a first-class citizen of the website's structure, and is just as easy to create and share as text
