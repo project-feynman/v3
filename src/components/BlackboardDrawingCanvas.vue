@@ -122,14 +122,14 @@ export default {
     },
     changeTool (tool) {
       this.currentTool = tool;
-      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) // isStrokeEraser now erases in the back like a normal eraser
-        ? "destination-out"
-        : "source-over";
-      if (this.isStrokeEraser) {
-        this.$root.$emit("show-snackbar", 
-          "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
-        );
-      }
+      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) ? // isStrokeEraser now erases in the back like a normal eraser
+        "destination-out" : "source-over";
+      // it showing up is annoying
+      // if (this.isStrokeEraser) {
+      //   this.$root.$emit("show-snackbar", 
+      //     "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
+      //   );
+      // }
       this.createCustomCusor();
     },
     async resetBoard () {
