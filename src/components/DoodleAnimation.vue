@@ -1,4 +1,6 @@
 <template>
+<div id="doodle-wrapper" @click="(e) => clickOutsideDoodle(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+
   <div ref="VideoWrapper" class="video-container">
     <div ref="CanvasWrapper" style="position: relative;">
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
@@ -40,13 +42,15 @@
           <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
         </v-select>
       </v-col>
-      <v-btn @click="$emit('toggle-fullscreen')"><v-icon>mdi-fullscreen</v-icon></v-btn>
+      <v-btn @click="toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn>
     </div>
   </div>
+</div>
 </template>
 
 <script>
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
+import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
 import _ from "lodash";
 import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
 
@@ -55,7 +59,10 @@ export default {
     strokesArray: Array,
     backgroundUrl: String
   },
-  mixins: [CanvasDrawMixin],
+  mixins: [
+    CanvasDrawMixin,
+    DoodleFullscreenMixin
+  ],
   data: () => ({
     currentFrameIdx: -1,
     isPlaying: true,
@@ -205,6 +212,8 @@ export default {
 </script>
 
 <style scoped>
+@import "../styles/doodle-fullscreen.scss";
+
 .video-container {
   margin: auto;
   position: relative;

@@ -19,7 +19,10 @@
         :imageDownloadUrl="expl.imageUrl"
         v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
       >
-        <div id="doodle-wrapper" @click="(e) => clickOutsideDoodle(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+      
+        <!-- <div id="doodle-wrapper" @click="(e) => clickOutsideDoodle(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'"> -->
+          <!-- this might need some css to be the right size -->
+        <div> 
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0 || isLoading">
             <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
@@ -35,13 +38,11 @@
             :strokesArray="strokesArray"
             :imageBlob="imageBlob" 
             :audioUrl="expl.audioUrl" 
-            @toggle-fullscreen="toggleFullscreen"
             ref="Doodle"
           />
           <DoodleAnimation v-else
             :strokesArray="strokesArray"
             :backgroundUrl="expl.imageUrl"
-            @toggle-fullscreen="toggleFullscreen"
             ref="Doodle"
           />
       </div>
@@ -119,8 +120,7 @@ export default {
   },
   data: () => ({ 
     isEditing: false,
-    popup: false,
-    isFullScreen: false
+    popup: false
   }),
   methods: {
     upvoteExpl () {
@@ -167,21 +167,6 @@ export default {
       // this.$router.push(`/class/${this.$route.params.class_id}`);
       this.$root.$emit("show-snackbar", "Successfully deleted post, you might have to leave the page though");
     },
-    toggleFullscreen () {
-      this.isFullScreen = !this.isFullScreen;
-      const { Doodle } = this.$refs;
-      Doodle.handleResize();
-      if (this.isFullScreen) {
-        document.documentElement.style.overflowY = "hidden";
-      } else {
-        document.documentElement.style.overflowY = "auto";
-      }
-    },
-    clickOutsideDoodle (e) {
-      if (e.target.id === "doodle-wrapper" && this.isFullScreen) {
-        this.toggleFullscreen()
-      }
-    }
   }
 }
 </script>
@@ -192,24 +177,5 @@ export default {
   top: 50%; 
   left: 50%;
   transform: translate(-50%, -50%);
-}
-.video-wrapper {
-  height: 100%; 
-  width: 100%; 
-  position: relative; 
-  z-index: 5; 
-  margin: auto;
-}
-.fullscreen-video {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 10;
-  background-color: rgba(0,0,0,0.5);
 }
 </style>
