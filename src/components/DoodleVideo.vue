@@ -1,5 +1,5 @@
 <template>
-  <div id="doodle-wrapper" @click="(e) => clickOutsideDoodle(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+  <div @click="exitFullscreen()" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
     <div ref="VideoWrapper" class="video-container">
       <div ref="CanvasWrapper" style="position: relative;">
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>
@@ -30,7 +30,7 @@
             <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
           </v-select>
         </v-col>
-        <v-btn @click="toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn>
+        <v-btn @click.stop="toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn>
       </div>
     </div>
   </div>
