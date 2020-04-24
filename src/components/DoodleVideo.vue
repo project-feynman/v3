@@ -1,5 +1,5 @@
 <template>
-  <div @click="exitFullscreen()" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+  <div id="fullscreen-wrapper" @click="(e) => exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
     <div ref="VideoWrapper" class="video-container">
       <div ref="CanvasWrapper" style="position: relative;">
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>

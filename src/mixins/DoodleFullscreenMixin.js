@@ -1,6 +1,6 @@
 export default {
   data: () => ({
-      isFullScreen: false
+    isFullScreen: false
   }),
   methods: {
     toggleFullscreen () {
@@ -9,8 +9,8 @@ export default {
       document.documentElement.style.overflowY = this.isFullScreen ? 
         "hidden" : "auto"; 
     },
-    exitFullscreen () {
-      if (this.isFullScreen) {
+    exitFullscreen (e) {
+      if (e.target.id === "fullscreen-wrapper" && this.isFullScreen) {
         this.toggleFullscreen();
       }
     }
