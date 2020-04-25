@@ -6,9 +6,6 @@
         <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
           BLOG
         </v-btn> -->
-        <!-- <a href="https://github.com/eltonlin1998/ExplainMIT" target="_blank">
-          <ButtonNew icon="mdi-git">Source Code</ButtonNew>
-        </a> -->
         <BasePopupButton actionName="Create class" 
           @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
@@ -47,7 +44,7 @@
               </h1>
             </div>
             <h3 class="headline font-weight-light">
-              A place where people help each other efficiently
+              A place where people can help each other efficiently
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
