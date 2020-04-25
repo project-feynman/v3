@@ -1,5 +1,5 @@
 <template>
-<div id="fullscreen-wrapper" @click="(e) => exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+<div id="fullscreen-wrapper" @click="(e) => $_exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
   <div ref="VideoWrapper" class="video-container">
     <div ref="CanvasWrapper" style="position: relative;">
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
@@ -41,7 +41,7 @@
           <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
         </v-select>
       </v-col>
-      <v-btn @click.stop="toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn>
+      <v-btn @click.stop="$_toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn>
     </div>
   </div>
 </div>
