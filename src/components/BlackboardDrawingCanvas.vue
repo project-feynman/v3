@@ -242,6 +242,7 @@ export default {
       } else { 
         this.getTouchPos(e); 
       }
+      this.$_setStyle(this.currentTool.color, this.currentTool.lineWidth);
       this.convertAndSavePoint(this.currPoint.x, this.currPoint.y);
       this.drawToPoint(this.currPoint);
     },
