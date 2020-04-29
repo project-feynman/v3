@@ -46,8 +46,8 @@ export default {
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
       return new Promise(async resolve => {
-        const newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
         for (let i = 1; i < points.length; i++) {
+          let newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
           this.$_setStyle(color, newLineWidth);
           this.$_connectTwoPoints(points, i, isErasing);
           if (pointPeriod !== null) { // delay for a duration of pointPeriod
@@ -73,8 +73,12 @@ export default {
       this.ctx.lineTo(curX, curY);
       this.ctx.stroke();
     },
-    $_setStyle (color = "white", lineWidth = 2) {
+    $_setStyle (color = "white", lineWidth = 2.5) {
       this.ctx.strokeStyle = color;
+      // We might wanna do this so that strokes in mobile don't get too thin and in large screens don't get too thick
+      // The current problem is that doing it this way will make the stroke eraser width the same width as normal stroke
+      // const newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
+      // this.ctx.lineWidth = Math.min(newLineWidth, 2.5);
       this.ctx.lineWidth = lineWidth;
       this.ctx.lineCap = "round"; // lines at different angles can join into each other
     },
