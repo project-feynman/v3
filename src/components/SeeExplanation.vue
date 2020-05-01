@@ -22,13 +22,13 @@
       
         <!-- <div id="doodle-wrapper" @click="(e) => clickOutsideDoodle(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'"> -->
           <!-- this might need some css to be the right size -->
-        <div> 
+        <div style="position: relative;"> 
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0 || isLoading">
             <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
-            <div v-if="expl.hasStrokes" class="overlay-item">
+            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
-              <v-btn v-else @click="handlePlayClick(fetchStrokes)" large dark>
+              <v-btn v-else large dark>
                 <v-icon>mdi-play</v-icon>
               </v-btn>
             </div>
@@ -140,6 +140,7 @@ export default {
       return this.expl.upvotersIds.includes(this.user.uid);
     },
     handlePlayClick (fetchStrokes) {
+      if (this.isLoading) return;
       fetchStrokes();
       // update view count 
       const ref = db.doc(`${this.expl.ref}`);
@@ -174,8 +175,12 @@ export default {
 <style scoped>
 .overlay-item {
   position: absolute; 
-  top: 50%; 
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>
