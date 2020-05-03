@@ -19,9 +19,6 @@
         :imageDownloadUrl="expl.imageUrl"
         v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
       >
-      
-        <!-- <div id="doodle-wrapper" @click="(e) => clickOutsideDoodle(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'"> -->
-          <!-- this might need some css to be the right size -->
         <div style="position: relative;"> 
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0 || isLoading">

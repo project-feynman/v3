@@ -111,6 +111,9 @@ export default {
         resolve();
       })
     },
+    /** 
+     * Maximizes the size of the animation canvas while preserving aspect ratio
+     */
     resizeVideo () {
       const { CanvasWrapper, VideoWrapper } = this.$refs;
       VideoWrapper.style.width = "100%";
@@ -183,7 +186,7 @@ export default {
           playBreak = true;
           break;
         }
-        if (i % 10 === 0) { this.currentFrameIdx = i; }
+        if (i % 10 === 0) this.currentFrameIdx = i;
         await this.renderFrame(this.allFrames[i], false); // draw 1 stroke per event loop
       }
       if (!playBreak) { // We can't check if the currentFrameIdx is the last last frame as we increment it only every 10 frames
