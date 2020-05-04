@@ -11,6 +11,8 @@
     <CreateExplanation v-if="user" 
       :postDbRef="postRef" 
       :newExplanationDbRef="explanationsRef" 
+      :key="changeKeyToForceReset"
+      @upload-started="changeKeyToForceReset += 1"
       ref="CreateExplanation"
     />
   </div>
@@ -39,6 +41,7 @@ export default {
     explanationsRef: null,
     postRef: null,
     databaseListeners: [],
+    changeKeyToForceReset: 0
   }),
   computed: {
     ...mapState([
