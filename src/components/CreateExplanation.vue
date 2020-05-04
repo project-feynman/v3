@@ -16,7 +16,7 @@
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
         <template v-if="user">
           <v-btn v-if="!isUploadingPost"
-            @click="submitPost()" 
+            @click="submitExplanation()" 
             :loading="isButtonDisabled" 
             :disabled="isButtonDisabled"
             color="secondary" 
@@ -183,7 +183,7 @@ export default {
     async initRetry () {
       this.isPreviewing = false;
       this.changeKeyToForceReset += 1;
-      // QUICKFIX: Dourmashkin
+      // QUICKFIX: Dourmashkin just wants it to reset everything and not leave any remnants behind 
       // await this.$nextTick(); // wait for v-if to mount Blackboard 
       // this.$refs.Blackboard.tryRecordAgain();
       // this.resizeBlackboard(); // see edge case explanation above
@@ -193,126 +193,100 @@ export default {
       this.isRecordingVideo = false;
       this.isPreviewing = true;
     },
-    // uploads the snapshot of the text, images, drawings and audio for the explanation
-    async submitPost () {
-      // STAGE 1/3: setup variables
+    /**
+     * Save the explanation data into the global Vuex store (so the data doesn't disappear
+     * if this component is destroyed), then initiates the upload process.
+     */
+    async submitExplanation () {
       const { TextEditor, Blackboard } = this.$refs;
-      const strokesArray = Blackboard.getStrokesArray();
-      const backgroundImageBlob = Blackboard.getImageBlob();
-      
       if (this.postTitle.length === 0 && this.titleRequired) {
         this.postTitle = `Untitled (${new Date().toDateString()})`; 
       }
-
-      this.isUploadingPost = true; // trigger the "submit" button to go into a loading state
-      const secondInMilliseconds = 1000;
-      // Check if the firestore upload API has any way to detect an error or something because longer videos will obviously take much more time.
-      const uploadTimeout = setTimeout(() => { 
-        this.messageToUser = "Still uploading...hang in there."
-      }, 
-      10 * secondInMilliseconds);
-
-      const explanation = {
-        title: this.postTitle,
-        html: TextEditor.html,
-        date: new Date().toISOString(),
-        creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
-        mitClass: this.mitClass,
-        tags: [],
-        duration: Blackboard.currentTime,
-        hasStrokes: strokesArray.length > 0
-      };
-
-      // STAGE 2/3: upload data to Firebase storage
-        try {
-          // accumulate promises for strokes, audio, images to process them in parallel
-          const promises = [];
-          // check if blackboard was used or not
-          if (strokesArray.length > 0 || backgroundImageBlob) { 
-            // audio
-            if (Blackboard.currentState === RecordState.POST_RECORD) {
-              explanation.audioUrl = await this.$_saveToStorage(
-                `audio/${getRandomId()}`, 
-                this.previewVideo.audio.blob, 
-                true
-              ); // true means loading bar will be indicated
-              promises.push(explanation.audioUrl);
-            } 
-
-            // thumbnail 
-            let thumbnailBlob; 
-            if (this.previewVideo.thumbnailBlob) {
-              thumbnailBlob = this.previewVideo.thumbnailBlob
-            } else {
-              thumbnailBlob = await Blackboard.getThumbnail();
-            }
-            explanation.thumbnail = await this.$_saveToStorage(
-              `images/${getRandomId()}`, 
-              thumbnailBlob
+      const explRef = this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId());
+      this.$store.commit("ADD_EXPL_TO_CACHE", {
+        ref: explRef,
+        strokesArray: Blackboard.getStrokesArray(),
+        backgroundImageBlob: Blackboard.getImageBlob(),
+        thumbnailBlob: this.previewVideo.thumbnailBlob ? this.previewVideo.thumbnailBlob : await Blackboard.getThumbnail(),
+        audioBlob: Blackboard.currentState === RecordState.POST_RECORD ? this.previewVideo.audio.blob : null,
+        metadata: {
+          title: this.postTitle,
+          html: TextEditor.html,
+          date: new Date().toISOString(),
+          creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
+          mitClass: this.mitClass,
+          tags: [],
+          duration: Blackboard.currentTime,
+          hasStrokes: Blackboard.getStrokesArray().length > 0
+        }
+      });
+      this.uploadExplanation(explRef);
+      this.$root.$emit("show-snackbar", "Uploading your explanation...");
+      this.$emit("upload-started"); // let the clients i.e. ClassPageSeePost and ClassPageNewPost re-render the <CreateExplanation/> component
+    },
+    /**
+     * 
+     * @param {*} context a reference to the Vuex store, and is automatically injected when the method is called using `$store.dispatch()`
+     * @param {*} ref the location on Firestore to which the explanation document will be uploaded
+     * @param {*} explID maps to a specific explanation from the cache (TODO: could be retrieved from explRef.id instead)
+     * @returns Uploads the explanation. If the upload fails for any reason,
+     * this function will call itself after 5 seconds to re-attempt the upload
+     */
+    async uploadExplanation (ref) {
+      try {
+        const explData = this.$store.state.explCache[ref.id];
+        const { strokesArray, audioBlob, thumbnailBlob, backgroundImageBlob } = explData; 
+        const explDoc = { ...explData.metadata }; // we build up each property of `explDoc` then upload it Firestore
+        const promises = []; // upload thumbnail, audio, images and strokes in parallel 
+        if (strokesArray.length > 0 || backgroundImageBlob) { // if the blackboard was used
+          promises.push(
+            this.uploadStrokesToDatabase(strokesArray, ref.collection("strokes"))
+          );
+          promises.push(
+            this.$_saveToStorage(getRandomId(), thumbnailBlob).then(URL => explDoc.thumbnail = URL)
+          );
+          if (audioBlob) {
+            promises.push(
+              this.$_saveToStorage(getRandomId(), audioBlob).then(URL => explDoc.audioUrl = URL)
             );
-            promises.push(explanation.thumbnail);
-
-            // background image
-            if (backgroundImageBlob) {
-              explanation.imageUrl = await this.$_saveToStorage(
-                `images/${getRandomId()}`, 
-                backgroundImageBlob
-              );
-              promises.push(explanation.imageUrl);
-            }
+          } 
+          if (backgroundImageBlob) {
+            promises.push(
+              this.$_saveToStorage(getRandomId(), backgroundImageBlob).then(URL => explDoc.imageUrl = URL)
+            );
           }
-          
-          // upload the explanation document itself
-          if (this.willCreateNewPost) {
-            explanation.participants = [this.simplifiedUser];
-            explanation.hasReplies = false;
-            promises.push(this.postDbRef.set(explanation));
-            if (explanation.hasStrokes) {
-              promises.push(
-                this.uploadStrokesToDatabase(
-                  strokesArray, 
-                  this.postDbRef.collection("strokes")
-                )
-              );
-            }
-          } else {
+        }
+        await Promise.all(promises);
+        // TODO: refactor the below logic to the client
+        const promises2 = [];
+        if (this.willCreateNewPost) {
+          explDoc.participants = [this.simplifiedUser];
+          explDoc.hasReplies = false;
+        } else {
+          promises2.push(
             this.postDbRef.update({
               participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
               hasReplies: true
-            });
-            const newExplId = getRandomId();
-            promises.push(
-              this.newExplanationDbRef.doc(newExplId).set(explanation)
-            );
-            if (explanation.hasStrokes) {
-              promises.push(
-                this.uploadStrokesToDatabase(
-                  strokesArray, 
-                  this.newExplanationDbRef.doc(newExplId).collection("strokes")
-                )
-              );
-            }
-          }
-          await Promise.all(promises);
-
-          // STAGE 3/3: reset variables
-          clearInterval(uploadTimeout);
-          this.messageToUser = "";
-          this.changeKeyToForceReset += 1;
-          this.isUploadingPost = false;
-          this.isPreviewing = false;
-          this.previewVideo = {};
-
-          // emit events
-          this.$emit("upload-finish"); 
-          this.$root.$emit("show-snackbar", "Successfully uploaded.");
-        } catch (reason) {
-          this.$root.$emit("show-snackbar", `Upload failed, reason: ${reason}`);
-          this.messageToUser = "Upload failed for some reason. Try again."
-          this.isUploadingPost = false;
-          return; 
+            })
+          );
         }
+        promises2.push(ref.set(explDoc));
+        await Promise.all(promises2);
+        delete this.$store.state.explCache[ref.id];
+        this.$root.$emit("show-snackbar", "Successfully uploaded your explanation.");   
+      } catch (error) {
+        // TODO: send an error email to ExplainMIT core team
+        console.log("error =", error);
+        this.$root.$emit("show-snackbar", "Upload failed, trying again...");
+        // set a delay in case the upload failure is immediate and will overwhelm the call stack
+        setTimeout(() => this.uploadExplanation(ref), 5000); 
+      }
     },
+    /**
+     * @param strokesArray an array of stroke objects
+     * @param databaseRef location on Firestore where the stroke documents will be uploaded
+     * @effect uploads each stroke of the array to databaseRef 
+     */
     uploadStrokesToDatabase (strokesArray, databaseRef) {
       return new Promise(async (resolve, reject) => {
         try {

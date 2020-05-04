@@ -3,8 +3,8 @@
     titleRequired
     :willCreateNewPost="true"
     :postDbRef="newPostRef"
-    :key="updateKeyToResetComponent"
-    @upload-finish="updateKeyToResetComponent += 1"
+    :key="changeKeyToForceReset"
+    @upload-started="changeKeyToForceReset += 1"
     ref="CreateExplanation"
   />
 </template>
@@ -20,7 +20,7 @@ export default {
   },
   data () {
     return {
-      updateKeyToResetComponent: 0,
+      changeKeyToForceReset: 0,
       newPostRef: null
     }
   },
@@ -30,7 +30,7 @@ export default {
     }
   },
   watch: {
-    updateKeyToResetComponent: {
+    changeKeyToForceReset: {
       handler: "resetExplanationComponent",
       immediate: true
     }
@@ -46,6 +46,7 @@ export default {
     else next(); 
   },
   methods: {
+    // TODO: refactor the logic so that this method is unnecessary
     resetExplanationComponent () {
       this.newPostRef = this.postsRef.doc(getRandomId());
     }
