@@ -69,12 +69,16 @@ export default {
       });
     },
     async $_listenToCollection (ref, obj, val) {
-      return new Promise(async (resolve) => {
+      return new Promise(async resolve => {
         try {
           const unsubscribeListener = ref.onSnapshot(querySnapshot => { // onSnapshot does NOT return a promise
             const resultDocs = [];
-            querySnapshot.forEach((doc) => { 
-              resultDocs.push({...doc.data(), "id": doc.id, "ref": doc.ref.path })
+            querySnapshot.forEach(doc => { 
+              resultDocs.push({ 
+                id: doc.id, 
+                ref: doc.ref.path, 
+                ...doc.data() 
+              })
             });
             obj[val] = resultDocs;
             resolve(unsubscribeListener);
@@ -84,6 +88,13 @@ export default {
         } 
       });
     },
+    /**
+     * 
+     * @param {*} path location in Firebase storage for the blob to be uploaded
+     * @param {*} blob the blob to be uploaded
+     * @param {*} showProgress TODO: remove this parameter
+     * @return a promise that resolves to the downloadURL for the blob on Firebase storage
+     */
     $_saveToStorage (path, blob, showProgress = false) {
       return new Promise((resolve, reject) => {
         try {
