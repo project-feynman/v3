@@ -4,6 +4,7 @@
       <LiveBoardAudio :roomId="roomId"/>
       <Blackboard 
         @stroke-drawn="(stroke) => uploadToDb(stroke)"
+        @image-rendered="(imageFile) => uploadBgImageToDb(imageFile)"
         @board-reset="deleteAllStrokesFromDb()"
         ref="Blackboard"
         :isRealtime="true"
@@ -15,6 +16,7 @@
         </template>
         <template v-slot:database-listener="{ 
           drawStrokeOnCanvas, 
+          displayImage,
           resetBoard 
         }">
           <RenderlessListenToBlackboard
@@ -22,6 +24,7 @@
             @initial-strokes-fetched="(initialStrokes) => renderOnCanvas(initialStrokes, drawStrokeOnCanvas)"
             @new-stroke-from-db="(stroke) => renderIfNotByMe(stroke, drawStrokeOnCanvas)"
             @db-wiped="resetBoard()"
+            @new-bg-image-from-db="(imageBlob) => handleDisplayImage(imageBlob)"
             ref="RenderlessListener"
           >
           </RenderlessListenToBlackboard>
@@ -90,6 +93,10 @@ export default {
     });
   },
   methods: {
+    handleDisplayImage (imageBlob){
+      const { Blackboard } = this.$refs;
+      Blackboard.displayImage(imageBlob);
+    },
     renderOnCanvas (strokesArray, drawStrokeOnCanvas) {
       for (let stroke of strokesArray) {
         drawStrokeOnCanvas(stroke);
@@ -106,6 +113,11 @@ export default {
       } catch (error) {
         this.$root.$emit("snow-snackbar", "Failed to upload stroke to database.");
       }
+    },
+    async uploadBgImageToDb (imageFile) {
+      console.log("added image to DB")
+      const imageUrl = await this.$_saveToStorage(`images/${this.roomId}`, imageFile);
+      this.roomRef.update({ imageUrl });
     },
     renderIfNotByMe (newStroke, drawStrokeOnCanvas) {
       // TODO: don't duplicate the drawings

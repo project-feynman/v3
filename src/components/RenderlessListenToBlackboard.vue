@@ -20,6 +20,7 @@ export default {
   ],
   created () {
     this.keepSyncingBoardWithDb();
+    this.keepSyncingImage();
   },
   data () {
     return {
@@ -36,6 +37,24 @@ export default {
   methods: {
     getStrokesArray () {
       return this.strokesArray;
+    },
+    async keepSyncingImage () {
+      this.roomRef = db.doc(`classes/${this.mitClass.id}/blackboards/${this.blackboardId}`);
+      this.unsubscribe2 = this.roomRef.onSnapshot((snapshot)=>{
+        let newObj = {};
+        let imageURL = ""
+        for (const property in snapshot.data()) {
+          if ((typeof snapshot.data()[property]) == "string"){
+            console.log("got imageurl prop")
+            imageURL = snapshot.data()[property];
+            const blob = this.$_getBlobFromStorage(imageURL).then((blob) => {
+              console.log("blobRetreived from snapshot", blob);
+              this.$emit('new-bg-image-from-db', blob)
+            });
+          }
+          
+        }
+      })
     },
     keepSyncingBoardWithDb () {
       this.strokesRef = db.collection(`classes/${this.mitClass.id}/blackboards/${this.blackboardId}/strokes`);

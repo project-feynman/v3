@@ -12,8 +12,10 @@
       :isRealtime="isRealtime"
       @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
       @board-reset="$emit('board-reset')"
+      
       ref="BlackboardDrawingCanvas"
     >
+    <!-- @image-rendered="(imageURL) => $emit('image-rendered', imageURL)" -->
       <template v-slot:canvas-toolbar="{ 
         currentTool,
         isFullScreen,
@@ -28,7 +30,7 @@
           :currentTool="currentTool.type"
           :isFullScreen="isFullScreen"
           @tool-select="(newTool) => changeTool(newTool)"
-          @image-select="(imageFile) => displayImageFile(imageFile)"
+          @image-select="(imageFile) => {displayImageFile(imageFile); $emit('image-rendered', imageFile)}"
           @wipe-board="resetBoard()"
           @toggle-fullScreen="toggleFullScreen()"
         >
@@ -144,6 +146,10 @@ export default {
       const { BlackboardDrawingCanvas } = this.$refs;
       BlackboardDrawingCanvas.convertAllStrokesToBeInitialStrokes();
       this.currentState = RecordState.PRE_RECORD;
+    },
+    displayImage(imageFile){
+      const { BlackboardDrawingCanvas } = this.$refs;
+      BlackboardDrawingCanvas.displayImageFile(imageFile);
     },
     drawStrokeOnCanvas (stroke, drawInstantly = true) {
       // TODO: add timestamp so online recording also works

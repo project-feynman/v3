@@ -80,6 +80,7 @@ export default {
   computed: {
     imageBlobUrl () {
       if (this.imageBlob) {
+        console.log("imageblob", this.imageBlob, URL) //TODO, the url being passed around isnt right
         return URL.createObjectURL(this.imageBlob);
       } else {
         return "";
@@ -149,9 +150,12 @@ export default {
       };
       this.imageBlob = null;
     },
-    displayImageFile (imageFile) {
-      this.imageBlob = imageFile; 
-      this.$_renderBackground(this.imageBlobUrl);
+    async displayImageFile (imageFile) {
+      console.log("blobby", imageFile) // maybe no render if already correct image
+      if (imageFile !== this.imageBlob){
+        this.imageBlob = imageFile; 
+        this.$_renderBackground(this.imageBlobUrl);
+      }
     },
     startNewStroke (e) {
       this.$emit("stroke-start");
