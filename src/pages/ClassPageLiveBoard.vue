@@ -68,7 +68,7 @@ export default {
       return this.$store.state.user; 
     },
     simpleUser () {
-      if (!this.user) { return; } 
+      if (!this.user) return; 
       return {
         email: this.user.email,
         uid: this.user.uid,
