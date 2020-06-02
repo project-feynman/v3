@@ -22,8 +22,8 @@
         <BlackboardToolBar
           :currentTool="currentTool.type"
           :isFullScreen="isFullScreen"
-          @tool-select="(newTool) => changeTool(newTool)"
-          @image-select="(imageFile) => displayImageFile(imageFile)"
+          @tool-select="newTool => changeTool(newTool)"
+          @image-select="imageFile => displayImageFile(imageFile)"
           @wipe-board="resetBoard()"
           @toggle-fullScreen="toggleFullScreen()"
         >
@@ -54,7 +54,7 @@
     </BlackboardCoreDrawing>
 
     <BlackboardAudioRecorder
-      @audio-recorded="(audioObj) => handleNewRecording(audioObj)"
+      @audio-recorded="audioObj => handleNewRecording(audioObj)"
       ref="AudioRecorder"
     />
   </div>
@@ -123,7 +123,7 @@ export default {
       this.$emit("record-end", this.getBlackboardData);
     },
     async getBlackboardData () {
-      return new Promise(async (resolve) => {
+      return new Promise(async resolve => {
         const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
         const thumbnailBlob = await BlackboardDrawingCanvas.getThumbnail();
         resolve({
