@@ -11,8 +11,8 @@
           class="mb-5"
         />
       </v-col>
-      <!-- TODO: use explicit props -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
+
       <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
         <template v-if="user">
@@ -104,10 +104,6 @@ import { mapState } from "vuex";
 
 export default {
   props: {
-    strokesArray: {
-      type: Array,
-      default: () => []
-    },
     willCreateNewPost: {
       type: Boolean,
       default: () => false
@@ -130,6 +126,7 @@ export default {
     ButtonNew
   },
   data: () => ({
+    strokesArray: [],
     messageToUser: "",
     uploadProgress: 0,
     isRecordingVideo: false,
@@ -179,6 +176,9 @@ export default {
       const { Blackboard } = this.$refs;
       const { BlackboardDrawingCanvas } = Blackboard.$refs; 
       BlackboardDrawingCanvas.resizeBlackboard();
+    },
+    getBlackboard () {
+      return this.$refs.Blackboard;
     },
     // used by NewExplanation and SeeExplanation
     getTextEditor () {

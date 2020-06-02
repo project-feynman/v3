@@ -133,8 +133,7 @@ export default {
       });
     },
     getStrokesArray () {
-      // WARNING: rep exposure (client could mutate the array)
-      return this.strokesArray;
+      return [...this.strokesArray]; // use a defensive copy to avoid rep exposure / client mutating the array
     },
     getImageBlob () {
       return this.$refs.BlackboardDrawingCanvas.imageBlob;
