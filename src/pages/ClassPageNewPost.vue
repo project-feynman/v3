@@ -1,6 +1,7 @@
 <template>
   <CreateExplanation 
     titleRequired
+    :strokesArray="strokesArray"
     :willCreateNewPost="true"
     :postDbRef="newPostRef"
     :key="changeKeyToForceReset"
@@ -20,6 +21,7 @@ export default {
   },
   data () {
     return {
+      strokesArray: [],
       changeKeyToForceReset: 0,
       newPostRef: null
     }
@@ -35,19 +37,25 @@ export default {
       immediate: true
     }
   },
+  /**
+   * Shows a confirmation popup if the user is leaving with unfinished work. 
+   * 
+   * @see https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
+   * 
+   */
   beforeRouteLeave (to, from, next) {
-    const Blackboard = this.$refs.CreateExplanation.getBlackboard();
     const TextEditor = this.$refs.CreateExplanation.getTextEditor();
-    if (Blackboard.getStrokesArray().length > 0 || TextEditor.extractAllText().length > 0) {
+    if (this.strokesArray.length > 0 || TextEditor.extractAllText().length > 0) {
       const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
       if (wantToLeave) next();
-      else next(false); 
+      else next(false); // Calling `next(false)` aborts the current navigation 
     } 
     else next(); 
   },
   methods: {
     // TODO: refactor the logic so that this method is unnecessary
     resetExplanationComponent () {
+      this.strokesArray = []; // it's aliased to CreateExplanation's strokesArray so must be reset 
       this.newPostRef = this.postsRef.doc(getRandomId());
     }
   }

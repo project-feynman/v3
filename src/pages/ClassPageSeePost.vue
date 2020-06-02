@@ -9,6 +9,7 @@
     />
     <!-- Need to be logged-in to reply to existing posts -->
     <CreateExplanation v-if="user" 
+      :strokesArray="strokesArray"
       :postDbRef="postRef" 
       :newExplanationDbRef="explanationsRef" 
       :key="changeKeyToForceReset"
@@ -36,6 +37,7 @@ export default {
     SeeExplanation,
   },
   data: () => ({
+    strokesArray: [],
     originalPost: null,
     explanations: [],
     explanationsRef: null,
@@ -49,6 +51,12 @@ export default {
     ]),
     sortedExplanations () {
       return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
+    }
+  },
+  // TODO: refactor
+  watch: {
+    changeKeyToForceReset () {
+      this.strokesArray = [];
     }
   },
   async created () {
@@ -81,10 +89,9 @@ export default {
         next();
         return;
       }
-      const Blackboard = CreateExplanation.getBlackboard();
       const TextEditor = CreateExplanation.getTextEditor();
 
-      if (Blackboard.getStrokesArray().length > 0 || TextEditor.extractAllText().length > 0) {
+      if (this.strokesArray.length > 0 || TextEditor.extractAllText().length > 0) {
         const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
         if (!wantToLeave) next(false);
         else next(); 

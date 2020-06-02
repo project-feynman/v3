@@ -11,6 +11,7 @@
           class="mb-5"
         />
       </v-col>
+      <!-- TODO: use explicit props -->
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
       <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
@@ -99,9 +100,14 @@ import db from "@/database.js";
 import { RecordState } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js";
 import ButtonNew from "@/components/ButtonNew.vue";
+import { mapState } from "vuex";
 
 export default {
   props: {
+    strokesArray: {
+      type: Array,
+      default: () => []
+    },
     willCreateNewPost: {
       type: Boolean,
       default: () => false
@@ -124,7 +130,6 @@ export default {
     ButtonNew
   },
   data: () => ({
-    strokesArray: [],
     messageToUser: "",
     uploadProgress: 0,
     isRecordingVideo: false,
@@ -141,9 +146,10 @@ export default {
     isFullScreenDoodle: false
   }),
   computed: {
-    user () { 
-      return this.$store.state.user; 
-    },
+    ...mapState([
+      "user",
+      "mitClass"
+    ]),
     simplifiedUser () {
       return {
         uid: this.user.uid,
@@ -160,9 +166,6 @@ export default {
         lastName: "anonymous"
       };
     },
-    mitClass () { 
-      return this.$store.state.mitClass; 
-    },
     isButtonDisabled () {
       return this.isUploadingPost || this.isRecordingVideo;
     }
@@ -177,9 +180,7 @@ export default {
       const { BlackboardDrawingCanvas } = Blackboard.$refs; 
       BlackboardDrawingCanvas.resizeBlackboard();
     },
-    getBlackboard () {
-      return this.$refs.Blackboard;
-    },
+    // used by NewExplanation and SeeExplanation
     getTextEditor () {
       return this.$refs.TextEditor;
     },
