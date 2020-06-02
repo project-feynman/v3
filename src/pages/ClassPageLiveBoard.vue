@@ -36,9 +36,7 @@
  */
 import firebase from "firebase/app";
 import "firebase/firestore";
-import TheAppBar from "@/components/TheAppBar.vue";
 import Blackboard from "@/components/Blackboard.vue";
-import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
@@ -49,9 +47,7 @@ export default {
   components: { 
     ButtonNew,
     Blackboard,
-    BlackboardToolBar,
     LiveBoardAudio,
-    TheAppBar
   },
   mixins: [
     DatabaseHelpersMixin
@@ -106,7 +102,6 @@ export default {
     */
     keepSyncingBoardWithDb () {
       this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
-        console.log("snapshot received!")
         if (snapshot.docs.length === 0) {
           this.strokesArray = [];
         } else {
@@ -172,7 +167,6 @@ export default {
 
         // step 1 (step 2 is executed in Cloud Functions)
         await firebaseRef.onDisconnect().set(this.simpleUser);
-        
         // now join the room 
         this.roomRef.update({ // it's much faster to update Firestore directly
           participants: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
