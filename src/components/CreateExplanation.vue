@@ -71,15 +71,12 @@
             </template>
           </BasePopupButton>
         </v-row>
-        <div id="doodle-wrapper" :class="isFullScreenDoodle ? 'fullscreen-video' : 'video-wrapper'" @click="e=>this.clickOutsideDoodle(e)">
-          <DoodleVideo
-            :strokesArray="previewVideo.strokesArray"
-            :audioUrl="previewVideo.audio.blobUrl"
-            :imageBlob="previewVideo.imageBlob"
-            @toggle-fullscreen="toggleFullscreenDoodle"
-            ref="Doodle"
-          />
-        </div>
+        <DoodleVideo
+          :strokesArray="previewVideo.strokesArray"
+          :audioUrl="previewVideo.audio.blobUrl"
+          :imageBlob="previewVideo.imageBlob"
+          ref="Doodle"
+        />
       </template>
     </v-container>
   </v-card>
@@ -134,8 +131,7 @@ export default {
     isAnonymous: false,
     isUploadingPost: false,
     changeKeyToForceReset: 0,
-    postTitle: "",
-    isFullScreenDoodle: false
+    postTitle: ""
   }),
   computed: {
     user () { 
@@ -361,22 +357,6 @@ export default {
           reject(reason);
         }
       });
-    },
-    toggleFullscreenDoodle () {
-      this.isFullScreenDoodle = !this.isFullScreenDoodle;
-      const { Doodle } = this.$refs;
-      Doodle.handleResize();
-      if (this.isFullScreenDoodle) {
-        document.documentElement.style.overflowY = "hidden";
-      } else {
-        document.documentElement.style.overflowY = "auto";
-        window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
-      }
-    },
-    clickOutsideDoodle (e) {
-      if (e.target.id === "doodle-wrapper" && this.isFullScreenDoodle) {
-        this.toggleFullscreenDoodle()
-      }
     }
   }
 }
@@ -385,24 +365,5 @@ export default {
 <style scoped>
 .v-text-field {
   font-size: 1.6em;
-}
-.video-wrapper {
-  height: 100%; 
-  width: 100%; 
-  position: relative; 
-  z-index: 5; 
-  margin: auto;
-}
-.fullscreen-video {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 10;
-  background-color: rgba(0,0,0,0.5);
 }
 </style>

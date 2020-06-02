@@ -1,4 +1,5 @@
 <template>
+<div id="fullscreen-wrapper" @click="(e) => $_exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
   <div ref="VideoWrapper" class="video-container">
     <div ref="CanvasWrapper" style="position: relative;">
       <canvas ref="FrontCanvas" class="front-canvas"></canvas>
@@ -40,13 +41,15 @@
           <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
         </v-select>
       </v-col>
-      <v-btn @click="$emit('toggle-fullscreen')"><v-icon>mdi-fullscreen</v-icon></v-btn>
+      <v-btn @click.stop="$_toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn>
     </div>
   </div>
+</div>
 </template>
 
 <script>
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
+import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
 import _ from "lodash";
 import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
 
@@ -55,7 +58,10 @@ export default {
     strokesArray: Array,
     backgroundUrl: String
   },
-  mixins: [CanvasDrawMixin],
+  mixins: [
+    CanvasDrawMixin,
+    DoodleFullscreenMixin
+  ],
   data: () => ({
     currentFrameIdx: -1,
     isPlaying: true,
@@ -105,6 +111,9 @@ export default {
         resolve();
       })
     },
+    /** 
+     * Maximizes the size of the animation canvas while preserving aspect ratio
+     */
     resizeVideo () {
       const { CanvasWrapper, VideoWrapper } = this.$refs;
       VideoWrapper.style.width = "100%";
@@ -177,7 +186,7 @@ export default {
           playBreak = true;
           break;
         }
-        if (i % 10 === 0) { this.currentFrameIdx = i; }
+        if (i % 10 === 0) this.currentFrameIdx = i;
         await this.renderFrame(this.allFrames[i], false); // draw 1 stroke per event loop
       }
       if (!playBreak) { // We can't check if the currentFrameIdx is the last last frame as we increment it only every 10 frames
@@ -205,6 +214,8 @@ export default {
 </script>
 
 <style scoped>
+@import "../styles/doodle-fullscreen.scss";
+
 .video-container {
   margin: auto;
   position: relative;

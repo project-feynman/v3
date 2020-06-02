@@ -1,40 +1,43 @@
 <template>
-  <div ref="VideoWrapper" class="video-container">
-    <div ref="CanvasWrapper" style="position: relative;">
-      <canvas ref="FrontCanvas" class="front-canvas"></canvas>
-      <canvas ref="BackCanvas" class="background-canvas"></canvas>
-    </div>
-    <audio v-if="audioUrl && strokesArray.length > 0"
-      :src="audioUrl" 
-      @play="initSyncing()"
-      @seeking="syncStrokesToAudio()"
-      ref="AudioPlayer" 
-      style="width: 100%;"
-      controls
-    />
-    <div id="extra-controls">
-      <v-col cols="auto" class="px-0 py-0">
-        <v-select
-          :items="speedOptions"
-          :value="playbackSpeed"
-          @input="changePlaybackSpeed"
-          dense
-          solo
-          background-color="rgba(255,255,255,0.75)"
-          :hide-details="true"
-          class="my-0"
-          color="accent"
-          item-color="accent"
-        >
-          <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
-        </v-select>
-      </v-col>
-      <v-btn @click="$emit('toggle-fullscreen')"><v-icon>mdi-fullscreen</v-icon></v-btn>
+  <div id="fullscreen-wrapper" @click="(e) => $_exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
+    <div ref="VideoWrapper" class="video-container">
+      <div ref="CanvasWrapper" style="position: relative;">
+        <canvas ref="FrontCanvas" class="front-canvas"></canvas>
+        <canvas ref="BackCanvas" class="background-canvas"></canvas>
+      </div>
+      <audio v-if="audioUrl && strokesArray.length > 0"
+        :src="audioUrl" 
+        @play="initSyncing()"
+        @seeking="syncStrokesToAudio()"
+        ref="AudioPlayer" 
+        style="width: 100%;"
+        controls
+      />
+      <div id="extra-controls">
+        <v-col cols="auto" class="px-0 py-0">
+          <v-select
+            :items="speedOptions"
+            :value="playbackSpeed"
+            @input="changePlaybackSpeed"
+            dense
+            solo
+            background-color="rgba(255,255,255,0.75)"
+            :hide-details="true"
+            class="my-0"
+            color="accent"
+            item-color="accent"
+          >
+            <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
+          </v-select>
+        </v-col>
+        <v-btn @click.stop="$_toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import _ from "lodash";
 import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
@@ -52,7 +55,8 @@ export default {
     imageBlob: Blob // a File is also a Blob
   },
   mixins: [
-    CanvasDrawMixin
+    CanvasDrawMixin,
+    DoodleFullscreenMixin
   ],
   data: () => ({
     playbackSpeed: 1,
@@ -200,6 +204,8 @@ export default {
 </script>
 
 <style scoped>
+@import "../styles/doodle-fullscreen.scss";
+
 .video-container {
   margin: auto;
   position: relative;
