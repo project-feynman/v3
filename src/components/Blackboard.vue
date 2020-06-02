@@ -70,7 +70,6 @@
  * Manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob.
 */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
-import BlackboardDrawingCanvas from "@/components/BlackboardDrawingCanvas.vue";
 import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
@@ -88,7 +87,6 @@ export default {
     BlackboardToolBar,
     BlackboardAudioRecorder, 
     BlackboardCoreDrawing,
-    BlackboardDrawingCanvas,
     ButtonNew
   },
   data () {
