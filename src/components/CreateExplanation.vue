@@ -45,16 +45,18 @@
       </v-progress-linear>
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
-        @record-start="isRecordingVideo = true"
-        @record-end="(getBlackboardData) => showPreview(getBlackboardData)"
+        :strokesArray="strokesArray"
+        @stroke-drawn="stroke => strokesArray.push(stroke)"
         :key="changeKeyToForceReset"
         :isRealtime="false"
+        @record-start="isRecordingVideo = true"
+        @record-end="getBlackboardData => showPreview(getBlackboardData)"
         ref="Blackboard"
       />
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
         <v-row>
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <BasePopupButton v-if="!isUploadingPost"
             actionName="Retry new recording" 
             @action-do="initRetry()"
@@ -71,7 +73,7 @@
             </template>
           </BasePopupButton>
         </v-row>
-        <div id="doodle-wrapper" :class="isFullScreenDoodle ? 'fullscreen-video' : 'video-wrapper'" @click="e=>this.clickOutsideDoodle(e)">
+        <div id="doodle-wrapper" :class="isFullScreenDoodle ? 'fullscreen-video' : 'video-wrapper'" @click="e => this.clickOutsideDoodle(e)">
           <DoodleVideo
             :strokesArray="previewVideo.strokesArray"
             :audioUrl="previewVideo.audio.blobUrl"
@@ -122,6 +124,7 @@ export default {
     ButtonNew
   },
   data: () => ({
+    strokesArray: [],
     messageToUser: "",
     uploadProgress: 0,
     isRecordingVideo: false,
@@ -204,7 +207,7 @@ export default {
       }
       const explRef = this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId());
       this.$store.commit("ADD_EXPL_TO_CACHE", {
-        ref: explRef,
+        ref: explRef, // why is this necessary
         strokesArray: Blackboard.getStrokesArray(),
         backgroundImageBlob: Blackboard.getImageBlob(),
         thumbnailBlob: this.previewVideo.thumbnailBlob ? this.previewVideo.thumbnailBlob : await Blackboard.getThumbnail(),

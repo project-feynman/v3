@@ -7,10 +7,11 @@
     >
 
     </slot>
-    <BlackboardDrawingCanvas 
+    <BlackboardCoreDrawing
+      :strokesArray="strokesArray"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
-      @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
+      @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       @board-reset="$emit('board-reset')"
       ref="BlackboardDrawingCanvas"
     >
@@ -56,7 +57,7 @@
           </ButtonNew>
         </BlackboardToolBar>
       </template>
-    </BlackboardDrawingCanvas>
+    </BlackboardCoreDrawing>
 
     <BlackboardAudioRecorder
       @audio-recorded="(audioObj) => handleNewRecording(audioObj)"
@@ -73,19 +74,25 @@
 */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BlackboardDrawingCanvas from "@/components/BlackboardDrawingCanvas.vue";
+import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { RecordState } from "@/CONSTANTS.js";
 
 export default {
   props: {
+    strokesArray: {
+      type: Array,
+      required: true
+    },
     isRealtime: Boolean
   },
   components: { 
     BlackboardToolBar,
     BlackboardAudioRecorder, 
+    BlackboardCoreDrawing,
     BlackboardDrawingCanvas,
-    ButtonNew,
+    ButtonNew
   },
   data () {
     return {
@@ -152,8 +159,9 @@ export default {
       if (drawInstantly) {
         BlackboardDrawingCanvas.$_drawStroke(stroke); 
       } else {
-        const { $_getPointDuration } = BlackboardDrawingCanvas;
-        BlackboardDrawingCanvas.$_drawStroke(stroke, $_getPointDuration(stroke))
+        const { $_drawStroke, $_getPointDuration } = BlackboardDrawingCanvas;
+        $_drawStroke(stroke, $_getPointDuration(stroke));
+        // BlackboardDrawingCanvas.$_drawStroke(stroke, $_getPointDuration(stroke))
       }
     },
     resetBoard () {
