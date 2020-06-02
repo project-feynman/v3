@@ -56,10 +56,10 @@ export default {
     this.postRef = db.doc(`classes/${class_id}/posts/${post_id}`);
     this.explanationsRef = this.postRef.collection("explanations");
     
-    this.$_listenToDoc(this.postRef, this, "originalPost").then((listener) => {
+    this.$_listenToDoc(this.postRef, this, "originalPost").then(listener => {
       this.databaseListeners.push(listener);
     });
-    this.$_listenToCollection(this.explanationsRef, this, "explanations").then((listener) => {
+    this.$_listenToCollection(this.explanationsRef, this, "explanations").then(listener => {
       this.databaseListeners.push(listener);
     });
   },
@@ -70,7 +70,7 @@ export default {
     this.confirmExit(next);
   },
   destroyed () { 
-    for (let unsubscribeListener of this.databaseListeners) {
+    for (const unsubscribeListener of this.databaseListeners) {
       unsubscribeListener();
     }
   },
