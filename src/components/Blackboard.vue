@@ -1,12 +1,5 @@
 <template>
   <div>
-    <slot name="database-listener"
-      :drawStrokeOnCanvas="drawStrokeOnCanvas"
-      :wipeBoard="wipeBoard"
-      :resetBoard="resetBoard"
-    >
-
-    </slot>
     <BlackboardCoreDrawing
       :strokesArray="strokesArray"
       @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
@@ -72,7 +65,7 @@
  * A functional blackboard that supports saving and recording:
     - Saving: The user can save the state of the blackboard as a replayable animation. 
     - Recording: By pressing "record", the user can record a voiced video explanation. 
-    
+
  * Maintains the invariant that the UI <canvas/> contains exactly the strokes from `strokesArray`. 
  * Manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob.
 */
@@ -156,24 +149,6 @@ export default {
       const { BlackboardDrawingCanvas } = this.$refs;
       BlackboardDrawingCanvas.convertAllStrokesToBeInitialStrokes();
       this.currentState = RecordState.PRE_RECORD;
-    },
-    drawStrokeOnCanvas (stroke, drawInstantly = true) {
-      // TODO: add timestamp so online recording also works
-      const { BlackboardDrawingCanvas } = this.$refs;
-      BlackboardDrawingCanvas.appendToStrokesArray(stroke);
-      if (drawInstantly) {
-        BlackboardDrawingCanvas.$_drawStroke(stroke); 
-      } else {
-        const { $_drawStroke, $_getPointDuration } = BlackboardDrawingCanvas;
-        $_drawStroke(stroke, $_getPointDuration(stroke));
-        // BlackboardDrawingCanvas.$_drawStroke(stroke, $_getPointDuration(stroke))
-      }
-    },
-    resetBoard () {
-      this.$refs.BlackboardDrawingCanvas.resetBoard();
-    },
-    wipeBoard () {
-      this.$refs.BlackboardDrawingCanvas.wipeBoard();
     },
     toggleTouchDrawing () {
       this.$refs.BlackboardDrawingCanvas.touchDisabled = !this.$refs.BlackboardDrawingCanvas.touchDisabled;
