@@ -207,8 +207,8 @@ export default {
       }
       const explRef = this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId());
       this.$store.commit("ADD_EXPL_TO_CACHE", {
-        ref: explRef, // why is this necessary
-        strokesArray: Blackboard.getStrokesArray(),
+        ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads
+        strokesArray: this.strokesArray,
         backgroundImageBlob: Blackboard.getImageBlob(),
         thumbnailBlob: this.previewVideo.thumbnailBlob ? this.previewVideo.thumbnailBlob : await Blackboard.getThumbnail(),
         audioBlob: Blackboard.currentState === RecordState.POST_RECORD ? this.previewVideo.audio.blob : null,
@@ -220,7 +220,7 @@ export default {
           mitClass: this.mitClass,
           tags: [],
           duration: Blackboard.currentTime,
-          hasStrokes: Blackboard.getStrokesArray().length > 0
+          hasStrokes: this.strokesArray.length > 0
         }
       });
       this.uploadExplanation(explRef);

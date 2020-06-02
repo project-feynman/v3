@@ -13,12 +13,12 @@
     </slot>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
       <canvas ref="FrontCanvas" class="front-canvas" 
-        @touchstart="(e) => touchStart(e)"
-        @touchmove="(e) => touchMove(e)"
-        @touchend="(e) => touchEnd(e)"
-        @mousedown="(e) => mouseDown(e)"
-        @mousemove="(e) => mouseMove(e)"
-        @mouseup="(e) => mouseUp(e)"
+        @touchstart="e => touchStart(e)"
+        @touchmove="e => touchMove(e)"
+        @touchend="e => touchEnd(e)"
+        @mousedown="e => mouseDown(e)"
+        @mousemove="e => mouseMove(e)"
+        @mouseup="e => mouseUp(e)"
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
@@ -84,7 +84,7 @@ export default {
       },
       isHoldingLeftClick: false,
       touchDisabled: true, // isIosSafari() is broken
-      localStrokesArray: [],
+      localStrokesArray: [...this.strokesArray],
       currentStroke: { 
         points: [] 
       },
@@ -116,27 +116,25 @@ export default {
   },
   // strokesArray => UI 
   watch: {
-    strokesArray: {
-      immediate: true,
-      handler () {
-        const n = this.strokesArray.length; 
-        if (n === 0) {
-          this.wipeBoard(); 
-          this.localStrokesArray = [];
-        } else if (n - this.localStrokesArray.length === 1) { 
-          const newStroke = this.strokesArray[n-1];
-          this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke));
-          this.localStrokesArray.push(newStroke);
-        } else if (n === this.localStrokesArray.length) {
-          return; 
-        } else {
-          throw new Error("Rep invariant is broken for BlackboardCoreDrawing.vue");
-        }
+    strokesArray () {
+      const n = this.strokesArray.length; 
+      if (n === 0) {
+        this.wipeBoard(); 
+        this.localStrokesArray = [];
+      } else if (n - this.localStrokesArray.length === 1) { 
+        const newStroke = this.strokesArray[n-1];
+        this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke));
+        this.localStrokesArray.push(newStroke);
+      } else if (n === this.localStrokesArray.length) {
+        return; 
+      } else {
+        throw new Error("Rep invariant is broken for BlackboardCoreDrawing.vue");
       }
     }
   },
   mounted () {
-    this.initializeComponent();
+    this.initializeCanvas();
+    document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
     window.addEventListener("resize", this.resizeBlackboard, false); 
   },
   destroyed () {
@@ -148,10 +146,8 @@ export default {
       e.preventDefault()
       if (this.currentStroke.points.length === 0) return;  // user is touching the screen despite that touch is disabled
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
-      
       this.localStrokesArray.push(this.currentStroke);
       this.$emit("stroke-drawn", this.currentStroke);
-
       // reset 
       this.currentStroke = { 
         points: [] 
@@ -161,21 +157,15 @@ export default {
         y: -1 
       };
     },
-    initializeComponent () {
+    initializeCanvas () {
       this.canvas = this.$refs.FrontCanvas;
       this.bgCanvas = this.$refs.BackCanvas;
       this.ctx = this.canvas.getContext("2d");
       this.bgCtx = this.bgCanvas.getContext("2d");
       this.resizeBlackboard();
-      document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
+      this.$_drawStrokesInstantly();
     },
-    appendToStrokesArray (stroke) {
-      this.strokesArray.push({
-        startTime: this.currentTime,
-        endTime: this.currentTime, // TODO: of course this is not correct
-        ...stroke
-      });
-    },
+
     // convertAllStrokesToBeInitialStrokes () {
     //   for (const stroke of this.strokesArray) {
     //     [stroke.startTime, stroke.endTime] = [0, 0];
@@ -197,7 +187,7 @@ export default {
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
-      this.strokesArray = [];
+      this.localStrokesArray = [];
       this.prevPoint = { 
         x: -1, 
         y: -1 
@@ -303,7 +293,6 @@ export default {
           y: finger1.pageY - top - window.scrollY
         };
       }
-      const radius = 10;
       for (let i = 0; i < this.strokesArray.length; i++) {
         const stroke = this.strokesArray[i];
         // don't undo eraser strokes
@@ -313,7 +302,8 @@ export default {
         for (const point of stroke.points) {
           const deltaX = eraserCenter.x - point.unitX * this.canvas.width;
           const deltaY = eraserCenter.y - point.unitY * this.canvas.height;
-          if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
+          const radius = 10; 
+          if (Math.sqrt(deltaX**2 + deltaY**2) < radius) {
             this.eraseStroke(stroke);
             break; 
           }
@@ -331,7 +321,7 @@ export default {
         points: stroke.points
       };
       this.$_drawStroke(antiStroke);
-      this.strokesArray.push(antiStroke);
+      this.localStrokesArray.push(antiStroke);
       this.$emit("stroke-drawn", antiStroke);
     },
     getTouchPos (e) {
@@ -341,7 +331,7 @@ export default {
       this.currPoint.y = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
-      if (e.touches.length !== 1) { return true; } // multiple fingers not allowed
+      if (e.touches.length !== 1) return true; // multiple fingers not allowed
       return this.isFinger(e) && this.touchDisabled;
     },
     isApplePencil (e) {
@@ -377,7 +367,6 @@ export default {
         this.$_drawStrokesInstantly2();
         // TODO: remove this quickfix to avoid the double drawing thumbnail 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
         this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
     },

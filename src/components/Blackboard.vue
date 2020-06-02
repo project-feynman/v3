@@ -9,9 +9,9 @@
     </slot>
     <BlackboardCoreDrawing
       :strokesArray="strokesArray"
+      @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
-      @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       @board-reset="$emit('board-reset')"
       ref="BlackboardDrawingCanvas"
     >
@@ -25,6 +25,7 @@
         touchDisabled
       }"
       >
+        <!-- TODO: refactor resetBoard() -->
         <BlackboardToolBar
           :currentTool="currentTool.type"
           :isFullScreen="isFullScreen"
@@ -138,7 +139,8 @@ export default {
       });
     },
     getStrokesArray () {
-      return this.$refs.BlackboardDrawingCanvas.strokesArray;
+      // WARNING: rep exposure (client could mutate the array)
+      return this.strokesArray;
     },
     getImageBlob () {
       return this.$refs.BlackboardDrawingCanvas.imageBlob;

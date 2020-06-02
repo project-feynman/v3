@@ -2,37 +2,38 @@
   <div id="room">
     <template v-if="user">
       <LiveBoardAudio :roomId="roomId"/>
-      <Blackboard 
-        @stroke-drawn="(stroke) => uploadToDb(stroke)"
+      <Blackboard v-if="hasFetchedStrokesFromDb"
+        isRealtime
+        :strokesArray="strokesArray"
+        @stroke-drawn="stroke => uploadToDb(stroke)"
         @board-reset="deleteAllStrokesFromDb()"
-        ref="Blackboard"
-        :isRealtime="true"
       >
         <template v-slot:blackboard-toolbar>
-          <ButtonNew icon="mdi-upload" disabled>
-            Save Board
-          </ButtonNew>
+          <ButtonNew icon="mdi-upload" disabled>Save Board</ButtonNew>
         </template>
-        <template v-slot:database-listener="{ 
-          drawStrokeOnCanvas, 
-          resetBoard 
-        }"
-        >
-          <RenderlessListenToBlackboard
-            :blackboardId="roomId"
-            @initial-strokes-fetched="(initialStrokes) => renderOnCanvas(initialStrokes, drawStrokeOnCanvas)"
-            @new-stroke-from-db="(stroke) => renderIfNotByMe(stroke, drawStrokeOnCanvas)"
-            @db-wiped="resetBoard()"
-            ref="RenderlessListener"
-          >
-          </RenderlessListenToBlackboard>
-        </template> 
       </Blackboard> 
     </template>
   </div>
 </template>
 
 <script>
+/**
+ * A real-time blackboard, which is <Blackboard/> hooked up to Firestore.
+ * 
+ * Proof of database <=> blackboard: 
+ * 
+ * database => blackboard: 
+ *     Whenever a new stroke is added to the database, the database listener will trigger and update 
+ *     strokesArray, which propagates to the Blackboard component
+ * 
+ * blackboard => database: 
+ *     Whenever the user draws a new stroke, that stroke will be uploaded as a new document to the database. 
+ *     Momentarily, there will be divergence between state and UI:
+ *     the user's `strokesArray` does NOT have the new stroke, even though she was the one who drew the stroke.
+ *     However, when the write operation finally resolves, everyone's `strokesArray` will be updated, 
+ *     including the original author herself. Note that there will be double drawing, where the first is for feedback,
+ *     and the second is to signal when other people can actually see her new stroke. 
+ */
 import firebase from "firebase/app";
 import "firebase/firestore";
 import TheAppBar from "@/components/TheAppBar.vue";
@@ -40,34 +41,38 @@ import Blackboard from "@/components/Blackboard.vue";
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import RenderlessListenToBlackboard from "@/components/RenderlessListenToBlackboard.vue";
 import db from "@/database.js";
 import ButtonNew from "@/components/ButtonNew.vue";
+import { mapState } from "vuex";
 
 export default {
   components: { 
-    TheAppBar,
     ButtonNew,
     Blackboard,
     BlackboardToolBar,
     LiveBoardAudio,
-    RenderlessListenToBlackboard
+    TheAppBar
   },
   mixins: [
     DatabaseHelpersMixin
   ],
   data () {
     return {
+      strokesArray: [],
       room: {},
+      roomRef: null,
+      strokesRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
-      roomId: this.$route.params.room_id
+      roomId: this.$route.params.room_id,
+      hasFetchedStrokesFromDb: false
     }
   },
   computed: {
-    user () { 
-      return this.$store.state.user; 
-    },
+    ...mapState([
+      "user",
+      "mitClass"
+    ]),
     simpleUser () {
       if (!this.user) return; 
       return {
@@ -79,8 +84,10 @@ export default {
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
+    this.strokesRef = this.roomRef.collection("strokes");
     this.room = await this.$_getDoc(this.roomRef);
     this.setUserDisconnectHook();
+    this.keepSyncingBoardWithDb();
   },
   beforeDestroy () {
     if (this.unsubscribeRoomListener) {
@@ -91,16 +98,34 @@ export default {
     });
   },
   methods: {
-    renderOnCanvas (strokesArray, drawStrokeOnCanvas) {
-      for (let stroke of strokesArray) {
-        drawStrokeOnCanvas(stroke);
-      }
+    /*
+      TODO:
+        1. order by `timestamp` rather than `strokeNumber`
+        2. Investigate why each new stroke triggers 2-3 snapshot callbacks
+        3. handle a board reset more efficiently
+    */
+    keepSyncingBoardWithDb () {
+      this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
+        console.log("snapshot received!")
+        if (snapshot.docs.length === 0) {
+          this.strokesArray = [];
+        } else {
+          snapshot.docChanges().filter(change => change.type === "added").forEach(change => {
+            this.strokesArray.push({
+              id: change.doc.id,
+              ...change.doc.data()
+            });
+          });
+        }
+        if (!this.hasFetchedStrokesFromDb) { 
+          this.hasFetchedStrokesFromDb = true;
+        }
+      });
     },
     async uploadToDb (stroke) {
       const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-      const strokesRef = this.roomRef.collection("strokes");
       try {
-        strokesRef.add({
+        this.strokesRef.add({
           timestamp,
           ...stroke
         });
@@ -108,25 +133,27 @@ export default {
         this.$root.$emit("snow-snackbar", "Failed to upload stroke to database.");
       }
     },
-    renderIfNotByMe (newStroke, drawStrokeOnCanvas) {
-      // TODO: don't duplicate the drawings
-      // const localStrokes = this.$refs.Blackboard.getStrokesArray();
-      drawStrokeOnCanvas(newStroke, false); // not an instant stroke
-    },
     async deleteAllStrokesFromDb () {
-      const strokesArray = this.$refs.RenderlessListener.getStrokesArray();
+      const promises = [];
       const strokeDeleteRequests = [];
+      let currentBatch = db.batch();
+      let currentBatchSize = 0;
 
-      for (let stroke of strokesArray) {
-        const ref = this.roomRef.collection("strokes").doc(stroke.id);
-        strokeDeleteRequests.push(ref.delete());
+      for (const stroke of this.strokesArray) {
+        if (currentBatchSize >= 500) {
+          promises.push(currentBatch.commit());
+          currentBatch = db.batch(); 
+          currentBatchSize = 0; 
+        } 
+        currentBatch.delete(this.strokesRef.doc(stroke.id));
+        currentBatchSize += 1;
       }
-      const backgroundResetRequest = this.roomRef.update({ imageUrl: "" });
 
-      await Promise.all([
-        ...strokeDeleteRequests, 
-        backgroundResetRequest
-      ]);
+      promises.push(currentBatch.commit()); 
+      promises.push(
+        this.roomRef.update({ imageUrl: "" })
+      );
+      await Promise.all(promises);
       this.$root.$emit("show-snackbar", "Successfully reset blackboard.");
     },
     setUserDisconnectHook () {
@@ -137,7 +164,7 @@ export default {
       */
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
-        if (isUserConnected === false) { return; }
+        if (isUserConnected === false) return; 
         // first ensure `onDisconnect` hook is successfully processed 
         const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
         // 1. User leaves, and his/her identity is saved to Firebase
@@ -150,12 +177,11 @@ export default {
         this.roomRef.update({ // it's much faster to update Firestore directly
           participants: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
         });
-        firebaseRef.set({ 
+        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: "", 
           firstName: "" 
-        }); 
-        // Firebase will not detect change if it's set to an empty object
+        });
       });
     }
   }
