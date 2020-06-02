@@ -68,10 +68,13 @@
 </template>
 
 <script>
-/* A functional blackboard that supports saving and recording:
+/** 
+ * A functional blackboard that supports saving and recording:
     - Saving: The user can save the state of the blackboard as a replayable animation. 
     - Recording: By pressing "record", the user can record a voiced video explanation. 
-  This component manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob
+    
+ * Maintains the invariant that the UI <canvas/> contains exactly the strokes from `strokesArray`. 
+ * Manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob.
 */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BlackboardDrawingCanvas from "@/components/BlackboardDrawingCanvas.vue";
