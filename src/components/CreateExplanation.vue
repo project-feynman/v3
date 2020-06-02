@@ -230,8 +230,8 @@ export default {
     /**
      * 
      * @param {*} context a reference to the Vuex store, and is automatically injected when the method is called using `$store.dispatch()`
-     * @param {*} ref the location on Firestore to which the explanation document will be uploaded
-     * @param {*} explID maps to a specific explanation from the cache (TODO: could be retrieved from explRef.id instead)
+     * @param {*} ref the location on Firestore to which the explanation document will be uploaded. 
+     *                Moreover, ref.id maps to the specific explanation from the expl cache. 
      * @returns Uploads the explanation. If the upload fails for any reason,
      * this function will call itself after 5 seconds to re-attempt the upload
      */
@@ -295,68 +295,21 @@ export default {
         try {
           const promises = [];
           const n = strokesArray.length;
+          let currentBatch = db.batch();
+          let currentBatchSize = 0; 
+          const maxBatchSize = 500; 
 
-          if (n > 1500) {
-            const batch1 = db.batch();
-            const batch2 = db.batch(); 
-            const batch3 = db.batch();
-            const batch4 = db.batch();
-            for (let i = 0; i < 500; i++) {
-              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 500; i < 1000; i++) {
-              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 1000; i < 1500; i++) {
-              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 1500; i < n; i++) {
-              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            promises.push(batch1.commit());
-            promises.push(batch2.commit());
-            promises.push(batch3.commit());
-            promises.push(batch4.commit());
+          for (const stroke of this.strokesArray) {
+            if (currentBatchSize >= maxBatchSize) {
+              promises.push(currentBatch.commit());
+              currentBatch = db.batch(); 
+              currentBatchSize = 0; 
+            } 
+            currentBatch.set(databaseRef.doc(getRandomId()), stroke);
+            currentBatchSize += 1;
           }
 
-          else if (n > 1000) {
-            const batch1 = db.batch();
-            const batch2 = db.batch(); 
-            const batch3 = db.batch();
-            for (let i = 0; i < 500; i++) {
-              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 500; i < 1000; i++) {
-              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 1000; i < n; i++) {
-              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            promises.push(batch1.commit());
-            promises.push(batch2.commit());
-            promises.push(batch3.commit());
-          } 
-
-          else if (n > 500) {
-            const batch1 = db.batch();
-            const batch2 = db.batch(); 
-            for (let i = 0; i < 500; i++) {
-              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 500; i < n; i++) {
-              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            promises.push(batch1.commit());
-            promises.push(batch2.commit());
-          } 
-        
-          else {
-            const batch = db.batch();
-            for (let stroke of strokesArray) {
-              batch.set(databaseRef.doc(getRandomId()), stroke); 
-            }
-            promises.push(batch.commit());
-          }
+          promises.push(currentBatch.commit()); 
           await Promise.all(promises);
           resolve();
         } catch (reason) {
