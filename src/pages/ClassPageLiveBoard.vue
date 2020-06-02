@@ -2,14 +2,16 @@
   <div id="room">
     <template v-if="user">
       <LiveBoardAudio :roomId="roomId"/>
-      <Blackboard v-if="hasFetchedStrokesFromDb"
+      <p v-if="!hasFetchedStrokesFromDb">Loading the real-time blackboard...</p>
+      <Blackboard v-else
+        ref="Blackboard"
         isRealtime
         :strokesArray="strokesArray"
         @stroke-drawn="stroke => uploadToDb(stroke)"
         @board-reset="deleteAllStrokesFromDb()"
       >
         <template v-slot:blackboard-toolbar>
-          <ButtonNew icon="mdi-upload" disabled>Save Board</ButtonNew>
+          <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
         </template>
       </Blackboard> 
     </template>
@@ -39,9 +41,11 @@ import "firebase/firestore";
 import Blackboard from "@/components/Blackboard.vue";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import db from "@/database.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { mapState } from "vuex";
+import { getRandomId } from "@/helpers.js";
 
 export default {
   components: { 
@@ -50,7 +54,8 @@ export default {
     LiveBoardAudio,
   },
   mixins: [
-    DatabaseHelpersMixin
+    DatabaseHelpersMixin,
+    ExplUploadHelpers
   ],
   data () {
     return {
@@ -69,12 +74,13 @@ export default {
       "user",
       "mitClass"
     ]),
-    simpleUser () {
+    simplifiedUser () {
       if (!this.user) return; 
       return {
         email: this.user.email,
         uid: this.user.uid,
-        firstName: this.user.firstName
+        firstName: this.user.firstName,
+        lastName: this.user.lastName
       }
     }
   },
@@ -90,10 +96,25 @@ export default {
       this.unsubscribeRoomListener();
     }
     this.roomRef.update({
-      participants: firebase.firestore.FieldValue.arrayRemove(this.simpleUser)
+      participants: firebase.firestore.FieldValue.arrayRemove(this.simplifiedUser)
     });
   },
   methods: {
+    async uploadExplanation () {
+      const { TextEditor, Blackboard } = this.$refs;
+      const title = `Untitled (${new Date().toLocaleTimeString()})`; 
+      const html = "";
+      const explRef = db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`);
+      const audioBlob = null; // TODO
+      const thumbnailBlob = await Blackboard.getThumbnail();
+      this.$_saveExplToCacheThenUpload(
+        thumbnailBlob,
+        audioBlob,
+        html,
+        title,
+        explRef
+      )
+    },
     /*
       TODO:
         1. order by `timestamp` rather than `strokeNumber`
@@ -112,6 +133,7 @@ export default {
             });
           });
         }
+
         if (!this.hasFetchedStrokesFromDb) { 
           this.hasFetchedStrokesFromDb = true;
         }
@@ -166,10 +188,10 @@ export default {
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
 
         // step 1 (step 2 is executed in Cloud Functions)
-        await firebaseRef.onDisconnect().set(this.simpleUser);
+        await firebaseRef.onDisconnect().set(this.simplifiedUser);
         // now join the room 
         this.roomRef.update({ // it's much faster to update Firestore directly
-          participants: firebase.firestore.FieldValue.arrayUnion(this.simpleUser)
+          participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
         });
         firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
