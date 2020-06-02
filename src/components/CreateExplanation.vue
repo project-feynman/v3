@@ -235,7 +235,7 @@ export default {
      * @returns Uploads the explanation. If the upload fails for any reason,
      * this function will call itself after 5 seconds to re-attempt the upload
      */
-    async uploadExplanation (ref) {
+    async uploadExplanation (ref, retryCount = 0) {
       try {
         const explData = this.$store.state.explCache[ref.id];
         const { strokesArray, audioBlob, thumbnailBlob, backgroundImageBlob } = explData; 
@@ -261,28 +261,29 @@ export default {
         }
         await Promise.all(promises);
         // TODO: refactor the below logic to the client
-        const promises2 = [];
         if (this.willCreateNewPost) {
           explDoc.participants = [this.simplifiedUser];
           explDoc.hasReplies = false;
         } else {
-          promises2.push(
+          promises.push(
             this.postDbRef.update({
               participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
               hasReplies: true
             })
           );
         }
-        promises2.push(ref.set(explDoc));
-        await Promise.all(promises2);
+        promises.push(ref.set(explDoc));
+        await Promise.all(promises);
         delete this.$store.state.explCache[ref.id];
         this.$root.$emit("show-snackbar", "Successfully uploaded your explanation.");   
       } catch (error) {
         // TODO: send an error email to ExplainMIT core team
         console.log("error =", error);
         this.$root.$emit("show-snackbar", "Upload failed, trying again...");
-        // set a delay in case the upload failure is immediate and will overwhelm the call stack
-        setTimeout(() => this.uploadExplanation(ref), 5000); 
+        const maxRetryCount = 5;
+        if (retryCount < maxRetryCount) {
+          setTimeout(() => this.uploadExplanation(ref, retryCount + 1), 5000); // set a delay in case the upload failure is immediate and will overwhelm the call stack
+        }
       }
     },
     /**
