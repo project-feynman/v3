@@ -176,7 +176,7 @@ export default {
       this.$_setStyle(this.currentTool.color, this.currentTool.lineWidth);
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) { return; } 
+      if (this.isNotValidTouch(e)) return; 
       if (e.touches[0].touchType === "stylus") { 
         this.touchDisabled = true; 
       }
@@ -188,7 +188,7 @@ export default {
       }
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) { return; } 
+      if (this.isNotValidTouch(e)) return;  
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else { 
@@ -209,7 +209,7 @@ export default {
       }
     },
     mouseMove (e) {
-      if (!this.isHoldingLeftClick) { return; } 
+      if (!this.isHoldingLeftClick) return; 
       if (this.isStrokeEraser) { 
         this.eraseStrokesWithinRadius(e); 
       } else {
