@@ -16,7 +16,8 @@
         <template v-slot:database-listener="{ 
           drawStrokeOnCanvas, 
           resetBoard 
-        }">
+        }"
+        >
           <RenderlessListenToBlackboard
             :blackboardId="roomId"
             @initial-strokes-fetched="(initialStrokes) => renderOnCanvas(initialStrokes, drawStrokeOnCanvas)"
@@ -109,7 +110,7 @@ export default {
     },
     renderIfNotByMe (newStroke, drawStrokeOnCanvas) {
       // TODO: don't duplicate the drawings
-      const localStrokes = this.$refs.Blackboard.getStrokesArray();
+      // const localStrokes = this.$refs.Blackboard.getStrokesArray();
       drawStrokeOnCanvas(newStroke, false); // not an instant stroke
     },
     async deleteAllStrokesFromDb () {
