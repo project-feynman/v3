@@ -74,6 +74,7 @@ import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { RecordState } from "@/CONSTANTS.js";
+import { mapState } from "vuex";
 
 export default {
   props: {
@@ -81,7 +82,10 @@ export default {
       type: Array,
       required: true
     },
-    isRealtime: Boolean
+    isRealtime: {
+      type: Boolean,
+      required: true
+    }
   },
   components: { 
     BlackboardToolBar,
@@ -98,9 +102,9 @@ export default {
     }
   },
   computed: {
-    user () { 
-      return this.$store.state.user; 
-    }
+    ...mapState([
+      "user"
+    ])
   },
   methods: {
     async startRecording () {
