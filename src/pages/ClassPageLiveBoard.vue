@@ -11,6 +11,7 @@
         @board-reset="deleteAllStrokesFromDb()"
       >
         <template v-slot:blackboard-toolbar>
+          <ButtonNew @click="toggleHelpSignal()" icon="mdi-account-alert">Signal For Help</ButtonNew> 
           <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
         </template>
       </Blackboard> 
@@ -87,7 +88,8 @@ export default {
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
     this.strokesRef = this.roomRef.collection("strokes");
-    this.room = await this.$_getDoc(this.roomRef);
+    // this.room = await this.$_getDoc(this.roomRef);
+    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
     this.setUserDisconnectHook();
     this.keepSyncingBoardWithDb();
   },
@@ -100,6 +102,11 @@ export default {
     });
   },
   methods: {
+    async toggleHelpSignal () {
+      await this.roomRef.update({
+        status: this.room.status === "Needs help" ? "" : "Needs help"
+      }); 
+    },
     async uploadExplanation () {
       const { TextEditor, Blackboard } = this.$refs;
       const title = `Untitled (${new Date().toLocaleTimeString()})`; 
@@ -113,7 +120,7 @@ export default {
         html,
         title,
         explRef
-      )
+      );
     },
     /*
       TODO:

@@ -3,7 +3,7 @@
   <v-card>
     <v-navigation-drawer 
       :value="value" 
-      @input="(newVal) => $emit('input', newVal)" 
+      @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
       width="400"
@@ -77,6 +77,7 @@
                   <v-list-item-title>
                     Table {{ i }}
                     <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
+                    <h2 v-if="blackboard.status">{{ blackboard.status }}</h2>
                   </v-list-item-title>
                   <div class="active-blackboard-users pl-4 pt-2">
                     <template v-for="(participant, i) in blackboard.participants">
@@ -131,7 +132,7 @@ export default {
       blackboards: [],
       snapshotListeners: [],
       isMicOn: false,
-      activeTab: "forum"
+      activeTab: this.$route.params.room_id ? 1 : 0
     }
   },
   computed: { 
