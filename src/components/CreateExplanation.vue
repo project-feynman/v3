@@ -4,7 +4,7 @@
       <!-- Text editor -->
       <v-col cols="12" md="6" class="pa-0">
         <v-text-field v-if="titleRequired" 
-          placeholder="Type the title here."
+          placeholder="Title"
           v-model="postTitle"
           color="accent"
           hide-details
