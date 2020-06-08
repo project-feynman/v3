@@ -68,6 +68,7 @@ import db from "@/database.js";
 import { navbarHeight } from "@/CONSTANTS.js";
 import firebase from "firebase/app";
 import "firebase/functions";
+import { mapState } from "vuex"; 
 
 export default {
   props: {
@@ -86,12 +87,10 @@ export default {
     }
   },
   computed: {
-    mitClass () { 
-      return this.$store.state.mitClass; 
-    },
-    user () {
-      return this.$store.state.user;
-    }
+    ...mapState([
+      "mitClass",
+      "user"
+    ])
   },
   created () {
     const { class_id } = this.$route.params; 
