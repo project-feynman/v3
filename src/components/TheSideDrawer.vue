@@ -6,7 +6,7 @@
       @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
-      width="400"
+      width="350"
       class="the-side-drawer"
     >
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
@@ -19,7 +19,7 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum">Not Realtime</v-tab>
+        <v-tab key="Forum">Async</v-tab>
         <!-- Require log-in to use real-time boards -->
         <v-tab :disabled="!user" key="Blackboard">Realtime</v-tab>
       </v-tabs>
@@ -63,7 +63,7 @@
               class="blackboard-item"
               active-class="active-blackboard"
             >
-              CENTER TABLE (49 active)
+              CENTER TABLE ({{ centerTableParticipants.length }} active)
             </v-list-item>
             <template v-for="(blackboard, i) in blackboards">
               <v-list-item
@@ -132,7 +132,8 @@ export default {
       blackboards: [],
       snapshotListeners: [],
       isMicOn: false,
-      activeTab: this.$route.params.room_id ? 1 : 0
+      activeTab: this.$route.params.room_id ? 1 : 0,
+      centerTableParticipants: []
     }
   },
   computed: { 
@@ -147,10 +148,15 @@ export default {
     const postsRef = db.collection(`classes/${this.classId}/posts`);
     const postsQuery = postsRef.orderBy("date", "desc").limit(100);
     const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
+    const participantsRef = db.collection(`classes/${this.classId}/participants`);
 
-    this.$_listenToCollection(blackboardsRef, this, "blackboards").then((snapshotListener) => {
+    this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
+    this.$_listenToCollection(participantsRef, this, "centerTableParticipants").then(snapshotListener => {
+      this.snapshotListeners.push(snapshotListener);
+    });
+
     // this.$_listenToCollection(postsQuery, this, "posts").then((snapshotListener) => {
     //   this.snapshotListeners.push(snapshotListener);
     // });
