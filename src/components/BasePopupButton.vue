@@ -38,7 +38,7 @@
             Cancel
           </v-btn>
           <slot name="popup-action-buttons">
-            <v-btn v-if="actionName" @click="doAction()" color="secondary" text>
+            <v-btn v-if="actionName" @click="doAction()" color="secondary" text :id='actionName'>
               {{ actionName }}
             </v-btn>
           </slot>

@@ -19,9 +19,9 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum">Q&A Forum</v-tab>
+        <v-tab key="Forum" id="forum-tab">Q&A Forum</v-tab>
         <!-- Require log-in to use real-time boards -->
-        <v-tab :disabled="!user" key="Blackboard">Realtime Boards</v-tab>
+        <v-tab :disabled="!user" key="Blackboard" id="blackboard-tab">Realtime Boards</v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
