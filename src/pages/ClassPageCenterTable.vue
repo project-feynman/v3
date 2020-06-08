@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div>
     <ButtonNew class="ml-5 pl-5" @click="moveStudentsToRooms()" icon="mdi-help">
       Assign students to groups of 3
     </ButtonNew>
@@ -11,7 +11,7 @@
     <p>class document: {{ classDoc }}</p>
     <p>class participants: {{ participants }}</p>
     <RealtimeBlackboard :strokesRef="strokesRef"/>
-  </v-container>
+  </div>
 </template>
 
 <script>
@@ -152,6 +152,7 @@ export default {
       await Promise.all(promises); 
       shuffle(connectedStudents); 
       shuffle(tableAssignments);
+
       // `tableAssignments` has the structure of: [{ roomID: "123", "assignees": ["345", "abc"] }]
       let i = 0; 
       const groupSize = 3; 
