@@ -19,9 +19,9 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum">Q&A Forum</v-tab>
+        <v-tab key="Forum">Fake Piazza</v-tab>
         <!-- Require log-in to use real-time boards -->
-        <v-tab :disabled="!user" key="Blackboard">Realtime Boards</v-tab>
+        <v-tab :disabled="!user" key="Blackboard">Fake Zoom</v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
@@ -45,18 +45,26 @@
         </v-tab-item>
         <!-- Can't use real-time blackboards unless user is logged in -->
         <v-tab-item v-if="user" key="Blackboard">
-          <v-btn v-if="blackboards"
+          <!-- <v-btn v-if="blackboards"
             outlined
             large
             block
-            :disabled="blackboards.length > 5" 
+            :disabled="blackboards.length > 20" 
             @click="createBlackboard()"
             color="secondary"
           >
             <v-icon class="pr-2">mdi-plus</v-icon>
             CREATE BLACKBOARD
-          </v-btn>
+          </v-btn> -->
           <v-list class="pt-0">
+            <v-list-item 
+              :to="(`/class/${classId}/room/center-table`)"
+              color="accent"
+              class="blackboard-item"
+              active-class="active-blackboard"
+            >
+              CENTER TABLE (49 active)
+            </v-list-item>
             <template v-for="(blackboard, i) in blackboards">
               <v-list-item
                 :to="(`/class/${classId}/room/${blackboard.id}`)"
@@ -67,7 +75,7 @@
               >
                 <v-list-item-content v-if="blackboard.participants">
                   <v-list-item-title>
-                    Blackboard {{ i }}
+                    Table {{ i }}
                     <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
                   </v-list-item-title>
                   <div class="active-blackboard-users pl-4 pt-2">
