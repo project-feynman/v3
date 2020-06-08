@@ -6,6 +6,7 @@
     <p>
       This is where the instructor can broadcast his blackboard to many students at once, ideal for lectures. 
       The instructor can press a button to evenly divide students into random groups in real-time blackboard rooms. 
+      Furthermore, all explanations made here can be efficiently saved (both visual and audio). 
     </p>
     <p>class document: {{ classDoc }}</p>
     <p>class participants: {{ participants }}</p>
@@ -14,6 +15,14 @@
 </template>
 
 <script>
+/**
+ * The main table in our virtual TEAL classroom, where the instructor broadcasts material to many students
+ * 
+ * Correctness argument for why participants is correct (TODO: implement the following): 
+ *   If the user leaves by going to a different page, the `destroy()` hook will call, which is handled. 
+ *   If the user leaves by disconnecting, the firebase `disconnect hook` will clean up the user document
+ */
+
 import db from "@/database.js";
 import { mapState } from "vuex"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
@@ -80,41 +89,37 @@ export default {
     //   listen to the class doc for new group assignments
     registerUserAndListenForRoomAssignments () {
       if (this.isStaff) return; 
-      else {
-        // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
-        this.classRef.collection("participants").doc(this.user.uid).set({
-          uid: this.user.uid,
-          email: this.user.email,
-          // firstName: this.user.firstName,
-          // lastName: this.user.lastName,
-        }); 
-        let onlyJustJoined = true; 
-        this.removeClassDocListener = this.classRef.onSnapshot(doc => {
-          /* roomAssignment := [{
-            roomID: ""
-            assignees: set([])
-          }] */
-          for (const roomAssignment of doc.data().tableAssignments) {
-            if (roomAssignment.assignees.includes(this.user.uid)) {
-              if (onlyJustJoined) {
-                onlyJustJoined = false; 
-                return; 
-              } else {
-                this.removeClassDocListener(); 
-                this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
-                this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)")
-              }
+      // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
+      this.classRef.collection("participants").doc(this.user.uid).set({
+        uid: this.user.uid,
+        email: this.user.email,
+        // firstName: this.user.firstName,
+        // lastName: this.user.lastName,
+      }); 
+      let onlyJustJoined = true; 
+      this.removeClassDocListener = this.classRef.onSnapshot(doc => {
+        /* roomAssignment := [{
+          roomID: ""
+          assignees: set([])
+        }] */
+        for (const roomAssignment of doc.data().tableAssignments) {
+          if (roomAssignment.assignees.includes(this.user.uid)) {
+            if (onlyJustJoined) {
+              onlyJustJoined = false; 
+              return; 
+            } else {
+              this.removeClassDocListener(); 
+              this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
+              this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)")
             }
           }
-        });
-      }
+        }
+      });
     },
     async moveStudentsToRooms () {
-      // get the array of participants who are currently connected 
-      const connectedStudents = await this.$_getCollection(this.classRef.collection("participants"));
       /**
        * Shuffles array in place. ES6 version
-       * @param {Array} a items An array containing the items.
+       * @param {Array} a array containing items.
        * @see https://stackoverflow.com/a/6274381
        */
       function shuffle(a) {
@@ -124,32 +129,42 @@ export default {
         }
         return a;
       }
-      shuffle(connectedStudents); 
-      // STEP 3: create the room assignment 
-      const groupSize = 4; 
+      const promises = []; 
+      const connectedStudents = []; 
       const tableAssignments = []; 
-      const tealTables = await this.$_getCollection(this.classRef.collection("blackboards")); 
-      let i = 0; 
-      for (const table of tealTables) {
-        tableAssignments.push({
-          roomID: table.id,
-          assignees: []
-        }); 
-      }
+      promises.push(
+        this.$_getCollection(this.classRef.collection("participants")).then(participants => {
+          connectedStudents.push(...participants);
+        })
+      ); 
+      promises.push(
+        this.$_getCollection(this.classRef.collection("blackboards")).then(tealTables => {
+          const groupSize = 4; 
+          let i = 0; 
+          for (const table of tealTables) {
+            tableAssignments.push({
+              roomID: table.id,
+              assignees: []
+            }); 
+          }
+        })
+      );
+      await Promise.all(promises); 
+      shuffle(connectedStudents); 
       shuffle(tableAssignments);
       // `tableAssignments` has the structure of: [{ roomID: "123", "assignees": ["345", "abc"] }]
+      let i = 0; 
+      const groupSize = 3; 
       for (const student of connectedStudents) {
         if (tableAssignments[i].assignees.length > groupSize) {
           i += 1; 
         }
         tableAssignments[i].assignees.push(student.uid); 
       }
-
-      // STEP 4: update the class doc to notify connected users to be redirected
+      // update the class doc, so each connected user will detect the change and be redirected.
       await this.classRef.update({
         tableAssignments
       });
-
       // now assume that all the connected users will be automatically migrated to rooms, so participants should now be empty
       const batch = db.batch(); 
       for (const participant of this.participants) {
