@@ -1,16 +1,10 @@
 <template>
   <div>
-    <slot name="database-listener"
-      :drawStrokeOnCanvas="drawStrokeOnCanvas"
-      :wipeBoard="wipeBoard"
-      :resetBoard="resetBoard"
-    >
-
-    </slot>
-    <BlackboardDrawingCanvas 
+    <BlackboardCoreDrawing
+      :strokesArray="strokesArray"
+      @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
-      @stroke-drawn="(stroke) => $emit('stroke-drawn', stroke)"
       @board-reset="$emit('board-reset')"
       ref="BlackboardDrawingCanvas"
     >
@@ -24,11 +18,12 @@
         touchDisabled
       }"
       >
+        <!-- TODO: refactor resetBoard() -->
         <BlackboardToolBar
           :currentTool="currentTool.type"
           :isFullScreen="isFullScreen"
-          @tool-select="(newTool) => changeTool(newTool)"
-          @image-select="(imageFile) => displayImageFile(imageFile)"
+          @tool-select="newTool => changeTool(newTool)"
+          @image-select="imageFile => displayImageFile(imageFile)"
           @wipe-board="resetBoard()"
           @toggle-fullScreen="toggleFullScreen()"
         >
@@ -56,36 +51,47 @@
           </ButtonNew>
         </BlackboardToolBar>
       </template>
-    </BlackboardDrawingCanvas>
+    </BlackboardCoreDrawing>
 
     <BlackboardAudioRecorder
-      @audio-recorded="(audioObj) => handleNewRecording(audioObj)"
+      @audio-recorded="audioObj => handleNewRecording(audioObj)"
       ref="AudioRecorder"
     />
   </div>
 </template>
 
 <script>
-/* A functional blackboard that supports saving and recording:
+/** 
+ * A functional blackboard that supports saving and recording:
     - Saving: The user can save the state of the blackboard as a replayable animation. 
     - Recording: By pressing "record", the user can record a voiced video explanation. 
-  This component manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob
+
+ * Maintains the invariant that the UI <canvas/> contains exactly the strokes from `strokesArray`. 
+ * Manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob.
 */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
-import BlackboardDrawingCanvas from "@/components/BlackboardDrawingCanvas.vue";
+import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { RecordState } from "@/CONSTANTS.js";
+import { mapState } from "vuex";
 
 export default {
   props: {
-    isRealtime: Boolean
+    strokesArray: {
+      type: Array,
+      required: true
+    },
+    isRealtime: {
+      type: Boolean,
+      required: true
+    }
   },
   components: { 
     BlackboardToolBar,
     BlackboardAudioRecorder, 
-    BlackboardDrawingCanvas,
-    ButtonNew,
+    BlackboardCoreDrawing,
+    ButtonNew
   },
   data () {
     return {
@@ -96,9 +102,9 @@ export default {
     }
   },
   computed: {
-    user () { 
-      return this.$store.state.user; 
-    }
+    ...mapState([
+      "user"
+    ])
   },
   methods: {
     async startRecording () {
@@ -119,7 +125,7 @@ export default {
       this.$emit("record-end", this.getBlackboardData);
     },
     async getBlackboardData () {
-      return new Promise(async (resolve) => {
+      return new Promise(async resolve => {
         const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
         const thumbnailBlob = await BlackboardDrawingCanvas.getThumbnail();
         resolve({
@@ -131,7 +137,7 @@ export default {
       });
     },
     getStrokesArray () {
-      return this.$refs.BlackboardDrawingCanvas.strokesArray;
+      return [...this.strokesArray]; // use a defensive copy to avoid rep exposure / client mutating the array
     },
     getImageBlob () {
       return this.$refs.BlackboardDrawingCanvas.imageBlob;
@@ -144,23 +150,6 @@ export default {
       const { BlackboardDrawingCanvas } = this.$refs;
       BlackboardDrawingCanvas.convertAllStrokesToBeInitialStrokes();
       this.currentState = RecordState.PRE_RECORD;
-    },
-    drawStrokeOnCanvas (stroke, drawInstantly = true) {
-      // TODO: add timestamp so online recording also works
-      const { BlackboardDrawingCanvas } = this.$refs;
-      BlackboardDrawingCanvas.appendToStrokesArray(stroke);
-      if (drawInstantly) {
-        BlackboardDrawingCanvas.$_drawStroke(stroke); 
-      } else {
-        const { $_getPointDuration } = BlackboardDrawingCanvas;
-        BlackboardDrawingCanvas.$_drawStroke(stroke, $_getPointDuration(stroke))
-      }
-    },
-    resetBoard () {
-      this.$refs.BlackboardDrawingCanvas.resetBoard();
-    },
-    wipeBoard () {
-      this.$refs.BlackboardDrawingCanvas.wipeBoard();
     },
     toggleTouchDrawing () {
       this.$refs.BlackboardDrawingCanvas.touchDisabled = !this.$refs.BlackboardDrawingCanvas.touchDisabled;

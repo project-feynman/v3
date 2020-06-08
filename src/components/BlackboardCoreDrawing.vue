@@ -13,12 +13,12 @@
     </slot>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
       <canvas ref="FrontCanvas" class="front-canvas" 
-        @touchstart="(e) => touchStart(e)"
-        @touchmove="(e) => touchMove(e)"
-        @touchend="(e) => touchEnd(e)"
-        @mousedown="(e) => mouseDown(e)"
-        @mousemove="(e) => mouseMove(e)"
-        @mouseup="(e) => mouseUp(e)"
+        @touchstart="e => touchStart(e)"
+        @touchmove="e => touchMove(e)"
+        @touchend="e => touchEnd(e)"
+        @mousedown="e => mouseDown(e)"
+        @mousemove="e => mouseMove(e)"
+        @mouseup="e => mouseUp(e)"
       ></canvas>
       <canvas ref="BackCanvas" class="back-canvas"></canvas>
     </div>
@@ -26,7 +26,26 @@
 </template>
 
 <script>
-/* A HTML canvas that supports drawing with stylus/touch/mouse. */
+/**
+ * A HTML canvas that supports drawing with stylus/touch/mouse. 
+ * Maintains the invariant that the UI exactly reflects the strokesArray (see proof):
+ * 
+ * strokesArray => UI:
+ *     case 1: a new stroke is pushed to `strokesArray`
+ *         The watcher will draw it onto <canvas/> * and call `localStrokesArray.push(newStroke)`. 
+ * 
+ *     case 2: `strokesArray becomes empty
+ *         The watcher wipes the <canvas/> and calls `localStrokesArray = []`.
+ * 
+ *     Note that mutating / deleting existing strokes are both disallowed (which will be enforced by an ADT later).
+ * 
+ * UI => strokesArray:
+ *     No matter how the user draws, `saveStrokeThenReset()` is called:
+ *         1. $emit("stroke-drawn", newStroke) // so the client's `strokesArray` will be updated via v-model.
+ *         2. localStrokesArray.push(newStroke) // so when the above change propagates back down, the strokesArray watcher ignores it. 
+ * 
+ * Therefore, strokesArray <=> UI. 
+ */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import ButtonNew from "@/components/ButtonNew.vue";
@@ -35,6 +54,10 @@ import { isIosSafari } from "@/helpers.js";
 
 export default {
   props: {
+    strokesArray: {
+      type: Array,
+      required: true
+    },
     isRealtime: Boolean,
     currentTime: {
       type: Number,
@@ -46,7 +69,7 @@ export default {
   ],
   components: { 
     BlackboardToolBar, 
-    ButtonNew,
+    ButtonNew
   },
   data () {
     return {
@@ -60,8 +83,8 @@ export default {
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
-      touchDisabled: isIosSafari(), // assume iPad users use Safari 
-      strokesArray: [],
+      touchDisabled: true, // isIosSafari() is broken
+      localStrokesArray: [...this.strokesArray],
       currentStroke: { 
         points: [] 
       },
@@ -79,11 +102,7 @@ export default {
   },
   computed: {
     imageBlobUrl () {
-      if (this.imageBlob) {
-        return URL.createObjectURL(this.imageBlob);
-      } else {
-        return "";
-      }
+      return this.imageBlob ? URL.createObjectURL(this.imageBlob) : "";
     },
     isStrokeEraser () {
       return this.currentTool.type === BlackboardTools.STROKE_ERASER;
@@ -95,41 +114,66 @@ export default {
       return this.currentTool.type === BlackboardTools.PEN;
     }
   },
+  // strokesArray => UI 
+  watch: {
+    strokesArray () {
+      const n = this.strokesArray.length; 
+      if (n === 0) {
+        this.wipeBoard(); 
+        this.localStrokesArray = [];
+      } else if (n - this.localStrokesArray.length === 1) { 
+        const newStroke = this.strokesArray[n-1];
+        this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke));
+        this.localStrokesArray.push(newStroke);
+      } else if (n === this.localStrokesArray.length) {
+        return; 
+      } else {
+        throw new Error("Rep invariant is broken for BlackboardCoreDrawing.vue");
+      }
+    }
+  },
   mounted () {
-    this.canvas = this.$refs.FrontCanvas;
-    this.ctx = this.canvas.getContext("2d");
-    this.bgCanvas = this.$refs.BackCanvas;
-    this.bgCtx = this.bgCanvas.getContext("2d");
-    this.resizeBlackboard();
+    this.initializeCanvas();
+    document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
     window.addEventListener("resize", this.resizeBlackboard, false); 
-    document.fonts.ready.then(() => this.createCustomCusor()); // since cursor uses material icons font, load it after fonts are ready
   },
   destroyed () {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
-    appendToStrokesArray (stroke) {
-      this.strokesArray.push({
-        startTime: this.currentTime,
-        endTime: this.currentTime, // TODO: of course this is not correct
-        ...stroke
-      });
+    // UI => strokesArray
+    saveStrokeThenReset (e) {
+      e.preventDefault()
+      if (this.currentStroke.points.length === 0) return;  // user is touching the screen despite that touch is disabled
+      this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
+      this.localStrokesArray.push(this.currentStroke);
+      this.$emit("stroke-drawn", this.currentStroke);
+      // reset 
+      this.currentStroke = { 
+        points: [] 
+      };
+      this.prevPoint = { 
+        x: -1, 
+        y: -1 
+      };
     },
-    convertAllStrokesToBeInitialStrokes () {
-      for (const stroke of this.strokesArray) {
-        [stroke.startTime, stroke.endTime] = [0, 0];
-      }
+    initializeCanvas () {
+      this.canvas = this.$refs.FrontCanvas;
+      this.bgCanvas = this.$refs.BackCanvas;
+      this.ctx = this.canvas.getContext("2d");
+      this.bgCtx = this.bgCanvas.getContext("2d");
+      this.resizeBlackboard();
+      this.$_drawStrokesInstantly();
     },
+    // convertAllStrokesToBeInitialStrokes () {
+    //   for (const stroke of this.strokesArray) {
+    //     [stroke.startTime, stroke.endTime] = [0, 0];
+    //   }
+    // },
     changeTool (tool) {
       this.currentTool = tool;
       this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) ? // isStrokeEraser now erases in the back like a normal eraser
         "destination-out" : "source-over";
-      // it showing up is annoying
-      // if (this.isStrokeEraser) {
-      //   this.$root.$emit("show-snackbar", 
-      //     "If the stroke eraser doesn't seem to detect properly, try tracing it slowly along the stroke you want to erase."
-      //   );
-      // }
       this.createCustomCusor();
     },
     async resetBoard () {
@@ -142,7 +186,7 @@ export default {
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
-      this.strokesArray = [];
+      this.localStrokesArray = [];
       this.prevPoint = { 
         x: -1, 
         y: -1 
@@ -185,11 +229,8 @@ export default {
     },
     touchMove (e) {
       if (this.isNotValidTouch(e)) return;  
-      if (this.isStrokeEraser) { 
-        this.eraseStrokesWithinRadius(e); 
-      } else { 
-        this.drawToPointAndSave(e); 
-      }
+      if (this.isStrokeEraser) this.eraseStrokesWithinRadius(e); 
+      else this.drawToPointAndSave(e);  
     },
     touchEnd (e) { 
       this.saveStrokeThenReset(e); 
@@ -217,21 +258,6 @@ export default {
       this.isHoldingLeftClick = false;
       this.saveStrokeThenReset(e);
     },
-    saveStrokeThenReset (e) {
-      e.preventDefault()
-      if (this.currentStroke.points.length === 0) { return; }  // user is touching the screen despite that touch is disabled
-      this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
-      this.strokesArray.push(this.currentStroke);
-      this.$emit("stroke-drawn", this.currentStroke);
-      // reset 
-      this.currentStroke = { 
-        points: [] 
-      };
-      this.prevPoint = { 
-        x: -1, 
-        y: -1 
-      };
-    },
     drawToPointAndSave (e, isMouse) {
       e.preventDefault();
       if (isMouse) { 
@@ -240,7 +266,7 @@ export default {
           y: e.offsetY 
         }; 
       } else { 
-        this.getTouchPos(e); 
+        this.getTouchPos(e); // mutates this.currPoint
       }
       this.convertAndSavePoint(this.currPoint.x, this.currPoint.y);
       this.drawToPoint(this.currPoint);
@@ -266,17 +292,17 @@ export default {
           y: finger1.pageY - top - window.scrollY
         };
       }
-      const radius = 10;
       for (let i = 0; i < this.strokesArray.length; i++) {
         const stroke = this.strokesArray[i];
         // don't undo eraser strokes
         if (stroke.wasErased || stroke.isErasing) {  
           continue;
         }
-        for (let point of stroke.points) {
+        for (const point of stroke.points) {
           const deltaX = eraserCenter.x - point.unitX * this.canvas.width;
           const deltaY = eraserCenter.y - point.unitY * this.canvas.height;
-          if (radius > Math.sqrt(deltaX**2 + deltaY**2)) {
+          const radius = 10; 
+          if (Math.sqrt(deltaX**2 + deltaY**2) < radius) {
             this.eraseStroke(stroke);
             break; 
           }
@@ -293,9 +319,8 @@ export default {
         lineWidth: stroke.lineWidth + 2,
         points: stroke.points
       };
-
       this.$_drawStroke(antiStroke);
-      this.strokesArray.push(antiStroke);
+      this.localStrokesArray.push(antiStroke);
       this.$emit("stroke-drawn", antiStroke);
     },
     getTouchPos (e) {
@@ -305,14 +330,14 @@ export default {
       this.currPoint.y = finger1.pageY - top - window.scrollY;
     },
     isNotValidTouch (e) {
-      if (e.touches.length !== 1) { return true; } // multiple fingers not allowed
+      if (e.touches.length !== 1) return true; // multiple fingers not allowed
       return this.isFinger(e) && this.touchDisabled;
     },
     isApplePencil (e) {
       return e.touches[0].touchType === "stylus";
     },
     isFinger (e) { // not true: could be Surface pen
-      return e.touches[0].touchType !== "stylus" 
+      return e.touches[0].touchType !== "stylus";
     },
     drawToPoint ({ x, y }) {
       if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
@@ -326,12 +351,14 @@ export default {
       this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
       this.ctx.lineTo(x, y);
     },
-    // this implementation suffers from edge cases: 
-    // if eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
-    // I tried not using a background color, but then the white strokes will be invisible
-    // I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
+    /* 
+      this implementation suffers from edge cases: 
+      if eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
+      I tried not using a background color, but then the white strokes will be invisible
+      I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
+    */
     getThumbnail () {
-      return new Promise(async (resolve) => {
+      return new Promise(async resolve => {
         if (this.imageBlob) { // has a background image
           await this.$_renderBackground(this.imageBlobUrl);
         } else {
@@ -341,8 +368,7 @@ export default {
         this.$_drawStrokesInstantly2();
         // TODO: remove this quickfix to avoid the double drawing thumbnail 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        this.bgCanvas.toBlob((thumbnail) => resolve(thumbnail));
+        this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
     },
     resizeBlackboard () {
