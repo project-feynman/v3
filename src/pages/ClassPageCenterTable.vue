@@ -1,35 +1,40 @@
 <template>
-  <div>
-    <v-btn @click="moveStudentsToRooms()">
-      Assign students to random groups of 3
-    </v-btn>
+  <v-container>
+    <ButtonNew class="ml-5 pl-5" @click="moveStudentsToRooms()" icon="mdi-help">
+      Assign students to groups of 3
+    </ButtonNew>
     <p>
       This is where the instructor can broadcast his blackboard to many students at once, ideal for lectures. 
       The instructor can press a button to evenly divide students into random groups in real-time blackboard rooms. 
     </p>
     <p>class document: {{ classDoc }}</p>
     <p>class participants: {{ participants }}</p>
-    <Blackboard :strokesArray="strokesArray" isRealtime/>
-  </div>
+    <RealtimeBlackboard :strokesRef="strokesRef"/>
+  </v-container>
 </template>
 
 <script>
 import db from "@/database.js";
 import { mapState } from "vuex"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
-import Blackboard from "@/components/Blackboard.vue";
+import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"; 
+import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   mixins: [
     DatabaseHelpersMixin
   ],
   components: {
-    Blackboard
+    RealtimeBlackboard,
+    ButtonNew
   },
   data () {
     return {
       classRef: db.collection("classes").doc(this.$route.params.class_id),
       classDoc: {},
+      strokesRef: db.collection(
+        `classes/${this.$route.params.class_id}/blackboards/${this.$route.params.room_id}/strokes`
+      ),
       removeClassDocListener: null,
       participants: [],
       tableAssignments: [],
@@ -97,7 +102,7 @@ export default {
               } else {
                 this.removeClassDocListener(); 
                 this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
-                this.$root.$emit("show-snackbar", "You're been assigned to a random group. Have fun :)")
+                this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)")
               }
             }
           }

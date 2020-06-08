@@ -19,9 +19,9 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum">Fake Piazza</v-tab>
+        <v-tab key="Forum">Not Realtime</v-tab>
         <!-- Require log-in to use real-time boards -->
-        <v-tab :disabled="!user" key="Blackboard">Fake Zoom</v-tab>
+        <v-tab :disabled="!user" key="Blackboard">Realtime</v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">

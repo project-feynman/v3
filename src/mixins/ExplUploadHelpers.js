@@ -3,11 +3,27 @@ import { getRandomId } from "@/helpers.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import { mapState } from "vuex"; 
 
 export default {
   mixins: [
     DatabaseHelpersMixin
   ],
+  computed: {
+    ...mapState([
+      "user",
+      "mitClass"
+    ]),
+    simplifiedUser () {
+      if (!this.user) return; 
+      return {
+        email: this.user.email,
+        uid: this.user.uid,
+        firstName: this.user.firstName,
+        lastName: this.user.lastName
+      }
+    }
+  },
   methods: {
     /**
      * Save the explanation data into the global Vuex store (so the data doesn't disappear
