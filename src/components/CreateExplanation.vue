@@ -12,11 +12,12 @@
         />
       </v-col>
       <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`"/>
+
       <p class="red--text">{{ messageToUser }}</p>
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
         <template v-if="user">
           <v-btn v-if="!isUploadingPost"
-            @click="submitExplanation()" 
+            @click="uploadExplanation()" 
             :loading="isButtonDisabled" 
             :disabled="isButtonDisabled"
             color="secondary" 
@@ -45,16 +46,18 @@
       </v-progress-linear>
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
-        @record-start="isRecordingVideo = true"
-        @record-end="(getBlackboardData) => showPreview(getBlackboardData)"
+        :strokesArray="strokesArray"
+        @stroke-drawn="stroke => strokesArray.push(stroke)"
         :key="changeKeyToForceReset"
         :isRealtime="false"
+        @record-start="isRecordingVideo = true"
+        @record-end="getBlackboardData => showPreview(getBlackboardData)"
         ref="Blackboard"
       />
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
         <v-row>
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <BasePopupButton v-if="!isUploadingPost"
             actionName="Retry new recording" 
             @action-do="initRetry()"
@@ -85,6 +88,7 @@
 <script>
 import Blackboard from "@/components/Blackboard.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import TextEditor from "@/components/TextEditor.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
@@ -94,6 +98,7 @@ import db from "@/database.js";
 import { RecordState } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js";
 import ButtonNew from "@/components/ButtonNew.vue";
+import { mapState } from "vuex";
 
 export default {
   props: {
@@ -109,7 +114,8 @@ export default {
     newExplanationDbRef: Object
   },
   mixins: [
-    DatabaseHelpersMixin
+    DatabaseHelpersMixin,
+    ExplUploadHelpers
   ],
   components: { 
     Blackboard, 
@@ -119,6 +125,7 @@ export default {
     ButtonNew
   },
   data: () => ({
+    strokesArray: [],
     messageToUser: "",
     uploadProgress: 0,
     isRecordingVideo: false,
@@ -134,9 +141,10 @@ export default {
     postTitle: ""
   }),
   computed: {
-    user () { 
-      return this.$store.state.user; 
-    },
+    ...mapState([
+      "user",
+      "mitClass"
+    ]),
     simplifiedUser () {
       return {
         uid: this.user.uid,
@@ -153,9 +161,6 @@ export default {
         lastName: "anonymous"
       };
     },
-    mitClass () { 
-      return this.$store.state.mitClass; 
-    },
     isButtonDisabled () {
       return this.isUploadingPost || this.isRecordingVideo;
     }
@@ -170,6 +175,7 @@ export default {
       const { BlackboardDrawingCanvas } = Blackboard.$refs; 
       BlackboardDrawingCanvas.resizeBlackboard();
     },
+    // The 2 methods below are used by `NewPost` and `SeePost`
     getBlackboard () {
       return this.$refs.Blackboard;
     },
@@ -189,174 +195,35 @@ export default {
       this.isRecordingVideo = false;
       this.isPreviewing = true;
     },
-    /**
-     * Save the explanation data into the global Vuex store (so the data doesn't disappear
-     * if this component is destroyed), then initiates the upload process.
-     */
-    async submitExplanation () {
+    async uploadExplanation() {
       const { TextEditor, Blackboard } = this.$refs;
       if (this.postTitle.length === 0 && this.titleRequired) {
-        this.postTitle = `Untitled (${new Date().toDateString()})`; 
+        this.postTitle = `Untitled (${new Date().toLocaleTimeString()})`;
       }
-      const explRef = this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId());
-      this.$store.commit("ADD_EXPL_TO_CACHE", {
-        ref: explRef,
-        strokesArray: Blackboard.getStrokesArray(),
-        backgroundImageBlob: Blackboard.getImageBlob(),
-        thumbnailBlob: this.previewVideo.thumbnailBlob ? this.previewVideo.thumbnailBlob : await Blackboard.getThumbnail(),
-        audioBlob: Blackboard.currentState === RecordState.POST_RECORD ? this.previewVideo.audio.blob : null,
-        metadata: {
-          title: this.postTitle,
-          html: TextEditor.html,
-          date: new Date().toISOString(),
-          creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
-          mitClass: this.mitClass,
-          tags: [],
-          duration: Blackboard.currentTime,
-          hasStrokes: Blackboard.getStrokesArray().length > 0
-        }
-      });
-      this.uploadExplanation(explRef);
-      this.$root.$emit("show-snackbar", "Uploading your explanation...");
-      this.$emit("upload-started"); // let the clients i.e. ClassPageSeePost and ClassPageNewPost re-render the <CreateExplanation/> component
+      const thumbnailBlob = this.previewVideo.thumbnailBlob ? this.previewVideo.thumbnailBlob : await Blackboard.getThumbnail();
+      this.$_saveExplToCacheThenUpload(
+        thumbnailBlob,
+        Blackboard.currentState === RecordState.POST_RECORD ? this.previewVideo.audio.blob : null,
+        TextEditor.html,
+        this.postTitle,
+        this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId())
+      )
     },
-    /**
-     * 
-     * @param {*} context a reference to the Vuex store, and is automatically injected when the method is called using `$store.dispatch()`
-     * @param {*} ref the location on Firestore to which the explanation document will be uploaded
-     * @param {*} explID maps to a specific explanation from the cache (TODO: could be retrieved from explRef.id instead)
-     * @returns Uploads the explanation. If the upload fails for any reason,
-     * this function will call itself after 5 seconds to re-attempt the upload
-     */
-    async uploadExplanation (ref) {
-      try {
-        const explData = this.$store.state.explCache[ref.id];
-        const { strokesArray, audioBlob, thumbnailBlob, backgroundImageBlob } = explData; 
-        const explDoc = { ...explData.metadata }; // we build up each property of `explDoc` then upload it Firestore
-        const promises = []; // upload thumbnail, audio, images and strokes in parallel 
-        if (strokesArray.length > 0 || backgroundImageBlob) { // if the blackboard was used
-          promises.push(
-            this.uploadStrokesToDatabase(strokesArray, ref.collection("strokes"))
-          );
-          promises.push(
-            this.$_saveToStorage(getRandomId(), thumbnailBlob).then(URL => explDoc.thumbnail = URL)
-          );
-          if (audioBlob) {
-            promises.push(
-              this.$_saveToStorage(getRandomId(), audioBlob).then(URL => explDoc.audioUrl = URL)
-            );
-          } 
-          if (backgroundImageBlob) {
-            promises.push(
-              this.$_saveToStorage(getRandomId(), backgroundImageBlob).then(URL => explDoc.imageUrl = URL)
-            );
-          }
-        }
-        await Promise.all(promises);
-        // TODO: refactor the below logic to the client
-        const promises2 = [];
-        if (this.willCreateNewPost) {
-          explDoc.participants = [this.simplifiedUser];
-          explDoc.hasReplies = false;
-        } else {
-          promises2.push(
-            this.postDbRef.update({
-              participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
-              hasReplies: true
-            })
-          );
-        }
-        promises2.push(ref.set(explDoc));
-        await Promise.all(promises2);
-        delete this.$store.state.explCache[ref.id];
-        this.$root.$emit("show-snackbar", "Successfully uploaded your explanation.");   
-      } catch (error) {
-        // TODO: send an error email to ExplainMIT core team
-        console.log("error =", error);
-        this.$root.$emit("show-snackbar", "Upload failed, trying again...");
-        // set a delay in case the upload failure is immediate and will overwhelm the call stack
-        setTimeout(() => this.uploadExplanation(ref), 5000); 
+    toggleFullscreenDoodle () {
+      this.isFullScreenDoodle = !this.isFullScreenDoodle;
+      const { Doodle } = this.$refs;
+      Doodle.handleResize();
+      if (this.isFullScreenDoodle) {
+        document.documentElement.style.overflowY = "hidden";
+      } else {
+        document.documentElement.style.overflowY = "auto";
+        window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
       }
     },
-    /**
-     * @param strokesArray an array of stroke objects
-     * @param databaseRef location on Firestore where the stroke documents will be uploaded
-     * @effect uploads each stroke of the array to databaseRef 
-     */
-    uploadStrokesToDatabase (strokesArray, databaseRef) {
-      return new Promise(async (resolve, reject) => {
-        try {
-          const promises = [];
-          const n = strokesArray.length;
-
-          if (n > 1500) {
-            const batch1 = db.batch();
-            const batch2 = db.batch(); 
-            const batch3 = db.batch();
-            const batch4 = db.batch();
-            for (let i = 0; i < 500; i++) {
-              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 500; i < 1000; i++) {
-              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 1000; i < 1500; i++) {
-              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 1500; i < n; i++) {
-              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            promises.push(batch1.commit());
-            promises.push(batch2.commit());
-            promises.push(batch3.commit());
-            promises.push(batch4.commit());
-          }
-
-          else if (n > 1000) {
-            const batch1 = db.batch();
-            const batch2 = db.batch(); 
-            const batch3 = db.batch();
-            for (let i = 0; i < 500; i++) {
-              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 500; i < 1000; i++) {
-              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 1000; i < n; i++) {
-              batch3.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            promises.push(batch1.commit());
-            promises.push(batch2.commit());
-            promises.push(batch3.commit());
-          } 
-
-          else if (n > 500) {
-            const batch1 = db.batch();
-            const batch2 = db.batch(); 
-            for (let i = 0; i < 500; i++) {
-              batch1.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            for (let i = 500; i < n; i++) {
-              batch2.set(databaseRef.doc(getRandomId()), strokesArray[i]);
-            }
-            promises.push(batch1.commit());
-            promises.push(batch2.commit());
-          } 
-        
-          else {
-            const batch = db.batch();
-            for (let stroke of strokesArray) {
-              batch.set(databaseRef.doc(getRandomId()), stroke); 
-            }
-            promises.push(batch.commit());
-          }
-          await Promise.all(promises);
-          resolve();
-        } catch (reason) {
-          console.log("failed, reason =", reason);
-          reject(reason);
-        }
-      });
+    clickOutsideDoodle (e) {
+      if (e.target.id === "doodle-wrapper" && this.isFullScreenDoodle) {
+        this.toggleFullscreenDoodle()
+      }
     }
   }
 }

@@ -42,7 +42,7 @@ export default {
       }
     },
     $_drawStrokesInstantly () {
-      this.strokesArray.forEach((stroke) => this.$_drawStroke(stroke));
+      this.strokesArray.forEach(stroke => this.$_drawStroke(stroke));
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
       return new Promise(async resolve => {

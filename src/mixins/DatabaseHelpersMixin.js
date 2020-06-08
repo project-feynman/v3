@@ -28,7 +28,7 @@ export default {
         try {
           const results = [];
           const collectionSnapshot = await ref.get();
-          collectionSnapshot.forEach((doc) => {
+          collectionSnapshot.forEach(doc => {
             results.push({ 
               id: doc.id, 
               ref: doc.ref.path, 
@@ -51,7 +51,7 @@ export default {
     async $_listenToDoc (ref, obj, val) {
       return new Promise(async (resolve) => {
         try {
-          const unsubscribeListener = ref.onSnapshot((doc) => { // onSnapshot does NOT return a promise
+          const unsubscribeListener = ref.onSnapshot(doc => { // onSnapshot does NOT return a promise
             if (!doc.exists) {
               obj[val] = undefined;
               throw new Error("Document doesn't exist");
@@ -69,7 +69,7 @@ export default {
       });
     },
     async $_listenToCollection (ref, obj, val) {
-      return new Promise(async resolve => {
+      return new Promise(async (resolve, reject) => {
         try {
           const unsubscribeListener = ref.onSnapshot(querySnapshot => { // onSnapshot does NOT return a promise
             const resultDocs = [];
@@ -85,6 +85,7 @@ export default {
           });
         } catch (error) {
           this.$root.$emit("show-snackbar", error.message);
+          reject(error);
         } 
       });
     },
@@ -103,7 +104,7 @@ export default {
           const uploadTask = ref.put(blob);
           let uploadTimeout = null;
           uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED,
-            (snapshot) => {
+            snapshot => {
               // TODO: refactor
               if (showProgress) {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
@@ -119,7 +120,7 @@ export default {
                 }
               }
             },
-            (error) => { 
+            error => { 
               console.log("Error while uploading: ", error);
             },
             async () => {
@@ -130,7 +131,7 @@ export default {
         } catch (error) {
           console.log("Error initiating the upload =", error);
           this.$root.$emit("snow-snackbar", error.message);
-          throw new Error(error);
+          reject(error);
         }
       });
     },
