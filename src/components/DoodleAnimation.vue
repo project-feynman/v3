@@ -2,7 +2,7 @@
 <div id="fullscreen-wrapper" @click="(e) => $_exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
   <div ref="VideoWrapper" class="video-container">
     <div ref="CanvasWrapper" style="position: relative;">
-      <canvas ref="FrontCanvas" class="front-canvas"></canvas>
+      <canvas ref="FrontCanvas" class="front-canvas" data-qa="doodle-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
     <div class="d-flex animation-controls">

@@ -25,7 +25,7 @@
         </slot>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-btn block text color="accent" @click="$emit('sign-out')" id="sign-out-btn">Sign Out</v-btn>
+          <v-btn block text color="accent" @click="$emit('sign-out')" data-qa="sign-out-btn">Sign Out</v-btn>
         </v-card-actions>
       </v-card>
     </v-menu>

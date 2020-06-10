@@ -22,8 +22,8 @@
         <div style="position: relative;"> 
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0 || isLoading">
-            <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
-            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item">
+            <v-img :src="expl.thumbnail" :aspect-ratio="16/9" data-qa="expl-thumbnail"/>
+            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item" data-qa="play-btn">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
               <v-btn v-else large dark>
                 <v-icon>mdi-play</v-icon>

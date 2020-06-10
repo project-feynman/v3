@@ -18,4 +18,20 @@
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
+
+  on('task', {
+    cutURL( {original, cutStart} ){
+      return new Promise((resolve) => {
+        let ind = original.search(cutStart);
+        resolve(original.slice(0,ind));
+      })
+      
+    },
+    getComponentProperty( {component} ){
+      return new Promise((resolve) => {
+        console.log(component)
+        resolve(component.strokesArray)
+      })
+    }
+  })
 }
