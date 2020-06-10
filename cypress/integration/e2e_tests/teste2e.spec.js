@@ -3,10 +3,12 @@ describe('Logs in and Visits Tabs', () => {
     cy.visit('/')
     cy.contains('h1', 'ExplainMIT')
     cy.wait(2500)
+    // cy.get('#home-page').toMatchImageSnapshot()
   })
   
   it('signs out', () => {
     cy.get('[data-qa="account-btn"]').click()
+    cy.contains('Explain MIT')
     cy.get('[data-qa="sign-out-btn"]').click()
     cy.wait(1000)
   })
@@ -28,31 +30,31 @@ describe('Logs in and Visits Tabs', () => {
     cy.contains("Tutorial")
   })
 
-  it('goes to realtime', () => {
-    cy.get('[data-qa="blackboard-tab"]').click()
-    cy.wait(1000)
-  })
+  // it('goes to realtime', () => {
+  //   cy.get('[data-qa="blackboard-tab"]').click()
+  //   cy.wait(1000)
+  // })
 
-  it("clicks on board 0", () => {
-    cy.contains("Blackboard 0").click()
-    cy.contains("Record Audio")
-    cy.contains("Save Board")
-    cy.contains("Full Screen")
-    cy.url().should('include', '/class/')
-    cy.url().should('include', '/room/')
-    cy.wait(1000)
-  })
+  // it("clicks on board 0", () => {
+  //   cy.contains("Blackboard 0").click()
+  //   cy.contains("Record Audio")
+  //   cy.contains("Save Board")
+  //   cy.contains("Full Screen")
+  //   cy.url().should('include', '/class/')
+  //   cy.url().should('include', '/room/')
+  //   cy.wait(1000)
+  // })
 
-  it("Uses URL to go back to Q&A", () => {
-    cy.url().then((url) => { 
-      cy.task('cutURL', { original: url, cutStart: 'room'})
-      .then( (url) => {
-        cy.visit(url)
-        cy.wait(1000)
-        cy.contains("Tutorial")
-      }) 
-    })
-  })
+  // it("Uses URL to go back to Q&A", () => {
+  //   cy.url().then((url) => { 
+  //     cy.task('cutURL', { original: url, cutStart: 'room'})
+  //     .then( (url) => {
+  //       cy.visit(url)
+  //       cy.wait(1000)
+  //       cy.contains("Tutorial")
+  //     }) 
+  //   })
+  // })
 })
 
 describe("Tests New Post", () => {
@@ -113,11 +115,25 @@ describe("Tests New Post", () => {
     cy.wait(1000)
   })
 
-  it('checks post', () => {
+  it('checks thumbnail snapshot', () => {
+    
+    cy.wait(1000)
+    cy.get("[data-qa='expl-thumbnail']").toMatchImageSnapshot()
+    
+    cy.wait(1000)
+  })
+  
+  it('checks video page and plays video', () => {
     cy.get('[data-qa="create-expl"]')
-    cy.get("[data-qa='expl-thumbnail']")
     cy.get("[data-qa='play-btn']").click()
-    cy.get("[data-qa='doodle-canvas']")
+    cy.wait(1000)
+  })
+
+  it('checks canvas snapshot', () => {
+    cy.get("[data-qa='doodle-canvas']").toMatchImageSnapshot()
+    cy.wait(1000)
+    // cy.get("[data-qa='delete-post-btn']").click()
+    // cy.get("[data-qa='confirm-delete']").click()
   })
     
 })

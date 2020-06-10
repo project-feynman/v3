@@ -15,10 +15,12 @@
 /**
  * @type {Cypress.PluginConfig}
  */
+const { initPlugin } = require('cypress-plugin-snapshots/plugin');
+
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
-
+  
   on('task', {
     cutURL( {original, cutStart} ){
       return new Promise((resolve) => {
@@ -34,4 +36,7 @@ module.exports = (on, config) => {
       })
     }
   })
+
+  initPlugin(on, config);
+  return config;
 }
