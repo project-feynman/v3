@@ -8,7 +8,7 @@ describe('Logs in and Visits Tabs', () => {
   
   it('signs out', () => {
     cy.get('[data-qa="account-btn"]').click()
-    cy.contains('Explain MIT')
+    cy.contains('@')
     cy.get('[data-qa="sign-out-btn"]').click()
     cy.wait(1000)
   })
@@ -30,31 +30,6 @@ describe('Logs in and Visits Tabs', () => {
     cy.contains("Tutorial")
   })
 
-  // it('goes to realtime', () => {
-  //   cy.get('[data-qa="blackboard-tab"]').click()
-  //   cy.wait(1000)
-  // })
-
-  // it("clicks on board 0", () => {
-  //   cy.contains("Blackboard 0").click()
-  //   cy.contains("Record Audio")
-  //   cy.contains("Save Board")
-  //   cy.contains("Full Screen")
-  //   cy.url().should('include', '/class/')
-  //   cy.url().should('include', '/room/')
-  //   cy.wait(1000)
-  // })
-
-  // it("Uses URL to go back to Q&A", () => {
-  //   cy.url().then((url) => { 
-  //     cy.task('cutURL', { original: url, cutStart: 'room'})
-  //     .then( (url) => {
-  //       cy.visit(url)
-  //       cy.wait(1000)
-  //       cy.contains("Tutorial")
-  //     }) 
-  //   })
-  // })
 })
 
 describe("Tests New Post", () => {
@@ -137,3 +112,127 @@ describe("Tests New Post", () => {
   })
     
 })
+
+describe("Realtime Board Test", () => {
+  it('opens side drawer', () => {
+    cy.get( "[data-qa='toggle-drawer']").click()
+  })
+
+  it('moves to RT Board', () => {
+    cy.get('[data-qa="blackboard-tab"]').click()
+    cy.contains("Blackboard 0").click()
+    cy.contains("Record Audio")
+    cy.contains("Save Board")
+    cy.contains("Full Screen")
+    cy.url().should('include', '/class/')
+    cy.url().should('include', '/room/')
+    cy.wait(1000)
+  })
+
+  it('resets board', ()=> {
+    cy.get("[data-qa='wipe-board']").click()
+    cy.get("[data-qa='Reset board']").click()
+    cy.contains('Successfully reset blackboard.')
+    cy.contains('CLOSE').click()
+  })
+
+  it('draws on board', () => {
+    cy.get("[data-qa='#ec1bf7']").click()
+    cy.get("[data-qa='front-canvas']")
+      .trigger('mousedown', {offsetX:250, offsetY:100})
+      .trigger('mousemove', {offsetX:260, offsetY:300})
+      .trigger('mouseup')
+
+    cy.get("[data-qa='orange']").click()
+
+    cy.get("[data-qa='front-canvas']")
+      .trigger('mousedown', {offsetX:260, offsetY:300} )
+      .trigger('mousemove', {offsetX:800, offsetY:100})
+      .trigger('mousemove', {offsetX:800, offsetY:400})
+      .trigger('mouseup')
+
+    cy.get("[data-qa='front-canvas']")
+      .trigger('mousedown', {offsetX:100, offsetY:500} )
+      .trigger('mousemove', {offsetX:800, offsetY:500})
+      .trigger('mouseup')
+
+    cy.wait(1000)
+  })
+
+  it('checks RT snapshot', () => {
+    cy.get("[data-qa='front-canvas']").toMatchImageSnapshot()
+  })
+
+  it('signs out', () => {
+    cy.get('[data-qa="account-btn"]').click()
+    cy.contains('@')
+    cy.get('[data-qa="sign-out-btn"]').click()
+    cy.wait(1000)
+  })
+
+  it('logs in with new user', () => {
+    cy.get('[data-qa="log-in-btn"]').click()
+    cy.get('[data-qa="email"]').type('it@g.com')
+    cy.get('[data-qa="password"]').type('testing')
+    cy.get('[data-qa="Log in"]').click()
+    cy.wait(1000)
+  })
+
+  it('closes snackbar', () => {
+    cy.contains("Welcome to ExplainMIT!")
+    cy.contains("CLOSE").click()
+    cy.wait(1000)
+  })
+
+  it('checks RT snapshot with new user', () => {
+    cy.get("[data-qa='front-canvas']").toMatchImageSnapshot()
+  })
+
+  it('erases line', () => {
+    cy.get("[data-qa='eraser']").click()
+    cy.get("[data-qa='front-canvas']")
+      .trigger('mousedown', {offsetX:800, offsetY:100})
+      .trigger('mousemove', {offsetX:800, offsetY:400})
+      .trigger('mouseup')
+  })
+
+  it('signs out', () => {
+    cy.get('[data-qa="account-btn"]').click()
+    cy.contains('@')
+    cy.get('[data-qa="sign-out-btn"]').click()
+    cy.wait(1000)
+  })
+
+  it('logs in', () => {
+    cy.get('[data-qa="log-in-btn"]').click()
+    cy.get('[data-qa="email"]').type('explainmit@gmail.com')
+    cy.get('[data-qa="password"]').type('explain')
+    cy.get('[data-qa="Log in"]').click()
+    cy.wait(1000)
+  })
+
+  it('closes snackbar', () => {
+    cy.contains("Welcome to ExplainMIT!")
+    cy.contains("CLOSE").click()
+    cy.wait(1000)
+  })
+
+  it('checks RT erase snapshot with explain', () => {
+    cy.get("[data-qa='front-canvas']").toMatchImageSnapshot()
+  })
+
+})
+
+
+
+
+// it("Uses URL to go back to Q&A", () => {
+      //   cy.url().then((url) => { 
+      //     cy.task('cutURL', { original: url, cutStart: 'room'})
+      //     .then( (url) => {
+      //       cy.visit(url)
+      //       cy.wait(1000)
+      //       cy.contains("Tutorial")
+      //     }) 
+      //   })
+      // })
