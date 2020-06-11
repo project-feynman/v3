@@ -100,7 +100,8 @@
 </template>
 
 <script>
-import FileExplorer from "@/components/FileExplorer.vue";
+// import FileExplorer from "@/components/FileExplorer.vue";
+import FileExplorer from "@/components/FileExplorerByDate.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial } from "@/CONSTANTS.js";
 import { displayDate } from "@/helpers.js";
