@@ -13,7 +13,7 @@
           color="secondary"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle">Log In</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</ButtonNew>
           </template>
         </BasePopupButton>
 
@@ -47,7 +47,7 @@
           @settings-changed="(S) => updateSettings(S)"
         >
           <template v-slot:activator="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle">Account</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="account-btn">Account</ButtonNew>
           </template>
           <template v-slot:menu-buttons>
             <v-btn @click="leaveClass()" block text color="accent">

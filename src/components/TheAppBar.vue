@@ -8,7 +8,7 @@
     style="zIndex:9;" 
     :height="navbarHeight"
   >
-    <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'"
+    <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'" data-qa="toggle-drawer"
       @click.stop="$emit('toggle-drawer')"
     />
     <img src="/favicon.ico"
