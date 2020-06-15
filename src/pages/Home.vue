@@ -40,11 +40,11 @@
             <div class="central-title d-flex justify-center align-center mb-4">
               <img src="/logo.png" class="hero-img"/>
               <h1 class="text--primary ml-2">
-                ExplainMIT
+                explain.mit.edu
               </h1>
             </div>
             <h3 class="headline font-weight-light">
-              A place where people can help each other efficiently
+              A memory-efficient, blackboard-centric platform for people to teach and collaborate. 
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
