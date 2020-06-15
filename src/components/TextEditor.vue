@@ -116,6 +116,7 @@ export default {
         // content: defaultHtml,
         onUpdate: ({ getHTML }) => {
           this.html = getHTML();
+          this.$emit("update:html", this.html);
         }
       }),
       content: defaultHtml,

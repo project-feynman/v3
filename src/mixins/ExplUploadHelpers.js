@@ -33,11 +33,10 @@ export default {
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
     async $_saveExplToCacheThenUpload (thumbnailBlob, audioBlob, html, title, explRef) {
-      const { Blackboard } = this.$refs;
       this.$store.commit("ADD_EXPL_TO_CACHE", {
         ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads
         strokesArray: this.strokesArray,
-        backgroundImageBlob: Blackboard.getImageBlob(),
+        backgroundImageBlob: this.blackboard.bgImageBlob,
         thumbnailBlob,
         audioBlob,
         metadata: {
@@ -47,7 +46,7 @@ export default {
           creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
           mitClass: this.mitClass,
           tags: [],
-          duration: Blackboard.currentTime,
+          duration: this.blackboard.currentTime, 
           hasStrokes: this.strokesArray.length > 0
         }
       });
@@ -138,7 +137,6 @@ export default {
             currentBatch.set(databaseRef.doc(getRandomId()), stroke);
             currentBatchSize += 1;
           }
-
           promises.push(currentBatch.commit()); 
           await Promise.all(promises);
           resolve();

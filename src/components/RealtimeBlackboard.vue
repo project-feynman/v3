@@ -1,19 +1,42 @@
 <template>
-  <p v-if="!hasFetchedStrokesFromDb">Loading the real-time blackboard...</p>
-  <Blackboard v-else
-    ref="Blackboard"
-    isRealtime
-    :strokesArray="strokesArray"
-    @stroke-drawn="stroke => uploadToDb(stroke)"
-    @board-reset="deleteAllStrokesFromDb()"
-  >
-    <template v-slot:blackboard-toolbar>
-      <slot name="blackboard-toolbar">
+  <div>
+    <p v-if="!hasFetchedStrokesFromDb">Loading the real-time blackboard...</p>
+    <Blackboard v-else
+      :strokesArray="strokesArray" @stroke-drawn="stroke => uploadToDb(stroke)"
+      :key="incrementKeyToDestroy"
+      isRealtime
+      @mounted="getThumbnailBlob => blackboard.getThumbnailBlob = getThumbnailBlob"
+      @update:currentTime="currentTime => blackboard.currentTime = currentTime"
+      @update:bgImageBlob="blob => blackboard.bgImageBlob = blob"
+      @update:audioBlob="blob => blackboard.audioBlob = blob"
+      @board-reset="deleteAllStrokesFromDb()"
+      @record-end="handleRecordEnd()"
+    >
+      <template v-slot:blackboard-toolbar>
+        <slot name="blackboard-toolbar">
 
-      </slot> 
-      <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
-    </template> 
-  </Blackboard> 
+        </slot> 
+        <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
+      </template> 
+    </Blackboard> 
+     <v-dialog v-model="dialog" max-width="290">
+      <v-card>
+        <v-card-title class="headline">Save your recorded explanation?</v-card-title>
+        <v-card-text>
+          Save your recorded explanation?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn color="green darken-1" text @click="discardAudio()">
+            No, discard it. 
+          </v-btn>
+          <v-btn color="green darken-1" text @click="saveVideo()">
+            Yes, save it as a post. 
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
 <script>
@@ -28,7 +51,7 @@
  * 
  * blackboard => database: 
  *     Whenever the user draws a new stroke, that stroke will be uploaded as a new document to the database. 
- *     Momentarily, there will be divergence between state and UI:
+ *     Momentarily, there will be divergence between state and UI, which is to say that 
  *     the user's `strokesArray` does NOT have the new stroke, even though she was the one who drew the stroke.
  *     However, when the write operation finally resolves, everyone's `strokesArray` will be updated, 
  *     including the original author herself. Note that there will be double drawing, where the first is for feedback,
@@ -59,8 +82,16 @@ export default {
   data () {
     return {
       strokesArray: [],
-      hasFetchedStrokesFromDb: false
-    }
+      hasFetchedStrokesFromDb: false,
+      blackboard: {
+        bgImageBlob: null,
+        audioBlob: null,
+        getThumbnailBlob: null,
+        currentTime: 0
+      },
+      dialog: false,
+      incrementKeyToDestroy: 0
+    };
   },
   computed: {
     ...mapState([
@@ -86,11 +117,12 @@ export default {
           snapshot.docChanges().filter(change => change.type === "added").forEach(change => {
             this.strokesArray.push({
               id: change.doc.id,
-              ...change.doc.data()
+              ...change.doc.data(),
+              startTime: this.blackboard.currentTime,
+              endTime: 1 + this.blackboard.currentTime // make other people's strokes have a period of 1 second
             });
           });
         }
-
         if (!this.hasFetchedStrokesFromDb) { 
           this.hasFetchedStrokesFromDb = true;
         }
@@ -104,19 +136,18 @@ export default {
           ...stroke
         });
       } catch (error) {
-        this.$root.$emit("snow-snackbar", "Failed to upload stroke to database.");
+        this.$root.$emit("show-snackbar", "Failed to upload stroke to database.");
       }
     },
     async uploadExplanation () {
-      const { Blackboard } = this.$refs;
       const title = `Untitled (${new Date().toLocaleTimeString()})`; 
       const html = "";
       const explRef = db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`);
-      const audioBlob = null; // TODO
-      const thumbnailBlob = await Blackboard.getThumbnail();
+      const thumbnailBlob = await this.blackboard.getThumbnailBlob();
+
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
-        audioBlob,
+        this.blackboard.audioBlob,
         html,
         title,
         explRef
@@ -145,6 +176,18 @@ export default {
       // );
       await Promise.all(promises);
       this.$root.$emit("show-snackbar", "Successfully reset blackboard.");
+    },
+    handleRecordEnd () {
+      // ask if the user wants to save/discard the recorded explanation 
+      this.dialog = true; 
+    },
+    saveVideo () {
+      this.dialog = false; 
+      this.uploadExplanation(); 
+    },
+    discardAudio () {
+      this.dialog = false; 
+      this.incrementKeyToDestroy += 1; 
     }
   }
 }
