@@ -25,22 +25,10 @@
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
-          <v-list class="py-0">
-            <!-- Requrie log-in to create new posts -->
-            <v-list-item 
-              :disabled="!user"
-              :to="(`/class/${classId}/posts/new`)" 
-            >
-              <v-list-item-icon>
-                <v-icon>mdi-plus</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title>New Post</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item> 
-          </v-list>
-          <!-- File Explorer -->
-          <FileExplorer/>
+          <v-expansion-panels accordion flat focusable>
+            <FileExplorer title="Notes Archive" type="note"/>
+            <FileExplorer title="Q&A Forum" type="question"/>
+          </v-expansion-panels>
 
         </v-tab-item>
         <!-- Can't use real-time blackboards unless user is logged in -->

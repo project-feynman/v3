@@ -1,6 +1,5 @@
 <template>
-  <v-card class="mx-auto" max-width="500">
-    <v-sheet class="pa-4 secondary lighten-3">
+    <!--<v-sheet class="pa-4 secondary lighten-3">
       <v-text-field
         v-model="search"
         label="Search existing posts..."
@@ -11,9 +10,8 @@
         clearable
         clear-icon="mdi-close-circle-outline"
       ></v-text-field>
-    </v-sheet>
-    <v-card-text>
-      <v-container>
+    </v-sheet>-->
+      <!--<v-container>
         <v-row>
           <v-col>
             Group By
@@ -25,78 +23,127 @@
             ></v-select>
           </v-col>
         </v-row>
-      </v-container>
-      <v-treeview
-        :items="organizedPosts"
-        :search="search"
-        :open="openedFoldersIndices"
-        :load-children="(folder) => fetchRelevantPosts(folder)"
-        open-on-click
-        :key="incrementKeyToDestroy"
-      >
-        <template v-slot:prepend="{ item, open }">
-          <v-icon v-if="item.isFolder">
-            {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-          </v-icon> 
-          <!-- cannot move/edit posts if not logged in -->
-          <v-menu v-else-if="user" bottom right>
+      </v-container>-->
+      
+      <v-expansion-panel :id="type">
+        <v-expansion-panel-header>
+          <v-menu bottom right>
             <template v-slot:activator="{ on }">
-              <v-btn icon v-on="on">
+              <v-btn icon v-on="on" class="expansion-options">
                 <v-icon>mdi-dots-vertical</v-icon>
               </v-btn>
             </template>
 
             <v-list>
-              <v-list-item>
-                <BasePopupButton>
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" color="secondary" text>
-                      MOVE
-                    </v-btn>
-                  </template>
-                  <template v-slot:popup-content="{ closePopup }">
-                    <h1>Select a folder</h1>
-                    <template v-if="mitClass">
-                      <div class="text-center mt-5">
-                        <v-chip v-for="tagName in mitClass.tags" 
-                          @click="movePostToFolder(item, tagName, closePopup)"
-                          :key="tagName" 
-                          color="accent" 
-                          class="ma-2">
-                          {{ tagName }}
-                        </v-chip>
-                      </div>
-                    </template>
-                  </template>
-                </BasePopupButton>
-              </v-list-item>
-              <v-list-item>
-                <BasePopupButton actionName="Rename Post" 
-                  :inputFields="['New Name']"
-                  @action-do="(payload) => renamePost(payload, item)"
-                >
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
-                  </template>
-                </BasePopupButton>
-              </v-list-item>
+              <v-list-item @click="groupBy='date'">Group By Date</v-list-item>
+              <v-list-item @click="groupBy='concept'">Group By Tags</v-list-item>
             </v-list>
           </v-menu>
-        </template>
-        <template v-slot:label="{ item }">
-          <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
-            <v-list-item-content>
-              <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
-              <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item v-else>
-            {{ item.name }}
-          </v-list-item>
-        </template>
-      </v-treeview>
-    </v-card-text>
-  </v-card>
+          <h3 class="expansion-title">{{ title }}</h3>
+          <v-btn
+            :disabled="!user"
+            :to="(`/class/${classId}/posts/new`)" 
+            outlined
+            color="accent"
+          >
+            <v-icon left>mdi-plus</v-icon>New {{ type }}
+          </v-btn>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content class="px-0">
+          <v-treeview
+            :items="organizedPosts"
+            :search="search"
+            :open="openedFoldersIndices"
+            :load-children="(folder) => fetchRelevantPosts(folder)"
+            open-on-click
+            :key="incrementKeyToDestroy"
+          >
+            <template v-slot:prepend="{ item, open }">
+              <v-icon v-if="item.isFolder">
+                {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+              </v-icon> 
+              <!-- cannot move/edit posts if not logged in -->
+              <v-menu v-else-if="user" bottom right>
+                <template v-slot:activator="{ on }">
+                  <v-btn icon v-on="on">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
+                </template>
+
+                <v-list>
+                  <v-list-item>
+                    <BasePopupButton>
+                      <template v-slot:activator-button="{ on }">
+                        <v-btn v-on="on" color="secondary" text>
+                          MOVE
+                        </v-btn>
+                      </template>
+                      <template v-slot:popup-content="{ closePopup }">
+                        <h1>Select a folder</h1>
+                        <template v-if="mitClass">
+                          <div class="text-center mt-5">
+                            <v-chip v-for="tagName in mitClass.tags" 
+                              @click="movePostToFolder(item, tagName, closePopup)"
+                              :key="tagName" 
+                              color="accent" 
+                              class="ma-2">
+                              {{ tagName }}
+                            </v-chip>
+                          </div>
+                        </template>
+                      </template>
+                    </BasePopupButton>
+                  </v-list-item>
+                  <v-list-item>
+                    <BasePopupButton actionName="Rename Post" 
+                      :inputFields="['New Name']"
+                      @action-do="(payload) => renamePost(payload, item)"
+                    >
+                      <template v-slot:activator-button="{ on }">
+                        <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
+                      </template>
+                    </BasePopupButton>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </template>
+            <template v-slot:label="{ item }">
+              <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
+                <v-list-item-content>
+                  <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
+                  <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item v-else>
+                {{ item.name }}
+              </v-list-item>
+            </template>
+            <template v-slot:append="{ item }">
+              <v-menu v-if="user && item.isFolder" bottom right>
+                <template v-slot:activator="{ on }">
+                  <v-btn icon v-on="on">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
+                </template>
+
+                <v-list>
+                  <v-list-item>
+                    <BasePopupButton actionName="Rename Folder" 
+                      :inputFields="['New Name']"
+                      @action-do="(payload) => renameTag(payload, item)"
+                    >
+                      <template v-slot:activator-button="{ on }">
+                        <v-btn v-on="on" color="accent" text>Rename</v-btn>
+                      </template>
+                    </BasePopupButton>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </template>
+          </v-treeview>
+          
+        </v-expansion-panel-content>
+      </v-expansion-panel>
 </template>
 
 <script>
@@ -111,22 +158,39 @@ import { mapState } from "vuex";
 import moment from "moment";
 
 export default {
+  props: {
+    title: String,
+    type: String,
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
   components: {
     BasePopupButton
   },
-  computed: mapState([
-    "user",
-    "mitClass"
-  ]),
+  computed: {
+    classId () { 
+      return this.$route.params.class_id; 
+    },
+    groupBy: {
+      get: function () {
+        return (this.type==='note') ? 'concept' : 'date';
+      },
+      set: function (newVal) {
+        if (newVal==="concept") this.groupByConcept();
+        else this.groupByDate();
+      }
+    },
+    ...mapState([
+      "user",
+      "mitClass"
+    ])
+  },
   data: () => ({
     dateList: [],
     organizedPosts: [],
     conceptGroups: [],
     dateGroups: [],
-    groupBy: 'Concept',
     search: null,
     incrementKeyToDestroy: 0,
     openedFoldersIndices: [],
@@ -135,15 +199,12 @@ export default {
   watch: {
     mitClass: {
       immediate: true,
-      handler : function () {this.groupByConcept()}
-    },
-    groupBy: function(newValue) {
-      if (newValue==="Concept") {
-        this.groupByConcept();
-      } else {
-        this.groupByDate();
+      deep: true,
+      handler : async function () {
+        // this.tagsArrayToObject();
+        if (this.groupBy==="concept") this.groupByConcept();
+        else this.groupByDate();
       }
-
     }
   },
   beforeDestroy () {
@@ -159,24 +220,38 @@ export default {
       });
       this.$root.$emit("show-snackbar", "Successfully renamed the post.");
     },
+    async renameTag (payload, tag) {
+      const i = this.mitClass.tags.findIndex(({name}) => name ==tag.name);
+      this.mitClass.tags[i].name=payload['New Name']
+      console.log(this.mitClass)
+      const postRef = db.doc(`classes/${this.$route.params.class_id}`);
+      await postRef.update({
+        tags: this.mitClass.tags,
+      });
+      this.$root.$emit("show-snackbar", "Successfully renamed the folder.");
+    },
     async groupByDate () {
+      console.log('grouping by date');
       this.organizedPosts = this.dateGroups;
-      if (this.groupByDate.length!==0) return;
-        db.collection(`classes/${this.$route.params.class_id}/posts`).get().then((querySnapshot)=> {
-          querySnapshot.forEach(doc => {
-            this.dateList.push(doc.data().date);
-          })
-          this.foldersFromDates();
-        });
+      if (this.dateGroups.length!==0) return;
+      db.collection(`classes/${this.$route.params.class_id}/posts`).get().then((querySnapshot)=> {
+        querySnapshot.forEach(doc => {
+          this.dateList.push(doc.data().date);
+        })
+        this.foldersFromDates();
+      });
+
+      console.log('current length '+this.organizedPosts.length)
     },
     async groupByConcept () {
+      console.log('grouping by concept');
       this.organizedPosts = this.conceptGroups;
-      if (!this.mitClass || this.groupByDate.length!==0) return; 
+      if (!this.mitClass || this.conceptGroups.length!==0) return; 
       let i = 0;
       for (const tag of this.mitClass.tags) {
         this.conceptGroups.push({
           id: i,
-          name: tag,
+          name: tag.name,
           isFolder: true,
           children: [],
           date: "999999999999999999999999999999999999999" // so it'll always appear at the top
@@ -191,8 +266,9 @@ export default {
     },
     async fetchRelevantPosts (item) {
       let postsQuery;
-      if (this.groupBy === 'Concept') {
-        postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "array-contains", item.name);
+      if (this.groupBy === 'concept') {
+        const tag_id = this.mitClass.tags.find(({name}) => name === item.name).id
+        postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "array-contains", tag_id);
       } else {
         const startDate = new Date(item.name.split('-')[0]).toISOString()
         const endDate = new Date(item.name.split('-')[1]).toISOString()
@@ -259,6 +335,7 @@ export default {
       });
     },
     foldersFromDates () {
+      this.dateGroups.length = 0;
       let weekGroups = {}
       this.dateList.sort((a, b) => (a < b) ? 1 : ((a > b) ? -1 : 0)); // First sort the date in reverse chronological order
       this.dateList.forEach( date => {
@@ -293,7 +370,71 @@ export default {
     },
     displayDate (date) {
       return displayDate(date);
-    }
+    },
+    // A temporary function to convert the tags of a class from array to object when class is loaded
+    async tagsArrayToObject () {
+      let tags = this.mitClass.tags;
+      let newTags = [];
+      if (tags.length && typeof tags[0] === 'string') {
+        for (let tag of tags) {
+          newTags.push({
+            id: Math.random().toString(16).slice(2),
+            name: tag,
+            parent: null
+          })
+        }
+        const classRef = db.doc(`classes/${this.$route.params.class_id}`);
+        await classRef.update({
+          tags: newTags
+        });
+        this.mitClass.tags = newTags;
+        this.tagPostToTagId(newTags);
+      }
+    },
+    async tagPostToTagId (tags) {
+      db.collection(`classes/${this.$route.params.class_id}/posts`).get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+          const postTags = doc.data().tags;
+          let tag_ids = [];
+          for (let tag of postTags) {
+            tag_ids.push(tags.find(({name}) => name ==tag).id);
+          }
+          doc.ref.update({
+              tags: tag_ids
+          });
+        });
+      });
+    },
   }
 };
 </script>
+
+<style scoped>
+.v-expansion-panel {
+  position: sticky;
+  top:0;
+  z-index: 2;
+}
+.v-expansion-panel#question {
+  bottom: 0;
+}
+.v-expansion-panel-header > *:not(.expansion-title) {
+  flex: 0 0 auto;
+}
+.v-expansion-panel.v-expansion-panel--active {
+  position: relative;
+  z-index: 1;
+}
+.v-expansion-panel:not(.v-expansion-panel--active) .expansion-options {
+  display: none;
+}
+.v-expansion-panel .v-expansion-panel-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #eee;
+}
+.v-expansion-panel#question .v-expansion-panel-header {
+  top: 68px;
+}
+</style>
