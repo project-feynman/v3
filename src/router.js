@@ -17,7 +17,11 @@ export default new Router({
       children: [
         {
           path: "",
-          component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/ClassPageOverview.vue") 
+          component: () => import(/* webpackChunkName: "class-page-overview" */ "./pages/ClassPageOverview.vue") 
+        },
+        {
+          path: "room/center-table",
+          component: () => import(/* webpackChunkName: "class-page-center-table" */ "./pages/ClassPageCenterTable.vue")
         },
         {
           path: "room/:room_id",

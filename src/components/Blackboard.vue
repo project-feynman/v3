@@ -1,12 +1,13 @@
 <template>
   <div>
     <BlackboardCoreDrawing
-      :strokesArray="strokesArray"
-      @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
+      :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
+      @mounted="getThumbnailBlob => $emit('mounted', getThumbnailBlob)"
+      @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
+      @update:bgImageBlob="blob => $emit('update:bgImageBlob', blob)"
       @board-reset="$emit('board-reset')"
-      ref="BlackboardDrawingCanvas"
     >
       <template v-slot:canvas-toolbar="{ 
         currentTool,
@@ -15,6 +16,7 @@
         displayImageFile, 
         resetBoard,
         toggleFullScreen,
+        setTouchDisabled,
         touchDisabled
       }"
       >
@@ -30,23 +32,13 @@
           <slot name="blackboard-toolbar"> 
 
           </slot> 
-          <ButtonNew @click="toggleTouchDrawing()" icon="mdi-fingerprint">
+          <ButtonNew @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
             {{ touchDisabled ? "Enable" : "Disable" }} Touch
           </ButtonNew>
-
-          <ButtonNew v-if="currentState === RecordState.PRE_RECORD"
-            @click="startRecording()" 
-            icon="mdi-adjust"
-            filled
-          >
+          <ButtonNew v-if="!isRecording" @click="startRecording()" icon="mdi-adjust" filled>
             Record Audio
           </ButtonNew>
-
-          <ButtonNew v-else-if="currentState === RecordState.MID_RECORD"
-            @click="stopRecording()"
-            icon="mdi-stop"
-            filled
-          >
+          <ButtonNew v-else @click="stopRecording()" icon="mdi-stop" filled>
             Finish Recording
           </ButtonNew>
         </BlackboardToolBar>
@@ -54,15 +46,16 @@
     </BlackboardCoreDrawing>
 
     <BlackboardAudioRecorder
+      @created="({ startRecording, stopRecording }) => bindAudioRecorderMethods(startRecording, stopRecording)"
+      @update:audioBlob="blob => $emit('update:audioBlob', blob)"
       @audio-recorded="audioObj => handleNewRecording(audioObj)"
-      ref="AudioRecorder"
     />
   </div>
 </template>
 
 <script>
 /** 
- * A functional blackboard that supports saving and recording:
+ * An enhanced blackboard that supports audio recording.
     - Saving: The user can save the state of the blackboard as a replayable animation. 
     - Recording: By pressing "record", the user can record a voiced video explanation. 
 
@@ -95,64 +88,47 @@ export default {
   },
   data () {
     return {
+      audioRecorder: {
+        startRecording: null,
+        stopRecording: null
+      },
       timer: null,
       currentTime: 0,
       currentState: RecordState.PRE_RECORD,
       RecordState
-    }
+    };
   },
   computed: {
     ...mapState([
       "user"
-    ])
+    ]),
+    isRecording () {
+      return this.currentState === RecordState.MID_RECORD; 
+    }
   },
   methods: {
+    bindAudioRecorderMethods (startRecording, stopRecording) {
+      this.audioRecorder.startRecording = startRecording;
+      this.audioRecorder.stopRecording = stopRecording;
+    },
     async startRecording () {
-      await this.$refs.AudioRecorder.startRecording();
+      this.audioRecorder.startRecording();
       this.currentTime = 0;
-      this.timer = setInterval(() => this.currentTime += 0.1, 100);   
+      this.timer = setInterval(
+        () => { 
+          this.currentTime += 0.1;
+          this.$emit("update:currentTime", this.currentTime);
+        }, 
+        100
+      );   
       this.currentState = RecordState.MID_RECORD;
       this.$emit("record-start"); // inform the parent to disable the "submit post" button
     },
-    stopRecording () {
+    async stopRecording () {
       clearInterval(this.timer); 
-      // after calling `stopRecording()`, some time is needed before
-      // the new recording is ready, and we'll handle it in `handleNewRecording()`
-      this.$refs.AudioRecorder.stopRecording(); 
-    },
-    handleNewRecording (audioObj) {
-      this.currentState = RecordState.POST_RECORD;
-      this.$emit("record-end", this.getBlackboardData);
-    },
-    async getBlackboardData () {
-      return new Promise(async resolve => {
-        const { AudioRecorder, BlackboardDrawingCanvas } = this.$refs;
-        const thumbnailBlob = await BlackboardDrawingCanvas.getThumbnail();
-        resolve({
-          strokesArray: BlackboardDrawingCanvas.strokesArray,
-          imageBlob: BlackboardDrawingCanvas.imageBlob,
-          audio: AudioRecorder.audio,
-          thumbnailBlob
-        });
-      });
-    },
-    getStrokesArray () {
-      return [...this.strokesArray]; // use a defensive copy to avoid rep exposure / client mutating the array
-    },
-    getImageBlob () {
-      return this.$refs.BlackboardDrawingCanvas.imageBlob;
-    },
-    getThumbnail () {
-      return this.$refs.BlackboardDrawingCanvas.getThumbnail();
-    },
-    tryRecordAgain () {
-      this.currentTime = 0;
-      const { BlackboardDrawingCanvas } = this.$refs;
-      BlackboardDrawingCanvas.convertAllStrokesToBeInitialStrokes();
-      this.currentState = RecordState.PRE_RECORD;
-    },
-    toggleTouchDrawing () {
-      this.$refs.BlackboardDrawingCanvas.touchDisabled = !this.$refs.BlackboardDrawingCanvas.touchDisabled;
+      await this.audioRecorder.stopRecording(); 
+      this.currentState = RecordState.POST_RECORD; 
+      this.$emit("record-end"); 
     }
   }
 };

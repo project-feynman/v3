@@ -108,7 +108,7 @@ export default {
           new Placeholder({
             emptyEditorClass: 'is-editor-empty',
             emptyNodeClass: 'is-empty',
-            emptyNodeText: (node) => 'Press ENTER for more typing space. Draw on the blackboard below to create an animation/video.',
+            emptyNodeText: node => 'Type here...',
             showOnlyWhenEditable: true,
             showOnlyCurrent: false,
           }),
@@ -116,6 +116,7 @@ export default {
         // content: defaultHtml,
         onUpdate: ({ getHTML }) => {
           this.html = getHTML();
+          this.$emit("update:html", this.html);
         }
       }),
       content: defaultHtml,

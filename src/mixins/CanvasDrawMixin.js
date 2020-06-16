@@ -1,8 +1,8 @@
 export default {
   methods: {
-    /*
-      Adjust the internal dimensions of the canvas to match its external display dimensions 
-      Assumes there is a back canvas, and will redraw the background but not the strokes
+    /**
+     * Adjust the internal dimensions of the canvas to match its external display dimensions 
+     * Assumes there is a back canvas, and will redraw the background but not the strokes
     */
     $_rescaleCanvas () {
       const { width, scrollWidth, height, scrollHeight } = this.canvas; 
@@ -19,37 +19,45 @@ export default {
       }
       return false
     },
-    /*
-      Renders a background if one exists
+    /** 
+     * Renders a background if one exists
     */
     $_renderBackground (imageBlobUrl) {
-      return new Promise((resolve) => {
-        if (!imageBlobUrl) { resolve(); }
+      return new Promise(resolve => {
+        if (!imageBlobUrl) resolve();
         const image = new Image();
         image.src = imageBlobUrl; 
         this.bgCanvas.width = this.canvas.width;
         this.bgCanvas.height = this.canvas.height;
         image.onload = () => {
           this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
-          resolve();
+        resolve();
         } 
       });
     },
+    /**
+     * Play an animation by render strokes in sequence at a rate of 1 stroke per event loop  
+     */
     async $_quickplay () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       for (const stroke of this.strokesArray) {
-        await this.$_drawStroke(stroke, 0); // draw 1 stroke per event loop
+        await this.$_drawStroke(stroke, 0); // 0 wait-time = draw 1 stroke per event loop
       }
     },
-    $_drawStrokesInstantly () {
-      this.strokesArray.forEach(stroke => this.$_drawStroke(stroke));
+    /**
+     * Render every stroke of `this.strokesArray` without delay on a canvas context.
+     * 
+     * @param {*} ctx the canvas context on which the strokes will be rendered
+     */
+    $_drawStrokesInstantly (ctx = this.ctx) {
+      this.strokesArray.forEach(stroke => this.$_drawStroke(stroke, null, ctx));
     },
-    $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null) {
+    $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null, ctx = this.ctx) {
       return new Promise(async resolve => {
         const newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
-        this.$_setStyle(color, newLineWidth);
+        this.$_setStyle(color, newLineWidth, ctx);
         for (let i = 1; i < points.length; i++) {
-          this.$_connectTwoPoints(points, i, isErasing);
+          this.$_connectTwoPoints(points, i, isErasing, ctx);
           if (pointPeriod !== null) { // delay for a duration of pointPeriod
             await new Promise(resolve => setTimeout(resolve, pointPeriod));
           }
@@ -57,7 +65,12 @@ export default {
         resolve();
       });
     },
-    $_connectTwoPoints (points, i, isErasing) {
+    $_setStyle (color = "white", lineWidth = 2, ctx = this.ctx) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "round"; // lines at different angles can join into each other
+    },
+    $_connectTwoPoints (points, i, isErasing, ctx = this.ctx) {
       // TODO: this silently fails for edge case if a stroke only has 1 point
       const prevPoint = points[i - 1]; // this fails silently for the first point of the stroke i = 0
       const prevX = prevPoint.unitX * this.canvas.width;
@@ -67,57 +80,11 @@ export default {
       const curX = curPoint.unitX * this.canvas.width;
       const curY = curPoint.unitY * this.canvas.height;
 
-      this.ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
-      this.ctx.beginPath();
-      this.ctx.moveTo(prevX, prevY);
-      this.ctx.lineTo(curX, curY);
-      this.ctx.stroke();
-    },
-    $_setStyle (color = "white", lineWidth = 2) {
-      this.ctx.strokeStyle = color;
-      this.ctx.lineWidth = lineWidth;
-      this.ctx.lineCap = "round"; // lines at different angles can join into each other
-    },
-    $_drawStrokesInstantly2 () {
-      this.strokesArray.forEach((stroke) => {
-        if (!stroke.isErasing && !stroke.wasErased) {
-          this.$_drawStroke2(stroke);
-        }
-      });
-    },
-    $_drawStroke2 ({ points, color, lineWidth, isErasing}, pointPeriod = null) {
-      return new Promise(async (resolve) => {
-        let newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
-        this.$_setStyle2(color, newLineWidth);
-        for (let i = 1; i < points.length; i++) {
-          this.$_connectTwoPoints2(points, i, isErasing);
-          if (pointPeriod !== null) { // delay for a duration of pointPeriod
-            await new Promise(resolve => setTimeout(resolve, pointPeriod));
-          }
-        }
-        resolve();
-      });
-    },
-    $_connectTwoPoints2 (points, i, isErasing) {
-      // TODO: this silently fails for edge case if a stroke only has 1 point
-      const prevPoint = points[i - 1]; // this fails silently for the first point of the stroke i = 0
-      const prevX = prevPoint.unitX * this.canvas.width;
-      const prevY = prevPoint.unitY * this.canvas.height;
-
-      const curPoint = points[i];
-      const curX = curPoint.unitX * this.canvas.width;
-      const curY = curPoint.unitY * this.canvas.height;
-
-      this.bgCtx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
-      this.bgCtx.beginPath();
-      this.bgCtx.moveTo(prevX, prevY);
-      this.bgCtx.lineTo(curX, curY);
-      this.bgCtx.stroke();
-    },
-    $_setStyle2 (color = "white", lineWidth = 2) {
-      this.bgCtx.strokeStyle = color;
-      this.bgCtx.lineWidth = lineWidth;
-      this.bgCtx.lineCap = "round"; // lines at different angles can join into each other
+      ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
+      ctx.beginPath();
+      ctx.moveTo(prevX, prevY);
+      ctx.lineTo(curX, curY);
+      ctx.stroke();
     },
     $_getPointDuration (stroke) { // measured in seconds
       const strokePeriod = (stroke.endTime - stroke.startTime);

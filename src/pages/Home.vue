@@ -40,11 +40,11 @@
             <div class="central-title d-flex justify-center align-center mb-4">
               <img src="/logo.png" class="hero-img"/>
               <h1 class="text--primary ml-2">
-                ExplainMIT
+                explain.mit.edu
               </h1>
             </div>
             <h3 class="headline font-weight-light">
-              A place where people can help each other efficiently
+              A memory-efficient, blackboard-centric platform for people to teach and collaborate. 
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
@@ -52,11 +52,10 @@
                 <v-col cols="auto">
                   <BasePopupButton actionName="Explore" outlined color="secondary">
                     <template v-slot:popup-content>
-                      <!-- Privacy issues: we shouldn't expose 8.02 -->
-                      <!-- <div>
+                      <div>
                         <a @click="signInAnonymouslyThenRedirectTo('class/oQV3TgY3OrvE93lAT7sx')" color="purple">8.02</a>
                       </div>
-                      <p>Professor Dourmashkin use animations to help students in 8.02</p> -->
+                      <p>Professor Dourmashkin use animations to help students in 8.02</p>
                       <div>
                         <a @click="signInAnonymouslyThenRedirectTo('class/mDbUrvjy4pe8Q5s5wyoD')" color="purple">Core Team</a>
                       </div>
@@ -207,8 +206,8 @@ export default {
     this.fetchClasses(); 
     const demoVideoRef = db.doc(`classes/${demoVideo.classId}/posts/${demoVideo.postId}`);
     const demoVideoRef2 = db.doc(`classes/${demoVideo2.classId}/posts/${demoVideo2.postId}/explanations/${demoVideo2.postId}`);
-    this.$_getDoc(demoVideoRef).then((demoVideo) => this.demoVideo = demoVideo);
-    this.$_getDoc(demoVideoRef2).then((demoVideo2) => this.demoVideo2 = demoVideo2);
+    this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
+    this.$_getDoc(demoVideoRef2).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },
   mounted () { 
     window.addEventListener("scroll", this.logoVisibility); 

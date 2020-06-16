@@ -3,10 +3,10 @@
   <v-card >
     <v-navigation-drawer 
       :value="value" 
-      @input="(newVal) => $emit('input', newVal)" 
+      @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
-      width="400"
+      width="350"
       class="the-side-drawer"
     >
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
@@ -19,9 +19,9 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum" data-qa="forum-tab">Q&A Forum</v-tab>
+        <v-tab key="Forum" data-qa="forum-tab">Archive</v-tab>
         <!-- Require log-in to use real-time boards -->
-        <v-tab :disabled="!user" key="Blackboard" data-qa="blackboard-tab">Realtime Boards</v-tab>
+        <v-tab :disabled="!user" key="Blackboard" data-qa="blackboard-tab">Lounges</v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
@@ -45,18 +45,26 @@
         </v-tab-item>
         <!-- Can't use real-time blackboards unless user is logged in -->
         <v-tab-item v-if="user" key="Blackboard">
-          <v-btn v-if="blackboards"
+          <!-- <v-btn v-if="blackboards"
             outlined
             large
             block
-            :disabled="blackboards.length > 5" 
+            :disabled="blackboards.length > 20" 
             @click="createBlackboard()"
             color="secondary"
           >
             <v-icon class="pr-2">mdi-plus</v-icon>
             CREATE BLACKBOARD
-          </v-btn>
+          </v-btn> -->
           <v-list class="pt-0">
+            <v-list-item 
+              :to="(`/class/${classId}/room/center-table`)"
+              color="accent"
+              class="blackboard-item"
+              active-class="active-blackboard"
+            >
+              MAIN LOBBY ({{ centerTableParticipants.length }} active)
+            </v-list-item>
             <template v-for="(blackboard, i) in blackboards">
               <v-list-item
                 :to="(`/class/${classId}/room/${blackboard.id}`)"
@@ -67,8 +75,9 @@
               >
                 <v-list-item-content v-if="blackboard.participants">
                   <v-list-item-title>
-                    Blackboard {{ i }}
+                    Lounge {{ i }}
                     <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
+                    <h2 v-if="blackboard.status">{{ blackboard.status }}</h2>
                   </v-list-item-title>
                   <div class="active-blackboard-users pl-4 pt-2">
                     <template v-for="(participant, i) in blackboard.participants">
@@ -123,7 +132,8 @@ export default {
       blackboards: [],
       snapshotListeners: [],
       isMicOn: false,
-      activeTab: "forum"
+      activeTab: this.$route.params.room_id ? 1 : 0,
+      centerTableParticipants: []
     }
   },
   computed: { 
@@ -138,10 +148,15 @@ export default {
     const postsRef = db.collection(`classes/${this.classId}/posts`);
     const postsQuery = postsRef.orderBy("date", "desc").limit(100);
     const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
+    const participantsRef = db.collection(`classes/${this.classId}/participants`);
 
-    this.$_listenToCollection(blackboardsRef, this, "blackboards").then((snapshotListener) => {
+    this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
+    this.$_listenToCollection(participantsRef, this, "centerTableParticipants").then(snapshotListener => {
+      this.snapshotListeners.push(snapshotListener);
+    });
+
     // this.$_listenToCollection(postsQuery, this, "posts").then((snapshotListener) => {
     //   this.snapshotListeners.push(snapshotListener);
     // });
