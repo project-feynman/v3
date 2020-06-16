@@ -13,7 +13,7 @@
 
     </slot>
     <div ref="BlackboardWrapper" class="blackboard-wrapper">
-      <canvas ref="FrontCanvas" class="front-canvas" 
+      <canvas ref="FrontCanvas" class="front-canvas" data-qa="front-canvas"
         @touchstart="e => touchStart(e)"
         @touchmove="e => touchMove(e)"
         @touchend="e => touchEnd(e)"

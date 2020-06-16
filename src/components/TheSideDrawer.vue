@@ -1,6 +1,6 @@
 <template>
   <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
-  <v-card>
+  <v-card >
     <v-navigation-drawer 
       :value="value" 
       @input="newVal => $emit('input', newVal)" 
@@ -19,10 +19,9 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum">Archive</v-tab>
-        <!-- <v-tab>Q&A</v-tab> -->
+        <v-tab key="Forum" data-qa="forum-tab">Archive</v-tab>
         <!-- Require log-in to use real-time boards -->
-        <v-tab :disabled="!user" key="Blackboard">Lounges</v-tab>
+        <v-tab :disabled="!user" key="Blackboard" data-qa="blackboard-tab">Lounges</v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">

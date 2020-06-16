@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card data-qa="create-expl">
     <v-container fluid>
       <!-- Text editor -->
       <v-col cols="12" md="6" class="pa-0">
@@ -9,6 +9,7 @@
           color="accent"
           hide-details
           class="mb-5"
+          data-qa="title-field"
         />
       </v-col>
 
@@ -26,6 +27,7 @@
             :disabled="isButtonDisabled"
             color="secondary" 
             class="ma-0 white--text" 
+            data-qa="submit-post-btn"
           >
             SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
             <v-icon class="pl-2">mdi-send</v-icon>

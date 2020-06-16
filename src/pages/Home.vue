@@ -16,7 +16,7 @@
         </BasePopupButton>
         <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="(S) => updateSettings(S)">
           <template v-slot:activator="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle">Account</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="account-btn">Account</ButtonNew>
           </template>
         </TheDropdownMenu>
       </template>
@@ -28,7 +28,7 @@
           color="secondary"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle">Log In</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</ButtonNew>
           </template>
         </BasePopupButton>
       </template>
@@ -133,7 +133,7 @@
               <RenderlessAsync :dbRef="getMitClassRef(C.id)">
                 <template slot-scope="{ fetchedData: C }">
                   <transition name="fade">
-                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`">
+                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`" :data-qa="C.name">
                       <v-card-title class="title">{{ C.name }}</v-card-title>
                       <v-card-subtitle>{{ C.description }}</v-card-subtitle>
                     </v-card>

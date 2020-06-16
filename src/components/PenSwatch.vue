@@ -2,7 +2,7 @@
 	<v-container>
     <v-row class="align-center">
       <v-col cols="auto" class="px-0 py-1" v-for="color in colors" :key="color" :class="isColorActive(color) ? 'selected-color':''">
-        <ButtonNew color="accent lighten-2" :filled="isColorActive(color)" @click="selectColor(color)" small>
+        <ButtonNew color="accent lighten-2" :filled="isColorActive(color)" @click="selectColor(color)" small :data-qa="color">
           <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
             width="20px" height="46px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
             <g>

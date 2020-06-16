@@ -22,8 +22,8 @@
         <div style="position: relative;"> 
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0 || isLoading">
-            <v-img :src="expl.thumbnail" :aspect-ratio="16/9"/>
-            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item">
+            <v-img :src="expl.thumbnail" :aspect-ratio="16/9" data-qa="expl-thumbnail"/>
+            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item" data-qa="play-btn">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
               <v-btn v-else large dark>
                 <v-icon>mdi-play</v-icon>
@@ -52,7 +52,7 @@
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn text color="secondary" @click="popup = false">CANCEL</v-btn>
-            <v-btn text color="secondary" @click="deleteExplanation()">DELETE</v-btn>
+            <v-btn text color="secondary" @click="deleteExplanation()" data-qa="confirm-delete">DELETE</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -70,7 +70,7 @@
           <template v-if="expl.creator.uid === user.uid">
             <!-- <ButtonNew @click="" -->
             <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
-            <ButtonNew @click="popup = true" icon="mdi-delete">Delete</ButtonNew>
+            <ButtonNew @click="popup = true" icon="mdi-delete" data-qa="delete-post-btn">Delete</ButtonNew>
           </template>
           <ButtonNew @click="upvoteExpl()" :disabled="expl.creator.uid === user.uid">
             Thanks! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
