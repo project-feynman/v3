@@ -25,6 +25,7 @@
                     v-model="inputValues[field]"
                     :label="field"
                     :type="field"
+                    :data-qa="field"
                     required
                   />
                 </v-col>
@@ -38,7 +39,7 @@
             Cancel
           </v-btn>
           <slot name="popup-action-buttons">
-            <v-btn v-if="actionName" @click="doAction()" color="secondary" text>
+            <v-btn v-if="actionName" @click="doAction()" color="secondary" text :data-qa='actionName'>
               {{ actionName }}
             </v-btn>
           </slot>

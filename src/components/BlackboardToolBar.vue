@@ -11,15 +11,15 @@
                 @select-color="(newColor) => changePenColor(newColor)" 
               />
             </v-col>
-            <ButtonNew :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser">
+            <ButtonNew :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
               Eraser
             </ButtonNew>
-            <ButtonNew :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser">
+            <ButtonNew :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser" data-qa="stroke-eraser">
               Stroke Eraser
             </ButtonNew>
             <BasePopupButton @action-do="$emit('wipe-board')" actionName="Reset board">
               <template v-slot:activator-button="{ on }">
-                <ButtonNew :on="on" icon="mdi-delete">
+                <ButtonNew :on="on" icon="mdi-delete" data-qa="wipe-board">
                   Wipe Board
                 </ButtonNew>
               </template>
