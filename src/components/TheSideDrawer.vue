@@ -19,9 +19,10 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum">Async</v-tab>
+        <v-tab key="Forum">Archive</v-tab>
+        <!-- <v-tab>Q&A</v-tab> -->
         <!-- Require log-in to use real-time boards -->
-        <v-tab :disabled="!user" key="Blackboard">Realtime</v-tab>
+        <v-tab :disabled="!user" key="Blackboard">Lounges</v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
         <v-tab-item key="Forum">
@@ -63,7 +64,7 @@
               class="blackboard-item"
               active-class="active-blackboard"
             >
-              CENTER TABLE ({{ centerTableParticipants.length }} active)
+              MAIN LOBBY ({{ centerTableParticipants.length }} active)
             </v-list-item>
             <template v-for="(blackboard, i) in blackboards">
               <v-list-item
@@ -75,7 +76,7 @@
               >
                 <v-list-item-content v-if="blackboard.participants">
                   <v-list-item-title>
-                    Table {{ i }}
+                    Lounge {{ i }}
                     <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
                     <h2 v-if="blackboard.status">{{ blackboard.status }}</h2>
                   </v-list-item-title>

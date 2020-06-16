@@ -72,7 +72,7 @@ export default {
   methods: {
     async toggleHelpSignal () {
       await this.roomRef.update({
-        status: this.room.status === "Needs help" ? "" : "Needs help"
+        status: this.room.status === "help!" ? "" : "help!"
       }); 
     },
     setUserDisconnectHook () {
