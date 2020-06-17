@@ -3,11 +3,11 @@
     <template v-if="user">
       <LiveBoardAudio :roomId="roomId"/>
       <RealtimeBlackboard :strokesRef="strokesRef"> 
-        <template v-slot:blackboard-toolbar>
+        <!-- <template v-slot:blackboard-toolbar>
           <ButtonNew @click="toggleHelpSignal()" icon="mdi-account-alert">
             Signal For Help
           </ButtonNew> 
-        </template> 
+        </template>  -->
       </RealtimeBlackboard>
     </template>
   </div>
@@ -62,6 +62,9 @@ export default {
     this.strokesRef = this.roomRef.collection("strokes");
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
     this.setUserDisconnectHook();
+    this.$root.$on('toggle-help-signal', (roomId) => {
+      if(roomId === this.roomId) {this.toggleHelpSignal()}
+    })
   },
   beforeDestroy () {
     this.unsubscribeRoomListener();
