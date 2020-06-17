@@ -148,7 +148,8 @@ export default {
   },
   computed: { 
     ...mapState([
-      "user"
+      "user",
+      "blackboardRoom"
     ]),
     classId () { 
       return this.$route.params.class_id; 
@@ -199,11 +200,10 @@ export default {
       this.$root.$emit('toggleMic', this.isMicOn);
     },
     async toggleHelpSignal () {
-      this.$root.$emit('toggle-help-signal', this.$route.params.room_id)
-      // let roomRef = db.doc(`classes/${this.classId}/blackboards/${this.$route.params.room_id}`)
-      // await roomRef.update({
-      //   status: this.room.status === "help!" ? "" : "help!"
-      // }); 
+      const roomRef = db.doc(`classes/${this.classId}/blackboards/${this.$route.params.room_id}`);
+      roomRef.update({
+        status: this.blackboardRoom.status === "help!" ? "" : "help!"
+      }); 
     }
   }
 };

@@ -40,7 +40,8 @@ export default new Vuex.Store({
     user: null,
     isFetchingUser: true,
     mitClass: null,
-    explCache: {}
+    explCache: {},
+    blackboardRoom: null
   },
   mutations: {
     SET_USER (state, user) {
@@ -49,6 +50,9 @@ export default new Vuex.Store({
     },
     SET_CLASS (state, mitClass) {
       state.mitClass = mitClass;
+    },
+    SET_ROOM (state, blackboardRoom) {
+      state.blackboardRoom = blackboardRoom; 
     },
     /**
      * Saves an explanation to the global cache so it can be accessed and uploaded to Firestore in the app background
