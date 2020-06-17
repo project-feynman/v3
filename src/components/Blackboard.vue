@@ -36,15 +36,15 @@
           </template>
           
           <template v-slot:record-audio-slot>
-          <slot name="blackboard-toolbar">
-          </slot> 
-          
-          <ButtonNew v-if="!isRecording" @click="startRecording()" icon="mdi-adjust" filled>
-            Record Audio
-          </ButtonNew>
-          <ButtonNew v-else @click="stopRecording()" icon="mdi-stop" filled>
-            Finish Recording
-          </ButtonNew>
+            <slot name="blackboard-toolbar">
+
+            </slot> 
+            <ButtonNew v-if="!isRecording" @click="startRecording()" icon="mdi-adjust" filled>
+              Record Audio
+            </ButtonNew>
+            <ButtonNew v-else @click="stopRecording()" icon="mdi-stop" filled>
+              Finish Recording
+            </ButtonNew>
           </template>
         </BlackboardToolBar>
       </template>
