@@ -27,16 +27,12 @@
                   </v-icon>
               </template>
               <v-list :color="'#eee'">
-                <v-list-tile> 
                 <ButtonNew v-show="!lastEraserNormal" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
                   Eraser
                 </ButtonNew>
-                </v-list-tile>
-                <v-list-tile>
                 <ButtonNew v-show="lastEraserNormal" :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser" data-qa="stroke-eraser">
                   Stroke Eraser
                 </ButtonNew>
-                </v-list-tile>
               </v-list>
             </v-menu>
             </v-card>
