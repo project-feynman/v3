@@ -12,8 +12,9 @@
       :postDbRef="postRef" 
       :newExplanationDbRef="explanationsRef" 
       :key="changeKeyToForceReset"
+      @alias:strokesArray="strokesArray => this.strokesArray = strokesArray"
+      @update:html="html => this.html = html"
       @upload-started="changeKeyToForceReset += 1"
-      ref="CreateExplanation"
     />
   </div>
 </template>
@@ -36,6 +37,8 @@ export default {
     SeeExplanation,
   },
   data: () => ({
+    strokesArray: [],
+    html: "",
     originalPost: null,
     explanations: [],
     explanationsRef: null,
@@ -76,18 +79,10 @@ export default {
   },
   methods: {
     confirmExit (next) {
-      const { CreateExplanation } = this.$refs;
-      if (!CreateExplanation) {
-        next();
-        return;
-      }
-      const Blackboard = CreateExplanation.getBlackboard(); 
-      const TextEditor = CreateExplanation.getTextEditor();
-
-      if (Blackboard.getStrokesArray().length > 0 || TextEditor.extractAllText().length > 0) {
+      if (this.strokesArray.length > 0 || this.html.length > 0) {
         const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
         if (!wantToLeave) next(false);
-        else next(); 
+        else next();
       } 
       else next(); 
     }

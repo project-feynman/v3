@@ -15,33 +15,49 @@
       @click="$router.push('/')"
       :class="['home-logo', page === 'realtime' ? 'd-none d-sm-block' : '']"
     />
-    <v-toolbar-title v-if="mitClass && $route.path !== '/'" :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']">
+    <v-toolbar-title v-if="mitClass && $route.path !== '/'" 
+      :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
+    >
       {{ mitClass.name }}
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
     <v-spacer/>
-      <router-link to="/class/mDbUrvjy4pe8Q5s5wyoD/posts/y16PFhzal9SNKcT48voj">
-        <ButtonNew icon="mdi-lightbulb-on">Our Mission</ButtonNew>
-      </router-link>
-      <router-link to="/class/mDbUrvjy4pe8Q5s5wyoD/posts/VUPlJW7t1N3mJiWEFY8z">
-        <ButtonNew icon="mdi-git">Source Code</ButtonNew>
-      </router-link>
-      <BasePopupButton 
-        actionName="Give Feedback" 
-        :inputFields="['Feedback']"
-        @action-do="(bugReport) => submitBug(bugReport)"
-      >
-        <template v-slot:activator-button="{ on }">
-          <ButtonNew :on="on" icon="mdi-message">Give Feedback</ButtonNew>
-        </template>
-        <template v-slot:message-to-user>
-          Report a bug, suggest a feature, etc.
-          We will be excited to read what you write and update you by email. 
-        </template>
-      </BasePopupButton>
-      <slot>
-        
-      </slot>
+
+    <v-menu v-model="menu" 
+      :close-on-content-click="false" 
+      :nudge-width="200" 
+      offset-x
+    >
+      <template v-slot:activator="{ on }">
+        <ButtonNew :on="on" icon="mdi-lightbulb-on">About Us</ButtonNew> 
+      </template>
+      <v-card>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <router-link to="/class/mDbUrvjy4pe8Q5s5wyoD/posts/y16PFhzal9SNKcT48voj">
+            <ButtonNew icon="mdi-lightbulb-on">Our Goal</ButtonNew>
+          </router-link>
+          <router-link to="/class/mDbUrvjy4pe8Q5s5wyoD/posts/VUPlJW7t1N3mJiWEFY8z">
+            <ButtonNew icon="mdi-git">Source Code</ButtonNew>
+          </router-link>
+          <BasePopupButton actionName="Give Feedback" 
+            :inputFields="['Feedback']"
+            @action-do="(bugReport) => submitBug(bugReport)"
+          >
+            <template v-slot:activator-button="{ on }">
+              <ButtonNew :on="on" icon="mdi-message">Give Feedback</ButtonNew>
+            </template>
+            <template v-slot:message-to-user>
+              Report a bug, suggest a feature, etc.
+              We will be excited to read what you write and update you by email. 
+            </template>
+          </BasePopupButton>
+        </v-card-actions>
+      </v-card>
+    </v-menu>
+    <slot>
+      
+    </slot>
   </v-app-bar>
 </template>
 
@@ -52,6 +68,7 @@ import db from "@/database.js";
 import { navbarHeight } from "@/CONSTANTS.js";
 import firebase from "firebase/app";
 import "firebase/functions";
+import { mapState } from "vuex"; 
 
 export default {
   props: {
@@ -65,16 +82,15 @@ export default {
   },
   data () {
     return {
-      navbarHeight
+      navbarHeight,
+      menu: false
     }
   },
   computed: {
-    mitClass () { 
-      return this.$store.state.mitClass; 
-    },
-    user () {
-      return this.$store.state.user;
-    }
+    ...mapState([
+      "mitClass",
+      "user"
+    ])
   },
   created () {
     const { class_id } = this.$route.params; 

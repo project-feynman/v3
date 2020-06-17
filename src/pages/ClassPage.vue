@@ -34,13 +34,6 @@
       </template>
 
       <template v-else>
-        <!-- Email notifications -->
-        <MenuEmailSettings>
-          <template v-slot:activator="{ on }">
-            <ButtonNew :on="on" icon="mdi-bell">Email Settings</ButtonNew>
-          </template>
-        </MenuEmailSettings>
-
         <!-- Account Circle -->
         <TheDropdownMenu 
           @sign-out="$_signOut()" 
@@ -49,7 +42,16 @@
           <template v-slot:activator="{ on }">
             <ButtonNew :on="on" icon="mdi-account-circle" data-qa="account-btn">Account</ButtonNew>
           </template>
+
           <template v-slot:menu-buttons>
+            <!-- Email notifications -->
+            <MenuEmailSettings>
+              <template v-slot:activator="{ on }">
+                <v-btn v-on="on" block text color="accent">Email Settings</v-btn>
+                <!-- <ButtonNew :on="on" icon="mdi-bell">Email Settings</ButtonNew> -->
+              </template>
+            </MenuEmailSettings>
+            <v-divider/>
             <v-btn @click="leaveClass()" block text color="accent">
               {{ isUserEnrolled ? 'DROP' : 'JOIN' }} Class
             </v-btn>
