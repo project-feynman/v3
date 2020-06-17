@@ -37,6 +37,17 @@
             <v-list>
               <v-list-item @click="groupBy='date'">Group By Date</v-list-item>
               <v-list-item @click="groupBy='concept'">Group By Tags</v-list-item>
+              <v-list-item>
+                <BasePopupButton actionName="Add a New Folder" 
+                  :inputFields="['Folder Name', 'Parent']"
+                  @action-do="(payload) => addNewFolder(payload)"
+                >
+                  <template v-slot:activator-button="{ on }">
+                    <v-btn v-on="on" color="secondary" text>Add Folder</v-btn>
+                  </template>
+                </BasePopupButton>
+              </v-list-item>
+              
             </v-list>
           </v-menu>
           <h3 class="expansion-title">{{ title }}</h3>
@@ -83,11 +94,11 @@
                         <template v-if="mitClass">
                           <div class="text-center mt-5">
                             <v-chip v-for="tagName in mitClass.tags" 
-                              @click="movePostToFolder(item, tagName, closePopup)"
-                              :key="tagName" 
+                              @click="movePostToFolder(item, tagName.id, closePopup)"
+                              :key="tagName.id" 
                               color="accent" 
                               class="ma-2">
-                              {{ tagName }}
+                              {{ tagName.name }}
                             </v-chip>
                           </div>
                         </template>
@@ -156,6 +167,7 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import { mapState } from "vuex";
 import moment from "moment";
+import { Drag, Drop } from 'vue-drag-drop';
 
 export default {
   props: {
@@ -166,7 +178,9 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    BasePopupButton
+    BasePopupButton,
+    Drag,
+    Drop
   },
   computed: {
     classId () { 
@@ -230,6 +244,29 @@ export default {
       });
       this.$root.$emit("show-snackbar", "Successfully renamed the folder.");
     },
+    async addNewFolder (payload) {
+      let parent = null;
+      let error = '';
+      console.log('parent '+ payload['Parent']);
+      console.log('is there one?'+ payload['Parent']=='')
+      if (payload['Parent']) {
+        try {
+          parent = this.mitClass.tags.find(({name}) => name == payload['Parent']).id;
+        } catch (e) {
+          error = 'But could not find the parent specified.'
+        } 
+      }
+
+      this.mitClass.tags.push({
+        id: Math.random().toString(16).slice(2),
+        name: payload['Folder Name'],
+        parent: parent
+      });
+      await db.doc(`classes/${this.$route.params.class_id}`).update({
+        tags: this.mitClass.tags
+      });
+      this.$root.$emit("show-snackbar", `Successfully added folder. ${error}`);
+    },
     async groupByDate () {
       console.log('grouping by date');
       this.organizedPosts = this.dateGroups;
@@ -248,14 +285,25 @@ export default {
       this.organizedPosts = this.conceptGroups;
       if (!this.mitClass || this.conceptGroups.length!==0) return; 
       let i = 0;
+      let tags = this.mitClass.tags;
+      tags.sort((a,b) => a.parent === null ? 1 : (b.parent === null ? 0 : -1));
       for (const tag of this.mitClass.tags) {
-        this.conceptGroups.push({
-          id: i,
+        const tag_object = {
+          id: tag.id,
           name: tag.name,
           isFolder: true,
           children: [],
-          date: "999999999999999999999999999999999999999" // so it'll always appear at the top
-        });
+          date: "999999999999999999999999999999999999999", // so it'll always appear at the top
+        };
+        if (tag.parent===null) {
+          this.conceptGroups.push(tag_object);
+        } else {
+          const n = this.conceptGroups.findIndex(({id}) => id == tag.parent);
+          if (n===-1) { // In case parent doesn't exist (maybe deleted or sth)
+            this.conceptGroups.push(tag_object);
+          }
+        }
+        
         i += 1;
       }
       this.fetchPostsWithNoTags(); 
@@ -278,8 +326,10 @@ export default {
       /* check if the query results is non-empty, otherwise `onSnapshot` will never trigger 
         and the promise will never be resolved (and the browser freezes) */
       const results = await postsQuery.get();
+      console.log('getting');
       if (results.empty) return;
-      await this.bindArrayToDatabase(item.children, postsQuery);
+      console.log('not empty')
+      await this.bindArrayToDatabase(item.children, item.id, postsQuery);
 
       // because we destroy the tree everytime the data updates, we need to ensure the opened folders stay open
       // this.mitClass.tags.forEach((tag, i) => {
@@ -287,7 +337,13 @@ export default {
       //     this.openedFoldersIndices.push(i);
       //   }
       // });
-      let i = this.organizedPosts.findIndex(folder => folder.name === item.name);
+      // This is a temporary solution, and needs to be changed in the future
+      let i;
+      if (this.groupBy === 'date') {
+        i = this.organizedPosts.findIndex(folder => folder.name === item.name);
+      } else {
+        i = item.id;
+      }
       this.openedFoldersIndices.push(i);
     },
     async movePostToFolder (post, folder, closePopup) {
@@ -314,12 +370,23 @@ export default {
       });
       this.snapshotListeners.push(snapshotListener);
     },
-    bindArrayToDatabase (array, queryRef) {
+    bindArrayToDatabase (array, id, queryRef) {
       return new Promise((resolve) => {
         const snapshotListener = queryRef.onSnapshot((snapshot) => {
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
+          console.log('before slicing', array.slice());
           array.length = 0; 
+          const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
+          for (let tag of childrenFolders) {
+            array.push({
+              id: tag.id,
+              name: tag.name,
+              isFolder: true,
+              children: [],
+              date: "999999999999999999999999999999999999999", // so it'll always appear at the top
+            });
+          }
           snapshot.forEach((doc) => {
             array.push({
               id: doc.id,
