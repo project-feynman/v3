@@ -29,18 +29,23 @@
           @wipe-board="resetBoard()"
           @toggle-fullScreen="toggleFullScreen()"
         >
-          <slot name="blackboard-toolbar"> 
+          <template v-slot:touch-slot>
+            <ButtonNew @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
+              {{ touchDisabled ? "Enable" : "Disable" }} Touch
+            </ButtonNew>
+          </template>
+          
+          <template v-slot:record-audio-slot>
+            <slot name="blackboard-toolbar">
 
-          </slot> 
-          <ButtonNew @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
-            {{ touchDisabled ? "Enable" : "Disable" }} Touch
-          </ButtonNew>
-          <ButtonNew v-if="!isRecording" @click="startRecording()" icon="mdi-adjust" filled>
-            Record Audio
-          </ButtonNew>
-          <ButtonNew v-else @click="stopRecording()" icon="mdi-stop" filled>
-            Finish Recording
-          </ButtonNew>
+            </slot> 
+            <ButtonNew v-if="!isRecording" @click="startRecording()" icon="mdi-adjust" filled>
+              Record Audio
+            </ButtonNew>
+            <ButtonNew v-else @click="stopRecording()" icon="mdi-stop" filled>
+              Finish Recording
+            </ButtonNew>
+          </template>
         </BlackboardToolBar>
       </template>
     </BlackboardCoreDrawing>

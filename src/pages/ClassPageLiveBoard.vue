@@ -2,13 +2,7 @@
   <div id="room">
     <template v-if="user">
       <LiveBoardAudio :roomId="roomId"/>
-      <RealtimeBlackboard :strokesRef="strokesRef"> 
-        <template v-slot:blackboard-toolbar>
-          <ButtonNew @click="toggleHelpSignal()" icon="mdi-account-alert">
-            Signal For Help
-          </ButtonNew> 
-        </template> 
-      </RealtimeBlackboard>
+      <RealtimeBlackboard :strokesRef="strokesRef"/>
     </template>
   </div>
 </template>
@@ -57,6 +51,11 @@ export default {
       }
     }
   },
+  watch: {
+    room () {
+      this.$store.commit("SET_ROOM", this.room);    
+    }
+  },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
     this.strokesRef = this.roomRef.collection("strokes");
@@ -70,11 +69,6 @@ export default {
     });
   },
   methods: {
-    async toggleHelpSignal () {
-      await this.roomRef.update({
-        status: this.room.status === "help!" ? "" : "help!"
-      }); 
-    },
     setUserDisconnectHook () {
       /*
         Firebase Realtime Database provides a special location at /.info/connected 

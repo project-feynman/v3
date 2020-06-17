@@ -86,6 +86,16 @@
                         <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
                           {{ participant.firstName }}
                         </div>
+                        <v-btn 
+                          v-if="user.uid === participant.uid" 
+                          @click="toggleHelpSignal()"  
+                          color="accent lighten-1"
+                          :outlined="true"
+                          rounded
+                          style="margin:3px">
+                          <v-icon>mdi-account-alert</v-icon>
+                          <!-- Signal For Help -->
+                        </v-btn> 
                         <v-btn v-if="user.uid === participant.uid" 
                           @click="toggleMic()" 
                           :color="isMicOn ? 'accent' : 'accent lighten-1'" 
@@ -138,7 +148,8 @@ export default {
   },
   computed: { 
     ...mapState([
-      "user"
+      "user",
+      "blackboardRoom"
     ]),
     classId () { 
       return this.$route.params.class_id; 
@@ -185,8 +196,14 @@ export default {
       return displayDate(dateString);
     },
     toggleMic () {
-      this.isMicOn = !this.isMicOn
+      this.isMicOn = !this.isMicOn;
       this.$root.$emit('toggleMic', this.isMicOn);
+    },
+    async toggleHelpSignal () {
+      const roomRef = db.doc(`classes/${this.classId}/blackboards/${this.$route.params.room_id}`);
+      roomRef.update({
+        status: this.blackboardRoom.status === "help!" ? "" : "help!"
+      }); 
     }
   }
 };
