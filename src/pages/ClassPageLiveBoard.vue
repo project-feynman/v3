@@ -81,7 +81,7 @@ export default {
         which is updated every time the Firebase Realtime Database client's connection state changes. 
         https://firebase.google.com/docs/database/web/offline-capabilities
       */
-      firebase.database().ref(".info/connected").on("value", async (snapshot) => {
+      firebase.database().ref(".info/connected").on("value", async snapshot => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return; 
         // first ensure `onDisconnect` hook is successfully processed 
