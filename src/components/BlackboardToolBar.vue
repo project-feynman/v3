@@ -11,13 +11,41 @@
                 @select-color="(newColor) => changePenColor(newColor)" 
               />
             </v-col>
-            <ButtonNew :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
-              Eraser
-            </ButtonNew>
-            <ButtonNew :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser" data-qa="stroke-eraser">
-              Stroke Eraser
-            </ButtonNew>
-            <BasePopupButton @action-do="$emit('wipe-board')" actionName="Reset board">
+            <v-card :color="'#eee'" class="rounded-card">
+              <ButtonNew v-show="lastEraserNormal" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
+                  Eraser
+              </ButtonNew>
+              <ButtonNew v-show="!lastEraserNormal" :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser" data-qa="stroke-eraser">
+                Stroke Eraser
+              </ButtonNew>
+            <v-menu  :offset-y="true">
+              <template v-slot:activator="{ on, attrs }" style="width: 100%">
+                  <v-icon 
+                  v-bind="attrs"
+                  v-on="on">
+                  mdi-chevron-down
+                  </v-icon>
+              </template>
+              <v-list :color="'#eee'">
+                <v-list-tile> 
+                <ButtonNew v-show="!lastEraserNormal" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
+                  Eraser
+                </ButtonNew>
+                </v-list-tile>
+                <v-list-tile>
+                <ButtonNew v-show="lastEraserNormal" :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser" data-qa="stroke-eraser">
+                  Stroke Eraser
+                </ButtonNew>
+                </v-list-tile>
+              </v-list>
+            </v-menu>
+            </v-card>
+            
+            <slot name="touch-slot"></slot>
+
+          </v-row>
+        </v-col>
+        <BasePopupButton @action-do="$emit('wipe-board')" actionName="Reset board">
               <template v-slot:activator-button="{ on }">
                 <ButtonNew :on="on" icon="mdi-delete" data-qa="wipe-board">
                   Wipe Board
@@ -25,10 +53,8 @@
               </template>
               <template v-slot:message-to-user>
                 Are you sure you want to wipe everything?
-              </template>
-            </BasePopupButton>
-          </v-row>
-        </v-col>
+              </template> 
+        </BasePopupButton>
         <ButtonNew @click="$refs.fileInput.click()" icon="mdi-image">
           <input 
             @change="(e) => handleImageSelection(e)" 
@@ -38,7 +64,7 @@
           >
           Add Background
         </ButtonNew>
-        <slot>
+        <slot name="record-audio-slot">
 
         </slot>
         <ButtonNew @click="fullScreen()" :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
@@ -74,7 +100,8 @@ export default {
       toolbarHeight,
       color: "white",
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
-      colorPaletteExpanded: false
+      colorPaletteExpanded: false,
+      lastEraserNormal: true
     }
   },
   computed: {
@@ -116,6 +143,7 @@ export default {
       });
     },
     selectNormalEraser () {
+      this.lastEraserNormal = true;
       this.colorPaletteExpanded = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.NORMAL_ERASER,
@@ -124,6 +152,7 @@ export default {
       });
     },
     selectStrokeEraser () {
+      this.lastEraserNormal = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.STROKE_ERASER,
         color: this.color,
