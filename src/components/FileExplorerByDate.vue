@@ -322,13 +322,6 @@ export default {
         const endDate = new Date(item.name.split('-')[1]).toISOString()
         postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("date", ">=", startDate).where("date", "<=", endDate);
       }
-
-      /* check if the query results is non-empty, otherwise `onSnapshot` will never trigger 
-        and the promise will never be resolved (and the browser freezes) */
-      const results = await postsQuery.get();
-      console.log('getting');
-      if (results.empty) return;
-      console.log('not empty')
       await this.bindArrayToDatabase(item.children, item.id, postsQuery);
 
       // because we destroy the tree everytime the data updates, we need to ensure the opened folders stay open
@@ -371,12 +364,24 @@ export default {
       this.snapshotListeners.push(snapshotListener);
     },
     bindArrayToDatabase (array, id, queryRef) {
-      return new Promise((resolve) => {
-        const snapshotListener = queryRef.onSnapshot((snapshot) => {
+      return new Promise(resolve => {
+        const snapshotListener = queryRef.onSnapshot(snapshot => {  
+          if (snapshot.empty) {
+            array.push({ 
+              id: "Push something so the folder doesn't enter an infinite loop and freeze the browser",
+              name: "(This folder is empty)",
+              date: "January 3rd"
+            });
+            this.incrementKeyToDestroy += 1;
+            resolve();
+            return; 
+          }
+          // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
+          // array.length = 0; 
+
           console.log('before slicing', array.slice());
-          array.length = 0; 
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
           for (let tag of childrenFolders) {
             array.push({
