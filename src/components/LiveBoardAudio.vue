@@ -1,16 +1,8 @@
 <template>
     
 	<div >
-		<!-- <v-btn @click="enterAudioChat()">
-				Connect Audio
-		</v-btn> -->
-		<!-- <div class="row remote_video_container"> -->
 		<div id="remote-media"></div>
-		<!-- </div> -->
-		<!-- <div class="spacing"></div> -->
-		<div class="row">
-			<div id="local-media"></div>
-		</div>
+		<div id="local-media"></div>
 	</div>
 </template> 
 
@@ -39,7 +31,12 @@ export default {
 	},
 	created() {
 		this.token = this.getAccessToken();
+	},
+	mounted () {
 		this.$root.$on('toggleMic', (micStatus) => this.toggleMic(micStatus));
+	},
+	beforeDestroy () {
+		this.$root.$off('toggleMic')
 	},
 	destroyed() {
 		this.leaveRoomIfJoined();
@@ -141,10 +138,10 @@ export default {
 						});
 		},
 		leaveRoomIfJoined() {
-		if (this.activeRoom) {
-			this.activeRoom.disconnect();
-			console.log("disconnecting");
-		}
+			if (this.activeRoom) {
+				this.activeRoom.disconnect();
+				console.log("disconnecting");
+			}
 		},
 		log(message){
 		this.x = this.x + message + '\r\n'
@@ -226,24 +223,4 @@ export default {
 </script>
 
 <style >
-   /* .remote_video_container {
-     left: 0;
-     margin: 0;
-     border: 1px solid rgb(124, 129, 124);
-   }
-   #localTrack video {
-       border: 3px solid rgb(124, 129, 124);
-       margin: 0px;
-       max-width: 50% !important;
-       background-repeat: no-repeat;
-   }
-   .spacing {
-     padding: 20px;
-     width: 100%;
-   }
-   .roomTitle {
-       border: 1px solid rgb(124, 129, 124);
-       padding: 4px;
-       color: dodgerblue;
-   } */
 </style>
