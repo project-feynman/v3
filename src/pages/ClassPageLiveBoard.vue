@@ -1,7 +1,6 @@
 <template>
   <div id="room">
     <template v-if="user">
-      <LiveBoardAudio :roomId="roomId"/>
       <RealtimeBlackboard :strokesRef="strokesRef"/>
     </template>
   </div>

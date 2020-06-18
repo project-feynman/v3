@@ -86,24 +86,25 @@
                         <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
                           {{ participant.firstName }}
                         </div>
-                        <v-btn 
-                          v-if="user.uid === participant.uid" 
-                          @click="toggleHelpSignal()"  
-                          color="accent lighten-1"
-                          :outlined="true"
-                          rounded
-                          style="margin:3px">
-                          <v-icon>mdi-account-alert</v-icon>
-                          <!-- Signal For Help -->
-                        </v-btn> 
-                        <v-btn v-if="user.uid === participant.uid" 
-                          @click="toggleMic()" 
-                          :color="isMicOn ? 'accent' : 'accent lighten-1'" 
-                          :outlined="isMicOn" 
-                          rounded
-                        >
-                          <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
-                        </v-btn>
+                        <template v-if="user.uid === participant.uid">
+                          <v-btn 
+                            @click="toggleHelpSignal()"  
+                            color="accent lighten-1"
+                            :outlined="true"
+                            rounded
+                            style="margin:3px">
+                            <v-icon>mdi-account-alert</v-icon>
+                            <!-- Signal For Help -->
+                          </v-btn> 
+                          <v-btn
+                            @click="toggleMic()" 
+                            :color="isMicOn ? 'accent' : 'accent lighten-1'" 
+                            :outlined="isMicOn" 
+                            rounded
+                          >
+                            <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                          </v-btn>
+                        </template>
                       </div>
                     </template>
                   </div>
@@ -115,12 +116,18 @@
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
+     <LiveBoardAudio 
+        v-if="user"
+        :roomId="lastBlackboardRoomId"
+        @left-room="isMicOn = false"
+        ref="LiveAudio"/>
   </v-card>
 </template>
 
 <script>
 import FileExplorer from "@/components/FileExplorer.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import { tutorial } from "@/CONSTANTS.js";
 import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
@@ -134,7 +141,8 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    FileExplorer
+    FileExplorer,
+    LiveBoardAudio
   },
   data () {
     return {
@@ -143,7 +151,8 @@ export default {
       snapshotListeners: [],
       isMicOn: false,
       activeTab: this.$route.params.room_id ? 1 : 0,
-      centerTableParticipants: []
+      centerTableParticipants: [],
+      savedRoomId: ""
     }
   },
   computed: { 
@@ -153,6 +162,16 @@ export default {
     ]),
     classId () { 
       return this.$route.params.class_id; 
+    },
+    roomId () {
+      return this.$route.params.room_id;
+    },
+    lastBlackboardRoomId () {
+      if (this.roomId) {
+        this.savedRoomId = this.roomId;
+        return this.roomId;
+      }
+      return this.savedRoomId;
     }
   },
   async created () {
@@ -171,8 +190,6 @@ export default {
     // this.$_listenToCollection(postsQuery, this, "posts").then((snapshotListener) => {
     //   this.snapshotListeners.push(snapshotListener);
     // });
-
-    this.$root.$on("leftRoom", () => this.isMicOn = false);
   },
   destroyed () {
     for (const detachListener of this.snapshotListeners) {
@@ -197,10 +214,11 @@ export default {
     },
     toggleMic () {
       this.isMicOn = !this.isMicOn;
-      this.$root.$emit('toggleMic', this.isMicOn);
+      const { LiveAudio } = this.$refs;
+      LiveAudio.toggleMic(this.isMicOn)
     },
     async toggleHelpSignal () {
-      const roomRef = db.doc(`classes/${this.classId}/blackboards/${this.$route.params.room_id}`);
+      const roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
       roomRef.update({
         status: this.blackboardRoom.status === "help!" ? "" : "help!"
       }); 

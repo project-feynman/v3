@@ -16,32 +16,47 @@ import { twilioCreds } from "@/twiliocreds.js";
 
 export default {
 	props: {
-		roomId: String,
+		roomId: String
 	},
 	data() {
 		return {
 			loading: false,
-			activeRoom: '',
-			token: null,
-			isMicOn: false
+			activeRoom: null
 		}
 	},
 	computed: {
-		user () { return this.$store.state.user;}
+		user () { return this.$store.state.user;},
+	},
+	watch: {
+		roomId () {
+			console.log("newRoomId", this.roomId);
+			this.leaveRoomIfJoined(); //disconnected also emits an event
+		}
 	},
 	created() {
-		this.token = this.getAccessToken();
+		console.log("audio created")
 	},
 	mounted () {
-		this.$root.$on('toggleMic', (micStatus) => this.toggleMic(micStatus));
-	},
-	beforeDestroy () {
-		this.$root.$off('toggleMic')
+		
 	},
 	destroyed() {
+		console.log('Audio destroyed',this.roomId)
 		this.leaveRoomIfJoined();
 	},
 	methods: {
+		toggleMic (micStatusOn) {
+			console.log("toggled mic", this.roomId, micStatusOn)
+			if (micStatusOn){
+				if (this.activeRoom===null) {
+					this.enterAudioChat();
+				} else {
+					this.unMuteAudio();
+				}
+			}
+			else {
+				this.muteAudio();
+			}
+		},
 		getAccessToken() {
 				var AccessToken = require('twilio').jwt.AccessToken;
 				var VideoGrant = AccessToken.VideoGrant;
@@ -108,10 +123,10 @@ export default {
 				container.appendChild(selfContainer);
 
 				participant.tracks.forEach((publication) => {
-						this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, selfContainer);
 				});
 				participant.on('trackPublished', (publication) => {
-						this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, selfContainer);
 				});
 				participant.on('trackUnpublished', this.trackUnpublished);
 		},
@@ -161,7 +176,7 @@ export default {
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			Twilio.connect(this.token , connectOptions).then(
+			Twilio.connect(this.getAccessToken() , connectOptions).then(
 				(room) => { 
 					this.onTwilioConnect(room);
 					this.unMuteAudio();
@@ -188,7 +203,6 @@ export default {
 				room.on('participantConnected', (participant) => {
 						console.log("Joining: '" + participant.identity + "'");
 						this.participantConnected(participant, remoteMediaContainer);
-						this.isMicOn = false;
 				});
 
 				room.on('participantDisconnected', (participant) => {
@@ -199,24 +213,11 @@ export default {
 
 				room.on('disconnected', () => {
 					console.log('Left the rooom');
-					this.$root.$emit('leftRoom');
+					this.$emit('left-room');
 					this.detachParticipantTracks(room.localParticipant);
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
 				});
-		},
-		toggleMic (micStatus) {
-			this.isMicOn = micStatus;
-			if (this.isMicOn){
-				if (this.activeRoom==='') {
-					this.enterAudioChat();
-				} else {
-					this.unMuteAudio();
-				}
-			}
-			else {
-				this.muteAudio();
-			}
 		}
 	}
 }
