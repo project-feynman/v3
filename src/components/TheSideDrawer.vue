@@ -32,15 +32,11 @@
 
       <v-tabs-items v-model="activeTab">
         <v-tab-item value="archive">
-          <v-expansion-panels>
-            <FileExplorer title="Notes Archive" type="note"/>
-          </v-expansion-panels>
+          <FileExplorer title="Notes Archive" type="note"/>
         </v-tab-item>
 
         <v-tab-item value="Q&A">
-          <v-expansion-panels>
-            <FileExplorer title="Q&A Forum" type="question"/>
-          </v-expansion-panels>
+          <FileExplorer title="Q&A Forum" type="question"/>
         </v-tab-item>
 
         <!-- Can't use real-time blackboards unless user is logged in -->
