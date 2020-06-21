@@ -188,11 +188,15 @@ export default {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return; 
         const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
+        // maybe remove the await for performance improvements?
         await firebaseRef.onDisconnect().set(this.simplifiedUser);
-        this.roomRef.update({ // it's much faster to update Firestore directly
+        this.roomRef.update({ // it's much faster to update Firestore directly then to wait for Cloud Functions
           participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
         });
-        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+        
+        // cleanup firebase from previous user remnants, so when the onDisconnect hook triggers,
+        // the firebase will go from empty to {} for Cloud Functions to detect it
+        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object for some reason
           email: "", 
           uid: "", 
           firstName: "" 
