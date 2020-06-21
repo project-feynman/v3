@@ -119,15 +119,19 @@
               </v-menu>
             </template>
             <template v-slot:label="{ item }">
-              <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
-                <v-list-item-content>
-                  <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
-                  <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item v-else>
-                {{ item.name }}
-              </v-list-item>
+              <drop class="drop" @drop="handleDrop(item, ...arguments)">
+                <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
+                  <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
+                    <v-list-item-content>
+                      <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
+                      <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item v-else>
+                    {{ item.name }}
+                  </v-list-item>
+                </drag>
+              </drop>
             </template>
             <template v-slot:append="{ item }">
               <v-menu v-if="user && item.isFolder" bottom right>
@@ -243,6 +247,27 @@ export default {
         tags: this.mitClass.tags,
       });
       this.$root.$emit("show-snackbar", "Successfully renamed the folder.");
+    },
+    async handleDrop (droppedAt, item) {
+      console.log('the data', item);
+      console.log('dropped at', droppedAt);
+      let msg = '';
+      let tag = '';
+      if (droppedAt.isFolder) {
+        tag = [droppedAt.id]
+      } else {
+        tag = droppedAt.tags
+      }
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${item.data.id}`);
+      await postRef.update({
+        tags: tag // a file can only exist in one folder at the time (for now)
+      }).then(function() {
+        msg = "Successfully moved post to the specified folder";
+      }).catch(function(error) {
+        msg = "Something went wrong while moving the post";
+        console.log(error);
+      });
+      this.$root.$emit("show-snackbar", msg);
     },
     async addNewFolder (payload) {
       let parent = null;
@@ -362,7 +387,8 @@ export default {
           this.organizedPosts.push({
             id: doc.id,
             name: doc.data().title,
-            date: doc.data().date
+            date: doc.data().date,
+            tags: doc.data().tags,
           });
         });
         this.organizedPosts.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
@@ -391,7 +417,8 @@ export default {
             array.push({
               id: doc.id,
               name: doc.data().title,
-              date: doc.data().date
+              date: doc.data().date,
+              tags: doc.data().tags,
             });
           });
           array.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
