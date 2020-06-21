@@ -17,6 +17,9 @@ export const getRandomId = function () {
   return autoId;
 }
 
+/**
+ * TODO: currently fails to detect iPad Safari
+ */
 export function isIosSafari () {
   return navigator.userAgent.match(/iP(od|hone|ad)/) &&
     navigator.userAgent.match(/AppleWebKit/) &&
