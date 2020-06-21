@@ -4,7 +4,7 @@
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
-      @mounted="getThumbnailBlob => $emit('mounted', getThumbnailBlob)"
+      @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @update:bgImageBlob="blob => $emit('update:bgImageBlob', blob)"
       @board-reset="$emit('board-reset')"
@@ -42,6 +42,7 @@
             <ButtonNew v-if="!isRecording" @click="startRecording()" icon="mdi-adjust" filled>
               Record Audio
             </ButtonNew>
+            
             <ButtonNew v-else @click="stopRecording()" icon="mdi-stop" filled>
               Finish Recording
             </ButtonNew>
@@ -64,7 +65,7 @@
     - Saving: The user can save the state of the blackboard as a replayable animation. 
     - Recording: By pressing "record", the user can record a voiced video explanation. 
 
- * Maintains the invariant that the UI <canvas/> contains exactly the strokes from `strokesArray`. 
+ * Maintains the invariant that the UI <canvas/> displays exactly the strokes from `strokesArray`. 
  * Manages its own state i.e. currentTime, strokesArray, audioBlob and imageBlob.
 */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";

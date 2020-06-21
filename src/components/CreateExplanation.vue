@@ -14,7 +14,6 @@
       </v-col>
 
       <TextEditor 
-        :key="`editor-${changeKeyToForceReset}`"
         @update:html="html => updateHTML(html)"
       />
       <p class="red--text">{{ messageToUser }}</p>
@@ -52,11 +51,12 @@
       </v-progress-linear>
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
-        :strokesArray="strokesArray" @stroke-drawn="stroke => strokesArray.push(stroke)"
         :key="changeKeyToForceReset"
         :isRealtime="false"
-        ref="Blackboard"
-        @mounted="getThumbnailBlob => blackboard.getThumbnailBlob = getThumbnailBlob"
+        :strokesArray="strokesArray" 
+        @stroke-drawn="stroke => strokesArray.push(stroke)"
+        @board-reset="strokesArray = []"
+        @mounted="blackboardMethods => bindBlackboardMethods(blackboardMethods)"
         @update:audioBlob="audioBlob => blackboard.audioBlob = audioBlob"
         @update:bgImageBlob="bgImageBlob => blackboard.bgImageBlob = bgImageBlob"
         @update:currentTime="currentTime => blackboard.currentTime = currentTime"
@@ -69,7 +69,7 @@
           <v-spacer/>
           <BasePopupButton v-if="!isUploadingPost"
             actionName="Retry new recording" 
-            @action-do="initRetry()"
+            @action-do="clearPreviewAndResetBlackboard()"
           >
             <template v-slot:activator-button="{ on }">
               <ButtonNew :on="on" filled icon="mdi-keyboard-return">
@@ -184,6 +184,9 @@ export default {
     this.$emit("alias:strokesArray", this.strokesArray);
   },
   methods: {
+    bindBlackboardMethods ({ getThumbnailBlob }) {
+      this.blackboard.getThumbnailBlob = getThumbnailBlob; 
+    },
     convertToURL (blob) {
       return URL.createObjectURL(blob);
     },
@@ -191,19 +194,11 @@ export default {
       this.html = html; 
       this.$emit("update:html", this.html);
     },
-    /* WEIRD EDGE CASE: Always call `resizeBlackboard` if `isPreviewing` is set to false.
-      If the window is resized while Blackboard.vue is hidden with `v-show`, the blackboard's display size will become 0 
-      therefore, when the user press presses "retry", the Blackboard will reappear with 0 width. A similar case happens 
-      with submiting a post. */
-    resizeBlackboard () {
-      const { Blackboard } = this.$refs;
-      const { BlackboardDrawingCanvas } = Blackboard.$refs; 
-      BlackboardDrawingCanvas.resizeBlackboard();
-    },
-    // The 2 methods below are used by `NewPost` and `SeePost`
-    async initRetry () {
+    clearPreviewAndResetBlackboard () {
       this.isPreviewing = false;
-      this.changeKeyToForceReset += 1;
+      // reset the blackboard component 
+      this.strokesArray.length = 0; // must not use `strokesArray = []`
+      this.changeKeyToForceReset += 1; // must be called after strokesArray is reset otherwise the blackboard will be rerendered with the previous strokes
     },
     async showPreview () {      
       this.previewVideo = {
