@@ -4,7 +4,7 @@
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
-      @mounted="getThumbnailBlob => $emit('mounted', getThumbnailBlob)"
+      @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @update:bgImageBlob="blob => $emit('update:bgImageBlob', blob)"
       @board-reset="$emit('board-reset')"
