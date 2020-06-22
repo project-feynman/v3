@@ -2,8 +2,7 @@
   <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
   <v-card >
     <v-navigation-drawer 
-      :value="value" 
-      @input="(newVal) => $emit('input', newVal)" 
+      :value="value" @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
       width="400"
@@ -19,20 +18,30 @@
         class="side-tabs"
         slider-color="accent"
       >
-        <v-tab key="Forum" data-qa="forum-tab">Q&A Forum</v-tab>
+        <v-tab href="#archive">
+          Archive
+        </v-tab>
+        <v-tab href="#Q&A" data-qa="forum-tab">
+          Q&A
+        </v-tab>
         <!-- Require log-in to use real-time boards -->
-        <v-tab :disabled="!user" key="Blackboard" data-qa="blackboard-tab">Realtime Boards</v-tab>
+        <v-tab href="#rooms" :disabled="!user" data-qa="blackboard-tab">
+          Rooms
+        </v-tab>
       </v-tabs>
       <v-tabs-items v-model="activeTab">
-        <v-tab-item key="Forum">
-          <v-expansion-panels accordion flat focusable>
+        <v-tab-item value="archive">
+          <v-expansion-panels>
             <FileExplorer title="Notes Archive" type="note"/>
+          </v-expansion-panels>
+        </v-tab-item>
+        <v-tab-item value="Q&A">
+          <v-expansion-panels>
             <FileExplorer title="Q&A Forum" type="question"/>
           </v-expansion-panels>
-
         </v-tab-item>
         <!-- Can't use real-time blackboards unless user is logged in -->
-        <v-tab-item v-if="user" key="Blackboard">
+        <v-tab-item v-if="user" value="rooms">
           <v-btn v-if="blackboards"
             outlined
             large
@@ -112,7 +121,7 @@ export default {
       blackboards: [],
       snapshotListeners: [],
       isMicOn: false,
-      activeTab: "forum"
+      activeTab: "archive"
     }
   },
   computed: { 
