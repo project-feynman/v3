@@ -5,7 +5,7 @@
       :strokesArray="strokesArray" @stroke-drawn="stroke => uploadToDb(stroke)"
       :key="incrementKeyToDestroy"
       isRealtime
-      @mounted="getThumbnailBlob => blackboard.getThumbnailBlob = getThumbnailBlob"
+      @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:bgImageBlob="blob => blackboard.bgImageBlob = blob"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
