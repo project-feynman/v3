@@ -105,6 +105,9 @@
                             <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
                           </v-btn>
                         </template>
+                        <template v-else>
+                            <v-icon class="">{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                        </template>
                       </div>
                     </template>
                   </div>
@@ -132,6 +135,8 @@ import { tutorial } from "@/CONSTANTS.js";
 import { displayDate } from "@/helpers.js";
 import db from "@/database.js";
 import { mapState } from "vuex";
+import firebase from "firebase/app";
+import "firebase/firestore";
 
 export default {
   props: {
@@ -216,6 +221,15 @@ export default {
       this.isMicOn = !this.isMicOn;
       const { LiveAudio } = this.$refs;
       LiveAudio.toggleMic(this.isMicOn)
+      this.updateMicStatus()
+    },
+    updateMicStatus () {
+      var updatedParticipants = this.blackboards.find(room => room.id === this.roomId).participants;
+      updatedParticipants.find(participant => participant.uid === this.user.uid).isMicOn = this.isMicOn;
+      const blackboardRoomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
+      blackboardRoomRef.update({
+        participants: updatedParticipants
+      })
     },
     async toggleHelpSignal () {
       const roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);

@@ -42,12 +42,18 @@ export default {
     ]),
     simplifiedUser () {
       if (!this.user) return; 
-      return {
+      const main = {
         email: this.user.email,
         uid: this.user.uid,
         firstName: this.user.firstName,
-        lastName: this.user.lastName
+        lastName: this.user.lastName,
       }
+      console.log(this.room.participants)
+      if (this.room.participants.find(p => p.uid === this.user.uid)) {
+        return {...main, isMicOn: this.room.participants.find(p => p.uid === this.user.uid).isMicOn }
+      }
+      return main
+      
     }
   },
   watch: {
@@ -63,8 +69,8 @@ export default {
   },
   beforeDestroy () {
     this.unsubscribeRoomListener();
-    this.roomRef.update({
-      participants: firebase.firestore.FieldValue.arrayRemove(this.simplifiedUser)
+    this.roomRef.update({ //Filters out the current user
+      participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
     });
   },
   methods: {
@@ -81,7 +87,7 @@ export default {
         const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
         // 1. User leaves, and his/her identity is saved to Firebase
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
-
+        
         // step 1 (step 2 is executed in Cloud Functions)
         await firebaseRef.onDisconnect().set(this.simplifiedUser);
         // now join the room 
