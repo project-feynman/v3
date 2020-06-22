@@ -29,6 +29,11 @@
 <script>
 /**
  * A HTML canvas that supports drawing with stylus/touch/mouse. 
+ * 
+ * Note that the local array and client array can deviate by 1 stroke (represents lag for example in the case of a realtime blackboard)
+ *   localStrokesArray ahead: realtime database hasn't updated 
+ *   clientStrokesArray ahead: client wants to add a stroke programmaticaly on the canvas
+ * 
  * Maintains the invariant that the UI exactly reflects the strokesArray (see proof):
  * 
  * strokesArray => UI:
@@ -84,8 +89,8 @@ export default {
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
-      touchDisabled: true, // isIosSafari() is broken
-      localStrokesArray: [...this.strokesArray],
+      touchDisabled: true, 
+      localStrokesArray: [...this.strokesArray], // ...creates a real copy, rather than an alias
       currentStroke: { 
         points: [] 
       },
@@ -115,36 +120,44 @@ export default {
       return this.currentTool.type === BlackboardTools.PEN;
     }
   },
-  // strokesArray => UI 
   watch: {
+    /**
+     * Ensures `strokesArray => UI`, that is whenever the client mutates the `strokesArray` prop, we update <canvas/> accordingly`. 
+     * 
+     * Note we must ignore the case where (n == this.localStrokesArray.length)
+     * because it means that user drew on canvas --> emits event --> client changes --> triggers our own watch hook
+     */
     strokesArray () {
-      const n = this.strokesArray.length; 
-      if (n === 0) {
+      if (this.strokesArray.length === 0) {
         this.wipeUI(); 
         this.localStrokesArray = [];
-      } else if (n - this.localStrokesArray.length === 1) { 
+      } else if (this.strokesArray.length - this.localStrokesArray.length === 1) { 
         const newStroke = this.strokesArray[n-1];
         this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke));
         this.localStrokesArray.push(newStroke);
-      } else if (n === this.localStrokesArray.length) {
-        return; 
-      } else {
-        throw new Error(
-          `Rep invariant broken: new size = ${n}, old size = ${this.localStrokesArray.length}`
-        );
-      }
+      } 
+      this.checkRepInvariant(); 
     }
   },
   mounted () {
     this.initializeCanvas();
     document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
     window.addEventListener("resize", this.resizeBlackboard, false); 
-    this.$emit("mounted", this.getThumbnailBlob); 
+    this.$emit("mounted", { 
+      getThumbnailBlob: this.getThumbnailBlob,
+    }); 
   },
   destroyed () {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
+    checkRepInvariant () {
+      const i = this.strokesArray.length ; 
+      const j = this.localStrokesArray.length; 
+      if (Math.abs(i - j) > 1) {
+        throw new Error(`Rep invariant broken: external, internal lengths are ${i}, ${j}`);
+      }
+    },
     // UI => strokesArray
     saveStrokeThenReset (e) {
       e.preventDefault()
