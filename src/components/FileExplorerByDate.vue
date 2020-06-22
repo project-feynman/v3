@@ -220,6 +220,8 @@ export default {
       deep: true,
       handler : async function () {
         // this.tagsArrayToObject();
+        // this.initializeClassOrder();
+        this.setClassMaxOrder();
         if (this.groupBy==="concept") this.groupByConcept();
         else this.groupByDate();
       }
@@ -253,14 +255,31 @@ export default {
       console.log('dropped at', droppedAt);
       let msg = '';
       let tag = '';
+      let order = item.data.order;
+      console.log('current order',order);
       if (droppedAt.isFolder) {
-        tag = [droppedAt.id]
+        tag = [droppedAt.id];
       } else {
-        tag = droppedAt.tags
+        tag = droppedAt.tags;
+        const lower = droppedAt.order;
+        console.log('dragged at', lower);
+        let upper = droppedAt.order;
+        await db.collection(`classes/${this.$route.params.class_id}/posts`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
+          console.log(querySnapshot);
+          querySnapshot.forEach((doc)=> {
+            upper = doc.data().order;
+            console.log('upper inside snapshot', upper)
+          });
+        });
+        console.log('upper outside', upper);
+        const avg = (lower+upper)/2;
+        order = (avg === upper) ? (avg+1): avg;
+        console.log('final order', order);
       }
       const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${item.data.id}`);
       await postRef.update({
-        tags: tag // a file can only exist in one folder at the time (for now)
+        tags: tag, // a file can only exist in one folder at the time (for now)
+        order: order
       }).then(function() {
         msg = "Successfully moved post to the specified folder";
       }).catch(function(error) {
@@ -389,9 +408,10 @@ export default {
             name: doc.data().title,
             date: doc.data().date,
             tags: doc.data().tags,
+            order: doc.data().order,
           });
         });
-        this.organizedPosts.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
+        this.organizedPosts.sort((a, b) => b.order-a.order);
         this.incrementKeyToDestroy += 1;
       });
       this.snapshotListeners.push(snapshotListener);
@@ -419,9 +439,10 @@ export default {
               name: doc.data().title,
               date: doc.data().date,
               tags: doc.data().tags,
+              order: doc.data().order,
             });
           });
-          array.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
+          array.sort((a, b) => b.order-a.order);
           this.incrementKeyToDestroy += 1;
           resolve();
         });
@@ -499,6 +520,31 @@ export default {
         });
       });
     },
+    async initializeClassOrder () {
+      let order = 1;
+      db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+          doc.ref.update({
+              order: order
+          });
+          order +=1;
+        });
+      });
+      db.doc(`classes/${this.$route.params.class_id}`).update({
+        maxOrder: order,
+      });
+    },
+    async setClassMaxOrder () {
+      // const class = this.$route.params.class_id
+      db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('order', 'desc').limit(1).get().then((querySnapshot)=> {
+        querySnapshot.forEach((doc)=> {
+          db.doc(`classes/${this.$route.params.class_id}`).update({
+            maxOrder: doc.data().order,
+          });
+        });
+      })
+
+    }
   }
 };
 </script>
