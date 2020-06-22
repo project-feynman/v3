@@ -263,7 +263,7 @@ export default {
         tag = droppedAt.tags;
         const lower = droppedAt.order;
         console.log('dragged at', lower);
-        let upper = droppedAt.order;
+        let upper = droppedAt.order; // Fallback in case the droppedAt item has the highest order in the class
         await db.collection(`classes/${this.$route.params.class_id}/posts`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
           console.log(querySnapshot);
           querySnapshot.forEach((doc)=> {
@@ -273,7 +273,7 @@ export default {
         });
         console.log('upper outside', upper);
         const avg = (lower+upper)/2;
-        order = (avg === upper) ? (avg+1): avg;
+        order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
         console.log('final order', order);
       }
       const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${item.data.id}`);
@@ -342,7 +342,8 @@ export default {
         if (tag.parent===null) {
           this.conceptGroups.push(tag_object);
         } else {
-          const n = this.conceptGroups.findIndex(({id}) => id == tag.parent);
+          // const n = this.conceptGroups.findIndex(({id}) => id == tag.parent); not sure why i wrote this function previously lol
+          const n = this.mitClass.tags.findIndex(({id}) => id == tag.parent);
           if (n===-1) { // In case parent doesn't exist (maybe deleted or sth)
             this.conceptGroups.push(tag_object);
           }
@@ -366,13 +367,6 @@ export default {
         const endDate = new Date(item.name.split('-')[1]).toISOString()
         postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("date", ">=", startDate).where("date", "<=", endDate);
       }
-
-      /* check if the query results is non-empty, otherwise `onSnapshot` will never trigger 
-        and the promise will never be resolved (and the browser freezes) */
-      const results = await postsQuery.get();
-      console.log('getting');
-      if (results.empty) return;
-      console.log('not empty')
       await this.bindArrayToDatabase(item.children, item.id, postsQuery);
 
       // because we destroy the tree everytime the data updates, we need to ensure the opened folders stay open
@@ -383,6 +377,7 @@ export default {
       // });
       // This is a temporary solution, and needs to be changed in the future
       let i;
+      console.log('now managing the indices')
       if (this.groupBy === 'date') {
         i = this.organizedPosts.findIndex(folder => folder.name === item.name);
       } else {
@@ -401,7 +396,21 @@ export default {
     bindUntaggedPostsToDatabase (queryRef) {
       const snapshotListener = queryRef.onSnapshot((snapshot) => {
         // clear previous data (but don't clear the folders)
-        this.organizedPosts.length = this.mitClass.tags.length; 
+        // Consider only the root folders
+        // We can't just filter the classtags for root folders since folders can be deleted, but we should make better way to delete 
+        let rootTagsLength = 0
+        for (const tag of this.mitClass.tags) {
+          if (tag.parent===null) {
+            rootTagsLength +=1
+          } else {
+            const n = this.mitClass.tags.findIndex(({id}) => id == tag.parent);
+            if (n===-1) { // In case parent doesn't exist (maybe deleted or sth)
+              rootTagsLength+=1
+            }
+          }
+        }
+        this.organizedPosts.length = rootTagsLength;
+        console.log('untagged');
         snapshot.forEach((doc) => {
           this.organizedPosts.push({
             id: doc.id,
@@ -417,12 +426,24 @@ export default {
       this.snapshotListeners.push(snapshotListener);
     },
     bindArrayToDatabase (array, id, queryRef) {
-      return new Promise((resolve) => {
-        const snapshotListener = queryRef.onSnapshot((snapshot) => {
+      return new Promise(resolve => {
+        const snapshotListener = queryRef.onSnapshot(snapshot => {  
+          if (snapshot.empty) {
+            array.push({ 
+              id: "Push something so the folder doesn't enter an infinite loop and freeze the browser",
+              name: "(This folder is empty)",
+              date: "January 3rd"
+            });
+            this.incrementKeyToDestroy += 1;
+            resolve();
+            return; 
+          }
+          // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
-          console.log('before slicing', array.slice());
           array.length = 0; 
+
+          console.log('before slicing', array.slice());
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
           for (let tag of childrenFolders) {
             array.push({
