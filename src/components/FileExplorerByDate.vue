@@ -97,15 +97,19 @@
               </v-menu>
             </template>
             <template v-slot:label="{ item }">
-              <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
-                <v-list-item-content>
-                  <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
-                  <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item v-else>
-                {{ item.name }}
-              </v-list-item>
+              <drop class="drop" @drop="handleDrop(item, ...arguments)">
+                <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
+                  <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
+                    <v-list-item-content>
+                      <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
+                      <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item v-else>
+                    {{ item.name }}
+                  </v-list-item>
+                </drag>
+              </drop>
             </template>
             <template v-slot:append="{ item }">
               <v-menu v-if="user && item.isFolder" bottom right>
@@ -204,8 +208,10 @@ export default {
       immediate: true,
       deep: true,
       async handler () {
-        // this.tagsArrayToObject();
-        if (this.groupBy === "concept") this.groupByConcept();
+        this.tagsArrayToObject();
+        // this.initializeClassOrder();
+        // this.setClassMaxOrder();
+        if (this.groupBy==="concept") this.groupByConcept();
         else this.groupByDate();
       }
     }
@@ -251,6 +257,44 @@ export default {
       this.incrementKeyToDestroy += 1;
       this.$root.$emit("show-snackbar", "Successfully created a new folder.");
     },
+    async handleDrop (droppedAt, item) {
+      console.log('the data', item);
+      console.log('dropped at', droppedAt);
+      let msg = '';
+      let tag = '';
+      let order = item.data.order;
+      console.log('current order',order);
+      if (droppedAt.isFolder) {
+        tag = [droppedAt.id];
+      } else {
+        tag = droppedAt.tags;
+        const lower = droppedAt.order;
+        console.log('dragged at', lower);
+        let upper = droppedAt.order; // Fallback in case the droppedAt item has the highest order in the class
+        await db.collection(`classes/${this.$route.params.class_id}/posts`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
+          console.log(querySnapshot);
+          querySnapshot.forEach((doc)=> {
+            upper = doc.data().order;
+            console.log('upper inside snapshot', upper)
+          });
+        });
+        console.log('upper outside', upper);
+        const avg = (lower+upper)/2;
+        order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
+        console.log('final order', order);
+      }
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${item.data.id}`);
+      await postRef.update({
+        tags: tag, // a file can only exist in one folder at the time (for now)
+        order: order
+      }).then(function() {
+        msg = "Successfully moved post to the specified folder";
+      }).catch(function(error) {
+        msg = "Something went wrong while moving the post";
+        console.log(error);
+      });
+      this.$root.$emit("show-snackbar", msg);
+    },
     async groupByDate () {
       console.log('grouping by date');
       this.organizedPosts = this.dateGroups;
@@ -281,7 +325,8 @@ export default {
         if (tag.parent===null) {
           this.conceptGroups.push(tag_object);
         } else {
-          const n = this.conceptGroups.findIndex(({id}) => id == tag.parent);
+          // const n = this.conceptGroups.findIndex(({id}) => id == tag.parent); not sure why i wrote this function previously lol
+          const n = this.mitClass.tags.findIndex(({id}) => id == tag.parent);
           if (n===-1) { // In case parent doesn't exist (maybe deleted or sth)
             this.conceptGroups.push(tag_object);
           }
@@ -315,6 +360,7 @@ export default {
       // });
       // This is a temporary solution, and needs to be changed in the future
       let i;
+      console.log('now managing the indices')
       if (this.groupBy === 'date') {
         i = this.organizedPosts.findIndex(folder => folder.name === item.name);
       } else {
@@ -333,15 +379,31 @@ export default {
     bindUntaggedPostsToDatabase (queryRef) {
       const snapshotListener = queryRef.onSnapshot((snapshot) => {
         // clear previous data (but don't clear the folders)
-        this.organizedPosts.length = this.mitClass.tags.length; 
+        // Consider only the root folders
+        // We can't just filter the classtags for root folders since folders can be deleted, but we should make better way to delete 
+        let rootTagsLength = 0
+        for (const tag of this.mitClass.tags) {
+          if (tag.parent===null) {
+            rootTagsLength +=1
+          } else {
+            const n = this.mitClass.tags.findIndex(({id}) => id == tag.parent);
+            if (n===-1) { // In case parent doesn't exist (maybe deleted or sth)
+              rootTagsLength+=1
+            }
+          }
+        }
+        this.organizedPosts.length = rootTagsLength;
+        console.log('untagged');
         snapshot.forEach((doc) => {
           this.organizedPosts.push({
             id: doc.id,
             name: doc.data().title,
-            date: doc.data().date
+            date: doc.data().date,
+            tags: doc.data().tags,
+            order: doc.data().order,
           });
         });
-        this.organizedPosts.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
+        this.organizedPosts.sort((a, b) => b.order-a.order);
         this.incrementKeyToDestroy += 1;
       });
       this.snapshotListeners.push(snapshotListener);
@@ -362,7 +424,7 @@ export default {
           // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
-          // array.length = 0; 
+          array.length = 0; 
 
           console.log('before slicing', array.slice());
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
@@ -379,10 +441,12 @@ export default {
             array.push({
               id: doc.id,
               name: doc.data().title,
-              date: doc.data().date
+              date: doc.data().date,
+              tags: doc.data().tags,
+              order: doc.data().order,
             });
           });
-          array.sort((a, b) => (a.date < b.date) ? 1 : ((a.date > b.date) ? -1 : 0));
+          array.sort((a, b) => b.order-a.order);
           this.incrementKeyToDestroy += 1;
           resolve();
         });
@@ -458,6 +522,20 @@ export default {
               tags: tag_ids
           });
         });
+      });
+    },
+    async initializeClassOrder () {
+      let order = 1;
+      db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+          doc.ref.update({
+              order: order
+          });
+          order +=1;
+        });
+      });
+      db.doc(`classes/${this.$route.params.class_id}`).update({
+        maxOrder: order,
       });
     },
   }
