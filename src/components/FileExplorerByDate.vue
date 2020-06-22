@@ -1,5 +1,7 @@
 <template>
-    <!--<v-sheet class="pa-4 secondary lighten-3">
+  <div>
+    <!-- Exact Search Bar -->
+    <!-- <v-sheet class="pa-4 secondary lighten-3">
       <v-text-field
         v-model="search"
         label="Search existing posts..."
@@ -10,47 +12,23 @@
         clearable
         clear-icon="mdi-close-circle-outline"
       ></v-text-field>
-    </v-sheet>-->
-      <!--<v-container>
-        <v-row>
-          <v-col>
-            Group By
-          </v-col>
-          <v-col cols="auto">
-            <v-select
-              :items="['Concept', 'Date']"
-              v-model="groupBy"
-            ></v-select>
-          </v-col>
-        </v-row>
-      </v-container>-->
-      
-      <v-expansion-panel :id="type">
-        <v-expansion-panel-header>
-          <v-menu bottom right>
-            <template v-slot:activator="{ on }">
-              <v-btn icon v-on="on" class="expansion-options">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
+    </v-sheet> -->
 
-            <v-list>
-              <v-list-item @click="groupBy='date'">Group By Date</v-list-item>
-              <v-list-item @click="groupBy='concept'">Group By Tags</v-list-item>
-              <v-list-item>
-                <BasePopupButton actionName="Add a New Folder" 
-                  :inputFields="['Folder Name', 'Parent']"
-                  @action-do="(payload) => addNewFolder(payload)"
-                >
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" color="secondary" text>Add Folder</v-btn>
-                  </template>
-                </BasePopupButton>
-              </v-list-item>
-              
-            </v-list>
-          </v-menu>
-          <h3 class="expansion-title">{{ title }}</h3>
+        <div d-flex>
+          <v-btn @click="groupByDate()">Group By Date</v-btn>
+          <v-btn @click="groupByConcept()">Group By Tags</v-btn>
+
+          <v-btn>
+            <BasePopupButton actionName="Create a New Folder" 
+              :inputFields="['Folder Name']"
+              @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
+            >
+              <template v-slot:activator-button="{ on }">
+                <v-btn v-on="on" color="secondary" text>Create Folder</v-btn>
+              </template>
+            </BasePopupButton>
+          </v-btn>
+
           <v-btn
             :disabled="!user"
             :to="(`/class/${classId}/posts/new`)" 
@@ -59,15 +37,15 @@
           >
             <v-icon left>mdi-plus</v-icon>New {{ type }}
           </v-btn>
-        </v-expansion-panel-header>
-        <v-expansion-panel-content class="px-0">
+        </div>
+
           <v-treeview
             :items="organizedPosts"
             :search="search"
             :open="openedFoldersIndices"
             :load-children="(folder) => fetchRelevantPosts(folder)"
-            open-on-click
             :key="incrementKeyToDestroy"
+            open-on-click
           >
             <template v-slot:prepend="{ item, open }">
               <v-icon v-if="item.isFolder">
@@ -152,26 +130,36 @@
                       </template>
                     </BasePopupButton>
                   </v-list-item>
+                  <!-- Ability to create a sub-folder -->
+                  <v-list-item>
+                    <BasePopupButton actionName="Create Sub-folder"
+                      :inputFields="['Folder name']"
+                      @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
+                    >
+                      <template v-slot:activator-button="{ on }">
+                         <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
+                      </template>
+                    </BasePopupButton>
+                  </v-list-item>
                 </v-list>
               </v-menu>
             </template>
           </v-treeview>
-          
-        </v-expansion-panel-content>
-      </v-expansion-panel>
+    </div>
 </template>
 
 <script>
 // TODO: Fix search; Allow user to edit; Fix the strange nesting
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import { displayDate } from "@/helpers.js";
+import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { mapState } from "vuex";
 import moment from "moment";
 import { Drag, Drop } from 'vue-drag-drop';
+import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   props: {
@@ -183,6 +171,7 @@ export default {
   ],
   components: {
     BasePopupButton,
+    ButtonNew,
     Drag,
     Drop
   },
@@ -191,11 +180,11 @@ export default {
       return this.$route.params.class_id; 
     },
     groupBy: {
-      get: function () {
+      get () {
         return (this.type==='note') ? 'concept' : 'date';
       },
-      set: function (newVal) {
-        if (newVal==="concept") this.groupByConcept();
+      set (newVal) {
+        if (newVal === "concept") this.groupByConcept();
         else this.groupByDate();
       }
     },
@@ -218,10 +207,10 @@ export default {
     mitClass: {
       immediate: true,
       deep: true,
-      handler : async function () {
-        // this.tagsArrayToObject();
+      async handler () {
+        this.tagsArrayToObject();
         // this.initializeClassOrder();
-        this.setClassMaxOrder();
+        // this.setClassMaxOrder();
         if (this.groupBy==="concept") this.groupByConcept();
         else this.groupByDate();
       }
@@ -249,6 +238,24 @@ export default {
         tags: this.mitClass.tags,
       });
       this.$root.$emit("show-snackbar", "Successfully renamed the folder.");
+    },
+    /**
+     * Create a new folder in the class archive via Firestore. 
+     * 
+     * @param name name of the new folder. 
+     * @param parentID ID of the parent folder that'd contain the new folder. 
+     *                 If "", a root folder is created.
+     */
+    async createNewFolder (name, parentID = null) {
+      await db.doc(`classes/${this.mitClass.id}`).update({
+        tags: firebase.firestore.FieldValue.arrayUnion({
+          id: getRandomId(),
+          name,
+          parent: parentID
+        })
+      });
+      this.incrementKeyToDestroy += 1;
+      this.$root.$emit("show-snackbar", "Successfully created a new folder.");
     },
     async handleDrop (droppedAt, item) {
       console.log('the data', item);
@@ -288,29 +295,6 @@ export default {
       });
       this.$root.$emit("show-snackbar", msg);
     },
-    async addNewFolder (payload) {
-      let parent = null;
-      let error = '';
-      console.log('parent '+ payload['Parent']);
-      console.log('is there one?'+ payload['Parent']=='')
-      if (payload['Parent']) {
-        try {
-          parent = this.mitClass.tags.find(({name}) => name == payload['Parent']).id;
-        } catch (e) {
-          error = 'But could not find the parent specified.'
-        } 
-      }
-
-      this.mitClass.tags.push({
-        id: Math.random().toString(16).slice(2),
-        name: payload['Folder Name'],
-        parent: parent
-      });
-      await db.doc(`classes/${this.$route.params.class_id}`).update({
-        tags: this.mitClass.tags
-      });
-      this.$root.$emit("show-snackbar", `Successfully added folder. ${error}`);
-    },
     async groupByDate () {
       console.log('grouping by date');
       this.organizedPosts = this.dateGroups;
@@ -321,7 +305,6 @@ export default {
         })
         this.foldersFromDates();
       });
-
       console.log('current length '+this.organizedPosts.length)
     },
     async groupByConcept () {
@@ -348,7 +331,7 @@ export default {
             this.conceptGroups.push(tag_object);
           }
         }
-        
+
         i += 1;
       }
       this.fetchPostsWithNoTags(); 
@@ -359,13 +342,13 @@ export default {
     },
     async fetchRelevantPosts (item) {
       let postsQuery;
+      const postsRef = db.collection(`classes/${this.mitClass.id}/posts`);
       if (this.groupBy === 'concept') {
-        const tag_id = this.mitClass.tags.find(({name}) => name === item.name).id
-        postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "array-contains", tag_id);
+        postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
-        const startDate = new Date(item.name.split('-')[0]).toISOString()
-        const endDate = new Date(item.name.split('-')[1]).toISOString()
-        postsQuery = db.collection(`classes/${this.$route.params.class_id}/posts`).where("date", ">=", startDate).where("date", "<=", endDate);
+        const startDate = new Date(item.name.split('-')[0]).toISOString();
+        const endDate = new Date(item.name.split('-')[1]).toISOString();
+        postsQuery = postsRef.where("date", ">=", startDate).where("date", "<=", endDate);
       }
       await this.bindArrayToDatabase(item.children, item.id, postsQuery);
 
@@ -431,7 +414,7 @@ export default {
           if (snapshot.empty) {
             array.push({ 
               id: "Push something so the folder doesn't enter an infinite loop and freeze the browser",
-              name: "(This folder is empty)",
+              name: "(Empty)",
               date: "January 3rd"
             });
             this.incrementKeyToDestroy += 1;
@@ -441,11 +424,7 @@ export default {
           // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
-<<<<<<< HEAD
           array.length = 0; 
-=======
-          // array.length = 0; 
->>>>>>> a454faed620c8dbfd922383e281cb7d07911e411
 
           console.log('before slicing', array.slice());
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
@@ -559,17 +538,6 @@ export default {
         maxOrder: order,
       });
     },
-    async setClassMaxOrder () {
-      // const class = this.$route.params.class_id
-      db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('order', 'desc').limit(1).get().then((querySnapshot)=> {
-        querySnapshot.forEach((doc)=> {
-          db.doc(`classes/${this.$route.params.class_id}`).update({
-            maxOrder: doc.data().order,
-          });
-        });
-      })
-
-    }
   }
 };
 </script>

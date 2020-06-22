@@ -55,7 +55,7 @@ export default {
     const { class_id, post_id } = this.$route.params;
     this.postRef = db.doc(`classes/${class_id}/posts/${post_id}`);
     this.explanationsRef = this.postRef.collection("explanations");
-    
+
     this.$_listenToDoc(this.postRef, this, "originalPost").then(listener => {
       this.databaseListeners.push(listener);
     });

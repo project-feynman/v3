@@ -29,17 +29,16 @@
           Rooms
         </v-tab>
       </v-tabs>
+
       <v-tabs-items v-model="activeTab">
         <v-tab-item value="archive">
-          <v-expansion-panels>
-            <FileExplorer title="Notes Archive" type="note"/>
-          </v-expansion-panels>
+          <FileExplorer title="Notes Archive" type="note"/>
         </v-tab-item>
+
         <v-tab-item value="Q&A">
-          <v-expansion-panels>
-            <FileExplorer title="Q&A Forum" type="question"/>
-          </v-expansion-panels>
+          <FileExplorer title="Q&A Forum" type="question"/>
         </v-tab-item>
+
         <!-- Can't use real-time blackboards unless user is logged in -->
         <v-tab-item v-if="user" value="rooms">
           <v-btn v-if="blackboards"
@@ -53,6 +52,7 @@
             <v-icon class="pr-2">mdi-plus</v-icon>
             CREATE BLACKBOARD
           </v-btn>
+
           <v-list class="pt-0">
             <template v-for="(blackboard, i) in blackboards">
               <v-list-item
@@ -67,6 +67,7 @@
                     Blackboard {{ i }}
                     <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
                   </v-list-item-title>
+
                   <div class="active-blackboard-users pl-4 pt-2">
                     <template v-for="(participant, i) in blackboard.participants">
                       <div class="d-flex align-center py-2" :key="i">
@@ -74,6 +75,7 @@
                         <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
                           {{ participant.firstName }}
                         </div>
+
                         <v-btn v-if="user.uid === participant.uid" 
                           @click="toggleMic()" 
                           :color="isMicOn ? 'accent' : 'accent lighten-1'" 
