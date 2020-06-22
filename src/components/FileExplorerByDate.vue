@@ -441,7 +441,11 @@ export default {
           // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
+<<<<<<< HEAD
           array.length = 0; 
+=======
+          // array.length = 0; 
+>>>>>>> a454faed620c8dbfd922383e281cb7d07911e411
 
           console.log('before slicing', array.slice());
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
