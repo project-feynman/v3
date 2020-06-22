@@ -49,9 +49,6 @@ export default {
   props: {
     value: Boolean
   },
-  mixins: [
-    DatabaseHelpersMixin
-  ],
   components: {
     FileExplorer,
     RoomExplorer,
