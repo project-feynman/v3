@@ -8,7 +8,6 @@
       width="350"
       class="the-side-drawer"
     >
-<<<<<<< HEAD
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
         <v-icon class="pr-2">mdi-home</v-icon> 
         Overview
