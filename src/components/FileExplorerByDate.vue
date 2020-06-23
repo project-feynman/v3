@@ -31,7 +31,7 @@
           <ButtonNew 
             icon="mdi-shape-square-plus"
             :disabled="!user"
-            :to="(`/class/${classId}/posts/new`)" 
+            :to="(`/class/${classId}/new?type=${type==='question'? 'question':'post'}`)" 
             color="secondary"
           > 
             New {{ type }}
@@ -100,7 +100,7 @@
             <template v-slot:label="{ item }">
               <drop class="drop" @drop="handleDrop(item, ...arguments)">
                 <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
-                  <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
+                  <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/${type==='question'?'questions':'posts'}/${item.id}`">
                     <v-list-item-content>
                       <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
                       <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
@@ -224,7 +224,7 @@ export default {
   },
   methods: {
     async renamePost (payload, post) {
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${post.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}/${post.id}`);
       await postRef.update({
         title: payload["New Name"]
       });
@@ -272,7 +272,7 @@ export default {
         const lower = droppedAt.order;
         console.log('dragged at', lower);
         let upper = droppedAt.order; // Fallback in case the droppedAt item has the highest order in the class
-        await db.collection(`classes/${this.$route.params.class_id}/posts`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
+        await db.collection(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
           console.log(querySnapshot);
           querySnapshot.forEach((doc)=> {
             upper = doc.data().order;
@@ -284,7 +284,7 @@ export default {
         order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
         console.log('final order', order);
       }
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${item.data.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}/${item.data.id}`);
       await postRef.update({
         tags: tag, // a file can only exist in one folder at the time (for now)
         order: order
@@ -300,7 +300,7 @@ export default {
       console.log('grouping by date');
       this.organizedPosts = this.dateGroups;
       if (this.dateGroups.length!==0) return;
-      db.collection(`classes/${this.$route.params.class_id}/posts`).get().then((querySnapshot)=> {
+      db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).get().then((querySnapshot)=> {
         querySnapshot.forEach(doc => {
           this.dateList.push(doc.data().date);
         })
@@ -338,12 +338,12 @@ export default {
       this.fetchPostsWithNoTags(); 
     },
     async fetchPostsWithNoTags () {
-      const query = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "==", []);
+      const query = db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).where("tags", "==", []);
       this.bindUntaggedPostsToDatabase(query);
     },
     async fetchRelevantPosts (item) {
       let postsQuery;
-      const postsRef = db.collection(`classes/${this.mitClass.id}/posts`);
+      const postsRef = db.collection(`classes/${this.mitClass.id}/${this.type==='question'?'questions':'posts'}`);
       if (this.groupBy === 'concept') {
         postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
@@ -370,7 +370,7 @@ export default {
       this.openedFoldersIndices.push(i);
     },
     async movePostToFolder (post, folder, closePopup) {
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${post.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}/${post.id}`);
       await postRef.update({
         tags: [folder] // a file can only exist in one folder at the time (for now)
       });
@@ -512,7 +512,7 @@ export default {
       }
     },
     async tagPostToTagId (tags) {
-      db.collection(`classes/${this.$route.params.class_id}/posts`).get().then(function(querySnapshot) {
+      db.collection(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}`).get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           const postTags = doc.data().tags;
           let tag_ids = [];
@@ -527,7 +527,7 @@ export default {
     },
     async initializeClassOrder () {
       let order = 1;
-      db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then(function(querySnapshot) {
+      db.collection(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}`).orderBy('date', 'asc').get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           doc.ref.update({
               order: order

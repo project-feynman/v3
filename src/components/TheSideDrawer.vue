@@ -32,7 +32,7 @@
         </v-tab-item>
 
         <v-tab-item value="Q&A">
-          <TheSideDrawerQuestions type="question"/>
+          <FileExplorer type="question"/>
         </v-tab-item>
     
         <!-- File Explorer -->
