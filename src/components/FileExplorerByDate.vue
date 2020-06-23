@@ -15,8 +15,8 @@
     </v-sheet> -->
 
         <div d-flex>
-          <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
-          <ButtonNew @click="groupByConcept()" icon="mdi-folder">Group By Folders</ButtonNew>
+          <ButtonNew @click="groupBy='date'" icon="mdi-calendar-range">Group By Date</ButtonNew>
+          <ButtonNew @click="groupBy='concept'" icon="mdi-folder">Group By Folders</ButtonNew>
 
           <BasePopupButton actionName="Create a New Folder" 
             :inputFields="['Folder Name']"
@@ -165,7 +165,10 @@ import { Drag, Drop } from 'vue-drag-drop';
 export default {
   props: {
     title: String,
-    type: String,
+    type: {
+      type: String,
+      default: 'note'
+    },
   },
   mixins: [
     DatabaseHelpersMixin
@@ -180,21 +183,13 @@ export default {
     classId () { 
       return this.$route.params.class_id; 
     },
-    groupBy: {
-      get () {
-        return (this.type==='note') ? 'concept' : 'date';
-      },
-      set (newVal) {
-        if (newVal === "concept") this.groupByConcept();
-        else this.groupByDate();
-      }
-    },
     ...mapState([
       "user",
       "mitClass"
     ])
   },
-  data: () => ({
+  data: function () {
+    return {
     dateList: [],
     organizedPosts: [],
     conceptGroups: [],
@@ -202,20 +197,26 @@ export default {
     search: null,
     incrementKeyToDestroy: 0,
     openedFoldersIndices: [],
-    snapshotListeners: []
-  }),
+    snapshotListeners: [],
+    groupBy: (this.type==='note') ? 'concept' : 'date',
+  }},
   watch: {
     mitClass: {
       immediate: true,
       deep: true,
       async handler () {
-        this.tagsArrayToObject();
-        // this.initializeClassOrder();
-        // this.setClassMaxOrder();
+        console.log(this.mitClass)
+        // await this.tagsArrayToObject();
+        // await this.initializeClassOrder();
         if (this.groupBy==="concept") this.groupByConcept();
         else this.groupByDate();
       }
-    }
+    },
+    groupBy: function(newVal) {
+      console.log(newVal)
+      if (newVal === "concept") this.groupByConcept();
+      else this.groupByDate();
+    },
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -344,6 +345,7 @@ export default {
     async fetchRelevantPosts (item) {
       let postsQuery;
       const postsRef = db.collection(`classes/${this.mitClass.id}/posts`);
+      console.log('current group is by', this.groupBy);
       if (this.groupBy === 'concept') {
         postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
@@ -491,8 +493,19 @@ export default {
     displayDate (date) {
       return displayDate(date);
     },
+    // The functions below work to make the classes existing in the database compatible with the new organization structure
     // A temporary function to convert the tags of a class from array to object when class is loaded
     async tagsArrayToObject () {
+      // If the class doesn't have tags initialized yet
+      console.log({...this.mitClass})
+      if (! this.mitClass.hasOwnProperty('tags')) {
+        db.doc(`classes/${this.$route.params.class_id}`).update({
+          tags: [],
+        });
+        this.mitClass.tags = []
+        return;
+      }
+
       let tags = this.mitClass.tags;
       let newTags = [];
       if (tags.length && typeof tags[0] === 'string') {
@@ -507,6 +520,7 @@ export default {
         await classRef.update({
           tags: newTags
         });
+        console.log('updating mitClass');
         this.mitClass.tags = newTags;
         this.tagPostToTagId(newTags);
       }
@@ -526,15 +540,21 @@ export default {
       });
     },
     async initializeClassOrder () {
-      let order = 1;
-      db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
+      let order = 0;
+      console.log({...this})
+      console.log('trying to order', this.mitClass.hasOwnProperty('maxOrder'))
+      if (this.mitClass.hasOwnProperty('maxOrder')) return;
+      console.log("this class has no ordering")
+      await db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then((querySnapshot)=> {
+        querySnapshot.forEach((doc)=> {
+          order +=1;
           doc.ref.update({
               order: order
           });
-          order +=1;
         });
+        console.log('final order-1', order)
       });
+      console.log('final order', order);
       db.doc(`classes/${this.$route.params.class_id}`).update({
         maxOrder: order,
       });
