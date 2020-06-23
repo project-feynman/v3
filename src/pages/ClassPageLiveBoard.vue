@@ -48,10 +48,6 @@ export default {
         firstName: this.user.firstName,
         lastName: this.user.lastName,
       }
-      console.log(this.room.participants)
-      if (this.room.participants.find(p => p.uid === this.user.uid)) {
-        return {...main, isMicOn: this.room.participants.find(p => p.uid === this.user.uid).isMicOn }
-      }
       return main
       
     }
@@ -91,9 +87,11 @@ export default {
         // step 1 (step 2 is executed in Cloud Functions)
         await firebaseRef.onDisconnect().set(this.simplifiedUser);
         // now join the room 
-        this.roomRef.update({ // it's much faster to update Firestore directly
-          participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
-        });
+        if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
+          this.roomRef.update({ // it's much faster to update Firestore directly
+            participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
+          });
+        }
         firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: "", 

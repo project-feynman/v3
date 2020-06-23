@@ -122,8 +122,9 @@
      <LiveBoardAudio 
         v-if="user"
         :roomId="lastBlackboardRoomId"
-        @left-room="isMicOn = false"
-        ref="LiveAudio"/>
+        :isMicOn="isMicOn"
+        @left-room="isMicOn=false"
+        :key="lastBlackboardRoomId"/>
   </v-card>
 </template>
 
@@ -219,8 +220,6 @@ export default {
     },
     toggleMic () {
       this.isMicOn = !this.isMicOn;
-      const { LiveAudio } = this.$refs;
-      LiveAudio.toggleMic(this.isMicOn)
       this.updateMicStatus()
     },
     updateMicStatus () {

@@ -1,5 +1,4 @@
 <template>
-    
 	<div >
 		<div id="remote-media"></div>
 		<div id="local-media"></div>
@@ -12,41 +11,44 @@ import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
+import { mapState } from "vuex";
 
 
 export default {
 	props: {
-		roomId: String
+		roomId: String,
+		isMicOn: Boolean
 	},
 	data() {
 		return {
 			loading: false,
-			activeRoom: null
+			activeRoom: null,
+			token: null
 		}
 	},
 	computed: {
-		user () { return this.$store.state.user;},
+		...mapState([
+      "user"
+    ]),
 	},
 	watch: {
-		roomId () {
-			console.log("newRoomId", this.roomId);
-			this.leaveRoomIfJoined(); //disconnected also emits an event
+		isMicOn () {
+			this.toggleMic()
 		}
 	},
 	created() {
 		console.log("audio created")
+		this.token = this.getAccessToken();
 	},
-	mounted () {
-		
-	},
-	destroyed() {
-		console.log('Audio destroyed',this.roomId)
+	beforeDestroy () {
+		this.$emit('left-room');
 		this.leaveRoomIfJoined();
+		console.log('Audio destroyed',this.roomId)
 	},
 	methods: {
-		toggleMic (micStatusOn) {
-			console.log("toggled mic", this.roomId, micStatusOn)
-			if (micStatusOn){
+		toggleMic () {
+			console.log("toggled mic", this.roomId, this.isMicOn)
+			if (this.isMicOn){
 				if (this.activeRoom===null) {
 					this.enterAudioChat();
 				} else {
@@ -54,7 +56,9 @@ export default {
 				}
 			}
 			else {
-				this.muteAudio();
+				if (this.activeRoom){
+					this.muteAudio();
+				}
 			}
 		},
 		getAccessToken() {
@@ -73,11 +77,6 @@ export default {
 						API_KEY_SECRET
 				);
 
-				// Set the Identity of this token
-				// let ids = ["Winston1", "Winston2", "Winston3"]
-				// let id = ids[Math.floor(Math.random()*3)];
-				// console.log(id);
-				// accessToken.identity = id;
 				accessToken.identity = this.user.uid;
 
 				// Grant access to Video
@@ -158,9 +157,6 @@ export default {
 				console.log("disconnecting");
 			}
 		},
-		log(message){
-		this.x = this.x + message + '\r\n'
-		}, 
 		enterAudioChat() {
 			this.loading = true;
 
@@ -170,13 +166,11 @@ export default {
 				audio: true,
 				// video: { width: 400 }
 			};
-			// before a user enters a new room,
-			// disconnect the user from they joined already
 			this.leaveRoomIfJoined();
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			Twilio.connect(this.getAccessToken() , connectOptions).then(
+			Twilio.connect(this.token, connectOptions).then(
 				(room) => { 
 					this.onTwilioConnect(room);
 					this.unMuteAudio();
@@ -186,10 +180,9 @@ export default {
 		},
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);
-				this.log('Successfully joined a Room: '+ room);
 				// set active toom
 				this.activeRoom = room;
-				this.loading = false;
+				// this.loading = false;
 				var previewContainer = document.getElementById('local-media');
 				this.attachTracks(this.getTracks(room.localParticipant), previewContainer);
 				
@@ -208,12 +201,10 @@ export default {
 				room.on('participantDisconnected', (participant) => {
 						console.log("RemoteParticipant '" + participant.identity + "' left the room");
 						this.detachParticipantTracks(participant);
-						// removeName(participant);
 				});
 
 				room.on('disconnected', () => {
 					console.log('Left the rooom');
-					this.$emit('left-room');
 					this.detachParticipantTracks(room.localParticipant);
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;

@@ -53,15 +53,21 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(a
   else { firestoreUserRef.update(eventStatus); }
 });
 
-// Updates blackboard participants when people join and leave
 exports.onWorkspaceParticipantsChanged = functions.database.ref("/room/{classId}/{roomId}").onWrite((change, context) => {
   const userWhoLeft = change.after.val();
   if (!userWhoLeft.uid) { return; }
   const { roomId, classId } = context.params;
   const workspaceRef = firestore.doc(`/classes/${classId}/blackboards/${roomId}`);
-  workspaceRef.update({
-    participants: admin.firestore.FieldValue.arrayRemove(userWhoLeft)
-  });
+  removeUserFromWorkspace(userWhoLeft, workspaceRef);
+
+  async function removeUserFromWorkspace(user, workspaceRef){
+    await workspaceRef.get().then(doc => {
+      const newParticipants = doc.data().participants.filter(p => p.uid !== user.uid)
+      workspaceRef.update({
+        participants: newParticipants
+      });
+    })
+  }
 });
 
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already
