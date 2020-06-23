@@ -128,10 +128,11 @@ export default {
      * because it means that user drew on canvas --> emits event --> client changes --> triggers our own watch hook
      */
     strokesArray () {
-      if (this.strokesArray.length === 0) {
+      const n = this.strokesArray.length; 
+      if (n === 0) {
         this.wipeUI(); 
         this.localStrokesArray = [];
-      } else if (this.strokesArray.length - this.localStrokesArray.length === 1) { 
+      } else if (n - this.localStrokesArray.length === 1) { 
         const newStroke = this.strokesArray[n-1];
         this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke));
         this.localStrokesArray.push(newStroke);
@@ -151,11 +152,17 @@ export default {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
+    /**
+     * Note `localStrokesArray` can be arbitrarily ahead of `strokesArray`. For example, 
+     * if the user draws 5 strokes quickly, but the client is a realtime blackboard 
+     * that has to upload those 5 strokes to Firestore, then until those documents are uploaded,
+     * `strokesArray` and `localStrokesArray` will differ by 5. 
+     */
     checkRepInvariant () {
-      const i = this.strokesArray.length ; 
-      const j = this.localStrokesArray.length; 
-      if (Math.abs(i - j) > 1) {
-        throw new Error(`Rep invariant broken: external, internal lengths are ${i}, ${j}`);
+      if (this.strokesArray.length - this.localStrokesArray.length > 1) {
+        throw new Error(
+          `Rep invariant broken: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
+        );
       }
     },
     // UI => strokesArray

@@ -14,7 +14,7 @@
             <ButtonNew :on="on" icon="mdi-plus">Create Class</ButtonNew>
           </template>
         </BasePopupButton>
-        <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="(S) => updateSettings(S)">
+        <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:activator="{ on }">
             <ButtonNew :on="on" icon="mdi-account-circle" data-qa="account-btn">Account</ButtonNew>
           </template>
@@ -44,7 +44,7 @@
               </h1>
             </div>
             <h3 class="headline font-weight-light">
-              A memory-efficient, blackboard-centric platform for people to teach and collaborate. 
+              A vibrant place where students, TAs and professors explain things to each other. 
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
@@ -53,9 +53,13 @@
                   <BasePopupButton actionName="Explore" outlined color="secondary">
                     <template v-slot:popup-content>
                       <div>
+                        <a @click="signInAnonymouslyThenRedirectTo('class/FVdgjuywaFgxvyylISt2')" color="purple">Tutorial</a>
+                      </div>
+                      <p>A detailed introduction to the website</p>
+                      <div>
                         <a @click="signInAnonymouslyThenRedirectTo('class/oQV3TgY3OrvE93lAT7sx')" color="purple">8.02</a>
                       </div>
-                      <p>Professor Dourmashkin use animations to help students in 8.02</p>
+                      <p>Senior Lecturer Dr. Dourmashkin used the platform to teach 8.02</p>
                       <div>
                         <a @click="signInAnonymouslyThenRedirectTo('class/mDbUrvjy4pe8Q5s5wyoD')" color="purple">Core Team</a>
                       </div>
@@ -70,7 +74,7 @@
                 <v-col cols="auto">
                   <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
-                    @action-do="(user) => $_signUp(user)"
+                    @action-do="user => $_signUp(user)"
                     outlined
                     color="secondary"
                   >
@@ -86,7 +90,7 @@
                 <v-col cols="12" sm="6">
                   <TheSearchBar 
                     :items="schoolClasses"
-                    @submit="(payload) => enrollInClass(payload)" 
+                    @submit="payload => enrollInClass(payload)" 
                     color="accent"
                   />
                 </v-col>
@@ -200,12 +204,12 @@ export default {
       attemptToJoinClassId: "",
       attemptToJoinClassName: "",
       hasEnteredPassword: false
-    }
+    };
   },
   async created () { 
     this.fetchClasses(); 
     const demoVideoRef = db.doc(`classes/${demoVideo.classId}/posts/${demoVideo.postId}`);
-    const demoVideoRef2 = db.doc(`classes/${demoVideo2.classId}/posts/${demoVideo2.postId}/explanations/${demoVideo2.postId}`);
+    const demoVideoRef2 = db.doc(`classes/${demoVideo2.classId}/posts/${demoVideo2.postId}`);
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
     this.$_getDoc(demoVideoRef2).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },

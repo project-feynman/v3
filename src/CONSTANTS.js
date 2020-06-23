@@ -1,5 +1,6 @@
 const CORE_TEAM_ID = "mDbUrvjy4pe8Q5s5wyoD";
 const PHYSICS_ID = "oQV3TgY3OrvE93lAT7sx";
+const TUTORIAL_ID = "FVdgjuywaFgxvyylISt2";
 
 export const DefaultEmailSettings = {
   emailOnNewPost: false,
@@ -22,13 +23,13 @@ export const tutorial = {
 
 // for the home page
 export const demoVideo = {
-  classId: CORE_TEAM_ID, // 8.02 
-  postId: "12QC9D3yAh2TLJafGj94" // Website introduction
+  classId: TUTORIAL_ID, 
+  postId: "M13OkhsWLo0XeK5wEElF"
 };
 
 export const demoVideo2 = {
-  classId: "FVdgjuywaFgxvyylISt2", 
-  postId: "xut7dg7pbso4up8nb5239"
+  classId: TUTORIAL_ID, 
+  postId: "XATdAHroEVJtSAHko5X1"
 };
 
 export const BlackboardTools = {
