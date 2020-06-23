@@ -32,7 +32,7 @@
         </v-tab-item>
 
         <v-tab-item value="Q&A">
-          <FileExplorer type="question"/>
+          <TheSideDrawerQuestions type="question"/>
         </v-tab-item>
     
         <!-- File Explorer -->
@@ -60,10 +60,11 @@
 </template>
 
 <script>
+import TheSideDrawerQuestions from "@/components/TheSideDrawerQuestions.vue";
 import FileExplorer from "@/components/FileExplorerByDate.vue";
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import RoomExplorer from "@/components/RoomExplorer.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
 import firebase from "firebase/app";
@@ -76,7 +77,8 @@ export default {
   components: {
     FileExplorer,
     RoomExplorer,
-    BasePopupButton
+    BasePopupButton,
+    TheSideDrawerQuestions
   },
   data () {
     return {
