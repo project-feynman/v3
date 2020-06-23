@@ -519,7 +519,7 @@ export default {
             tag_ids.push(tags.find(({name}) => name ==tag).id);
           }
           doc.ref.update({
-              tags: tag_ids
+            tags: tag_ids
           });
         });
       });
