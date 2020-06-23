@@ -15,29 +15,30 @@
     </v-sheet> -->
 
         <div d-flex>
-          <v-btn @click="groupByDate()">Group By Date</v-btn>
-          <v-btn @click="groupByConcept()">Group By Tags</v-btn>
+          <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
+          <ButtonNew @click="groupByConcept()" icon="mdi-folder">Group By Folders</ButtonNew>
 
-          <v-btn>
-            <BasePopupButton actionName="Create a New Folder" 
-              :inputFields="['Folder Name']"
-              @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
-            >
-              <template v-slot:activator-button="{ on }">
-                <v-btn v-on="on" color="secondary" text>Create Folder</v-btn>
-              </template>
-            </BasePopupButton>
-          </v-btn>
+          <BasePopupButton actionName="Create a New Folder" 
+            :inputFields="['Folder Name']"
+            @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
+          >
+            <template v-slot:activator-button="{ on }">
+              <ButtonNew :on="on" color="accent" icon="mdi-folder-plus">Create Folder</ButtonNew>
+              <!-- <v-btn v-on="on" color="secondary" text>Create Folder</v-btn> -->
+            </template>
+          </BasePopupButton>
 
-          <v-btn
+          <ButtonNew 
+            icon="mdi-shape-square-plus"
             :disabled="!user"
             :to="(`/class/${classId}/posts/new`)" 
-            outlined
-            color="accent"
-          >
-            <v-icon left>mdi-plus</v-icon>New {{ type }}
-          </v-btn>
+            color="secondary"
+          > 
+            New {{ type }}
+          </ButtonNew>
         </div>
+
+        <v-divider/>
 
           <v-treeview
             :items="organizedPosts"
@@ -152,6 +153,7 @@
 // TODO: Fix search; Allow user to edit; Fix the strange nesting
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import ButtonNew from "@/components/ButtonNew.vue";
 import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
 import firebase from "firebase/app";
@@ -159,7 +161,6 @@ import "firebase/firestore";
 import { mapState } from "vuex";
 import moment from "moment";
 import { Drag, Drop } from 'vue-drag-drop';
-import ButtonNew from "@/components/ButtonNew.vue";
 
 export default {
   props: {

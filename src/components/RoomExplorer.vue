@@ -19,8 +19,11 @@
       class="blackboard-item"
       active-class="active-blackboard"
     >
-      MAIN LOBBY ({{ centerTableParticipants.length }} active)
+      Main Lobby
     </v-list-item>
+
+    <v-divider/>
+
     <template v-for="(blackboard, i) in blackboards">
       <!-- 
       Complication: 
@@ -48,9 +51,9 @@
       >
         <v-list-item-content v-if="blackboard.participants">
           <v-list-item-title>
-            Lounge {{ i }}
-            <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
-            <p v-if="blackboard.status">{{ blackboard.status }}</p>
+            Room {{ i }}
+            <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
+            <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
           </v-list-item-title>
           <div class="active-blackboard-users pl-4 pt-2">
             <template v-for="(participant, i) in blackboard.participants">

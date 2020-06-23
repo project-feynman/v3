@@ -6,10 +6,9 @@
     <p>
       This is where the instructor can broadcast his blackboard to many students at once, ideal for lectures. 
       The instructor can press a button to evenly divide students into random groups in real-time blackboard rooms. 
-      Furthermore, all explanations made here can be efficiently saved (both visual and audio). 
     </p>
-    <p>class document: {{ classDoc }}</p>
-    <p>class participants: {{ participants }}</p>
+    <!-- <p>class document: {{ classDoc }}</p>
+    <p>class participants: {{ participants }}</p> -->
     <RealtimeBlackboard :strokesRef="strokesRef"/>
   </div>
 </template>
