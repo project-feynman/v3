@@ -5,26 +5,23 @@
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
-      width="400"
+      width="350"
       class="the-side-drawer"
     >
+<<<<<<< HEAD
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
         <v-icon class="pr-2">mdi-home</v-icon> 
         Overview
       </v-btn> -->
-      <v-tabs v-model="activeTab"
-        grow
-        active-class="accent--text"
-        class="side-tabs"
-        slider-color="accent"
-      >
+      <v-tabs v-model="activeTab" grow active-class="accent--text" class="side-tabs" slider-color="accent">
         <v-tab href="#archive">
           Archive
         </v-tab>
+        
         <v-tab href="#Q&A" data-qa="forum-tab">
           Q&A
         </v-tab>
-        <!-- Require log-in to use real-time boards -->
+
         <v-tab href="#rooms" :disabled="!user" data-qa="blackboard-tab">
           Rooms
         </v-tab>
@@ -32,66 +29,30 @@
 
       <v-tabs-items v-model="activeTab">
         <v-tab-item value="archive">
-          <FileExplorer title="Notes Archive" type="note"/>
+          <FileExplorer type="note"/>
         </v-tab-item>
 
         <v-tab-item value="Q&A">
-          <FileExplorer title="Q&A Forum" type="question"/>
+          <FileExplorer type="question"/>
         </v-tab-item>
-
-        <!-- Can't use real-time blackboards unless user is logged in -->
-        <v-tab-item v-if="user" value="rooms">
-          <v-btn v-if="blackboards"
-            outlined
-            large
-            block
-            :disabled="blackboards.length > 5" 
-            @click="createBlackboard()"
-            color="secondary"
-          >
-            <v-icon class="pr-2">mdi-plus</v-icon>
-            CREATE BLACKBOARD
-          </v-btn>
-
-          <v-list class="pt-0">
-            <template v-for="(blackboard, i) in blackboards">
-              <v-list-item
-                :to="(`/class/${classId}/room/${blackboard.id}`)"
-                :key="blackboard.id"
-                color="accent"
-                class="blackboard-item"
-                active-class="active-blackboard"
-              >
-                <v-list-item-content v-if="blackboard.participants">
-                  <v-list-item-title>
-                    Blackboard {{ i }}
-                    <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
-                  </v-list-item-title>
-
-                  <div class="active-blackboard-users pl-4 pt-2">
-                    <template v-for="(participant, i) in blackboard.participants">
-                      <div class="d-flex align-center py-2" :key="i">
-                        <v-icon>mdi-account</v-icon>
-                        <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
-                          {{ participant.firstName }}
-                        </div>
-
-                        <v-btn v-if="user.uid === participant.uid" 
-                          @click="toggleMic()" 
-                          :color="isMicOn ? 'accent' : 'accent lighten-1'" 
-                          :outlined="isMicOn" 
-                          rounded
-                        >
-                          <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
-                        </v-btn>
-                      </div>
-                    </template>
-                  </div>
-                </v-list-item-content>
-              </v-list-item>
-              <v-divider v-if="i + 1 < blackboards.length" :key="i"></v-divider>
-            </template>
+    
+        <!-- File Explorer -->
+        <!-- <v-tab-item>
+          <v-list class="py-0">
+            <v-list-item :disabled="!user" :to="(`/class/${classId}/posts/new`)" >
+              <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>New Post</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item> 
           </v-list>
+
+          <FileExplorer/>
+        </v-tab-item> -->
+
+        <!-- Room Explorer -->
+        <v-tab-item v-if="user" value="rooms">
+          <RoomExplorer/>
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -99,30 +60,24 @@
 </template>
 
 <script>
-// import FileExplorer from "@/components/FileExplorer.vue";
 import FileExplorer from "@/components/FileExplorerByDate.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import RoomExplorer from "@/components/RoomExplorer.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import { tutorial } from "@/CONSTANTS.js";
-import { displayDate } from "@/helpers.js";
-import db from "@/database.js";
 import { mapState } from "vuex";
 
 export default {
   props: {
     value: Boolean
   },
-  mixins: [
-    DatabaseHelpersMixin
-  ],
   components: {
-    FileExplorer
+    FileExplorer,
+    RoomExplorer,
+    BasePopupButton
   },
   data () {
     return {
-      posts: [],
-      blackboards: [],
-      snapshotListeners: [],
-      isMicOn: false,
       activeTab: "archive"
     }
   },
@@ -132,46 +87,6 @@ export default {
     ]),
     classId () { 
       return this.$route.params.class_id; 
-    }
-  },
-  async created () {
-    const postsRef = db.collection(`classes/${this.classId}/posts`);
-    const postsQuery = postsRef.orderBy("date", "desc").limit(100);
-    const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
-
-    this.$_listenToCollection(blackboardsRef, this, "blackboards").then((snapshotListener) => {
-      this.snapshotListeners.push(snapshotListener);
-    });
-    // this.$_listenToCollection(postsQuery, this, "posts").then((snapshotListener) => {
-    //   this.snapshotListeners.push(snapshotListener);
-    // });
-
-    this.$root.$on("leftRoom", () => this.isMicOn = false);
-  },
-  destroyed () {
-    for (const detachListener of this.snapshotListeners) {
-      detachListener();
-    }
-  },
-  methods: { 
-    displayFullPost (post) {
-      const { SearchBar } = this.$refs;
-      this.$router.push(`/class/${this.classId}/posts/${post.id}`);
-      SearchBar.reset();
-      SearchBar.blur();
-    },
-    createBlackboard () {
-      const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
-      const newBlackboard = blackboardsRef.add({
-        participants: []
-      });
-    },
-    displayDate (dateString) { 
-      return displayDate(dateString);
-    },
-    toggleMic () {
-      this.isMicOn = !this.isMicOn
-      this.$root.$emit('toggleMic', this.isMicOn);
     }
   }
 };

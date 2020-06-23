@@ -7,6 +7,7 @@
       :displayImageFile="displayImageFile"
       :resetBoard="resetBoard"
       :toggleFullScreen="toggleFullScreen"
+      :setTouchDisabled="setTouchDisabled"
       :touchDisabled="touchDisabled"
     >
 
@@ -28,6 +29,11 @@
 <script>
 /**
  * A HTML canvas that supports drawing with stylus/touch/mouse. 
+ * 
+ * Note that the local array and client array can deviate by 1 stroke (represents lag for example in the case of a realtime blackboard)
+ *   localStrokesArray ahead: realtime database hasn't updated 
+ *   clientStrokesArray ahead: client wants to add a stroke programmaticaly on the canvas
+ * 
  * Maintains the invariant that the UI exactly reflects the strokesArray (see proof):
  * 
  * strokesArray => UI:
@@ -83,8 +89,8 @@ export default {
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
-      touchDisabled: true, // isIosSafari() is broken
-      localStrokesArray: [...this.strokesArray],
+      touchDisabled: true, 
+      localStrokesArray: [...this.strokesArray], // ...creates a real copy, rather than an alias
       currentStroke: { 
         points: [] 
       },
@@ -114,33 +120,51 @@ export default {
       return this.currentTool.type === BlackboardTools.PEN;
     }
   },
-  // strokesArray => UI 
   watch: {
+    /**
+     * Ensures `strokesArray => UI`, that is whenever the client mutates the `strokesArray` prop, we update <canvas/> accordingly`. 
+     * 
+     * Note we must ignore the case where (n == this.localStrokesArray.length)
+     * because it means that user drew on canvas --> emits event --> client changes --> triggers our own watch hook
+     */
     strokesArray () {
       const n = this.strokesArray.length; 
       if (n === 0) {
-        this.wipeBoard(); 
+        this.wipeUI(); 
         this.localStrokesArray = [];
       } else if (n - this.localStrokesArray.length === 1) { 
         const newStroke = this.strokesArray[n-1];
         this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke));
         this.localStrokesArray.push(newStroke);
-      } else if (n === this.localStrokesArray.length) {
-        return; 
-      } else {
-        throw new Error("Rep invariant is broken for BlackboardCoreDrawing.vue");
-      }
+      } 
+      this.checkRepInvariant(); 
     }
   },
   mounted () {
     this.initializeCanvas();
     document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
     window.addEventListener("resize", this.resizeBlackboard, false); 
+    this.$emit("mounted", { 
+      getThumbnailBlob: this.getThumbnailBlob,
+    }); 
   },
   destroyed () {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
+    /**
+     * Note `localStrokesArray` can be arbitrarily ahead of `strokesArray`. For example, 
+     * if the user draws 5 strokes quickly, but the client is a realtime blackboard 
+     * that has to upload those 5 strokes to Firestore, then until those documents are uploaded,
+     * `strokesArray` and `localStrokesArray` will differ by 5. 
+     */
+    checkRepInvariant () {
+      if (this.strokesArray.length - this.localStrokesArray.length > 1) {
+        throw new Error(
+          `Rep invariant broken: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
+        );
+      }
+    },
     // UI => strokesArray
     saveStrokeThenReset (e) {
       e.preventDefault()
@@ -165,11 +189,6 @@ export default {
       this.resizeBlackboard();
       this.$_drawStrokesInstantly();
     },
-    // convertAllStrokesToBeInitialStrokes () {
-    //   for (const stroke of this.strokesArray) {
-    //     [stroke.startTime, stroke.endTime] = [0, 0];
-    //   }
-    // },
     changeTool (tool) {
       this.currentTool = tool;
       this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) ? // isStrokeEraser now erases in the back like a normal eraser
@@ -177,11 +196,11 @@ export default {
       this.createCustomCusor();
     },
     async resetBoard () {
-      this.wipeBoard();
+      this.wipeUI();
       this.resetVariables(); 
       this.$emit("board-reset");
     },
-    wipeBoard () {
+    wipeUI () {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
@@ -193,8 +212,12 @@ export default {
       };
       this.imageBlob = null;
     },
+    /**
+     * TODO: Is imageFile a Blob or File type? 
+     */
     displayImageFile (imageFile) {
       this.imageBlob = imageFile; 
+      this.$emit("update:bgImageBlob", this.imageBlob);
       this.$_renderBackground(this.imageBlobUrl);
     },
     startNewStroke (e) {
@@ -351,22 +374,26 @@ export default {
       this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
       this.ctx.lineTo(x, y);
     },
-    /* 
-      this implementation suffers from edge cases: 
-      if eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
-      I tried not using a background color, but then the white strokes will be invisible
-      I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
-    */
-    getThumbnail () {
+    /**
+     * Generates a thumbnail by: 
+     *   1. Render the background image / grey background on the back canvas 
+     *   2. Then draw on the strokes on the back canvas as well
+     * 
+     *   this implementation suffers from edge cases: 
+     *   If eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
+     *   I tried not using a background color, but then the white strokes will be invisible
+     *   I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
+     */
+    getThumbnailBlob () {
       return new Promise(async resolve => {
         if (this.imageBlob) { // has a background image
           await this.$_renderBackground(this.imageBlobUrl);
         } else {
-          this.bgCtx.fillStyle = `rgb(${62}, ${66}, ${66})`;
+          this.bgCtx.fillStyle = "rgb(62, 66, 66)";
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         }
-        this.$_drawStrokesInstantly2();
-        // TODO: remove this quickfix to avoid the double drawing thumbnail 
+        this.$_drawStrokesInstantly(this.bgCtx);
+        // TODO: remove this quickfix (first introduced to avoid double drawing thumbnail)
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
@@ -402,7 +429,15 @@ export default {
       await this.$nextTick();
       this.resizeBlackboard();
       window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
+    },
+    setTouchDisabled (newBoolean) {
+      this.touchDisabled = newBoolean; 
     }
+    // convertAllStrokesToBeInitialStrokes () {
+    //   for (const stroke of this.strokesArray) {
+    //     [stroke.startTime, stroke.endTime] = [0, 0];
+    //   }
+    // },
   }
 };
 </script>

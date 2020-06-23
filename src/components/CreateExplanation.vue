@@ -4,7 +4,7 @@
       <!-- Text editor -->
       <v-col cols="12" md="6" class="pa-0">
         <v-text-field v-if="titleRequired" 
-          placeholder="Type the title here."
+          placeholder="Title"
           v-model="postTitle"
           color="accent"
           hide-details
@@ -12,9 +12,12 @@
           data-qa="title-field"
         />
       </v-col>
-      <TextEditor ref="TextEditor" :key="`editor-${changeKeyToForceReset}`" />
 
+      <TextEditor 
+        @update:html="html => updateHTML(html)"
+      />
       <p class="red--text">{{ messageToUser }}</p>
+      
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
         <template v-if="user">
           <v-btn v-if="!isUploadingPost"
@@ -32,7 +35,7 @@
               <span v-else-if="isUploadingPost">Uploading...</span>
             </template>
           </v-btn>
-          <v-spacer></v-spacer>
+          <v-spacer/>
           <v-switch v-model="isAnonymous" class="mt-5"/>
           <p class="pt-4">toggle anonymous</p>
         </template>
@@ -48,13 +51,17 @@
       </v-progress-linear>
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
-        :strokesArray="strokesArray"
-        @stroke-drawn="stroke => strokesArray.push(stroke)"
         :key="changeKeyToForceReset"
         :isRealtime="false"
+        :strokesArray="strokesArray" 
+        @stroke-drawn="stroke => strokesArray.push(stroke)"
+        @board-reset="strokesArray = []"
+        @mounted="blackboardMethods => bindBlackboardMethods(blackboardMethods)"
+        @update:audioBlob="audioBlob => blackboard.audioBlob = audioBlob"
+        @update:bgImageBlob="bgImageBlob => blackboard.bgImageBlob = bgImageBlob"
+        @update:currentTime="currentTime => blackboard.currentTime = currentTime"
         @record-start="isRecordingVideo = true"
-        @record-end="getBlackboardData => showPreview(getBlackboardData)"
-        ref="Blackboard"
+        @record-end="showPreview()"
       />
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
@@ -62,7 +69,7 @@
           <v-spacer/>
           <BasePopupButton v-if="!isUploadingPost"
             actionName="Retry new recording" 
-            @action-do="initRetry()"
+            @action-do="clearPreviewAndResetBlackboard()"
           >
             <template v-slot:activator-button="{ on }">
               <ButtonNew :on="on" filled icon="mdi-keyboard-return">
@@ -78,9 +85,8 @@
         </v-row>
         <DoodleVideo
           :strokesArray="previewVideo.strokesArray"
-          :audioUrl="previewVideo.audio.blobUrl"
+          :audioUrl="convertToURL(previewVideo.audioBlob)"
           :imageBlob="previewVideo.imageBlob"
-          ref="Doodle"
         />
       </template>
     </v-container>
@@ -127,6 +133,14 @@ export default {
     ButtonNew
   },
   data: () => ({
+    postTitle: "",
+    html: "", // from the text editor
+    blackboard: {
+      getThumbnailBlob: null,
+      audioBlob: null,
+      bgImageBlob: null,
+      currentTime: 0
+    },
     strokesArray: [],
     messageToUser: "",
     uploadProgress: 0,
@@ -140,7 +154,6 @@ export default {
     isAnonymous: false,
     isUploadingPost: false,
     changeKeyToForceReset: 0,
-    postTitle: ""
   }),
   computed: {
     ...mapState([
@@ -167,65 +180,48 @@ export default {
       return this.isUploadingPost || this.isRecordingVideo;
     }
   },
+  created () {
+    this.$emit("alias:strokesArray", this.strokesArray);
+  },
   methods: {
-    /* Always call `resizeBlackboard` if `isPreviewing` is set to false.
-      If the window is resized while Blackboard.vue is hidden with `v-show`, the blackboard's display size will become 0 
-      therefore, when the user press presses "retry", the Blackboard will reappear with 0 width. A similar case happens 
-      with submiting a post. */
-    resizeBlackboard () {
-      const { Blackboard } = this.$refs;
-      const { BlackboardDrawingCanvas } = Blackboard.$refs; 
-      BlackboardDrawingCanvas.resizeBlackboard();
+    bindBlackboardMethods ({ getThumbnailBlob }) {
+      this.blackboard.getThumbnailBlob = getThumbnailBlob; 
     },
-    // The 2 methods below are used by `NewPost` and `SeePost`
-    getBlackboard () {
-      return this.$refs.Blackboard;
+    convertToURL (blob) {
+      return URL.createObjectURL(blob);
     },
-    getTextEditor () {
-      return this.$refs.TextEditor;
+    updateHTML (html) {
+      this.html = html; 
+      this.$emit("update:html", this.html);
     },
-    async initRetry () {
+    clearPreviewAndResetBlackboard () {
       this.isPreviewing = false;
-      this.changeKeyToForceReset += 1;
-      // QUICKFIX: Dourmashkin just wants it to reset everything and not leave any remnants behind 
-      // await this.$nextTick(); // wait for v-if to mount Blackboard 
-      // this.$refs.Blackboard.tryRecordAgain();
-      // this.resizeBlackboard(); // see edge case explanation above
+      // reset the blackboard component 
+      this.strokesArray.length = 0; // must not use `strokesArray = []`
+      this.changeKeyToForceReset += 1; // must be called after strokesArray is reset otherwise the blackboard will be rerendered with the previous strokes
     },
-    async showPreview (getBlackboardData) {
-      this.previewVideo = await getBlackboardData();
+    async showPreview () {      
+      this.previewVideo = {
+        strokesArray: this.strokesArray,
+        audioBlob: this.blackboard.audioBlob,
+        imageBlob: this.blackboard.bgImageBlob
+      };
       this.isRecordingVideo = false;
       this.isPreviewing = true;
     },
     async uploadExplanation() {
-      const { TextEditor, Blackboard } = this.$refs;
       if (this.postTitle.length === 0 && this.titleRequired) {
         this.postTitle = `Untitled (${new Date().toLocaleTimeString()})`;
       }
-      const thumbnailBlob = this.previewVideo.thumbnailBlob ? this.previewVideo.thumbnailBlob : await Blackboard.getThumbnail();
+      const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
+        this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
-        Blackboard.currentState === RecordState.POST_RECORD ? this.previewVideo.audio.blob : null,
-        TextEditor.html,
+        this.blackboard.audioBlob,
+        this.html,
         this.postTitle,
         this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId())
-      )
-    },
-    toggleFullscreenDoodle () {
-      this.isFullScreenDoodle = !this.isFullScreenDoodle;
-      const { Doodle } = this.$refs;
-      Doodle.handleResize();
-      if (this.isFullScreenDoodle) {
-        document.documentElement.style.overflowY = "hidden";
-      } else {
-        document.documentElement.style.overflowY = "auto";
-        window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
-      }
-    },
-    clickOutsideDoodle (e) {
-      if (e.target.id === "doodle-wrapper" && this.isFullScreenDoodle) {
-        this.toggleFullscreenDoodle()
-      }
+      );
     }
   }
 }

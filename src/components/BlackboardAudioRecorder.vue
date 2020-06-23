@@ -4,47 +4,42 @@
 
 <script>
 import AudioRecorder from "audio-recorder-polyfill";
-
 import mpegEncoder from "audio-recorder-polyfill/mpeg-encoder";
+
 AudioRecorder.encoder = mpegEncoder;
-AudioRecorder.prototype.mimeType = "audio/mpeg";
+AudioRecorder.prototype.mimeType = "audio/mpeg"; // mpeg is equivalent to mp3
 window.MediaRecorder = AudioRecorder;
 
 export default {
   data () {
     return {
       recorder: null,
-      audio: {} // TODO: refactor away this instance variable 
-    }
+    }; 
+  },
+  created () {
+    this.$emit("created", { 
+      startRecording: this.startRecording,
+      stopRecording: this.stopRecording
+    }); 
   },
   methods: {
     async startRecording () {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.recorder = new MediaRecorder(stream)
-
-      // When recording finishes, inject it into <audio>
-      this.recorder.addEventListener("dataavailable", e => {
-        const blob = e.data;
-        const audioPayload = {
-          blob,
-          blobUrl: URL.createObjectURL(blob),
-          size: blob.size,
-          type: blob.type
-        };
-        this.$emit("audio-recorded", audioPayload);
-        this.audio = audioPayload; // TODO: for legacy purposes so Blackboard.vue works 
-        this.recorder = null; // quickfix for Safari multiple files playing uncontrollably bug
-      });
-
-      // Start recording
-      this.recorder.start()
+      this.recorder.start();
       this.$emit("start-recording");
     },
     stopRecording () {
-      this.recorder.stop();
-      for (const track of this.recorder.stream.getTracks()) {
-        track.stop();
-      }
+      return new Promise((resolve, reject) => {
+        this.recorder.addEventListener("dataavailable", e => {
+          this.$emit("update:audioBlob", e.data); 
+          resolve(); 
+        });
+        this.recorder.stop();
+        for (const track of this.recorder.stream.getTracks()) {
+          track.stop();
+        }
+      });
     }
   }
 }
