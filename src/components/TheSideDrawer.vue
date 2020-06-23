@@ -55,6 +55,7 @@
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
+     
   </v-card>
 </template>
 
@@ -65,6 +66,8 @@ import RoomExplorer from "@/components/RoomExplorer.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import { tutorial } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
+import firebase from "firebase/app";
+import "firebase/firestore";
 
 export default {
   props: {
@@ -86,7 +89,11 @@ export default {
     ]),
     classId () { 
       return this.$route.params.class_id; 
-    }
+    },
+    roomId () {
+      return this.$route.params.room_id;
+    },
+    
   }
 };
 </script>

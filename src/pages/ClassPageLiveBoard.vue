@@ -1,7 +1,6 @@
 <template>
   <div id="room">
     <template v-if="user">
-      <LiveBoardAudio :roomId="roomId"/>
       <RealtimeBlackboard :strokesRef="strokesRef"/>
     </template>
   </div>
@@ -43,12 +42,14 @@ export default {
     ]),
     simplifiedUser () {
       if (!this.user) return; 
-      return {
+      const main = {
         email: this.user.email,
         uid: this.user.uid,
         firstName: this.user.firstName,
-        lastName: this.user.lastName
+        lastName: this.user.lastName,
       }
+      return main
+      
     }
   },
   watch: {
@@ -64,8 +65,8 @@ export default {
   },
   beforeDestroy () {
     this.unsubscribeRoomListener();
-    this.roomRef.update({
-      participants: firebase.firestore.FieldValue.arrayRemove(this.simplifiedUser)
+    this.roomRef.update({ //Filters out the current user
+      participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
     });
   },
   methods: {
@@ -84,15 +85,18 @@ export default {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return; 
         const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
-        // maybe remove the await for performance improvements?
-        await firebaseRef.onDisconnect().set(this.simplifiedUser);
-        this.roomRef.update({ // it's much faster to update Firestore directly then to wait for Cloud Functions
-          participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
-        });
+        // 1. User leaves, and his/her identity is saved to Firebase
+        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         
-        // cleanup firebase from previous user remnants, so when the onDisconnect hook triggers,
-        // the firebase will go from empty to {} for Cloud Functions to detect it
-        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object for some reason
+        // step 1 (step 2 is executed in Cloud Functions)
+        await firebaseRef.onDisconnect().set(this.simplifiedUser);
+        // now join the room 
+        if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
+          this.roomRef.update({ // it's much faster to update Firestore directly
+            participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
+          });
+        }
+        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: "", 
           firstName: "" 

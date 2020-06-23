@@ -11,6 +11,7 @@
     <v-icon class="pr-2">mdi-plus</v-icon>
     CREATE BLACKBOARD
   </v-btn> -->
+  <div>
   <v-list class="pt-0">
     <v-list-item 
       :to="(`/class/${classID}/room/center-table`)"
@@ -58,32 +59,37 @@
                 <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
                   {{ participant.firstName }}
                 </div>
-                
-                <BasePopupButton 
-                  @action-do="({ 'Status': status }) => setRoomStatus(status)" 
-                  :inputFields="['Status']"
-                  actionName="Set room status"
-                >
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn v-if="user.uid === participant.uid" 
-                      v-on="on"
-                      color="accent lighten-1"
-                      :outlined="true"
-                      rounded
-                      style="margin:3px">
-                      <v-icon>mdi-account-alert</v-icon>
-                    </v-btn> 
-                  </template>
-                </BasePopupButton>
 
-                <v-btn v-if="user.uid === participant.uid" 
-                  @click="toggleMic()" 
-                  :color="isMicOn ? 'accent' : 'accent lighten-1'" 
-                  :outlined="isMicOn" 
-                  rounded
-                >
-                  <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
-                </v-btn>
+                <template v-if="user.uid === participant.uid">
+                  <BasePopupButton
+                    @action-do="({ 'Status': status }) => setRoomStatus(status)" 
+                    :inputFields="['Status']"
+                    actionName="Set room status"
+                  >
+                    <template v-slot:activator-button="{ on }">
+                      <v-btn 
+                        v-on="on"
+                        color="accent lighten-1"
+                        :outlined="true"
+                        rounded
+                        style="margin:3px">
+                        <v-icon>mdi-account-alert</v-icon>
+                      </v-btn> 
+                    </template>
+                  </BasePopupButton>
+
+                  <v-btn 
+                    @click="toggleMic()" 
+                    :color="isMicOn ? 'accent' : 'accent lighten-1'" 
+                    :outlined="isMicOn" 
+                    rounded
+                  >
+                    <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                  </v-btn>
+                </template>
+                <template v-else>
+                  <v-icon class="">{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                </template>
               </div>
             </template>
           </div>
@@ -91,13 +97,24 @@
       </v-list-item>
       <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
     </template>
-  </v-list>
-</template>
 
+    
+  </v-list>
+  <LiveBoardAudio 
+      v-if="user"
+      :roomId="lastBlackboardRoomId"
+      :isMicOn="isMicOn"
+      @left-room="isMicOn=false"
+      :key="lastBlackboardRoomId"
+    />
+  </div>
+    
+</template>
 <script>
 import db from "@/database.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import { mapState } from "vuex";
 
 export default {
@@ -106,13 +123,15 @@ export default {
   ],
   components: {
     BasePopupButton,
+    LiveBoardAudio
   },
   data () {
     return {
       snapshotListeners: [],
       centerTableParticipants: [],
       blackboards: [],
-      isMicOn: false
+      isMicOn: false,
+      savedRoomId: ""
     };
   },
   computed: {
@@ -125,10 +144,15 @@ export default {
     },
     roomID () {
       return this.$route.params.room_id;
+    },
+    lastBlackboardRoomId () {
+      if (this.roomID) {
+        this.savedRoomId = this.roomID;
+      }
+      return this.savedRoomId;
     }
   },
   created () {
-    this.$root.$on("leftRoom", () => this.isMicOn = false);
     const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
 
@@ -151,15 +175,23 @@ export default {
       });
     },
     createBlackboard () {
-      const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
+      const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       const newBlackboard = blackboardsRef.add({
         participants: []
       });
     },
     toggleMic () {
       this.isMicOn = !this.isMicOn;
-      this.$root.$emit('toggleMic', this.isMicOn);
-    }
+      this.updateMicStatus()
+    },
+    updateMicStatus () {
+      var updatedParticipants = this.blackboards.find(room => room.id === this.roomID).participants;
+      updatedParticipants.find(participant => participant.uid === this.user.uid).isMicOn = this.isMicOn;
+      const blackboardRoomRef = db.doc(`classes/${this.classID}/blackboards/${this.roomID}`);
+      blackboardRoomRef.update({
+        participants: updatedParticipants
+      })
+    },
   }
 };
 </script>

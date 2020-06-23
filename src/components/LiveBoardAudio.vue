@@ -1,16 +1,7 @@
 <template>
-    
 	<div >
-		<!-- <v-btn @click="enterAudioChat()">
-				Connect Audio
-		</v-btn> -->
-		<!-- <div class="row remote_video_container"> -->
 		<div id="remote-media"></div>
-		<!-- </div> -->
-		<!-- <div class="spacing"></div> -->
-		<div class="row">
-			<div id="local-media"></div>
-		</div>
+		<div id="local-media"></div>
 	</div>
 </template> 
 
@@ -20,31 +11,56 @@ import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
+import { mapState } from "vuex";
 
 
 export default {
 	props: {
 		roomId: String,
+		isMicOn: Boolean
 	},
 	data() {
 		return {
 			loading: false,
-			activeRoom: '',
-			token: null,
-			isMicOn: false
+			activeRoom: null,
+			token: null
 		}
 	},
 	computed: {
-		user () { return this.$store.state.user;}
+		...mapState([
+      "user"
+    ]),
+	},
+	watch: {
+		isMicOn () {
+			this.toggleMic()
+		}
 	},
 	created() {
+		console.log("audio created")
 		this.token = this.getAccessToken();
-		this.$root.$on('toggleMic', (micStatus) => this.toggleMic(micStatus));
 	},
-	destroyed() {
+	beforeDestroy () {
+		this.$emit('left-room');
 		this.leaveRoomIfJoined();
+		console.log('Audio destroyed',this.roomId)
 	},
 	methods: {
+		toggleMic () {
+			console.log("toggled mic", this.roomId, this.isMicOn)
+			if (this.isMicOn){
+				if (this.activeRoom===null) {
+					this.enterAudioChat();
+				} else {
+					this.unMuteAudio();
+				}
+			}
+			else {
+				if (this.activeRoom){
+					this.muteAudio();
+				}
+			}
+		},
 		getAccessToken() {
 				var AccessToken = require('twilio').jwt.AccessToken;
 				var VideoGrant = AccessToken.VideoGrant;
@@ -61,11 +77,6 @@ export default {
 						API_KEY_SECRET
 				);
 
-				// Set the Identity of this token
-				// let ids = ["Winston1", "Winston2", "Winston3"]
-				// let id = ids[Math.floor(Math.random()*3)];
-				// console.log(id);
-				// accessToken.identity = id;
 				accessToken.identity = this.user.uid;
 
 				// Grant access to Video
@@ -111,10 +122,10 @@ export default {
 				container.appendChild(selfContainer);
 
 				participant.tracks.forEach((publication) => {
-						this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, selfContainer);
 				});
 				participant.on('trackPublished', (publication) => {
-						this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, selfContainer);
 				});
 				participant.on('trackUnpublished', this.trackUnpublished);
 		},
@@ -141,14 +152,11 @@ export default {
 						});
 		},
 		leaveRoomIfJoined() {
-		if (this.activeRoom) {
-			this.activeRoom.disconnect();
-			console.log("disconnecting");
-		}
+			if (this.activeRoom) {
+				this.activeRoom.disconnect();
+				console.log("disconnecting");
+			}
 		},
-		log(message){
-		this.x = this.x + message + '\r\n'
-		}, 
 		enterAudioChat() {
 			this.loading = true;
 
@@ -158,13 +166,11 @@ export default {
 				audio: true,
 				// video: { width: 400 }
 			};
-			// before a user enters a new room,
-			// disconnect the user from they joined already
 			this.leaveRoomIfJoined();
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			Twilio.connect(this.token , connectOptions).then(
+			Twilio.connect(this.token, connectOptions).then(
 				(room) => { 
 					this.onTwilioConnect(room);
 					this.unMuteAudio();
@@ -174,10 +180,9 @@ export default {
 		},
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);
-				this.log('Successfully joined a Room: '+ room);
 				// set active toom
 				this.activeRoom = room;
-				this.loading = false;
+				// this.loading = false;
 				var previewContainer = document.getElementById('local-media');
 				this.attachTracks(this.getTracks(room.localParticipant), previewContainer);
 				
@@ -191,59 +196,23 @@ export default {
 				room.on('participantConnected', (participant) => {
 						console.log("Joining: '" + participant.identity + "'");
 						this.participantConnected(participant, remoteMediaContainer);
-						this.isMicOn = false;
 				});
 
 				room.on('participantDisconnected', (participant) => {
 						console.log("RemoteParticipant '" + participant.identity + "' left the room");
 						this.detachParticipantTracks(participant);
-						// removeName(participant);
 				});
 
 				room.on('disconnected', () => {
 					console.log('Left the rooom');
-					this.$root.$emit('leftRoom');
 					this.detachParticipantTracks(room.localParticipant);
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
 				});
-		},
-		toggleMic (micStatus) {
-			this.isMicOn = micStatus;
-			if (this.isMicOn){
-				if (this.activeRoom==='') {
-					this.enterAudioChat();
-				} else {
-					this.unMuteAudio();
-				}
-			}
-			else {
-				this.muteAudio();
-			}
 		}
 	}
 }
 </script>
 
 <style >
-   /* .remote_video_container {
-     left: 0;
-     margin: 0;
-     border: 1px solid rgb(124, 129, 124);
-   }
-   #localTrack video {
-       border: 3px solid rgb(124, 129, 124);
-       margin: 0px;
-       max-width: 50% !important;
-       background-repeat: no-repeat;
-   }
-   .spacing {
-     padding: 20px;
-     width: 100%;
-   }
-   .roomTitle {
-       border: 1px solid rgb(124, 129, 124);
-       padding: 4px;
-       color: dodgerblue;
-   } */
 </style>
