@@ -20,24 +20,28 @@
       
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
         <template v-if="user">
-          <v-btn v-if="!isUploadingPost"
-            @click="uploadExplanation()" 
-            :loading="isButtonDisabled" 
-            :disabled="isButtonDisabled"
-            color="secondary" 
-            class="ma-0 white--text" 
-            data-qa="submit-post-btn"
-          >
-            SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
-            <v-icon class="pl-2">mdi-send</v-icon>
-            <template v-slot:loader>
-              <span v-if="isRecordingVideo">Recording...</span> 
-              <span v-else-if="isUploadingPost">Uploading...</span>
-            </template>
-          </v-btn>
-          <v-spacer/>
-          <v-switch v-model="isAnonymous" class="mt-5"/>
-          <p class="pt-4">toggle anonymous</p>
+          <v-row align="center" justify="space-between">
+            <v-col cols="auto">
+              <v-switch v-model="isAnonymous" label="Toggle Anonymous" color="accent"/>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn v-if="!isUploadingPost"
+                @click="uploadExplanation()" 
+                :loading="isButtonDisabled" 
+                :disabled="isButtonDisabled"
+                color="secondary" 
+                class="ma-0 white--text" 
+                data-qa="submit-post-btn"
+              >
+                SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
+                <v-icon class="pl-2">mdi-send</v-icon>
+                <template v-slot:loader>
+                  <span v-if="isRecordingVideo">Recording...</span> 
+                  <span v-else-if="isUploadingPost">Uploading...</span>
+                </template>
+              </v-btn>
+            </v-col>
+          </v-row>
         </template>
       </div>
       <v-progress-linear
