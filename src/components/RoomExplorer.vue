@@ -191,7 +191,7 @@ export default {
       blackboardRoomRef.update({
         participants: updatedParticipants
       })
-    },
+    }
   }
 };
 </script>

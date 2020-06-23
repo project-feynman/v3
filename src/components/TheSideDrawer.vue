@@ -92,8 +92,7 @@ export default {
     },
     roomId () {
       return this.$route.params.room_id;
-    },
-    
+    }
   }
 };
 </script>
