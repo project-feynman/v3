@@ -2,22 +2,43 @@
   <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
   <v-card >
     <v-navigation-drawer 
-      :value="value" 
-      @input="newVal => $emit('input', newVal)" 
+      :value="value" @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
       width="350"
       class="the-side-drawer"
     >
+<<<<<<< HEAD
+      <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
+        <v-icon class="pr-2">mdi-home</v-icon> 
+        Overview
+      </v-btn> -->
       <v-tabs v-model="activeTab" grow active-class="accent--text" class="side-tabs" slider-color="accent">
-        <v-tab key="Forum" data-qa="forum-tab">Archive</v-tab>
-        <v-tab :disabled="!user" key="Blackboard" data-qa="blackboard-tab">Lounges</v-tab>
+        <v-tab href="#archive">
+          Archive
+        </v-tab>
+        
+        <v-tab href="#Q&A" data-qa="forum-tab">
+          Q&A
+        </v-tab>
+
+        <v-tab href="#rooms" :disabled="!user" data-qa="blackboard-tab">
+          Rooms
+        </v-tab>
       </v-tabs>
+
       <v-tabs-items v-model="activeTab">
+        <v-tab-item value="archive">
+          <FileExplorer type="note"/>
+        </v-tab-item>
+
+        <v-tab-item value="Q&A">
+          <FileExplorer type="question"/>
+        </v-tab-item>
+    
         <!-- File Explorer -->
-        <v-tab-item>
+        <!-- <v-tab-item>
           <v-list class="py-0">
-            <!-- Require user to log-in to create new posts -->
             <v-list-item :disabled="!user" :to="(`/class/${classId}/posts/new`)" >
               <v-list-item-icon><v-icon>mdi-plus</v-icon></v-list-item-icon>
               <v-list-item-content>
@@ -27,10 +48,10 @@
           </v-list>
 
           <FileExplorer/>
-        </v-tab-item>
+        </v-tab-item> -->
 
         <!-- Room Explorer -->
-        <v-tab-item v-if="user">
+        <v-tab-item v-if="user" value="rooms">
           <RoomExplorer/>
         </v-tab-item>
       </v-tabs-items>
@@ -39,7 +60,8 @@
 </template>
 
 <script>
-import FileExplorer from "@/components/FileExplorer.vue";
+import FileExplorer from "@/components/FileExplorerByDate.vue";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import RoomExplorer from "@/components/RoomExplorer.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import { tutorial } from "@/CONSTANTS.js";
@@ -56,8 +78,8 @@ export default {
   },
   data () {
     return {
-      activeTab: this.$route.params.room_id ? 1 : 0,
-    };
+      activeTab: "archive"
+    }
   },
   computed: { 
     ...mapState([

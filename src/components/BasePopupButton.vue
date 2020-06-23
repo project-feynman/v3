@@ -7,37 +7,42 @@
         </v-btn>
       </slot>
     </template>
+
     <v-card>
       <v-card-title>
         <span class="headline">
           {{ actionName }}
         </span>
       </v-card-title>
+
       <v-card-text>
         <v-container>
           <slot name="message-to-user">
 
           </slot>
-            <slot name="popup-content" :closePopup="resetState">
-              <v-row>
-                <v-col v-for="field in inputFields" cols="12" :key="field">
-                  <v-text-field
-                    v-model="inputValues[field]"
-                    :label="field"
-                    :type="field"
-                    :data-qa="field"
-                    required
-                  />
-                </v-col>
-              </v-row>
-            </slot>
+
+          <slot name="popup-content" :closePopup="resetState">
+            <v-row>
+              <v-col v-for="field in inputFields" cols="12" :key="field">
+                <v-text-field
+                  v-model="inputValues[field]"
+                  :label="field"
+                  :type="field"
+                  :data-qa="field"
+                  required
+                />
+              </v-col>
+            </v-row>
+          </slot>
         </v-container>
       </v-card-text>
+
       <v-card-actions>
         <v-spacer/>
           <v-btn @click="resetState()" color="secondary" text>
             Cancel
           </v-btn>
+          
           <slot name="popup-action-buttons">
             <v-btn v-if="actionName" @click="doAction()" color="secondary" text :data-qa='actionName'>
               {{ actionName }}

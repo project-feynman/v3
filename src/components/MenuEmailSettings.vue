@@ -78,6 +78,7 @@ export default {
     async saveSettings () {
       const updatePayload = {};
       for (let [key, value] of Object.entries(this.emailSettings)) {
+        // example of `key` is "emailOnNewReply" and "emailOnNewPost"
         if (value) {
           updatePayload[key] = firebase.firestore.FieldValue.arrayUnion(this.mitClass.id);
         } else {
@@ -89,8 +90,10 @@ export default {
       this.menu = false; 
       this.$root.$emit("show-snackbar", "Successfully updated your email settings.")
     },
+    /**
+     *  @see https://stackoverflow.com/questions/7225407/convert-camelcasetext-to-sentence-case-text
+     */
     convertToSentenceCase (text) {
-      // Refer to https://stackoverflow.com/questions/7225407/convert-camelcasetext-to-sentence-case-text
       const result = text.replace( /([A-Z])/g, " $1" );
       return result.charAt(0).toUpperCase() + result.slice(1);
     }

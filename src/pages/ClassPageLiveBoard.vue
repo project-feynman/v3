@@ -69,27 +69,30 @@ export default {
     });
   },
   methods: {
+    /**
+     * Push the user object onto the room's `participants` array, and ensures that 
+     * Firebase will remove the user object if he/she disconnects for whatever reason.
+     * 
+     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
+     * @see https://firebase.google.com/docs/firestore/solutions/presence
+     * @see https://firebase.google.com/docs/database/web/offline-capabilities
+     */
     setUserDisconnectHook () {
-      /*
-        Firebase Realtime Database provides a special location at /.info/connected 
-        which is updated every time the Firebase Realtime Database client's connection state changes. 
-        https://firebase.google.com/docs/database/web/offline-capabilities
-      */
-      firebase.database().ref(".info/connected").on("value", async snapshot => {
+      // ".info/connected" is a special location on Firebase Realtime Database 
+      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
+      firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return; 
-        // first ensure `onDisconnect` hook is successfully processed 
         const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
-        // 1. User leaves, and his/her identity is saved to Firebase
-        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
-
-        // step 1 (step 2 is executed in Cloud Functions)
+        // maybe remove the await for performance improvements?
         await firebaseRef.onDisconnect().set(this.simplifiedUser);
-        // now join the room 
-        this.roomRef.update({ // it's much faster to update Firestore directly
+        this.roomRef.update({ // it's much faster to update Firestore directly then to wait for Cloud Functions
           participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
         });
-        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+        
+        // cleanup firebase from previous user remnants, so when the onDisconnect hook triggers,
+        // the firebase will go from empty to {} for Cloud Functions to detect it
+        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object for some reason
           email: "", 
           uid: "", 
           firstName: "" 
