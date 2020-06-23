@@ -50,7 +50,7 @@
           <v-list-item-title>
             Lounge {{ i }}
             <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span>
-            <h2 v-if="blackboard.status">{{ blackboard.status }}</h2>
+            <p v-if="blackboard.status">{{ blackboard.status }}</p>
           </v-list-item-title>
           <div class="active-blackboard-users pl-4 pt-2">
             <template v-for="(participant, i) in blackboard.participants">
