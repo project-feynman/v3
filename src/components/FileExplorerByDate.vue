@@ -205,15 +205,16 @@ export default {
       immediate: true,
       deep: true,
       async handler () {
-        console.log(this.mitClass)
-        // await this.tagsArrayToObject();
-        // await this.initializeClassOrder();
+        if (!this.mitClass) return;
+        console.log('mitclass updates')
+        await this.tagsArrayToObject();
+        await this.initializeClassOrder();
         if (this.groupBy==="concept") this.groupByConcept();
-        else this.groupByDate();
+        // else this.groupByDate();
       }
     },
     groupBy: function(newVal) {
-      console.log(newVal)
+      console.log('this one by groupby')
       if (newVal === "concept") this.groupByConcept();
       else this.groupByDate();
     },
@@ -234,7 +235,6 @@ export default {
     async renameTag (payload, tag) {
       const i = this.mitClass.tags.findIndex(({name}) => name ==tag.name);
       this.mitClass.tags[i].name=payload['New Name']
-      console.log(this.mitClass)
       const postRef = db.doc(`classes/${this.$route.params.class_id}`);
       await postRef.update({
         tags: this.mitClass.tags,
@@ -259,17 +259,18 @@ export default {
       this.incrementKeyToDestroy += 1;
       this.$root.$emit("show-snackbar", "Successfully created a new folder.");
     },
+    // For better UX; To be done after some time
     dragHover (action, id, data, event) {
-      console.log('action', action);
-      console.log('the id', id);
-      const target = document.getElementById(id);
-      console.log('the target', target);
-      console.log('inner eleement', target.contains(event.target))
-      if (target.contains(event.target)) return;
-      // console.log('target',target);
-      if (event==='start') target.classList.add('dragOver');
-      else target.classList.remove('dragOver');
-      console.log(target.classList)
+    //   console.log('action', action);
+    //   console.log('the id', id);
+    //   const target = document.getElementById(id);
+    //   console.log('the target', target);
+    //   console.log('inner eleement', target.contains(event.target))
+    //   if (target.contains(event.target)) return;
+    //   // console.log('target',target);
+    //   if (event==='start') target.classList.add('dragOver');
+    //   else target.classList.remove('dragOver');
+    //   console.log(target.classList)
     },
     async handleDrop (droppedAt, item) {
       item.highlight = false;
@@ -298,6 +299,11 @@ export default {
         const avg = (lower+upper)/2;
         order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
         console.log('final order', order);
+        if (order>this.mitClass.maxOrder) {
+          db.doc(`classes/${this.$route.params.class_id}`).update({
+            maxOrder: order,
+          });
+        }
       }
       const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${item.data.id}`);
       await postRef.update({
@@ -321,15 +327,13 @@ export default {
         })
         this.foldersFromDates();
       });
-      console.log('current length '+this.organizedPosts.length)
     },
     async groupByConcept () {
       console.log('grouping by concept');
       this.organizedPosts = this.conceptGroups;
       if (!this.mitClass || this.conceptGroups.length!==0) return; 
+      console.log('yay not cancelled')
       let i = 0;
-      let tags = this.mitClass.tags;
-      tags.sort((a,b) => a.parent === null ? 1 : (b.parent === null ? 0 : -1));
       for (const tag of this.mitClass.tags) {
         const tag_object = {
           id: tag.id,
@@ -359,7 +363,6 @@ export default {
     async fetchRelevantPosts (item) {
       let postsQuery;
       const postsRef = db.collection(`classes/${this.mitClass.id}/posts`);
-      console.log('current group is by', this.groupBy);
       if (this.groupBy === 'concept') {
         postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
@@ -428,22 +431,21 @@ export default {
     bindArrayToDatabase (array, id, queryRef) {
       return new Promise(resolve => {
         const snapshotListener = queryRef.onSnapshot(snapshot => {  
-          if (snapshot.empty) {
-            array.push({ 
-              id: "Push something so the folder doesn't enter an infinite loop and freeze the browser",
-              name: "(Empty)",
-              date: "January 3rd"
-            });
-            this.incrementKeyToDestroy += 1;
-            resolve();
-            return; 
-          }
+          // if (snapshot.empty) {
+          //   array.push({ 
+          //     id: "Push something so the folder doesn't enter an infinite loop and freeze the browser",
+          //     name: "(Empty)",
+          //     date: "January 3rd"
+          //   });
+          //   this.incrementKeyToDestroy += 1;
+          //   resolve();
+          //   return; 
+          // }
           // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
           array.length = 0; 
 
-          console.log('before slicing', array.slice());
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
           for (let tag of childrenFolders) {
             array.push({
@@ -511,12 +513,12 @@ export default {
     // A temporary function to convert the tags of a class from array to object when class is loaded
     async tagsArrayToObject () {
       // If the class doesn't have tags initialized yet
-      console.log({...this.mitClass})
       if (! this.mitClass.hasOwnProperty('tags')) {
         db.doc(`classes/${this.$route.params.class_id}`).update({
           tags: [],
         });
         this.mitClass.tags = []
+        this.tagPostToTagId([])
         return;
       }
 
@@ -544,8 +546,10 @@ export default {
         querySnapshot.forEach(function(doc) {
           const postTags = doc.data().tags;
           let tag_ids = [];
-          for (let tag of postTags) {
-            tag_ids.push(tags.find(({name}) => name ==tag).id);
+          if (typeof postTags !== "undefined") {
+            for (let tag of postTags) {
+              tag_ids.push(tags.find(({name}) => name ==tag).id);
+            }
           }
           doc.ref.update({
             tags: tag_ids
@@ -555,8 +559,6 @@ export default {
     },
     async initializeClassOrder () {
       let order = 0;
-      console.log({...this})
-      console.log('trying to order', this.mitClass.hasOwnProperty('maxOrder'))
       if (this.mitClass.hasOwnProperty('maxOrder')) return;
       console.log("this class has no ordering")
       await db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then((querySnapshot)=> {
@@ -566,7 +568,6 @@ export default {
               order: order
           });
         });
-        console.log('final order-1', order)
       });
       console.log('final order', order);
       db.doc(`classes/${this.$route.params.class_id}`).update({

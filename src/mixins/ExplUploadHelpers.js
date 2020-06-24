@@ -32,7 +32,7 @@ export default {
      * @params this contains the properties `postTitle`, `strokesArray`, etc. which defines the explanation 
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
-    async $_saveExplToCacheThenUpload (thumbnailBlob, audioBlob, html, title, explRef) {
+    async $_saveExplToCacheThenUpload (thumbnailBlob, audioBlob, html, title, tags, postOrder, explRef) {
       this.$store.commit("ADD_EXPL_TO_CACHE", {
         ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads
         strokesArray: this.strokesArray,
@@ -45,7 +45,8 @@ export default {
           date: new Date().toISOString(),
           creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
           mitClass: this.mitClass,
-          tags: [],
+          tags,
+          order: postOrder,
           duration: this.blackboard.currentTime, 
           hasStrokes: this.strokesArray.length > 0
         }

@@ -10,6 +10,7 @@
           hide-details
           class="mb-5"
           data-qa="title-field"
+          id="title"
         />
       </v-col>
 
@@ -23,13 +24,14 @@
           <v-row align="center" justify="space-between">
             <v-col cols="auto">
               <v-switch v-model="isAnonymous" label="Toggle Anonymous" color="accent"/>
+              <v-select v-if="willCreateNewPost" :items="tagSelect" v-model="folder" dense outlined label="Add to Folder" color="accent"></v-select>
             </v-col>
             <v-col cols="auto">
               <v-btn v-if="!isUploadingPost"
                 @click="uploadExplanation()" 
                 :loading="isButtonDisabled" 
                 :disabled="isButtonDisabled"
-                color="secondary" 
+                color="accent" 
                 class="ma-0 white--text" 
                 data-qa="submit-post-btn"
               >
@@ -158,6 +160,7 @@ export default {
     isAnonymous: false,
     isUploadingPost: false,
     changeKeyToForceReset: 0,
+    folder: '',
   }),
   computed: {
     ...mapState([
@@ -182,6 +185,14 @@ export default {
     },
     isButtonDisabled () {
       return this.isUploadingPost || this.isRecordingVideo;
+    },
+    tagSelect () {
+      if (!this.mitClass) return [];
+      let tags = []
+      for (let tag of this.mitClass.tags) {
+        tags.push({text: tag.name, value: tag.id})
+      }
+      return tags;
     }
   },
   created () {
@@ -219,20 +230,27 @@ export default {
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
+      const postOrder = (this.mitClass['maxOrder']+1) || 1;
+      console.log(this.folder)
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
         this.blackboard.audioBlob,
         this.html,
         this.postTitle,
-        this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId())
+        [this.folder],
+        postOrder,
+        this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId()),
       );
+      db.doc(`classes/${this.$route.params.class_id}`).update({
+        maxOrder: postOrder,
+      });
     }
   }
 }
 </script>
 
-<style scoped>
-.v-text-field {
+<style>
+.v-text-field #title {
   font-size: 1.6em;
 }
 </style>
