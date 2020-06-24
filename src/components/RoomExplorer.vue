@@ -51,7 +51,7 @@
       >
         <v-list-item-content v-if="blackboard.participants">
           <v-list-item-title>
-            Room {{ i }}
+            Space {{ i }}
             <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
             <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
           </v-list-item-title>
