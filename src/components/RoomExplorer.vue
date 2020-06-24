@@ -19,12 +19,22 @@
       class="blackboard-item"
       active-class="active-blackboard"
     >
-      Main Lobby
+      <h4>
+        Main Lobby
+      </h4>
     </v-list-item>
 
     <v-divider/>
-
-    <template v-for="(blackboard, i) in blackboards">
+    <!-- <v-list-item> -->
+    
+    <v-expansion-panels>
+      <template v-for="(category, i) in roomCategories">
+        <v-expansion-panel :key="i">
+          <v-expansion-panel-header><h4>{{category.title}}</h4></v-expansion-panel-header>
+            <v-expansion-panel-content> 
+              <v-list >
+                <template v-for="(blackboard, i) in category.rooms">
+    <!-- <template v-for="(blackboard, i) in blackboards"> -->
       <!-- 
       Complication: 
           clicking activator button i.e. v-on="on" inside <BasePopupButton> 
@@ -42,66 +52,69 @@
           class="blackboard-item" 
           :to="(`/class/${classId}/room/${blackboard.id}`)" 
       -->
-      <v-list-item
-        @click="$router.push(`/class/${classID}/room/${blackboard.id}`)"
-        :key="blackboard.id"
-        color="accent"
-        class="active-blackboard"
-        active-class="active-blackboard"
-      >
-        <v-list-item-content v-if="blackboard.participants">
-          <v-list-item-title>
-            Room {{ i }}
-            <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
-            <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
-          </v-list-item-title>
-          <div class="active-blackboard-users pl-4 pt-2">
-            <template v-for="(participant, i) in blackboard.participants">
-              <div class="d-flex align-center py-2" :key="i">
-                <v-icon>mdi-account</v-icon>
-                <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
-                  {{ participant.firstName }}
-                </div>
-
-                <template v-if="user.uid === participant.uid">
-                  <BasePopupButton
-                    @action-do="({ 'Status': status }) => setRoomStatus(status)" 
-                    :inputFields="['Status']"
-                    actionName="Set room status"
+                  <v-list-item
+                    @click="$router.push(`/class/${classID}/room/${blackboard.id}`)"
+                    :key="blackboard.id"
+                    color="accent"
+                    class="active-blackboard"
+                    active-class="active-blackboard"
                   >
-                    <template v-slot:activator-button="{ on }">
-                      <v-btn 
-                        v-on="on"
-                        color="accent lighten-1"
-                        :outlined="true"
-                        rounded
-                        style="margin:3px">
-                        <v-icon>mdi-account-alert</v-icon>
-                      </v-btn> 
-                    </template>
-                  </BasePopupButton>
+                    <v-list-item-content v-if="blackboard.participants">
+                      <v-list-item-title>
+                        Room {{ i }}
+                        <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
+                        <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
+                      </v-list-item-title>
+                      <div class="active-blackboard-users pl-4 pt-2">
+                        <template v-for="(participant, i) in blackboard.participants">
+                          <div class="d-flex align-center py-2" :key="i">
+                            <v-icon>mdi-account</v-icon>
+                            <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
+                              {{ participant.firstName }}
+                            </div>
 
-                  <v-btn 
-                    @click="toggleMic()" 
-                    :color="isMicOn ? 'accent' : 'accent lighten-1'" 
-                    :outlined="isMicOn" 
-                    rounded
-                  >
-                    <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
-                  </v-btn>
-                </template>
-                <template v-else>
-                  <v-icon class="">{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
-                </template>
-              </div>
-            </template>
-          </div>
-        </v-list-item-content>
-      </v-list-item>
-      <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
-    </template>
+                            <template v-if="user.uid === participant.uid">
+                              <BasePopupButton
+                                @action-do="({ 'Status': status }) => setRoomStatus(status)" 
+                                :inputFields="['Status']"
+                                actionName="Set room status"
+                              >
+                                <template v-slot:activator-button="{ on }">
+                                  <v-btn 
+                                    v-on="on"
+                                    color="accent lighten-1"
+                                    :outlined="true"
+                                    rounded
+                                    style="margin:3px">
+                                    <v-icon>mdi-account-alert</v-icon>
+                                  </v-btn> 
+                                </template>
+                              </BasePopupButton>
 
-    
+                              <v-btn 
+                                @click="toggleMic()" 
+                                :color="isMicOn ? 'accent' : 'accent lighten-1'" 
+                                :outlined="isMicOn" 
+                                rounded
+                              >
+                                <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                              </v-btn>
+                            </template>
+                            <template v-else>
+                              <v-icon class="">{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                            </template>
+                          </div>
+                        </template>
+                      </div>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
+                </template>
+              </v-list>
+            </v-expansion-panel-content>
+        </v-expansion-panel>
+      </template>
+    </v-expansion-panels>
   </v-list>
   <LiveBoardAudio 
       v-if="user"
@@ -134,7 +147,19 @@ export default {
       centerTableParticipants: [],
       blackboards: [],
       isMicOn: false,
-      savedRoomId: ""
+      savedRoomId: "",
+      roomCategories: [{
+        title: "Office Hours",
+        rooms: []
+      },
+      {
+        title: "TEAL Tables",
+        rooms: []
+      },
+      {
+        title: "Lounge",
+        rooms: []
+      }]
     };
   },
   computed: {
@@ -153,6 +178,14 @@ export default {
         this.savedRoomId = this.roomID;
       }
       return this.savedRoomId;
+    }
+  },
+  watch: {
+    blackboards (){
+      let l = this.blackboards.length;
+      this.roomCategories[0].rooms = this.blackboards.slice(0,l/3)
+      this.roomCategories[1].rooms = this.blackboards.slice(l/3, 2*l/3)
+      this.roomCategories[2].rooms = this.blackboards.slice(2*l/3)
     }
   },
   created () {
