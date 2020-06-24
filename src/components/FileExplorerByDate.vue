@@ -98,9 +98,9 @@
               </v-menu>
             </template>
             <template v-slot:label="{ item }">
-              <drop class="drop" @drop="handleDrop(item, ...arguments)">
+              <drop class="drop" @dragenter="dragHover('start', item.id, ...arguments)" @dragleave="dragHover('end', item.id, ...arguments)"  @drop="handleDrop(item, ...arguments)">
                 <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
-                  <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
+                  <v-list-item :id="item.id" two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
                     <v-list-item-content>
                       <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
                       <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
@@ -259,12 +259,26 @@ export default {
       this.incrementKeyToDestroy += 1;
       this.$root.$emit("show-snackbar", "Successfully created a new folder.");
     },
+    dragHover (action, id, data, event) {
+      console.log('action', action);
+      console.log('the id', id);
+      const target = document.getElementById(id);
+      console.log('the target', target);
+      console.log('inner eleement', target.contains(event.target))
+      if (target.contains(event.target)) return;
+      // console.log('target',target);
+      if (event==='start') target.classList.add('dragOver');
+      else target.classList.remove('dragOver');
+      console.log(target.classList)
+    },
     async handleDrop (droppedAt, item) {
+      item.highlight = false;
       console.log('the data', item);
       console.log('dropped at', droppedAt);
       let msg = '';
       let tag = '';
       let order = item.data.order;
+      order = typeof order === 'undefined' ? 0 : order;
       console.log('current order',order);
       if (droppedAt.isFolder) {
         tag = [droppedAt.id];
@@ -590,5 +604,8 @@ export default {
 }
 .v-expansion-panel#question .v-expansion-panel-header {
   top: 68px;
+}
+.dragOver {
+  background: black;
 }
 </style>
