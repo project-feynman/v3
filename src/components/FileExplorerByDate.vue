@@ -223,8 +223,9 @@ export default {
     }
   },
   methods: {
+    // Post order update on new post
     async renamePost (payload, post) {
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}/${post.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${post.id}`);
       await postRef.update({
         title: payload["New Name"]
       });
@@ -272,7 +273,7 @@ export default {
         const lower = droppedAt.order;
         console.log('dragged at', lower);
         let upper = droppedAt.order; // Fallback in case the droppedAt item has the highest order in the class
-        await db.collection(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
+        await db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
           console.log(querySnapshot);
           querySnapshot.forEach((doc)=> {
             upper = doc.data().order;
@@ -284,7 +285,7 @@ export default {
         order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
         console.log('final order', order);
       }
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}/${item.data.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${item.data.id}`);
       await postRef.update({
         tags: tag, // a file can only exist in one folder at the time (for now)
         order: order
@@ -370,7 +371,7 @@ export default {
       this.openedFoldersIndices.push(i);
     },
     async movePostToFolder (post, folder, closePopup) {
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}/${post.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${post.id}`);
       await postRef.update({
         tags: [folder] // a file can only exist in one folder at the time (for now)
       });
@@ -512,7 +513,7 @@ export default {
       }
     },
     async tagPostToTagId (tags) {
-      db.collection(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}`).get().then(function(querySnapshot) {
+      db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           const postTags = doc.data().tags;
           let tag_ids = [];
@@ -527,7 +528,7 @@ export default {
     },
     async initializeClassOrder () {
       let order = 1;
-      db.collection(`classes/${this.$route.params.class_id}/${type==='question'?'questions':'posts'}`).orderBy('date', 'asc').get().then(function(querySnapshot) {
+      db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).orderBy('date', 'asc').get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           doc.ref.update({
               order: order
