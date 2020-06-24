@@ -202,18 +202,23 @@ export default {
     search: null,
     incrementKeyToDestroy: 0,
     openedFoldersIndices: [],
-    snapshotListeners: []
+    snapshotListeners: [],
+    hasFetchedExpls: false
   }),
   watch: {
     mitClass: {
-      immediate: true,
+      immediate: true, // mitClass 
       deep: true,
       async handler () {
-        this.tagsArrayToObject();
-        // this.initializeClassOrder();
-        // this.setClassMaxOrder();
-        if (this.groupBy==="concept") this.groupByConcept();
-        else this.groupByDate();
+        if (!this.mitClass) return; 
+        if (!this.hasFetchedExpls) {
+          this.hasFetchedExpls = true;
+          this.tagsArrayToObject();
+          this.initializeClassOrder();
+          // this.setClassMaxOrder();
+          if (this.groupBy==="concept") this.groupByConcept();
+          else this.groupByDate();
+        }
       }
     }
   },
