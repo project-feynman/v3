@@ -210,14 +210,24 @@ export default {
         console.log('mitclass updates')
         await this.tagsArrayToObject();
         await this.initializeClassOrder();
-        if (this.groupBy==="concept") this.groupByConcept();
-        // else this.groupByDate();
+        if (this.groupBy==="concept") {
+          this.organizedPosts = this.conceptGroups;
+          this.groupByConcept();
+        } else {
+          this.organizedPosts = this.dateGroups;
+          this.groupByDate();
+        }
       }
     },
     groupBy: function(newVal) {
       console.log('this one by groupby')
-      if (newVal === "concept") this.groupByConcept();
-      else this.groupByDate();
+        if (this.groupBy==="concept") {
+          this.organizedPosts = this.conceptGroups;
+          this.groupByConcept();
+        } else {
+          this.organizedPosts = this.dateGroups;
+          this.groupByDate();
+        }
     },
   },
   beforeDestroy () {
@@ -250,14 +260,17 @@ export default {
      *                 If "", a root folder is created.
      */
     async createNewFolder (name, parentID = null) {
-      await db.doc(`classes/${this.mitClass.id}`).update({
-        tags: firebase.firestore.FieldValue.arrayUnion({
+      const newFolder = {
           id: getRandomId(),
           name,
           parent: parentID
-        })
+        }
+      await db.doc(`classes/${this.mitClass.id}`).update({
+        tags: firebase.firestore.FieldValue.arrayUnion(newFolder)
       });
-      this.incrementKeyToDestroy += 1;
+      this.mitClass.tags.push(newFolder)
+      this.groupByConcept(true);
+      // this.incrementKeyToDestroy += 1;
       this.$root.$emit("show-snackbar", "Successfully created a new folder.");
     },
     // For better UX; To be done after some time
@@ -325,7 +338,6 @@ export default {
     },
     async groupByDate () {
       console.log('grouping by date');
-      this.organizedPosts = this.dateGroups;
       if (this.dateGroups.length!==0) return;
       db.collection(`classes/${this.$route.params.class_id}/posts`).get().then((querySnapshot)=> {
         querySnapshot.forEach(doc => {
@@ -334,11 +346,12 @@ export default {
         this.foldersFromDates();
       });
     },
-    async groupByConcept () {
+    async groupByConcept (force = false) {
       console.log('grouping by concept');
-      this.organizedPosts = this.conceptGroups;
-      if (!this.mitClass || this.conceptGroups.length!==0) return; 
+      if ((!this.mitClass || this.conceptGroups.length!==0) && !force) return;
+      this.conceptGroups.length=0;
       console.log('yay not cancelled')
+      console.log('the tags', this.mitClass.tags);
       let i = 0;
       for (const tag of this.mitClass.tags) {
         const tag_object = {
