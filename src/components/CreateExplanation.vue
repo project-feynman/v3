@@ -232,18 +232,20 @@ export default {
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
       const postOrder = (this.mitClass['maxOrder']+1) || 1;
       console.log(this.folder)
+      const tags = this.folder === ''? [] : [this.folder];
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
         this.blackboard.audioBlob,
         this.html,
         this.postTitle,
-        [this.folder],
+        tags,
         postOrder,
         this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId()),
       );
       db.doc(`classes/${this.$route.params.class_id}`).update({
         maxOrder: postOrder,
       });
+      console.log('i think it went');
     }
   }
 }

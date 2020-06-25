@@ -102,6 +102,7 @@ export default {
         promises.push(ref.set(explDoc));
         await Promise.all(promises);
         delete this.$store.state.explCache[ref.id];
+        console.log('we have reached this far',ref.id)
         this.$root.$emit("show-snackbar", "Successfully uploaded your explanation.");   
       } catch (error) {
         // TODO: send an error email to ExplainMIT core team

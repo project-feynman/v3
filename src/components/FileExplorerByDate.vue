@@ -43,10 +43,11 @@
           <v-treeview
             :items="organizedPosts"
             :search="search"
-            :open="openedFoldersIndices"
+            :open.sync="openedFoldersIndices"
             :load-children="(folder) => fetchRelevantPosts(folder)"
             :key="incrementKeyToDestroy"
             open-on-click
+            @update:open="folderToggle"
           >
             <template v-slot:prepend="{ item, open }">
               <v-icon v-if="item.isFolder">
@@ -317,6 +318,11 @@ export default {
       });
       this.$root.$emit("show-snackbar", msg);
     },
+    folderToggle (a) {
+      // console.log('open ones', a);
+      // console.log('our indices', this.openedFoldersIndices);
+      // this.openedFoldersIndices = a;
+    },
     async groupByDate () {
       console.log('grouping by date');
       this.organizedPosts = this.dateGroups;
@@ -386,7 +392,7 @@ export default {
       } else {
         i = item.id;
       }
-      this.openedFoldersIndices.push(i);
+      // this.openedFoldersIndices.push(i);
     },
     async movePostToFolder (post, folder, closePopup) {
       const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${post.id}`);
@@ -412,10 +418,10 @@ export default {
             }
           }
         }
-        this.organizedPosts.length = rootTagsLength;
+        this.conceptGroups.length = rootTagsLength;
         console.log('untagged');
         snapshot.forEach((doc) => {
-          this.organizedPosts.push({
+          this.conceptGroups.push({
             id: doc.id,
             name: doc.data().title,
             date: doc.data().date,
@@ -423,7 +429,7 @@ export default {
             order: doc.data().order,
           });
         });
-        this.organizedPosts.sort((a, b) => b.order-a.order);
+        this.conceptGroups.sort((a, b) => b.order-a.order);
         this.incrementKeyToDestroy += 1;
       });
       this.snapshotListeners.push(snapshotListener);
@@ -460,7 +466,7 @@ export default {
             });
           });
           array.sort((a, b) => b.order-a.order);
-          this.incrementKeyToDestroy += 1;
+          // this.incrementKeyToDestroy += 1;
           resolve();
         });
         this.snapshotListeners.push(snapshotListener);
