@@ -431,16 +431,10 @@ export default {
     bindArrayToDatabase (array, id, queryRef) {
       return new Promise(resolve => {
         const snapshotListener = queryRef.onSnapshot(snapshot => {  
-          // if (snapshot.empty) {
-          //   array.push({ 
-          //     id: "Push something so the folder doesn't enter an infinite loop and freeze the browser",
-          //     name: "(Empty)",
-          //     date: "January 3rd"
-          //   });
-          //   this.incrementKeyToDestroy += 1;
-          //   resolve();
-          //   return; 
-          // }
+          if (snapshot.empty) {
+            resolve();
+            return; 
+          }
           // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
