@@ -14,7 +14,7 @@
       </v-btn> -->
       <v-tabs v-model="activeTab" grow active-class="accent--text" class="side-tabs" slider-color="accent">
         <v-tab href="#archive">
-          Archive
+          Library
         </v-tab>
         
         <v-tab href="#Q&A" data-qa="forum-tab">
@@ -22,7 +22,7 @@
         </v-tab>
 
         <v-tab href="#rooms" :disabled="!user" data-qa="blackboard-tab">
-          Rooms
+          Spaces
         </v-tab>
       </v-tabs>
 
