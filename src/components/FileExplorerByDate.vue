@@ -61,12 +61,10 @@
               <drop class="drop" @drop="handleDrop(item, ...arguments)">
                 <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
                   <v-list-item v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`" dense>
-                    <v-list-item-content>
-                      <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
-                    </v-list-item-content>
+                    <v-list-item-subtitle v-text="item.name"/>
                   </v-list-item>
-                  <v-list-item v-else>
-                    {{ item.name }}
+                  <v-list-item v-else dense>
+                    <v-list-item-subtitle v-text="item.name"/>
                   </v-list-item>
                 </drag>
               </drop>
@@ -149,6 +147,7 @@
                   </v-list-item>
                 </v-list>
               </v-menu>
+
             </template>
           </v-treeview>
     </div>
