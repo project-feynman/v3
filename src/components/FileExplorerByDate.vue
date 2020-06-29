@@ -58,7 +58,58 @@
               <v-icon v-if="item.isFolder">
                 {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
               </v-icon> 
-              <!-- cannot move/edit posts if not logged in -->
+              <v-icon v-else>
+                mdi-file-document
+              </v-icon>
+            </template>
+
+            <template v-slot:label="{ item }">
+              <drop class="drop" @drop="handleDrop(item, ...arguments)">
+                <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
+                  <v-list-item v-if="!item.isFolder" :to="`/class/${mitClass.id}/${type==='question'?'questions':'posts'}/${item.id}`" dense>
+                    <v-list-item-subtitle v-text="item.name"/>
+                  </v-list-item>
+                  <v-list-item v-else dense>
+                    <v-list-item-subtitle v-text="item.name"/>
+                  </v-list-item>
+                </drag>
+              </drop>
+            </template>
+
+            <template v-slot:append="{ item }">
+              <v-menu v-if="user && item.isFolder" bottom right>
+                <template v-slot:activator="{ on }">
+                  <v-btn icon v-on="on">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
+                </template>
+
+                <v-list>
+                  <v-list-item>
+                    <BasePopupButton actionName="Rename Folder" 
+                      :inputFields="['New Name']"
+                      @action-do="payload => renameTag(payload, item)"
+                    >
+                      <template v-slot:activator-button="{ on }">
+                        <v-btn v-on="on" color="accent" text>Rename</v-btn>
+                      </template>
+                    </BasePopupButton>
+                  </v-list-item>
+                  <!-- Ability to create a sub-folder -->
+                  <v-list-item>
+                    <BasePopupButton actionName="Create Sub-folder"
+                      :inputFields="['Folder name']"
+                      @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
+                    >
+                      <template v-slot:activator-button="{ on }">
+                         <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
+                      </template>
+                    </BasePopupButton>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+              
+              <!-- Different dropdown options for pages (refactor later) -->
               <v-menu v-else-if="user" bottom right>
                 <template v-slot:activator="{ on }">
                   <v-btn icon v-on="on">
@@ -97,54 +148,6 @@
                     >
                       <template v-slot:activator-button="{ on }">
                         <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </template>
-            <template v-slot:label="{ item }">
-              <drop class="drop" @drop="handleDrop(item, ...arguments)">
-                <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
-                  <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/${type==='question'?'questions':'posts'}/${item.id}`">
-                    <v-list-item-content>
-                      <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
-                      <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item v-else>
-                    {{ item.name }}
-                  </v-list-item>
-                </drag>
-              </drop>
-            </template>
-            <template v-slot:append="{ item }">
-              <v-menu v-if="user && item.isFolder" bottom right>
-                <template v-slot:activator="{ on }">
-                  <v-btn icon v-on="on">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-
-                <v-list>
-                  <v-list-item>
-                    <BasePopupButton actionName="Rename Folder" 
-                      :inputFields="['New Name']"
-                      @action-do="(payload) => renameTag(payload, item)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                        <v-btn v-on="on" color="accent" text>Rename</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                  <!-- Ability to create a sub-folder -->
-                  <v-list-item>
-                    <BasePopupButton actionName="Create Sub-folder"
-                      :inputFields="['Folder name']"
-                      @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                         <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
                       </template>
                     </BasePopupButton>
                   </v-list-item>
