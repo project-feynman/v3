@@ -11,7 +11,8 @@
     <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'" data-qa="toggle-drawer"
       @click.stop="$emit('toggle-drawer')"
     />
-    <img src="/favicon.ico"
+    <img src="/logo.png"
+      height="50"
       @click="$router.push('/')"
       :class="['home-logo', page === 'realtime' ? 'd-none d-sm-block' : '']"
     />
