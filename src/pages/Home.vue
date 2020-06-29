@@ -44,7 +44,7 @@
               </h1>
             </div>
             <h3 class="headline font-weight-light">
-              A vibrant place where students, TAs and professors explain things to each other. 
+              A vibrant place where students, TAs and professors explain things to each other. [NOTE: WE'RE CURRENTLY WORKING ON BREAKING CHANGES!]
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
