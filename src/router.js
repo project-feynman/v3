@@ -29,12 +29,16 @@ export default new Router({
         },
         {
           // when /user/:id/posts is matched
-          path: "posts/new",
+          path: "new",
           component: () => import(/* webpackChunkName: "new" */ "./pages/ClassPageNewPost.vue") 
         },
         {
           path: "posts/:post_id",
           component: () => import(/* webpackChunkName: "post" */ "./pages/ClassPageSeePost.vue")
+        },
+        {
+          path: "questions/:question_id",
+          component: () => import(/* webpackChunkName: "post" */ "./pages/ClassPageSeeQuestion.vue")
         }
       ]
     }
