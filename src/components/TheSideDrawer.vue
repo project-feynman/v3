@@ -5,7 +5,7 @@
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
-      width="375"
+      width="380"
       class="the-side-drawer"
     >
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">

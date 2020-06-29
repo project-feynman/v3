@@ -14,29 +14,35 @@
       ></v-text-field>
     </v-sheet> -->
 
-        <div d-flex>
-          <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
-          <ButtonNew @click="groupByConcept()" icon="mdi-folder">Group By Folders</ButtonNew>
-
-          <BasePopupButton actionName="Create a New Folder" 
-            :inputFields="['Folder Name']"
-            @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
-          >
-            <template v-slot:activator-button="{ on }">
-              <ButtonNew :on="on" color="accent" icon="mdi-folder-plus">Create Folder</ButtonNew>
-              <!-- <v-btn v-on="on" color="secondary" text>Create Folder</v-btn> -->
-            </template>
-          </BasePopupButton>
-
-          <ButtonNew 
-            icon="mdi-shape-square-plus"
-            :disabled="!user"
-            :to="(`/class/${classId}/new?type=${type==='question'? 'question':'post'}`)" 
-            color="secondary"
-          > 
-            New {{ type }}
-          </ButtonNew>
-        </div>
+        <v-layout>
+          <v-flex>
+            <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
+          </v-flex>
+          <v-flex>
+            <ButtonNew @click="groupByConcept()" icon="mdi-folder">Group By Folders</ButtonNew>
+          </v-flex>
+          <v-flex>
+            <BasePopupButton actionName="Create a New Folder" 
+              :inputFields="['Folder Name']"
+              @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
+            >
+              <template v-slot:activator-button="{ on }">
+                <ButtonNew :on="on" color="accent" icon="mdi-folder-plus">Create Folder</ButtonNew>
+                <!-- <v-btn v-on="on" color="secondary" text>Create Folder</v-btn> -->
+              </template>
+            </BasePopupButton>
+          </v-flex>
+          <v-flex>
+            <ButtonNew 
+              icon="mdi-shape-square-plus"
+              :disabled="!user"
+              :to="(`/class/${classId}/new?type=${type==='question'? 'question':'post'}`)" 
+              color="secondary"
+            > 
+              New {{ type }}
+            </ButtonNew>
+          </v-flex>
+        </v-layout>
 
         <v-divider/>
 
