@@ -96,7 +96,7 @@ export default {
       color: "white",
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7"],
       colorPaletteExpanded: false,
-      lastEraserNormal: true
+      lastEraserNormal: false
     }
   },
   computed: {
