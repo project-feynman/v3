@@ -129,9 +129,9 @@
             <v-col cols="12" md="6">
               <SeeExplanation v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
             </v-col>
-            <v-col cols="12" md="12">
+            <!-- <v-col cols="12" md="12">
               <CreateExplanation/>
-            </v-col>
+            </v-col> -->
           </v-row>
         </template>
 
