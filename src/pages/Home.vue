@@ -16,7 +16,11 @@
         </BasePopupButton>
         <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:activator="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="account-btn">Account</ButtonNew>
+             <v-avatar v-if="user" v-on="on" color="#ff5b24" style="cursor: pointer;">
+              <span v-if="user.firstName && user.lastName" class="white--text headline">
+                {{ user.firstName[0] + user.lastName[0] }}
+              </span>
+            </v-avatar>
           </template>
         </TheDropdownMenu>
       </template>
