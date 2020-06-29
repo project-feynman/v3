@@ -16,7 +16,11 @@
         </BasePopupButton>
         <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:activator="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="account-btn">Account</ButtonNew>
+             <v-avatar v-if="user" v-on="on" color="#ff5b24" style="cursor: pointer;">
+              <span v-if="user.firstName && user.lastName" class="white--text headline">
+                {{ user.firstName[0] + user.lastName[0] }}
+              </span>
+            </v-avatar>
           </template>
         </TheDropdownMenu>
       </template>
@@ -44,7 +48,8 @@
               </h1>
             </div>
             <h3 class="headline font-weight-light">
-              A vibrant place where students, TAs and professors explain things to each other. [NOTE: WE'RE CURRENTLY WORKING ON BREAKING CHANGES!]
+              A vibrant place where students, TAs and professors explain things to each other. 
+              (NOTE: WE'RE WORKING ON SOME BREAKING CHANGES CURRENTLY)
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
@@ -124,9 +129,9 @@
             <v-col cols="12" md="6">
               <SeeExplanation v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
             </v-col>
-            <v-col cols="12" md="12">
+            <!-- <v-col cols="12" md="12">
               <CreateExplanation/>
-            </v-col>
+            </v-col> -->
           </v-row>
         </template>
 

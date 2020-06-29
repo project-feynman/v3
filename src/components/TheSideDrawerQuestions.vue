@@ -14,148 +14,139 @@
       ></v-text-field>
     </v-sheet> -->
 
-        <v-layout>
-          <v-flex>
-            <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
-          </v-flex>
-          <v-flex>
-            <ButtonNew @click="groupByConcept()" icon="mdi-folder">Group By Folders</ButtonNew>
-          </v-flex>
-          <v-flex>
-            <BasePopupButton actionName="Create a New Folder" 
-              :inputFields="['Folder Name']"
-              @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
-            >
-              <template v-slot:activator-button="{ on }">
-                <ButtonNew :on="on" color="accent" icon="mdi-folder-plus">Create Folder</ButtonNew>
-                <!-- <v-btn v-on="on" color="secondary" text>Create Folder</v-btn> -->
-              </template>
-            </BasePopupButton>
-          </v-flex>
-          <v-flex>
-            <ButtonNew 
-              icon="mdi-shape-square-plus"
-              :disabled="!user"
-              :to="(`/class/${classId}/new?type=${type==='question'? 'question':'post'}`)" 
-              color="secondary"
-            > 
-              New {{ type }}
-            </ButtonNew>
-          </v-flex>
-        </v-layout>
+    <div d-flex>
+      <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
+      <ButtonNew @click="groupByConcept()" icon="mdi-folder">Group By Folders</ButtonNew>
 
-        <v-divider/>
+      <BasePopupButton actionName="Create a New Folder" 
+        :inputFields="['Folder Name']"
+        @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
+      >
+        <template v-slot:activator-button="{ on }">
+          <ButtonNew :on="on" color="accent" icon="mdi-folder-plus">Create Folder</ButtonNew>
+          <!-- <v-btn v-on="on" color="secondary" text>Create Folder</v-btn> -->
+        </template>
+      </BasePopupButton>
 
-          <v-treeview
-            :items="organizedPosts"
-            :search="search"
-            :open="openedFoldersIndices"
-            :load-children="(folder) => fetchRelevantPosts(folder)"
-            :key="incrementKeyToDestroy"
-            open-on-click
-          >
-            <template v-slot:prepend="{ item, open }">
-              <v-icon v-if="item.isFolder">
-                {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-              </v-icon> 
-              <v-icon v-else>
-                mdi-file-document
-              </v-icon>
-            </template>
-
-            <template v-slot:label="{ item }">
-              <drop class="drop" @drop="handleDrop(item, ...arguments)">
-                <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
-                  <v-list-item v-if="!item.isFolder" :to="`/class/${mitClass.id}/${type==='question'?'questions':'posts'}/${item.id}`" dense>
-                    <v-list-item-subtitle v-text="item.name"/>
-                  </v-list-item>
-                  <v-list-item v-else dense>
-                    <v-list-item-subtitle v-text="item.name"/>
-                  </v-list-item>
-                </drag>
-              </drop>
-            </template>
-
-            <template v-slot:append="{ item }">
-              <v-menu v-if="user && item.isFolder" bottom right>
-                <template v-slot:activator="{ on }">
-                  <v-btn icon v-on="on">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-
-                <v-list>
-                  <v-list-item>
-                    <BasePopupButton actionName="Rename Folder" 
-                      :inputFields="['New Name']"
-                      @action-do="payload => renameTag(payload, item)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                        <v-btn v-on="on" color="accent" text>Rename</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                  <!-- Ability to create a sub-folder -->
-                  <v-list-item>
-                    <BasePopupButton actionName="Create Sub-folder"
-                      :inputFields="['Folder name']"
-                      @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                         <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-              
-              <!-- Different dropdown options for pages (refactor later) -->
-              <v-menu v-else-if="user" bottom right>
-                <template v-slot:activator="{ on }">
-                  <v-btn icon v-on="on">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-
-                <v-list>
-                  <v-list-item>
-                    <BasePopupButton>
-                      <template v-slot:activator-button="{ on }">
-                        <v-btn v-on="on" color="secondary" text>
-                          MOVE
-                        </v-btn>
-                      </template>
-                      <template v-slot:popup-content="{ closePopup }">
-                        <h1>Select a folder</h1>
-                        <template v-if="mitClass">
-                          <div class="text-center mt-5">
-                            <v-chip v-for="tagName in mitClass.tags" 
-                              @click="movePostToFolder(item, tagName.id, closePopup)"
-                              :key="tagName.id" 
-                              color="accent" 
-                              class="ma-2">
-                              {{ tagName.name }}
-                            </v-chip>
-                          </div>
-                        </template>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                  <v-list-item>
-                    <BasePopupButton actionName="Rename Post" 
-                      :inputFields="['New Name']"
-                      @action-do="(payload) => renamePost(payload, item)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                        <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </template>
-          </v-treeview>
+      <ButtonNew 
+        icon="mdi-shape-square-plus"
+        :disabled="!user"
+        :to="(`/class/${classId}/posts/new-question`)" 
+        color="secondary"
+      > 
+        New {{ type }}
+      </ButtonNew>
     </div>
+
+    <v-divider/>
+
+    <v-treeview
+      :items="organizedPosts"
+      :search="search"
+      :open="openedFoldersIndices"
+      :load-children="(folder) => fetchRelevantPosts(folder)"
+      :key="incrementKeyToDestroy"
+      open-on-click
+    >
+      <template v-slot:prepend="{ item, open }">
+        <v-icon v-if="item.isFolder">
+          {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+        </v-icon> 
+        <!-- cannot move/edit posts if not logged in -->
+        <v-menu v-else-if="user" bottom right>
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item>
+              <BasePopupButton>
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" color="secondary" text>
+                    MOVE
+                  </v-btn>
+                </template>
+                <template v-slot:popup-content="{ closePopup }">
+                  <h1>Select a folder</h1>
+                  <template v-if="mitClass">
+                    <div class="text-center mt-5">
+                      <v-chip v-for="tagName in mitClass.tags" 
+                        @click="movePostToFolder(item, tagName.id, closePopup)"
+                        :key="tagName.id" 
+                        color="accent" 
+                        class="ma-2">
+                        {{ tagName.name }}
+                      </v-chip>
+                    </div>
+                  </template>
+                </template>
+              </BasePopupButton>
+            </v-list-item>
+            <v-list-item>
+              <BasePopupButton actionName="Rename Post" 
+                :inputFields="['New Name']"
+                @action-do="(payload) => renamePost(payload, item)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
+                </template>
+              </BasePopupButton>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
+      <template v-slot:label="{ item }">
+        <drop class="drop" @drop="handleDrop(item, ...arguments)">
+          <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
+            <v-list-item two-line v-if="!item.isFolder" :to="`/class/${mitClass.id}/posts/${item.id}`">
+              <v-list-item-content>
+                <v-list-item-subtitle v-text="item.name"></v-list-item-subtitle>
+                <v-list-item-subtitle v-text="displayDate(item.date)"></v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item v-else>
+              {{ item.name }}
+            </v-list-item>
+          </drag>
+        </drop>
+      </template>
+      <template v-slot:append="{ item }">
+        <v-menu v-if="user && item.isFolder" bottom right>
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item>
+              <BasePopupButton actionName="Rename Folder" 
+                :inputFields="['New Name']"
+                @action-do="(payload) => renameTag(payload, item)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" color="accent" text>Rename</v-btn>
+                </template>
+              </BasePopupButton>
+            </v-list-item>
+            <!-- Ability to create a sub-folder -->
+            <v-list-item>
+              <BasePopupButton actionName="Create Sub-folder"
+                :inputFields="['Folder name']"
+                @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
+              >
+                <template v-slot:activator-button="{ on }">
+                    <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
+                </template>
+              </BasePopupButton>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
+    </v-treeview>
+  </div>
 </template>
 
 <script>
@@ -211,18 +202,23 @@ export default {
     search: null,
     incrementKeyToDestroy: 0,
     openedFoldersIndices: [],
-    snapshotListeners: []
+    snapshotListeners: [],
+    hasFetchedExpls: false
   }),
   watch: {
     mitClass: {
-      immediate: true,
+      immediate: true, // mitClass 
       deep: true,
       async handler () {
-        this.tagsArrayToObject();
-        // this.initializeClassOrder();
-        // this.setClassMaxOrder();
-        if (this.groupBy==="concept") this.groupByConcept();
-        else this.groupByDate();
+        if (!this.mitClass) return; 
+        if (!this.hasFetchedExpls) {
+          this.hasFetchedExpls = true;
+          this.tagsArrayToObject();
+          this.initializeClassOrder();
+          // this.setClassMaxOrder();
+          if (this.groupBy==="concept") this.groupByConcept();
+          else this.groupByDate();
+        }
       }
     }
   },
@@ -232,9 +228,8 @@ export default {
     }
   },
   methods: {
-    // Post order update on new post
     async renamePost (payload, post) {
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${post.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${post.id}`);
       await postRef.update({
         title: payload["New Name"]
       });
@@ -282,7 +277,7 @@ export default {
         const lower = droppedAt.order;
         console.log('dragged at', lower);
         let upper = droppedAt.order; // Fallback in case the droppedAt item has the highest order in the class
-        await db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
+        await db.collection(`classes/${this.$route.params.class_id}/posts`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
           console.log(querySnapshot);
           querySnapshot.forEach((doc)=> {
             upper = doc.data().order;
@@ -294,7 +289,7 @@ export default {
         order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
         console.log('final order', order);
       }
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${item.data.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${item.data.id}`);
       await postRef.update({
         tags: tag, // a file can only exist in one folder at the time (for now)
         order: order
@@ -310,7 +305,7 @@ export default {
       console.log('grouping by date');
       this.organizedPosts = this.dateGroups;
       if (this.dateGroups.length!==0) return;
-      db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).get().then((querySnapshot)=> {
+      db.collection(`classes/${this.$route.params.class_id}/questions`).get().then((querySnapshot)=> {
         querySnapshot.forEach(doc => {
           this.dateList.push(doc.data().date);
         })
@@ -348,12 +343,14 @@ export default {
       this.fetchPostsWithNoTags(); 
     },
     async fetchPostsWithNoTags () {
-      const query = db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).where("tags", "==", []);
+      const query = db.collection(`classes/${this.$route.params.class_id}/questions`).where("tags", "==", []);
+      // const query = db.collection(`classes/${this.$route.params.class_id}/posts`).where("tags", "==", []);
       this.bindUntaggedPostsToDatabase(query);
     },
     async fetchRelevantPosts (item) {
       let postsQuery;
-      const postsRef = db.collection(`classes/${this.mitClass.id}/${this.type==='question'?'questions':'posts'}`);
+      const postsRef = db.collection(`classes/${this.mitClass.id}/questions`);
+      // const postsRef = db.collection(`classes/${this.mitClass.id}/posts`);
       if (this.groupBy === 'concept') {
         postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
@@ -380,7 +377,7 @@ export default {
       this.openedFoldersIndices.push(i);
     },
     async movePostToFolder (post, folder, closePopup) {
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${post.id}`);
+      const postRef = db.doc(`classes/${this.$route.params.class_id}/posts/${post.id}`);
       await postRef.update({
         tags: [folder] // a file can only exist in one folder at the time (for now)
       });
@@ -522,7 +519,7 @@ export default {
       }
     },
     async tagPostToTagId (tags) {
-      db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).get().then(function(querySnapshot) {
+      db.collection(`classes/${this.$route.params.class_id}/posts`).get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           const postTags = doc.data().tags;
           let tag_ids = [];
@@ -537,7 +534,7 @@ export default {
     },
     async initializeClassOrder () {
       let order = 1;
-      db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).orderBy('date', 'asc').get().then(function(querySnapshot) {
+      db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           doc.ref.update({
               order: order
