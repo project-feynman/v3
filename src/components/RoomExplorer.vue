@@ -97,7 +97,19 @@
                                 :outlined="isMicOn" 
                                 rounded
                               >
-                                <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                                <template v-if="hasConnectedAudio">
+                                  <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                                </template>
+                                <template v-else-if="!hasConnectedAudio && isMicOn">
+                                  <v-progress-circular
+                                    indeterminate
+                                    size="20"
+                                    width="2"/>
+                                </template>
+                                <template v-else>
+                                  Join Audio
+                                </template>
+
                               </v-btn>
                             </template>
                             <template v-else>
@@ -120,7 +132,8 @@
       v-if="user"
       :roomId="lastBlackboardRoomId"
       :isMicOn="isMicOn"
-      @left-room="isMicOn=false"
+      @left-room="isMicOn=false; hasConnectedAudio=false"
+      @audio-connected="hasConnectedAudio=true"
       :key="lastBlackboardRoomId"
     />
   </div>
@@ -147,6 +160,7 @@ export default {
       centerTableParticipants: [],
       blackboards: [],
       isMicOn: false,
+      hasConnectedAudio: false,
       savedRoomId: "",
       roomCategories: [{
         title: "Office Hours",
