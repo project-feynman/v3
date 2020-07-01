@@ -55,9 +55,8 @@ export default {
     }
   },
   async created () {
-    const { class_id, post_id } = this.$route.params;
-    const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
-    this.postRef = db.doc(`classes/${class_id}/${type}/${post_id}`);
+    const { class_id, question_id } = this.$route.params;
+    this.postRef = db.doc(`classes/${class_id}/questions/${question_id}`);
     this.explanationsRef = this.postRef.collection("explanations");
 
     this.$_listenToDoc(this.postRef, this, "originalPost").then(listener => {

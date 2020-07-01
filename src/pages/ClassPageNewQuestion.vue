@@ -30,8 +30,7 @@ export default {
   },
   computed: {
     postsRef () {
-      const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
-      return db.collection(`classes/${this.$route.params.class_id}/${type}`);
+      return db.collection(`classes/${this.$route.params.class_id}/questions`);
     }
   },
   watch: {
