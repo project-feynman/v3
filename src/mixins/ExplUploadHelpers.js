@@ -33,7 +33,6 @@ export default {
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
     async $_saveExplToCacheThenUpload (thumbnailBlob, audioBlob, html, title, tags, explRef) {
-      const postOrder = (this.mitClass['maxOrder']+1) || 1;
       this.$store.commit("ADD_EXPL_TO_CACHE", {
         ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads
         strokesArray: this.strokesArray,
@@ -47,7 +46,7 @@ export default {
           creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
           mitClass: this.mitClass,
           tags,
-          order: postOrder,
+          order: (this.mitClass.maxOrder + 1) || 1,
           duration: this.blackboard.currentTime, 
           hasStrokes: this.strokesArray.length > 0
         }

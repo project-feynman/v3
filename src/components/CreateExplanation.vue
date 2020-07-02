@@ -230,8 +230,8 @@ export default {
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
-      console.log(this.folder)
       const tags = this.folder === ''? [] : [this.folder];
+
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
         this.blackboard.audioBlob,
@@ -241,9 +241,8 @@ export default {
         this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId()),
       );
       db.doc(`classes/${this.$route.params.class_id}`).update({
-        maxOrder: postOrder,
+        maxOrder: (this.mitClass.maxOrder + 1) || 1
       });
-      console.log('i think it went');
     }
   }
 }
