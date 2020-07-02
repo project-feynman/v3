@@ -230,7 +230,6 @@ export default {
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
-      const postOrder = (this.mitClass['maxOrder']+1) || 1;
       console.log(this.folder)
       const tags = this.folder === ''? [] : [this.folder];
       this.$_saveExplToCacheThenUpload(
@@ -239,7 +238,6 @@ export default {
         this.html,
         this.postTitle,
         tags,
-        postOrder,
         this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId()),
       );
       db.doc(`classes/${this.$route.params.class_id}`).update({

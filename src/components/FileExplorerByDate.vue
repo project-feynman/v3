@@ -16,10 +16,10 @@
 
         <v-layout>
           <v-flex>
-            <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
+            <ButtonNew @click="groupBy='date'" icon="mdi-calendar-range">Group By Date</ButtonNew>
           </v-flex>
           <v-flex>
-            <ButtonNew @click="groupByConcept()" icon="mdi-folder">Group By Folders</ButtonNew>
+            <ButtonNew @click="groupBy='concept'" icon="mdi-folder">Group By Folders</ButtonNew>
           </v-flex>
           <v-flex>
             <BasePopupButton actionName="Create a New Folder" 
@@ -219,24 +219,12 @@ export default {
         console.log('mitclass updates')
         await this.tagsArrayToObject();
         await this.initializeClassOrder();
-        if (this.groupBy==="concept") {
-          this.organizedPosts = this.conceptGroups;
-          this.groupByConcept();
-        } else {
-          this.organizedPosts = this.dateGroups;
-          this.groupByDate();
-        }
+        this.groupPosts();
       }
     },
     groupBy: function(newVal) {
-      console.log('this one by groupby')
-        if (this.groupBy==="concept") {
-          this.organizedPosts = this.conceptGroups;
-          this.groupByConcept();
-        } else {
-          this.organizedPosts = this.dateGroups;
-          this.groupByDate();
-        }
+      console.log('this one by groupby');
+      this.groupPosts();
     },
   },
   beforeDestroy () {
@@ -297,48 +285,77 @@ export default {
     //   console.log(target.classList)
     },
     async handleDrop (droppedAt, item) {
-      item.highlight = false;
-      console.log('the data', item);
+      // item.highlight = false; For better UX
       console.log('dropped at', droppedAt);
+      console.log('the data', item.data);
       let msg = '';
       let tag = '';
-      let order = item.data.order;
-      order = typeof order === 'undefined' ? 0 : order;
-      console.log('current order',order);
-      if (droppedAt.isFolder) {
-        tag = [droppedAt.id];
-      } else {
-        tag = droppedAt.tags;
-        const lower = droppedAt.order;
-        console.log('dragged at', lower);
-        let upper = droppedAt.order; // Fallback in case the droppedAt item has the highest order in the class
-        await db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
-          console.log(querySnapshot);
-          querySnapshot.forEach((doc)=> {
-            upper = doc.data().order;
-            console.log('upper inside snapshot', upper)
-          });
-        });
-        console.log('upper outside', upper);
-        const avg = (lower+upper)/2;
-        order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
-        console.log('final order', order);
-        if (order>this.mitClass.maxOrder) {
-          db.doc(`classes/${this.$route.params.class_id}`).update({
-            maxOrder: order,
-          });
+      if (item.data.isFolder) {
+        let parent = []
+        if (droppedAt.isFolder) {
+          parent = droppedAt.id;
+        } else { // If it is a post
+          // Making sure it works even when some folder has been deleted
+          console.log('index in tag',this.mitClass.tags.findIndex(tag=> tag.id === droppedAt.tags[0]))
+          if (this.mitClass.tags.findIndex(tag=> tag.id === droppedAt.tags[0])>=0) parent = droppedAt.tags[0];
+          console.log('parent after drop', parent);
         }
+        if (parent === item.data.parent) {
+          //If there is no change in parent
+          msg = "No change in folder."
+          console.log('same parent');
+        } else {
+          const i = this.mitClass.tags.findIndex(tag => tag.id === item.data.id);
+          this.mitClass.tags[i].parent = parent;
+          await db.doc(`classes/${this.mitClass.id}`).update({
+            tags: this.mitClass.tags,
+          }).then(function() {
+            msg = "Successfully moved folder";
+          }).catch(function(error) {
+            msg = "Something went wrong while moving the folder";
+            console.log(error);
+          });
+          this.groupByConcept(true); // Rerender the tree with new structure
+        }
+      } else {
+        let order = item.data.order;
+        order = typeof order === 'undefined' ? 0 : order; // If order is not defined in the class yet
+        console.log('current order',order);
+        if (droppedAt.isFolder) {
+          tag = [droppedAt.id];
+        } else {
+          tag = droppedAt.tags;
+          const lower = droppedAt.order;
+          console.log('dragged at', lower);
+          let upper = droppedAt.order; // Fallback in case the droppedAt item has the highest order in the class
+          await db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).where("order", ">", lower).orderBy('order', 'asc').limit(1).get().then((querySnapshot)=> {
+            console.log(querySnapshot);
+            querySnapshot.forEach((doc)=> {
+              upper = doc.data().order;
+              console.log('upper inside snapshot', upper)
+            });
+          });
+          console.log('upper outside', upper);
+          const avg = (lower+upper)/2;
+          order = (lower === upper) ? (avg+1): avg; // when it is of highest order, the 'item' should still have order higher than it
+          console.log('final order', order);
+          if (order>this.mitClass.maxOrder) {
+            db.doc(`classes/${this.$route.params.class_id}`).update({
+              maxOrder: order,
+            });
+          }
+        }
+        const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${item.data.id}`);
+        await postRef.update({
+          tags: tag, // a file can only exist in one folder at the time (for now)
+          order: order
+        }).then(function() {
+          msg = "Successfully moved post to the specified folder";
+        }).catch(function(error) {
+          msg = "Something went wrong while moving the post";
+          console.log(error);
+        });
       }
-      const postRef = db.doc(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}/${item.data.id}`);
-      await postRef.update({
-        tags: tag, // a file can only exist in one folder at the time (for now)
-        order: order
-      }).then(function() {
-        msg = "Successfully moved post to the specified folder";
-      }).catch(function(error) {
-        msg = "Something went wrong while moving the post";
-        console.log(error);
-      });
       this.$root.$emit("show-snackbar", msg);
     },
     folderToggle (a) {
@@ -346,7 +363,18 @@ export default {
       // console.log('our indices', this.openedFoldersIndices);
       // this.openedFoldersIndices = a;
     },
+    groupPosts() {
+      if (this.groupBy==="concept") {
+        this.organizedPosts = this.conceptGroups;
+        this.groupByConcept();
+      } else {
+        this.organizedPosts = this.dateGroups;
+        this.groupByDate();
+      }
+    },
     async groupByDate () {
+      // This only (re)groups the posts, but doesn't rerender the UI.
+      // To rerender UI, call groupPosts
       console.log('grouping by date');
       if (this.dateGroups.length!==0) return;
       db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).get().then((querySnapshot)=> {
@@ -357,6 +385,10 @@ export default {
       });
     },
     async groupByConcept (force = false) {
+      // This only (re)groups the posts, but doesn't rerender the UI.
+      // To rerender UI, call groupPosts
+      // force: (Boolean) forces the concept tree to update even if it was already filled. We don't want ot force every single time user switches between
+      // but only when a new folder is added (cause we are not listening to mitClass (but not sure if fixing that would solve the problem))
       console.log('grouping by concept');
       if ((!this.mitClass || this.conceptGroups.length!==0) && !force) return;
       this.conceptGroups.length=0;
@@ -460,10 +492,6 @@ export default {
     bindArrayToDatabase (array, id, queryRef) {
       return new Promise(resolve => {
         const snapshotListener = queryRef.onSnapshot(snapshot => {  
-          if (snapshot.empty) {
-            resolve();
-            return; 
-          }
           // THE BELOW ARRAY RESET NO LONGER SEEMS NECESSARY, BUT KEEP HERE IN CASE
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
@@ -478,6 +506,10 @@ export default {
               children: [],
               date: "999999999999999999999999999999999999999", // so it'll always appear at the top
             });
+          }
+          if (snapshot.empty) {
+            resolve();
+            return; 
           }
           snapshot.forEach((doc) => {
             array.push({
@@ -584,7 +616,7 @@ export default {
       let order = 0;
       if (this.mitClass.hasOwnProperty('maxOrder')) return;
       console.log("this class has no ordering")
-      await db.collection(`classes/${this.$route.params.class_id}/posts`).orderBy('date', 'asc').get().then((querySnapshot)=> {
+      await db.collection(`classes/${this.$route.params.class_id}/${this.type==='question'?'questions':'posts'}`).orderBy('date', 'asc').get().then((querySnapshot)=> {
         querySnapshot.forEach((doc)=> {
           order +=1;
           doc.ref.update({

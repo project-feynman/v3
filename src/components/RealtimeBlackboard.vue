@@ -144,12 +144,14 @@ export default {
       const html = "";
       const explRef = db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`);
       const thumbnailBlob = await this.blackboard.getThumbnailBlob();
+      const tags = []
 
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
         this.blackboard.audioBlob,
         html,
         title,
+        tags,
         explRef
       );
     },
