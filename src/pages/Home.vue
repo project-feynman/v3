@@ -213,8 +213,13 @@ export default {
   },
   async created () { 
     this.fetchClasses(); 
+
+    // drawing/vision of a vibrant place where people talk around blackboards
     const demoVideoRef = db.doc(`classes/${demoVideo.classId}/posts/${demoVideo.postId}`);
-    const demoVideoRef2 = db.doc(`classes/${demoVideo2.classId}/posts/${demoVideo2.postId}`);
+    
+    // pitch deck's explanation of why we are lighter
+    const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/zTD5Du59M3wBoNuNx1Lm`);
+    
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
     this.$_getDoc(demoVideoRef2).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },
