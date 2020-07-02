@@ -214,10 +214,10 @@ export default {
   async created () { 
     this.fetchClasses(); 
 
-    // drawing/vision of a vibrant place where people talk around blackboards
+    // vision of a vibrant place where people talk around blackboards
     const demoVideoRef = db.doc(`classes/${demoVideo.classId}/posts/${demoVideo.postId}`);
     
-    // pitch deck's explanation of why we are lighter
+    // visual comparison of normal videos vs doodle videos
     const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/zTD5Du59M3wBoNuNx1Lm`);
     
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
