@@ -5,7 +5,7 @@
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
       clipped 
-      width="375"
+      width="380"
       class="the-side-drawer"
     >
       <!-- <v-btn text :to="(`/class/${classId}`)" block large color="accent" class="my-1">
@@ -60,10 +60,11 @@
 </template>
 
 <script>
+import TheSideDrawerQuestions from "@/components/TheSideDrawerQuestions.vue";
 import FileExplorer from "@/components/FileExplorerByDate.vue";
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import RoomExplorer from "@/components/RoomExplorer.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
 import firebase from "firebase/app";
@@ -76,7 +77,8 @@ export default {
   components: {
     FileExplorer,
     RoomExplorer,
-    BasePopupButton
+    BasePopupButton,
+    TheSideDrawerQuestions
   },
   data () {
     return {
