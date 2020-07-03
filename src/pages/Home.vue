@@ -32,7 +32,7 @@
           color="secondary"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</ButtonNew>
+            <ButtonNew :on="on" icon="mdi-account-circle" color="secondary" data-qa="log-in-btn">Log In</ButtonNew>
           </template>
         </BasePopupButton>
       </template>
@@ -49,7 +49,6 @@
             </div>
             <h3 class="headline font-weight-light">
               A vibrant place where students, TAs and professors explain things to each other. 
-              (NOTE: WE'RE WORKING ON SOME BREAKING CHANGES CURRENTLY)
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
@@ -215,7 +214,7 @@ export default {
     this.fetchClasses(); 
 
     // vision of a vibrant place where people talk around blackboards
-    const demoVideoRef = db.doc(`classes/${demoVideo.classId}/posts/${demoVideo.postId}`);
+    const demoVideoRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/aHaV1yIyaDR4n88pmzDk`);
     
     // visual comparison of normal videos vs doodle videos
     const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/zTD5Du59M3wBoNuNx1Lm`);
