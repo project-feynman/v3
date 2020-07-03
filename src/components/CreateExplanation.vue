@@ -240,9 +240,6 @@ export default {
         tags,
         this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId()),
       );
-      db.doc(`classes/${this.$route.params.class_id}`).update({
-        maxOrder: (this.mitClass.maxOrder + 1) || 1
-      });
     }
   }
 }
