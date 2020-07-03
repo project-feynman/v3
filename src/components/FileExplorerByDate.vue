@@ -248,6 +248,7 @@ export default {
       await postRef.update({
         tags: this.mitClass.tags,
       });
+      this.groupByConcept(true);
       this.$root.$emit("show-snackbar", "Successfully renamed the folder.");
     },
     /**
