@@ -1,8 +1,32 @@
 <template>
   <div>
-    <ButtonNew class="ml-5 pl-5" @click="moveStudentsToRooms()" icon="mdi-help">
-      Assign students to groups of 3
-    </ButtonNew>
+    <v-expansion-panels>
+      <v-expansion-panel>
+        <v-expansion-panel-header>
+          <v-row align="center">
+            <h3>
+            Assign students to groups of 3
+            </h3>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <v-list>
+            <v-list-item>
+          <v-select 
+            v-model="roomForRandom"
+            :items="mitClass.roomTypes"
+            label="Select a Room Group to Send Students to"
+            />  
+          <ButtonNew filled @click="moveStudentsToRooms()">
+            <h2>
+              Go
+            </h2>
+          </ButtonNew>
+            </v-list-item>
+          </v-list>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
     <p>
       This is where the instructor can broadcast his blackboard to many students at once, ideal for lectures. 
       The instructor can press a button to evenly divide students into random groups in real-time blackboard rooms. 
@@ -46,7 +70,8 @@ export default {
       removeClassDocListener: null,
       participants: [],
       tableAssignments: [],
-      strokesArray: []
+      strokesArray: [],
+      roomForRandom: ""
     };
   },
   computed: {
@@ -140,7 +165,8 @@ export default {
         this.$_getCollection(this.classRef.collection("blackboards")).then(tealTables => {
           const groupSize = 4; 
           let i = 0; 
-          for (const table of tealTables) {
+          for (const table of tealTables.filter(room => room.roomType === this.roomForRandom)) { //This is using a filter for now so it's not optimized (because it fetches all boards first) probs fine
+            console.log(table.roomType)
             tableAssignments.push({
               roomID: table.id,
               assignees: []
