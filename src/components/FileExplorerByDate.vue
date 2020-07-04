@@ -219,7 +219,14 @@ export default {
         console.log('mitclass updates')
         await this.tagsArrayToObject();
         await this.initializeClassOrder();
-        this.groupPosts();
+        await this.groupPosts();
+        // An attempt to open the first folder by default. Not sure why it is not working
+        if (this.openedFoldersIndices.length===0) {
+          const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
+          console.log('adding this to opened indices', openThis);
+          this.openedFoldersIndices = [openThis];
+          console.log('the indices', this.openedFoldersIndices)
+        }
       }
     },
     groupBy: function(newVal) {
@@ -360,17 +367,17 @@ export default {
       this.$root.$emit("show-snackbar", msg);
     },
     folderToggle (a) {
-      // console.log('open ones', a);
-      // console.log('our indices', this.openedFoldersIndices);
+      console.log('open ones', a);
+      console.log('our indices', this.openedFoldersIndices);
       // this.openedFoldersIndices = a;
     },
-    groupPosts() {
+    async groupPosts() {
       if (this.groupBy==="concept") {
         this.organizedPosts = this.conceptGroups;
-        this.groupByConcept();
+        await this.groupByConcept();
       } else {
         this.organizedPosts = this.dateGroups;
-        this.groupByDate();
+        await this.groupByDate();
       }
     },
     async groupByDate () {
