@@ -40,7 +40,8 @@ export default {
     }
   },
   async created () {
-    const tutorialExplRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
+    // const tutorialExplRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
+    const tutorialExplRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/0aWcPnU5vOPck9qc48YG`);
     this.unsubscribe = await this.$_listenToDoc(tutorialExplRef, this, "tutorialExpl");
   },
   beforeDestroy () {
