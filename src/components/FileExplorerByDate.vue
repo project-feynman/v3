@@ -66,7 +66,7 @@
 
             <template v-slot:label="{ item }">
               <drop class="drop" @drop="handleDrop(item, ...arguments)">
-                <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
+                <drag class="drag" :key="item.id" :transfer-data="{ data: item }" :draggable="groupBy==='concept'">
                   <v-list-item v-if="!item.isFolder" :to="`/class/${mitClass.id}/${type==='question'?'questions':'posts'}/${item.id}`" dense>
                     <v-list-item-subtitle v-text="item.name"/>
                   </v-list-item>
@@ -221,12 +221,12 @@ export default {
         await this.initializeClassOrder();
         await this.groupPosts();
         // An attempt to open the first folder by default. Not sure why it is not working
-        if (this.openedFoldersIndices.length===0) {
-          const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
-          console.log('adding this to opened indices', openThis);
-          this.openedFoldersIndices = [openThis];
-          console.log('the indices', this.openedFoldersIndices)
-        }
+        // if (this.openedFoldersIndices.length===0) {
+        //   const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
+        //   console.log('adding this to opened indices', openThis);
+        //   this.openedFoldersIndices = [openThis];
+        //   console.log('the indices', this.openedFoldersIndices)
+        // }
       }
     },
     groupBy: function(newVal) {
@@ -293,6 +293,7 @@ export default {
     //   console.log(target.classList)
     },
     async handleDrop (droppedAt, item) {
+      if (this.groupBy==='date') return; // Need to make the item not draggable instead of this, but that's not working
       // item.highlight = false; For better UX
       console.log('dropped at', droppedAt);
       console.log('the data', item.data);
@@ -515,6 +516,7 @@ export default {
               date: "999999999999999999999999999999999999999", // so it'll always appear at the top
             });
           }
+          console.log('this is called');
           if (snapshot.empty) {
             resolve();
             return; 
@@ -528,7 +530,8 @@ export default {
               order: doc.data().order,
             });
           });
-          array.sort((a, b) => b.order-a.order);
+          if (this.groupBy==='concept') array.sort((a, b) => b.order-a.order);
+          else array.sort((a, b) => b.date-a.date);
           // this.incrementKeyToDestroy += 1;
           resolve();
         });
