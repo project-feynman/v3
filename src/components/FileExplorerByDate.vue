@@ -59,7 +59,7 @@
               <v-icon v-if="item.isFolder">
                 {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
               </v-icon> 
-              <v-icon v-else>
+              <v-icon v-else :class="(type==='question' && ! item.hasReplies) ? 'unanswered' : ''">
                 mdi-file-document
               </v-icon>
             </template>
@@ -491,6 +491,7 @@ export default {
             date: doc.data().date,
             tags: doc.data().tags,
             order: doc.data().order,
+            hasReplies: doc.data().hasReplies,
           });
         });
         this.conceptGroups.sort((a, b) => b.order-a.order);
@@ -528,6 +529,7 @@ export default {
               date: doc.data().date,
               tags: doc.data().tags,
               order: doc.data().order,
+              hasReplies: doc.data().hasReplies,
             });
           });
           if (this.groupBy==='concept') array.sort((a, b) => b.order-a.order);
@@ -674,5 +676,8 @@ export default {
 }
 .dragOver {
   background: black;
+}
+.unanswered {
+  color: #ee5555 !important;
 }
 </style>
