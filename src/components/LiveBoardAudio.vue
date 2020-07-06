@@ -181,6 +181,7 @@ export default {
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);
 				// set active toom
+				this.$emit('audio-connected')
 				this.activeRoom = room;
 				// this.loading = false;
 				var previewContainer = document.getElementById('local-media');
