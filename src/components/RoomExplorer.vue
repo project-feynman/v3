@@ -186,10 +186,10 @@ export default {
     }
   },
   watch: {
-    blackboards (){
-      if (this.mitClass.roomTypes){
+    blackboards () {
+      if (this.mitClass.roomTypes) {
         this.roomCategories = []
-        for (let type of this.mitClass.roomTypes) {
+        for (const type of this.mitClass.roomTypes) {
           this.roomCategories.push({title: type, rooms: this.blackboards.filter(room => room.roomType === type)})
         }
       }

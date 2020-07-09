@@ -116,7 +116,7 @@ export default {
     }
   },
   created () {
-    for (var i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 20; i++) {
       this.groupSizeList.push(i);
     }
   },
@@ -197,7 +197,6 @@ export default {
         this.$_getCollection(this.classRef.collection("blackboards")).then(tealTables => {
           let i = 0; 
           for (const table of tealTables.filter(room => room.roomType === this.roomForRandom)) { //This is using a filter for now so it's not optimized (because it fetches all boards first) probs fine
-            console.log(table.roomType)
             tableAssignments.push({
               roomID: table.id,
               assignees: []
