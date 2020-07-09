@@ -1,8 +1,37 @@
 <template>
   <div>
-    <ButtonNew class="ml-5 pl-5" @click="moveStudentsToRooms()" icon="mdi-help">
-      Assign students to groups of 3
-    </ButtonNew>
+    <v-expansion-panels>
+      <v-expansion-panel>
+        <v-expansion-panel-header>
+          <v-row align="center">
+            <h3>
+              Assign students to random groups
+            </h3>
+          </v-row>
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <v-list>
+            <v-list-item>
+              <v-select v-if="mitClass"
+                v-model="roomForRandom"
+                :items="mitClass.roomTypes"
+                label="Room Group"
+                />  
+              <v-select 
+                v-model="groupSizeForRandom"
+                :items="groupSizeList"
+                label="Group Size"
+              />
+              <ButtonNew filled @click="moveStudentsToRooms()">
+                <h2>
+                  Go
+                </h2>
+              </ButtonNew>
+            </v-list-item>
+          </v-list>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
     <p>
       This is where the instructor can broadcast his blackboard to many students at once, ideal for lectures. 
       The instructor can press a button to evenly divide students into random groups in real-time blackboard rooms. 
@@ -21,7 +50,8 @@
  *   If the user leaves by going to a different page, the `destroy()` hook will call, which is handled. 
  *   If the user leaves by disconnecting, the firebase `disconnect hook` will clean up the user document
  */
-
+import firebase from "firebase/app";
+import "firebase/firestore";
 import db from "@/database.js";
 import { mapState } from "vuex"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
@@ -46,7 +76,10 @@ export default {
       removeClassDocListener: null,
       participants: [],
       tableAssignments: [],
-      strokesArray: []
+      strokesArray: [],
+      roomForRandom: "",
+      groupSizeForRandom: 3,
+      groupSizeList: []
     };
   },
   computed: {
@@ -74,12 +107,21 @@ export default {
     user: {
       immediate: true,
       async handler () {
-        if (!this.user) return; 
+        if (!this.user) return;
         this.registerUserAndListenForRoomAssignments(); 
+        this.setUserDisconnectHook();
         this.$_listenToDoc(this.classRef, this, "classDoc");
         this.$_listenToCollection(this.classRef.collection("participants"), this, "participants");
       }
     }
+  },
+  created () {
+    for (let i = 1; i <= 20; i++) {
+      this.groupSizeList.push(i);
+    }
+  },
+  beforeDestroy () {
+    this.classRef.collection("participants").doc(this.user.uid).delete()
   },
   methods: {
     // TODO: 
@@ -115,6 +157,21 @@ export default {
         }
       });
     },
+    setUserDisconnectHook () {
+      firebase.database().ref(".info/connected").on("value", async (snapshot) => {
+        const isUserConnected = snapshot.val(); 
+        if (isUserConnected === false) return;
+        const firebaseRef = firebase.database().ref(`/class/${this.$route.params.class_id}/participants`);
+        await firebaseRef.onDisconnect().set({
+            uid: this.user.uid,
+            email: this.user.email
+        });
+        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+          email: "", 
+          uid: ""
+        });
+      })
+    }, 
     async moveStudentsToRooms () {
       /**
        * Shuffles array in place. ES6 version
@@ -138,9 +195,8 @@ export default {
       ); 
       promises.push(
         this.$_getCollection(this.classRef.collection("blackboards")).then(tealTables => {
-          const groupSize = 4; 
           let i = 0; 
-          for (const table of tealTables) {
+          for (const table of tealTables.filter(room => room.roomType === this.roomForRandom)) { //This is using a filter for now so it's not optimized (because it fetches all boards first) probs fine
             tableAssignments.push({
               roomID: table.id,
               assignees: []
@@ -154,10 +210,9 @@ export default {
 
       // `tableAssignments` has the structure of: [{ roomID: "123", "assignees": ["345", "abc"] }]
       let i = 0; 
-      const groupSize = 3; 
       for (const student of connectedStudents) {
-        if (tableAssignments[i].assignees.length > groupSize) {
-          i += 1; 
+        if (tableAssignments[i].assignees.length >= this.groupSizeForRandom) {
+          i = (i+1)%tableAssignments.length; //leftover students just get pushed onto a table
         }
         tableAssignments[i].assignees.push(student.uid); 
       }
@@ -165,12 +220,7 @@ export default {
       await this.classRef.update({
         tableAssignments
       });
-      // now assume that all the connected users will be automatically migrated to rooms, so participants should now be empty
-      const batch = db.batch(); 
-      for (const participant of this.participants) {
-        batch.delete(this.classRef.collection("participants").doc(participant.id))
-      }
-      await batch.commit(); 
+      // Here we used to batch delete all of the participants, but we dont need that anymore as particpants are deleted on destroy
     }
   }
 }
