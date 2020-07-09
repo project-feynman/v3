@@ -286,7 +286,6 @@ export default {
       if (this.groupBy === 'date') return; // Need to make the item not draggable instead of this, but that's not working
       // item.highlight = false; For better UX
       let msg = '';
-      let tag = '';
       if (item.data.isFolder) {
         let parent = []
         if (droppedAt.isFolder) {
@@ -311,6 +310,7 @@ export default {
           this.groupByTag(true); // Rerender the tree with new structure
         }
       } else {
+        let tag = [];
         let order = item.data.order;
         order = typeof order === 'undefined' ? 0 : order; // If order is not defined in the class yet
         if (droppedAt.isFolder) {
@@ -374,7 +374,6 @@ export default {
       // but only when a new folder is added (cause we are not listening to mitClass (but not sure if fixing that would solve the problem))
       if ((!this.mitClass || this.tagGroups.length!==0) && !force) return;
       this.tagGroups.length=0;
-      let i = 0;
       for (const tag of this.mitClass.tags) {
         const tag_object = {
           id: tag.id,
@@ -392,8 +391,6 @@ export default {
             this.tagGroups.push(tag_object);
           }
         }
-
-        i += 1;
       }
       this.fetchPostsWithNoTags(); 
     },
@@ -402,8 +399,8 @@ export default {
       this.bindUntaggedPostsToDatabase(query);
     },
     async fetchRelevantPosts (item) {
-      let postsQuery;
       const postsRef = db.collection(`classes/${this.mitClass.id}/${this.type === 'question'?'questions':'posts'}`);
+      let postsQuery;
       if (this.groupBy === 'tag') {
         postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
@@ -558,7 +555,7 @@ export default {
         return;
       }
 
-      let tags = this.mitClass.tags;
+      const tags = this.mitClass.tags;
       let newTags = [];
       if (tags.length && typeof tags[0] === 'string') {
         for (let tag of tags) {
@@ -593,8 +590,8 @@ export default {
       });
     },
     async initializeClassOrder () {
-      let order = 0;
       if (this.mitClass.hasOwnProperty('maxOrder')) return;
+      let order = 0;
       await db.collection(`classes/${this.$route.params.class_id}/${this.type === 'question'?'questions':'posts'}`).orderBy('date', 'asc').get().then((querySnapshot)=> {
         querySnapshot.forEach((doc)=> {
           order +=1;
