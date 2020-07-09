@@ -49,7 +49,6 @@ export default {
       (otherwise the client has to check for existence himself)
     */
     async $_listenToDoc (ref, obj, val) {
-      console.log(ref)
       return new Promise(async (resolve) => {
         try {
           const unsubscribeListener = ref.onSnapshot(doc => { // onSnapshot does NOT return a promise
