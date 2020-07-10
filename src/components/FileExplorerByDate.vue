@@ -13,6 +13,7 @@
         clear-icon="mdi-close-circle-outline"
       ></v-text-field>
     </v-sheet> -->
+    <PostSearch :postType="type"/>
 
         <v-layout>
           <v-flex>
@@ -163,6 +164,7 @@
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
+import PostSearch from "@/components/PostSearch.vue";
 import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
 import firebase from "firebase/app";
@@ -183,7 +185,8 @@ export default {
     BasePopupButton,
     ButtonNew,
     Drag,
-    Drop
+    Drop,
+    PostSearch
   },
   computed: {
     classId () { 
