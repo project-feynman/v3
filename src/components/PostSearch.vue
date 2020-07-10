@@ -24,20 +24,13 @@
         return-object
         >
             <template v-slot:item="{ parent, item }"> 
-                <!-- <div :to="`/class/${mitClass.id}/${postType==='question'?'questions':'posts'}/${item.objectID}`">
-                    <div
-                        v-html="parent.genFilteredText(item.title)"
-                    > 
-                    </div>
-                </div> -->
-                <!-- <v-list-item v-if="!item.isFolder" :to="`/class/${mitClass.id}/${postType==='question'?'questions':'posts'}/${item.objectID}`" dense>
-                    <v-list-item-subtitle v-text="item.title"/>
-                </v-list-item> -->
-                <v-card :to="`/class/${mitClass.id}/${postType==='question'?'questions':'posts'}/${item.objectID}`" tile style="width: 100%">
+                <!-- <template v-if="item.mitClass"> -->
+                <v-card :to="`/class/${item.mitClass.id}/${item.postType}/${item.objectID}`" tile style="width: 100%">
                     <v-card-title v-html="parent.genFilteredText(item.title)"/>
+                    <v-card-subtitle v-text="item.date"/>
                     <v-card-text v-html="parent.genFilteredText(stripHtml(item.html))"/>
                 </v-card>
-                
+                <!-- </template> -->
             </template>
 
             <template v-slot:selection="{ item }">
@@ -54,6 +47,7 @@ import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import algoliasearch from "algoliasearch";
+import { algoliaCreds } from "@/algoliaCreds.js"
 
 export default {
   props: {
@@ -63,7 +57,7 @@ export default {
   },
   data () {
     return {
-        algoliaClient: algoliasearch('5UW8XLZ3N7', 'da7dea9dc86e2d922227521833af6802'),
+        algoliaClient: algoliasearch(algoliaCreds.APP_SID, algoliaCreds.ADMIN_API_KEY),
         searchInput: "",
         search: null,
         searchResults: [],
@@ -82,14 +76,17 @@ export default {
       return this.$route.params.room_id;
     },
     searchIndex () {
-        return this.algoliaClient.initIndex((this.postType === 'question') ? 'questions' : 'posts')
+        return this.algoliaClient.initIndex(this.mitClass.id)
+    },
+    postTypeTrans () {
+        return this.postType === 'question' ? 'questions' : 'posts' 
     }
   },
   watch: {
       search (val) {
           if (val && val.length > 2){
               this.searchIndex.search(val).then( ({ hits }) => {
-                  this.searchResults = hits;
+                  this.searchResults = hits.filter(post => post.postType === this.postTypeTrans)
               })
           }
       },
@@ -105,7 +102,6 @@ export default {
         },
       //janky filter type thing so autocomplete displays all results from algolia
       text: item => item.title +" "+ item.html +" "+ item.creator.firstName +" "+ item.creator.lastName +" "+ item.creator.email 
-      
   }
 };
 </script>
