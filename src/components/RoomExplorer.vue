@@ -80,25 +80,19 @@
                                 actionName="Set room status"
                               >
                                 <template v-slot:activator-button="{ on }">
-                                  <v-btn 
-                                    v-on="on"
-                                    color="accent lighten-1"
-                                    :outlined="true"
-                                    rounded
-                                    style="margin:3px">
-                                    <v-icon>mdi-account-alert</v-icon>
-                                  </v-btn> 
+                                  <ButtonNew :on="on" outlined rounded icon="mdi-account-alert">
+                                    Re-label Room
+                                  </ButtonNew>
                                 </template>
                               </BasePopupButton>
-
-                              <v-btn 
-                                @click="toggleMic()" 
+                                                
+                              <ButtonNew @click="toggleMic()" 
                                 :color="isMicOn ? 'accent' : 'accent lighten-1'" 
-                                :outlined="isMicOn" 
-                                rounded
-                              >
-                                <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
-                              </v-btn>
+                                outlined 
+                                rounded 
+                                :icon="isMicOn ? 'mdi-microphone': 'mdi-microphone-off'">
+                                Toggle Mic
+                              </ButtonNew>
                             </template>
                             <template v-else>
                               <v-icon class="">{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
@@ -129,6 +123,7 @@
 <script>
 import db from "@/database.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
+import ButtonNew from "@/components/ButtonNew.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import { mapState } from "vuex";
@@ -139,6 +134,7 @@ export default {
   ],
   components: {
     BasePopupButton,
+    ButtonNew,
     LiveBoardAudio
   },
   data () {
