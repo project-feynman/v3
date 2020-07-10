@@ -1,17 +1,6 @@
 <template>
   <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
   <v-sheet class="pa-4 secondary lighten-3">
-      <!-- <v-text-field
-        v-model="search"
-        label="Search existing posts..."
-        dark
-        flat
-        solo-inverted
-        hide-details
-        clearable
-        clear-icon="mdi-close-circle-outline"
-      ></v-text-field> -->
-
       <v-autocomplete
         v-model="selectedItem"
         :search-input.sync="search"
@@ -24,13 +13,14 @@
         return-object
         >
             <template v-slot:item="{ parent, item }"> 
-                <!-- <template v-if="item.mitClass"> -->
                 <v-card :to="`/class/${item.mitClass.id}/${item.postType}/${item.objectID}`" tile style="width: 100%">
                     <v-card-title v-html="parent.genFilteredText(item.title)"/>
-                    <v-card-subtitle v-text="item.date"/>
-                    <v-card-text v-html="parent.genFilteredText(stripHtml(item.html))"/>
+                    <v-card-subtitle >
+                        <div v-text="item.creator.firstName +' '+ item.creator.lastName"/>
+                        <div v-text="item.date"/>
+                    </v-card-subtitle>
+                    <v-card-text v-html="parent.genFilteredText(item.html)"/>
                 </v-card>
-                <!-- </template> -->
             </template>
 
             <template v-slot:selection="{ item }">
@@ -42,12 +32,10 @@
 </template>
 
 <script>
-import { tutorial } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
-import firebase from "firebase/app";
-import "firebase/firestore";
 import algoliasearch from "algoliasearch";
-import { algoliaCreds } from "@/algoliaCreds.js"
+import { algoliaCreds } from "@/algoliaCreds.js";
+import { displayDate } from "@/helpers.js";
 
 export default {
   props: {
@@ -61,7 +49,8 @@ export default {
         searchInput: "",
         search: null,
         searchResults: [],
-        selectedItem: { creator: {}}
+        selectedItem: { creator: {}},
+        displayDate: displayDate
     }
   },
   computed: { 
@@ -69,12 +58,6 @@ export default {
       "user",
       "mitClass"
     ]),
-    classId () { 
-      return this.$route.params.class_id; 
-    },
-    roomId () {
-      return this.$route.params.room_id;
-    },
     searchIndex () {
         return this.algoliaClient.initIndex(this.mitClass.id)
     },
@@ -86,16 +69,21 @@ export default {
       search (val) {
           if (val && val.length > 2){
               this.searchIndex.search(val).then( ({ hits }) => {
-                  this.searchResults = hits.filter(post => post.postType === this.postTypeTrans)
+                  let filteredHits = hits.filter(post => post.postType === this.postTypeTrans)
+                  if (filteredHits.length !== this.searchResults.length) { // only update when the search result changes. idk if this is necessary but it should be more efficient
+                    this.searchResults = filteredHits.map( post => { 
+                        // for display purposes
+                        post.date = displayDate(post.date)
+                        post.html = this.stripHtml(post.html) 
+                        return post
+                    })
+                  }
               })
           }
-      },
-      selectedItem () {
-
       }
   },
   methods: {
-      stripHtml(html) {
+      stripHtml (html) {
             var tmp = document.createElement("DIV");
             tmp.innerHTML = html;
             return tmp.textContent || tmp.innerText || "";
