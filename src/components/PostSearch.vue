@@ -10,6 +10,8 @@
         flat
         solo-inverted
         :item-text="text"
+        :loading="loading"
+        no-data-text="No Posts Match your Search"
         return-object
         >
             <template v-slot:item="{ parent, item }"> 
@@ -24,8 +26,8 @@
             </template>
 
             <template v-slot:selection="{ item }">
-                    <div v-text="item.title">
-                    </div>
+                <div v-text="item.title">
+                </div>
             </template>
       </v-autocomplete>
     </v-sheet>
@@ -50,7 +52,8 @@ export default {
         search: null,
         searchResults: [],
         selectedItem: { creator: {}},
-        displayDate: displayDate
+        displayDate: displayDate,
+        loading: false
     }
   },
   computed: { 
@@ -68,16 +71,18 @@ export default {
   watch: {
       search (val) {
           if (val && val.length > 2){
+              this.loading = true;
               this.searchIndex.search(val).then( ({ hits }) => {
                   let filteredHits = hits.filter(post => post.postType === this.postTypeTrans)
                   if (filteredHits.length !== this.searchResults.length) { // only update when the search result changes. idk if this is necessary but it should be more efficient
                     this.searchResults = filteredHits.map( post => { 
                         // for display purposes
-                        post.date = displayDate(post.date)
-                        post.html = this.stripHtml(post.html) 
+                        post.date = displayDate(post.date);
+                        post.html = this.stripHtml(post.html);
                         return post
                     })
                   }
+                  this.loading = false;
               })
           }
       }
