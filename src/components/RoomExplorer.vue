@@ -61,7 +61,7 @@
                   >
                     <v-list-item-content v-if="blackboard.participants">
                       <v-list-item-title>
-                        Room {{ i }}
+                        Space {{ i }}
                         <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                         <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
                       </v-list-item-title>
@@ -77,11 +77,11 @@
                               <BasePopupButton
                                 @action-do="({ 'Status': status }) => setRoomStatus(status)" 
                                 :inputFields="['Status']"
-                                actionName="Set room status"
+                                actionName="Re-label Space"
                               >
                                 <template v-slot:activator-button="{ on }">
                                   <ButtonNew :on="on" outlined rounded icon="mdi-account-alert">
-                                    Re-label Room
+                                    Re-label Space
                                   </ButtonNew>
                                 </template>
                               </BasePopupButton>
