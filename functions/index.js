@@ -73,6 +73,12 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/room/{classId}
   }
 });
 
+exports.onMainLobbyParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
+  const userWhoLeft = change.after.val();
+  const { classId } = context.params;
+  firestore.doc(`/classes/${classId}/participants/${userWhoLeft.uid}`).delete();
+})
+
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already
   return `
     <h3>${explDoc.title}</h3>
