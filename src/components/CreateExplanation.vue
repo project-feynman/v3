@@ -230,7 +230,7 @@ export default {
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
-      const tags = this.folder === ''? [] : [this.folder];
+      const tags = this.folder === "" ? [] : [this.folder];
 
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
