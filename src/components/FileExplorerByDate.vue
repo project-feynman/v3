@@ -218,12 +218,19 @@ export default {
         if (!this.mitClass) return;
         await this.tagsArrayToObject();
         await this.initializeClassOrder();
-        await this.groupPosts();
+        this.groupPosts();
         // An attempt to open the first folder by default. Not sure why it is not working
-        // if (this.openedFoldersIndices.length===0) {
-        //   const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
-        //   this.openedFoldersIndices = [openThis];
-        // }
+        console.log('mitClass');
+        setTimeout(()=>{
+          console.log('called finally')
+          if (this.openedFoldersIndices.length===0) {
+            const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
+            console.log('adding this one', openThis);
+            this.openedFoldersIndices.push(openThis);
+            console.log('before', this.openedFoldersIndices)
+            // setTimeout(()=>{this.openedFoldersIndices.push(openThis);}, 1000);
+          }
+        }, 500);
       }
     },
     groupBy: function(newVal) {
@@ -253,6 +260,11 @@ export default {
       });
       this.groupByTag(true);
       this.$root.$emit("show-snackbar", "Successfully renamed the folder.");
+    },
+    openThisFolder (folder) {
+      if ( !this.openedFoldersIndices.includes(folder) ) {
+        this.openedFoldersIndices.push(folder);
+      }
     },
     /**
      * Create a new folder in the class archive via Firestore. 
@@ -287,15 +299,15 @@ export default {
       // item.highlight = false; For better UX
       let msg = '';
       if (item.data.isFolder) {
-        let parent = []
+        let parent = null;
         if (droppedAt.isFolder) {
           parent = droppedAt.id;
         } else { // If it is a post
           // Making sure it works even when some folder has been deleted
           if (this.mitClass.tags.findIndex(tag=> tag.id === droppedAt.tags[0])>=0) parent = droppedAt.tags[0];
         }
-        if (parent === item.data.parent) {
-          //If there is no change in parent
+        if (parent === item.data.parent || parent === item.data.id) {
+          //If there is no change in parent, or is dragged onto oneself
           msg = "No change in folder."
         } else {
           const i = this.mitClass.tags.findIndex(tag => tag.id === item.data.id);
@@ -347,27 +359,27 @@ export default {
     folderToggle (a) {
       // this.openedFoldersIndices = a;
     },
-    async groupPosts() {
+    groupPosts() {
       if (this.groupBy === "tag") {
         this.organizedPosts = this.tagGroups;
-        await this.groupByTag();
+        this.groupByTag();
       } else {
         this.organizedPosts = this.dateGroups;
-        await this.groupByDate();
+        this.groupByDate();
       }
     },
     async groupByDate () {
       // This only (re)groups the posts, but doesn't rerender the UI.
       // To rerender UI, call groupPosts
       if (this.dateGroups.length!==0) return;
-      db.collection(`classes/${this.$route.params.class_id}/${this.type === 'question'?'questions':'posts'}`).get().then((querySnapshot)=> {
+      await db.collection(`classes/${this.$route.params.class_id}/${this.type === 'question'?'questions':'posts'}`).get().then((querySnapshot)=> {
         querySnapshot.forEach(doc => {
           this.dateList.push(doc.data().date);
         })
         this.foldersFromDates();
       });
     },
-    async groupByTag (force = false) {
+    groupByTag (force = false) {
       // This only (re)groups the posts, but doesn't rerender the UI.
       // To rerender UI, call groupPosts
       // force: (Boolean) forces the tag tree to update even if it was already filled. We don't want ot force every single time user switches between
@@ -394,7 +406,7 @@ export default {
       }
       this.fetchPostsWithNoTags(); 
     },
-    async fetchPostsWithNoTags () {
+    fetchPostsWithNoTags () {
       const query = db.collection(`classes/${this.$route.params.class_id}/${this.type === 'question'?'questions':'posts'}`).where("tags", "==", []);
       this.bindUntaggedPostsToDatabase(query);
     },
@@ -438,7 +450,7 @@ export default {
         // clear previous data (but don't clear the folders)
         // Consider only the root folders
         // We can't just filter the classtags for root folders since folders can be deleted, but we should make better way to delete 
-        let rootTagsLength = 0
+        let rootTagsLength = 0;
         for (const tag of this.mitClass.tags) {
           if (tag.parent === null) {
             rootTagsLength +=1
@@ -497,6 +509,12 @@ export default {
               hasReplies: doc.data().hasReplies,
             });
           });
+          snapshot.docChanges().forEach(function(change) {
+            if (change.type === "added") {
+              const addedPost = change.doc.data().title;
+              console.log('new post', addedPost);
+            }
+          });
           if (this.groupBy === 'tag') array.sort((a, b) => b.order-a.order);
           else array.sort((a, b) => b.date-a.date);
           // this.incrementKeyToDestroy += 1;
@@ -507,7 +525,7 @@ export default {
     },
     foldersFromDates () {
       this.dateGroups.length = 0;
-      let weekGroups = {}
+      const weekGroups = {}
       this.dateList.sort((a, b) => (a < b) ? 1 : ((a > b) ? -1 : 0)); // First sort the date in reverse chronological order
       this.dateList.forEach( date => {
         date = moment(date)
@@ -521,7 +539,7 @@ export default {
           .isoWeek(date.week())
           .endOf('week')
           .format('YYYY MMM D')
-        let week = `${startDay}-${endDay}`;
+        const week = `${startDay}-${endDay}`;
         if (!weekGroups[week]) {
           weekGroups[week] = 0;
         }
@@ -556,7 +574,7 @@ export default {
       }
 
       const tags = this.mitClass.tags;
-      let newTags = [];
+      const newTags = [];
       if (tags.length && typeof tags[0] === 'string') {
         for (let tag of tags) {
           newTags.push({
@@ -577,7 +595,7 @@ export default {
       db.collection(`classes/${this.$route.params.class_id}/${this.type === 'question'?'questions':'posts'}`).get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           const postTags = doc.data().tags;
-          let tag_ids = [];
+          const tag_ids = [];
           if (typeof postTags !== "undefined") {
             for (let tag of postTags) {
               tag_ids.push(tags.find(({name}) => name ==tag).id);
