@@ -224,22 +224,22 @@ export default {
       this.isRecordingVideo = false;
       this.isPreviewing = true;
     },
-    async uploadExplanation() {
+    async uploadExplanation () {
       if (this.postTitle.length === 0 && this.titleRequired) {
         this.postTitle = `Untitled (${new Date().toLocaleTimeString()})`;
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
-      const tags = this.folder === "" ? [] : [this.folder];
-
-      this.$_saveExplToCacheThenUpload(
+      
+      this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
-        this.blackboard.audioBlob,
-        this.html,
-        this.postTitle,
-        tags,
-        this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId()),
-      );
+        audioBlob: this.blackboard.audioBlob,
+        html: this.html,
+        title: this.postTitle,
+        tags: this.folder === "" ? [] : [this.folder],
+        explRef: this.willCreateNewPost ? 
+          this.postDbRef : this.newExplanationDbRef.doc(getRandomId())
+      });
     }
   }
 }

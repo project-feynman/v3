@@ -142,19 +142,15 @@ export default {
       }
     },
     async uploadExplanation () {
-      const html = "";
-      const explRef = db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`);
       const thumbnailBlob = await this.blackboard.getThumbnailBlob();
-      const tags = []
-
-      this.$_saveExplToCacheThenUpload(
+      this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
-        this.blackboard.audioBlob,
-        html,
-        this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleTimeString()})`, 
-        tags,
-        explRef
-      );
+        audioBlob: this.blackboard.audioBlob,
+        html: "",
+        title: this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleTimeString()})`, 
+        tags: [],
+        explRef: db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`)
+      });
       this.explTitle = ""; 
     },
     async deleteAllStrokesFromDb () {
