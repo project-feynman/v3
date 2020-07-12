@@ -32,7 +32,8 @@ export default {
      * @params this contains the properties `postTitle`, `strokesArray`, etc. which defines the explanation 
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
-    async $_saveExplToCacheThenUpload (thumbnailBlob, audioBlob, html, title, explRef) {
+    async $_saveExplToCacheThenUpload (thumbnailBlob, audioBlob, html, title, tags, explRef) {
+      const postOrder = parseInt(this.mitClass.maxOrder + 1) || 1
       this.$store.commit("ADD_EXPL_TO_CACHE", {
         ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads
         strokesArray: this.strokesArray,
@@ -45,10 +46,14 @@ export default {
           date: new Date().toISOString(),
           creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
           mitClass: this.mitClass,
-          tags: [],
+          tags,
+          order: postOrder,
           duration: this.blackboard.currentTime, 
           hasStrokes: this.strokesArray.length > 0
         }
+      });
+      db.doc(`classes/${this.$route.params.class_id}`).update({
+        maxOrder: postOrder,
       });
       this.$_uploadExplanation(explRef); 
       this.$root.$emit("show-snackbar", "Uploading your explanation...");
@@ -101,6 +106,7 @@ export default {
         promises.push(ref.set(explDoc));
         await Promise.all(promises);
         delete this.$store.state.explCache[ref.id];
+        console.log('we have reached this far',ref.id)
         this.$root.$emit("show-snackbar", "Successfully uploaded your explanation.");   
       } catch (error) {
         // TODO: send an error email to ExplainMIT core team

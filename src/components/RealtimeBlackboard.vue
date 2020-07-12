@@ -19,12 +19,13 @@
         <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
       </template> 
     </Blackboard> 
-     <v-dialog v-model="dialog" max-width="290">
+     <v-dialog v-model="dialog" max-width="600">
       <v-card>
         <v-card-title class="headline">Save your recorded explanation?</v-card-title>
         <v-card-text>
-          Save your recorded explanation?
+          <v-text-field v-model="explTitle" placeholder="(Optional) Enter a title..."/>
         </v-card-text>
+
         <v-card-actions>
           <v-spacer/>
           <v-btn color="green darken-1" text @click="discardAudio()">
@@ -81,6 +82,7 @@ export default {
   },
   data () {
     return {
+      explTitle: "",
       strokesArray: [],
       hasFetchedStrokesFromDb: false,
       blackboard: {
@@ -140,18 +142,20 @@ export default {
       }
     },
     async uploadExplanation () {
-      const title = `Untitled (${new Date().toLocaleTimeString()})`; 
       const html = "";
       const explRef = db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`);
       const thumbnailBlob = await this.blackboard.getThumbnailBlob();
+      const tags = []
 
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
         this.blackboard.audioBlob,
         html,
-        title,
+        this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleTimeString()})`, 
+        tags,
         explRef
       );
+      this.explTitle = ""; 
     },
     async deleteAllStrokesFromDb () {
       const promises = [];

@@ -61,7 +61,7 @@
                   >
                     <v-list-item-content v-if="blackboard.participants">
                       <v-list-item-title>
-                        Room {{ i }}
+                        Space {{ i }}
                         <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                         <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
                       </v-list-item-title>
@@ -77,43 +77,28 @@
                               <BasePopupButton
                                 @action-do="({ 'Status': status }) => setRoomStatus(status)" 
                                 :inputFields="['Status']"
-                                actionName="Set room status"
+                                actionName="Re-label Space"
                               >
                                 <template v-slot:activator-button="{ on }">
-                                  <v-btn 
-                                    v-on="on"
-                                    color="accent lighten-1"
-                                    :outlined="true"
-                                    rounded
-                                    style="margin:3px">
-                                    <v-icon>mdi-account-alert</v-icon>
-                                  </v-btn> 
+                                  <ButtonNew :on="on" outlined rounded icon="mdi-account-alert">
+                                    Re-label Space
+                                  </ButtonNew>
                                 </template>
                               </BasePopupButton>
-
-                              <v-btn 
-                                @click="toggleMic()" 
+                                                
+                              <ButtonNew @click="toggleMic()" 
                                 :color="isMicOn ? 'accent' : 'accent lighten-1'" 
                                 :outlined="isMicOn" 
                                 rounded
+                                :icon="isMicOn ? 'mdi-microphone': 'mdi-microphone-off'"
                               >
-                                <template v-if="hasConnectedAudio">
-                                  <v-icon class="">{{ isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                                <template v-if="!hasConnectedAudio">
+                                  <template v-if="!isMicOn">Connect Audio</template>
+                                  <v-progress-circular v-else indeterminate size="20" width="2"/>
                                 </template>
-                                <template v-else-if="!hasConnectedAudio && isMicOn">
-                                  <v-progress-circular
-                                    indeterminate
-                                    size="20"
-                                    width="2"/>
-                                </template>
-                                <template v-else>
-                                  Join Audio
-                                </template>
-
-                              </v-btn>
-                            </template>
-                            <template v-else>
-                              <v-icon class="">{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
+                                
+                                <template v-else>{{ isMicOn ? "Mute" : "Unmute" }} Mic</template>
+                              </ButtonNew>
                             </template>
                           </div>
                         </template>
@@ -142,6 +127,7 @@
 <script>
 import db from "@/database.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
+import ButtonNew from "@/components/ButtonNew.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import { mapState } from "vuex";
@@ -152,6 +138,7 @@ export default {
   ],
   components: {
     BasePopupButton,
+    ButtonNew,
     LiveBoardAudio
   },
   data () {

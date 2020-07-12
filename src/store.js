@@ -27,6 +27,15 @@ function syncUserWithDb (userRef, context) {
   });
 }
 
+// function syncMitClassWithDb (mitClassRef, context) {
+//   mitClassRef.onSnapshot(mitClass => {
+//     if (!mitClass.exists) return; 
+//     console.log(mitClass.data())
+//     context.commit('SET_CLASS', mitClass.data());
+//     setDisconnectHook(mitClass.data()); // TODO: delete previous onDisconnect() hook 
+//   });
+// }
+
 async function getDocFromDb (ref) {
   return new Promise(async (resolve, reject) => {
     const doc = await ref.get();
@@ -70,7 +79,9 @@ export default new Vuex.Store({
       return new Promise(async resolve => {
         const ref = db.collection("classes").doc(classId);
         const classDoc = await getDocFromDb(ref);
+        // console.log(classDoc);
         context.commit("SET_CLASS", classDoc);
+        // syncMitClassWithDb(ref, context);
         resolve();
       });
     },

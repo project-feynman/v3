@@ -10,6 +10,7 @@
           hide-details
           class="mb-5"
           data-qa="title-field"
+          id="title"
         />
       </v-col>
 
@@ -20,24 +21,29 @@
       
       <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
         <template v-if="user">
-          <v-btn v-if="!isUploadingPost"
-            @click="uploadExplanation()" 
-            :loading="isButtonDisabled" 
-            :disabled="isButtonDisabled"
-            color="secondary" 
-            class="ma-0 white--text" 
-            data-qa="submit-post-btn"
-          >
-            SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
-            <v-icon class="pl-2">mdi-send</v-icon>
-            <template v-slot:loader>
-              <span v-if="isRecordingVideo">Recording...</span> 
-              <span v-else-if="isUploadingPost">Uploading...</span>
-            </template>
-          </v-btn>
-          <v-spacer/>
-          <v-switch v-model="isAnonymous" class="mt-5"/>
-          <p class="pt-4">toggle anonymous</p>
+          <v-row align="center" justify="space-between">
+            <v-col cols="auto">
+              <v-switch v-model="isAnonymous" label="Toggle Anonymous" color="accent"/>
+              <v-select v-if="willCreateNewPost" :items="tagSelect" v-model="folder" dense outlined label="Add to Folder" color="accent"></v-select>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn v-if="!isUploadingPost"
+                @click="uploadExplanation()" 
+                :loading="isButtonDisabled" 
+                :disabled="isButtonDisabled"
+                color="accent" 
+                class="ma-0 white--text" 
+                data-qa="submit-post-btn"
+              >
+                SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
+                <v-icon class="pl-2">mdi-send</v-icon>
+                <template v-slot:loader>
+                  <span v-if="isRecordingVideo">Recording...</span> 
+                  <span v-else-if="isUploadingPost">Uploading...</span>
+                </template>
+              </v-btn>
+            </v-col>
+          </v-row>
         </template>
       </div>
       <v-progress-linear
@@ -154,6 +160,7 @@ export default {
     isAnonymous: false,
     isUploadingPost: false,
     changeKeyToForceReset: 0,
+    folder: '',
   }),
   computed: {
     ...mapState([
@@ -178,6 +185,14 @@ export default {
     },
     isButtonDisabled () {
       return this.isUploadingPost || this.isRecordingVideo;
+    },
+    tagSelect () {
+      if (!this.mitClass) return [];
+      let tags = []
+      for (let tag of this.mitClass.tags) {
+        tags.push({text: tag.name, value: tag.id})
+      }
+      return tags;
     }
   },
   created () {
@@ -215,20 +230,23 @@ export default {
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
+      const tags = this.folder === "" ? [] : [this.folder];
+
       this.$_saveExplToCacheThenUpload(
         thumbnailBlob,
         this.blackboard.audioBlob,
         this.html,
         this.postTitle,
-        this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId())
+        tags,
+        this.willCreateNewPost ? this.postDbRef : this.newExplanationDbRef.doc(getRandomId()),
       );
     }
   }
 }
 </script>
 
-<style scoped>
-.v-text-field {
+<style>
+.v-text-field #title {
   font-size: 1.6em;
 }
 </style>

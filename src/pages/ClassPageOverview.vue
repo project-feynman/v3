@@ -1,12 +1,12 @@
 <template>
   <v-card>
     <SeeExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
-    <v-card-title>Class</v-card-title>
+    <!-- <v-card-title>Class</v-card-title>
     <v-card-text>
       <p v-for="classmate in classmates" :key="classmate.id">
         {{ `${classmate.firstName} ${classmate.lastName}` }}
       </p>
-    </v-card-text>
+    </v-card-text> -->
   </v-card>
 </template>
 
@@ -40,7 +40,8 @@ export default {
     }
   },
   async created () {
-    const tutorialExplRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
+    // const tutorialExplRef = db.doc(`classes/${tutorial.classId}/posts/${tutorial.postId}`);
+    const tutorialExplRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/0aWcPnU5vOPck9qc48YG`);
     this.unsubscribe = await this.$_listenToDoc(tutorialExplRef, this, "tutorialExpl");
   },
   beforeDestroy () {
