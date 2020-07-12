@@ -88,14 +88,17 @@
                                                 
                               <ButtonNew @click="toggleMic()" 
                                 :color="isMicOn ? 'accent' : 'accent lighten-1'" 
-                                outlined 
-                                rounded 
-                                :icon="isMicOn ? 'mdi-microphone': 'mdi-microphone-off'">
-                                Toggle Mic
+                                :outlined="isMicOn" 
+                                rounded
+                                :icon="isMicOn ? 'mdi-microphone': 'mdi-microphone-off'"
+                              >
+                                <template v-if="!hasConnectedAudio">
+                                  <template v-if="!isMicOn">Connect Audio</template>
+                                  <v-progress-circular v-else indeterminate size="20" width="2"/>
+                                </template>
+                                
+                                <template v-else>{{ isMicOn ? "Mute" : "Unmute" }} Mic</template>
                               </ButtonNew>
-                            </template>
-                            <template v-else>
-                              <v-icon class="">{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}</v-icon>
                             </template>
                           </div>
                         </template>
@@ -114,7 +117,8 @@
       v-if="user"
       :roomId="lastBlackboardRoomId"
       :isMicOn="isMicOn"
-      @left-room="isMicOn=false"
+      @left-room="isMicOn=false; hasConnectedAudio=false"
+      @audio-connected="hasConnectedAudio=true"
       :key="lastBlackboardRoomId"
     />
   </div>
@@ -143,25 +147,17 @@ export default {
       centerTableParticipants: [],
       blackboards: [],
       isMicOn: false,
+      hasConnectedAudio: false,
       savedRoomId: "",
-      roomCategories: [{
-        title: "Office Hours",
-        rooms: []
-      },
-      {
-        title: "TEAL Tables",
-        rooms: []
-      },
-      {
-        title: "Lounge",
-        rooms: []
-      }]
+      roomTypes: [],
+      roomCategories: []
     };
   },
   computed: {
     ...mapState([
       "user",
-      "blackboardRoom"
+      "blackboardRoom",
+      "mitClass"
     ]),
     classID () {
       return this.$route.params.class_id;
@@ -177,11 +173,16 @@ export default {
     }
   },
   watch: {
-    blackboards (){
-      let l = this.blackboards.length;
-      this.roomCategories[0].rooms = this.blackboards.slice(0,l/3)
-      this.roomCategories[1].rooms = this.blackboards.slice(l/3, 2*l/3)
-      this.roomCategories[2].rooms = this.blackboards.slice(2*l/3)
+    blackboards () {
+      if (this.mitClass.roomTypes) {
+        this.roomCategories = []
+        for (const type of this.mitClass.roomTypes) {
+          this.roomCategories.push({title: type, rooms: this.blackboards.filter(room => room.roomType === type)})
+        }
+      }
+      else {
+        this.roomCategories = [{title: "Blackboard Rooms", rooms: this.blackboards}]
+      }
     }
   },
   created () {
