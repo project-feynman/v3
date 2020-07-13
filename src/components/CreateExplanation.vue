@@ -1,9 +1,9 @@
 <template>
   <v-card data-qa="create-expl">
     <v-container fluid>
-      <!-- Text editor -->
+      <!-- Title -->
       <v-col cols="12" md="6" class="pa-0">
-        <v-text-field v-if="titleRequired" 
+        <v-text-field v-if="explType === 'post'" 
           placeholder="Title"
           v-model="postTitle"
           color="accent"
@@ -14,38 +14,38 @@
         />
       </v-col>
 
-      <TextEditor 
-        @update:html="html => updateHTML(html)"
-      />
+      <!-- Text Editor -->
+      <TextEditor @update:html="html => this.html = html"/>
       <p class="red--text">{{ messageToUser }}</p>
       
-      <div v-if="(newExplanationDbRef || postDbRef)" class="d-flex align-center">
-        <template v-if="user">
-          <v-row align="center" justify="space-between">
-            <v-col cols="auto">
-              <v-switch v-model="isAnonymous" label="Toggle Anonymous" color="accent"/>
-              <v-select v-if="willCreateNewPost" :items="tagSelect" v-model="folder" dense outlined label="Add to Folder" color="accent"></v-select>
-            </v-col>
-            <v-col cols="auto">
-              <v-btn v-if="!isUploadingPost"
-                @click="uploadExplanation()" 
-                :loading="isButtonDisabled" 
-                :disabled="isButtonDisabled"
-                color="accent" 
-                class="ma-0 white--text" 
-                data-qa="submit-post-btn"
-              >
-                SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
-                <v-icon class="pl-2">mdi-send</v-icon>
-                <template v-slot:loader>
-                  <span v-if="isRecordingVideo">Recording...</span> 
-                  <span v-else-if="isUploadingPost">Uploading...</span>
-                </template>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </template>
+      <div v-if="user" class="d-flex align-center">
+        <v-row align="center" justify="space-between">
+          <v-col cols="auto">
+            <v-switch v-model="isAnonymous" label="Toggle Anonymous" color="accent"/>
+            <v-select v-if="explType === 'post'" :items="tagSelect" v-model="folder" dense outlined label="Add to Folder" color="accent"></v-select>
+          </v-col>
+
+          <v-col cols="auto">
+            <v-btn v-if="!isUploadingPost"
+              @click="uploadExplanation()" 
+              :loading="isButtonDisabled" 
+              :disabled="isButtonDisabled"
+              color="accent" 
+              class="ma-0 white--text" 
+              data-qa="submit-post-btn"
+            >
+              SUBMIT {{ isAnonymous ? "anonymously" : `as ${user.firstName}` }}
+              <v-icon class="pl-2">mdi-send</v-icon>
+              <template v-slot:loader>
+                <span v-if="isRecordingVideo">Recording...</span> 
+                <span v-else-if="isUploadingPost">Uploading...</span>
+              </template>
+            </v-btn>
+          </v-col>
+        </v-row>
       </div>
+
+      <!-- Upload Progress Bar -->
       <v-progress-linear
         :value="uploadProgress"
         :active="isUploadingPost"
@@ -55,6 +55,7 @@
       >
         Uploading...
       </v-progress-linear>
+
       <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
       <Blackboard v-show="!isPreviewing"
         :key="changeKeyToForceReset"
@@ -69,6 +70,7 @@
         @record-start="isRecordingVideo = true"
         @record-end="showPreview()"
       />
+
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
         <v-row>
@@ -89,6 +91,7 @@
             </template>
           </BasePopupButton>
         </v-row>
+
         <DoodleVideo
           :strokesArray="previewVideo.strokesArray"
           :audioUrl="convertToURL(previewVideo.audioBlob)"
@@ -116,16 +119,10 @@ import { mapState } from "vuex";
 
 export default {
   props: {
-    willCreateNewPost: {
-      type: Boolean,
-      default: () => false
-    },
-    titleRequired: {
-      type: Boolean,
-      default: () => false
-    },
-    postDbRef: Object,
-    newExplanationDbRef: Object
+    explType: {
+      typ: String,
+      required: true
+    }
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -148,7 +145,6 @@ export default {
       currentTime: 0
     },
     strokesArray: [],
-    messageToUser: "",
     uploadProgress: 0,
     isRecordingVideo: false,
     isPreviewing: false,
@@ -159,6 +155,7 @@ export default {
     },
     isAnonymous: false,
     isUploadingPost: false,
+    messageToUser: "",
     changeKeyToForceReset: 0,
     folder: '',
   }),
@@ -190,24 +187,55 @@ export default {
       if (!this.mitClass) return [];
       let tags = []
       for (let tag of this.mitClass.tags) {
-        tags.push({text: tag.name, value: tag.id})
+        tags.push({ text: tag.name, value: tag.id })
       }
       return tags;
     }
   },
-  created () {
-    this.$emit("alias:strokesArray", this.strokesArray);
+  watch: {
+    mitClass: {
+      immediate: true,
+      handler () {
+        this.decideWhereExplsAreSaved()
+      }
+    }
   },
   methods: {
+    decideWhereExplsAreSaved () {
+      if (!this.mitClass) return; 
+      const classRef = db.doc(`classes/${this.mitClass.id}`);
+      const classPath = `classes/${this.mitClass.id}`;
+      if (this.explType === "post") {
+        this.newPostRef = db.doc(`${classPath}/posts/${getRandomId()}`);
+      } else if (this.explType === "reply") {
+        this.newPostRef = db.doc(`${classPath}/posts/${this.$route.params.post_id}`);
+        this.newReplyRef = this.newPostRef.collection("explanations").doc(getRandomId());
+      }
+    },
+    /**
+     *  Show a confirmation popup if the user exits the current URL (to prevent accidental loss of work)
+     *  `beforeRouteUpdate` is called when the route change but this `ClassPageSeePost` is still used
+     *  @see https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
+     */
+    beforeRouteUpdate (to, from, next) {
+      this.confirmExit(next);
+    },
+    beforeRouteLeave (to, from, next) {
+      this.confirmExit(next);
+    },
+    confirmExit (next) {
+      if (this.strokesArray.length > 0 || this.html.length > 0) {
+        const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
+        if (!wantToLeave) next(false);
+        else next();
+      } 
+      else next(); 
+    },
     bindBlackboardMethods ({ getThumbnailBlob }) {
       this.blackboard.getThumbnailBlob = getThumbnailBlob; 
     },
     convertToURL (blob) {
       return URL.createObjectURL(blob);
-    },
-    updateHTML (html) {
-      this.html = html; 
-      this.$emit("update:html", this.html);
     },
     clearPreviewAndResetBlackboard () {
       this.isPreviewing = false;
@@ -225,7 +253,7 @@ export default {
       this.isPreviewing = true;
     },
     async uploadExplanation () {
-      if (this.postTitle.length === 0 && this.titleRequired) {
+      if (this.postTitle === "" && this.explType === "post") {
         this.postTitle = `Untitled (${new Date().toLocaleTimeString()})`;
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
@@ -237,12 +265,40 @@ export default {
         html: this.html,
         title: this.postTitle,
         tags: this.folder === "" ? [] : [this.folder],
-        explRef: this.willCreateNewPost ? 
-          this.postDbRef : this.newExplanationDbRef.doc(getRandomId())
+        explRef: this.explType === "post" ? this.newPostRef : this.newReplyRef
       });
+  
+      this.hardResetChildrenComponents(); 
+    },
+    /**
+     * Note, always properly reset the states i.e. variables/model 
+     * before re-rendering the UI (incrementing changeKeyToForceReset)
+     */
+    hardResetChildrenComponents () {
+      this.postTitle = ""; 
+      this.html = "";
+      this.blackboard = {
+        getThumbnailBlob: null,
+        audioBlob: null,
+        bgImageBlob: null,
+        currentTime: 0
+      };
+      this.strokesArray = [];
+
+      // preview-related variables (to be refactored and eliminated in the future)
+      this.previewVideo = {
+        strokesArray: [],
+        audioBlob: null,
+        imageBlob: ""
+      };
+      this.isPreviewing = false; 
+
+      // always reset state before re-rendering 
+      this.changeKeyToForceReset += 1; 
+      this.decideWhereExplsAreSaved();
     }
   }
-}
+};
 </script>
 
 <style>

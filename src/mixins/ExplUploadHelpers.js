@@ -64,7 +64,7 @@ export default {
      * @param {*} ref the location on Firestore to which the explanation document will be uploaded. 
      *                Moreover, ref.id maps to the specific explanation from the expl cache. 
      * @returns Uploads the explanation. If the upload fails for any reason,
-     * this function will call itself after 5 seconds to re-attempt the upload
+     * this function will call itself after 5 seconds to re-attempt the upload.
      */
     async $_uploadExplanation (ref, retryCount = 0) {
       try {

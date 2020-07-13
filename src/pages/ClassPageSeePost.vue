@@ -9,12 +9,7 @@
     />
     <!-- Need to be logged-in to reply to existing posts -->
     <CreateExplanation v-if="user" 
-      :postDbRef="postRef" 
-      :newExplanationDbRef="explanationsRef" 
-      :key="changeKeyToForceReset"
-      @alias:strokesArray="strokesArray => this.strokesArray = strokesArray"
-      @update:html="html => this.html = html"
-      @upload-started="changeKeyToForceReset += 1"
+      explType="reply"
     />
   </div>
 </template>
@@ -37,14 +32,11 @@ export default {
     SeeExplanation,
   },
   data: () => ({
-    strokesArray: [],
-    html: "",
     originalPost: null,
     explanations: [],
     explanationsRef: null,
     postRef: null,
     databaseListeners: [],
-    changeKeyToForceReset: 0
   }),
   computed: {
     ...mapState([
@@ -67,25 +59,9 @@ export default {
       this.databaseListeners.push(listener);
     });
   },
-  beforeRouteUpdate (to, from, next) {
-    this.confirmExit(next);
-  },
-  beforeRouteLeave (to, from, next) {
-    this.confirmExit(next);
-  },
   destroyed () { 
     for (const unsubscribeListener of this.databaseListeners) {
       unsubscribeListener();
-    }
-  },
-  methods: {
-    confirmExit (next) {
-      if (this.strokesArray.length > 0 || this.html.length > 0) {
-        const wantToLeave = window.confirm("Do you really want to leave? You might have unsaved changes.");
-        if (!wantToLeave) next(false);
-        else next();
-      } 
-      else next(); 
     }
   }
 }

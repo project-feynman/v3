@@ -30,7 +30,15 @@ export default new Router({
         {
           // when /user/:id/posts is matched
           path: "new",
-          component: () => import(/* webpackChunkName: "new" */ "./pages/ClassPageNewPost.vue") 
+          // component: () => import(/* webpackChunkName: "new" */ "./pages/ClassPageNewPost.vue") 
+          // move from components folder to pages folder later
+          component: () => import(/* webpackChunkName: "new" */ "./components/CreateExplanation.vue"),
+          props: route => {
+            // if it's a new post/question, the query type will be "post" or "question"
+            return {
+              explType: route.query.type ? "post" : "reply" 
+            };  
+          }
         },
         {
           path: "posts/:post_id",
@@ -38,7 +46,7 @@ export default new Router({
         },
         {
           path: "questions/:question_id",
-          component: () => import(/* webpackChunkName: "post" */ "./pages/ClassPageSeeQuestion.vue")
+          component: () => import(/* webpackChunkName: "question" */ "./pages/ClassPageSeeQuestion.vue")
         }
       ]
     }
