@@ -23,11 +23,14 @@ export default {
     }); 
   },
   methods: {
-    async startRecording () {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      this.recorder = new MediaRecorder(stream)
-      this.recorder.start();
-      this.$emit("start-recording");
+    startRecording () {
+      return new Promise(async resolve => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.recorder = new MediaRecorder(stream); 
+        this.recorder.start(); 
+        this.$emit("start-recording");
+        resolve();
+      });
     },
     stopRecording () {
       return new Promise((resolve, reject) => {
