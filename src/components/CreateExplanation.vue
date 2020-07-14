@@ -206,9 +206,11 @@ export default {
       const classRef = db.doc(`classes/${this.mitClass.id}`);
       const classPath = `classes/${this.mitClass.id}`;
       if (this.explType === "post") {
-        this.newPostRef = db.doc(`${classPath}/posts/${getRandomId()}`);
+        this.newPostRef = db.doc(
+          `${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${getRandomId()}`
+        );
       } else if (this.explType === "reply") {
-        this.newPostRef = db.doc(`${classPath}/posts/${this.$route.params.post_id}`);
+        this.newPostRef = db.doc(`${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${this.$route.params.post_id}`);
         this.newReplyRef = this.newPostRef.collection("explanations").doc(getRandomId());
       }
     },
