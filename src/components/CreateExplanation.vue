@@ -15,7 +15,7 @@
       </v-col>
 
       <!-- Text Editor -->
-      <TextEditor @update:html="html => this.html = html"/>
+      <TextEditor @update:html="html => this.html = html" :key="changeKeyToForceReset + 1"/>
       <p class="red--text">{{ messageToUser }}</p>
       
       <div v-if="user" class="d-flex align-center">
@@ -210,7 +210,8 @@ export default {
           `${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${getRandomId()}`
         );
       } else if (this.explType === "reply") {
-        this.newPostRef = db.doc(`${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${this.$route.params.post_id}`);
+        const { question_id, post_id } = this.$route.params;
+        this.newPostRef = db.doc(`${classPath}/${question_id ? "questions" : "posts"}/${question_id}`);
         this.newReplyRef = this.newPostRef.collection("explanations").doc(getRandomId());
       }
     },

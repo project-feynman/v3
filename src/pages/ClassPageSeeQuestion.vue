@@ -8,14 +8,7 @@
       :expl="expl" 
     />
     <!-- Need to be logged-in to reply to existing posts -->
-    <CreateExplanation v-if="user" 
-      :postDbRef="postRef" 
-      :newExplanationDbRef="explanationsRef" 
-      :key="changeKeyToForceReset"
-      @alias:strokesArray="strokesArray => this.strokesArray = strokesArray"
-      @update:html="html => this.html = html"
-      @upload-started="changeKeyToForceReset += 1"
-    />
+    <CreateExplanation v-if="user" explType="reply"/>
   </div>
 </template>
 
@@ -65,12 +58,6 @@ export default {
     this.$_listenToCollection(this.explanationsRef, this, "explanations").then(listener => {
       this.databaseListeners.push(listener);
     });
-  },
-  beforeRouteUpdate (to, from, next) {
-    this.confirmExit(next);
-  },
-  beforeRouteLeave (to, from, next) {
-    this.confirmExit(next);
   },
   destroyed () { 
     for (const unsubscribeListener of this.databaseListeners) {
