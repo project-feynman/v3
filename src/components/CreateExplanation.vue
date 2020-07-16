@@ -158,6 +158,7 @@ export default {
     messageToUser: "",
     changeKeyToForceReset: 0,
     folder: '',
+    newReplyRef: null
   }),
   computed: {
     ...mapState([
@@ -295,6 +296,7 @@ export default {
         imageBlob: ""
       };
       this.isPreviewing = false; 
+      this.newReplyRef = null;
 
       // always reset state before re-rendering 
       this.changeKeyToForceReset += 1; 
