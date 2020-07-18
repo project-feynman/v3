@@ -39,15 +39,16 @@
 
       <v-card-actions>
         <v-spacer/>
-          <v-btn @click="resetState()" color="secondary" text>
-            Cancel
-          </v-btn>
+        
+        <v-btn @click="resetState()" color="secondary" text>
+          Cancel
+        </v-btn>
           
-          <slot name="popup-action-buttons">
-            <v-btn v-if="actionName" @click="doAction()" color="secondary" text :data-qa='actionName'>
-              {{ actionName }}
-            </v-btn>
-          </slot>
+        <slot name="popup-action-buttons">
+          <v-btn v-if="actionName" @click="doAction()" color="secondary" text :data-qa='actionName'>
+            {{ actionName }}
+          </v-btn>
+        </slot>
       </v-card-actions>
     </v-card>
   </v-dialog>
