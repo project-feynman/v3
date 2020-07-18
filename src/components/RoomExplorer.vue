@@ -45,8 +45,9 @@
                   active-class="active-blackboard"
                 >
                   <v-list-item-content v-if="blackboard.participants">
+                    <!-- will use substring(0, category.title.length - 1) to remove plural "s" in future -->
                     <v-list-item-title>
-                      {{ category.title.substring(0, category.title.length - 1) }} {{ i }}
+                      {{ category.title.substring(0, category.title.length) }} {{ i }}
                       <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                       <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
                     </v-list-item-title>
