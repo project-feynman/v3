@@ -4,8 +4,8 @@
 
 <script>
 import AudioRecorder from "audio-recorder-polyfill";
-import mpegEncoder from "audio-recorder-polyfill/mpeg-encoder";
 
+// import mpegEncoder from "audio-recorder-polyfill/mpeg-encoder";
 // AudioRecorder.encoder = mpegEncoder;
 // AudioRecorder.prototype.mimeType = "audio/mpeg"; // mpeg is equivalent to mp3
 window.MediaRecorder = AudioRecorder;
