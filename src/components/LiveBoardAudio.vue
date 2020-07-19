@@ -3,13 +3,12 @@
 		<portal to="local-media">
 			<div id="local-media" class="video-element"></div>
 		</portal>
-		<!-- <template v-if="roomParticipants">  -->
-			<template v-for="participant in roomParticipants">
-				<portal :to="`remote-media-${participant}`"  :key="participant">
-					<div  :id="`remote-media-${participant}`"/>
-				</portal>
-			</template>
-		<!-- </template> -->
+
+		<template v-for="participant in roomParticipants">
+			<portal :to="`remote-media-${participant}`"  :key="participant">
+				<div  :id="`remote-media-${participant}`"/>
+			</portal>
+		</template>
 	</div>
 </template> 
 
@@ -44,16 +43,16 @@ export default {
 		isMicOn () {
 			this.toggleMic()
 		},
-		roomParticipants () {
-			console.log("PART", this.roomParticipants)
-			this.$nextTick(() => {
-				this.$nextTick(()=> {
-					console.log("ELEM", document.getElementById(`remote-media-${this.roomParticipants[0]}`))
-				})
+		// roomParticipants () {
+		// 	console.log("PART", this.roomParticipants)
+		// 	this.$nextTick(() => {
+		// 		this.$nextTick(()=> {
+		// 			console.log("ELEM", document.getElementById(`remote-media-${this.roomParticipants[0]}`))
+		// 		})
 				
-			})
+		// 	})
 			
-		}
+		// }
 	},
 	created() {
 		console.log("audio created")
