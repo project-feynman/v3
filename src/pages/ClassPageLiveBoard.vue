@@ -3,6 +3,22 @@
     <template v-if="user">
       <RealtimeBlackboard :strokesRef="strokesRef"/>
     </template>
+
+    <v-container fluid>
+				<v-row>
+					<v-col>
+            <div class="video-container">
+							<portal-target name="local-media" />
+            </div>
+					</v-col>
+					<v-col v-for="participant in room.participants" :key="participant.uid">
+            <!-- <div class="video-container"> -->
+              <portal-target :name="`remote-media-${participant.uid}`" />
+            <!-- </div> -->
+					</v-col>
+				</v-row>
+		</v-container>
+    
   </div>
 </template>
 
@@ -106,3 +122,9 @@ export default {
   }
 };
 </script>
+<style scoped>
+.video-container{
+     /* border: 1px solid rgb(50, 129, 124); */
+     width: 100%;
+}
+</style>

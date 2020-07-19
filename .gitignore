@@ -38,4 +38,6 @@ yarn-error.log*
 functions/sendgrid.json
 functions/adminCredentials.json
 src/twiliocreds.js
+functions/algoliaCreds.json
+src/algoliaCreds.js
 

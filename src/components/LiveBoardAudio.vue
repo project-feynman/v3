@@ -1,7 +1,15 @@
 <template>
-	<div >
-		<div id="remote-media"></div>
-		<div id="local-media"></div>
+	<div>
+		<portal to="local-media">
+			<div id="local-media" class="video-element"></div>
+		</portal>
+		<!-- <template v-if="roomParticipants">  -->
+			<template v-for="participant in roomParticipants">
+				<portal :to="`remote-media-${participant}`"  :key="participant">
+					<div  :id="`remote-media-${participant}`"/>
+				</portal>
+			</template>
+		<!-- </template> -->
 	</div>
 </template> 
 
@@ -23,17 +31,28 @@ export default {
 		return {
 			loading: false,
 			activeRoom: null,
-			token: null
+			token: null,
+			roomParticipants: []
 		}
 	},
 	computed: {
 		...mapState([
-      "user"
-    ]),
+      		"user"
+			])
 	},
 	watch: {
 		isMicOn () {
 			this.toggleMic()
+		},
+		roomParticipants () {
+			console.log("PART", this.roomParticipants)
+			this.$nextTick(() => {
+				this.$nextTick(()=> {
+					console.log("ELEM", document.getElementById(`remote-media-${this.roomParticipants[0]}`))
+				})
+				
+			})
+			
 		}
 	},
 	created() {
@@ -60,6 +79,7 @@ export default {
 					this.muteAudio();
 				}
 			}
+			console.log("activeRoom", this.activeRoom)
 		},
 		getAccessToken() {
 				var AccessToken = require('twilio').jwt.AccessToken;
@@ -90,7 +110,14 @@ export default {
 		},
 		// Trigger log events 
 		attachTrack(track, container) {
-				container.appendChild(track.attach());
+				if (track.kind === "video") {
+					var videoTag = track.attach();
+					videoTag.style.width = '100%'
+					container.appendChild(videoTag);
+				}
+				// else {
+				// 	container.appendChild(track.attach());
+				// }
 		},
 		attachTracks(tracks, container) {
 				tracks.forEach((track) => {
@@ -116,10 +143,14 @@ export default {
 				console.log(publication.kind + ' track was unpublished.');
 		},
 		participantConnected(participant, container) {
+			this.$nextTick(() => {
+				
 				let selfContainer = document.createElement('div');
 				selfContainer.id = `participantContainer-${participant.identity}`;
 
-				container.appendChild(selfContainer);
+				var temp = document.getElementById(`remote-media-${participant.identity}`);
+
+				temp.appendChild(selfContainer);
 
 				participant.tracks.forEach((publication) => {
 					this.trackPublished(publication, selfContainer);
@@ -128,6 +159,8 @@ export default {
 					this.trackPublished(publication, selfContainer);
 				});
 				participant.on('trackUnpublished', this.trackUnpublished);
+			})
+				
 		},
 		detachParticipantTracks(participant) {
 				var tracks = this.getTracks(participant);
@@ -164,7 +197,7 @@ export default {
 				name: this.roomId,
 				// logLevel: 'debug',
 				audio: true,
-				// video: { width: 400 }
+				video: {width: {min: 50, max: 500}}
 			};
 			this.leaveRoomIfJoined();
 			
@@ -187,20 +220,31 @@ export default {
 				var previewContainer = document.getElementById('local-media');
 				this.attachTracks(this.getTracks(room.localParticipant), previewContainer);
 				
-				var remoteMediaContainer = document.getElementById('remote-media');
+				
 
 				room.participants.forEach((participant) => {
 						console.log("Already in Room: '" + participant.identity + "'");
-						this.participantConnected(participant, remoteMediaContainer);
+						if(!this.roomParticipants.includes(participant.identity)){
+							this.roomParticipants.push(participant.identity)
+						}
+						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+						this.participantConnected(participant);
 				});
 
 				room.on('participantConnected', (participant) => {
 						console.log("Joining: '" + participant.identity + "'");
-						this.participantConnected(participant, remoteMediaContainer);
+						if(!this.roomParticipants.includes(participant.identity)){
+							this.roomParticipants.push(participant.identity)
+						}
+						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+						this.participantConnected(participant);
 				});
 
 				room.on('participantDisconnected', (participant) => {
 						console.log("RemoteParticipant '" + participant.identity + "' left the room");
+						
+						this.roomParticipants = this.roomParticipants.filter(p => p !== participant.identity)
+
 						this.detachParticipantTracks(participant);
 				});
 
@@ -215,5 +259,6 @@ export default {
 }
 </script>
 
-<style >
+<style scoped>
+
 </style>

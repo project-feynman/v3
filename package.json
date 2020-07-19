@@ -17,6 +17,7 @@
     "firebase": "^7.5.2",
     "lodash": "^4.17.15",
     "moment": "^2.26.0",
+    "portal-vue": "^2.1.7",
     "tiptap": "^1.26.6",
     "tiptap-extensions": "^1.28.6",
     "twilio": "^3.41.1",
