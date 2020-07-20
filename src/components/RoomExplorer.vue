@@ -86,18 +86,18 @@
                                 </template>
                               </BasePopupButton>
                                                 
-                              <ButtonNew @click="toggleMic()" 
-                                :color="isMicOn ? 'accent' : 'accent lighten-1'" 
-                                :outlined="isMicOn" 
+                              <ButtonNew @click="hasJoinedMedia=!hasJoinedMedia" 
+                                :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
+                                :outlined="hasJoinedMedia" 
                                 rounded
-                                :icon="isMicOn ? 'mdi-microphone': 'mdi-microphone-off'"
+                                :icon="hasJoinedMedia ? 'mdi-microphone': 'mdi-microphone-off'"
                               >
-                                <template v-if="!hasConnectedAudio">
-                                  <template v-if="!isMicOn">Connect Audio</template>
+                                <template v-if="!hasLoadedMedia">
+                                  <template v-if="!hasJoinedMedia">Join Video Chat</template>
                                   <v-progress-circular v-else indeterminate size="20" width="2"/>
                                 </template>
                                 
-                                <template v-else>{{ isMicOn ? "Mute" : "Unmute" }} Mic</template>
+                                <template v-else>Exit Video Chat</template>
                               </ButtonNew>
                             </template>
                           </div>
@@ -116,9 +116,9 @@
   <LiveBoardAudio 
       v-if="user"
       :roomId="lastBlackboardRoomId"
-      :isMicOn="isMicOn"
-      @left-room="isMicOn=false; hasConnectedAudio=false"
-      @audio-connected="hasConnectedAudio=true"
+      :hasJoinedMedia="hasJoinedMedia"
+      @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
+      @media-connected="hasLoadedMedia=true"
       :key="lastBlackboardRoomId"
     />
   </div>
@@ -147,6 +147,9 @@ export default {
       centerTableParticipants: [],
       blackboards: [],
       isMicOn: false,
+      isCameraOn: false,
+      hasLoadedMedia: false,
+      hasJoinedMedia: false,
       hasConnectedAudio: false,
       savedRoomId: "",
       roomTypes: [],

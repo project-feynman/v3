@@ -7,29 +7,15 @@
     <v-container fluid>
 				<v-row>
 					<v-col>
-            <v-card>
-              <v-container>
-                <v-row>
-                  <portal-target name="local-media">
+              <portal-target name="local-media">
                   </portal-target>
-                </v-row>
-                  <v-row>
-                    <v-col>
-                      {{user.firstName}}
-                    </v-col>
-                    <!-- <v-col>
-                      <v-btn>
-                        sjdfklsd
-                      </v-btn>
-                    </v-col> -->
-                  </v-row>
-              </v-container>
-            </v-card>
 					</v-col>
-          <template v-for="participant in room.participants.filter(u => u.uid !== user.uid)">
-            <v-col :key="participant.uid">
-              <portal-target :name="`remote-media-${participant.uid}`" />
-            </v-col>
+          <template v-if="room.participants">
+            <template  v-for="participant in room.participants.filter(u => u.uid !== user.uid)">
+              <v-col :key="participant.uid">
+                <portal-target :name="`remote-media-${participant.uid}`" />
+              </v-col>
+            </template>
           </template>
 				</v-row>
 		</v-container>

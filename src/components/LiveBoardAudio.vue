@@ -1,12 +1,36 @@
 <template>
 	<div>
 		<portal to="local-media">
-			<div id="local-media" class="video-element"></div>
+			<v-container>
+                <v-row>
+                  	<div id="local-media" class="video-element">
+				
+					</div>
+                </v-row>
+                  <v-row>
+                    <v-col>
+                      {{user.firstName}}
+                    </v-col>
+					<v-col>
+                      <v-btn @click="toggleMic()">
+                        {{isMicOn ? "Mute Mic" : "Unmute Mic"}}
+                      </v-btn>
+                    </v-col>
+                    <v-col>
+                      <v-btn @click="toggleCamera()">
+                        {{isCameraOn ? "DisableVideo" : "EnableVideo"}}
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+              </v-container>
+			
 		</portal>
 
 		<template v-for="participant in roomParticipants">
 			<portal :to="`remote-media-${participant}`"  :key="participant">
-				<div  :id="`remote-media-${participant}`"/>
+				<div  :id="`remote-media-${participant}`">
+					
+				</div>
 			</portal>
 		</template>
 	</div>
@@ -24,14 +48,16 @@ import { mapState } from "vuex";
 export default {
 	props: {
 		roomId: String,
-		isMicOn: Boolean
+		hasJoinedMedia: Boolean
 	},
 	data() {
 		return {
 			loading: false,
 			activeRoom: null,
 			token: null,
-			roomParticipants: []
+			roomParticipants: [],
+			isCameraOn: false,
+			isMicOn: false
 		}
 	},
 	computed: {
@@ -40,19 +66,14 @@ export default {
 			])
 	},
 	watch: {
-		isMicOn () {
-			this.toggleMic()
-		},
-		// roomParticipants () {
-		// 	console.log("PART", this.roomParticipants)
-		// 	this.$nextTick(() => {
-		// 		this.$nextTick(()=> {
-		// 			console.log("ELEM", document.getElementById(`remote-media-${this.roomParticipants[0]}`))
-		// 		})
-				
-		// 	})
-			
-		// }
+		hasJoinedMedia () {
+			if(this.hasJoinedMedia){
+				this.enterAudioChat();
+			}
+			else {
+				this.leaveRoomIfJoined();
+			}
+		}
 	},
 	created() {
 		console.log("audio created")
@@ -66,19 +87,34 @@ export default {
 	methods: {
 		toggleMic () {
 			console.log("toggled mic", this.roomId, this.isMicOn)
-			if (this.isMicOn){
+			if (!this.isMicOn){
 				if (this.activeRoom===null) {
 					this.enterAudioChat();
 				} else {
-					this.unMuteAudio();
+					this.enableTrack("audio");
 				}
 			}
 			else {
 				if (this.activeRoom){
-					this.muteAudio();
+					this.disableTrack("audio");
 				}
 			}
-			console.log("activeRoom", this.activeRoom)
+		},
+		toggleCamera () {
+			console.log("toggled camera", this.roomId, this.isCameraOn)
+			if (!this.isCameraOn){
+				if (this.activeRoom===null) {
+					this.enterAudioChat();
+				} else {
+					this.enableTrack("video");
+				}
+			}
+			else {
+				if (this.activeRoom){
+					this.disableTrack("video");
+				}
+			}
+			
 		},
 		getAccessToken() {
 				var AccessToken = require('twilio').jwt.AccessToken;
@@ -141,21 +177,16 @@ export default {
 		trackUnpublished(publication) {
 				console.log(publication.kind + ' track was unpublished.');
 		},
-		participantConnected(participant, container) {
+		participantConnected(participant) {
 			this.$nextTick(() => {
-				
-				let selfContainer = document.createElement('div');
-				selfContainer.id = `participantContainer-${participant.identity}`;
-
 				var temp = document.getElementById(`remote-media-${participant.identity}`);
-
-				temp.appendChild(selfContainer);
+				// temp.appendChild(document.createElement('span'))
 
 				participant.tracks.forEach((publication) => {
-					this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, temp);
 				});
 				participant.on('trackPublished', (publication) => {
-					this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, temp);
 				});
 				participant.on('trackUnpublished', this.trackUnpublished);
 			})
@@ -165,15 +196,30 @@ export default {
 				var tracks = this.getTracks(participant);
 				tracks.forEach(this.detachTrack);
 		},
-		muteAudio () {
+		disableTrack (type) {
 			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
-				track.disable();
+				if (track.kind === type) {
+					track.disable();
+					if (type === 'video'){
+						this.isCameraOn = false;
+					}
+					else{
+						this.isMicOn = false;
+					}
+				}
 			});
 		},
-		unMuteAudio () {
+		enableTrack (type) {
 			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
-				console.log(track);
-				track.enable();
+				if (track.kind === type) {
+					track.enable();
+					if (type === 'video'){
+						this.isCameraOn = true;
+					}
+					else{
+						this.isMicOn = true;
+					}
+				}
 			});
 		},
 		getTracks(participant) {
@@ -189,7 +235,7 @@ export default {
 				console.log("disconnecting");
 			}
 		},
-		enterAudioChat() {
+		async enterAudioChat() {
 			this.loading = true;
 
 			let connectOptions = {
@@ -202,24 +248,20 @@ export default {
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			Twilio.connect(this.token, connectOptions).then(
-				(room) => { 
-					this.onTwilioConnect(room);
-					this.unMuteAudio();
-				}, 
-				(error) => { console.log(error.message) }
-			);
+			let room = await Twilio.connect(this.token, connectOptions);
+			this.onTwilioConnect(room)
+			this.$emit('media-connected')
+			this.loading = false;
 		},
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);
 				// set active toom
-				this.$emit('audio-connected')
+				
 				this.activeRoom = room;
-				// this.loading = false;
 				var previewContainer = document.getElementById('local-media');
 				this.attachTracks(this.getTracks(room.localParticipant), previewContainer);
-				
-				
+				this.isMicOn = true;
+				this.isCameraOn = true;
 
 				room.participants.forEach((participant) => {
 						console.log("Already in Room: '" + participant.identity + "'");
@@ -249,6 +291,7 @@ export default {
 
 				room.on('disconnected', () => {
 					console.log('Left the rooom');
+					this.$emit('left-room')
 					this.detachParticipantTracks(room.localParticipant);
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
