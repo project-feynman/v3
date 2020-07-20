@@ -1,10 +1,15 @@
 <template>
-  <div id="room">
-    <template v-if="user">
-      <RealtimeBlackboard :strokesRef="strokesRef"/>
+  <div id="room" style="position: relative">
+    
+    <template v-if="user" >
+      <RealtimeBlackboard :strokesRef="strokesRef" style="padding-bottom: 400px"/>
     </template>
+    <!-- <div style="position: fixed; bottom: 0; height: 50px; z-index: 1000">
+      sklfdjsfklsdjfkl
+    </div> -->
 
-    <v-container fluid>
+    <!-- <div > -->
+    <v-container fluid class="video-display">
 				<v-row>
 					<v-col>
               <portal-target name="local-media">
@@ -19,6 +24,8 @@
           </template>
 				</v-row>
 		</v-container>
+    <!-- </div> -->
+    
     
   </div>
 </template>
@@ -127,5 +134,13 @@ export default {
 .video-container{
      /* border: 1px solid rgb(50, 129, 124); */
      width: 100%;
+}
+.video-display{
+  width: 100%;
+  bottom: 0%;
+  position: fixed;
+  opacity: 1;
+  z-index: 1000;
+  padding-bottom: 0;
 }
 </style>
