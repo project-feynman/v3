@@ -48,7 +48,8 @@ import { mapState } from "vuex";
 export default {
 	props: {
 		roomId: String,
-		hasJoinedMedia: Boolean
+		hasJoinedMedia: Boolean,
+		blackboardRoom: Object
 	},
 	data() {
 		return {
@@ -61,9 +62,12 @@ export default {
 		}
 	},
 	computed: {
-		...mapState([
-      		"user"
-			])
+	...mapState([
+			"user"
+		]),
+		classId () {
+      		return this.$route.params.class_id;
+    	},
 	},
 	watch: {
 		hasJoinedMedia () {
@@ -72,6 +76,18 @@ export default {
 			}
 			else {
 				this.leaveRoomIfJoined();
+			}
+		},
+		isMicOn: {
+			// immediate: true,
+			handler () {
+				this.updateMediaStatus("audio");
+			}
+		},
+		isCameraOn: {
+			// immediate: true,
+			handler () {
+				this.updateMediaStatus("video");
 			}
 		}
 	},
@@ -86,7 +102,7 @@ export default {
 	},
 	methods: {
 		toggleMic () {
-			console.log("toggled mic", this.roomId, this.isMicOn)
+			console.log("toggled mic", this.roomId, this.isMicOn )
 			if (!this.isMicOn){
 				if (this.activeRoom===null) {
 					this.enterAudioChat();
@@ -114,7 +130,22 @@ export default {
 					this.disableTrack("video");
 				}
 			}
-			
+		},
+		updateMediaStatus (type) {
+			console.log("Updating db", this.roomId, type)
+			if (this.blackboardRoom.id === this.roomId) { ///WARNING!!! This is nasty business to set the participants. probably should do it a safer way.
+				var updatedParticipants = this.blackboardRoom.participants;
+				if (type === "audio") {
+					updatedParticipants.find(participant => participant.uid === this.user.uid).isMicOn = this.isMicOn;
+				}
+				else {
+					updatedParticipants.find(participant => participant.uid === this.user.uid).isCameraOn = this.isCameraOn;
+				}
+				const blackboardRoomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
+				blackboardRoomRef.update({
+					participants: updatedParticipants
+				})
+			}
 		},
 		getAccessToken() {
 				var AccessToken = require('twilio').jwt.AccessToken;
@@ -180,7 +211,6 @@ export default {
 		participantConnected(participant) {
 			this.$nextTick(() => {
 				var temp = document.getElementById(`remote-media-${participant.identity}`);
-				// temp.appendChild(document.createElement('span'))
 
 				participant.tracks.forEach((publication) => {
 					this.trackPublished(publication, temp);
@@ -231,6 +261,8 @@ export default {
 		},
 		leaveRoomIfJoined() {
 			if (this.activeRoom) {
+				this.isCameraOn = false;
+				this.isMicOn = false;
 				this.activeRoom.disconnect();
 				console.log("disconnecting");
 			}
@@ -295,6 +327,8 @@ export default {
 					this.detachParticipantTracks(room.localParticipant);
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
+					this.isMicOn = false;
+					this.isCameraOn = false;
 				});
 		}
 	}

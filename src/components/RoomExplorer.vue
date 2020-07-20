@@ -100,6 +100,9 @@
                                 <template v-else>Exit Video Chat</template>
                               </ButtonNew>
                             </template>
+                            <template v-else>
+                              <v-icon>{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
+                            </template>
                           </div>
                         </template>
                       </div>
@@ -117,6 +120,7 @@
       v-if="user"
       :roomId="lastBlackboardRoomId"
       :hasJoinedMedia="hasJoinedMedia"
+      :blackboardRoom="blackboardRoom"
       @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
       @media-connected="hasLoadedMedia=true"
       :key="lastBlackboardRoomId"
@@ -216,18 +220,18 @@ export default {
         participants: []
       });
     },
-    toggleMic () {
-      this.isMicOn = !this.isMicOn;
-      this.updateMicStatus()
-    },
-    updateMicStatus () {
-      var updatedParticipants = this.blackboards.find(room => room.id === this.roomID).participants;
-      updatedParticipants.find(participant => participant.uid === this.user.uid).isMicOn = this.isMicOn;
-      const blackboardRoomRef = db.doc(`classes/${this.classID}/blackboards/${this.roomID}`);
-      blackboardRoomRef.update({
-        participants: updatedParticipants
-      })
-    }
+    // toggleMic () {
+    //   this.isMicOn = !this.isMicOn;
+    //   this.updateMicStatus()
+    // },
+    // updateMicStatus () {
+    //   var updatedParticipants = this.blackboards.find(room => room.id === this.roomID).participants;
+    //   updatedParticipants.find(participant => participant.uid === this.user.uid).isMicOn = this.isMicOn;
+    //   const blackboardRoomRef = db.doc(`classes/${this.classID}/blackboards/${this.roomID}`);
+    //   blackboardRoomRef.update({
+    //     participants: updatedParticipants
+    //   })
+    // }
   }
 };
 </script>
