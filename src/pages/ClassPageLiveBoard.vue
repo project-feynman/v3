@@ -2,7 +2,7 @@
   <div id="room" style="position: relative">
     
     <template v-if="user" >
-      <RealtimeBlackboard :strokesRef="strokesRef" style="padding-bottom: 400px"/>
+      <RealtimeBlackboard :strokesRef="strokesRef" style="padding-bottom: 120px"/>
     </template>
     <!-- <div style="position: fixed; bottom: 0; height: 50px; z-index: 1000">
       sklfdjsfklsdjfkl
@@ -11,13 +11,13 @@
     <!-- <div > -->
     <v-container fluid class="video-display">
 				<v-row>
-					<v-col>
+					<v-col class="video-col">
               <portal-target name="local-media">
                   </portal-target>
 					</v-col>
           <template v-if="room.participants">
             <template  v-for="participant in room.participants.filter(u => u.uid !== user.uid)">
-              <v-col :key="participant.uid">
+              <v-col :key="participant.uid" class="video-col">
                 <portal-target :name="`remote-media-${participant.uid}`" />
               </v-col>
             </template>
@@ -138,9 +138,12 @@ export default {
 .video-display{
   width: 100%;
   bottom: 0%;
-  position: fixed;
+  /* position: fixed; */
   opacity: 1;
   z-index: 1000;
   padding-bottom: 0;
+}
+.video-col{
+	flex-grow: 0
 }
 </style>

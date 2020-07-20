@@ -1,44 +1,45 @@
 <template>
 	<div v-if="hasJoinedMedia">
 		<portal to="local-media">
-			<v-container>
-                <v-row>
-                  	<div id="local-media" class="video-element"/>
-                </v-row>
-                  <v-row>
-                    <v-col>
-                      {{user.firstName}}
-                    </v-col>
-					<v-col>
-                      <v-btn @click="toggleMic()">
-                        {{isMicOn ? "Mute Mic" : "Unmute Mic"}}
-                      </v-btn>
-                    </v-col>
-                    <v-col>
-                      <v-btn @click="toggleCamera()">
-                        {{isCameraOn ? "DisableVideo" : "EnableVideo"}}
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-              </v-container>
-			
+			  <div class="video-container">
+				<div id="local-media"  style="bottom: 0; position: absolute; width:100%"/>
+				<v-container style="bottom: 1%; position: absolute; ">
+					<v-row style="">
+						 <v-col >
+							 <div class="name-container">
+								{{user.firstName + " " + user.lastName}}
+							 </div>
+						</v-col>
+						
+						<v-col >
+							<div style="position:absolute; bottom: 10px; right: 10px;">
+								<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+								<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+							</div>
+						</v-col>
+					</v-row>
+				</v-container>
+			  </div>
 		</portal>
 
 		<template v-for="participant in blackboardRoom.participants">
 			<template v-if="roomParticipants.includes(participant.uid)">
 				<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
-					<v-container>
-					<v-row>
-						<div  :id="`remote-media-${participant.uid}`"/>
-					</v-row>
-					<v-row>
-						<v-col>{{participant.firstName}}</v-col>
-						<v-col>
-							<v-icon>{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
-							<v-icon>{{participant.isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon>
-						</v-col>
-					</v-row>
-				</v-container>
+				<div class="video-container">
+					<div :id="`remote-media-${participant.uid}`"  style="bottom: 0; position: absolute; width:100%"/>
+					<v-container style="bottom: 1%; position: absolute; color: transparent; ">
+						<v-row >
+							<v-col >
+								<v-icon small class="participant-mic">
+									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+								</v-icon> 
+								<div class="name-container" style="left: 28px">
+									{{participant.firstName + " " + participant.lastName}}
+								</div>
+							</v-col>
+						</v-row>
+					</v-container>
+			  	</div>
 					
 				</portal>
 			</template>
@@ -185,19 +186,22 @@ export default {
 				return jwt;
 		},
 		// Trigger log events 
-		attachTrack(track, container) {
+		attachTrack(track, container, isLocal=false) {
 				if (track.kind === "video") {
 					var videoTag = track.attach();
-					videoTag.style.width = '100%'
+					videoTag.style.width = '100%';
+					if (isLocal){
+						videoTag.style.transform = 'scale(-1, 1)'; //flips video horizontally
+					}
 					container.appendChild(videoTag);
 				}
 				// else {
 				// 	container.appendChild(track.attach());
 				// }
 		},
-		attachTracks(tracks, container) {
+		attachTracks(tracks, container, isLocal=false) {
 				tracks.forEach((track) => {
-						this.attachTrack(track, container);
+						this.attachTrack(track, container, isLocal);
 				});
 		},
 		detachTrack(track) {
@@ -305,7 +309,7 @@ export default {
 				
 				this.activeRoom = room;
 				var previewContainer = document.getElementById('local-media');
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer);
+				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
 				this.isMicOn = true;
 				this.isCameraOn = true;
 
@@ -344,5 +348,20 @@ export default {
 </script>
 
 <style scoped>
-
+.video-container{
+	width: 200px;
+	position: relative
+}
+.name-container{
+	color: white; 
+	position:absolute; 
+	bottom: 10px; 
+	font-size: 12px
+}
+.participant-mic{
+	position: absolute; 
+	bottom: 11px; 
+	color: white; 
+	left: 5px;
+}
 </style>
