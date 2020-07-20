@@ -102,6 +102,7 @@
                             </template>
                             <template v-else>
                               <v-icon>{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
+                              <v-icon>{{participant.isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon>
                             </template>
                           </div>
                         </template>

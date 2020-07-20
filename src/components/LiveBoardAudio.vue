@@ -1,11 +1,9 @@
 <template>
-	<div>
+	<div v-if="hasJoinedMedia">
 		<portal to="local-media">
 			<v-container>
                 <v-row>
-                  	<div id="local-media" class="video-element">
-				
-					</div>
+                  	<div id="local-media" class="video-element"/>
                 </v-row>
                   <v-row>
                     <v-col>
@@ -26,12 +24,24 @@
 			
 		</portal>
 
-		<template v-for="participant in roomParticipants">
-			<portal :to="`remote-media-${participant}`"  :key="participant">
-				<div  :id="`remote-media-${participant}`">
+		<template v-for="participant in blackboardRoom.participants">
+			<template v-if="roomParticipants.includes(participant.uid)">
+				<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
+					<v-container>
+					<v-row>
+						<div  :id="`remote-media-${participant.uid}`"/>
+					</v-row>
+					<v-row>
+						<v-col>{{participant.firstName}}</v-col>
+						<v-col>
+							<v-icon>{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
+							<v-icon>{{participant.isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon>
+						</v-col>
+					</v-row>
+				</v-container>
 					
-				</div>
-			</portal>
+				</portal>
+			</template>
 		</template>
 	</div>
 </template> 
@@ -209,6 +219,10 @@ export default {
 				console.log(publication.kind + ' track was unpublished.');
 		},
 		participantConnected(participant) {
+			// const blackBoardUser = this.blackboardRoom.participants.find(u => u.uid === participant.identity)
+			if(!this.roomParticipants.includes(participant.identity)){
+				this.roomParticipants.push(participant.identity)
+			}
 			this.$nextTick(() => {
 				var temp = document.getElementById(`remote-media-${participant.identity}`);
 
@@ -297,18 +311,12 @@ export default {
 
 				room.participants.forEach((participant) => {
 						console.log("Already in Room: '" + participant.identity + "'");
-						if(!this.roomParticipants.includes(participant.identity)){
-							this.roomParticipants.push(participant.identity)
-						}
 						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
 						this.participantConnected(participant);
 				});
 
 				room.on('participantConnected', (participant) => {
 						console.log("Joining: '" + participant.identity + "'");
-						if(!this.roomParticipants.includes(participant.identity)){
-							this.roomParticipants.push(participant.identity)
-						}
 						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
 						this.participantConnected(participant);
 				});
