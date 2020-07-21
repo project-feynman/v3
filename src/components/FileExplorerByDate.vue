@@ -209,6 +209,7 @@ export default {
     openedFoldersIndices: [],
     snapshotListeners: [],
     groupBy: (this.type === 'note') ? 'tag' : 'date',
+    firstCall: true, // See if this is the first time page is calling database
   }},
   watch: {
     mitClass: {
@@ -220,14 +221,10 @@ export default {
         await this.initializeClassOrder();
         this.groupPosts();
         // An attempt to open the first folder by default. Not sure why it is not working
-        console.log('mitClass');
         setTimeout(()=>{
-          console.log('called finally')
           if (this.openedFoldersIndices.length===0 && this.groupBy==='date') {
             const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
-            console.log('adding this one', openThis);
             this.openedFoldersIndices.push(openThis);
-            console.log('before', this.openedFoldersIndices)
             // setTimeout(()=>{this.openedFoldersIndices.push(openThis);}, 1000);
           }
         }, 500);
@@ -371,6 +368,7 @@ export default {
     async groupByDate () {
       // This only (re)groups the posts, but doesn't rerender the UI.
       // To rerender UI, call groupPosts
+      console.log('group by dates');
       if (this.dateGroups.length!==0) return;
       await db.collection(`classes/${this.$route.params.class_id}/${this.type === 'question'?'questions':'posts'}`).get().then((querySnapshot)=> {
         querySnapshot.forEach(doc => {
@@ -411,6 +409,7 @@ export default {
       this.bindUntaggedPostsToDatabase(query);
     },
     async fetchRelevantPosts (item) {
+      console.log('fetching')
       const postsRef = db.collection(`classes/${this.mitClass.id}/${this.type === 'question'?'questions':'posts'}`);
       let postsQuery;
       if (this.groupBy === 'tag') {
@@ -484,7 +483,7 @@ export default {
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
           array.length = 0; 
-
+          console.log('binding array to database');
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
           for (let tag of childrenFolders) {
             array.push({
@@ -509,14 +508,18 @@ export default {
               hasReplies: doc.data().hasReplies,
             });
           });
-          snapshot.docChanges().forEach(function(change) {
-            if (change.type === "added") {
+          snapshot.docChanges().forEach((change) => {
+            // console.log('new post added')
+            if (change.type === "added" && ! this.firstCall) {
+              // console.log('this is actually new');
               const addedPost = change.doc.data().title;
+              // console.log(addedPost);
             }
           });
           if (this.groupBy === 'tag') array.sort((a, b) => b.order-a.order);
           else array.sort((a, b) => b.date-a.date);
           // this.incrementKeyToDestroy += 1;
+          this.firstCall = false;
           resolve();
         });
         this.snapshotListeners.push(snapshotListener);
@@ -626,37 +629,37 @@ export default {
 </script>
 
 <style scoped>
-.v-expansion-panel {
-  position: sticky;
-  top:0;
-  z-index: 2;
-}
-.v-expansion-panel#question {
-  bottom: 0;
-}
-.v-expansion-panel-header > *:not(.expansion-title) {
-  flex: 0 0 auto;
-}
-.v-expansion-panel.v-expansion-panel--active {
-  position: relative;
-  z-index: 1;
-}
-.v-expansion-panel:not(.v-expansion-panel--active) .expansion-options {
-  display: none;
-}
-.v-expansion-panel .v-expansion-panel-header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: #eee;
-}
-.v-expansion-panel#question .v-expansion-panel-header {
-  top: 68px;
-}
-.dragOver {
-  background: black;
-}
-.unanswered {
-  color: #ee5555 !important;
-}
+  .v-expansion-panel {
+    position: sticky;
+    top:0;
+    z-index: 2;
+  }
+  .v-expansion-panel#question {
+    bottom: 0;
+  }
+  .v-expansion-panel-header > *:not(.expansion-title) {
+    flex: 0 0 auto;
+  }
+  .v-expansion-panel.v-expansion-panel--active {
+    position: relative;
+    z-index: 1;
+  }
+  .v-expansion-panel:not(.v-expansion-panel--active) .expansion-options {
+    display: none;
+  }
+  .v-expansion-panel .v-expansion-panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #eee;
+  }
+  .v-expansion-panel#question .v-expansion-panel-header {
+    top: 68px;
+  }
+  .dragOver {
+    background: black;
+  }
+  .unanswered {
+    color: #ee5555 !important;
+  }
 </style>
