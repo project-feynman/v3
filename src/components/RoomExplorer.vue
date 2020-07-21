@@ -164,8 +164,7 @@ export default {
       expandedPanels: [],
       roomStatusPopup: false,
       updatedStatus: "",
-      roomParticipantsMap: {},
-      roomParticpants: {}
+      roomParticipantsMap: {}
     };
   },
   computed: {
@@ -246,9 +245,6 @@ export default {
     }
   },
   methods: {
-    togg(){
-      console.log("MAPPY", this.roomParticipantsMap)
-    },
     setRoomStatus (status) {
       db.doc(`classes/${this.classID}/blackboards/${this.roomID}`).update({
         status

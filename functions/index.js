@@ -70,6 +70,14 @@ exports.onWorkspaceParticipantsChanged = functions.database.ref("/room/{classId}
   }
 });
 
+exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId}/{roomId}/participants").onWrite((change,context) => {
+  const userWhoLeft = change.after.val();
+  if (!userWhoLeft.uid) { return; }
+  const { roomId, classId } = context.params;
+  const workspaceRef = firestore.doc(`/classes/${classId}/blackboards/${roomId}`);
+  workspaceRef.collection('participants').doc(userWhoLeft.uid).delete();
+})
+
 exports.onMainLobbyParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
   const { classId } = context.params;

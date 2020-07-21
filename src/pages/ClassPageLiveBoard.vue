@@ -122,7 +122,7 @@ export default {
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return; 
-        const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
+        const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
         // 1. User leaves, and his/her identity is saved to Firebase
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         
