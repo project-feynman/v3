@@ -195,9 +195,9 @@ export default {
 					}
 					container.appendChild(videoTag);
 				}
-				// else {
-				// 	container.appendChild(track.attach());
-				// }
+				else {
+					container.appendChild(track.attach());
+				}
 		},
 		attachTracks(tracks, container, isLocal=false) {
 				tracks.forEach((track) => {
