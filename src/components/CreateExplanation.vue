@@ -103,18 +103,18 @@
 </template>
 
 <script>
-import Blackboard from "@/components/Blackboard.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
+import Blackboard from "@/components/Blackboard.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import TextEditor from "@/components/TextEditor.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import ButtonNew from "@/components/ButtonNew.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
 import { RecordState } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js";
-import ButtonNew from "@/components/ButtonNew.vue";
 import { mapState } from "vuex";
 
 export default {
@@ -158,6 +158,7 @@ export default {
     messageToUser: "",
     changeKeyToForceReset: 0,
     folder: '',
+    newReplyRef: null
   }),
   computed: {
     ...mapState([
@@ -201,6 +202,9 @@ export default {
     }
   },
   methods: {
+    /**
+     * TODO: refactor (the if statements and the implicit settings are code smells)
+     */
     decideWhereExplsAreSaved () {
       if (!this.mitClass) return; 
       const classRef = db.doc(`classes/${this.mitClass.id}`);
@@ -211,7 +215,13 @@ export default {
         );
       } else if (this.explType === "reply") {
         const { question_id, post_id } = this.$route.params;
-        this.newPostRef = db.doc(`${classPath}/${question_id ? "questions" : "posts"}/${question_id}`);
+        if (question_id) {
+          this.newPostRef = db.doc(`${classPath}/questions/${question_id}`);
+        } else if (post_id) {
+          this.newPostRef = db.doc(`${classPath}/posts/${post_id}`);
+        } else {
+          throw new Error("The reply is not to a question nor a post.")
+        }
         this.newReplyRef = this.newPostRef.collection("explanations").doc(getRandomId());
       }
     },
@@ -295,6 +305,7 @@ export default {
         imageBlob: ""
       };
       this.isPreviewing = false; 
+      this.newReplyRef = null;
 
       // always reset state before re-rendering 
       this.changeKeyToForceReset += 1; 

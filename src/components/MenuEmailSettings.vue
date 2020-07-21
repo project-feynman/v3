@@ -11,11 +11,11 @@
         </slot>
       </template>
       <v-card>
-        <v-card-title>Email Settings</v-card-title>
+        <v-card-title>Email Settings {{mitClass ? "for " + mitClass.name : ""}}</v-card-title>
         <v-divider/>
-        <v-list v-if="user && $store.state.mitClass">
-          <template v-for="mitClass in user.enrolledClasses">
-            <v-list-item v-if="mitClass.id === $store.state.mitClass.id" :key="mitClass.id">
+        <v-list v-if="user && mitClass">
+          <template v-for="enrolledClass in user.enrolledClasses">
+            <v-list-item v-if="enrolledClass.id === mitClass.id" :key="enrolledClass.id">
               <v-container class="px-0">
                 <v-list-item-action>
                   <template v-for="(isEnabled, option) in DefaultEmailSettings">

@@ -512,7 +512,6 @@ export default {
           snapshot.docChanges().forEach(function(change) {
             if (change.type === "added") {
               const addedPost = change.doc.data().title;
-              console.log('new post', addedPost);
             }
           });
           if (this.groupBy === 'tag') array.sort((a, b) => b.order-a.order);

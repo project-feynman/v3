@@ -81,11 +81,11 @@ function getEmailBody (explDoc, classId, postId) { // assumes .data() has been c
     <h3>${explDoc.title}</h3>
     <p>${explDoc.description ? explDoc.description : "" }</p>
     <img src="${explDoc.thumbnail ? explDoc.thumbnail : "" }"></img>
-    <a href="https://explain.mit.edu/class/${classId}/posts/${postId}">Click here to view.</a>
+    <a href="https://explain.mit.edu/class/${classId}/questions/${postId}">Click here to view.</a>
   `; 
 }
 
-exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/{postId}").onCreate(async (newPostDoc, context) => {
+exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/questions/{postId}").onCreate(async (newPostDoc, context) => {
   const { classId, postId } = context.params;
   const classmatesRef = firestore.collection("users").where("emailOnNewPost", "array-contains", classId);
   const classmatesDocs = await classmatesRef.get();
@@ -104,23 +104,24 @@ exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/posts/
   });
 });
 
-exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/posts/{postId}/explanations/{explanationId}").onCreate(async (newReplyDoc, context) => {
+exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/questions/{postId}/explanations/{explanationId}").onCreate(async (newReplyDoc, context) => {
   const { classId, postId } = context.params;
-  const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/posts/${postId}`));
+  const originalPost = await getDocFromDb(firestore.doc(`/classes/${classId}/questions/${postId}`));
   for (let participant of originalPost.participants) {
     const newReply = newReplyDoc.data(); 
-    console.log("classId =", classId);
-    console.log("participant.email =", participant.email);
-    console.log("newReply.creator.email =", newReply.creator.email);
-    if (participant.email === newReply.creator.email) { 
-      continue; 
-    } else if (participant.emailOnNewReply.includes(classId)) { 
-      sendEmail(
-        participant.email, 
-        `${newReply.creator.firstName} replied in a ${newReply.mitClass.name} post you engaged in`,
-        getEmailBody(newReply, classId, postId)
-      );
-    }
+    const userRef = firestore.collection("users").where("uid", "==", participant.uid);
+    const userDocs = await userRef.get();
+    userDocs.forEach((userDoc) => {
+      const currParticipant = userDoc.data();
+      if (currParticipant.uid !== newReply.creator.uid && currParticipant.emailOnNewReply.includes(classId)) { 
+        sendEmail(
+          currParticipant.email, 
+          `${newReply.creator.firstName} replied in a ${newReply.mitClass.name} post you engaged in`,
+          getEmailBody(newReply, classId, postId)
+        );
+      }
+    })
+      
   }
 });
 
@@ -166,9 +167,9 @@ async function createSummaryEmail (dailyOrWeekly) {
   const allExplanations = [];
   let postsRef; 
   if (dailyOrWeekly === emailSummaryFrequencyEnum.DAILY) {
-    postsRef = firestore.collectionGroup("posts").where("date", ">", getYesterday());
+    postsRef = firestore.collectionGroup("questions").where("date", ">", getYesterday());
   } else if (dailyOrWeely === emailSummaryFrequencyEnum.WEEKLY) {
-    postsRef = firestore.collectionGroup("posts").where("date", ">", getLastWeek());
+    postsRef = firestore.collectionGroup("questions").where("date", ">", getLastWeek());
   }
   const postsDocs = await postsRef.get();
   postsDocs.forEach((postDoc) => allExplanations.push({ id: postDoc.id, ...postDoc.data() }));
@@ -179,7 +180,7 @@ async function createSummaryEmail (dailyOrWeekly) {
     <h1>Most viewed post: ${topExpl.title}</h1> 
     <p>${topExpl.description ? topExpl.description : ""}</p>
     ${ topExpl.thumbnail ? `<img src="${topExpl.thumbnail}"></img>` : "" }
-    <a href="https://explain.mit.edu/class/${topExpl.mitClass.id}/posts/${topExpl.id}">Click here to view.</a>
+    <a href="https://explain.mit.edu/class/${topExpl.mitClass.id}/questions/${topExpl.id}">Click here to view.</a>
   `;
 }
 

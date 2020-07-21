@@ -92,12 +92,14 @@ export default {
         }
         await Promise.all(promises);
         // TODO: refactor the below logic to the client
-        if (this.willCreateNewPost || !this.postDbRef) { // `!this.postDbRef` is a quickfix
+        if (!this.newReplyRef) { // this is not a reply
           explDoc.participants = [this.simplifiedUser];
           explDoc.hasReplies = false;
-        } else {
+          console.log("In new post")
+        } else { // this is a reply
+          console.log("Adding to new")
           promises.push(
-            this.postDbRef.update({
+            this.newPostRef.update({ // this is a reply, and newPostRef is the original post
               participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
               hasReplies: true
             })

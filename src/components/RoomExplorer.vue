@@ -19,39 +19,25 @@
       class="blackboard-item"
       active-class="active-blackboard"
     >
-      <h4>
-        Main Lobby
-      </h4>
+      Lecture Hall
     </v-list-item>
 
     <v-divider/>
-    <!-- <v-list-item> -->
     
-    <v-expansion-panels>
+    <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels">
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
-          <v-expansion-panel-header><h4>{{category.title}}</h4></v-expansion-panel-header>
-            <v-expansion-panel-content> 
-              <v-list >
-                <template v-for="(blackboard, i) in category.rooms">
-    <!-- <template v-for="(blackboard, i) in blackboards"> -->
-      <!-- 
-      Complication: 
-          clicking activator button i.e. v-on="on" inside <BasePopupButton> 
-          will uncontrollably force a page refresh. I'm guessing it's because
-          the click event propagates to the parent <v-list-item> which 
-          has a :to attribute and triggers a URL redirect, though it's not clear
-          why it's a slow, real URL request rather than a fast simulated URL request,
-          which is the normal behavior for all our route navigations. 
+          <v-expansion-panel-header>
+            {{ category.title }}
+          </v-expansion-panel-header>
 
-          The workaround is that I removed the :to attribute, and use @click="$router.push()".
-          The drawback is now no room can detect if it is currently active 
-          (:to attribute use to highlight items that match with the current URL)
-          so I now expand all blackboards and make everything "active-blackboard".
-      
-          class="blackboard-item" 
-          :to="(`/class/${classId}/room/${blackboard.id}`)" 
-      -->
+           <v-expansion-panel-content> 
+            <v-list>
+              <template v-for="(blackboard, i) in category.rooms">
+                <!-- we use `$router.push` instead of the `:to` attribute 
+                    see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/HQamsmNvtAcYv8xsOIwb 
+                -->
+                <!-- @click="$router.push(`/class/${classID}/room/${blackboard.id}`)" -->
                   <v-list-item
                     @click="$router.push(`/class/${classID}/room/${blackboard.id}`)"
                     :key="blackboard.id"
@@ -74,17 +60,34 @@
                             </div>
 
                             <template v-if="user.uid === participant.uid">
-                              <BasePopupButton
-                                @action-do="({ 'Status': status }) => setRoomStatus(status)" 
-                                :inputFields="['Status']"
-                                actionName="Re-label Space"
-                              >
-                                <template v-slot:activator-button="{ on }">
-                                  <ButtonNew :on="on" outlined rounded icon="mdi-account-alert">
-                                    Re-label Space
-                                  </ButtonNew>
-                                </template>
-                              </BasePopupButton>
+                              <ButtonNew @click="roomStatusPopup = true" outlined rounded icon="mdi-account-alert">
+                                Re-label Space
+                              </ButtonNew>
+                              <v-dialog v-model="roomStatusPopup" persistent max-width="600px">
+                                <v-card>
+                                  <v-card-title>
+                                    <span class="headline">
+                                      Update Status
+                                    </span>
+                                  </v-card-title>
+
+                                  <v-card-text>
+                                    <v-text-field v-model="updatedStatus"/>
+                                  </v-card-text>
+
+                                  <v-card-actions>
+                                    <v-spacer/>
+
+                                    <v-btn @click="roomStatusPopup = false" color="secondary" text>
+                                      Cancel
+                                    </v-btn>
+
+                                    <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
+                                      Update Status
+                                    </v-btn>
+                                  </v-card-actions>
+                                </v-card>
+                              </v-dialog>
                                                 
                               <ButtonNew @click="hasJoinedMedia=!hasJoinedMedia" 
                                 :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
@@ -105,14 +108,15 @@
                               <v-icon>{{participant.isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon>
                             </template>
                           </div>
+                        
                         </template>
                       </div>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
-                </template>
-              </v-list>
-            </v-expansion-panel-content>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
+              </template>
+            </v-list>
+          </v-expansion-panel-content>
         </v-expansion-panel>
       </template>
     </v-expansion-panels>
@@ -127,8 +131,8 @@
       :key="lastBlackboardRoomId"
     />
   </div>
-    
 </template>
+
 <script>
 import db from "@/database.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
@@ -158,7 +162,12 @@ export default {
       hasConnectedAudio: false,
       savedRoomId: "",
       roomTypes: [],
-      roomCategories: []
+      roomCategories: [],
+      expandedPanels: [],
+      isMicOn: false,
+      hasConnectedAudio: false,
+      roomStatusPopup: false,
+      updatedStatus: ""
     };
   },
   computed: {
@@ -183,13 +192,21 @@ export default {
   watch: {
     blackboards () {
       if (this.mitClass.roomTypes) {
-        this.roomCategories = []
+        this.roomCategories = [];
         for (const type of this.mitClass.roomTypes) {
-          this.roomCategories.push({title: type, rooms: this.blackboards.filter(room => room.roomType === type)})
+          this.roomCategories.push({
+            title: type, 
+            rooms: this.blackboards.filter(room => room.roomType === type)
+          });
         }
       }
       else {
-        this.roomCategories = [{title: "Blackboard Rooms", rooms: this.blackboards}]
+        this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }]
+      }
+      // the collapsible should be completely open by default
+      this.expandedPanels = []; 
+      for (let i = 0; i < this.roomCategories.length; i++) {
+        this.expandedPanels.push(i);
       }
     }
   },
@@ -214,6 +231,7 @@ export default {
       db.doc(`classes/${this.classID}/blackboards/${this.roomID}`).update({
         status
       });
+      this.roomStatusPopup = false;
     },
     createBlackboard () {
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);

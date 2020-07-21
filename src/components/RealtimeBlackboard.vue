@@ -3,14 +3,13 @@
     <p v-if="!hasFetchedStrokesFromDb">Loading the real-time blackboard...</p>
     <Blackboard v-else
       :strokesArray="strokesArray" @stroke-drawn="stroke => uploadToDb(stroke)"
-      :key="incrementKeyToDestroy"
       isRealtime
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:bgImageBlob="blob => blackboard.bgImageBlob = blob"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
-      @board-reset="deleteAllStrokesFromDb()"
       @record-end="handleRecordEnd()"
+      @board-reset="deleteAllStrokesFromDb()"
     >
       <template v-slot:blackboard-toolbar>
         <slot name="blackboard-toolbar">
@@ -19,13 +18,13 @@
         <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
       </template> 
     </Blackboard> 
+
      <v-dialog v-model="dialog" max-width="600">
       <v-card>
         <v-card-title class="headline">Save your recorded explanation?</v-card-title>
         <v-card-text>
           <v-text-field v-model="explTitle" placeholder="(Optional) Enter a title..."/>
         </v-card-text>
-
         <v-card-actions>
           <v-spacer/>
           <v-btn color="green darken-1" text @click="discardAudio()">
@@ -82,9 +81,8 @@ export default {
   },
   data () {
     return {
-      explTitle: "",
-      strokesArray: [],
       hasFetchedStrokesFromDb: false,
+      strokesArray: [],
       blackboard: {
         bgImageBlob: null,
         audioBlob: null,
@@ -92,7 +90,7 @@ export default {
         currentTime: 0
       },
       dialog: false,
-      incrementKeyToDestroy: 0
+      explTitle: ""
     };
   },
   computed: {
@@ -187,7 +185,6 @@ export default {
     },
     discardAudio () {
       this.dialog = false; 
-      this.incrementKeyToDestroy += 1; 
     }
   }
 }

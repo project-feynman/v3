@@ -14,6 +14,7 @@
             <ButtonNew :on="on" icon="mdi-plus">Create Class</ButtonNew>
           </template>
         </BasePopupButton>
+
         <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:activator="{ on }">
              <v-avatar v-if="user" v-on="on" color="#ff5b24" style="cursor: pointer;">
@@ -24,6 +25,7 @@
           </template>
         </TheDropdownMenu>
       </template>
+
       <template v-else>
         <BasePopupButton actionName="Log in" 
           :inputFields="['email', 'password']" 
@@ -37,6 +39,7 @@
         </BasePopupButton>
       </template>
     </TheAppBar>
+    
     <v-content>
       <transition name="fade">
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
@@ -75,6 +78,7 @@
                     </template>
                   </BasePopupButton>
                 </v-col>
+                
                 <v-col cols="auto">
                   <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
@@ -89,6 +93,7 @@
                   </BasePopupButton>
                 </v-col>
               </template>
+
               <!-- Search Bar -->
               <template v-else>
                 <v-col cols="12" sm="6">
@@ -103,6 +108,7 @@
           </v-container>
         </v-card>
       </transition>
+
       <v-container fluid>
         <!-- Class security popup -->
         <v-dialog v-model="classSecurityPopup" max-width="600px">
@@ -128,9 +134,6 @@
             <v-col cols="12" md="6">
               <SeeExplanation v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
             </v-col>
-            <!-- <v-col cols="12" md="12">
-              <CreateExplanation/>
-            </v-col> -->
           </v-row>
         </template>
 
