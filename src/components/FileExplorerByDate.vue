@@ -223,7 +223,7 @@ export default {
         console.log('mitClass');
         setTimeout(()=>{
           console.log('called finally')
-          if (this.openedFoldersIndices.length===0) {
+          if (this.openedFoldersIndices.length===0 && this.groupBy==='date') {
             const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
             console.log('adding this one', openThis);
             this.openedFoldersIndices.push(openThis);

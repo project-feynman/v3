@@ -57,6 +57,9 @@ export default {
       activeTab: "rooms"
     }
   },
+  created () {
+    this.activeTab = this.$route.params.hasOwnProperty('room_id') ? 'rooms' : ( this.$route.params.hasOwnProperty('post_id') ? 'archive' : 'Q&A' );
+  },
   computed: { 
     ...mapState([
       "user"
