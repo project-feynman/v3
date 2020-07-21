@@ -45,14 +45,14 @@
                     class="active-blackboard"
                     active-class="active-blackboard"
                   >
-                    <v-list-item-content v-if="blackboard.participants">
+                    <v-list-item-content >
                       <v-list-item-title>
                         Space {{ i }}
                         <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                         <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
                       </v-list-item-title>
                       <div class="active-blackboard-users pl-4 pt-2">
-                        <template v-for="(participant, i) in blackboard.participants">
+                        <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
                           <div class="d-flex align-center py-2" :key="i">
                             <v-icon>mdi-account</v-icon>
                             <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
@@ -140,6 +140,7 @@ import ButtonNew from "@/components/ButtonNew.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import { mapState } from "vuex";
+import Vue from 'vue';
 
 export default {
   mixins: [
@@ -162,7 +163,9 @@ export default {
       roomCategories: [],
       expandedPanels: [],
       roomStatusPopup: false,
-      updatedStatus: ""
+      updatedStatus: "",
+      roomParticipantsMap: {},
+      roomParticpants: {}
     };
   },
   computed: {
@@ -186,6 +189,7 @@ export default {
   },
   watch: {
     blackboards () {
+      console.log("triggeredBlackboards", this.blackboards)
       if (this.mitClass.roomTypes) {
         this.roomCategories = [];
         for (const type of this.mitClass.roomTypes) {
@@ -203,9 +207,28 @@ export default {
       for (let i = 0; i < this.roomCategories.length; i++) {
         this.expandedPanels.push(i);
       }
-    }
+
+      this.blackboards.forEach( blackboard => {
+        const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+        const participantsRef = blackboardsRef.doc(blackboard.id).collection('participants');
+        Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
+        this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
+          // console.log("fetched participants", this.roomParticipantsMap)
+          this.snapshotListeners.push(snapshotListener);
+        });
+      })
+
+    },
+    // roomParticipantsMap:
+    //  {
+    //    deep: true,
+    //    handler () {
+    //   console.log("roomParts", this.roomParticipantsMap)
+    //    }
+    // }
   },
   created () {
+
     const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
 
@@ -215,6 +238,7 @@ export default {
     this.$_listenToCollection(participantsRef, this, "centerTableParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
+
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -222,6 +246,9 @@ export default {
     }
   },
   methods: {
+    togg(){
+      console.log("MAPPY", this.roomParticipantsMap)
+    },
     setRoomStatus (status) {
       db.doc(`classes/${this.classID}/blackboards/${this.roomID}`).update({
         status

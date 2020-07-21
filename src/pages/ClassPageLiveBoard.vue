@@ -15,8 +15,8 @@
               <portal-target name="local-media">
                   </portal-target>
 					</v-col>
-          <template v-if="room.participants">
-            <template  v-for="participant in room.participants.filter(u => u.uid !== user.uid)">
+          <template v-if="roomParticipants">
+            <template  v-for="participant in roomParticipants.filter(u => u.uid !== user.uid)">
               <v-col :key="participant.uid" class="video-col">
                 <portal-target :name="`remote-media-${participant.uid}`" />
               </v-col>
@@ -52,11 +52,15 @@ export default {
   data () {
     return {
       room: {},
+      roomParticipants: [],
+      snapshotListeners: [],
       roomRef: null,
+      roomParticipantsRef: null,
       strokesRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
-      roomId: this.$route.params.room_id,
+      roomId: this.$route.params.room_id
+      
     }
   },
   computed: {
@@ -83,15 +87,25 @@ export default {
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
+    this.roomParticipantsRef = this.roomRef.collection('participants');
     this.strokesRef = this.roomRef.collection("strokes");
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
+
+    this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
+      this.snapshotListeners.push(snapshotListener);
+    });
+
     this.setUserDisconnectHook();
   },
   beforeDestroy () {
     this.unsubscribeRoomListener();
-    this.roomRef.update({ //Filters out the current user
-      participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
-    });
+    // this.roomRef.update({ //Filters out the current user
+    //   participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
+    // });
+    for (const detachListener of this.snapshotListeners) {
+      detachListener();
+    }
+    this.roomParticipantsRef.doc(this.user.uid).delete();
   },
   methods: {
     /**
@@ -115,11 +129,17 @@ export default {
         // step 1 (step 2 is executed in Cloud Functions)
         await firebaseRef.onDisconnect().set(this.simplifiedUser);
         // now join the room 
-        if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
-          this.roomRef.update({ // it's much faster to update Firestore directly
-            participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
-          });
-        }
+        // if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
+        //   this.roomRef.update({ // it's much faster to update Firestore directly
+        //     participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
+        //   });
+        // }
+        this.roomParticipantsRef.doc(this.user.uid).set({
+          ...this.simplifiedUser,
+          isMicOn: false,
+          isCameraOn: false,
+          hasConnectedMedia: false
+        }); 
         firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: "", 
