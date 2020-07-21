@@ -184,11 +184,13 @@ export default {
         this.savedRoomId = this.roomID;
       }
       return this.savedRoomId;
+    },
+    numberOfBlackboards () {
+      return this.blackboards.length
     }
   },
   watch: {
     blackboards () {
-      console.log("triggeredBlackboards", this.blackboards)
       if (this.mitClass.roomTypes) {
         this.roomCategories = [];
         for (const type of this.mitClass.roomTypes) {
@@ -206,25 +208,17 @@ export default {
       for (let i = 0; i < this.roomCategories.length; i++) {
         this.expandedPanels.push(i);
       }
-
+    },
+    numberOfBlackboards () {
       this.blackboards.forEach( blackboard => {
         const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
         const participantsRef = blackboardsRef.doc(blackboard.id).collection('participants');
         Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
         this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
-          // console.log("fetched participants", this.roomParticipantsMap)
           this.snapshotListeners.push(snapshotListener);
         });
       })
-
-    },
-    // roomParticipantsMap:
-    //  {
-    //    deep: true,
-    //    handler () {
-    //   console.log("roomParts", this.roomParticipantsMap)
-    //    }
-    // }
+    }
   },
   created () {
 
@@ -256,19 +250,7 @@ export default {
       const newBlackboard = blackboardsRef.add({
         participants: []
       });
-    },
-    // toggleMic () {
-    //   this.isMicOn = !this.isMicOn;
-    //   this.updateMicStatus()
-    // },
-    // updateMicStatus () {
-    //   var updatedParticipants = this.blackboards.find(room => room.id === this.roomID).participants;
-    //   updatedParticipants.find(participant => participant.uid === this.user.uid).isMicOn = this.isMicOn;
-    //   const blackboardRoomRef = db.doc(`classes/${this.classID}/blackboards/${this.roomID}`);
-    //   blackboardRoomRef.update({
-    //     participants: updatedParticipants
-    //   })
-    // }
+    }
   }
 };
 </script>
