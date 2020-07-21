@@ -104,8 +104,8 @@
                               </ButtonNew>
                             </template>
                             <template v-else>
-                              <v-icon>{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
-                              <v-icon>{{participant.isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon>
+                              <v-icon style="right: 7%">{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
+                              <v-icon style="right: 5%">{{participant.isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon>
                             </template>
                           </div>
                         
@@ -155,17 +155,12 @@ export default {
       snapshotListeners: [],
       centerTableParticipants: [],
       blackboards: [],
-      isMicOn: false,
-      isCameraOn: false,
       hasLoadedMedia: false,
       hasJoinedMedia: false,
-      hasConnectedAudio: false,
       savedRoomId: "",
       roomTypes: [],
       roomCategories: [],
       expandedPanels: [],
-      isMicOn: false,
-      hasConnectedAudio: false,
       roomStatusPopup: false,
       updatedStatus: ""
     };
