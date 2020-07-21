@@ -415,9 +415,11 @@ export default {
       if (this.groupBy === 'tag') {
         postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
-        const startDate = new Date(item.name.split('-')[0]).toISOString();
-        const endDate = new Date(item.name.split('-')[1]).toISOString();
-        postsQuery = postsRef.where("date", ">=", startDate).where("date", "<=", endDate);
+        const startTime = new Date(item.name.split('-')[0]).toISOString();
+        const endDate = new Date(item.name.split('-')[1]);
+        endDate.setHours(23, 59, 59); // Since we want the post till the end of the day
+        const endTime = endDate.toISOString();
+        postsQuery = postsRef.where("date", ">=", startTime).where("date", "<=", endTime);
       }
       await this.bindArrayToDatabase(item.children, item.id, postsQuery);
 
@@ -547,6 +549,7 @@ export default {
         }
         weekGroups[week]++;
       });
+      console.log('by weeks', weekGroups);
       let i = 0;
       for (var week in weekGroups) {
         this.dateGroups.push({
