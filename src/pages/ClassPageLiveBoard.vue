@@ -16,7 +16,7 @@
                   </portal-target>
 					</v-col>
           <template v-if="roomParticipants">
-            <template  v-for="participant in roomParticipants.filter(u => u.uid !== user.uid)">
+            <template  v-for="participant in roomParticipants.filter(u => u.uid !== user.uid && u.hasJoinedMedia)">
               <v-col :key="participant.uid" class="video-col">
                 <portal-target :name="`remote-media-${participant.uid}`" />
               </v-col>
@@ -138,7 +138,7 @@ export default {
           ...this.simplifiedUser,
           isMicOn: false,
           isCameraOn: false,
-          hasConnectedMedia: false
+          hasJoinedMedia: false
         }); 
         firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 

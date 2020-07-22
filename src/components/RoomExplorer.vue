@@ -124,6 +124,8 @@
   <LiveBoardAudio 
       v-if="user"
       :roomId="lastBlackboardRoomId"
+      :classId="classID"
+      :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
       :hasJoinedMedia="hasJoinedMedia"
       :blackboardRoom="blackboardRoom"
       @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"

@@ -22,9 +22,8 @@
 			  </div>
 		</portal>
 
-		<template v-for="participant in blackboardRoom.participants">
-			<template v-if="roomParticipants.includes(participant.uid)">
-				<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
+		<template v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid))">
+			<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
 				<div class="video-container">
 					<div :id="`remote-media-${participant.uid}`"  style="bottom: 0; position: absolute; width:100%"/>
 					<v-container style="bottom: 1%; position: absolute; color: transparent; ">
@@ -40,9 +39,7 @@
 						</v-row>
 					</v-container>
 			  	</div>
-					
-				</portal>
-			</template>
+			</portal>
 		</template>
 	</div>
 </template> 
@@ -59,29 +56,33 @@ import { mapState } from "vuex";
 export default {
 	props: {
 		roomId: String,
+		classId: String,
 		hasJoinedMedia: Boolean,
-		blackboardRoom: Object
+		blackboardRoom: Object,
+		roomParticipants: Array
 	},
 	data() {
 		return {
 			loading: false,
 			activeRoom: null,
 			token: null,
-			roomParticipants: [],
 			isCameraOn: false,
-			isMicOn: false
+			isMicOn: false,
+			snapshotListeners: [],
+			roomParticipantsRef: null
 		}
 	},
 	computed: {
 	...mapState([
 			"user"
 		]),
-		classId () {
-      		return this.$route.params.class_id;
-    	},
+		roomParticipantRef () {
+			return db.doc(`classes/${this.classId}/blackboards/${this.roomId}/participants/${this.user.uid}`);
+		}
 	},
 	watch: {
 		hasJoinedMedia () {
+			this.updateMediaStatus();
 			if(this.hasJoinedMedia){
 				this.enterAudioChat();
 			}
@@ -92,13 +93,13 @@ export default {
 		isMicOn: {
 			// immediate: true,
 			handler () {
-				this.updateMediaStatus("audio");
+				this.updateMediaStatus();
 			}
 		},
 		isCameraOn: {
 			// immediate: true,
 			handler () {
-				this.updateMediaStatus("video");
+				this.updateMediaStatus();
 			}
 		}
 	},
@@ -142,19 +143,13 @@ export default {
 				}
 			}
 		},
-		updateMediaStatus (type) {
-			console.log("Updating db", this.roomId, type)
-			if (this.blackboardRoom.id === this.roomId) { ///WARNING!!! This is nasty business to set the participants. probably should do it a safer way.
-				var updatedParticipants = this.blackboardRoom.participants;
-				if (type === "audio") {
-					updatedParticipants.find(participant => participant.uid === this.user.uid).isMicOn = this.isMicOn;
-				}
-				else {
-					updatedParticipants.find(participant => participant.uid === this.user.uid).isCameraOn = this.isCameraOn;
-				}
-				const blackboardRoomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
-				blackboardRoomRef.update({
-					participants: updatedParticipants
+		updateMediaStatus () {
+			console.log("Updating db", this.isMicOn, this.isCameraOn, this.hasJoinedMedia)
+			if (this.roomParticipantRef){
+				this.roomParticipantRef.update({
+					isMicOn: this.isMicOn,
+					isCameraOn: this.isCameraOn,
+					hasJoinedMedia: this.hasJoinedMedia
 				})
 			}
 		},
@@ -223,10 +218,6 @@ export default {
 				console.log(publication.kind + ' track was unpublished.');
 		},
 		participantConnected(participant) {
-			// const blackBoardUser = this.blackboardRoom.participants.find(u => u.uid === participant.identity)
-			if(!this.roomParticipants.includes(participant.identity)){
-				this.roomParticipants.push(participant.identity)
-			}
 			this.$nextTick(() => {
 				var temp = document.getElementById(`remote-media-${participant.identity}`);
 
@@ -327,20 +318,18 @@ export default {
 
 				room.on('participantDisconnected', (participant) => {
 						console.log("RemoteParticipant '" + participant.identity + "' left the room");
-						
-						this.roomParticipants = this.roomParticipants.filter(p => p !== participant.identity)
 
 						this.detachParticipantTracks(participant);
 				});
 
 				room.on('disconnected', () => {
 					console.log('Left the rooom');
+					this.isMicOn = false;
+					this.isCameraOn = false;
 					this.$emit('left-room')
 					this.detachParticipantTracks(room.localParticipant);
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
-					this.isMicOn = false;
-					this.isCameraOn = false;
 				});
 		}
 	}
