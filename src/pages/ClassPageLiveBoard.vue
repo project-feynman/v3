@@ -1,8 +1,32 @@
 <template>
-  <div id="room">
-    <template v-if="user">
-      <RealtimeBlackboard :strokesRef="strokesRef"/>
+  <div id="room" style="position: relative">
+    
+    <template v-if="user" >
+      <RealtimeBlackboard :strokesRef="strokesRef" style="padding-bottom: 120px"/>
     </template>
+    <!-- <div style="position: fixed; bottom: 0; height: 50px; z-index: 1000">
+      sklfdjsfklsdjfkl
+    </div> -->
+
+    <!-- <div > -->
+    <v-container fluid class="video-display">
+				<v-row>
+					<v-col class="video-col">
+              <portal-target name="local-media">
+                  </portal-target>
+					</v-col>
+          <template v-if="roomParticipants">
+            <template  v-for="participant in roomParticipants.filter(u => u.uid !== user.uid && u.hasJoinedMedia)">
+              <v-col :key="participant.uid" class="video-col">
+                <portal-target :name="`remote-media-${participant.uid}`" />
+              </v-col>
+            </template>
+          </template>
+				</v-row>
+		</v-container>
+    <!-- </div> -->
+    
+    
   </div>
 </template>
 
@@ -28,11 +52,15 @@ export default {
   data () {
     return {
       room: {},
+      roomParticipants: [],
+      snapshotListeners: [],
       roomRef: null,
+      roomParticipantsRef: null,
       strokesRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
-      roomId: this.$route.params.room_id,
+      roomId: this.$route.params.room_id
+      
     }
   },
   computed: {
@@ -59,15 +87,25 @@ export default {
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
+    this.roomParticipantsRef = this.roomRef.collection('participants');
     this.strokesRef = this.roomRef.collection("strokes");
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
+
+    this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
+      this.snapshotListeners.push(snapshotListener);
+    });
+
     this.setUserDisconnectHook();
   },
   beforeDestroy () {
     this.unsubscribeRoomListener();
-    this.roomRef.update({ //Filters out the current user
-      participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
-    });
+    // this.roomRef.update({ //Filters out the current user
+    //   participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
+    // });
+    for (const detachListener of this.snapshotListeners) {
+      detachListener();
+    }
+    this.roomParticipantsRef.doc(this.user.uid).delete();
   },
   methods: {
     /**
@@ -84,18 +122,24 @@ export default {
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return; 
-        const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}`);
+        const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
         // 1. User leaves, and his/her identity is saved to Firebase
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         
         // step 1 (step 2 is executed in Cloud Functions)
         await firebaseRef.onDisconnect().set(this.simplifiedUser);
         // now join the room 
-        if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
-          this.roomRef.update({ // it's much faster to update Firestore directly
-            participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
-          });
-        }
+        // if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
+        //   this.roomRef.update({ // it's much faster to update Firestore directly
+        //     participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser)
+        //   });
+        // }
+        this.roomParticipantsRef.doc(this.user.uid).set({
+          ...this.simplifiedUser,
+          isMicOn: false,
+          isCameraOn: false,
+          hasJoinedMedia: false
+        }); 
         firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: "", 
@@ -106,3 +150,20 @@ export default {
   }
 };
 </script>
+<style scoped>
+.video-container{
+     /* border: 1px solid rgb(50, 129, 124); */
+     width: 100%;
+}
+.video-display{
+  width: 100%;
+  bottom: 0%;
+  /* position: fixed; */
+  opacity: 1;
+  z-index: 1000;
+  padding-bottom: 0;
+}
+.video-col{
+	flex-grow: 0
+}
+</style>

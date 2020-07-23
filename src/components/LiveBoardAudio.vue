@@ -1,7 +1,46 @@
 <template>
-	<div >
-		<div id="remote-media"></div>
-		<div id="local-media"></div>
+	<div v-if="hasJoinedMedia">
+		<portal to="local-media">
+			  <div class="video-container">
+				<div id="local-media"  style="bottom: 0; position: absolute; width:100%"/>
+				<v-container style="bottom: 1%; position: absolute; ">
+					<v-row style="">
+						 <v-col >
+							 <div class="name-container">
+								{{user.firstName + " " + user.lastName}}
+							 </div>
+						</v-col>
+						
+						<v-col >
+							<div style="position:absolute; bottom: 10px; right: 10px;">
+								<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+								<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+							</div>
+						</v-col>
+					</v-row>
+				</v-container>
+			  </div>
+		</portal>
+
+		<template v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid))">
+			<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
+				<div class="video-container">
+					<div :id="`remote-media-${participant.uid}`"  style="bottom: 0; position: absolute; width:100%"/>
+					<v-container style="bottom: 1%; position: absolute; color: transparent; ">
+						<v-row >
+							<v-col >
+								<v-icon small class="participant-mic">
+									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+								</v-icon> 
+								<div class="name-container" style="left: 28px">
+									{{participant.firstName + " " + participant.lastName}}
+								</div>
+							</v-col>
+						</v-row>
+					</v-container>
+			  	</div>
+			</portal>
+		</template>
 	</div>
 </template> 
 
@@ -17,23 +56,51 @@ import { mapState } from "vuex";
 export default {
 	props: {
 		roomId: String,
-		isMicOn: Boolean
+		classId: String,
+		hasJoinedMedia: Boolean,
+		blackboardRoom: Object,
+		roomParticipants: Array
 	},
 	data() {
 		return {
 			loading: false,
 			activeRoom: null,
-			token: null
+			token: null,
+			isCameraOn: false,
+			isMicOn: false,
+			snapshotListeners: [],
+			roomParticipantsRef: null
 		}
 	},
 	computed: {
-		...mapState([
-      "user"
-    ]),
+	...mapState([
+			"user"
+		]),
+		roomParticipantRef () {
+			return db.doc(`classes/${this.classId}/blackboards/${this.roomId}/participants/${this.user.uid}`);
+		}
 	},
 	watch: {
-		isMicOn () {
-			this.toggleMic()
+		hasJoinedMedia () {
+			this.updateMediaStatus();
+			if(this.hasJoinedMedia){
+				this.enterAudioChat();
+			}
+			else {
+				this.leaveRoomIfJoined();
+			}
+		},
+		isMicOn: {
+			// immediate: true,
+			handler () {
+				this.updateMediaStatus();
+			}
+		},
+		isCameraOn: {
+			// immediate: true,
+			handler () {
+				this.updateMediaStatus();
+			}
 		}
 	},
 	created() {
@@ -47,18 +114,43 @@ export default {
 	},
 	methods: {
 		toggleMic () {
-			console.log("toggled mic", this.roomId, this.isMicOn)
-			if (this.isMicOn){
+			console.log("toggled mic", this.roomId, this.isMicOn )
+			if (!this.isMicOn){
 				if (this.activeRoom===null) {
 					this.enterAudioChat();
 				} else {
-					this.unMuteAudio();
+					this.enableTrack("audio");
 				}
 			}
 			else {
 				if (this.activeRoom){
-					this.muteAudio();
+					this.disableTrack("audio");
 				}
+			}
+		},
+		toggleCamera () {
+			console.log("toggled camera", this.roomId, this.isCameraOn)
+			if (!this.isCameraOn){
+				if (this.activeRoom===null) {
+					this.enterAudioChat();
+				} else {
+					this.enableTrack("video");
+				}
+			}
+			else {
+				if (this.activeRoom){
+					this.disableTrack("video");
+				}
+			}
+		},
+		updateMediaStatus () {
+			console.log("Updating db", this.isMicOn, this.isCameraOn, this.hasJoinedMedia)
+			if (this.roomParticipantRef){
+				this.roomParticipantRef.update({
+					isMicOn: this.isMicOn,
+					isCameraOn: this.isCameraOn,
+					hasJoinedMedia: this.hasJoinedMedia
+				})
 			}
 		},
 		getAccessToken() {
@@ -89,12 +181,22 @@ export default {
 				return jwt;
 		},
 		// Trigger log events 
-		attachTrack(track, container) {
-				container.appendChild(track.attach());
+		attachTrack(track, container, isLocal=false) {
+				if (track.kind === "video") {
+					var videoTag = track.attach();
+					videoTag.style.width = '100%';
+					if (isLocal){
+						videoTag.style.transform = 'scale(-1, 1)'; //flips video horizontally
+					}
+					container.appendChild(videoTag);
+				}
+				else {
+					container.appendChild(track.attach());
+				}
 		},
-		attachTracks(tracks, container) {
+		attachTracks(tracks, container, isLocal=false) {
 				tracks.forEach((track) => {
-						this.attachTrack(track, container);
+						this.attachTrack(track, container, isLocal);
 				});
 		},
 		detachTrack(track) {
@@ -115,33 +217,48 @@ export default {
 		trackUnpublished(publication) {
 				console.log(publication.kind + ' track was unpublished.');
 		},
-		participantConnected(participant, container) {
-				let selfContainer = document.createElement('div');
-				selfContainer.id = `participantContainer-${participant.identity}`;
-
-				container.appendChild(selfContainer);
+		participantConnected(participant) {
+			this.$nextTick(() => {
+				var temp = document.getElementById(`remote-media-${participant.identity}`);
 
 				participant.tracks.forEach((publication) => {
-					this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, temp);
 				});
 				participant.on('trackPublished', (publication) => {
-					this.trackPublished(publication, selfContainer);
+					this.trackPublished(publication, temp);
 				});
 				participant.on('trackUnpublished', this.trackUnpublished);
+			})
+				
 		},
 		detachParticipantTracks(participant) {
 				var tracks = this.getTracks(participant);
 				tracks.forEach(this.detachTrack);
 		},
-		muteAudio () {
+		disableTrack (type) {
 			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
-				track.disable();
+				if (track.kind === type) {
+					track.disable();
+					if (type === 'video'){
+						this.isCameraOn = false;
+					}
+					else{
+						this.isMicOn = false;
+					}
+				}
 			});
 		},
-		unMuteAudio () {
+		enableTrack (type) {
 			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
-				console.log(track);
-				track.enable();
+				if (track.kind === type) {
+					track.enable();
+					if (type === 'video'){
+						this.isCameraOn = true;
+					}
+					else{
+						this.isMicOn = true;
+					}
+				}
 			});
 		},
 		getTracks(participant) {
@@ -153,59 +270,63 @@ export default {
 		},
 		leaveRoomIfJoined() {
 			if (this.activeRoom) {
+				this.isCameraOn = false;
+				this.isMicOn = false;
 				this.activeRoom.disconnect();
 				console.log("disconnecting");
 			}
 		},
-		enterAudioChat() {
+		async enterAudioChat() {
 			this.loading = true;
 
 			let connectOptions = {
 				name: this.roomId,
 				// logLevel: 'debug',
 				audio: true,
-				// video: { width: 400 }
+				video: {width: {min: 50, max: 500}}
 			};
 			this.leaveRoomIfJoined();
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			Twilio.connect(this.token, connectOptions).then(
-				(room) => { 
-					this.onTwilioConnect(room);
-					this.unMuteAudio();
-				}, 
-				(error) => { console.log(error.message) }
-			);
+			let room = await Twilio.connect(this.token, connectOptions);
+			this.onTwilioConnect(room)
+			this.$emit('media-connected')
+			this.loading = false;
 		},
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);
 				// set active toom
-				this.$emit('audio-connected')
-				this.activeRoom = room;
-				// this.loading = false;
-				var previewContainer = document.getElementById('local-media');
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer);
 				
-				var remoteMediaContainer = document.getElementById('remote-media');
+				this.activeRoom = room;
+				var previewContainer = document.getElementById('local-media');
+				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
+				this.isMicOn = true;
+				this.isCameraOn = true;
 
 				room.participants.forEach((participant) => {
 						console.log("Already in Room: '" + participant.identity + "'");
-						this.participantConnected(participant, remoteMediaContainer);
+						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+						this.participantConnected(participant);
 				});
 
 				room.on('participantConnected', (participant) => {
 						console.log("Joining: '" + participant.identity + "'");
-						this.participantConnected(participant, remoteMediaContainer);
+						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+						this.participantConnected(participant);
 				});
 
 				room.on('participantDisconnected', (participant) => {
 						console.log("RemoteParticipant '" + participant.identity + "' left the room");
+
 						this.detachParticipantTracks(participant);
 				});
 
 				room.on('disconnected', () => {
 					console.log('Left the rooom');
+					this.isMicOn = false;
+					this.isCameraOn = false;
+					this.$emit('left-room')
 					this.detachParticipantTracks(room.localParticipant);
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
@@ -215,5 +336,21 @@ export default {
 }
 </script>
 
-<style >
+<style scoped>
+.video-container{
+	width: 200px;
+	position: relative
+}
+.name-container{
+	color: white; 
+	position:absolute; 
+	bottom: 10px; 
+	font-size: 12px
+}
+.participant-mic{
+	position: absolute; 
+	bottom: 11px; 
+	color: white; 
+	left: 5px;
+}
 </style>

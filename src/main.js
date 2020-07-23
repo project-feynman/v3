@@ -5,6 +5,7 @@ import store from './store';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import vuetify from './plugins/vuetify';
+import PortalVue from 'portal-vue';
 
 Vue.config.productionTip = false;
 
@@ -19,3 +20,5 @@ new Vue({
   vuetify, 
   render: h => h(App) 
 }).$mount('#app');
+
+Vue.use(PortalVue)
