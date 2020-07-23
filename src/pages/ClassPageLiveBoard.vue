@@ -24,8 +24,12 @@
           </template>
 				</v-row>
 		</v-container>
-    <!-- </div> -->
-    
+
+    <LiveMessageChat
+      :roomParticipants="roomParticipants"
+      :roomId="this.roomId"
+      :classId="this.classId"
+    />
     
   </div>
 </template>
@@ -38,13 +42,15 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { mapState } from "vuex";
-import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
+import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
+import LiveMessageChat from "@/components/LiveMessageChat.vue";
 
 export default {
   components: { 
     ButtonNew,
     LiveBoardAudio,
-    RealtimeBlackboard
+    RealtimeBlackboard,
+    LiveMessageChat
   },
   mixins: [
     DatabaseHelpersMixin,
