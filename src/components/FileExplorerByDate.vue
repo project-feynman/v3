@@ -103,7 +103,7 @@
                       @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
                     >
                       <template v-slot:activator-button="{ on }">
-                         <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
+                         <v-btn v-on="on" color="accent" text>Create Sub-folder</v-btn>
                       </template>
                     </BasePopupButton>
                   </v-list-item>
@@ -223,6 +223,7 @@ export default {
         // An attempt to open the first folder by default. Not sure why it is not working
         setTimeout(()=>{
           if (this.openedFoldersIndices.length===0 && this.groupBy==='date') {
+            console.log('the folders are ', this.organizedPosts.slice());
             const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
             this.openedFoldersIndices.push(openThis);
             // setTimeout(()=>{this.openedFoldersIndices.push(openThis);}, 1000);
@@ -286,7 +287,8 @@ export default {
     },
     // For better UX; To be done after some time
     dragHover (action, id, data, event) {
-    //   const target = document.getElementById(id);
+      const target = document.getElementById(id);
+      console.log(target);
     //   if (target.contains(event.target)) return;
     //   if (event==='start') target.classList.add('dragOver');
     //   else target.classList.remove('dragOver');
@@ -346,7 +348,7 @@ export default {
           tags: tag, // a file can only exist in one folder at the time (for now)
           order: order
         }).then(function() {
-          msg = "Successfully moved post to the specified folder";
+          msg = "Successfully moved the post";
         }).catch(function(error) {
           msg = "Something went wrong while moving the post";
         });
