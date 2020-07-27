@@ -294,10 +294,15 @@ export default {
       this.userRef.update({ enrolledClasses: payload })
     },
     async createClass ({ "class name": name, "class description": description }) {
+      if (!name) {
+        this.$root.$emit("show-snackbar", "Error: new class must have a name");
+        return;
+      }
       this.fetchClasses();
       for (const c of this.schoolClasses) {
         if (c.name === name) return; 
       }
+      // TODO: parallelize with Promise.all()
       const classDoc = await db.collection("classes").add({
         name,
         description: description || "No description yet",
