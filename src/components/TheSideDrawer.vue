@@ -24,15 +24,15 @@
 
       <v-tabs-items v-model="activeTab">
         <v-tab-item value="archive">
-          <FileExplorer type="note"/>
+          <TheSideDrawerLibrary type="note"/>
         </v-tab-item>
 
         <v-tab-item value="Q&A">
-          <FileExplorer type="question"/>
+          <TheSideDrawerQuestions type="question"/>
         </v-tab-item>
     
         <v-tab-item v-if="user" value="rooms">
-          <RoomExplorer/>
+          <TheSideDrawerSpaces/>
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -40,8 +40,10 @@
 </template>
 
 <script>
-import FileExplorer from "@/components/FileExplorerByDate.vue";
-import RoomExplorer from "@/components/RoomExplorer.vue";
+import TheSideDrawerLibrary from "@/components/TheSideDrawerLibrary.vue";
+import TheSideDrawerQuestions from "@/components/TheSideDrawerQuestions.vue";
+import TheSideDrawerSpaces from "@/components/TheSideDrawerSpaces.vue";
+
 import { mapState } from "vuex";
 
 export default {
@@ -49,8 +51,9 @@ export default {
     value: Boolean
   },
   components: {
-    FileExplorer,
-    RoomExplorer
+    TheSideDrawerLibrary,
+    TheSideDrawerQuestions,
+    TheSideDrawerSpaces
   },
   data () {
     return {
