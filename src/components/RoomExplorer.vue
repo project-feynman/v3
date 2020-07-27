@@ -46,7 +46,7 @@
                   >
                     <v-list-item-content>
                       <v-list-item-title>
-                        Space {{ i }}
+                        {{ category.title.substring(0, category.title.length) }} {{ i }}
                         <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                         <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
                       </v-list-item-title>
