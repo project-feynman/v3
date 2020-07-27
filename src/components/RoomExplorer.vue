@@ -1,16 +1,4 @@
 <template>
-  <!-- 
-  <v-btn v-if="blackboards"
-    outlined
-    large
-    block
-    :disabled="blackboards.length > 20" 
-    @click="createBlackboard()"
-    color="secondary"
-  >
-    <v-icon class="pr-2">mdi-plus</v-icon>
-    CREATE BLACKBOARD
-  </v-btn> -->
   <div>
   <v-list class="pt-0">
     <v-list-item 
@@ -28,7 +16,8 @@
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
           <v-expansion-panel-header>
-            {{ category.title }}
+            {{ category.title }} &nbsp;
+            <span class="active-count accent--text"> ({{category.rooms.length}} rooms) </span>
           </v-expansion-panel-header>
 
            <v-expansion-panel-content> 
@@ -119,6 +108,23 @@
         </v-expansion-panel>
       </template>
     </v-expansion-panels>
+    <v-btn v-if="blackboards"
+      outlined
+      large
+      block
+      :disabled="blackboards.length > 20" 
+      @click="isCreatePopupOpen= true"
+      color="secondary"
+    >
+      <v-icon class="pr-2">mdi-plus</v-icon>
+      ADD BLACKBOARD
+    </v-btn>
+    <CreateBlackboardPopup 
+      :isCreatePopupOpen="isCreatePopupOpen"
+      :roomTypes="roomTypes"
+      @popup-closed="isCreatePopupOpen=false"
+      @create-blackboard="roomType => createBlackboard(roomType)"
+    />
   </v-list>
   <LiveBoardAudio 
       v-if="user"
@@ -136,10 +142,13 @@
 
 <script>
 import db from "@/database.js";
+import firebase from "firebase/app";
+import "firebase/firestore";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import ButtonNew from "@/components/ButtonNew.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
+import CreateBlackboardPopup from "@/components/CreateBlackboardPopup.vue";
 import { mapState } from "vuex";
 import Vue from 'vue';
 
@@ -150,7 +159,8 @@ export default {
   components: {
     BasePopupButton,
     ButtonNew,
-    LiveBoardAudio
+    LiveBoardAudio,
+    CreateBlackboardPopup
   },
   data () {
     return {
@@ -165,7 +175,9 @@ export default {
       expandedPanels: [],
       roomStatusPopup: false,
       updatedStatus: "",
-      roomParticipantsMap: {}
+      roomParticipantsMap: {},
+      mitClassDoc: {},
+      isCreatePopupOpen: false,
     };
   },
   computed: {
@@ -192,22 +204,18 @@ export default {
   },
   watch: {
     blackboards () {
-      if (this.mitClass.roomTypes) {
-        this.roomCategories = [];
-        for (const type of this.mitClass.roomTypes) {
-          this.roomCategories.push({
-            title: type, 
-            rooms: this.blackboards.filter(room => room.roomType === type)
-          });
-        }
-      }
-      else {
-        this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }]
-      }
-      // the collapsible should be completely open by default
-      this.expandedPanels = []; 
-      for (let i = 0; i < this.roomCategories.length; i++) {
-        this.expandedPanels.push(i);
+      this.setRoomCategories() //reconstruct the roomCategories
+    },
+    mitClassDoc () {
+      this.roomTypes = this.mitClassDoc.roomTypes;
+    },
+    roomTypes () {
+      this.setRoomCategories() //reconstruct the roomCategories: warning may be race conditions between this and blackboard watch hook
+    },
+    blackboardRoom () {
+      if (this.expandedPanels.length <= 0){ //only for init we open the panels of where the user is
+        const ind = this.roomTypes.indexOf(this.blackboardRoom.roomType)
+        this.expandedPanels = [ind]
       }
     },
     numberOfBlackboards () {
@@ -225,6 +233,7 @@ export default {
 
     const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
+    const classRef = db.doc(`classes/${this.classID}`)
 
     this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
@@ -232,7 +241,10 @@ export default {
     this.$_listenToCollection(participantsRef, this, "centerTableParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
-
+    this.$_listenToDoc(classRef, this, "mitClassDoc").then(snapshotListener => {
+      this.snapshotListeners.push(snapshotListener);
+    })
+    
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -240,17 +252,43 @@ export default {
     }
   },
   methods: {
+    setRoomCategories () {
+      if (this.roomTypes) {
+        this.roomCategories = [];
+        for (const type of this.roomTypes) {
+          this.roomCategories.push({
+            title: type, 
+            rooms: this.blackboards.filter(room => room.roomType === type)
+          });
+        }
+      }
+      else {
+        this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }]
+      }
+    },
     setRoomStatus (status) {
       db.doc(`classes/${this.classID}/blackboards/${this.roomID}`).update({
         status
       });
       this.roomStatusPopup = false;
     },
-    createBlackboard () {
+    createBlackboard (roomType) {
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-      const newBlackboard = blackboardsRef.add({
-        participants: []
-      });
+      if (roomType) {
+        if (!this.roomTypes.find(type => type === roomType)){
+          const classRef = db.doc(`classes/${this.classID}`)
+          classRef.update({
+            roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
+          })
+        }
+        const newBlackboard = blackboardsRef.add({
+          roomType: roomType
+        });
+        this.isCreatePopupOpen = false;
+      }
+      else {
+        this.$root.$emit("show-snackbar", "Error: Not a valid room type name")
+      }
     }
   }
 };
