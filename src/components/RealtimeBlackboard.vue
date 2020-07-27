@@ -111,6 +111,7 @@ export default {
     */
     keepSyncingBoardWithDb () {
       this.strokesRef.orderBy("strokeNumber").onSnapshot(snapshot => {
+        // detects if the blackboard was wiped
         if (snapshot.docs.length === 0) {
           this.strokesArray = [];
         } else {
