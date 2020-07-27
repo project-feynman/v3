@@ -56,29 +56,27 @@
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="!user">
-                <v-col cols="auto">
+                <!-- <v-col cols="auto">
                   <BasePopupButton actionName="Explore" outlined color="secondary">
                     <template v-slot:popup-content>
-                      <div>
-                        <a @click="signInAnonymouslyThenRedirectTo('class/FVdgjuywaFgxvyylISt2')" color="purple">Tutorial</a>
-                      </div>
-                      <p>A detailed introduction to the website</p>
-                      <div>
-                        <a @click="signInAnonymouslyThenRedirectTo('class/oQV3TgY3OrvE93lAT7sx')" color="purple">8.02</a>
-                      </div>
-                      <p>Senior Lecturer Dr. Dourmashkin used the platform to teach 8.02</p>
-                      <div>
-                        <a @click="signInAnonymouslyThenRedirectTo('class/mDbUrvjy4pe8Q5s5wyoD')" color="purple">Core Team</a>
-                      </div>
-                      <p>Our internal developer team use the platform to architect the software itself</p>
+                      Below are classes beta-testing explain.mit.edu in preparation for Fall 2020:
+                      <li>
+                        <a @click="signInAnonymouslyThenRedirectTo('class/oQV3TgY3OrvE93lAT7sx')" color="purple">
+                          8.02 
+                        </a>
+                      </li> 
+                      <li>
+                        <a @click="signInAnonymouslyThenRedirectTo('class/O00mSbBEYQxTnv3cKkbe')" color="purple">
+                          8.01 
+                        </a>
+                      </li>
                     </template>
-                    <template v-slot:popup-action-buttons>
+                    <template v-slot:popup-action-buttons> -->
                       <!-- A hack to not display the action button -->
-                      <div></div>
+                      <!-- <div></div>
                     </template>
                   </BasePopupButton>
-                </v-col>
-                
+                </v-col> -->
                 <v-col cols="auto">
                   <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
