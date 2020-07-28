@@ -1,36 +1,45 @@
 <template>
   <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
-  <v-sheet class="pa-4 secondary lighten-3">
-      <v-autocomplete
-        v-model="selectedItem"
-        :search-input.sync="search"
-        :items="searchResults"
-        label="Search existing posts..."
-        dark
-        flat
-        solo-inverted
-        :item-text="text"
-        :loading="loading"
-        no-data-text="No Posts Match your Search"
-        return-object
-        >
-            <template v-slot:item="{ parent, item }"> 
-                <v-card :to="`/class/${item.mitClass.id}/${item.postType}/${item.objectID}`" tile style="width: 100%">
-                    <v-card-title v-html="parent.genFilteredText(item.title)"/>
-                    <v-card-subtitle >
-                        <div v-text="item.creator.firstName +' '+ item.creator.lastName"/>
-                        <div v-text="item.date"/>
-                    </v-card-subtitle>
-                    <v-card-text v-html="parent.genFilteredText(item.html)"/>
-                </v-card>
-            </template>
-
-            <template v-slot:selection="{ item }">
-                <div v-text="item.title">
+  <v-container>
+    <v-autocomplete
+      v-model="selectedItem"
+      :search-input.sync="search"
+      :items="searchResults"
+      label="Search existing posts..."
+      flat
+      filled
+      dense
+      outlined
+      rounded
+      color="accent lighten-2"
+      :item-text="text"
+      :loading="loading"
+      no-data-text="No Posts Match your Search"
+      return-object
+      class="post-search"
+      >
+        <template v-slot:item="{ parent, item }">
+          <v-list-item :to="`/class/${item.mitClass.id}/${item.postType}/${item.objectID}`" two-line style="border-bottom: 1px solid #eee;">
+          <v-list-item-content>
+            <v-list-item-title v-html="parent.genFilteredText(item.title)" style="font-size:1em; padding-bottom: 5px;"/>
+            <v-list-item-subtitle >
+                <div class="search-result-html" v-html="parent.genFilteredText(item.html)" style="padding-bottom: 3px;"/>
+                <div class="search-result-metadata">
+                  <span v-text="item.creator.firstName +' '+ item.creator.lastName"/>
+                  <span>|</span>
+                  <span v-text="getFolderOrDate(item)"/>
                 </div>
-            </template>
-      </v-autocomplete>
-    </v-sheet>
+            </v-list-item-subtitle>
+          </v-list-item-content>
+          </v-list-item>
+        </template>
+
+        <template v-slot:selection="{ item }">
+          <div v-text="item.title">
+          </div>
+        </template>
+    </v-autocomplete>
+  </v-container>
 </template>
 
 <script>
@@ -94,7 +103,21 @@ export default {
             return tmp.textContent || tmp.innerText || "";
         },
       //janky filter type thing so autocomplete displays all results from algolia
-      text: item => item.title +" "+ item.html +" "+ item.creator.firstName +" "+ item.creator.lastName +" "+ item.creator.email 
+      text: item => item.title +" "+ item.html +" "+ item.creator.firstName +" "+ item.creator.lastName +" "+ item.creator.email ,
+      getFolderOrDate (item) {
+        // So I am trying to get the folder of the post, and in case it doesn't have folder, return only the date (not time)
+        // Not sure how to get the folder here
+        return item.date;
+      }
   }
 };
 </script>
+
+<style>
+.post-search .v-text-field__details {
+  display: none;
+}
+.search-result-metadata span {
+  padding: 0 4px;
+}
+</style>
