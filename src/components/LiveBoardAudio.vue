@@ -1,8 +1,8 @@
 <template>
 	<div v-if="hasJoinedMedia">
 		<portal to="local-media">
-			  <div class="video-container">
-				<div id="local-media"  style="bottom: 0; position: absolute; width:100%"/>
+			  <div class="video-container-wrapper">
+				<div id="local-media" class="video-container"/>
 				<v-container style="bottom: 1%; position: absolute; ">
 					<v-row style="">
 						 <v-col >
@@ -24,8 +24,8 @@
 
 		<template v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid))">
 			<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
-				<div class="video-container">
-					<div :id="`remote-media-${participant.uid}`"  style="bottom: 0; position: absolute; width:100%"/>
+				<div class="video-container-wrapper">
+					<div :id="`remote-media-${participant.uid}`"  class="video-container"/>
 					<v-container style="bottom: 1%; position: absolute; color: transparent; ">
 						<v-row >
 							<v-col >
@@ -184,10 +184,8 @@ export default {
 		attachTrack(track, container, isLocal=false) {
 				if (track.kind === "video") {
 					var videoTag = track.attach();
-					videoTag.style.width = '100%';
-					if (isLocal){
-						videoTag.style.transform = 'scale(-1, 1)'; //flips video horizontally
-					}
+					videoTag.setAttribute('style', 
+								`width: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
 					container.appendChild(videoTag);
 				}
 				else {
@@ -281,9 +279,8 @@ export default {
 
 			let connectOptions = {
 				name: this.roomId,
-				// logLevel: 'debug',
 				audio: true,
-				video: {width: {min: 50, max: 500}}
+				video: true
 			};
 			this.leaveRoomIfJoined();
 			
@@ -337,9 +334,21 @@ export default {
 </script>
 
 <style scoped>
+.video{
+	width: 100%;
+}
 .video-container{
+	bottom: 0; 
+	position: absolute; 
+	/* width:100%; */
+	height: 100%;
+}
+.video-container-wrapper{
+	height: 200px;
 	width: 200px;
-	position: relative
+	position: relative;
+	border-style: solid;
+	border-color: green;
 }
 .name-container{
 	color: white; 
