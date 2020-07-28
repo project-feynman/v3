@@ -28,7 +28,10 @@
         </v-tab-item>
 
         <v-tab-item value="Q&A">
-          <TheSideDrawerQuestions type="question"/>
+          <!-- <TheSideDrawerQuestions type="question"/> -->
+
+          <!-- Uncomment below when you finish the refactor -->
+          <TheSideDrawerQuestionsBeta v-if="mitClass"/>
         </v-tab-item>
     
         <v-tab-item v-if="user" value="rooms">
@@ -42,6 +45,7 @@
 <script>
 import TheSideDrawerLibrary from "@/components/TheSideDrawerLibrary.vue";
 import TheSideDrawerQuestions from "@/components/TheSideDrawerQuestions.vue";
+import TheSideDrawerQuestionsBeta from "@/components/TheSideDrawerQuestionsBeta.vue"; 
 import TheSideDrawerSpaces from "@/components/TheSideDrawerSpaces.vue";
 
 import { mapState } from "vuex";
@@ -53,6 +57,7 @@ export default {
   components: {
     TheSideDrawerLibrary,
     TheSideDrawerQuestions,
+    TheSideDrawerQuestionsBeta,
     TheSideDrawerSpaces
   },
   data () {
@@ -62,7 +67,8 @@ export default {
   },
   computed: { 
     ...mapState([
-      "user"
+      "user",
+      "mitClass"
     ])
   }
 };

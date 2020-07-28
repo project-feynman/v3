@@ -485,6 +485,7 @@ export default {
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
           array.length = 0; 
 
+          // fetch sub-folders
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
           for (let tag of childrenFolders) {
             array.push({
@@ -499,6 +500,8 @@ export default {
             resolve();
             return; 
           }
+
+          // fetch the folder's contents
           snapshot.forEach((doc) => {
             array.push({
               id: doc.id,
@@ -525,7 +528,8 @@ export default {
     foldersFromDates () {
       this.dateGroups.length = 0;
       const weekGroups = {}
-      this.dateList.sort((a, b) => (a < b) ? 1 : ((a > b) ? -1 : 0)); // First sort the date in reverse chronological order
+      // First sort the date in reverse chronological order
+      this.dateList.sort((a, b) => (a < b) ? 1 : ((a > b) ? -1 : 0)); 
       this.dateList.forEach( date => {
         date = moment(date)
         const startDay = moment()
