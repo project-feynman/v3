@@ -21,7 +21,8 @@
 						:key="participant.uid" 
 						class="video-col">
 						<div class="video-container-wrapper" >
-							<div :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
 									{{participant.firstName + " " + participant.lastName}}
@@ -360,12 +361,12 @@ export default {
 	opacity: 1;
 	z-index: 1000;
 	padding-bottom: 0;
+	margin-left: 0%;
 }
 .video-col{
 	flex-grow: 0;
 	padding-left: 2px;
 	padding-right: 2px;
-	border-style: solid;
 }
 
 .video-container-wrapper{
@@ -373,7 +374,9 @@ export default {
 	width: 240px;
 	position: relative;
 	border-style: solid;
+	border-color: var(--v-accent-base);
 	background-color:black;
+	border-radius: 10px;
 }
 .video-container-wrapper .video-container{
 	bottom: 0; 
@@ -401,6 +404,7 @@ export default {
 	padding-left: 5px;
 	padding-right: 5px;
 	left: 0px;
+	border-bottom-left-radius: 6px;
 }
 .display-bar .local-buttons-container{
 	position: absolute;

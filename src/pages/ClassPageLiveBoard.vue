@@ -1,5 +1,5 @@
 <template>
-  <div id="room" style="position: relative">
+  <div id="room">
     <portal-target name="video-chat"/>
     <template v-if="user" >
       <RealtimeBlackboard :strokesRef="strokesRef"/>
