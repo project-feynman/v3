@@ -3,22 +3,15 @@
 		<portal to="local-media">
 			  <div class="video-container-wrapper">
 				<div id="local-media" class="video-container"/>
-				<v-container style="bottom: 1%; position: absolute; ">
-					<v-row style="">
-						 <v-col >
-							 <div class="name-container">
-								{{user.firstName + " " + user.lastName}}
-							 </div>
-						</v-col>
-						
-						<v-col >
-							<div style="position:absolute; bottom: 10px; right: 10px;">
-								<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
-								<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
-							</div>
-						</v-col>
-					</v-row>
-				</v-container>
+				<div class="display-bar">
+					<div class="name-container">
+						{{user.firstName + " " + user.lastName}}
+					</div>
+					<div class="local-buttons-container">
+						<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+						<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+					</div>
+				</div>
 			  </div>
 		</portal>
 
@@ -26,18 +19,14 @@
 			<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
 				<div class="video-container-wrapper">
 					<div :id="`remote-media-${participant.uid}`"  class="video-container"/>
-					<v-container style="bottom: 1%; position: absolute; color: transparent; ">
-						<v-row >
-							<v-col >
-								<v-icon small class="participant-mic">
-									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
-								</v-icon> 
-								<div class="name-container" style="left: 28px">
-									{{participant.firstName + " " + participant.lastName}}
-								</div>
-							</v-col>
-						</v-row>
-					</v-container>
+					<div class="display-bar">
+						<v-icon class="participant-mic">
+							{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+						</v-icon> 
+						<div class="name-container">
+							{{participant.firstName + " " + participant.lastName}}
+						</div>
+					</div>
 			  	</div>
 			</portal>
 		</template>
@@ -359,36 +348,48 @@ export default {
 </script>
 
 <style scoped>
-/* .video{
-	width: 100%;
-} */
-.video-container{
-	bottom: 0; 
-	position: absolute; 
-	width:100%;
-	height: 100%;
-	/* display: block;
-	margin-left: auto;
-	margin-right: auto; */
-	text-align: center;
-}
 .video-container-wrapper{
 	height: 135px;
 	width: 240px;
 	position: relative;
 	border-style: solid;
-	border-color: green;
+	background-color:black;
 }
-.name-container{
+.video-container-wrapper .video-container{
+	bottom: 0; 
+	position: absolute; 
+	width:100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.video-container-wrapper .display-bar{
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	height: 20%;
+	width: 100%;
+}
+.display-bar .name-container{
+	background-color: rgb(31, 31, 31);
 	color: white; 
 	position:absolute; 
-	bottom: 10px; 
-	font-size: 12px
+	bottom: 0px; 
+	font-size: 12px;
+	text-align: center;
+	padding-left: 5px;
+	padding-right: 5px;
+	left: 0px;
 }
-.participant-mic{
-	position: absolute; 
-	bottom: 11px; 
+.display-bar .local-buttons-container{
+	position: absolute;
+	right: 0px;
+}
+.display-bar .participant-mic{
+	position: absolute;
+	right: 0px;
 	color: white; 
-	left: 5px;
+	bottom: 0px;
 }
 </style>
