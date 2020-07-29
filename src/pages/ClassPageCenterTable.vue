@@ -79,7 +79,9 @@ export default {
       strokesArray: [],
       roomForRandom: "",
       groupSizeForRandom: 3,
-      groupSizeList: []
+      groupSizeList: [],
+      firebaseRef: null,
+      snapshotListeners: []
     };
   },
   computed: {
@@ -110,9 +112,16 @@ export default {
         if (!this.user) return;
         this.registerUserAndListenForRoomAssignments(); 
         this.setUserDisconnectHook();
-        this.$_listenToDoc(this.classRef, this, "classDoc");
-        this.$_listenToCollection(this.classRef.collection("participants"), this, "participants");
+        this.$_listenToDoc(this.classRef, this, "classDoc").then((snapshotListener) => {
+          this.snapshotListeners.push(snapshotListener);
+        });
+        this.$_listenToCollection(this.classRef.collection("participants"), this, "participants").then((snapshotListener) => {
+          this.snapshotListeners.push(snapshotListener);
+        });
       }
+    },
+    participants() {
+      console.log("centerRoomParts", this.participants)
     }
   },
   created () {
@@ -121,7 +130,15 @@ export default {
     }
   },
   beforeDestroy () {
-    this.classRef.collection("participants").doc(this.user.uid).delete()
+    this.removeClassDocListener(); 
+    for (const detachListener of this.snapshotListeners) {
+      console.log("detachParts")
+      detachListener();
+    }
+    this.firebaseRef.onDisconnect().cancel().then(() => {
+      console.log("cancel")
+    });
+    this.classRef.collection("participants").doc(this.user.uid).delete();
   },
   methods: {
     // TODO: 
@@ -161,12 +178,12 @@ export default {
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return;
-        const firebaseRef = firebase.database().ref(`/class/${this.$route.params.class_id}/participants`);
-        await firebaseRef.onDisconnect().set({
+        this.firebaseRef = firebase.database().ref(`/class/${this.$route.params.class_id}/participants`);
+        await this.firebaseRef.onDisconnect().set({
             uid: this.user.uid,
             email: this.user.email
         });
-        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: ""
         });
