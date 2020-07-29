@@ -183,10 +183,35 @@ export default {
 		// Trigger log events 
 		attachTrack(track, container, isLocal=false) {
 				if (track.kind === "video") {
-					var videoTag = track.attach();
-					videoTag.setAttribute('style', 
-								`width: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
-					container.appendChild(videoTag);
+
+					if (track.isStarted) {
+						scaleAndAttachVideo(track, container);
+					}
+
+					track.on('dimensionsChanged', (videoTrack) => { 
+						console.log("Track dimensions changed", videoTrack);
+						scaleAndAttachVideo(track, container);
+					});
+					track.on('started', (videoTrack) => { 
+						console.log("Track started", videoTrack);
+						scaleAndAttachVideo(track, container);
+					});
+
+					function scaleAndAttachVideo (videoTrack, container) {
+						var videoTag = videoTrack.attach();
+						const videoHeight = videoTrack.dimensions.height;
+						const videoWidth = videoTrack.dimensions.width;
+						console.log("video dims", videoTrack, videoHeight, videoWidth)
+						const aspectRatio = videoWidth/videoHeight;
+						videoTag.setAttribute('style', 
+									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
+						
+						while (container.firstChild) {
+							container.removeChild(container.lastChild);
+						}
+						container.appendChild(videoTag);
+					}
+					
 				}
 				else {
 					container.appendChild(track.attach());
@@ -334,18 +359,22 @@ export default {
 </script>
 
 <style scoped>
-.video{
+/* .video{
 	width: 100%;
-}
+} */
 .video-container{
 	bottom: 0; 
 	position: absolute; 
-	/* width:100%; */
+	width:100%;
 	height: 100%;
+	/* display: block;
+	margin-left: auto;
+	margin-right: auto; */
+	text-align: center;
 }
 .video-container-wrapper{
-	height: 200px;
-	width: 200px;
+	height: 135px;
+	width: 240px;
 	position: relative;
 	border-style: solid;
 	border-color: green;
