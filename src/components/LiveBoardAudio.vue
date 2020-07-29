@@ -2,7 +2,7 @@
 	<div v-if="hasJoinedMedia">
 		<portal to="video-chat">
 			<v-container class="video-display">
-				<v-row style="overflow: auto">
+				<v-row>
 					<v-col class="video-col">
 						<div class="video-container-wrapper">
 							<div id="local-media" class="video-container"/>
@@ -365,6 +365,7 @@ export default {
 	flex-grow: 0;
 	padding-left: 2px;
 	padding-right: 2px;
+	border-style: solid;
 }
 
 .video-container-wrapper{

@@ -36,8 +36,8 @@ export default {
       strokesRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
-      roomId: this.$route.params.room_id
-      
+      roomId: this.$route.params.room_id,
+      firebaseRef: null
     }
   },
   computed: {
@@ -83,6 +83,7 @@ export default {
       detachListener();
     }
     this.roomParticipantsRef.doc(this.user.uid).delete();
+    this.firebaseRef.onDisconnect().cancel();
   },
   methods: {
     /**
@@ -98,13 +99,14 @@ export default {
       // that keeps track of whether the current client is conneceted or disconnected (see doc above)
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
+        console.log("disconnectHookSet", this.user, this.roomId, isUserConnected)
         if (isUserConnected === false) return; 
-        const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
+        this.firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
         // 1. User leaves, and his/her identity is saved to Firebase
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         
         // step 1 (step 2 is executed in Cloud Functions)
-        await firebaseRef.onDisconnect().set(this.simplifiedUser);
+        await this.firebaseRef.onDisconnect().set(this.simplifiedUser);
         // now join the room 
         // if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
         //   this.roomRef.update({ // it's much faster to update Firestore directly
@@ -117,7 +119,7 @@ export default {
           isCameraOn: false,
           hasJoinedMedia: false
         }); 
-        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: "", 
           firstName: "" 
