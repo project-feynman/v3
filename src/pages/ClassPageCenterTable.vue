@@ -119,9 +119,6 @@ export default {
           this.snapshotListeners.push(snapshotListener);
         });
       }
-    },
-    participants() {
-      console.log("centerRoomParts", this.participants)
     }
   },
   created () {
@@ -132,12 +129,9 @@ export default {
   beforeDestroy () {
     this.removeClassDocListener(); 
     for (const detachListener of this.snapshotListeners) {
-      console.log("detachParts")
       detachListener();
     }
-    this.firebaseRef.onDisconnect().cancel().then(() => {
-      console.log("cancel")
-    });
+    this.firebaseRef.onDisconnect().cancel()
     this.classRef.collection("participants").doc(this.user.uid).delete();
   },
   methods: {

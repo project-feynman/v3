@@ -99,7 +99,6 @@ export default {
       // that keeps track of whether the current client is conneceted or disconnected (see doc above)
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
-        console.log("disconnectHookSet", this.user, this.roomId, isUserConnected)
         if (isUserConnected === false) return; 
         this.firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
         // 1. User leaves, and his/her identity is saved to Firebase
