@@ -1,35 +1,40 @@
 <template>
 	<div v-if="hasJoinedMedia">
-		<portal to="local-media">
-			  <div class="video-container-wrapper">
-				<div id="local-media" class="video-container"/>
-				<div class="display-bar">
-					<div class="name-container">
-						{{user.firstName + " " + user.lastName}}
-					</div>
-					<div class="local-buttons-container">
-						<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
-						<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
-					</div>
-				</div>
-			  </div>
-		</portal>
-
-		<template v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid))">
-			<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
-				<div class="video-container-wrapper">
-					<div :id="`remote-media-${participant.uid}`"  class="video-container"/>
-					<div class="display-bar">
-						<v-icon class="participant-mic">
-							{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
-						</v-icon> 
-						<div class="name-container">
-							{{participant.firstName + " " + participant.lastName}}
+		<portal to="video-chat">
+			<v-container class="video-display">
+				<v-row style="overflow: auto">
+					<v-col class="video-col">
+						<div class="video-container-wrapper">
+							<div id="local-media" class="video-container"/>
+							<div class="display-bar">
+								<div class="name-container">
+									{{user.firstName + " " + user.lastName}}
+								</div>
+								<div class="local-buttons-container">
+									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+								</div>
+							</div>
 						</div>
-					</div>
-			  	</div>
-			</portal>
-		</template>
+					</v-col>
+					<v-col v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid) && p.hasJoinedMedia)" 
+						:key="participant.uid" 
+						class="video-col">
+						<div class="video-container-wrapper" >
+							<div :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<div class="display-bar">
+								<div class="name-container">
+									{{participant.firstName + " " + participant.lastName}}
+								</div>
+								<v-icon class="participant-mic">
+									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+								</v-icon> 
+							</div>
+						</div>
+					</v-col>
+				</v-row>
+			</v-container>
+		</portal>
 	</div>
 </template> 
 
@@ -179,7 +184,7 @@ export default {
 
 					track.on('dimensionsChanged', (videoTrack) => { 
 						console.log("Track dimensions changed", videoTrack);
-						scaleAndAttachVideo(track, container);
+						// scaleAndAttachVideo(track, container);
 					});
 					track.on('started', (videoTrack) => { 
 						console.log("Track started", videoTrack);
@@ -195,9 +200,9 @@ export default {
 						videoTag.setAttribute('style', 
 									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
 						
-						while (container.firstChild) {
-							container.removeChild(container.lastChild);
-						}
+						// while (container.firstChild) {
+						// 	container.removeChild(container.lastChild);
+						// }
 						container.appendChild(videoTag);
 					}
 					
@@ -348,6 +353,20 @@ export default {
 </script>
 
 <style scoped>
+.video-display{
+	width: 100%;
+	bottom: 0%;
+	/* position: fixed; */
+	opacity: 1;
+	z-index: 1000;
+	padding-bottom: 0;
+}
+.video-col{
+	flex-grow: 0;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
 .video-container-wrapper{
 	height: 135px;
 	width: 240px;

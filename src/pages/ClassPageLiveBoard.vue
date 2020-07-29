@@ -1,32 +1,9 @@
 <template>
   <div id="room" style="position: relative">
-    
+    <portal-target name="video-chat"/>
     <template v-if="user" >
-      <RealtimeBlackboard :strokesRef="strokesRef" style="padding-bottom: 120px"/>
+      <RealtimeBlackboard :strokesRef="strokesRef"/>
     </template>
-    <!-- <div style="position: fixed; bottom: 0; height: 50px; z-index: 1000">
-      sklfdjsfklsdjfkl
-    </div> -->
-
-    <!-- <div > -->
-    <v-container fluid class="video-display">
-				<v-row>
-					<v-col class="video-col">
-              <portal-target name="local-media">
-                  </portal-target>
-					</v-col>
-          <template v-if="roomParticipants">
-            <template  v-for="participant in roomParticipants.filter(u => u.uid !== user.uid && u.hasJoinedMedia)">
-              <v-col :key="participant.uid" class="video-col">
-                <portal-target :name="`remote-media-${participant.uid}`" />
-              </v-col>
-            </template>
-          </template>
-				</v-row>
-		</v-container>
-    <!-- </div> -->
-    
-    
   </div>
 </template>
 
@@ -151,19 +128,4 @@ export default {
 };
 </script>
 <style scoped>
-.video-container{
-     /* border: 1px solid rgb(50, 129, 124); */
-     width: 100%;
-}
-.video-display{
-  width: 100%;
-  bottom: 0%;
-  /* position: fixed; */
-  opacity: 1;
-  z-index: 1000;
-  padding-bottom: 0;
-}
-.video-col{
-	flex-grow: 0
-}
 </style>
