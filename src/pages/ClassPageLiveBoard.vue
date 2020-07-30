@@ -1,32 +1,9 @@
 <template>
-  <div id="room" style="position: relative">
-    
+  <div id="room">
+    <portal-target name="video-chat"/>
     <template v-if="user" >
-      <RealtimeBlackboard :strokesRef="strokesRef" style="padding-bottom: 120px"/>
+      <RealtimeBlackboard :strokesRef="strokesRef"/>
     </template>
-    <!-- <div style="position: fixed; bottom: 0; height: 50px; z-index: 1000">
-      sklfdjsfklsdjfkl
-    </div> -->
-
-    <!-- <div > -->
-    <v-container fluid class="video-display">
-				<v-row>
-					<v-col class="video-col">
-              <portal-target name="local-media">
-                  </portal-target>
-					</v-col>
-          <template v-if="roomParticipants">
-            <template  v-for="participant in roomParticipants.filter(u => u.uid !== user.uid && u.hasJoinedMedia)">
-              <v-col :key="participant.uid" class="video-col">
-                <portal-target :name="`remote-media-${participant.uid}`" />
-              </v-col>
-            </template>
-          </template>
-				</v-row>
-		</v-container>
-    <!-- </div> -->
-    
-    
   </div>
 </template>
 
@@ -59,8 +36,8 @@ export default {
       strokesRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
-      roomId: this.$route.params.room_id
-      
+      roomId: this.$route.params.room_id,
+      firebaseRef: null
     }
   },
   computed: {
@@ -106,6 +83,7 @@ export default {
       detachListener();
     }
     this.roomParticipantsRef.doc(this.user.uid).delete();
+    this.firebaseRef.onDisconnect().cancel();
   },
   methods: {
     /**
@@ -122,12 +100,12 @@ export default {
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false) return; 
-        const firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
+        this.firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
         // 1. User leaves, and his/her identity is saved to Firebase
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         
         // step 1 (step 2 is executed in Cloud Functions)
-        await firebaseRef.onDisconnect().set(this.simplifiedUser);
+        await this.firebaseRef.onDisconnect().set(this.simplifiedUser);
         // now join the room 
         // if (!this.room.participants.find(p => p.uid === this.simplifiedUser.uid)){ //Sometimes the user already exists due to realtime bug
         //   this.roomRef.update({ // it's much faster to update Firestore directly
@@ -140,7 +118,7 @@ export default {
           isCameraOn: false,
           hasJoinedMedia: false
         }); 
-        firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: "", 
           firstName: "" 
@@ -151,19 +129,4 @@ export default {
 };
 </script>
 <style scoped>
-.video-container{
-     /* border: 1px solid rgb(50, 129, 124); */
-     width: 100%;
-}
-.video-display{
-  width: 100%;
-  bottom: 0%;
-  /* position: fixed; */
-  opacity: 1;
-  z-index: 1000;
-  padding-bottom: 0;
-}
-.video-col{
-	flex-grow: 0
-}
 </style>

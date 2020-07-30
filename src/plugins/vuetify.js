@@ -15,9 +15,9 @@ export default new Vuetify({
         secondary: colors.purple, // #FFCDD2 or deep-purple accent-4 
         accent: "#ff5b24"
       }
+    },
+    options: {
+      customProperties: true
     }
   },
-  options: {
-    customProperties: true
-  }
 });
