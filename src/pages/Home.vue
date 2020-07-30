@@ -304,7 +304,8 @@ export default {
       const classDoc = await db.collection("classes").add({
         name,
         description: description || "No description yet",
-        tags: []
+        tags: [],
+        roomTypes: ["Blackboard Rooms"]
       });
       await this.userRef.update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion({

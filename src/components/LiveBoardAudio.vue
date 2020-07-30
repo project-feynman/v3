@@ -1,46 +1,41 @@
 <template>
 	<div v-if="hasJoinedMedia">
-		<portal to="local-media">
-			  <div class="video-container">
-				<div id="local-media"  style="bottom: 0; position: absolute; width:100%"/>
-				<v-container style="bottom: 1%; position: absolute; ">
-					<v-row style="">
-						 <v-col >
-							 <div class="name-container">
-								{{user.firstName + " " + user.lastName}}
-							 </div>
-						</v-col>
-						
-						<v-col >
-							<div style="position:absolute; bottom: 10px; right: 10px;">
-								<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
-								<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+		<portal to="video-chat">
+			<v-container class="video-display">
+				<v-row>
+					<v-col class="video-col">
+						<div class="video-container-wrapper">
+							<div id="local-media" class="video-container"/>
+							<div class="display-bar">
+								<div class="name-container">
+									{{user.firstName + " " + user.lastName}}
+								</div>
+								<div class="local-buttons-container">
+									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+								</div>
 							</div>
-						</v-col>
-					</v-row>
-				</v-container>
-			  </div>
-		</portal>
-
-		<template v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid))">
-			<portal :to="`remote-media-${participant.uid}`"  :key="participant.uid" >
-				<div class="video-container">
-					<div :id="`remote-media-${participant.uid}`"  style="bottom: 0; position: absolute; width:100%"/>
-					<v-container style="bottom: 1%; position: absolute; color: transparent; ">
-						<v-row >
-							<v-col >
-								<v-icon small class="participant-mic">
-									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
-								</v-icon> 
-								<div class="name-container" style="left: 28px">
+						</div>
+					</v-col>
+					<v-col v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid) && p.hasJoinedMedia)" 
+						:key="participant.uid" 
+						class="video-col">
+						<div class="video-container-wrapper" >
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
+							<div class="display-bar">
+								<div class="name-container">
 									{{participant.firstName + " " + participant.lastName}}
 								</div>
-							</v-col>
-						</v-row>
-					</v-container>
-			  	</div>
-			</portal>
-		</template>
+								<v-icon class="participant-mic">
+									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+								</v-icon> 
+							</div>
+						</div>
+					</v-col>
+				</v-row>
+			</v-container>
+		</portal>
 	</div>
 </template> 
 
@@ -183,12 +178,35 @@ export default {
 		// Trigger log events 
 		attachTrack(track, container, isLocal=false) {
 				if (track.kind === "video") {
-					var videoTag = track.attach();
-					videoTag.style.width = '100%';
-					if (isLocal){
-						videoTag.style.transform = 'scale(-1, 1)'; //flips video horizontally
+
+					if (track.isStarted) {
+						scaleAndAttachVideo(track, container);
 					}
-					container.appendChild(videoTag);
+
+					track.on('dimensionsChanged', (videoTrack) => { 
+						console.log("Track dimensions changed", videoTrack);
+						// scaleAndAttachVideo(track, container);
+					});
+					track.on('started', (videoTrack) => { 
+						console.log("Track started", videoTrack);
+						scaleAndAttachVideo(track, container);
+					});
+
+					function scaleAndAttachVideo (videoTrack, container) {
+						var videoTag = videoTrack.attach();
+						const videoHeight = videoTrack.dimensions.height;
+						const videoWidth = videoTrack.dimensions.width;
+						console.log("video dims", videoTrack, videoHeight, videoWidth)
+						const aspectRatio = videoWidth/videoHeight;
+						videoTag.setAttribute('style', 
+									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
+						
+						// while (container.firstChild) {
+						// 	container.removeChild(container.lastChild);
+						// }
+						container.appendChild(videoTag);
+					}
+					
 				}
 				else {
 					container.appendChild(track.attach());
@@ -281,9 +299,8 @@ export default {
 
 			let connectOptions = {
 				name: this.roomId,
-				// logLevel: 'debug',
 				audio: true,
-				video: {width: {min: 50, max: 500}}
+				video: true
 			};
 			this.leaveRoomIfJoined();
 			
@@ -337,20 +354,66 @@ export default {
 </script>
 
 <style scoped>
-.video-container{
-	width: 200px;
-	position: relative
+.video-display{
+	width: 100%;
+	bottom: 0%;
+	/* position: fixed; */
+	opacity: 1;
+	z-index: 1000;
+	padding-bottom: 0;
+	margin-left: 0%;
 }
-.name-container{
+.video-col{
+	flex-grow: 0;
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+.video-container-wrapper{
+	height: 135px;
+	width: 240px;
+	position: relative;
+	border-style: solid;
+	border-color: var(--v-accent-base);
+	background-color:black;
+	border-radius: 10px;
+}
+.video-container-wrapper .video-container{
+	bottom: 0; 
+	position: absolute; 
+	width:100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.video-container-wrapper .display-bar{
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	height: 20%;
+	width: 100%;
+}
+.display-bar .name-container{
+	background-color: rgb(31, 31, 31);
 	color: white; 
 	position:absolute; 
-	bottom: 10px; 
-	font-size: 12px
+	bottom: 0px; 
+	font-size: 12px;
+	text-align: center;
+	padding-left: 5px;
+	padding-right: 5px;
+	left: 0px;
+	border-bottom-left-radius: 6px;
 }
-.participant-mic{
-	position: absolute; 
-	bottom: 11px; 
+.display-bar .local-buttons-container{
+	position: absolute;
+	right: 0px;
+}
+.display-bar .participant-mic{
+	position: absolute;
+	right: 0px;
 	color: white; 
-	left: 5px;
+	bottom: 0px;
 }
 </style>
