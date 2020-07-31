@@ -1,10 +1,15 @@
 <template>
-  <div id="room">
+  <div id="room" class="room-wrapper" style=" overflow: hidden">
+    <v-btn @click="messagesOpen = !messagesOpen" class="chat-btn">
+      Open Chat
+    </v-btn>
     <portal-target name="video-chat"/>
-    <template v-if="user" >
+    
+    <div v-if="user" style="margin-top: 55px">
       <RealtimeBlackboard :strokesRef="strokesRef"/>
-    </template>
+    </div>
     <LiveMessageChat
+      v-model="messagesOpen"
       :roomParticipants="roomParticipants"
       :roomId="this.roomId"
       :classId="this.classId"
@@ -44,7 +49,8 @@ export default {
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
-      firebaseRef: null
+      firebaseRef: null,
+      messagesOpen: false,
     }
   },
   computed: {
@@ -136,4 +142,18 @@ export default {
 };
 </script>
 <style scoped>
+.room-wrapper{
+  /* position: absolute;  */
+  /* width: 50%;  */
+  /* height: 100% */
+}
+.chat-btn{
+  position: absolute; 
+  right: 0%; 
+  top: 0%; 
+  border-style: solid; 
+  height: 50px;
+  margin-top: 5px;
+  z-index: 7; /* this z-index is under the app-bar but over the weird blackboard stuff*/
+}
 </style>

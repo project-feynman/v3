@@ -1,22 +1,34 @@
 <template>
-    <div>
-        <div class="chat-container">
-            <div class="message" v-for="(message,index) in sortedMessages" v-bind:key="index" :class="{own: message.creator.uid == user.uid}">
-                <div class="name-display" v-if="index == 0 || sortedMessages[index-1].creator.uid != message.creator.uid">
-                    {{message.creator.firstName+ " " + message.creator.lastName}}
+    <v-card>
+        <v-navigation-drawer 
+            :value="value" @input="newVal => $emit('input', newVal)" 
+            right
+            app
+            clipped
+            width="380"
+            class="the-side-drawer">  
+        <div class ="chat-container-wrapper">
+            <div class="chat-container">
+                <div class="message" v-for="(message,i) in sortedMessages" v-bind:key="i" >
+                    <div class="name-display" v-if="i == 0 || sortedMessages[i-1].creator.uid != message.creator.uid">
+                        {{user.uid === message.creator.uid ? "Me" : message.creator.firstName+ " " + message.creator.lastName}}
+                    </div>
+                    <div style="margin-top: 5px"></div>
+                    <div class="content">
+                        <div v-text="message.content"></div>
+                    </div> 
                 </div>
-                <div style="margin-top: 5px"></div>
-                <div class="content">
-                    <div v-html="message.content"></div>
-                    <!-- <chat-image v-if="message.image" :imgsrc="message.image" @imageLoad="imageLoad"></chat-image> -->
-                </div> 
             </div>
         </div>
-        <v-text-field v-model="currentText">
+        <v-text-field v-model="currentText" @keydown.enter="addMessage(currentText)" placeholder="Type a message...">
+            <v-btn color='accent' slot="append" @click="addMessage(currentText)" >
+                Send
+                <v-icon class="pl-2">mdi-send</v-icon>
+            </v-btn>
         </v-text-field>
-        <v-btn @click="addMessage()">
-        </v-btn>
-    </div>
+        
+        </v-navigation-drawer>
+    </v-card>
 </template>
 
 <script>
@@ -33,6 +45,7 @@ import mapSort from 'mapsort';
 
 export default {
     props: {
+        value: Boolean,
         roomId: String,
         classId: String,
         roomParticipants: Array
@@ -88,15 +101,17 @@ export default {
         }
     },
     methods: {
-        addMessage () {
+        addMessage (text) {
+            if (!text) { return; }
             const messageID = getRandomId();
-            const date = new Date().toISOString()
+            const date = new Date().toISOString();
             this.messagesRef.doc(messageID).set({
                 id: messageID,
                 creator: this.simplifiedUser,
-                content: this.currentText,
+                content: text,
                 date: date
-            })
+            });
+            this.currentText = "";
         },
         displayDate (date) {
             return displayDate(date);
@@ -106,59 +121,36 @@ export default {
 </script>
 
 <style scoped>
-.scrollable {
-    overflow-y: auto;
-    height: 90vh;
-  }
-  .typer{
+.chat-container-wrapper{
+    /* height: calc(100vh - 9.5rem); */
+    overflow: auto;
+    display:flex; 
+    flex-direction:column-reverse;
+}
+.chat-container-wrapper .chat-container{
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    bottom: 0;
-    height: 4.9rem;
-    width: 100%;
-    background-color: #fff;
-    box-shadow: 0 -5px 10px -5px rgba(0,0,0,.2);
-  }
-  .typer input[type=text]{
-    position: absolute;
-    left: 2.5rem;
-    padding: 1rem;
-    width: 80%;
-    background-color: transparent;
-    border: none;
-    outline: none;
-    font-size: 1.25rem;
-  }
-  .chat-container{
-    box-sizing: border-box;
-    height: calc(100vh - 9.5rem);
-    overflow-y: auto;
     padding: 10px;
     background-color: #f2f2f2;
-  }
-  .message{
+}
+.message{
     margin-bottom: 3px;
-  }
-  .message.own{
-    text-align: right;
-  }
-  /* .message.own .content{
-    background-color: lightskyblue;
-  } */
-  .name-display{
+    width:300px;
+}
+.name-display{
     font-size: 12px;
     font-weight: bold;
-  }
-  .chat-container .content{
+}
+.chat-container .content{
     padding: 8px;
-    /* background-color: lightgreen; */
-    /* border-style: solid; */
     border-radius: 10px;
-    /* border-color: rgb(231, 137, 13); */
     display:inline-block;
     box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12);
-    max-width: 50%;
-    /* word-wrap: break-word; */
-    }
+    display: inline-block;
+    word-break: break-word;
+    hyphens: auto;
+}
+.the-side-drawer {
+    z-index: 7;
+    max-width: 75%;
+}
 </style>
