@@ -114,7 +114,6 @@
 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import ButtonNew from "@/components/ButtonNew.vue";
 import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
 import firebase from "firebase/app";
@@ -134,7 +133,6 @@ export default {
   ],
   components: {
     BasePopupButton,
-    ButtonNew,
     Drag,
     Drop
   },
@@ -160,18 +158,6 @@ export default {
   },
   created () {
     this.groupPosts();
-    // An attempt to open the first folder by default. Not sure why it is not working
-    console.log('mitClass');
-    // setTimeout(()=>{
-    console.log('called finally')
-    if (this.openedFoldersIndices.length===0) {
-      const openThis = this.folders.filter(item => item.isFolder)[0].id;
-      console.log('adding this one', openThis);
-      this.openedFoldersIndices.push(openThis);
-      console.log('before', this.openedFoldersIndices)
-    }
-    // }, 500);
-
   },
   methods: {
     async renamePost (payload, post) {
@@ -215,13 +201,6 @@ export default {
       this.mitClass.tags.push(newFolder)
       this.groupPosts(true);
       this.$root.$emit("show-snackbar", "Successfully created a new folder.");
-    },
-    // For better UX; To be done after some time
-    dragHover (action, id, data, event) {
-    //   const target = document.getElementById(id);
-    //   if (target.contains(event.target)) return;
-    //   if (event==='start') target.classList.add('dragOver');
-    //   else target.classList.remove('dragOver');
     },
     async handleDrop (droppedAt, item) {
       // item.highlight = false; For better UX
@@ -285,8 +264,6 @@ export default {
       this.$root.$emit("show-snackbar", msg);
     },
     groupPosts (force = false) {
-      // This only (re)groups the posts, but doesn't rerender the UI.
-      // To rerender UI, call groupPosts
       // force: (Boolean) forces the tag tree to update even if it was already filled. We don't want ot force every single time user switches between
       // but only when a new folder is added (cause we are not listening to mitClass (but not sure if fixing that would solve the problem))
       if ((!this.mitClass || this.folders.length!==0) && !force) return;
@@ -411,9 +388,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.unanswered {
-  color: #ee5555 !important;
-}
-</style>

@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panels accordion v-model="openedWeeks" multiple class="group-by-date">
+  <v-expansion-panels hover accordion v-model="openedWeeks" multiple class="group-by-date">
     <v-expansion-panel
       v-for="week in weeks"
       :key="week.date"
@@ -26,7 +26,7 @@
               :class="(collection === 'questions') && !post.hasReplies ? 'unanswered' : 'answered'"
             >
               <v-list-item-icon>
-                <v-icon>mdi-file-document-box-outline</v-icon>
+                <v-icon>{{ collection === 'questions' ? 'mdi-file-question-outline' : 'mdi-file-document-box-outline'}}</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title style="font-size:1em; color: #555; padding-bottom: 5px;">{{ post.name }}</v-list-item-title>
@@ -47,7 +47,6 @@
           </template>
         </v-list>
       </v-expansion-panel-content>
-      <v-divider inset/>
     </v-expansion-panel>
   </v-expansion-panels>
 </template>
@@ -201,7 +200,7 @@ export default {
   position: relative;
   left: -5px;
   border-left: 5px solid #B00;
-  background: rgba(255,100,100,0.1);
+  background: rgba(255,100,100,0.07);
 }
 .group-by-date .unanswered.v-list-item--active {
   background: rgba(255,0,0,0.1);
@@ -211,7 +210,7 @@ export default {
 }
 .group-by-date .v-expansion-panel--active > .v-expansion-panel-header {
   min-height: unset;
-  background-color: #d8d8d8;
+  background-color: #d8d8d8 !important;
 }
 .group-by-date .post-metaData span {
   padding: 0 3px;
