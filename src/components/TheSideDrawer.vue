@@ -24,7 +24,7 @@
 
       <v-tabs-items v-model="activeTab">
         <v-tab-item value="archive">
-          <TheSideDrawerFileExplorer type="posts"/>
+          <TheSideDrawerFileExplorer type="posts" v-if="mitClass"/>
         </v-tab-item>
 
         <v-tab-item value="Q&A">

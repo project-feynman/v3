@@ -1,29 +1,53 @@
 <template>
-  <v-expansion-panels accordion v-model="openedWeeks" multiple>
+  <v-expansion-panels accordion v-model="openedWeeks" multiple class="group-by-date">
     <v-expansion-panel
       v-for="week in weeks"
       :key="week.date"
     >
       <v-expansion-panel-header ripple color="#f8f8f8">{{ week.name }}</v-expansion-panel-header>
       <v-expansion-panel-content>
-        <v-list>
+        <template
+          v-if="week.isLoading"
+        >
+          <div class="text-center py-2">
+            <v-progress-circular
+              indeterminate
+              color="accent"
+            ></v-progress-circular>
+          </div>
+        </template>
+        <v-list v-else shaped>
           <template 
             v-for="post in week.children"
           >
             <v-list-item
               :to="`/class/${mitClass.id}/${collection}/${post.id}`" dense
               two-line
+              :class="(collection === 'questions') && !post.hasReplies ? 'unanswered' : 'answered'"
             >
+              <v-list-item-icon>
+                <v-icon>mdi-file-document-box-outline</v-icon>
+              </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title style="font-size:1em; color: #555; padding-bottom: 5px;">{{ post.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ post.date }}</v-list-item-subtitle>
+                <v-list-item-subtitle class="post-metaData">
+                  <span v-if="getFolder(post)">
+                    <v-icon small>mdi-folder-open</v-icon>
+                    {{ getFolder(post) }}
+                  </span>
+                  <span v-if="getFolder(post)">|</span>
+                  <span>
+                    <v-icon small>mdi-calendar</v-icon>
+                    {{ getDate(post) }}
+                  </span>
+                </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
             <v-divider/>
           </template>
         </v-list>
       </v-expansion-panel-content>
-      <v-divider/>
+      <v-divider inset/>
     </v-expansion-panel>
   </v-expansion-panels>
 </template>
@@ -94,6 +118,7 @@ export default {
     },
     async openThisWeek (week) {
       if (week.children.length!==0) return;
+      week.isLoading = true
       console.log(week);
       const startTime = new Date(week.name.split('-')[0]).toISOString();
       const endDate = new Date(week.name.split('-')[1]);
@@ -101,7 +126,7 @@ export default {
       const endTime = endDate.toISOString();
       const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startTime).where("date", "<=", endTime);
       const posts = [];
-      return new Promise(resolve => {
+      await new Promise(resolve => {
         const snapshotListener = postsQuery.onSnapshot(snapshot => {
           if (snapshot.empty) {
             resolve();
@@ -113,9 +138,11 @@ export default {
               name: doc.data().title,
               date: doc.data().date,
               hasReplies: doc.data().hasReplies,
+              tag: doc.data().tags[0],
             });
           });
           posts.sort((a, b) => b.date-a.date);
+          week.isLoading= false
           resolve();
         });
         week.children = posts;
@@ -153,19 +180,43 @@ export default {
             name: week,
             isFolder: true,
             children: [],
-            date: week.split('-')[0]
+            date: week.split('-')[0],
+            isLoading: false,
           });
         i++;
       }
     },
+    getFolder (post) {
+      const folderIndex = this.mitClass.tags.findIndex(tag => tag.id === post.tag);
+      if (folderIndex === -1) return false;
+      return this.mitClass.tags[folderIndex].name;
+    },
+    getDate (post) {
+      const theDate = moment(post.date);
+      return theDate.format('MMM D, YYYY');
+    }
   }
 }
 
 </script>
 
 <style>
-.v-expansion-panel--active > .v-expansion-panel-header {
+.group-by-date .unanswered {
+  position: relative;
+  left: -5px;
+  border-left: 5px solid #B00;
+}
+.group-by-date .unanswered.v-list-item--active {
+  background: rgba(255,0,0,0.1);
+}
+.group-by-date .v-expansion-panel-content__wrap {
+  padding: 0 5px 0 8px;
+}
+.group-by-date .v-expansion-panel--active > .v-expansion-panel-header {
   min-height: unset;
   background-color: #d8d8d8;
+}
+.group-by-date .post-metaData span {
+  padding: 0 3px;
 }
 </style>
