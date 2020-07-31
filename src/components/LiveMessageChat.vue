@@ -1,31 +1,47 @@
 <template>
-    <v-card>
+    <v-card style="height: 100%">
         <v-navigation-drawer 
             :value="value" @input="newVal => $emit('input', newVal)" 
             right
             app
             clipped
             width="380"
-            class="the-side-drawer">  
-        <div class ="chat-container-wrapper">
-            <div class="chat-container">
-                <div class="message" v-for="(message,i) in sortedMessages" v-bind:key="i" >
-                    <div class="name-display" v-if="i == 0 || sortedMessages[i-1].creator.uid != message.creator.uid">
-                        {{user.uid === message.creator.uid ? "Me" : message.creator.firstName+ " " + message.creator.lastName}}
+            class="the-side-drawer"
+            :stateless="true">  
+            <!-- <div> -->
+                <div class ="chat-container-wrapper">
+                    <!-- <v-list>
+                        <v-list-item class="chat-container-wrapper"> -->
+                    <div class="chat-container">
+                        <div class="message" v-for="(message,i) in sortedMessages" v-bind:key="i" >
+                            <div class="name-display" v-if="i == 0 || sortedMessages[i-1].creator.uid != message.creator.uid">
+                                {{user.uid === message.creator.uid ? "Me" : message.creator.firstName+ " " + message.creator.lastName}}
+                            </div>
+                            <div style="margin-top: 5px"></div>
+                            <div class="content">
+                                <div v-text="message.content"></div>
+                            </div> 
+                        </div>
                     </div>
-                    <div style="margin-top: 5px"></div>
-                    <div class="content">
-                        <div v-text="message.content"></div>
-                    </div> 
+                        <!-- </v-list-item>
+                    </v-list> -->
                 </div>
-            </div>
-        </div>
-        <v-text-field v-model="currentText" @keydown.enter="addMessage(currentText)" placeholder="Type a message...">
-            <v-btn color='accent' slot="append" @click="addMessage(currentText)" >
-                Send
-                <v-icon class="pl-2">mdi-send</v-icon>
-            </v-btn>
-        </v-text-field>
+                <div class="text-box-container">
+                    <div class="text-container">
+                        <v-textarea 
+                            rows="1"
+                            auto-grow
+                            v-model="currentText" 
+                            placeholder="Type a message...">
+                        </v-textarea>
+                    </div>
+                    <div class="submit-btn-container">
+                        <v-icon style="right: 0px" color='accent'  @click="addMessage(currentText)" >
+                                mdi-send
+                        </v-icon>
+                    </div>
+                </div>
+            <!-- </div> -->
         
         </v-navigation-drawer>
     </v-card>
@@ -87,7 +103,7 @@ export default {
                 (a, b) => {
                     return (a.date > b.date) ? 1 : ((a.date < b.date) ? -1 : 0)
 	            })
-            }
+        }
     },
     created () {
         this.messagesRef = db.collection(`classes/${this.classId}/blackboards/${this.roomId}/messages`);
@@ -121,8 +137,13 @@ export default {
 </script>
 
 <style scoped>
+.the-side-drawer {
+    z-index: 10;
+    max-width: 75%;
+    height: 100%;
+}
 .chat-container-wrapper{
-    /* height: calc(100vh - 9.5rem); */
+    height: 85%;
     overflow: auto;
     display:flex; 
     flex-direction:column-reverse;
@@ -139,9 +160,10 @@ export default {
 .name-display{
     font-size: 12px;
     font-weight: bold;
+    margin-top: 10px;
 }
-.chat-container .content{
-    padding: 8px;
+.message .content{
+    padding: 5px;
     border-radius: 10px;
     display:inline-block;
     box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12);
@@ -149,8 +171,24 @@ export default {
     word-break: break-word;
     hyphens: auto;
 }
-.the-side-drawer {
-    z-index: 7;
-    max-width: 75%;
+.text-box-container{
+    position: absolute;
+    bottom: 0%;
+    left: 0px;
+    margin-left: 10px;
+    height: 15%;
+    max-height: 15%;
+    width: 95%
 }
+.text-box-container .text-container{
+    position: absolute;
+    left: 0%;
+    width: 90%
+}
+.text-box-container .submit-btn-container{
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+}
+
 </style>

@@ -1,11 +1,11 @@
 <template>
-  <div id="room" class="room-wrapper" style=" overflow: hidden">
+  <div id="room" class="room-wrapper">
     <v-btn @click="messagesOpen = !messagesOpen" class="chat-btn">
-      Open Chat
+      {{messagesOpen ? 'Close' : 'Open'}} Chat
     </v-btn>
     <portal-target name="video-chat"/>
     
-    <div v-if="user" style="margin-top: 55px">
+    <div v-if="user" style="margin-top: 55px;">
       <RealtimeBlackboard :strokesRef="strokesRef"/>
     </div>
     <LiveMessageChat
@@ -145,7 +145,7 @@ export default {
 .room-wrapper{
   /* position: absolute;  */
   /* width: 50%;  */
-  /* height: 100% */
+  height: 100px;
 }
 .chat-btn{
   position: absolute; 
