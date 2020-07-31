@@ -45,117 +45,13 @@
         </v-layout>
 
         <v-divider/>
-
-          <v-treeview
-            :items="organizedPosts"
-            :search="search"
-            :open.sync="openedFoldersIndices"
-            :load-children="(folder) => fetchRelevantPosts(folder)"
-            :key="incrementKeyToDestroy"
-            open-on-click
-            @update:open="folderToggle"
-          >
-            <template v-slot:prepend="{ item, open }">
-              <v-icon v-if="item.isFolder">
-                {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-              </v-icon> 
-              <v-icon v-else :class="(type === 'question' && ! item.hasReplies) ? 'unanswered' : ''">
-                mdi-file-document
-              </v-icon>
-            </template>
-
-            <template v-slot:label="{ item }">
-              <drop class="drop" @drop="handleDrop(item, ...arguments)">
-                <drag class="drag" :key="item.id" :transfer-data="{ data: item }" :draggable="groupBy === 'tag'">
-                  <v-list-item v-if="!item.isFolder" :to="`/class/${mitClass.id}/${type === 'question'?'questions':'posts'}/${item.id}`" dense>
-                    <v-list-item-subtitle v-text="item.name"/>
-                  </v-list-item>
-                  <v-list-item v-else dense>
-                    <v-list-item-subtitle v-text="item.name"/>
-                  </v-list-item>
-                </drag>
-              </drop>
-            </template>
-
-            <template v-slot:append="{ item }">
-              <v-menu v-if="user && item.isFolder" bottom right>
-                <template v-slot:activator="{ on }">
-                  <v-btn icon v-on="on">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-
-                <v-list>
-                  <v-list-item>
-                    <BasePopupButton actionName="Rename Folder" 
-                      :inputFields="['New Name']"
-                      @action-do="payload => renameTag(payload, item)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                        <v-btn v-on="on" color="accent" text>Rename</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                  <!-- Ability to create a sub-folder -->
-                  <v-list-item>
-                    <BasePopupButton actionName="Create Sub-folder"
-                      :inputFields="['Folder name']"
-                      @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                         <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-              
-              <!-- Different dropdown options for pages (refactor later) -->
-              <v-menu v-else-if="user" bottom right>
-                <template v-slot:activator="{ on }">
-                  <v-btn icon v-on="on">
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-
-                <v-list>
-                  <v-list-item>
-                    <BasePopupButton>
-                      <template v-slot:activator-button="{ on }">
-                        <v-btn v-on="on" color="secondary" text>
-                          MOVE
-                        </v-btn>
-                      </template>
-                      <template v-slot:popup-content="{ closePopup }">
-                        <h1>Select a folder</h1>
-                        <template v-if="mitClass">
-                          <div class="text-center mt-5">
-                            <v-chip v-for="tagName in mitClass.tags" 
-                              @click="movePostToFolder(item, tagName.id, closePopup)"
-                              :key="tagName.id" 
-                              color="accent" 
-                              class="ma-2">
-                              {{ tagName.name }}
-                            </v-chip>
-                          </div>
-                        </template>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                  <v-list-item>
-                    <BasePopupButton actionName="Rename Post" 
-                      :inputFields="['New Name']"
-                      @action-do="(payload) => renamePost(payload, item)"
-                    >
-                      <template v-slot:activator-button="{ on }">
-                        <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
-                      </template>
-                    </BasePopupButton>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </template>
-          </v-treeview>
+        <!--<TheSideDrawerGroupByFolders :collection="type" v-if="mitClass"/>-->
+        <template v-if="mitClass">
+          <TheSideDrawerGroupByDate :collection="type" v-if="groupBy==='date'"/>
+          <TheSideDrawerGroupByFolders :collection="type" v-else/>
+        
+        </template>
+        
     </div>
 </template>
 
@@ -171,13 +67,15 @@ import "firebase/firestore";
 import { mapState } from "vuex";
 import moment from "moment";
 import { Drag, Drop } from 'vue-drag-drop';
+import TheSideDrawerGroupByFolders from "@/components/TheSideDrawerGroupByFolders.vue";
+import TheSideDrawerGroupByDate from "@/components/TheSideDrawerGroupByDate.vue";
 
 export default {
   props: {
     title: String,
     type: {
       type: String,
-      default: 'note'
+      default: 'posts'
     },
   },
   mixins: [
@@ -187,7 +85,9 @@ export default {
     BasePopupButton,
     ButtonNew,
     Drag,
-    Drop
+    Drop, 
+    TheSideDrawerGroupByFolders,
+    TheSideDrawerGroupByDate,
   },
   computed: {
     classId () { 
@@ -208,7 +108,7 @@ export default {
     incrementKeyToDestroy: 0,
     openedFoldersIndices: [],
     snapshotListeners: [],
-    groupBy: (this.type === 'note') ? 'tag' : 'date',
+    groupBy: (this.type === 'posts') ? 'tag' : 'date',
   }},
   watch: {
     mitClass: {

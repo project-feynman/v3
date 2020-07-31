@@ -24,14 +24,14 @@
 
       <v-tabs-items v-model="activeTab">
         <v-tab-item value="archive">
-          <TheSideDrawerLibrary type="note"/>
+          <TheSideDrawerFileExplorer type="posts"/>
         </v-tab-item>
 
         <v-tab-item value="Q&A">
           <!-- <TheSideDrawerQuestions type="question"/> -->
 
           <!-- Uncomment below when you finish the refactor -->
-          <TheSideDrawerQuestionsBeta v-if="mitClass"/>
+          <TheSideDrawerFileExplorer type="questions" v-if="mitClass"/>
         </v-tab-item>
     
         <v-tab-item v-if="user" value="rooms">
@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import TheSideDrawerLibrary from "@/components/TheSideDrawerLibrary.vue";
+import TheSideDrawerFileExplorer from "@/components/TheSideDrawerFileExplorer.vue";
 import TheSideDrawerQuestions from "@/components/TheSideDrawerQuestions.vue";
 import TheSideDrawerQuestionsBeta from "@/components/TheSideDrawerQuestionsBeta.vue"; 
 import TheSideDrawerSpaces from "@/components/TheSideDrawerSpaces.vue";
@@ -55,7 +55,7 @@ export default {
     value: Boolean
   },
   components: {
-    TheSideDrawerLibrary,
+    TheSideDrawerFileExplorer,
     TheSideDrawerQuestions,
     TheSideDrawerQuestionsBeta,
     TheSideDrawerSpaces
