@@ -103,7 +103,7 @@
                       @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
                     >
                       <template v-slot:activator-button="{ on }">
-                         <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
+                         <v-btn v-on="on" color="accent" text>Create Sub-folder</v-btn>
                       </template>
                     </BasePopupButton>
                   </v-list-item>
@@ -209,6 +209,7 @@ export default {
     openedFoldersIndices: [],
     snapshotListeners: [],
     groupBy: (this.type === 'note') ? 'tag' : 'date',
+    firstCall: true, // See if this is the first time page is calling database
   }},
   watch: {
     mitClass: {
@@ -220,14 +221,10 @@ export default {
         await this.initializeClassOrder();
         this.groupPosts();
         // An attempt to open the first folder by default. Not sure why it is not working
-        console.log('mitClass');
         setTimeout(()=>{
-          console.log('called finally')
-          if (this.openedFoldersIndices.length===0) {
+          if (this.openedFoldersIndices.length===0 && this.groupBy==='date') {
             const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
-            console.log('adding this one', openThis);
             this.openedFoldersIndices.push(openThis);
-            console.log('before', this.openedFoldersIndices)
             // setTimeout(()=>{this.openedFoldersIndices.push(openThis);}, 1000);
           }
         }, 500);
@@ -289,7 +286,7 @@ export default {
     },
     // For better UX; To be done after some time
     dragHover (action, id, data, event) {
-    //   const target = document.getElementById(id);
+      const target = document.getElementById(id);
     //   if (target.contains(event.target)) return;
     //   if (event==='start') target.classList.add('dragOver');
     //   else target.classList.remove('dragOver');
@@ -349,7 +346,7 @@ export default {
           tags: tag, // a file can only exist in one folder at the time (for now)
           order: order
         }).then(function() {
-          msg = "Successfully moved post to the specified folder";
+          msg = "Successfully moved the post";
         }).catch(function(error) {
           msg = "Something went wrong while moving the post";
         });
@@ -416,9 +413,11 @@ export default {
       if (this.groupBy === 'tag') {
         postsQuery = postsRef.where("tags", "array-contains", item.id);
       } else {
-        const startDate = new Date(item.name.split('-')[0]).toISOString();
-        const endDate = new Date(item.name.split('-')[1]).toISOString();
-        postsQuery = postsRef.where("date", ">=", startDate).where("date", "<=", endDate);
+        const startTime = new Date(item.name.split('-')[0]).toISOString();
+        const endDate = new Date(item.name.split('-')[1]);
+        endDate.setHours(23, 59, 59); // Since we want the post till the end of the day
+        const endTime = endDate.toISOString();
+        postsQuery = postsRef.where("date", ">=", startTime).where("date", "<=", endTime);
       }
       await this.bindArrayToDatabase(item.children, item.id, postsQuery);
 
@@ -484,7 +483,6 @@ export default {
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
           array.length = 0; 
-
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
           for (let tag of childrenFolders) {
             array.push({
@@ -509,14 +507,15 @@ export default {
               hasReplies: doc.data().hasReplies,
             });
           });
-          snapshot.docChanges().forEach(function(change) {
-            if (change.type === "added") {
+          snapshot.docChanges().forEach((change) => {
+            if (change.type === "added" && ! this.firstCall) {
               const addedPost = change.doc.data().title;
             }
           });
           if (this.groupBy === 'tag') array.sort((a, b) => b.order-a.order);
           else array.sort((a, b) => b.date-a.date);
           // this.incrementKeyToDestroy += 1;
+          this.firstCall = false;
           resolve();
         });
         this.snapshotListeners.push(snapshotListener);
@@ -626,37 +625,37 @@ export default {
 </script>
 
 <style scoped>
-.v-expansion-panel {
-  position: sticky;
-  top:0;
-  z-index: 2;
-}
-.v-expansion-panel#question {
-  bottom: 0;
-}
-.v-expansion-panel-header > *:not(.expansion-title) {
-  flex: 0 0 auto;
-}
-.v-expansion-panel.v-expansion-panel--active {
-  position: relative;
-  z-index: 1;
-}
-.v-expansion-panel:not(.v-expansion-panel--active) .expansion-options {
-  display: none;
-}
-.v-expansion-panel .v-expansion-panel-header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: #eee;
-}
-.v-expansion-panel#question .v-expansion-panel-header {
-  top: 68px;
-}
-.dragOver {
-  background: black;
-}
-.unanswered {
-  color: #ee5555 !important;
-}
+  .v-expansion-panel {
+    position: sticky;
+    top:0;
+    z-index: 2;
+  }
+  .v-expansion-panel#question {
+    bottom: 0;
+  }
+  .v-expansion-panel-header > *:not(.expansion-title) {
+    flex: 0 0 auto;
+  }
+  .v-expansion-panel.v-expansion-panel--active {
+    position: relative;
+    z-index: 1;
+  }
+  .v-expansion-panel:not(.v-expansion-panel--active) .expansion-options {
+    display: none;
+  }
+  .v-expansion-panel .v-expansion-panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #eee;
+  }
+  .v-expansion-panel#question .v-expansion-panel-header {
+    top: 68px;
+  }
+  .dragOver {
+    background: black;
+  }
+  .unanswered {
+    color: #ee5555 !important;
+  }
 </style>
