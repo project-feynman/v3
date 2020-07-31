@@ -223,7 +223,6 @@ export default {
         // An attempt to open the first folder by default. Not sure why it is not working
         setTimeout(()=>{
           if (this.openedFoldersIndices.length===0 && this.groupBy==='date') {
-            console.log('the folders are ', this.organizedPosts.slice());
             const openThis = this.organizedPosts.filter(item => item.isFolder)[0].id;
             this.openedFoldersIndices.push(openThis);
             // setTimeout(()=>{this.openedFoldersIndices.push(openThis);}, 1000);
@@ -288,7 +287,6 @@ export default {
     // For better UX; To be done after some time
     dragHover (action, id, data, event) {
       const target = document.getElementById(id);
-      console.log(target);
     //   if (target.contains(event.target)) return;
     //   if (event==='start') target.classList.add('dragOver');
     //   else target.classList.remove('dragOver');
@@ -370,7 +368,6 @@ export default {
     async groupByDate () {
       // This only (re)groups the posts, but doesn't rerender the UI.
       // To rerender UI, call groupPosts
-      console.log('group by dates');
       if (this.dateGroups.length!==0) return;
       await db.collection(`classes/${this.$route.params.class_id}/${this.type === 'question'?'questions':'posts'}`).get().then((querySnapshot)=> {
         querySnapshot.forEach(doc => {
@@ -411,7 +408,6 @@ export default {
       this.bindUntaggedPostsToDatabase(query);
     },
     async fetchRelevantPosts (item) {
-      console.log('fetching')
       const postsRef = db.collection(`classes/${this.mitClass.id}/${this.type === 'question'?'questions':'posts'}`);
       let postsQuery;
       if (this.groupBy === 'tag') {
@@ -487,7 +483,6 @@ export default {
           /* we cannot use `array = [];` to reset the array 
              see explanation http://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/c63541e6-3df5-4b30-a96a-575585e7b181 */
           array.length = 0; 
-          console.log('binding array to database');
           const childrenFolders = this.mitClass.tags.filter(tag => tag.parent === id);
           for (let tag of childrenFolders) {
             array.push({
@@ -513,11 +508,8 @@ export default {
             });
           });
           snapshot.docChanges().forEach((change) => {
-            // console.log('new post added')
             if (change.type === "added" && ! this.firstCall) {
-              // console.log('this is actually new');
               const addedPost = change.doc.data().title;
-              // console.log(addedPost);
             }
           });
           if (this.groupBy === 'tag') array.sort((a, b) => b.order-a.order);
@@ -551,7 +543,6 @@ export default {
         }
         weekGroups[week]++;
       });
-      console.log('by weeks', weekGroups);
       let i = 0;
       for (var week in weekGroups) {
         this.dateGroups.push({
