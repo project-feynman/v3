@@ -87,8 +87,6 @@ export default {
   },
   watch: {
     openedWeeks: function (newVal, oldVal) {
-      console.log('previously opened weeks', oldVal);
-      console.log('now opened weeks', newVal);
       const justOpened = newVal.filter(x => !oldVal.includes(x));
       if (justOpened.length===1) {
         this.openThisWeek(this.weeks[justOpened]);
@@ -119,7 +117,6 @@ export default {
     async openThisWeek (week) {
       if (week.children.length!==0) return;
       week.isLoading = true
-      console.log(week);
       const startTime = new Date(week.name.split('-')[0]).toISOString();
       const endDate = new Date(week.name.split('-')[1]);
       endDate.setHours(23, 59, 59); // Since we want the post till the end of the day
@@ -132,8 +129,9 @@ export default {
             resolve();
             return;
           }
+          week.children.length = 0;
           snapshot.forEach(doc => {
-            posts.push({
+            week.children.push({
               id: doc.id,
               name: doc.data().title,
               date: doc.data().date,
@@ -141,12 +139,10 @@ export default {
               tag: doc.data().tags[0],
             });
           });
-          posts.sort((a, b) => b.date-a.date);
+          week.children.sort((a, b) => b.date-a.date);
           week.isLoading= false
           resolve();
         });
-        week.children = posts;
-        console.log('the week', week);
         this.snapshotListeners.push(snapshotListener)
       })
       // await this.bindArrayToDatabase(item.children, item.id, postsQuery);
@@ -205,6 +201,7 @@ export default {
   position: relative;
   left: -5px;
   border-left: 5px solid #B00;
+  background: rgba(255,100,100,0.1);
 }
 .group-by-date .unanswered.v-list-item--active {
   background: rgba(255,0,0,0.1);
