@@ -1,5 +1,5 @@
 <template>
-	<v-container>
+	<v-container class="py-0">
     <v-row class="align-center">
       <v-col cols="auto" class="px-0 py-1" v-for="color in colors" :key="color" :class="isColorActive(color) ? 'selected-color':''">
         <ButtonNew color="accent lighten-2" :filled="isColorActive(color)" @click="selectColor(color)" small :data-qa="color">

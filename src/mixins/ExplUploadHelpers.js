@@ -55,6 +55,7 @@ export default {
       db.doc(`classes/${this.$route.params.class_id}`).update({
         maxOrder: postOrder,
       });
+      this.mitClass.maxOrder = postOrder;
       this.$_uploadExplanation(explRef); 
       this.$root.$emit("show-snackbar", "Uploading your explanation...");
       this.$emit("upload-started"); // let the clients i.e. ClassPageSeePost and ClassPageNewPost re-render the <CreateExplanation/> component
