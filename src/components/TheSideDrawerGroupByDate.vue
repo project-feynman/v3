@@ -2,7 +2,7 @@
   <v-expansion-panels hover accordion v-model="openedWeeks" multiple class="group-by-date">
     <v-expansion-panel
       v-for="week in weeks"
-      :key="week.date"
+      :key="week.start.toISOString()"
     >
       <v-expansion-panel-header ripple color="#f8f8f8">{{ week.name }}</v-expansion-panel-header>
       <v-expansion-panel-content>
@@ -64,7 +64,7 @@ export default {
   props: {
     collection: {
       type: String,
-      default: 'posts'
+      default: 'questions'
     },
   },
   mixins: [
@@ -81,7 +81,8 @@ export default {
       weeks: [],
       search: null,
       snapshotListeners: [],
-      openedWeeks: []
+      openedWeeks: [],
+      weeksMounted: false,
     }
   },
   watch: {
@@ -90,7 +91,13 @@ export default {
       if (justOpened.length===1) {
         this.openThisWeek(this.weeks[justOpened]);
       }
-    }
+    },
+    weeksMounted: function (newVal) {
+      if ( newVal === true ) {
+        this.openedWeeks.push(0);
+        this.openThisWeek(this.weeks[0]); // This should have been handled by the watch hook on openedWeeks, but strangely doesn't
+      }
+    },
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -105,22 +112,61 @@ export default {
       // This only (re)groups the posts, but doesn't rerender the UI.
       // To rerender UI, call groupPosts
       if (this.weeks.length!==0) return;
-      const dateList = [];
-      await db.collection(`classes/${this.$route.params.class_id}/${this.collection}`).get().then((querySnapshot)=> {
+      const collectionRef = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`);
+      // Get the first and last post posted in the class
+      let firstDate, lastDate;
+      await collectionRef.orderBy('date', 'asc').limit(1).get().then(querySnapshot => {
+        if (querySnapshot.empty) return;
         querySnapshot.forEach(doc => {
-          dateList.push(doc.data().date);
-        })
-        this.foldersFromDates(dateList);
+          firstDate = new Date(doc.data().date);
+        });
       });
+
+      await collectionRef.orderBy('date', 'desc').limit(1).get().then(querySnapshot => {
+        if (querySnapshot.empty) return;
+        querySnapshot.forEach(doc => {
+          lastDate = moment(doc.data().date);
+        });
+      });
+
+      let startOfNextWeek  = moment()
+          .isoWeekYear(lastDate.year())
+          .isoWeek(lastDate.week())
+          .startOf('week')
+          .add(1, 'week')
+          .toDate();
+      
+      while ( startOfNextWeek > firstDate ) {
+        const endOfThisWeek = new Date(startOfNextWeek.getTime());
+        endOfThisWeek.setDate(endOfThisWeek.getDate() - 1);
+        const startOfThisWeek = new Date(startOfNextWeek.getTime());
+        startOfThisWeek.setDate(startOfNextWeek.getDate() - 7);
+
+        await collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
+          if (!querySnapshot.empty) {
+            this.weeks.push({
+              name: 'Week ' + moment(startOfThisWeek).format('MMM D') + ' - ' + moment(endOfThisWeek).format('MMM D'),
+              start: startOfThisWeek,
+              end: startOfNextWeek,
+              isLoading: false,
+              children: [],
+            })
+          }
+        });
+        startOfNextWeek = startOfThisWeek;
+      }
+      this.weeksMounted = true;
     },
     async openThisWeek (week) {
       if (week.children.length!==0) return;
       week.isLoading = true
-      const startTime = new Date(week.name.split('-')[0]).toISOString();
-      const endDate = new Date(week.name.split('-')[1]);
-      endDate.setHours(23, 59, 59); // Since we want the post till the end of the day
-      const endTime = endDate.toISOString();
-      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startTime).where("date", "<=", endTime);
+      // const startTime = new Date(week.name.split('-')[0]).toISOString();
+      // const endDate = new Date(week.name.split('-')[1]);
+      // endDate.setHours(23, 59, 59); // Since we want the post till the end of the day
+      // const endTime = endDate.toISOString();
+      const startDate = week.start.toISOString();
+      const endDate = week.end.toISOString();
+      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startDate).where("date", "<=", endDate);
       const posts = [];
       await new Promise(resolve => {
         const snapshotListener = postsQuery.onSnapshot(snapshot => {
@@ -143,43 +189,7 @@ export default {
           resolve();
         });
         this.snapshotListeners.push(snapshotListener)
-      })
-      // await this.bindArrayToDatabase(item.children, item.id, postsQuery);
-    },
-    foldersFromDates (dateList) {
-      this.weeks.length = 0;
-      const weekGroups = {}
-      dateList.sort((a, b) => (a < b) ? 1 : ((a > b) ? -1 : 0)); // First sort the date in reverse chronological order
-      dateList.forEach( date => {
-        date = moment(date)
-        const startDay = moment()
-          .isoWeekYear(date.year())
-          .isoWeek(date.week())
-          .startOf('week')
-          .format('YYYY MMM D')
-        const endDay = moment()
-          .isoWeekYear(date.year())
-          .isoWeek(date.week())
-          .endOf('week')
-          .format('YYYY MMM D')
-        const week = `${startDay}-${endDay}`;
-        if (!weekGroups[week]) {
-          weekGroups[week] = 0;
-        }
-        weekGroups[week]++;
       });
-      let i = 0;
-      for (var week in weekGroups) {
-        this.weeks.push({
-            id: i,
-            name: week,
-            isFolder: true,
-            children: [],
-            date: week.split('-')[0],
-            isLoading: false,
-          });
-        i++;
-      }
     },
     getFolder (post) {
       const folderIndex = this.mitClass.tags.findIndex(tag => tag.id === post.tag);
