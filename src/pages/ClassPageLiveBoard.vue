@@ -99,7 +99,11 @@ export default {
       // that keeps track of whether the current client is conneceted or disconnected (see doc above)
       firebase.database().ref(".info/connected").on("value", async (snapshot) => {
         const isUserConnected = snapshot.val(); 
-        if (isUserConnected === false) return; 
+        if (isUserConnected === false){
+          console.log("USER disconnected", this.room, this.user, this.roomId)
+          return;
+        } 
+        console.log("USER connected", this.room, this.user, this.roomId)
         this.firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
         // 1. User leaves, and his/her identity is saved to Firebase
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
