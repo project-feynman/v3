@@ -85,8 +85,15 @@
                     color="secondary"
                   >
                     <template v-slot:message-to-user>
-                      Sign up for an account to ask questions and create explanations. 
-                      Passwords are handled by Google Firebase Authentication.
+                      To provide an <u>exceptional</u> experience, we plan to serve only 3 classes for the initial closed-beta, where we watch every class session closely, anticipate needs and problems,
+                      provide near 24/7 customer support, and fix bugs/implement new features within hourly/daily cycles.
+                      <br>
+                      <br>
+                      However, <u>every class can use explain.mit.edu for free</u> and automatically 
+                      benefit from the software upgrades driven by the closed-beta.
+                      <br>
+                      <br>
+                      Sign up for an account to create new classes or join existing classes. Passwords are handled by Google Firebase Authentication.
                     </template>
                   </BasePopupButton>
                 </v-col>
