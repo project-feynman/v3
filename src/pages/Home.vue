@@ -225,7 +225,7 @@ export default {
     const demoVideoRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/aHaV1yIyaDR4n88pmzDk`);
     
     // visual comparison of normal videos vs doodle videos
-    const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/zTD5Du59M3wBoNuNx1Lm`);
+    const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/R0BgFgLe8BPvUfrfLmCq`);
     
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
     this.$_getDoc(demoVideoRef2).then(demoVideo2 => this.demoVideo2 = demoVideo2);
