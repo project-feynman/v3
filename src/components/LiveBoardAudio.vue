@@ -180,26 +180,25 @@ export default {
 				return jwt;
 		},
 		// Trigger log events 
-		attachTrack(track, container, isLocal=false) {
+		attachTrack(track, container, isLocal, init) {
+			this.detachTrack(track) //remove any duplicate tracks
 				if (track.kind === "video") {
-					console.log("TRAK", track)
+					console.log("TRAK", init, track)
+					
 					if (track.isStarted) {
 						scaleAndAttachVideo(track, container);
 					}
-
-					// track.off('dimensionsChanged', () => {
-					// 	console.log("Track dimensions reodslfsdk", videoTrack);
-					// });
-					// track.off();
-
-					track.on('dimensionsChanged', (videoTrack) => { 
-						console.log("Track dimensions changed", videoTrack);
-						// scaleAndAttachVideo(track, container);
-					});
-					track.on('started', (videoTrack) => { 
-						console.log("Track started", videoTrack);
-						scaleAndAttachVideo(track, container);
-					});
+					
+					if (init){ //we dont want to set a bunch of event emitters
+						track.on('dimensionsChanged', (videoTrack) => { 
+							console.log("Track dimensions changed", videoTrack);
+							// scaleAndAttachVideo(track, container);
+						});
+						track.on('started', (videoTrack) => { 
+							console.log("Track started", videoTrack);
+							scaleAndAttachVideo(track, container);
+						});
+					}
 
 					function scaleAndAttachVideo (videoTrack, container) {
 						var videoTag = videoTrack.attach();
@@ -220,9 +219,9 @@ export default {
 					container.appendChild(track.attach());
 				}
 		},
-		attachTracks(tracks, container, isLocal=false) {
+		attachTracks(tracks, container, isLocal=false, init=false) {
 				tracks.forEach((track) => {
-						this.attachTrack(track, container, isLocal);
+						this.attachTrack(track, container, isLocal, init);
 				});
 		},
 		detachTrack(track) {
@@ -232,11 +231,11 @@ export default {
 		},
 		trackPublished(publication, container) {
 				if (publication.isSubscribed) {
-						this.attachTrack(publication.track, container);
+						this.attachTrack(publication.track, container, false, true);
 				}
 				publication.on('subscribed', (track) => {
 						console.log('Subscribed to ' + publication.kind + ' track');
-						this.attachTrack(track, container);
+						this.attachTrack(track, container, false, true);
 				});
 				publication.on('unsubscribed', this.detachTrack);
 		},
@@ -324,17 +323,16 @@ export default {
 				// set active toom
 				
 				this.activeRoom = room;
-				// var previewContainer = document.getElementById('local-media');
-				// this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
-				this.connectAllTracksInRoom(room)
+				var previewContainer = document.getElementById('local-media');
+				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, true);
 				this.isMicOn = true;
 				this.isCameraOn = true;
 
-				// room.participants.forEach((participant) => {
-				// 		console.log("Already in Room: '" + participant.identity + "'");
-				// 		// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
-				// 		this.participantConnected(participant);
-				// });
+				room.participants.forEach((participant) => {
+						console.log("Already in Room: '" + participant.identity + "'");
+						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+						this.participantConnected(participant);
+				});
 
 				room.on('participantConnected', (participant) => {
 						console.log("Joining: '" + participant.identity + "'");
@@ -359,35 +357,35 @@ export default {
 				});
 		},
 		connectAllTracksInRoom (room) {
-
-			// function recurse (component) {
-			// 	this.$nextTick( () => {
-			// 		var previewContainer = document.getElementById('local-media');
-			// 		console.log("preview", previewContainer, "LocalTrak")
-			// 		if (previewContainer) {
-			// 			this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
-			// 			return;
-			// 		}
-			// 		recurse()
-			// 	})
-			// }
-			this.recurseNextTick(room);
+			this.recurseNextTickLocal(room, 0);
 
 			room.participants.forEach((participant) => {
-				console.log("Already in Room: '" + participant.identity + "'");
-				this.participantConnected(participant);
+				this.recurseNextTickRemote(room, participant, 0);
 			});
 		},
-		recurseNextTick(room) {
-			this.$nextTick( () => {
-				var previewContainer = document.getElementById('local-media');
-				console.log("preview", previewContainer, "LocalTrak")
-				if (previewContainer) {
-					this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
-					return;
-				}
-				this.recurseNextTick(room)
-			})
+		recurseNextTickLocal(room, count) {
+			if (count < 5){
+				this.$nextTick( () => {
+					var previewContainer = document.getElementById('local-media');
+					if (previewContainer) {
+						this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, false);
+						return;
+					}
+					this.recurseNextTickLocal(room, count+1)
+				})
+			}
+		},
+		recurseNextTickRemote(room, participant, count) {
+			if (count < 5){
+				this.$nextTick( () => {
+					var previewContainer = document.getElementById(`remote-media-${participant.identity}`);
+					if (previewContainer) {
+						this.attachTracks(this.getTracks(participant), previewContainer, false, false);
+						return;
+					}
+					this.recurseNextTickRemote(room, participant, count+1)
+				})
+			}
 		}
 	}
 }
