@@ -1,9 +1,10 @@
 <template>
-  <div id="room">
+  <div id="room" class="room-wrapper">
     <portal-target name="video-chat"/>
-    <template v-if="user" >
-      <RealtimeBlackboard :strokesRef="strokesRef"/>
-    </template>
+    
+    <div v-if="user" style="margin-top: 55px;">
+      <RealtimeBlackboard :strokesRef="strokesRef" :roomParticipants="roomParticipants"/>
+    </div>
   </div>
 </template>
 
@@ -15,7 +16,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { mapState } from "vuex";
-import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
+import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
   components: { 
@@ -37,7 +38,8 @@ export default {
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
-      firebaseRef: null
+      firebaseRef: null,
+      messagesOpen: false,
     }
   },
   computed: {
@@ -125,3 +127,21 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.room-wrapper{
+  /* position: absolute;  */
+  /* width: 50%;  */
+  height: 100px;
+}
+.chat-btn{
+  position: absolute; 
+  right: 0%; 
+  top: 0%; 
+  border-style: solid; 
+  height: 50px;
+  margin-top: 5px;
+  z-index: 7; /* this z-index is under the app-bar but over the weird blackboard stuff*/
+}
+</style>
+
