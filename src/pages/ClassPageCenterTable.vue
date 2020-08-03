@@ -146,19 +146,17 @@ export default {
         // firstName: this.user.firstName,
         // lastName: this.user.lastName,
       }); 
-      console.log('setUserinDb')
       let onlyJustJoined = true; 
       this.removeClassDocListener = this.classRef.onSnapshot(doc => {
-        console.log("IntoSnapshot", onlyJustJoined)
         if (onlyJustJoined) {
           onlyJustJoined = false; 
           return; 
         }
         for (const roomAssignment of doc.data().tableAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
-              this.removeClassDocListener(); 
-              this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
-              this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)");
+            this.removeClassDocListener(); 
+            this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
+            this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)");
           }
         }
       });
@@ -172,12 +170,10 @@ export default {
             uid: this.user.uid,
             email: this.user.email
         });
-
         this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: ""
         });
-
         this.registerUserAndListenForRoomAssignments();
       })
     }, 
@@ -198,16 +194,14 @@ export default {
       const tableAssignments = []; 
       connectedStudents.push(...this.participants);
       const query = this.classRef.collection("blackboards").where("roomType", "==", this.roomForRandom);
-      await query.get().then( blackboards => {
+      await query.get().then(blackboards => {
         blackboards.forEach(blackboard => {
-          console.log("bdd", blackboard)
           tableAssignments.push({
             roomID: blackboard.id,
             assignees: []
           }); 
         })
-      })
-      console.log("blackboardsDone")
+      });
       shuffle(connectedStudents); 
       shuffle(tableAssignments);
 
@@ -215,7 +209,7 @@ export default {
       let i = 0; 
       for (const student of connectedStudents) {
         if (tableAssignments[i].assignees.length >= this.groupSizeForRandom) {
-          i = (i+1)%tableAssignments.length; //leftover students just get pushed onto a table
+          i = (i+1)%tableAssignments.length; // leftover students just get pushed onto a table
         }
         tableAssignments[i].assignees.push(student.uid); 
       }
