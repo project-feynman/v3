@@ -68,16 +68,17 @@
       v-model="drawer"
       :roomParticipantsMap="roomParticipantsMap"/>
     <div v-if="lastBlackboardRoomId" style="border-style; solid; z-index: 100; position: fixed; right: 0px; bottom: 0px">
-      <LiveBoardAudio 
-        v-if="user"
-        :roomId="lastBlackboardRoomId"
-        :classId="classID"
-        :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
-        :hasJoinedMedia="hasJoinedMedia"
-        @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
-        @media-connected="hasLoadedMedia=true"
-        :key="lastBlackboardRoomId"
-      />
+        <LiveBoardAudio 
+          v-if="user"
+          :roomId="lastBlackboardRoomId"
+          :classId="classID"
+          :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
+          :portalToLiveBoard="portalToLiveBoard"
+          :hasJoinedMedia="hasJoinedMedia"
+          @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
+          @media-connected="hasLoadedMedia=true"
+          :key="lastBlackboardRoomId"
+        />
       <ButtonNew @click="hasJoinedMedia=!hasJoinedMedia" 
         :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
         :outlined="hasJoinedMedia" 
@@ -92,19 +93,18 @@
         <template v-else>Exit Video Chat</template>
       </ButtonNew>
 
-      <!-- <ButtonNew @click="hasJoinedMedia=!hasJoinedMedia" 
-        :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
-        :outlined="hasJoinedMedia" 
+      <ButtonNew @click="portalToLiveBoard=!portalToLiveBoard" 
+        color='accent'
         rounded
-        :icon="hasJoinedMedia ? 'mdi-microphone': 'mdi-microphone-off'"
+        outlined
+        icon="mdi-video"
       >
-        <template v-if="!hasLoadedMedia">
-          <template v-if="!hasJoinedMedia">Join Video Chat</template>
-          <v-progress-circular v-else indeterminate size="20" width="2"/>
+        <template v-if="portalToLiveBoard">
+          Put video to bottom
         </template>
         
-        <template v-else>Exit Video Chat</template>
-      </ButtonNew> -->
+        <template v-else>Put video in Room</template>
+      </ButtonNew>
     </div>
     <v-content>
       <RouterView :key="$route.fullPath"/>
@@ -151,7 +151,7 @@ export default {
     roomParticipantsMap: {},
     hasJoinedMedia: false,
     hasLoadedMedia: false,
-
+    portalToLiveBoard: false
   }),
   computed: {
     ...mapState([

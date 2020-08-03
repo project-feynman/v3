@@ -1,6 +1,6 @@
 <template>
 	<div v-if="hasJoinedMedia">
-		<portal to="video-chat">
+		<portal to="video-chat" :disabled="!portalToLiveBoard">
 			<v-container class="video-display">
 				<v-row>
 					<v-col class="video-col">
@@ -36,6 +36,7 @@
 				</v-row>
 			</v-container>
 		</portal>
+		<!-- <portal-target name="video-chat-global"/> -->
 	</div>
 </template> 
 
@@ -53,7 +54,8 @@ export default {
 		roomId: String,
 		classId: String,
 		hasJoinedMedia: Boolean,
-		roomParticipants: Array
+		roomParticipants: Array,
+		portalToLiveBoard: Boolean
 	},
 	data() {
 		return {
@@ -95,6 +97,9 @@ export default {
 			handler () {
 				this.updateMediaStatus();
 			}
+		},
+		portalToLiveBoard () {
+			this.connectAllTracksInRoom(this.activeRoom)
 		}
 	},
 	created() {
@@ -177,10 +182,15 @@ export default {
 		// Trigger log events 
 		attachTrack(track, container, isLocal=false) {
 				if (track.kind === "video") {
-
+					console.log("TRAK", track)
 					if (track.isStarted) {
 						scaleAndAttachVideo(track, container);
 					}
+
+					// track.off('dimensionsChanged', () => {
+					// 	console.log("Track dimensions reodslfsdk", videoTrack);
+					// });
+					// track.off();
 
 					track.on('dimensionsChanged', (videoTrack) => { 
 						console.log("Track dimensions changed", videoTrack);
@@ -195,7 +205,6 @@ export default {
 						var videoTag = videoTrack.attach();
 						const videoHeight = videoTrack.dimensions.height;
 						const videoWidth = videoTrack.dimensions.width;
-						console.log("video dims", videoTrack, videoHeight, videoWidth)
 						const aspectRatio = videoWidth/videoHeight;
 						videoTag.setAttribute('style', 
 									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
@@ -315,16 +324,17 @@ export default {
 				// set active toom
 				
 				this.activeRoom = room;
-				var previewContainer = document.getElementById('local-media');
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
+				// var previewContainer = document.getElementById('local-media');
+				// this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
+				this.connectAllTracksInRoom(room)
 				this.isMicOn = true;
 				this.isCameraOn = true;
 
-				room.participants.forEach((participant) => {
-						console.log("Already in Room: '" + participant.identity + "'");
-						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
-						this.participantConnected(participant);
-				});
+				// room.participants.forEach((participant) => {
+				// 		console.log("Already in Room: '" + participant.identity + "'");
+				// 		// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+				// 		this.participantConnected(participant);
+				// });
 
 				room.on('participantConnected', (participant) => {
 						console.log("Joining: '" + participant.identity + "'");
@@ -347,6 +357,37 @@ export default {
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
 				});
+		},
+		connectAllTracksInRoom (room) {
+
+			// function recurse (component) {
+			// 	this.$nextTick( () => {
+			// 		var previewContainer = document.getElementById('local-media');
+			// 		console.log("preview", previewContainer, "LocalTrak")
+			// 		if (previewContainer) {
+			// 			this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
+			// 			return;
+			// 		}
+			// 		recurse()
+			// 	})
+			// }
+			this.recurseNextTick(room);
+
+			room.participants.forEach((participant) => {
+				console.log("Already in Room: '" + participant.identity + "'");
+				this.participantConnected(participant);
+			});
+		},
+		recurseNextTick(room) {
+			this.$nextTick( () => {
+				var previewContainer = document.getElementById('local-media');
+				console.log("preview", previewContainer, "LocalTrak")
+				if (previewContainer) {
+					this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
+					return;
+				}
+				this.recurseNextTick(room)
+			})
 		}
 	}
 }
