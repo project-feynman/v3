@@ -28,16 +28,13 @@ function sendEmail (to, subject, body) {
   }
 }
 
+// TODO: throw an explicit error
 function getDocFromDb (ref) {
   return new Promise(async (resolve, reject) => {
     const doc = await ref.get();
     if (doc.exists) { 
-      resolve({ 
-        "id": doc.id, 
-        ...doc.data() 
-      }); 
-    }  // TODO: throw an explicit error
-    else { 
+      resolve({  id: doc.id, ...doc.data() }); 
+    } else {
       reject(); 
     }
   })
@@ -56,8 +53,7 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(a
 
 exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId}/{roomId}/participants").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
-  console.log("userWhoLeft", userWhoLeft)
-  if (!userWhoLeft.uid) { return; }
+  if (!userWhoLeft.uid) return; // under what situations would `.uid` be undefined?
   const { roomId, classId } = context.params;
   const workspaceRef = firestore.doc(`/classes/${classId}/blackboards/${roomId}`);
   workspaceRef.collection('participants').doc(userWhoLeft.uid).delete();

@@ -65,6 +65,8 @@
     </TheAppBar>
 
     <TheSideDrawer v-model="drawer"/>
+
+    <!-- Router View -->
     <v-content>
       <RouterView :key="$route.fullPath"/>
     </v-content>

@@ -113,7 +113,7 @@
       large
       block
       :disabled="blackboards.length > 20" 
-      @click="isCreatePopupOpen= true"
+      @click="isCreatePopupOpen = true"
       color="secondary"
     >
       <v-icon class="pr-2">mdi-plus</v-icon>
@@ -122,20 +122,21 @@
     <CreateBlackboardPopup 
       :isCreatePopupOpen="isCreatePopupOpen"
       :roomTypes="roomTypes"
-      @popup-closed="isCreatePopupOpen=false"
+      @popup-closed="isCreatePopupOpen = false"
       @create-blackboard="roomType => createBlackboard(roomType)"
     />
   </v-list>
-  <LiveBoardAudio 
-      v-if="user"
+
+  <!-- TODO: refactor -->
+    <LiveBoardAudio v-if="user"
       :roomId="lastBlackboardRoomId"
       :classId="classID"
       :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
       :hasJoinedMedia="hasJoinedMedia"
       :blackboardRoom="blackboardRoom"
-      @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
-      @media-connected="hasLoadedMedia=true"
       :key="lastBlackboardRoomId"
+      @left-room="hasJoinedMedia = false; hasLoadedMedia = false;"
+      @media-connected="hasLoadedMedia = true"
     />
   </div>
 </template>
@@ -204,7 +205,7 @@ export default {
   },
   watch: {
     blackboards () {
-      this.setRoomCategories() //reconstruct the roomCategories
+      this.setRoomCategories() // reconstruct the roomCategories
     },
     mitClassDoc () {
       this.roomTypes = this.mitClassDoc.roomTypes;
@@ -213,16 +214,17 @@ export default {
       this.setRoomCategories() //reconstruct the roomCategories: warning may be race conditions between this and blackboard watch hook
     },
     blackboardRoom () {
-      if (this.expandedPanels.length <= 0){ //only for init we open the panels of where the user is
+      if (this.expandedPanels.length <= 0) { //only for init we open the panels of where the user is
         const ind = this.roomTypes.indexOf(this.blackboardRoom.roomType)
         this.expandedPanels = [ind]
       }
     },
+    // TODO
     numberOfBlackboards () {
-      this.blackboards.forEach( blackboard => {
+      this.blackboards.forEach(blackboard => {
         const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-        const participantsRef = blackboardsRef.doc(blackboard.id).collection('participants');
-        Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
+        const participantsRef = blackboardsRef.doc(blackboard.id).collection("participants");
+        Vue.set(this.roomParticipantsMap, blackboard.id, []); // this makes each entry in the object reactive.
         this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
           this.snapshotListeners.push(snapshotListener);
         });
@@ -230,7 +232,6 @@ export default {
     }
   },
   created () {
-
     const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
     const classRef = db.doc(`classes/${this.classID}`)
@@ -243,8 +244,7 @@ export default {
     });
     this.$_listenToDoc(classRef, this, "mitClassDoc").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
-    })
-    
+    });
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -263,7 +263,7 @@ export default {
         }
       }
       else {
-        this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }]
+        this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }];
       }
     },
     setRoomStatus (status) {
@@ -275,11 +275,11 @@ export default {
     createBlackboard (roomType) {
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       if (roomType) {
-        if (!this.roomTypes.find(type => type === roomType)){
-          const classRef = db.doc(`classes/${this.classID}`)
+        if (!this.roomTypes.find(type => type === roomType)) {
+          const classRef = db.doc(`classes/${this.classID}`);
           classRef.update({
             roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
-          })
+          });
         }
         const newBlackboard = blackboardsRef.add({
           roomType: roomType
