@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <v-layout>
       <v-flex>
         <ButtonNew @click="groupByDate()" icon="mdi-calendar-range">Group By Date</ButtonNew>
@@ -33,6 +32,7 @@
 
     <v-divider/>
 
+    <!-- SEARCH BAR -->
     <PostSearch :postType="type"/>
 
     <v-divider/>
