@@ -50,22 +50,6 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(a
   else { firestoreUserRef.update(eventStatus); }
 });
 
-exports.onWorkspaceParticipantsChanged = functions.database.ref("/room/{classId}/{roomId}").onWrite((change, context) => {
-  const userWhoLeft = change.after.val();
-  if (!userWhoLeft.uid) { return; }
-  const { roomId, classId } = context.params;
-  const workspaceRef = firestore.doc(`/classes/${classId}/blackboards/${roomId}`);
-  removeUserFromWorkspace(userWhoLeft, workspaceRef);
-
-  async function removeUserFromWorkspace(user, workspaceRef){
-    await workspaceRef.get().then(doc => {
-      const newParticipants = doc.data().participants.filter(p => p.uid !== user.uid)
-      workspaceRef.update({
-        participants: newParticipants
-      });
-    })
-  }
-});
 
 exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId}/{roomId}/participants").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
@@ -77,6 +61,7 @@ exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId
 
 exports.onMainLobbyParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
+  if (!userWhoLeft.uid) { return; }
   const { classId } = context.params;
   firestore.doc(`/classes/${classId}/participants/${userWhoLeft.uid}`).delete();
 })
