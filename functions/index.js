@@ -4,6 +4,9 @@ const admin = require("firebase-admin");
 const sgMail = require('@sendgrid/mail');
 const adminCredentials = require("./adminCredentials.json");
 const { SENDGRID_API_KEY } = require("./sendgrid.json");
+const algoliasearch = require('algoliasearch')
+const { APP_SID, ADMIN_API_KEY } = require('./algoliaCreds.json')
+const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY)
 
 admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
@@ -212,4 +215,28 @@ exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
     );
   }
 });
+
+exports.onNewPost = functions.firestore.document('/classes/{classId}/{postType}/{postId}').onCreate((snap, context) => {
+  const post = snap.data()
+  const { classId, postType, postId } = context.params;
+  const alogoliaObj = {
+    title: post.title,
+    html: post.html,
+    creator: post.creator,
+    date: post.date,
+    mitClass: post.mitClass,
+    postType: postType,
+    objectID: postId,
+  }
+  const index = algoliaClient.initIndex(classId)
+  index.saveObject(alogoliaObj)
+  return
+})
+
+exports.onDeletePost = functions.firestore.document('/classes/{classId}/{postType}/{postId}').onDelete((snap, context) => {
+  const { classId, postType, postId } = context.params;
+  const index = algoliaClient.initIndex(classId)
+  index.deleteObject(postId)
+  return
+})
 
