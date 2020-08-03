@@ -35,7 +35,8 @@
         </v-tab-item>
     
         <v-tab-item v-if="user" value="rooms">
-          <TheSideDrawerSpaces/>
+          <TheSideDrawerSpaces
+            :roomParticipantsMap="roomParticipantsMap"/>
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -52,7 +53,8 @@ import { mapState } from "vuex";
 
 export default {
   props: {
-    value: Boolean
+    value: Boolean,
+    roomParticipantsMap: Object
   },
   components: {
     TheSideDrawerFileExplorer,

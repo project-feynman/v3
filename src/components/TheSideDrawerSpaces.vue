@@ -126,17 +126,6 @@
       @create-blackboard="roomType => createBlackboard(roomType)"
     />
   </v-list>
-  <LiveBoardAudio 
-      v-if="user"
-      :roomId="lastBlackboardRoomId"
-      :classId="classID"
-      :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
-      :hasJoinedMedia="hasJoinedMedia"
-      :blackboardRoom="blackboardRoom"
-      @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
-      @media-connected="hasLoadedMedia=true"
-      :key="lastBlackboardRoomId"
-    />
   </div>
 </template>
 
@@ -153,6 +142,9 @@ import { mapState } from "vuex";
 import Vue from 'vue';
 
 export default {
+  props: {
+    roomParticipantsMap: Object
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -175,7 +167,7 @@ export default {
       expandedPanels: [],
       roomStatusPopup: false,
       updatedStatus: "",
-      roomParticipantsMap: {},
+      // roomParticipantsMap: {},
       mitClassDoc: {},
       isCreatePopupOpen: false,
     };
@@ -192,15 +184,15 @@ export default {
     roomID () {
       return this.$route.params.room_id;
     },
-    lastBlackboardRoomId () {
-      if (this.roomID) {
-        this.savedRoomId = this.roomID;
-      }
-      return this.savedRoomId;
-    },
-    numberOfBlackboards () {
-      return this.blackboards.length
-    }
+    // lastBlackboardRoomId () {
+    //   if (this.roomID) {
+    //     this.savedRoomId = this.roomID;
+    //   }
+    //   return this.savedRoomId;
+    // },
+    // numberOfBlackboards () {
+    //   return this.blackboards.length
+    // }
   },
   watch: {
     blackboards () {
@@ -218,16 +210,22 @@ export default {
         this.expandedPanels = [ind]
       }
     },
-    numberOfBlackboards () {
-      this.blackboards.forEach( blackboard => {
-        const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-        const participantsRef = blackboardsRef.doc(blackboard.id).collection('participants');
-        Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
-        this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
-          this.snapshotListeners.push(snapshotListener);
-        });
-      })
+    roomParticipantsMap : {
+      immediate: true,
+      handler () {
+      console.log("SIDEMAP", this.roomParticipantsMap)
+      }
     }
+    // numberOfBlackboards () {
+    //   this.blackboards.forEach( blackboard => {
+    //     const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+    //     const participantsRef = blackboardsRef.doc(blackboard.id).collection('participants');
+    //     Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
+    //     this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
+    //       this.snapshotListeners.push(snapshotListener);
+    //     });
+    //   })
+    // }
   },
   created () {
 

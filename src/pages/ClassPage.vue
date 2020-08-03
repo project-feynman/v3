@@ -64,7 +64,48 @@
       </template>
     </TheAppBar>
 
-    <TheSideDrawer v-model="drawer"/>
+    <TheSideDrawer
+      v-model="drawer"
+      :roomParticipantsMap="roomParticipantsMap"/>
+    <div v-if="lastBlackboardRoomId" style="border-style; solid; z-index: 100; position: fixed; right: 0px; bottom: 0px">
+      <LiveBoardAudio 
+        v-if="user"
+        :roomId="lastBlackboardRoomId"
+        :classId="classID"
+        :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
+        :hasJoinedMedia="hasJoinedMedia"
+        @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
+        @media-connected="hasLoadedMedia=true"
+        :key="lastBlackboardRoomId"
+      />
+      <ButtonNew @click="hasJoinedMedia=!hasJoinedMedia" 
+        :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
+        :outlined="hasJoinedMedia" 
+        rounded
+        :icon="hasJoinedMedia ? 'mdi-microphone': 'mdi-microphone-off'"
+      >
+        <template v-if="!hasLoadedMedia">
+          <template v-if="!hasJoinedMedia">Join Video Chat</template>
+          <v-progress-circular v-else indeterminate size="20" width="2"/>
+        </template>
+        
+        <template v-else>Exit Video Chat</template>
+      </ButtonNew>
+
+      <!-- <ButtonNew @click="hasJoinedMedia=!hasJoinedMedia" 
+        :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
+        :outlined="hasJoinedMedia" 
+        rounded
+        :icon="hasJoinedMedia ? 'mdi-microphone': 'mdi-microphone-off'"
+      >
+        <template v-if="!hasLoadedMedia">
+          <template v-if="!hasJoinedMedia">Join Video Chat</template>
+          <v-progress-circular v-else indeterminate size="20" width="2"/>
+        </template>
+        
+        <template v-else>Exit Video Chat</template>
+      </ButtonNew> -->
+    </div>
     <v-content>
       <RouterView :key="$route.fullPath"/>
     </v-content>
@@ -78,17 +119,21 @@ import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
+import Vue from 'vue';
 
 export default {
   mixins: [
     AuthHelpers,
+    DatabaseHelpersMixin
   ],
   components: { 
     TheSideDrawer,
@@ -96,10 +141,17 @@ export default {
     TheDropdownMenu,
     MenuEmailSettings,
     ButtonNew,
-    BasePopupButton
+    BasePopupButton,
+    LiveBoardAudio
   },
   data: () => ({
-    drawer: true
+    drawer: true,
+    blackboards: [],
+    snapshotListeners: [],
+    roomParticipantsMap: {},
+    hasJoinedMedia: false,
+    hasLoadedMedia: false,
+
   }),
   computed: {
     ...mapState([
@@ -110,7 +162,52 @@ export default {
       if (!this.user) return; 
       if (!this.user.enrolledClasses) return; 
       return this.user.enrolledClasses.filter((course) => course.id === this.$route.params.class_id).length === 1;
+    },
+    classID () {
+      return this.$route.params.class_id;
+    },
+    roomID () {
+      return this.$route.params.room_id;
+    },
+    lastBlackboardRoomId () {
+      if (this.roomID) {
+        this.savedRoomId = this.roomID;
+      }
+      return this.savedRoomId;
+    },
+    numberOfBlackboards () {
+      return this.blackboards.length;
     }
+  },
+  watch : {
+    numberOfBlackboards () {
+      
+      this.blackboards.forEach( blackboard => {
+        const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+        const participantsRef = blackboardsRef.doc(blackboard.id).collection('participants');
+        Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
+        this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
+          this.snapshotListeners.push(snapshotListener);
+        });
+      })
+      console.log("listening for map")
+    },
+    roomParticipantsMap () {
+      console.log("MAP", this.roomParticipantsMap)
+    }
+  },
+  created () {
+    console.log("created Classpage")
+    const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+    this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
+      console.log("listening to blackboard")
+      this.snapshotListeners.push(snapshotListener);
+    });
+  },
+  beforeDestroy () {
+    for (const detachListener of this.snapshotListeners) {
+      detachListener();
+    };
   },
   methods: {
     async updateSettings (payload) {

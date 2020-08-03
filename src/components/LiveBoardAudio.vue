@@ -53,7 +53,6 @@ export default {
 		roomId: String,
 		classId: String,
 		hasJoinedMedia: Boolean,
-		blackboardRoom: Object,
 		roomParticipants: Array
 	},
 	data() {
