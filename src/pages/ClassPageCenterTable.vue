@@ -124,6 +124,7 @@ export default {
     this.setUserDisconnectHook();
   },
   beforeDestroy () {
+    firebase.database().ref(".info/connected").off();
     this.removeClassDocListener(); 
     for (const detachListener of this.snapshotListeners) {
       detachListener();
