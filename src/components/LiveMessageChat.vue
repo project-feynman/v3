@@ -28,6 +28,7 @@
 						v-model="currentText" 
 						placeholder="Type a message..."
 						color="accent"
+						v-on:keyup.enter="addMessage(currentText)"
 					>
 				</v-textarea>
 			</v-col>
@@ -152,9 +153,9 @@ export default {
 }
 .message{
     margin-bottom: 3px;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 .name-display{
     font-size: 12px;
@@ -178,11 +179,6 @@ export default {
 .text-box-container{
 	display: flex;
 	align-items: center;
-}
-.text-box-container .text-container{
-
-}
-.text-box-container .submit-btn-container{
 }
 
 </style>
