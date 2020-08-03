@@ -105,33 +105,30 @@ export default {
     3. Implement the assignment button 
     4. Add the real-time blackboard, except make it read-only for students
   */
-  watch: {
-    user: {
-      immediate: true,
-      async handler () {
-        if (!this.user) return;
-        this.registerUserAndListenForRoomAssignments(); 
-        this.setUserDisconnectHook();
-        this.$_listenToDoc(this.classRef, this, "classDoc").then((snapshotListener) => {
-          this.snapshotListeners.push(snapshotListener);
-        });
-        this.$_listenToCollection(this.classRef.collection("participants"), this, "participants").then((snapshotListener) => {
-          this.snapshotListeners.push(snapshotListener);
-        });
-      }
-    }
-  },
+  // watch: {
+  //   participants () {
+  //     console.log("PART", this.participants)
+  //   }
+  // },
   created () {
     for (let i = 1; i <= 20; i++) {
       this.groupSizeList.push(i);
     }
+    // this.$_listenToDoc(this.classRef, this, "classDoc").then((snapshotListener) => {
+    //   this.snapshotListeners.push(snapshotListener);
+    // });
+    this.$_listenToCollection(this.classRef.collection("participants"), this, "participants").then((snapshotListener) => {
+      this.snapshotListeners.push(snapshotListener);
+    });
+
+    this.setUserDisconnectHook();
   },
   beforeDestroy () {
     this.removeClassDocListener(); 
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
-    this.firebaseRef.onDisconnect().cancel()
+    this.firebaseRef.onDisconnect().cancel();
     this.classRef.collection("participants").doc(this.user.uid).delete();
   },
   methods: {
@@ -148,22 +145,19 @@ export default {
         // firstName: this.user.firstName,
         // lastName: this.user.lastName,
       }); 
+      console.log('setUserinDb')
       let onlyJustJoined = true; 
       this.removeClassDocListener = this.classRef.onSnapshot(doc => {
-        /* roomAssignment := [{
-          roomID: ""
-          assignees: set([])
-        }] */
+        console.log("IntoSnapshot", onlyJustJoined)
+        if (onlyJustJoined) {
+          onlyJustJoined = false; 
+          return; 
+        }
         for (const roomAssignment of doc.data().tableAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
-            if (onlyJustJoined) {
-              onlyJustJoined = false; 
-              return; 
-            } else {
               this.removeClassDocListener(); 
               this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
-              this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)")
-            }
+              this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)");
           }
         }
       });
@@ -177,10 +171,13 @@ export default {
             uid: this.user.uid,
             email: this.user.email
         });
+
         this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
           uid: ""
         });
+
+        this.registerUserAndListenForRoomAssignments();
       })
     }, 
     async moveStudentsToRooms () {
@@ -196,26 +193,20 @@ export default {
         }
         return a;
       }
-      const promises = []; 
       const connectedStudents = []; 
       const tableAssignments = []; 
-      promises.push(
-        this.$_getCollection(this.classRef.collection("participants")).then(participants => {
-          connectedStudents.push(...participants);
+      connectedStudents.push(...this.participants);
+      const query = this.classRef.collection("blackboards").where("roomType", "==", this.roomForRandom);
+      await query.get().then( blackboards => {
+        blackboards.forEach(blackboard => {
+          console.log("bdd", blackboard)
+          tableAssignments.push({
+            roomID: blackboard.id,
+            assignees: []
+          }); 
         })
-      ); 
-      promises.push(
-        this.$_getCollection(this.classRef.collection("blackboards")).then(tealTables => {
-          let i = 0; 
-          for (const table of tealTables.filter(room => room.roomType === this.roomForRandom)) { //This is using a filter for now so it's not optimized (because it fetches all boards first) probs fine
-            tableAssignments.push({
-              roomID: table.id,
-              assignees: []
-            }); 
-          }
-        })
-      );
-      await Promise.all(promises); 
+      })
+      console.log("blackboardsDone")
       shuffle(connectedStudents); 
       shuffle(tableAssignments);
 
