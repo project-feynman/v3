@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@google-cloud/logging": "^4.5.2",
+    "algoliasearch": "^4.3.1",
     "audio-recorder-polyfill": "^0.3.4",
     "cypress-plugin-snapshots": "^1.4.3",
     "firebase": "^7.5.2",
     "lodash": "^4.17.15",
+    "mapsort": "^1.0.3",
     "moment": "^2.26.0",
     "portal-vue": "^2.1.7",
     "tiptap": "^1.26.6",

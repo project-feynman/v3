@@ -2,10 +2,11 @@
   <v-app-bar 
     app 
     clipped-left 
+    clipped-right
     color="white" 
     elevate-on-scroll 
     class="app-banner" 
-    style="zIndex:9;" 
+    style="zIndex:8;" 
     :height="navbarHeight"
   >
     <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'" data-qa="toggle-drawer"

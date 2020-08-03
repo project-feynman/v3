@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <v-layout>
       <v-flex>
         <ButtonNew @click="groupBy='date'" icon="mdi-calendar-range">Group By Date</ButtonNew>
@@ -30,14 +29,16 @@
         </ButtonNew>
       </v-flex>
     </v-layout>
-
+    
+    <!-- SEARCH BAR -->
     <v-divider/>
+    <PostSearch :postType="type"/>
+    <v-divider/>
+
     <template v-if="mitClass">
       <TheSideDrawerGroupByDate :collection="type" v-if="groupBy==='date'"/>
       <TheSideDrawerGroupByFolders :collection="type" v-else/>
-    
     </template>
-        
     </div>
 </template>
 
@@ -45,6 +46,7 @@
 // TODO: Fix search; Allow user to edit; Fix the strange nesting
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import PostSearch from "@/components/PostSearch.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
@@ -64,6 +66,7 @@ export default {
     },
   },
   components: {
+    PostSearch,
     BasePopupButton,
     ButtonNew,
     TheSideDrawerGroupByFolders,
