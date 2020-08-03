@@ -1,19 +1,10 @@
 <template>
   <div id="room" class="room-wrapper">
-    <v-btn @click="messagesOpen = !messagesOpen" class="chat-btn">
-      {{messagesOpen ? 'Close' : 'Open'}} Chat
-    </v-btn>
     <portal-target name="video-chat"/>
     
     <div v-if="user" style="margin-top: 55px;">
-      <RealtimeBlackboard :strokesRef="strokesRef"/>
+      <RealtimeBlackboard :strokesRef="strokesRef" :roomParticipants="roomParticipants"/>
     </div>
-    <LiveMessageChat
-      v-model="messagesOpen"
-      :roomParticipants="roomParticipants"
-      :roomId="this.roomId"
-      :classId="this.classId"
-    />
   </div>
 </template>
 
@@ -26,14 +17,12 @@ import db from "@/database.js";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
-import LiveMessageChat from "@/components/LiveMessageChat.vue";
 
 export default {
   components: { 
     ButtonNew,
     LiveBoardAudio,
-    RealtimeBlackboard,
-    LiveMessageChat
+    RealtimeBlackboard
   },
   mixins: [
     DatabaseHelpersMixin,

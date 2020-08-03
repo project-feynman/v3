@@ -15,6 +15,7 @@
         <slot name="blackboard-toolbar">
 
         </slot> 
+        <ButtonNew @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</ButtonNew>
         <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
       </template> 
     </Blackboard> 
@@ -36,6 +37,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <LiveMessageChat
+      v-model="messagesOpen"
+      :roomParticipants="roomParticipants"
+      :roomId="this.roomId"
+      :classId="this.classId"
+    />
   </div>
 </template>
 
@@ -64,20 +71,26 @@ import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
+import LiveMessageChat from "@/components/LiveMessageChat.vue";
 
 export default {
   props: {
     strokesRef: {
       type: null,
       required: true
-    }
+    },
+    roomParticipants: {
+      type: null,
+      required: true
+    },
   },
   mixins: [
     ExplUploadHelpers
   ],
   components: {
     Blackboard,
-    ButtonNew
+    ButtonNew,
+    LiveMessageChat
   },
   data () {
     return {
@@ -90,7 +103,10 @@ export default {
         currentTime: 0
       },
       dialog: false,
-      explTitle: ""
+      explTitle: "",
+      classId: this.$route.params.class_id,
+      roomId: this.$route.params.room_id,
+      messagesOpen: false,
     };
   },
   computed: {
@@ -128,6 +144,9 @@ export default {
           this.hasFetchedStrokesFromDb = true;
         }
       });
+    },
+    toggleChat () {
+      this.messagesOpen = !this.messagesOpen;
     },
     async uploadToDb (stroke) {
       const timestamp = firebase.firestore.FieldValue.serverTimestamp();

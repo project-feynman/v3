@@ -1,50 +1,43 @@
 <template>
-    <v-card style="height: 100%">
-        <v-navigation-drawer 
-            :value="value" @input="newVal => $emit('input', newVal)" 
-            right
-            app
-            clipped
-            width="380"
-            class="the-side-drawer"
-            :stateless="true">  
-            <!-- <div> -->
-                <div class ="chat-container-wrapper">
-                    <!-- <v-list>
-                        <v-list-item class="chat-container-wrapper"> -->
-                    <div class="chat-container">
-                        <div class="message" v-for="(message,i) in sortedMessages" v-bind:key="i" >
-                            <div class="name-display" v-if="i == 0 || sortedMessages[i-1].creator.uid != message.creator.uid">
-                                {{user.uid === message.creator.uid ? "Me" : message.creator.firstName+ " " + message.creator.lastName}}
-                            </div>
-                            <div style="margin-top: 5px"></div>
-                            <div class="content">
-                                <div v-text="message.content"></div>
-                            </div> 
-                        </div>
-                    </div>
-                        <!-- </v-list-item>
-                    </v-list> -->
-                </div>
-                <div class="text-box-container">
-                    <div class="text-container">
-                        <v-textarea 
-                            rows="1"
-                            auto-grow
-                            v-model="currentText" 
-                            placeholder="Type a message...">
-                        </v-textarea>
-                    </div>
-                    <div class="submit-btn-container">
-                        <v-icon style="right: 0px" color='accent'  @click="addMessage(currentText)" >
-                                mdi-send
-                        </v-icon>
-                    </div>
-                </div>
-            <!-- </div> -->
-        
-        </v-navigation-drawer>
-    </v-card>
+	<v-card :class="['chat-card', value ? '': 'd-none']">
+		<v-app-bar dense color="accent lighten-1" dark>
+			<v-icon left>mdi-chat</v-icon>
+      <v-toolbar-title>Messages</v-toolbar-title>
+		</v-app-bar>
+		<div class ="chat-container-wrapper">
+				<!-- <v-list>
+						<v-list-item class="chat-container-wrapper"> -->
+				<div class="chat-container">
+						<div class="message" v-for="(message,i) in sortedMessages" v-bind:key="i" >
+								<div class="name-display" v-if="(i == 0 || sortedMessages[i-1].creator.uid != message.creator.uid) && user.uid !== message.creator.uid">
+										{{user.uid === message.creator.uid ? "Me" : message.creator.firstName+ " " + message.creator.lastName}}
+								</div>
+								<div :class="['content', user.uid === message.creator.uid ? 'current-user': '']" style="margin-top: 5px">
+										<div v-text="message.content"></div>
+								</div> 
+						</div>
+				</div>
+						<!-- </v-list-item>
+				</v-list> -->
+		</div>
+		<div class="text-box-container d-flex">
+			<v-col class="text-container py-0 pr-0">
+				<v-textarea 
+						rows="1"
+						auto-grow
+						v-model="currentText" 
+						placeholder="Type a message..."
+						color="accent"
+					>
+				</v-textarea>
+			</v-col>
+			<v-col cols="auto" class="submit-btn-container">
+				<v-icon style="right: 0px" color='accent'  @click="addMessage(currentText)" >
+								mdi-send
+				</v-icon>
+			</v-col>
+		</div>
+	</v-card>
 </template>
 
 <script>
@@ -137,13 +130,17 @@ export default {
 </script>
 
 <style scoped>
-.the-side-drawer {
-    z-index: 10;
-    max-width: 75%;
-    height: 100%;
+.chat-card {
+	position: absolute;
+	bottom: 0;
+	right: 20px;
+	width: 350px;
+	height: 400px;
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
 }
 .chat-container-wrapper{
-    height: 85%;
     overflow: auto;
     display:flex; 
     flex-direction:column-reverse;
@@ -151,11 +148,13 @@ export default {
 .chat-container-wrapper .chat-container{
     box-sizing: border-box;
     padding: 10px;
-    background-color: #f2f2f2;
+    background-color: #f8f8f8;
 }
 .message{
     margin-bottom: 3px;
-    width:300px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
 }
 .name-display{
     font-size: 12px;
@@ -163,32 +162,32 @@ export default {
     margin-top: 10px;
 }
 .message .content{
-    padding: 5px;
+    max-width:270px;
+    padding: 5px 8px;
     border-radius: 10px;
-    display:inline-block;
     box-shadow: 0 1px 3px 0 rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 2px 1px -1px rgba(0,0,0,0.12);
     display: inline-block;
     word-break: break-word;
     hyphens: auto;
+		background: white;
+}
+.message .content.current-user{
+  align-self: flex-end;
+	background: #ddd;
 }
 .text-box-container{
-    position: absolute;
-    bottom: 0%;
-    left: 0px;
-    margin-left: 10px;
-    height: 15%;
-    max-height: 15%;
-    width: 95%
+	display: flex;
+	align-items: center;
 }
 .text-box-container .text-container{
-    position: absolute;
-    left: 0%;
-    width: 90%
+
 }
 .text-box-container .submit-btn-container{
-    position: absolute;
-    right: 0px;
-    bottom: 0px;
 }
 
+</style>
+<style>
+.text-box-container .v-text-field__details {
+	display: none;
+}
 </style>
