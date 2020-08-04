@@ -4,7 +4,7 @@
       :currentTool="currentTool"
       :isFullScreen="isFullScreen"
       :changeTool="changeTool"
-      :displayImageFile="displayImageFile"
+      :handleImageFile="handleImageFile"
       :resetBoard="resetBoard"
       :toggleFullScreen="toggleFullScreen"
       :setTouchDisabled="setTouchDisabled"
@@ -211,6 +211,18 @@ export default {
         y: -1 
       };
       this.imageBlob = null;
+    },
+    /**
+     * By design, Handles the case if `imageFile` is empty.
+     */
+    handleImageFile (e) {
+      const imageFile = e.target.files[0]; 
+      if (!imageFile) return; 
+      if (imageFile.type.split("/")[0] !== "image") {
+        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
+      } else {
+        this.displayImageFile(imageFile);
+      }
     },
     /**
      * TODO: Is imageFile a Blob or File type? 

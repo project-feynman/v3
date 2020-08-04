@@ -73,24 +73,18 @@
 
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
-        <v-row>
-          <v-spacer/>
-          <BasePopupButton v-if="!isUploadingPost"
-            actionName="Retry new recording" 
-            @action-do="clearPreviewAndResetBlackboard()"
-          >
-            <template v-slot:activator-button="{ on }">
-              <ButtonNew :on="on" filled icon="mdi-keyboard-return">
-                Retry Recording
-              </ButtonNew>
-            </template>
-            <template v-slot:message-to-user>
-              Everything will be deleted so you can start fresh again.
-              <!-- Your audio recording will be deleted, but you can re-use
-              your drawings as the initial setup for the new video. -->
-            </template>
-          </BasePopupButton>
-        </v-row>
+        <BasePopupButton v-if="!isUploadingPost"
+          actionName="Retry recording" 
+          @action-do="clearPreviewAndResetBlackboard()"
+        >
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-on="on" block>Retry recording</v-btn>
+          </template>
+          <template v-slot:message-to-user>
+            If you're not happy with your current video,
+            you can make another one.
+          </template>
+        </BasePopupButton>
 
         <DoodleVideo
           :strokesArray="previewVideo.strokesArray"

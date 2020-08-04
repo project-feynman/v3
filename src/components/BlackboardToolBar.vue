@@ -38,27 +38,7 @@
 
             </slot>
           </v-row>
-        </v-col>
-        <BasePopupButton @action-do="$emit('wipe-board')" actionName="Reset board">
-          <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-delete" data-qa="wipe-board">
-              Wipe Board
-            </ButtonNew>
-          </template>
-          <template v-slot:message-to-user>
-            Are you sure you want to wipe everything?
-          </template> 
-        </BasePopupButton>
-
-        <ButtonNew @click="$refs.fileInput.click()" icon="mdi-image">
-          <input 
-            @change="e => handleImageSelection(e)" 
-            style="display: none" 
-            type="file" 
-            ref="fileInput"
-          >
-          Add Background
-        </ButtonNew>
+        </v-col>        
         <slot name="record-audio-slot">
 
         </slot>
@@ -119,16 +99,6 @@ export default {
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
-    handleImageSelection (e) {
-      const imageFile = e.target.files[0];
-      // check the file type and only emit the event if it is valid
-      if (!imageFile) { return; } // user pressed cancel 
-      else if (imageFile.type.split("/")[0] !== "image") { 
-        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.")
-      } else {
-        this.$emit('image-select', imageFile);
-      }
-    },
     changePenColor (newColor) {
       this.color = newColor;
       this.$emit('tool-select', { 
