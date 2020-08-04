@@ -33,22 +33,22 @@
 </template>
 <script>
 export default {
-    props : {
-        isCreatePopupOpen: Boolean,
-        roomTypes: Array
+  props : {
+    isCreatePopupOpen: Boolean,
+    roomTypes: Array
+  },
+  data () {
+    return {
+        selectedRoomType: ""
+    };
+  },
+  methods: {
+    closePopup () {
+      this.$emit('popup-closed')
     },
-    data () {
-        return {
-            selectedRoomType: ""
-        };
-    },
-    methods: {
-        closePopup () {
-            this.$emit('popup-closed')
-        },
-        createBlackboard (roomType) {
-            this.$emit('create-blackboard', roomType)
-        }
+    createBlackboard (roomType) {
+      this.$emit('create-blackboard', roomType)
     }
+  }
 }
 </script>
