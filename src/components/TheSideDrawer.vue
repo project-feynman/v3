@@ -28,9 +28,6 @@
         </v-tab-item>
 
         <v-tab-item value="Q&A">
-          <!-- <TheSideDrawerQuestions type="question"/> -->
-
-          <!-- Uncomment below when you finish the refactor -->
           <TheSideDrawerFileExplorer type="questions" v-if="mitClass"/>
         </v-tab-item>
     
@@ -67,14 +64,20 @@ export default {
       activeTab: "rooms"
     }
   },
-  created () {
-    this.activeTab = this.$route.params.hasOwnProperty('question_id') ? 'Q&A' : ( this.$route.params.hasOwnProperty('post_id') ? 'archive' : 'rooms' );
-  },
   computed: { 
     ...mapState([
       "user",
       "mitClass"
     ])
+  },
+  created () {
+    if (this.$route.params.hasOwnProperty("question_id")) {
+      this.activeTab = "Q&A";
+    } else if (this.$route.params.hasOwnProperty("post_id")) {
+      this.activeTab = "archive";
+    } else {
+      this.activeTab = "rooms";
+    }
   }
 };
 </script>

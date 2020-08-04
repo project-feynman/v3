@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <SeeExplanation v-if="tutorialExpl" :expl="tutorialExpl"/>
+    <ExplanationDisplay v-if="tutorialExpl" :expl="tutorialExpl"/>
     <!-- <v-card-title>Class</v-card-title>
     <v-card-text>
       <p v-for="classmate in classmates" :key="classmate.id">
@@ -11,8 +11,7 @@
 </template>
 
 <script>
-import TheAppBar from "@/components/TheAppBar.vue";
-import SeeExplanation from "@/components/SeeExplanation.vue";
+import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial } from "@/CONSTANTS.js";
 import db from "@/database.js";
@@ -20,8 +19,7 @@ import db from "@/database.js";
 export default {
   mixins: [DatabaseHelpersMixin],
   components: { 
-    TheAppBar, 
-    SeeExplanation 
+    ExplanationDisplay 
   },
   data: () => ({
     tutorialExpl: null,

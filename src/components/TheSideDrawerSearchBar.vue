@@ -20,18 +20,18 @@
       class="post-search"
     >
       <template v-slot:item="{ parent, item }">
-        <v-list-item :to="`/class/${item.mitClass.id}/${item.postType}/${item.objectID}`" two-line style="border-bottom: 1px solid #eee;">
-        <v-list-item-content>
-          <v-list-item-title v-html="parent.genFilteredText(item.title)" style="font-size:1em; padding-bottom: 5px;"/>
-          <v-list-item-subtitle >
-              <div class="search-result-html" v-html="parent.genFilteredText(item.html)" style="padding-bottom: 3px;"/>
-              <div class="search-result-metadata">
-                <span v-text="item.creator.firstName +' '+ item.creator.lastName"/>
-                <span>|</span>
-                <span v-text="getFolderOrDate(item)"/>
-              </div>
-          </v-list-item-subtitle>
-        </v-list-item-content>
+        <v-list-item :to="`/class/${item.mitClass.id}/${item.postType}/${item.objectID}`" two-line style="border-bottom: 1px solid #eee; max-width: 350px;">
+          <v-list-item-content>
+            <v-list-item-title v-html="parent.genFilteredText(item.title)" style="font-size:1em; padding-bottom: 5px;"/>
+            <v-list-item-subtitle >
+                <div class="search-result-html" v-html="parent.genFilteredText(item.html)" style="padding-bottom: 3px;"/>
+                <div class="search-result-metadata">
+                  <span v-text="item.creator.firstName +' '+ item.creator.lastName"/>
+                  <span>|</span>
+                  <span v-text="getFolderOrDate(item)"/>
+                </div>
+            </v-list-item-subtitle>
+          </v-list-item-content>
         </v-list-item>
       </template>
 
@@ -117,7 +117,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .post-search .v-text-field__details {
   display: none;
 }

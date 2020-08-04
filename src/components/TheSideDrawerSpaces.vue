@@ -48,9 +48,9 @@
                             </div>
 
                             <template v-if="user.uid === participant.uid">
-                              <ButtonNew @click="roomStatusPopup = true" outlined rounded icon="mdi-account-alert">
+                              <BaseButton @click="roomStatusPopup = true" outlined rounded icon="mdi-account-alert">
                                 Re-label Space
-                              </ButtonNew>
+                              </BaseButton>
                               <v-dialog v-model="roomStatusPopup" persistent max-width="600px">
                                 <v-card>
                                   <v-card-title>
@@ -77,7 +77,7 @@
                                 </v-card>
                               </v-dialog>
                                                 
-                              <ButtonNew @click="hasJoinedMedia=!hasJoinedMedia" 
+                              <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
                                 :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
                                 :outlined="hasJoinedMedia" 
                                 rounded
@@ -89,7 +89,7 @@
                                 </template>
                                 
                                 <template v-else>Exit Video Chat</template>
-                              </ButtonNew>
+                              </BaseButton>
                             </template>
                             <template v-else>
                               <v-icon style="right: 7%">{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
@@ -134,9 +134,9 @@ import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
+import RealtimeAudio from "@/components/RealtimeAudio.vue";
 import CreateBlackboardPopup from "@/components/CreateBlackboardPopup.vue";
 import { mapState } from "vuex";
 import Vue from 'vue';
@@ -150,8 +150,8 @@ export default {
   ],
   components: {
     BasePopupButton,
-    ButtonNew,
-    LiveBoardAudio,
+    BaseButton,
+    RealtimeAudio,
     CreateBlackboardPopup
   },
   data () {

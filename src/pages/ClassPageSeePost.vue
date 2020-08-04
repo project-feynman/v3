@@ -1,23 +1,22 @@
 <template>
   <div>
-    <SeeExplanation v-if="originalPost" 
+    <ExplanationDisplay v-if="originalPost" 
       :expl="originalPost"
       hasTitle
     />
-    <SeeExplanation v-for="expl in sortedExplanations" :key="expl.id"
+    <ExplanationDisplay v-for="expl in sortedExplanations" :key="expl.id"
       :expl="expl" 
     />
     <!-- Need to be logged-in to reply to existing posts -->
-    <CreateExplanation v-if="user" 
+    <ExplanationCreate v-if="user" 
       explType="reply"
     />
   </div>
 </template>
 
 <script>
-import TheAppBar from "@/components/TheAppBar.vue";
-import CreateExplanation from "@/components/CreateExplanation.vue";
-import SeeExplanation from "@/components/SeeExplanation.vue";
+import ExplanationCreate from "@/components/ExplanationCreate.vue";
+import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import { mapState } from "vuex";
@@ -27,9 +26,8 @@ export default {
     DatabaseHelpersMixin
   ],
   components: { 
-    TheAppBar, 
-    CreateExplanation, 
-    SeeExplanation,
+    ExplanationCreate, 
+    ExplanationDisplay,
   },
   data: () => ({
     originalPost: null,

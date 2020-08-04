@@ -4,7 +4,7 @@
       <v-expansion-panel>
         <v-expansion-panel-header>
           <v-row align="center">
-            <h3>
+            <h3 class="accent--text">
               Assign students to random groups
             </h3>
           </v-row>
@@ -22,22 +22,18 @@
                 :items="groupSizeList"
                 label="Group Size"
               />
-              <ButtonNew filled @click="moveStudentsToRooms()">
+              <BaseButton filled @click="moveStudentsToRooms()">
                 <h2>
                   Go
                 </h2>
-              </ButtonNew>
+              </BaseButton>
             </v-list-item>
           </v-list>
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
-    <p>
-      This is where the instructor can broadcast his blackboard to many students at once, ideal for lectures. 
-      The instructor can press a button to evenly divide students into random groups in real-time blackboard rooms. 
-    </p>
-    <!-- <p>class document: {{ classDoc }}</p>
-    <p>class participants: {{ participants }}</p> -->
+
+    <!-- Realtime Blackboard -->
     <RealtimeBlackboard :strokesRef="strokesRef"/>
   </div>
 </template>
@@ -56,7 +52,7 @@ import db from "@/database.js";
 import { mapState } from "vuex"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"; 
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 export default {
   mixins: [
@@ -64,7 +60,7 @@ export default {
   ],
   components: {
     RealtimeBlackboard,
-    ButtonNew
+    BaseButton
   },
   data () {
     return {

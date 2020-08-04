@@ -16,10 +16,10 @@
 
         <v-layout>
           <v-flex>
-            <ButtonNew @click="groupBy='date'" icon="mdi-calendar-range">Group By Date</ButtonNew>
+            <BaseButton @click="groupBy='date'" icon="mdi-calendar-range">Group By Date</BaseButton>
           </v-flex>
           <v-flex>
-            <ButtonNew @click="groupBy='tag'" icon="mdi-folder">Group By Folders</ButtonNew>
+            <BaseButton @click="groupBy='tag'" icon="mdi-folder">Group By Folders</BaseButton>
           </v-flex>
           <v-flex>
             <BasePopupButton actionName="Create a New Folder" 
@@ -27,20 +27,20 @@
               @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
             >
               <template v-slot:activator-button="{ on }">
-                <ButtonNew :on="on" color="accent" icon="mdi-folder-plus">Create Folder</ButtonNew>
+                <BaseButton :on="on" color="accent" icon="mdi-folder-plus">Create Folder</BaseButton>
                 <!-- <v-btn v-on="on" color="secondary" text>Create Folder</v-btn> -->
               </template>
             </BasePopupButton>
           </v-flex>
           <v-flex>
-            <ButtonNew 
+            <BaseButton 
               icon="mdi-shape-square-plus"
               :disabled="!user"
               :to="(`/class/${classId}/new?type=${type === 'question'? 'question':'post'}`)" 
               color="secondary"
             > 
               New {{ type }}
-            </ButtonNew>
+            </BaseButton>
           </v-flex>
         </v-layout>
 
@@ -163,7 +163,7 @@
 // TODO: Fix search; Allow user to edit; Fix the strange nesting
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
 import firebase from "firebase/app";
@@ -185,7 +185,7 @@ export default {
   ],
   components: {
     BasePopupButton,
-    ButtonNew,
+    BaseButton,
     Drag,
     Drop
   },

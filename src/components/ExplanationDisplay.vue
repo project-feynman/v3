@@ -68,13 +68,13 @@
           </p> 
           <v-spacer></v-spacer>
           <template v-if="expl.creator.uid === user.uid">
-            <!-- <ButtonNew @click="" -->
-            <ButtonNew @click="startEditing()" icon="mdi-pencil">Edit Text</ButtonNew>
-            <ButtonNew @click="popup = true" icon="mdi-delete" data-qa="delete-post-btn">Delete</ButtonNew>
+            <!-- <BaseButton @click="" -->
+            <BaseButton @click="startEditing()" icon="mdi-pencil">Edit Text</BaseButton>
+            <BaseButton @click="popup = true" icon="mdi-delete" data-qa="delete-post-btn">Delete</BaseButton>
           </template>
-          <ButtonNew @click="upvoteExpl()" :disabled="expl.creator.uid === user.uid">
+          <BaseButton @click="upvoteExpl()" :disabled="expl.creator.uid === user.uid">
             Thanks! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
-          </ButtonNew>
+          </BaseButton>
         </v-layout>
       </v-row>
     </v-container>
@@ -86,7 +86,7 @@ import TextEditor from "@/components/TextEditor.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import DoodleAnimation from "@/components/DoodleAnimation.vue";
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes";
-import ButtonNew from "@/components/ButtonNew.vue"
+import BaseButton from "@/components/BaseButton.vue"
 import db from "@/database.js";
 import { displayDate } from "@/helpers.js";
 import firebase from "firebase/app";
@@ -105,7 +105,7 @@ export default {
     DoodleVideo,
     TextEditor,
     RenderlessFetchStrokes,
-    ButtonNew
+    BaseButton
   },
   computed: {
     strokesRef () {

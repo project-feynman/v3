@@ -15,8 +15,8 @@
         <slot name="blackboard-toolbar">
 
         </slot> 
-        <ButtonNew @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</ButtonNew>
-        <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
+        <BaseButton @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</BaseButton>
+        <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Animation</BaseButton>
       </template> 
     </Blackboard> 
 
@@ -37,7 +37,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <LiveMessageChat
+    <RealtimeMessageChat
       v-model="messagesOpen"
       :roomParticipants="roomParticipants"
       :roomId="this.roomId"
@@ -65,13 +65,13 @@
  *     and the second is to signal when other people can actually see her new stroke. 
  */
 import Blackboard from "@/components/Blackboard.vue"; 
+import BaseButton from "@/components/BaseButton.vue"; 
+import RealtimeMessageChat from "@/components/RealtimeMessageChat.vue";
 import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import firebase from "firebase/app"; 
-import ButtonNew from "@/components/ButtonNew.vue"; 
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
-import LiveMessageChat from "@/components/LiveMessageChat.vue";
 
 export default {
   props: {
@@ -89,8 +89,8 @@ export default {
   ],
   components: {
     Blackboard,
-    ButtonNew,
-    LiveMessageChat
+    BaseButton,
+    RealtimeMessageChat
   },
   data () {
     return {

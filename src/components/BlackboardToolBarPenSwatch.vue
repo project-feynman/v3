@@ -2,7 +2,7 @@
 	<v-container class="py-0">
     <v-row class="align-center">
       <v-col cols="auto" class="px-0 py-1" v-for="color in colors" :key="color" :class="isColorActive(color) ? 'selected-color':''">
-        <ButtonNew color="accent lighten-2" :filled="isColorActive(color)" @click="selectColor(color)" small :data-qa="color">
+        <BaseButton color="accent lighten-2" :filled="isColorActive(color)" @click="selectColor(color)" small :data-qa="color">
           <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
             width="20px" height="46px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
             <g>
@@ -16,7 +16,7 @@
                 c-0.959,0-1.919,0.339-2.685,1.013L8.121,65.5L8.098,0.024L91.878,0z"/>
             </g>
           </svg>
-        </ButtonNew>
+        </BaseButton>
       </v-col>
     </v-row>
   </v-container>
@@ -24,7 +24,7 @@
 
 
 <script>
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 export default {
   props: {
@@ -35,7 +35,7 @@ export default {
     }
   },
   components: { 
-    ButtonNew,
+    BaseButton,
   },
 	data () {
 		return {

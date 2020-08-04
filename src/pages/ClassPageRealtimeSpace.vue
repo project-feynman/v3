@@ -10,17 +10,15 @@
 <script>
 import firebase from "firebase/app";
 import "firebase/firestore";
-import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
   components: { 
-    ButtonNew,
-    LiveBoardAudio,
+    BaseButton,
     RealtimeBlackboard
   },
   mixins: [
@@ -63,7 +61,6 @@ export default {
     }
   },
   async created () {
-    console.log("created");
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
     this.roomParticipantsRef = this.roomRef.collection("participants");
     this.strokesRef = this.roomRef.collection("strokes");
