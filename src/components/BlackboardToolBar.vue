@@ -56,7 +56,7 @@ import Swatches from "vue-swatches";
 import { BlackboardTools, toolbarHeight } from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
-import PenSwatch from "@/components/PenSwatch.vue";
+import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
 
 export default {
   props: {
