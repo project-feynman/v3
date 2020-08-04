@@ -115,19 +115,21 @@ export default {
       const collectionRef = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`);
       // Get the first and last post posted in the class
       let firstDate, lastDate;
-      await collectionRef.orderBy('date', 'asc').limit(1).get().then(querySnapshot => {
+      const getFirstDate =  collectionRef.orderBy('date', 'asc').limit(1).get().then(querySnapshot => {
         if (querySnapshot.empty) return;
         querySnapshot.forEach(doc => {
           firstDate = new Date(doc.data().date);
         });
       });
 
-      await collectionRef.orderBy('date', 'desc').limit(1).get().then(querySnapshot => {
+      const getLastDate = collectionRef.orderBy('date', 'desc').limit(1).get().then(querySnapshot => {
         if (querySnapshot.empty) return;
         querySnapshot.forEach(doc => {
           lastDate = moment(doc.data().date);
         });
       });
+
+      await Promise.all([getFirstDate, getLastDate]);
 
       let startOfNextWeek  = moment()
           .isoWeekYear(lastDate.year())
@@ -136,25 +138,31 @@ export default {
           .add(1, 'week')
           .toDate();
       
+      const weekPromises = [];
+
       while ( startOfNextWeek > firstDate ) {
         const endOfThisWeek = new Date(startOfNextWeek.getTime());
         endOfThisWeek.setDate(endOfThisWeek.getDate() - 1);
         const startOfThisWeek = new Date(startOfNextWeek.getTime());
         startOfThisWeek.setDate(startOfNextWeek.getDate() - 7);
 
-        await collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
-          if (!querySnapshot.empty) {
-            this.weeks.push({
-              name: 'Week ' + moment(startOfThisWeek).format('MMM D') + ' - ' + moment(endOfThisWeek).format('MMM D'),
-              start: startOfThisWeek,
-              end: startOfNextWeek,
-              isLoading: false,
-              children: [],
-            })
-          }
-        });
+        weekPromises.push(
+          collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
+            if (!querySnapshot.empty) {
+              this.weeks.push({
+                name: 'Week ' + moment(startOfThisWeek).format('MMM D') + ' - ' + moment(endOfThisWeek).format('MMM D'),
+                start: startOfThisWeek,
+                end: startOfNextWeek,
+                isLoading: false,
+                children: [],
+              })
+            }
+          })
+        );
+        await Promise.all(weekPromises);
         startOfNextWeek = startOfThisWeek;
       }
+
       this.weeksMounted = true;
     },
     async openThisWeek (week) {
