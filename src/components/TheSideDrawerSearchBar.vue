@@ -46,7 +46,8 @@
 <script>
 import { mapState } from "vuex";
 import algoliasearch from "algoliasearch";
-import { algoliaCreds } from "@/algoliaCreds.js";
+//missing algoliaCreds.js
+//import { algoliaCreds } from "@/algoliaCreds.js";
 import { displayDate } from "@/helpers.js";
 import _ from "lodash";
 
@@ -56,7 +57,7 @@ export default {
   },
   data () {
     return {
-      algoliaClient: algoliasearch(algoliaCreds.APP_SID, algoliaCreds.ADMIN_API_KEY),
+      algoliaClient: algoliasearch("", ""), //algoliasearch(algoliaCreds.APP_SID, algoliaCreds.ADMIN_API_KEY),
       searchInput: "",
       search: null,
       searchResults: [],

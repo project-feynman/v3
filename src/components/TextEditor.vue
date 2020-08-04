@@ -2,14 +2,70 @@
   <div class="editor">
     <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
       <div class="menubar">
-        <v-btn @click="commands.bold" icon> 
+        <v-btn @click="showImage = !showImage" icon>
+          <v-icon>mdi-image</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.bold() }" @click="commands.bold" icon>
           <v-icon>mdi-format-bold</v-icon>
         </v-btn>
-        <v-btn @click="commands.italic" :class="{ 'is-active': isActive.italic() }" icon> 
+        <v-btn :class="{ 'is-active': isActive.italic() }" @click="commands.italic" icon>
           <v-icon>mdi-format-italic</v-icon>
         </v-btn>
+        <v-btn :class="{ 'is-active': isActive.strike() }" @click="commands.strike" icon>
+          <v-icon>mdi-format-strikethrough-variant</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.underline() }" @click="commands.underline" icon>
+          <v-icon>mdi-format-underline</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.paragraph() }" @click="commands.paragraph" icon>
+          <v-icon>mdi-view-headline</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.heading({ level: 1 }) }" @click="commands.heading({ level: 1 })" icon>
+          H1
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.heading({ level: 2 }) }" @click="commands.heading({ level: 2 })" icon>
+          H2
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.heading({ level: 3 }) }" @click="commands.heading({ level: 3 })" icon>
+          H3
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.bullet_list() }" @click="commands.bullet_list" icon>
+          <v-icon>mdi-format-list-bulleted</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.ordered_list() }" @click="commands.ordered_list" icon>
+          <v-icon>mdi-format-list-numbered</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.todo_list() }"  @click="commands.todo_list" icon>
+          <v-icon>mdi-format-list-checks</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.blockquote() }" @click="commands.blockquote" icon>
+          <v-icon>mdi-comment-quote-outline</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.code() }" @click="commands.code" icon>
+          <v-icon>mdi-code-tags</v-icon>
+        </v-btn>
+        <v-btn :class="{ 'is-active': isActive.code_block() }" @click="commands.code_block" icon>
+          <v-icon>mdi-code-array</v-icon>
+        </v-btn>
+        <v-btn @click="commands.horizontal_rule" icon>
+          <v-icon>mdi-window-minimize</v-icon>
+        </v-btn>
+        <v-btn @click="commands.undo" icon>
+          <v-icon>mdi-undo</v-icon>
+        </v-btn>
+        <v-btn @click="commands.redo" icon>
+          <v-icon>mdi-redo</v-icon>
+        </v-btn>
 
-        <!-- TODO: make it visible to the user that the option is currently selected -->
+        <!-- insert image -->
+        <div v-if="showImage">
+          <form @submit.prevent>
+            <v-icon>mdi-link</v-icon>
+            <input @keydown.enter.prevent="insertImage(commands.image)" class="white-text" placeholder="Enter image url here" type="text" v-model="imageURL"/>
+          </form>
+        </div>
+
+<!-- TODO: make it visible to the user that the option is currently selected
         <button
           class="menubar__button"
           :class="{ 'is-active': isActive.code_block() }"
@@ -24,6 +80,7 @@
         >
           <v-icon>mdi-format-title</v-icon>
         </button>
+        -->
       </div>
     </editor-menu-bar>
 
@@ -121,6 +178,8 @@ export default {
       }),
       content: defaultHtml,
       html: defaultHtml,
+      showImage: false,
+      imageURL: "",
     }
   },
   watch: {
@@ -157,7 +216,15 @@ export default {
       }
       console.log(output)
       return output;
-    }
+    },
+    insertImage(commands) {
+      let src = this.imageURL
+      if (src !== null) {
+        commands({ src })
+        this.showImage = false
+        this.imageURL = null
+      }
+    },
   }
 }
 </script>
