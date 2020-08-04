@@ -11,7 +11,6 @@
 <script>
 import firebase from "firebase/app";
 import "firebase/firestore";
-import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import ButtonNew from "@/components/ButtonNew.vue";
@@ -21,7 +20,6 @@ import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 export default {
   components: { 
     ButtonNew,
-    LiveBoardAudio,
     RealtimeBlackboard
   },
   mixins: [

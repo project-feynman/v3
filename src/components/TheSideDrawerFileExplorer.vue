@@ -32,7 +32,7 @@
     
     <!-- SEARCH BAR -->
     <v-divider/>
-    <PostSearch :postType="type"/>
+    <TheSideDrawerSearchBar :postType="type"/>
     <v-divider/>
 
     <template v-if="mitClass">
@@ -46,7 +46,7 @@
 // TODO: Fix search; Allow user to edit; Fix the strange nesting
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import PostSearch from "@/components/PostSearch.vue";
+import TheSideDrawerSearchBar from "@/components/TheSideDrawerSearchBar.vue";
 import ButtonNew from "@/components/ButtonNew.vue";
 import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
@@ -66,7 +66,7 @@ export default {
     },
   },
   components: {
-    PostSearch,
+    TheSideDrawerSearchBar,
     BasePopupButton,
     ButtonNew,
     TheSideDrawerGroupByFolders,

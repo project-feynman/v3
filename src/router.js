@@ -25,7 +25,7 @@ export default new Router({
         },
         {
           path: "room/:room_id",
-          component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/ClassPageLiveBoard.vue") 
+          component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/ClassPageRealtimeSpace.vue") 
         },
         {
           // when /user/:id/posts is matched

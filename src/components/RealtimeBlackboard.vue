@@ -37,7 +37,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <LiveMessageChat
+    <RealtimeMessageChat
       v-model="messagesOpen"
       :roomParticipants="roomParticipants"
       :roomId="this.roomId"
@@ -71,7 +71,7 @@ import ButtonNew from "@/components/ButtonNew.vue";
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
-import LiveMessageChat from "@/components/LiveMessageChat.vue";
+import RealtimeMessageChat from "@/components/RealtimeMessageChat.vue";
 
 export default {
   props: {
@@ -90,7 +90,7 @@ export default {
   components: {
     Blackboard,
     ButtonNew,
-    LiveMessageChat
+    RealtimeMessageChat
   },
   data () {
     return {

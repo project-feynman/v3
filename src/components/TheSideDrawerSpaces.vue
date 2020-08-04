@@ -128,7 +128,7 @@
   </v-list>
 
   <!-- TODO: refactor -->
-    <LiveBoardAudio v-if="user"
+    <RealtimeAudio v-if="user"
       :roomId="lastBlackboardRoomId"
       :classId="classID"
       :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
@@ -148,7 +148,7 @@ import "firebase/firestore";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import ButtonNew from "@/components/ButtonNew.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import LiveBoardAudio from "@/components/LiveBoardAudio.vue";
+import RealtimeAudio from "@/components/RealtimeAudio.vue";
 import CreateBlackboardPopup from "@/components/CreateBlackboardPopup.vue";
 import { mapState } from "vuex";
 import Vue from 'vue';
@@ -160,7 +160,7 @@ export default {
   components: {
     BasePopupButton,
     ButtonNew,
-    LiveBoardAudio,
+    RealtimeAudio,
     CreateBlackboardPopup
   },
   data () {
