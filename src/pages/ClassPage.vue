@@ -13,7 +13,7 @@
           color="secondary"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</ButtonNew>
+            <BaseButton :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</BaseButton>
           </template>
         </BasePopupButton>
 
@@ -24,7 +24,7 @@
             color="secondary"
           >
             <template v-slot:activator-button="{ on }">
-              <ButtonNew :on="on" icon="mdi-account-circle">Sign Up</ButtonNew>
+              <BaseButton :on="on" icon="mdi-account-circle">Sign Up</BaseButton>
             </template>
             <template v-slot:message-to-user>
               Sign up for an account so you can enroll in classes to ask questions and create explanations. 
@@ -52,7 +52,7 @@
             <MenuEmailSettings>
               <template v-slot:activator="{ on }">
                 <v-btn v-on="on" block text color="accent">Email Settings</v-btn>
-                <!-- <ButtonNew :on="on" icon="mdi-bell">Email Settings</ButtonNew> -->
+                <!-- <BaseButton :on="on" icon="mdi-bell">Email Settings</BaseButton> -->
               </template>
             </MenuEmailSettings>
             <v-divider/>
@@ -78,7 +78,7 @@ import MenuEmailSettings from "@/components/MenuEmailSettings.vue";
 import TheSideDrawer from "@/components/TheSideDrawer.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
@@ -97,7 +97,7 @@ export default {
     TheAppBar,
     TheDropdownMenu,
     MenuEmailSettings,
-    ButtonNew,
+    BaseButton,
     BasePopupButton
   },
   data: () => ({

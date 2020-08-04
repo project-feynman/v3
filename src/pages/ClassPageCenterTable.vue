@@ -22,11 +22,11 @@
                 :items="groupSizeList"
                 label="Group Size"
               />
-              <ButtonNew filled @click="moveStudentsToRooms()">
+              <BaseButton filled @click="moveStudentsToRooms()">
                 <h2>
                   Go
                 </h2>
-              </ButtonNew>
+              </BaseButton>
             </v-list-item>
           </v-list>
         </v-expansion-panel-content>
@@ -56,7 +56,7 @@ import db from "@/database.js";
 import { mapState } from "vuex"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"; 
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 export default {
   mixins: [
@@ -64,7 +64,7 @@ export default {
   ],
   components: {
     RealtimeBlackboard,
-    ButtonNew
+    BaseButton
   },
   data () {
     return {

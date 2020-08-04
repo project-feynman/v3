@@ -31,7 +31,7 @@
       @action-do="(bugReport) => submitBug(bugReport)"
     >
       <template v-slot:activator-button="{ on }">
-        <ButtonNew :on="on" icon="mdi-message">Give Feedback</ButtonNew>
+        <BaseButton :on="on" icon="mdi-message">Give Feedback</BaseButton>
       </template>
       <template v-slot:message-to-user>
         Report a bug, suggest a feature, etc.
@@ -46,7 +46,7 @@
 
 <script>
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import db from "@/database.js";
 import { navbarHeight } from "@/CONSTANTS.js";
 import firebase from "firebase/app";
@@ -61,7 +61,7 @@ export default {
   },
   components: { 
     BasePopupButton,
-    ButtonNew
+    BaseButton
   },
   data () {
     return {

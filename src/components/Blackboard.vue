@@ -29,9 +29,9 @@
           @toggle-fullScreen="toggleFullScreen()"
         >
           <template v-slot:touch-slot>
-            <ButtonNew @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
+            <BaseButton @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
               {{ touchDisabled ? "Enable" : "Disable" }} Touch
-            </ButtonNew>
+            </BaseButton>
           </template>
           
           <template v-slot:record-audio-slot>
@@ -41,7 +41,7 @@
 
             <template v-if="currentState === RecordState.PRE_RECORD">
               <!-- Set background image -->
-              <ButtonNew @click="$refs.fileInput.click()" icon="mdi-image">
+              <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
                 <input 
                   @change="e => handleImageFile(e)" 
                   style="display: none" 
@@ -49,14 +49,14 @@
                   ref="fileInput"
                 >
                 Add Background
-              </ButtonNew>
+              </BaseButton>
 
               <!-- Reset button -->
               <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
                 <template v-slot:activator-button="{ on }">
-                  <ButtonNew :on="on" icon="mdi-delete" data-qa="wipe-board">
+                  <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
                     Wipe Board
-                  </ButtonNew>
+                  </BaseButton>
                 </template>
                 <template v-slot:message-to-user>
                   Are you sure you want to wipe everything?
@@ -64,15 +64,15 @@
               </BasePopupButton>
 
               <!-- Record Button -->
-              <ButtonNew @click="startRecording()" icon="mdi-adjust" filled>
+              <BaseButton @click="startRecording()" icon="mdi-adjust" filled>
                 Record Audio
-              </ButtonNew>
+              </BaseButton>
             </template>
 
             <!-- Finish Record Button -->
-            <ButtonNew v-if="currentState === RecordState.MID_RECORD" @click="stopRecording()" icon="mdi-stop" filled>
+            <BaseButton v-if="currentState === RecordState.MID_RECORD" @click="stopRecording()" icon="mdi-stop" filled>
               Finish Recording
-            </ButtonNew>
+            </BaseButton>
           </template>
         </BlackboardToolBar>
       </template>
@@ -98,7 +98,7 @@
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import { RecordState } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
@@ -118,7 +118,7 @@ export default {
     BlackboardToolBar,
     BlackboardAudioRecorder, 
     BlackboardCoreDrawing,
-    ButtonNew,
+    BaseButton,
     BasePopupButton
   },
   data () {

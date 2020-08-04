@@ -103,7 +103,7 @@ import Blackboard from "@/components/Blackboard.vue";
 import DoodleVideo from "@/components/DoodleVideo.vue";
 import TextEditor from "@/components/TextEditor.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
@@ -127,7 +127,7 @@ export default {
     DoodleVideo,
     TextEditor,
     BasePopupButton,
-    ButtonNew
+    BaseButton
   },
   data: () => ({
     postTitle: "",

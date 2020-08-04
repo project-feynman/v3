@@ -13,13 +13,13 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
   components: { 
-    ButtonNew,
+    BaseButton,
     RealtimeBlackboard
   },
   mixins: [

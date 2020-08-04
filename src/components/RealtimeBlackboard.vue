@@ -15,8 +15,8 @@
         <slot name="blackboard-toolbar">
 
         </slot> 
-        <ButtonNew @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</ButtonNew>
-        <ButtonNew @click="uploadExplanation()" icon="mdi-upload">Save Board</ButtonNew>
+        <BaseButton @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</BaseButton>
+        <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Board</BaseButton>
       </template> 
     </Blackboard> 
 
@@ -67,7 +67,7 @@
 import Blackboard from "@/components/Blackboard.vue"; 
 import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import firebase from "firebase/app"; 
-import ButtonNew from "@/components/ButtonNew.vue"; 
+import BaseButton from "@/components/BaseButton.vue"; 
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
@@ -89,7 +89,7 @@ export default {
   ],
   components: {
     Blackboard,
-    ButtonNew,
+    BaseButton,
     RealtimeMessageChat
   },
   data () {

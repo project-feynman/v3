@@ -32,7 +32,7 @@ export default new Router({
           path: "new",
           // component: () => import(/* webpackChunkName: "new" */ "./pages/ClassPageNewPost.vue") 
           // move from components folder to pages folder later
-          component: () => import(/* webpackChunkName: "new" */ "./components/CreateExplanation.vue"),
+          component: () => import(/* webpackChunkName: "new" */ "./components/ExplanationCreate.vue"),
           props: route => {
             // if it's a new post/question, the query type will be "post" or "question"
             return {

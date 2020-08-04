@@ -4,13 +4,13 @@
     <p>{{ questionsArray }}</p>
 
     <!-- Button for a new question -->
-    <ButtonNew :to="`class/${classId}/new?type=question/`"
+    <BaseButton :to="`class/${classId}/new?type=question/`"
       :disabled="!user"
       icon="mdi-shape-square-plus"
       color="secondary"
     > 
       New Question
-    </ButtonNew>
+    </BaseButton>
 
     <!-- Display questions -->
     <v-treeview
@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import ButtonNew from "@/components/ButtonNew.vue"; 
+import BaseButton from "@/components/BaseButton.vue"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import { mapState } from "vuex";
@@ -32,7 +32,7 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    ButtonNew
+    BaseButton
   },
   data () {
     return {

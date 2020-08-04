@@ -11,7 +11,7 @@
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-plus">Create Class</ButtonNew>
+            <BaseButton :on="on" icon="mdi-plus">Create Class</BaseButton>
           </template>
         </BasePopupButton>
 
@@ -34,7 +34,7 @@
           color="secondary"
         >
           <template v-slot:activator-button="{ on }">
-            <ButtonNew :on="on" icon="mdi-account-circle" color="secondary" data-qa="log-in-btn">Log In</ButtonNew>
+            <BaseButton :on="on" icon="mdi-account-circle" color="secondary" data-qa="log-in-btn">Log In</BaseButton>
           </template>
         </BasePopupButton>
       </template>
@@ -56,27 +56,6 @@
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="!user">
-                <!-- <v-col cols="auto">
-                  <BasePopupButton actionName="Explore" outlined color="secondary">
-                    <template v-slot:popup-content>
-                      Below are classes beta-testing explain.mit.edu in preparation for Fall 2020:
-                      <li>
-                        <a @click="signInAnonymouslyThenRedirectTo('class/oQV3TgY3OrvE93lAT7sx')" color="purple">
-                          8.02 
-                        </a>
-                      </li> 
-                      <li>
-                        <a @click="signInAnonymouslyThenRedirectTo('class/O00mSbBEYQxTnv3cKkbe')" color="purple">
-                          8.01 
-                        </a>
-                      </li>
-                    </template>
-                    <template v-slot:popup-action-buttons> -->
-                      <!-- A hack to not display the action button -->
-                      <!-- <div></div>
-                    </template>
-                  </BasePopupButton>
-                </v-col> -->
                 <v-col cols="auto">
                   <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
@@ -134,10 +113,10 @@
         <template v-if="!user && !isFetchingUser">
           <v-row>
             <v-col cols="12" md="6">
-              <SeeExplanation v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+              <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
             </v-col>
             <v-col cols="12" md="6">
-              <SeeExplanation v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
+              <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
             </v-col>
           </v-row>
         </template>
@@ -176,21 +155,21 @@ import RenderlessAsync from "@/components/RenderlessAsync.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
-import SeeExplanation from "@/components/SeeExplanation.vue";
-import CreateExplanation from "@/components/CreateExplanation.vue";
+import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
+import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
-import ButtonNew from "@/components/ButtonNew.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 export default {
   components: {
     RenderlessAsync, 
     BasePopupButton,
-    SeeExplanation,
-    CreateExplanation,
+    ExplanationDisplay,
+    ExplanationCreate,
     TheAppBar,
     TheDropdownMenu,
     TheSearchBar,
-    ButtonNew
+    BaseButton
   },
   mixins: [
     AuthHelpers,
