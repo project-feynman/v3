@@ -121,7 +121,6 @@ export default {
           firstDate = new Date(doc.data().date);
         });
       });
-
       const getLastDate = collectionRef.orderBy('date', 'desc').limit(1).get().then(querySnapshot => {
         if (querySnapshot.empty) return;
         querySnapshot.forEach(doc => {
@@ -140,7 +139,7 @@ export default {
       
       const weekPromises = [];
 
-      while ( startOfNextWeek > firstDate ) {
+      while (startOfNextWeek > firstDate) {
         const endOfThisWeek = new Date(startOfNextWeek.getTime());
         endOfThisWeek.setDate(endOfThisWeek.getDate() - 1);
         const startOfThisWeek = new Date(startOfNextWeek.getTime());
@@ -154,8 +153,8 @@ export default {
                 start: startOfThisWeek,
                 end: startOfNextWeek,
                 isLoading: false,
-                children: [],
-              })
+                children: []
+              });
             }
           })
         );
