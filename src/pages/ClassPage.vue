@@ -67,7 +67,7 @@
     <TheSideDrawer
       v-model="drawer"
       :roomParticipantsMap="roomParticipantsMap"/>
-    <div v-if="lastBlackboardRoomId" style="border-style; solid; z-index: 100; position: fixed; right: 0px; bottom: 0px">
+    <div v-if="lastBlackboardRoomId" class="video-chat-container">
         <LiveBoardAudio 
           v-if="user"
           :roomId="lastBlackboardRoomId"
@@ -84,6 +84,7 @@
         :outlined="hasJoinedMedia" 
         rounded
         :icon="hasJoinedMedia ? 'mdi-microphone': 'mdi-microphone-off'"
+        style="right: 0px; bottom: 0px; position: relative"
       >
         <template v-if="!hasLoadedMedia">
           <template v-if="!hasJoinedMedia">Join Video Chat</template>
@@ -98,6 +99,7 @@
         rounded
         outlined
         icon="mdi-video"
+        style="bottom: 0px; right: 0px; position: relative"
       >
         <template v-if="portalToLiveBoard">
           Put video to bottom
@@ -237,6 +239,14 @@ export default {
 /* Make the side-drawer vertically scrollable  */
 html {
   overflow-y: auto; 
+}
+.video-chat-container{
+  border-style: solid; 
+  z-index: 100; 
+  position: fixed; 
+  right: 0px; 
+  bottom: 0px; 
+  background-color: #eee;
 }
 </style>
 

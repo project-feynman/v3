@@ -1,8 +1,7 @@
 <template>
   <div id="room" class="room-wrapper">
     <portal-target name="video-chat"/>
-    
-    <div v-if="user" style="margin-top: 55px;">
+    <div v-if="user">
       <RealtimeBlackboard :strokesRef="strokesRef" :roomParticipants="roomParticipants"/>
     </div>
   </div>
