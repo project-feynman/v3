@@ -35,9 +35,11 @@
         <v-btn :class="{ 'is-active': isActive.ordered_list() }" @click="commands.ordered_list" icon>
           <v-icon>mdi-format-list-numbered</v-icon>
         </v-btn>
+        <!--
         <v-btn :class="{ 'is-active': isActive.todo_list() }"  @click="commands.todo_list" icon>
           <v-icon>mdi-format-list-checks</v-icon>
         </v-btn>
+        -->
         <v-btn :class="{ 'is-active': isActive.blockquote() }" @click="commands.blockquote" icon>
           <v-icon>mdi-comment-quote-outline</v-icon>
         </v-btn>
@@ -91,6 +93,12 @@
 
 <script>
 import { Editor, EditorContent, EditorMenuBar, Node } from 'tiptap';
+
+//import hljs from 'highlight.js'; //will import everything. alt can be: import javascript from 'highlight.js/lib/languages/javascript';
+import javascript from 'highlight.js/lib/languages/javascript'
+import css from 'highlight.js/lib/languages/css'
+import python from 'highlight.js/lib/languages/python'
+
 import {
   Blockquote,
   CodeBlock,
@@ -110,6 +118,7 @@ import {
   Underline,
   History,
   Image,
+  CodeBlockHighlight,
   Placeholder
 } from 'tiptap-extensions';
 
@@ -230,6 +239,7 @@ export default {
 </script>
 
 <style lang="scss">
+
 .editor p.is-editor-empty:first-child::before {
   content: attr(data-empty-text);
   float: left;
@@ -238,4 +248,107 @@ export default {
   height: 0;
   font-style: italic;
 }
+
+@import "@/assets/scss/variables.scss";
+ul[data-type="todo_list"] {
+  padding-left: 0;
+}
+li[data-type="todo_item"] {
+  display: flex;
+  flex-direction: row;
+}
+.todo-checkbox {
+  border: 2px solid black;
+  height: 0.9em;
+  width: 0.9em;
+  box-sizing: border-box;
+  margin-right: 10px;
+  margin-top: 0.3rem;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  border-radius: 0.2em;
+  background-color: transparent;
+  transition: 0.4s background;
+}
+.todo-content {
+  flex: 1;
+  > p:last-of-type {
+    margin-bottom: 0;
+  }
+  > ul[data-type="todo_list"] {
+    margin: .5rem 0;
+  }
+}
+li[data-done="true"] {
+  > .todo-content {
+    > p {
+      text-decoration: line-through;
+    }
+  }
+  > .todo-checkbox {
+    background-color: $color-black;
+  }
+}
+li[data-done="false"] {
+  text-decoration: none;
+}
+
+.editor pre {
+  &::before {
+    content: attr(data-language);
+    text-transform: uppercase;
+    display: block;
+    text-align: right;
+    font-weight: bold;
+    font-size: 0.6rem;
+  }
+  code {
+    .hljs-comment,
+    .hljs-quote {
+      color: #999999;
+    }
+    .hljs-variable,
+    .hljs-template-variable,
+    .hljs-attribute,
+    .hljs-tag,
+    .hljs-name,
+    .hljs-regexp,
+    .hljs-link,
+    .hljs-name,
+    .hljs-selector-id,
+    .hljs-selector-class {
+      color: #f2777a;
+    }
+    .hljs-number,
+    .hljs-meta,
+    .hljs-built_in,
+    .hljs-builtin-name,
+    .hljs-literal,
+    .hljs-type,
+    .hljs-params {
+      color: #f99157;
+    }
+    .hljs-string,
+    .hljs-symbol,
+    .hljs-bullet {
+      color: #99cc99;
+    }
+    .hljs-title,
+    .hljs-section {
+      color: #ffcc66;
+    }
+    .hljs-keyword,
+    .hljs-selector-tag {
+      color: #6699cc;
+    }
+    .hljs-emphasis {
+      font-style: italic;
+    }
+    .hljs-strong {
+      font-weight: 700;
+    }
+  }
+}
+
 </style>
