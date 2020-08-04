@@ -16,7 +16,7 @@
 
         </slot> 
         <BaseButton @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</BaseButton>
-        <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Board</BaseButton>
+        <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Animation</BaseButton>
       </template> 
     </Blackboard> 
 
@@ -65,13 +65,13 @@
  *     and the second is to signal when other people can actually see her new stroke. 
  */
 import Blackboard from "@/components/Blackboard.vue"; 
+import BaseButton from "@/components/BaseButton.vue"; 
+import RealtimeMessageChat from "@/components/RealtimeMessageChat.vue";
 import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import firebase from "firebase/app"; 
-import BaseButton from "@/components/BaseButton.vue"; 
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
-import RealtimeMessageChat from "@/components/RealtimeMessageChat.vue";
 
 export default {
   props: {

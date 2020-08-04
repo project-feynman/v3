@@ -11,7 +11,6 @@
 </template>
 
 <script>
-import TheAppBar from "@/components/TheAppBar.vue";
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { tutorial } from "@/CONSTANTS.js";
@@ -20,7 +19,6 @@ import db from "@/database.js";
 export default {
   mixins: [DatabaseHelpersMixin],
   components: { 
-    TheAppBar, 
     ExplanationDisplay 
   },
   data: () => ({

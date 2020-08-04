@@ -21,7 +21,7 @@ export default new Router({
         },
         {
           path: "room/center-table",
-          component: () => import(/* webpackChunkName: "class-page-center-table" */ "./pages/ClassPageCenterTable.vue")
+          component: () => import(/* webpackChunkName: "class-page-center-table" */ "./pages/ClassPageLectureHall.vue")
         },
         {
           path: "room/:room_id",

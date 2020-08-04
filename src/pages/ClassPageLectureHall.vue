@@ -4,7 +4,7 @@
       <v-expansion-panel>
         <v-expansion-panel-header>
           <v-row align="center">
-            <h3>
+            <h3 class="accent--text">
               Assign students to random groups
             </h3>
           </v-row>
@@ -32,12 +32,8 @@
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
-    <p>
-      This is where the instructor can broadcast his blackboard to many students at once, ideal for lectures. 
-      The instructor can press a button to evenly divide students into random groups in real-time blackboard rooms. 
-    </p>
-    <!-- <p>class document: {{ classDoc }}</p>
-    <p>class participants: {{ participants }}</p> -->
+
+    <!-- Realtime Blackboard -->
     <RealtimeBlackboard :strokesRef="strokesRef"/>
   </div>
 </template>
