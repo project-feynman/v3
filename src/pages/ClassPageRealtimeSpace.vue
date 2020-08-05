@@ -63,7 +63,9 @@ export default {
       this.$store.commit("SET_ROOM", this.room);    
     },
     user () {
-      this.setParticipant();
+      if(this.user && this.user.firstName){ //the user is loaded
+        this.setParticipant();
+      }
     }
   },
   async created () {
@@ -78,7 +80,7 @@ export default {
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
-    if (this.user) { //the watch hook for user will not trigger 
+    if (this.user && this.user.firstName) { //the watch hook for user will not trigger 
       this.setParticipant();
     }
   },
@@ -94,7 +96,7 @@ export default {
       const participantRef = db.doc(`classes/${this.classId}/participants/${this.user.uid}`)
       this.removeSetParticipantListener = participantRef.onSnapshot(doc => { //we use onSnapshot here to ensure that the particpant was connected in ClassPage
         const user = doc.data();
-        console.log("PARTICHANGED", user)
+        console.log("PARTICHANGED", this.roomId, user)
         if (user) {
           participantRef.update({
             uid: this.user.uid,

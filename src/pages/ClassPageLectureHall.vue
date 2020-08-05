@@ -34,7 +34,7 @@
     </v-expansion-panels>
 
     <!-- Realtime Blackboard -->
-    <RealtimeBlackboard :strokesRef="strokesRef"/>
+    <RealtimeBlackboard :strokesRef="strokesRef" :roomParticipants="participants"/>
   </div>
 </template>
 
@@ -77,7 +77,9 @@ export default {
       groupSizeForRandom: 3,
       groupSizeList: [],
       firebaseRef: null,
-      snapshotListeners: []
+      snapshotListeners: [],
+      roomParticipantsRef: null,
+      removeSetParticipantListener: null
     };
   },
   computed: {
@@ -89,11 +91,24 @@ export default {
       if (!this.user) return false;
       else return this.user.type === "staff";
     },
+    classId () {
+      return this.$route.params.class_id
+    },
+    roomId () {
+      return this.$route.params.room_id
+    },
     ...mapState([
       "user",
       "hasFetchedUser",
       "mitClass"
     ])
+  },
+  watch: {
+    user () {
+      if(this.user && this.user.firstName){
+        this.setParticipant();
+      }
+    }
   },
   /*
     1. Distinguish between students and staff 
@@ -110,38 +125,29 @@ export default {
     for (let i = 1; i <= 20; i++) {
       this.groupSizeList.push(i);
     }
-    // this.$_listenToDoc(this.classRef, this, "classDoc").then((snapshotListener) => {
-    //   this.snapshotListeners.push(snapshotListener);
-    // });
-    this.$_listenToCollection(this.classRef.collection("participants"), this, "participants").then((snapshotListener) => {
+    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", "lecture-hall")
+    this.$_listenToCollection(this.roomParticipantsRef, this, "participants").then((snapshotListener) => {
       this.snapshotListeners.push(snapshotListener);
     });
-
-    this.setUserDisconnectHook();
+    if (this.user && this.user.firstName){
+      this.setParticipant();
+    }
   },
   beforeDestroy () {
-    firebase.database().ref(".info/connected").off();
-    this.removeClassDocListener(); 
+    this.removeSetParticipantListener();
+    this.removeClassDocListener();
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
-    this.firebaseRef.onDisconnect().cancel();
-    this.classRef.collection("participants").doc(this.user.uid).delete();
   },
   methods: {
     // TODO: 
     //   connect to the blackboard
     //   activate event listeners if and only if the user is a staff member
     //   listen to the class doc for new group assignments
-    registerUserAndListenForRoomAssignments () {
+    listenForRoomAssignments () {
       if (this.isStaff) return; 
       // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
-      this.classRef.collection("participants").doc(this.user.uid).set({
-        uid: this.user.uid,
-        email: this.user.email,
-        // firstName: this.user.firstName,
-        // lastName: this.user.lastName,
-      }); 
       let onlyJustJoined = true; 
       this.removeClassDocListener = this.classRef.onSnapshot(doc => {
         if (onlyJustJoined) {
@@ -157,22 +163,27 @@ export default {
         }
       });
     },
-    setUserDisconnectHook () {
-      firebase.database().ref(".info/connected").on("value", async (snapshot) => {
-        const isUserConnected = snapshot.val(); 
-        if (isUserConnected === false) return;
-        this.firebaseRef = firebase.database().ref(`/class/${this.$route.params.class_id}/participants`);
-        await this.firebaseRef.onDisconnect().set({
+    setParticipant() {
+      const participantRef = db.doc(`classes/${this.classId}/participants/${this.user.uid}`)
+      this.removeSetParticipantListener = participantRef.onSnapshot(doc => { //we use onSnapshot here to ensure that the particpant was connected in ClassPage
+        const user = doc.data();
+        console.log("PARTILOBYY", user)
+        if (user) {
+          this.removeSetParticipantListener();
+          participantRef.update({
             uid: this.user.uid,
-            email: this.user.email
-        });
-        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
-          email: "", 
-          uid: ""
-        });
-        this.registerUserAndListenForRoomAssignments();
+            email: this.user.email,
+            firstName: this.user.firstName,
+            lastName: this.user.lastName,
+            currentRoom: "lecture-hall",
+            isMicOn: false,
+            isCameraOn: false,
+            hasJoinedMedia: false
+          })
+          this.listenForRoomAssignments();
+        }
       })
-    }, 
+    },
     async moveStudentsToRooms () {
       /**
        * Shuffles array in place. ES6 version
