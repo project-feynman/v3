@@ -153,7 +153,9 @@ export default {
     roomParticipantsMap: {},
     hasJoinedMedia: false,
     hasLoadedMedia: false,
-    portalToLiveBoard: false
+    portalToLiveBoard: false,
+    firebaseRef: null,
+    classParticipantsRef: null
   }),
   computed: {
     ...mapState([
@@ -183,33 +185,30 @@ export default {
   },
   watch : {
     numberOfBlackboards () {
-      
       this.blackboards.forEach( blackboard => {
-        const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-        const participantsRef = blackboardsRef.doc(blackboard.id).collection('participants');
+        const roomParticipantsRef = this.classParticipantsRef.where("currentRoom", "==", blackboard.id);
         Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
-        this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
+        this.$_listenToCollection(roomParticipantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
           this.snapshotListeners.push(snapshotListener);
         });
       })
-      console.log("listening for map")
-    },
-    roomParticipantsMap () {
-      console.log("MAP", this.roomParticipantsMap)
     }
   },
   created () {
-    console.log("created Classpage")
+    this.classParticipantsRef = db.collection(`classes/${this.classID}/participants`)
     const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
     this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
-      console.log("listening to blackboard")
       this.snapshotListeners.push(snapshotListener);
     });
+    this.setUserDisconnectHook();
   },
   beforeDestroy () {
+    firebase.database().ref(".info/connected").off();
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     };
+    this.classParticipantsRef.doc(this.user.uid).delete()
+    this.firebaseRef.onDisconnect().cancel();
   },
   methods: {
     async updateSettings (payload) {
@@ -230,6 +229,42 @@ export default {
       });
       this.$router.push({path: '/'});
       this.$root.$emit("show-snackbar", "Successfully dropped class.");
+    },
+    /**
+     * Push the user object onto the room's `participants` array, and ensures that 
+     * Firebase will remove the user object if he/she disconnects for whatever reason.
+     * 
+     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
+     * @see https://firebase.google.com/docs/firestore/solutions/presence
+     * @see https://firebase.google.com/docs/database/web/offline-capabilities
+     */
+    setUserDisconnectHook () {
+      // ".info/connected" is a special location on Firebase Realtime Database 
+      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
+      firebase.database().ref(".info/connected").on("value", async snapshot => {
+        const isUserConnected = snapshot.val(); 
+        if (isUserConnected === false){
+          return;
+        } 
+        this.firebaseRef = firebase.database().ref(`/class/${this.classID}/participants`);
+        // 1. User leaves, and his/her identity is saved to Firebase
+        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
+        
+        // step 1 (step 2 is executed in Cloud Functions)
+        await this.firebaseRef.onDisconnect().set({ uid: this.user.uid });
+
+        //user hasn't always been fetched, but uid and email are set
+        this.classParticipantsRef.doc(this.user.uid).set({
+          uid: this.user.uid,
+          email: this.user.email
+        }); 
+        
+        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+          email: "", 
+          uid: "", 
+          firstName: "" 
+        });
+      });
     }
   }
 }

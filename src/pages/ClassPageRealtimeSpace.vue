@@ -30,6 +30,7 @@ export default {
       roomParticipants: [],
       snapshotListeners: [],
       roomRef: null,
+      classRef: null,
       roomParticipantsRef: null,
       strokesRef: null,
       unsubscribeRoomListener: null,
@@ -37,6 +38,8 @@ export default {
       roomId: this.$route.params.room_id,
       firebaseRef: null,
       messagesOpen: false,
+      hasUserBeenSet: false,
+      removeSetParticipantListener: null
     }
   },
   computed: {
@@ -58,11 +61,16 @@ export default {
   watch: {
     room () {
       this.$store.commit("SET_ROOM", this.room);    
+    },
+    user () {
+      this.setParticipant();
     }
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
-    this.roomParticipantsRef = this.roomRef.collection("participants");
+    this.classRef = db.doc(`classes/${this.classId}`);
+    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId)
+
     this.strokesRef = this.roomRef.collection("strokes");
 
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
@@ -70,58 +78,37 @@ export default {
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
-
-    this.setUserDisconnectHook();
+    if (this.user) { //the watch hook for user will not trigger 
+      this.setParticipant();
+    }
   },
   beforeDestroy () {
-    firebase.database().ref(".info/connected").off();
+    this.removeSetParticipantListener();
     this.unsubscribeRoomListener();
-    // this.roomRef.update({ //Filters out the current user
-    //   participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
-    // });
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
-    this.roomParticipantsRef.doc(this.user.uid).delete();
-    this.firebaseRef.onDisconnect().cancel();
   },
   methods: {
-    /**
-     * Push the user object onto the room's `participants` array, and ensures that 
-     * Firebase will remove the user object if he/she disconnects for whatever reason.
-     * 
-     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
-     * @see https://firebase.google.com/docs/firestore/solutions/presence
-     * @see https://firebase.google.com/docs/database/web/offline-capabilities
-     */
-    setUserDisconnectHook () {
-      // ".info/connected" is a special location on Firebase Realtime Database 
-      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
-      firebase.database().ref(".info/connected").on("value", async snapshot => {
-        const isUserConnected = snapshot.val(); 
-        if (isUserConnected === false){
-          return;
-        } 
-        this.firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
-        // 1. User leaves, and his/her identity is saved to Firebase
-        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
-        
-        // step 1 (step 2 is executed in Cloud Functions)
-        await this.firebaseRef.onDisconnect().set(this.simplifiedUser);
-
-        // add the current user to the lounge
-        this.roomParticipantsRef.doc(this.user.uid).set({
-          ...this.simplifiedUser,
-          isMicOn: false,
-          isCameraOn: false,
-          hasJoinedMedia: false
-        }); 
-        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
-          email: "", 
-          uid: "", 
-          firstName: "" 
-        });
-      });
+    setParticipant() {
+      const participantRef = db.doc(`classes/${this.classId}/participants/${this.user.uid}`)
+      this.removeSetParticipantListener = participantRef.onSnapshot(doc => { //we use onSnapshot here to ensure that the particpant was connected in ClassPage
+        const user = doc.data();
+        console.log("PARTICHANGED", user)
+        if (user) {
+          participantRef.update({
+            uid: this.user.uid,
+            email: this.user.email,
+            firstName: this.user.firstName,
+            lastName: this.user.lastName,
+            currentRoom: this.roomId,
+            isMicOn: false,
+            isCameraOn: false,
+            hasJoinedMedia: false
+          })
+          this.removeSetParticipantListener();
+        }
+      })
     }
   }
 };

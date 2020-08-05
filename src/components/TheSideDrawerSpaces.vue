@@ -208,12 +208,6 @@ export default {
         const ind = this.roomTypes.indexOf(this.blackboardRoom.roomType)
         this.expandedPanels = [ind]
       }
-    },
-    roomParticipantsMap : {
-      immediate: true,
-      handler () {
-      console.log("SIDEMAP", this.roomParticipantsMap)
-      }
     }
     // numberOfBlackboards () {
     //   this.blackboards.forEach( blackboard => {
