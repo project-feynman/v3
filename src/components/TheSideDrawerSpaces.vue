@@ -112,7 +112,6 @@
       outlined
       large
       block
-      :disabled="blackboards.length > 20" 
       @click="isCreatePopupOpen = true"
       color="secondary"
     >
