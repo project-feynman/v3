@@ -61,11 +61,6 @@ export default {
   watch: {
     room () {
       this.$store.commit("SET_ROOM", this.room);    
-    },
-    user () {
-      if(this.user && this.user.firstName){ //the user is loaded
-        this.setParticipant();
-      }
     }
   },
   async created () {
@@ -80,37 +75,55 @@ export default {
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
-    if (this.user && this.user.firstName) { //the watch hook for user will not trigger 
-      this.setParticipant();
-    }
+    this.setParticipant();
   },
   beforeDestroy () {
-    this.removeSetParticipantListener();
     this.unsubscribeRoomListener();
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
+    firebase.database().ref(".info/connected").off();
   },
   methods: {
     setParticipant() {
-      const participantRef = db.doc(`classes/${this.classId}/participants/${this.user.uid}`)
-      this.removeSetParticipantListener = participantRef.onSnapshot(doc => { //we use onSnapshot here to ensure that the particpant was connected in ClassPage
-        const user = doc.data();
-        console.log("PARTICHANGED", this.roomId, user)
-        if (user) {
-          this.removeSetParticipantListener();
-          participantRef.update({
-            uid: this.user.uid,
-            email: this.user.email,
-            firstName: this.user.firstName,
-            lastName: this.user.lastName,
-            currentRoom: this.roomId,
-            isMicOn: user.isMicOn ? true: false,
-            isCameraOn: user.isCameraOn ? true: false,
-            hasJoinedMedia: user.hasJoinedMedia ? true: false
-          })
-        }
-      })
+      firebase.database().ref(".info/connected").on("value", async snapshot => {
+        const isUserConnected = snapshot.val(); 
+        if (isUserConnected === false){
+          return;
+        } 
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.user.uid}`);
+        participantRef.get().then(doc => {
+          if (doc.exists){
+            const userObj = doc.data();
+            const isSameRoom = userObj.currentRoom === this.roomId;
+            console.log("doc exists!", userObj)
+            participantRef.update({
+              uid: this.user.uid,
+              email: this.user.email,
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              currentRoom: this.roomId,
+              isMicOn: isSameRoom ? userObj.isMicOn : false,
+              isCameraOn: isSameRoom ? userObj.isCameraOn : false,
+              hasJoinedMedia: isSameRoom ? userObj.hasJoinedMedia : false,
+            })
+          }
+          else{
+            console.log("doc no exist")
+            participantRef.set({
+              uid: this.user.uid,
+              email: this.user.email,
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              currentRoom: this.roomId,
+              isMicOn: false,
+              isCameraOn: false,
+              hasJoinedMedia: false
+            })
+          }
+        })
+        
+      });
     }
   }
 };

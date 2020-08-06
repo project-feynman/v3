@@ -108,7 +108,8 @@
           color='accent'
           rounded
           outlined
-          :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'">
+          :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
+        >
           {{isMinimizedView ? 'Normal View' : 'Mini View'}}
         </BaseButton>
       </template>
@@ -274,11 +275,7 @@ export default {
         await this.firebaseRef.onDisconnect().set({ uid: this.user.uid });
 
         //user hasn't always been fetched, but uid and email are set
-        console.log("Class Page: about to set user", this.user)
-        this.classParticipantsRef.doc(this.user.uid).set({
-          uid: this.user.uid,
-          email: this.user.email
-        }); 
+        console.log("Class Page set DC hook", this.user)
         
         this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
