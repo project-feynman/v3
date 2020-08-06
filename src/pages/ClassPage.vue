@@ -75,16 +75,17 @@
           :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
           :portalToLiveBoard="portalToLiveBoard"
           :hasJoinedMedia="hasJoinedMedia"
+          :isMinimizedView="isMinimizedView"
           @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
           @media-connected="hasLoadedMedia=true"
           :key="lastBlackboardRoomId"
+          class="video-component"
         />
       <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
         :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
         :outlined="hasJoinedMedia" 
         rounded
-        :icon="hasJoinedMedia ? 'mdi-microphone': 'mdi-microphone-off'"
-        style="right: 0px; bottom: 0px; position: relative"
+        :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
       >
         <template v-if="!hasLoadedMedia">
           <template v-if="!hasJoinedMedia">Join Video Chat</template>
@@ -93,20 +94,24 @@
         
         <template v-else>Exit Video Chat</template>
       </BaseButton>
-
-      <BaseButton @click="handleVideoViewToggle()" 
-        color='accent'
-        rounded
-        outlined
-        icon="mdi-video"
-        style="bottom: 0px; right: 0px; position: relative"
-      >
-        <template v-if="portalToLiveBoard">
-          Put video to bottom
-        </template>
-        
-        <template v-else>Put video in Room</template>
-      </BaseButton>
+      <template v-if="hasLoadedMedia">
+        <BaseButton @click="handleVideoViewToggle()" 
+          color='accent'
+          rounded
+          outlined
+          :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
+        >
+        {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
+        </BaseButton>
+        <BaseButton
+          @click="isMinimizedView = !isMinimizedView"
+          color='accent'
+          rounded
+          outlined
+          :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'">
+          {{isMinimizedView ? 'Normal View' : 'Mini View'}}
+        </BaseButton>
+      </template>
     </div>
     <v-content>
       <RouterView :key="$route.fullPath"/>
@@ -155,7 +160,8 @@ export default {
     hasLoadedMedia: false,
     portalToLiveBoard: false,
     firebaseRef: null,
-    classParticipantsRef: null
+    classParticipantsRef: null,
+    isMinimizedView: false
   }),
   computed: {
     ...mapState([
@@ -268,6 +274,7 @@ export default {
         await this.firebaseRef.onDisconnect().set({ uid: this.user.uid });
 
         //user hasn't always been fetched, but uid and email are set
+        console.log("Class Page: about to set user", this.user)
         this.classParticipantsRef.doc(this.user.uid).set({
           uid: this.user.uid,
           email: this.user.email
@@ -297,7 +304,22 @@ html {
   right: 0px; 
   bottom: 0px; 
   background-color: #eee;
+  /* height: 300px;
+  width: 500px; */
 }
+/* .video-chat-container .video-component{
+  position: absolute; 
+  margin-top: 50px;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  margin-bottom: 50px;
+}
+.minimize-video-btn{
+  position: absolute;
+  top:0%;
+  right:0%;
+} */
 </style>
 
 

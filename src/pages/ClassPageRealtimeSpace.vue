@@ -39,7 +39,7 @@ export default {
       firebaseRef: null,
       messagesOpen: false,
       hasUserBeenSet: false,
-      removeSetParticipantListener: null
+      removeSetParticipantListener: null,
     }
   },
   computed: {
@@ -98,6 +98,7 @@ export default {
         const user = doc.data();
         console.log("PARTICHANGED", this.roomId, user)
         if (user) {
+          this.removeSetParticipantListener();
           participantRef.update({
             uid: this.user.uid,
             email: this.user.email,
@@ -108,7 +109,6 @@ export default {
             isCameraOn: user.isCameraOn ? true: false,
             hasJoinedMedia: user.hasJoinedMedia ? true: false
           })
-          this.removeSetParticipantListener();
         }
       })
     }

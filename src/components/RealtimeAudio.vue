@@ -1,7 +1,7 @@
 <template>
 	<div v-if="hasJoinedMedia">
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
-			<v-container class="video-display">
+			<v-container v-show="!isMinimizedView" class="video-display">
 				<v-row>
 					<v-col class="video-col">
 						<div class="video-container-wrapper">
@@ -21,6 +21,39 @@
 						:key="participant.uid" 
 						class="video-col">
 						<div class="video-container-wrapper" >
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
+							<div class="display-bar">
+								<div class="name-container">
+									{{participant.firstName + " " + participant.lastName}}
+								</div>
+								<v-icon class="participant-mic">
+									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+								</v-icon> 
+							</div>
+						</div>
+					</v-col>
+				</v-row>
+			</v-container>
+			<v-container v-show="isMinimizedView" class="video-display">
+				<v-row>
+					<v-col class="video-col">
+						<div class="mini-view-container">
+							<div class="display-bar">
+								<div class="name-container">
+									{{user.firstName + " " + user.lastName}}
+								</div>
+								<div class="local-buttons-container">
+									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+								</div>
+							</div>
+						</div>
+					</v-col>
+					<v-col v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid) && p.hasJoinedMedia)" 
+						:key="participant.uid" 
+						class="video-col">
+						<div class="mini-view-container" >
 							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.uid}`"  class="video-container"/>
 							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
@@ -55,7 +88,8 @@ export default {
 		classId: String,
 		hasJoinedMedia: Boolean,
 		roomParticipants: Array,
-		portalToLiveBoard: Boolean
+		portalToLiveBoard: Boolean,
+		isMinimizedView: Boolean
 	},
 	data() {
 		return {
@@ -401,6 +435,7 @@ export default {
 	opacity: 1;
 	z-index: 1000;
 	padding-bottom: 0;
+	padding-top: 0;
 	margin-left: 0%;
 }
 .video-col{
@@ -455,5 +490,14 @@ export default {
 	right: 0px;
 	color: white; 
 	bottom: 0px;
+}
+.mini-view-container{
+	height: 30px;
+	width: 240px;
+	position: relative;
+	border-style: solid;
+	border-color: var(--v-accent-base);
+	background-color:black;
+	border-radius: 10px;
 }
 </style>
