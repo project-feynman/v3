@@ -73,7 +73,7 @@ export default {
 			"user"
 		]),
 		roomParticipantRef () {
-			return db.doc(`classes/${this.classId}/blackboards/${this.roomId}/participants/${this.user.uid}`);
+			return db.doc(`classes/${this.classId}/participants/${this.user.uid}`);
 		}
 	},
 	watch: {
@@ -99,7 +99,9 @@ export default {
 			}
 		},
 		portalToLiveBoard () {
-			this.connectAllTracksInRoom(this.activeRoom)
+			if (this.activeRoom){
+				this.connectAllTracksInRoom(this.activeRoom)
+			}
 		}
 	},
 	created() {
@@ -143,7 +145,7 @@ export default {
 			}
 		},
 		updateMediaStatus () {
-			console.log("Updating db", this.isMicOn, this.isCameraOn, this.hasJoinedMedia)
+			// console.log("Updating db", this.isMicOn, this.isCameraOn, this.hasJoinedMedia)
 			if (this.roomParticipantRef){
 				this.roomParticipantRef.update({
 					isMicOn: this.isMicOn,

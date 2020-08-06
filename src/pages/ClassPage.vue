@@ -94,7 +94,7 @@
         <template v-else>Exit Video Chat</template>
       </BaseButton>
 
-      <BaseButton @click="portalToLiveBoard=!portalToLiveBoard" 
+      <BaseButton @click="handleVideoViewToggle()" 
         color='accent'
         rounded
         outlined
@@ -177,6 +177,9 @@ export default {
       if (this.roomID) {
         this.savedRoomId = this.roomID;
       }
+      else{
+        this.portalToLiveBoard = false;
+      }
       return this.savedRoomId;
     },
     numberOfBlackboards () {
@@ -211,6 +214,17 @@ export default {
     this.firebaseRef.onDisconnect().cancel();
   },
   methods: {
+    handleVideoViewToggle () {
+      if (!this.hasLoadedMedia && this.hasJoinedMedia){
+        return;
+      }
+      if (this.roomID){
+        this.portalToLiveBoard = !this.portalToLiveBoard;
+      }
+      else{
+        this.portalToLiveBoard = false;
+      }
+    },
     async updateSettings (payload) {
       const userRef = db.doc(`users/${this.user.uid}`);
       userRef.update({ 
@@ -276,7 +290,8 @@ html {
   overflow-y: auto; 
 }
 .video-chat-container{
-  border-style: solid; 
+  /* border-style: solid;  */
+  border-radius: 10px;
   z-index: 100; 
   position: fixed; 
   right: 0px; 

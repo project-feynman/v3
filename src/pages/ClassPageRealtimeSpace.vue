@@ -104,9 +104,9 @@ export default {
             firstName: this.user.firstName,
             lastName: this.user.lastName,
             currentRoom: this.roomId,
-            isMicOn: false,
-            isCameraOn: false,
-            hasJoinedMedia: false
+            isMicOn: user.isMicOn ? true: false,
+            isCameraOn: user.isCameraOn ? true: false,
+            hasJoinedMedia: user.hasJoinedMedia ? true: false
           })
           this.removeSetParticipantListener();
         }
