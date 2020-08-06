@@ -149,19 +149,23 @@ export default {
         weekPromises.push(
           collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
             if (!querySnapshot.empty) {
+              // Because by the time query is run, the variables have already changed, we retrive them from the query itself
+              const {filters} = querySnapshot.Pm.query
+              const start = new Date(filters.filter(x => x.op.name === '>=')[0].value.Ht);
+              const end = new Date(filters.filter(x => x.op.name === '<')[0].value.Ht);
               this.weeks.push({
                 name: 'Week ' + moment(startOfThisWeek).format('MMM D') + ' - ' + moment(endOfThisWeek).format('MMM D'),
-                start: startOfThisWeek,
-                end: startOfNextWeek,
+                start: start,
+                end: end,
                 isLoading: false,
                 children: [],
               })
             }
           })
         );
-        await Promise.all(weekPromises);
         startOfNextWeek = startOfThisWeek;
       }
+      await Promise.all(weekPromises);
 
       this.weeksMounted = true;
     },
@@ -174,11 +178,12 @@ export default {
       // const endTime = endDate.toISOString();
       const startDate = week.start.toISOString();
       const endDate = week.end.toISOString();
-      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startDate).where("date", "<=", endDate);
+      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startDate).where("date", "<=", endDate).orderBy('date', 'desc');
       const posts = [];
       await new Promise(resolve => {
         const snapshotListener = postsQuery.onSnapshot(snapshot => {
           if (snapshot.empty) {
+            week.isLoading= false
             resolve();
             return;
           }
@@ -192,7 +197,6 @@ export default {
               tag: doc.data().tags[0],
             });
           });
-          week.children.sort((a, b) => b.date-a.date);
           week.isLoading= false
           resolve();
         });
