@@ -92,13 +92,14 @@ export default {
         if (isUserConnected === false){
           return;
         } 
-        const participantRef = db.doc(`classes/${this.classId}/participants/${this.user.uid}`);
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.rToken}`);
         participantRef.get().then(doc => {
           if (doc.exists){
             const userObj = doc.data();
             const isSameRoom = userObj.currentRoom === this.roomId;
             console.log("doc exists!", userObj)
             participantRef.update({
+              rToken: this.rToken,
               uid: this.user.uid,
               email: this.user.email,
               firstName: this.user.firstName,
@@ -112,6 +113,7 @@ export default {
           else{
             console.log("doc no exist")
             participantRef.set({
+              rToken: this.rToken,
               uid: this.user.uid,
               email: this.user.email,
               firstName: this.user.firstName,

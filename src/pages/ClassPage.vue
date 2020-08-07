@@ -167,7 +167,8 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "rToken"
     ]),
     isUserEnrolled () {
       if (!this.user) return; 
@@ -217,7 +218,7 @@ export default {
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     };
-    this.classParticipantsRef.doc(this.user.uid).delete()
+    this.classParticipantsRef.doc(this.rToken).delete()
     this.firebaseRef.onDisconnect().cancel();
   },
   methods: {
@@ -272,7 +273,7 @@ export default {
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         
         // step 1 (step 2 is executed in Cloud Functions)
-        await this.firebaseRef.onDisconnect().set({ uid: this.user.uid });
+        await this.firebaseRef.onDisconnect().set({ uid: this.rToken });
 
         //user hasn't always been fetched, but uid and email are set
         console.log("Class Page set DC hook", this.user)
