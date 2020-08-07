@@ -62,8 +62,9 @@ exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId
   workspaceRef.collection('participants').doc(userWhoLeft.uid).delete();
 })
 
-exports.onMainLobbyParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
+exports.onClassParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
+  console.log("user", userWhoLeft)
   if (!userWhoLeft.uid) { return; }
   const { classId } = context.params;
   firestore.doc(`/classes/${classId}/participants/${userWhoLeft.uid}`).delete();

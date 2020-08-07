@@ -1,7 +1,7 @@
 <template>
 	<div v-if="hasJoinedMedia">
-		<portal to="video-chat">
-			<v-container class="video-display">
+		<portal to="video-chat" :disabled="!portalToLiveBoard">
+			<v-container v-show="!isMinimizedView" class="video-display">
 				<v-row>
 					<v-col class="video-col">
 						<div class="video-container-wrapper">
@@ -35,7 +35,41 @@
 					</v-col>
 				</v-row>
 			</v-container>
+			<v-container v-show="isMinimizedView" class="video-display">
+				<v-row>
+					<v-col class="video-col">
+						<div class="mini-view-container">
+							<div class="display-bar">
+								<div class="name-container">
+									{{user.firstName + " " + user.lastName}}
+								</div>
+								<div class="local-buttons-container">
+									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
+									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+								</div>
+							</div>
+						</div>
+					</v-col>
+					<v-col v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid) && p.hasJoinedMedia)" 
+						:key="participant.uid" 
+						class="video-col">
+						<div class="mini-view-container" >
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
+							<div class="display-bar">
+								<div class="name-container">
+									{{participant.firstName + " " + participant.lastName}}
+								</div>
+								<v-icon class="participant-mic">
+									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+								</v-icon> 
+							</div>
+						</div>
+					</v-col>
+				</v-row>
+			</v-container>
 		</portal>
+		<!-- <portal-target name="video-chat-global"/> -->
 	</div>
 </template> 
 
@@ -53,8 +87,9 @@ export default {
 		roomId: String,
 		classId: String,
 		hasJoinedMedia: Boolean,
-		blackboardRoom: Object,
-		roomParticipants: Array
+		roomParticipants: Array,
+		portalToLiveBoard: Boolean,
+		isMinimizedView: Boolean
 	},
 	data() {
 		return {
@@ -72,7 +107,7 @@ export default {
 			"user"
 		]),
 		roomParticipantRef () {
-			return db.doc(`classes/${this.classId}/blackboards/${this.roomId}/participants/${this.user.uid}`);
+			return db.doc(`classes/${this.classId}/participants/${this.user.uid}`);
 		}
 	},
 	watch: {
@@ -95,6 +130,11 @@ export default {
 			// immediate: true,
 			handler () {
 				this.updateMediaStatus();
+			}
+		},
+		portalToLiveBoard () {
+			if (this.activeRoom){
+				this.connectAllTracksInRoom(this.activeRoom)
 			}
 		}
 	},
@@ -139,7 +179,7 @@ export default {
 			}
 		},
 		updateMediaStatus () {
-			console.log("Updating db", this.isMicOn, this.isCameraOn, this.hasJoinedMedia)
+			// console.log("Updating db", this.isMicOn, this.isCameraOn, this.hasJoinedMedia)
 			if (this.roomParticipantRef){
 				this.roomParticipantRef.update({
 					isMicOn: this.isMicOn,
@@ -176,27 +216,30 @@ export default {
 				return jwt;
 		},
 		// Trigger log events 
-		attachTrack(track, container, isLocal=false) {
+		attachTrack(track, container, isLocal, init) {
+			this.detachTrack(track) //remove any duplicate tracks
 				if (track.kind === "video") {
-
+					console.log("TRAK", init, track)
+					
 					if (track.isStarted) {
 						scaleAndAttachVideo(track, container);
 					}
-
-					track.on('dimensionsChanged', (videoTrack) => { 
-						console.log("Track dimensions changed", videoTrack);
-						// scaleAndAttachVideo(track, container);
-					});
-					track.on('started', (videoTrack) => { 
-						console.log("Track started", videoTrack);
-						scaleAndAttachVideo(track, container);
-					});
+					
+					if (init){ //we dont want to set a bunch of event emitters
+						track.on('dimensionsChanged', (videoTrack) => { 
+							console.log("Track dimensions changed", videoTrack);
+							// scaleAndAttachVideo(track, container);
+						});
+						track.on('started', (videoTrack) => { 
+							console.log("Track started", videoTrack);
+							scaleAndAttachVideo(track, container);
+						});
+					}
 
 					function scaleAndAttachVideo (videoTrack, container) {
 						var videoTag = videoTrack.attach();
 						const videoHeight = videoTrack.dimensions.height;
 						const videoWidth = videoTrack.dimensions.width;
-						console.log("video dims", videoTrack, videoHeight, videoWidth)
 						const aspectRatio = videoWidth/videoHeight;
 						videoTag.setAttribute('style', 
 									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
@@ -212,9 +255,9 @@ export default {
 					container.appendChild(track.attach());
 				}
 		},
-		attachTracks(tracks, container, isLocal=false) {
+		attachTracks(tracks, container, isLocal=false, init=false) {
 				tracks.forEach((track) => {
-						this.attachTrack(track, container, isLocal);
+						this.attachTrack(track, container, isLocal, init);
 				});
 		},
 		detachTrack(track) {
@@ -224,11 +267,11 @@ export default {
 		},
 		trackPublished(publication, container) {
 				if (publication.isSubscribed) {
-						this.attachTrack(publication.track, container);
+						this.attachTrack(publication.track, container, false, true);
 				}
 				publication.on('subscribed', (track) => {
 						console.log('Subscribed to ' + publication.kind + ' track');
-						this.attachTrack(track, container);
+						this.attachTrack(track, container, false, true);
 				});
 				publication.on('unsubscribed', this.detachTrack);
 		},
@@ -317,7 +360,7 @@ export default {
 				
 				this.activeRoom = room;
 				var previewContainer = document.getElementById('local-media');
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true);
+				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, true);
 				this.isMicOn = true;
 				this.isCameraOn = true;
 
@@ -348,6 +391,37 @@ export default {
 					room.participants.forEach(this.detachParticipantTracks);
 					this.activeRoom = null;
 				});
+		},
+		connectAllTracksInRoom (room) {
+			this.recurseNextTickLocal(room, 0);
+
+			room.participants.forEach((participant) => {
+				this.recurseNextTickRemote(room, participant, 0);
+			});
+		},
+		recurseNextTickLocal(room, count) {
+			if (count < 5){
+				this.$nextTick( () => {
+					var previewContainer = document.getElementById('local-media');
+					if (previewContainer) {
+						this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, false);
+						return;
+					}
+					this.recurseNextTickLocal(room, count+1)
+				})
+			}
+		},
+		recurseNextTickRemote(room, participant, count) {
+			if (count < 5){
+				this.$nextTick( () => {
+					var previewContainer = document.getElementById(`remote-media-${participant.identity}`);
+					if (previewContainer) {
+						this.attachTracks(this.getTracks(participant), previewContainer, false, false);
+						return;
+					}
+					this.recurseNextTickRemote(room, participant, count+1)
+				})
+			}
 		}
 	}
 }
@@ -361,6 +435,7 @@ export default {
 	opacity: 1;
 	z-index: 1000;
 	padding-bottom: 0;
+	padding-top: 0;
 	margin-left: 0%;
 }
 .video-col{
@@ -415,5 +490,14 @@ export default {
 	right: 0px;
 	color: white; 
 	bottom: 0px;
+}
+.mini-view-container{
+	height: 30px;
+	width: 240px;
+	position: relative;
+	border-style: solid;
+	border-color: var(--v-accent-base);
+	background-color:black;
+	border-radius: 10px;
 }
 </style>

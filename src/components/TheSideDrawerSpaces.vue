@@ -77,7 +77,7 @@
                                 </v-card>
                               </v-dialog>
                                                 
-                              <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
+                              <!-- <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
                                 :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
                                 :outlined="hasJoinedMedia" 
                                 rounded
@@ -89,7 +89,7 @@
                                 </template>
                                 
                                 <template v-else>Exit Video Chat</template>
-                              </BaseButton>
+                              </BaseButton> -->
                             </template>
                             <template v-else>
                               <v-icon style="right: 7%">{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
@@ -125,18 +125,6 @@
       @create-blackboard="roomType => createBlackboard(roomType)"
     />
   </v-list>
-
-  <!-- TODO: refactor -->
-    <RealtimeAudio v-if="user"
-      :roomId="lastBlackboardRoomId"
-      :classId="classID"
-      :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
-      :hasJoinedMedia="hasJoinedMedia"
-      :blackboardRoom="blackboardRoom"
-      :key="lastBlackboardRoomId"
-      @left-room="hasJoinedMedia = false; hasLoadedMedia = false;"
-      @media-connected="hasLoadedMedia = true"
-    />
   </div>
 </template>
 
@@ -153,6 +141,9 @@ import { mapState } from "vuex";
 import Vue from 'vue';
 
 export default {
+  props: {
+    roomParticipantsMap: Object
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -167,15 +158,14 @@ export default {
       snapshotListeners: [],
       centerTableParticipants: [],
       blackboards: [],
-      hasLoadedMedia: false,
-      hasJoinedMedia: false,
+      // hasLoadedMedia: false,
+      // hasJoinedMedia: false,
       savedRoomId: "",
       roomTypes: [],
       roomCategories: [],
       expandedPanels: [],
       roomStatusPopup: false,
       updatedStatus: "",
-      roomParticipantsMap: {},
       mitClassDoc: {},
       isCreatePopupOpen: false,
     };
@@ -192,15 +182,6 @@ export default {
     roomID () {
       return this.$route.params.room_id;
     },
-    lastBlackboardRoomId () {
-      if (this.roomID) {
-        this.savedRoomId = this.roomID;
-      }
-      return this.savedRoomId;
-    },
-    numberOfBlackboards () {
-      return this.blackboards.length
-    }
   },
   watch: {
     blackboards () {
@@ -217,17 +198,6 @@ export default {
         const ind = this.roomTypes.indexOf(this.blackboardRoom.roomType)
         this.expandedPanels = [ind]
       }
-    },
-    // TODO
-    numberOfBlackboards () {
-      this.blackboards.forEach(blackboard => {
-        const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-        const participantsRef = blackboardsRef.doc(blackboard.id).collection("participants");
-        Vue.set(this.roomParticipantsMap, blackboard.id, []); // this makes each entry in the object reactive.
-        this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
-          this.snapshotListeners.push(snapshotListener);
-        });
-      })
     }
   },
   created () {
