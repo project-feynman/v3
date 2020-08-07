@@ -17,11 +17,11 @@
 							</div>
 						</div>
 					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid) && p.hasJoinedMedia)" 
-						:key="participant.uid" 
+					<v-col v-for="participant in roomParticipants.filter(p => (p.rToken !== rToken) && p.hasJoinedMedia)" 
+						:key="participant.rToken" 
 						class="video-col">
 						<div class="video-container-wrapper" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
 							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
@@ -50,11 +50,11 @@
 							</div>
 						</div>
 					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.uid !== user.uid) && p.hasJoinedMedia)" 
-						:key="participant.uid" 
+					<v-col v-for="participant in roomParticipants.filter(p => (p.rToken !== rToken) && p.hasJoinedMedia)" 
+						:key="participant.rToken" 
 						class="video-col">
 						<div class="mini-view-container" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.uid}`"  class="video-container"/>
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
 							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
@@ -104,10 +104,11 @@ export default {
 	},
 	computed: {
 	...mapState([
-			"user"
+			"user",
+			"rToken"
 		]),
 		roomParticipantRef () {
-			return db.doc(`classes/${this.classId}/participants/${this.user.uid}`);
+			return db.doc(`classes/${this.classId}/participants/${this.rToken}`);
 		}
 	},
 	watch: {
@@ -204,7 +205,7 @@ export default {
 						API_KEY_SECRET
 				);
 
-				accessToken.identity = this.user.uid;
+				accessToken.identity = this.rToken;
 
 				// Grant access to Video
 				var grant = new VideoGrant();
