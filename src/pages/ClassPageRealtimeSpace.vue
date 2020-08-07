@@ -99,11 +99,6 @@ export default {
             const isSameRoom = userObj.currentRoom === this.roomId;
             console.log("doc exists!", userObj)
             participantRef.update({
-              rToken: this.rToken,
-              uid: this.user.uid,
-              email: this.user.email,
-              firstName: this.user.firstName,
-              lastName: this.user.lastName,
               currentRoom: this.roomId,
               isMicOn: isSameRoom ? userObj.isMicOn : false,
               isCameraOn: isSameRoom ? userObj.isCameraOn : false,
