@@ -79,7 +79,6 @@ export default {
       firebaseRef: null,
       snapshotListeners: [],
       roomParticipantsRef: null,
-      removeSetParticipantListener: null
     };
   },
   computed: {
@@ -100,15 +99,9 @@ export default {
     ...mapState([
       "user",
       "hasFetchedUser",
-      "mitClass"
+      "mitClass",
+      "rToken"
     ])
-  },
-  watch: {
-    user () {
-      if(this.user && this.user.firstName){
-        this.setParticipant();
-      }
-    }
   },
   /*
     1. Distinguish between students and staff 
@@ -129,12 +122,9 @@ export default {
     this.$_listenToCollection(this.roomParticipantsRef, this, "participants").then((snapshotListener) => {
       this.snapshotListeners.push(snapshotListener);
     });
-    if (this.user && this.user.firstName){
-      this.setParticipant();
-    }
+    this.setParticipant();
   },
   beforeDestroy () {
-    this.removeSetParticipantListener();
     this.removeClassDocListener();
     for (const detachListener of this.snapshotListeners) {
       detachListener();
@@ -164,25 +154,47 @@ export default {
       });
     },
     setParticipant() {
-      const participantRef = db.doc(`classes/${this.classId}/participants/${this.user.uid}`)
-      this.removeSetParticipantListener = participantRef.onSnapshot(doc => { //we use onSnapshot here to ensure that the particpant was connected in ClassPage
-        const user = doc.data();
-        console.log("PARTILOBYY", user)
-        if (user) {
-          this.removeSetParticipantListener();
-          participantRef.update({
-            uid: this.user.uid,
-            email: this.user.email,
-            firstName: this.user.firstName,
-            lastName: this.user.lastName,
-            currentRoom: "lecture-hall",
-            isMicOn: false,
-            isCameraOn: false,
-            hasJoinedMedia: false
-          })
-          this.listenForRoomAssignments();
-        }
-      })
+      firebase.database().ref(".info/connected").on("value", async snapshot => {
+        const isUserConnected = snapshot.val(); 
+        if (isUserConnected === false){
+          return;
+        } 
+        this.listenForRoomAssignments();
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.rToken}`);
+        participantRef.get().then(doc => {
+          if (doc.exists){
+            const userObj = doc.data();
+            const isSameRoom = userObj.currentRoom === this.roomId;
+            console.log("doc exists!", userObj)
+            participantRef.update({
+              rToken: this.rToken,
+              uid: this.user.uid,
+              email: this.user.email,
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              currentRoom: "lecture-hall",
+              isMicOn: isSameRoom ? userObj.isMicOn : false,
+              isCameraOn: isSameRoom ? userObj.isCameraOn : false,
+              hasJoinedMedia: isSameRoom ? userObj.hasJoinedMedia : false,
+            })
+          }
+          else{
+            console.log("doc no exist")
+            participantRef.set({
+              rToken: this.rToken,
+              uid: this.user.uid,
+              email: this.user.email,
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              currentRoom: "lecture-hall",
+              isMicOn: false,
+              isCameraOn: false,
+              hasJoinedMedia: false
+            })
+          }
+        })
+        
+      });
     },
     async moveStudentsToRooms () {
       /**
