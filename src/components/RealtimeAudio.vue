@@ -140,13 +140,11 @@ export default {
 		}
 	},
 	created() {
-		console.log("audio created")
 		this.token = this.getAccessToken();
 	},
 	beforeDestroy () {
 		this.$emit('left-room');
 		this.leaveRoomIfJoined();
-		console.log('Audio destroyed',this.roomId)
 	},
 	methods: {
 		toggleMic () {
@@ -220,7 +218,6 @@ export default {
 		attachTrack(track, container, isLocal, init) {
 			this.detachTrack(track) //remove any duplicate tracks
 				if (track.kind === "video") {
-					console.log("TRAK", init, track)
 					
 					if (track.isStarted) {
 						scaleAndAttachVideo(track, container);
