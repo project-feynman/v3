@@ -42,7 +42,8 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "rToken",
     ]),
     simplifiedUser () {
       if (!this.user) return; 
