@@ -30,6 +30,7 @@ export default {
       roomParticipants: [],
       snapshotListeners: [],
       roomRef: null,
+      classRef: null,
       roomParticipantsRef: null,
       strokesRef: null,
       unsubscribeRoomListener: null,
@@ -37,12 +38,15 @@ export default {
       roomId: this.$route.params.room_id,
       firebaseRef: null,
       messagesOpen: false,
+      hasUserBeenSet: false,
+      removeSetParticipantListener: null,
     }
   },
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "rToken",
     ]),
     simplifiedUser () {
       if (!this.user) return; 
@@ -62,7 +66,9 @@ export default {
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
-    this.roomParticipantsRef = this.roomRef.collection("participants");
+    this.classRef = db.doc(`classes/${this.classId}`);
+    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId)
+
     this.strokesRef = this.roomRef.collection("strokes");
 
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
@@ -70,57 +76,51 @@ export default {
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
-
-    this.setUserDisconnectHook();
+    this.setParticipant();
   },
   beforeDestroy () {
-    firebase.database().ref(".info/connected").off();
     this.unsubscribeRoomListener();
-    // this.roomRef.update({ //Filters out the current user
-    //   participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
-    // });
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
-    this.roomParticipantsRef.doc(this.user.uid).delete();
-    this.firebaseRef.onDisconnect().cancel();
+    firebase.database().ref(".info/connected").off();
   },
   methods: {
-    /**
-     * Push the user object onto the room's `participants` array, and ensures that 
-     * Firebase will remove the user object if he/she disconnects for whatever reason.
-     * 
-     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
-     * @see https://firebase.google.com/docs/firestore/solutions/presence
-     * @see https://firebase.google.com/docs/database/web/offline-capabilities
-     */
-    setUserDisconnectHook () {
-      // ".info/connected" is a special location on Firebase Realtime Database 
-      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
+    setParticipant() {
       firebase.database().ref(".info/connected").on("value", async snapshot => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false){
           return;
         } 
-        this.firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
-        // 1. User leaves, and his/her identity is saved to Firebase
-        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.rToken}`);
+        participantRef.get().then(doc => {
+          if (doc.exists){
+            const userObj = doc.data();
+            const isSameRoom = userObj.currentRoom === this.roomId;
+            console.log("doc exists!", userObj)
+            participantRef.update({
+              currentRoom: this.roomId,
+              isMicOn: isSameRoom ? userObj.isMicOn : false,
+              isCameraOn: isSameRoom ? userObj.isCameraOn : false,
+              hasJoinedMedia: isSameRoom ? userObj.hasJoinedMedia : false,
+            })
+          }
+          else{
+            console.log("doc no exist")
+            participantRef.set({
+              rToken: this.rToken,
+              uid: this.user.uid,
+              email: this.user.email,
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              currentRoom: this.roomId,
+              isMicOn: false,
+              isCameraOn: false,
+              hasJoinedMedia: false
+            })
+          }
+        })
         
-        // step 1 (step 2 is executed in Cloud Functions)
-        await this.firebaseRef.onDisconnect().set(this.simplifiedUser);
-
-        // add the current user to the lounge
-        this.roomParticipantsRef.doc(this.user.uid).set({
-          ...this.simplifiedUser,
-          isMicOn: false,
-          isCameraOn: false,
-          hasJoinedMedia: false
-        }); 
-        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
-          email: "", 
-          uid: "", 
-          firstName: "" 
-        });
       });
     }
   }

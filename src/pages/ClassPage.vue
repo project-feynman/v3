@@ -64,9 +64,56 @@
       </template>
     </TheAppBar>
 
-    <TheSideDrawer v-model="drawer"/>
-
-    <!-- Router View -->
+    <TheSideDrawer
+      v-model="drawer"
+      :roomParticipantsMap="roomParticipantsMap"/>
+    <div v-if="lastBlackboardRoomId" class="video-chat-container">
+        <RealtimeAudio 
+          v-if="user"
+          :roomId="lastBlackboardRoomId"
+          :classId="classID"
+          :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
+          :portalToLiveBoard="portalToLiveBoard"
+          :hasJoinedMedia="hasJoinedMedia"
+          :isMinimizedView="isMinimizedView"
+          @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
+          @media-connected="hasLoadedMedia=true"
+          :key="lastBlackboardRoomId"
+          class="video-component"
+        />
+      <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
+        :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
+        :outlined="hasJoinedMedia" 
+        rounded
+        :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
+      >
+        <template v-if="!hasLoadedMedia">
+          <template v-if="!hasJoinedMedia">Join Video Chat</template>
+          <v-progress-circular v-else indeterminate size="20" width="2"/>
+        </template>
+        
+        <template v-else>Exit Video Chat</template>
+      </BaseButton>
+      <template v-if="hasLoadedMedia">
+        <BaseButton @click="handleVideoViewToggle()" 
+          color='accent'
+          rounded
+          outlined
+          :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
+        >
+        {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
+        </BaseButton>
+        <BaseButton
+          @click="isMinimizedView = !isMinimizedView"
+          color='accent'
+          rounded
+          outlined
+          :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
+        >
+          {{isMinimizedView ? 'Normal View' : 'Mini View'}}
+        </BaseButton>
+      </template>
+    </div>
     <v-content>
       <RouterView :key="$route.fullPath"/>
     </v-content>
@@ -80,17 +127,21 @@ import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import RealtimeAudio from "@/components/RealtimeAudio.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
+import Vue from 'vue';
 
 export default {
   mixins: [
     AuthHelpers,
+    DatabaseHelpersMixin
   ],
   components: { 
     TheSideDrawer,
@@ -98,23 +149,90 @@ export default {
     TheDropdownMenu,
     MenuEmailSettings,
     BaseButton,
-    BasePopupButton
+    BasePopupButton,
+    RealtimeAudio
   },
   data: () => ({
-    drawer: true
+    drawer: true,
+    blackboards: [],
+    snapshotListeners: [],
+    roomParticipantsMap: {},
+    hasJoinedMedia: false,
+    hasLoadedMedia: false,
+    portalToLiveBoard: false,
+    firebaseRef: null,
+    classParticipantsRef: null,
+    isMinimizedView: false
   }),
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "rToken"
     ]),
     isUserEnrolled () {
       if (!this.user) return; 
       if (!this.user.enrolledClasses) return; 
       return this.user.enrolledClasses.filter((course) => course.id === this.$route.params.class_id).length === 1;
+    },
+    classID () {
+      return this.$route.params.class_id;
+    },
+    roomID () {
+      return this.$route.params.room_id;
+    },
+    lastBlackboardRoomId () {
+      if (this.roomID) {
+        this.savedRoomId = this.roomID;
+      }
+      else{
+        this.portalToLiveBoard = false;
+      }
+      return this.savedRoomId;
+    },
+    numberOfBlackboards () {
+      return this.blackboards.length;
     }
   },
+  watch : {
+    numberOfBlackboards () {
+      this.blackboards.forEach( blackboard => {
+        const roomParticipantsRef = this.classParticipantsRef.where("currentRoom", "==", blackboard.id);
+        Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
+        this.$_listenToCollection(roomParticipantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
+          this.snapshotListeners.push(snapshotListener);
+        });
+      })
+    }
+  },
+  created () {
+    this.classParticipantsRef = db.collection(`classes/${this.classID}/participants`)
+    const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+    this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
+      this.snapshotListeners.push(snapshotListener);
+    });
+    this.setUserDisconnectHook();
+  },
+  beforeDestroy () {
+    firebase.database().ref(".info/connected").off();
+    for (const detachListener of this.snapshotListeners) {
+      detachListener();
+    };
+    this.classParticipantsRef.doc(this.rToken).delete()
+    this.firebaseRef.onDisconnect().cancel();
+  },
   methods: {
+    handleVideoViewToggle () {
+      if (!this.hasLoadedMedia && this.hasJoinedMedia){
+        return;
+      }
+      if (this.roomID){
+        this.portalToLiveBoard = !this.portalToLiveBoard;
+      }
+      else{
+        this.portalToLiveBoard = false;
+      }
+    },
     async updateSettings (payload) {
       const userRef = db.doc(`users/${this.user.uid}`);
       userRef.update({ 
@@ -133,6 +251,39 @@ export default {
       });
       this.$router.push({path: '/'});
       this.$root.$emit("show-snackbar", "Successfully dropped class.");
+    },
+    /**
+     * Push the user object onto the room's `participants` array, and ensures that 
+     * Firebase will remove the user object if he/she disconnects for whatever reason.
+     * 
+     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
+     * @see https://firebase.google.com/docs/firestore/solutions/presence
+     * @see https://firebase.google.com/docs/database/web/offline-capabilities
+     */
+    setUserDisconnectHook () {
+      // ".info/connected" is a special location on Firebase Realtime Database 
+      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
+      firebase.database().ref(".info/connected").on("value", async snapshot => {
+        const isUserConnected = snapshot.val(); 
+        if (isUserConnected === false){
+          return;
+        } 
+        this.firebaseRef = firebase.database().ref(`/class/${this.classID}/participants`);
+        // 1. User leaves, and his/her identity is saved to Firebase
+        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
+        
+        // step 1 (step 2 is executed in Cloud Functions)
+        await this.firebaseRef.onDisconnect().set({ uid: this.rToken });
+
+        //user hasn't always been fetched, but uid and email are set
+        console.log("Class Page set DC hook", this.user)
+        
+        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
+          email: "", 
+          uid: "", 
+          firstName: "" 
+        });
+      });
     }
   }
 }
@@ -143,6 +294,30 @@ export default {
 html {
   overflow-y: auto; 
 }
+.video-chat-container{
+  /* border-style: solid;  */
+  border-radius: 10px;
+  z-index: 100; 
+  position: fixed; 
+  right: 0px; 
+  bottom: 0px; 
+  background-color: #eee;
+  /* height: 300px;
+  width: 500px; */
+}
+/* .video-chat-container .video-component{
+  position: absolute; 
+  margin-top: 50px;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  margin-bottom: 50px;
+}
+.minimize-video-btn{
+  position: absolute;
+  top:0%;
+  right:0%;
+} */
 </style>
 
 
