@@ -1,28 +1,5 @@
 <template>
-  <div id="room" class="room-wrapper">
-    <portal-target name="video-chat"/>
-    <div v-if="user">
-      <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
-        <template
-          v-for="(board, i) in room.blackboards"
-        >
-          <v-tab :href="'#'+board">
-            {{'Board #'+(i+1)}}
-          </v-tab>
-        </template>
-        <v-btn @click="newBoard()">+</v-btn>
-      </v-tabs>
-      <v-tabs-items v-model="activeBoard">
-        <template
-          v-for="board in room.blackboards"
-        >
-          <v-tab-item :value="board">
-            <RealtimeSingleBlackboard :blackboardId="board"/>
-          </v-tab-item>
-        </template>
-      </v-tabs-items>
-    </div>
-  </div>
+  <RealtimeBlackboard :strokesRef="strokesRef" :roomParticipants="roomParticipants"/>
 </template>
 
 <script>
@@ -30,13 +7,15 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
-import BaseButton from "@/components/BaseButton.vue";
 import { mapState } from "vuex";
-import RealtimeSingleBlackboard from "@/components/RealtimeSingleBlackboard.vue"
+import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
+  props: {
+    blackboardId: String,
+  },
   components: {
-    RealtimeSingleBlackboard
+    RealtimeBlackboard
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -46,15 +25,14 @@ export default {
       room: {},
       roomParticipants: [],
       snapshotListeners: [],
-      roomRef: null,
+      blackboardRef: null,
       roomParticipantsRef: null,
-      unsubscribeRoomListener: null,
+      strokesRef: null,
+      unsubscribeBoardListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
       firebaseRef: null,
       messagesOpen: false,
-      activeBoard: 'tab-1',
-      boards: [],
     }
   },
   computed: {
@@ -72,23 +50,12 @@ export default {
       };
     }
   },
-  // Why use a watch hook here? 
-  watch: {
-    room () {
-      this.$store.commit("SET_ROOM", this.room);
-    }
-  },
   async created () {
-    this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+    this.blackboardRef = db.doc(`classes/${this.classId}/blackboards/${this.blackboardId}`);
+    this.roomParticipantsRef = this.blackboardRef.collection("participants");
+    this.strokesRef = this.blackboardRef.collection("strokes");
 
-    // await this.roomRef.get().then(doc => {
-    //   console.log('the doc', doc.data().blackboards);
-    //   this.boards = doc.data().blackboards;
-    // })
-
-    this.roomParticipantsRef = this.roomRef.collection("participants");
-
-    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
+    this.unsubscribeBoardListener = await this.$_listenToDoc(this.blackboardRef, this, "room"); 
 
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
@@ -98,8 +65,8 @@ export default {
   },
   beforeDestroy () {
     firebase.database().ref(".info/connected").off();
-    this.unsubscribeRoomListener();
-    // this.roomRef.update({ //Filters out the current user
+    this.unsubscribeBoardListener();
+    // this.blackboardRef.update({ //Filters out the current user
     //   participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
     // });
     for (const detachListener of this.snapshotListeners) {
@@ -145,40 +112,8 @@ export default {
           firstName: "" 
         });
       });
-    },
-    newBoard () {
-      const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-      const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
-      
-      const newBlackboard = blackboardsRef.add({
-        roomType: '',
-      });
-      newBlackboard.then(result => {
-        roomRef.update({
-          blackboards: firebase.firestore.FieldValue.arrayUnion(result.id)
-        });
-        this.activeBoard = result.id;
-      })
-
     }
   }
 };
 </script>
-
-<style scoped>
-.room-wrapper{
-  /* position: absolute;  */
-  /* width: 50%;  */
-  height: 100px;
-}
-.chat-btn{
-  position: absolute; 
-  right: 0%; 
-  top: 0%; 
-  border-style: solid; 
-  height: 50px;
-  margin-top: 5px;
-  z-index: 7; /* this z-index is under the app-bar but over the weird blackboard stuff*/
-}
-</style>
 

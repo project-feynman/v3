@@ -221,7 +221,7 @@ export default {
     // TODO
     numberOfBlackboards () {
       this.blackboards.forEach(blackboard => {
-        const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+        const blackboardsRef = db.collection(`classes/${this.classID}/rooms`);
         const participantsRef = blackboardsRef.doc(blackboard.id).collection("participants");
         Vue.set(this.roomParticipantsMap, blackboard.id, []); // this makes each entry in the object reactive.
         this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
@@ -231,7 +231,7 @@ export default {
     }
   },
   created () {
-    const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+    const blackboardsRef = db.collection(`classes/${this.classID}/rooms`);
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
     const classRef = db.doc(`classes/${this.classID}`)
 
@@ -244,6 +244,7 @@ export default {
     this.$_listenToDoc(classRef, this, "mitClassDoc").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
+    this.initSlides();
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -266,12 +267,13 @@ export default {
       }
     },
     setRoomStatus (status) {
-      db.doc(`classes/${this.classID}/blackboards/${this.roomID}`).update({
+      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({
         status
       });
       this.roomStatusPopup = false;
     },
     createBlackboard (roomType) {
+      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       if (roomType) {
         if (!this.roomTypes.find(type => type === roomType)) {
@@ -280,14 +282,44 @@ export default {
             roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
           });
         }
+        // Create a new room and initialize it with a new board
         const newBlackboard = blackboardsRef.add({
           roomType: roomType
         });
+        newBlackboard.then(result => {
+          const newRoom = roomsRef.add({
+            roomType: roomType,
+            blackboards: [result.id]
+          });
+        })
         this.isCreatePopupOpen = false;
       }
       else {
         this.$root.$emit("show-snackbar", "Error: Not a valid room type name")
       }
+    },
+    async initSlides () {
+      console.log('initialize the Slides');
+      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
+      // Return if rooms already exists in a class
+      let initialized = false;
+      await roomsRef.limit(1).get().then(querySnapshot => {
+        if (!querySnapshot.empty) initialized = true;
+      })
+      if (initialized) return;
+      
+      await db.collection(`classes/${this.classID}/blackboards`).get().then(querySnapshot => {
+        console.log('inside the query', querySnapshot.empty)
+        querySnapshot.forEach(doc => {
+          console.log('the doc', doc.id);
+          roomsRef.add({
+            participants: doc.data().participants || [],
+            roomType: doc.data().roomType,
+            status: doc.data().status || '',
+            blackboards: [doc.id],
+          })
+        })
+      })
     }
   }
 };
