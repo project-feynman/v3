@@ -26,8 +26,9 @@ export const twilioCreds = {
 - Tony Wang: built the first DoodleVideo by syncing blackboard strokes to audio. 
 - Lujing Cen: optimized the DoodleVideo sliding algorithm to sync blackboard points to audio. 
 
-**Past Contributors**
+**Contributors (>1 accepted Pull Request)**
 - Yang Yang: worked on email notifications
 - Kirill Zabrodin: setup DevOps and well-formated documentation
 - John Lin: built the message chats for Feynman v2
 - Kyle Xiao: worked on Q&A
+- Rob Sullivan: made the text editor more powerful with code syntax highlighting, images, undo/redo, etc.
