@@ -44,8 +44,7 @@ import firebase from "firebase/app";
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
-//missing twiliocreds
-//import { twilioCreds } from "@/twiliocreds.js";
+import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
 
 

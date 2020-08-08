@@ -249,7 +249,7 @@ export default {
 
 <style lang="scss">
 .editor{
-  max-width: 100em;
+  max-width: none;
 }
 .editor p.is-editor-empty:first-child::before {
   content: attr(data-empty-text);
