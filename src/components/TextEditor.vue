@@ -43,9 +43,6 @@
         <v-btn :class="{ 'is-active': isActive.blockquote() }" @click="commands.blockquote" icon>
           <v-icon>mdi-comment-quote-outline</v-icon>
         </v-btn>
-        <v-btn :class="{ 'is-active': isActive.code() }" @click="commands.code" icon>
-          <v-icon>mdi-code-tags</v-icon>
-        </v-btn>
         <v-btn :class="{ 'is-active': isActive.code_block() }" @click="commands.code_block" icon>
           <v-icon>mdi-code-array</v-icon>
         </v-btn>
