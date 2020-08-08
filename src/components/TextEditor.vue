@@ -94,11 +94,6 @@
 <script>
 import { Editor, EditorContent, EditorMenuBar, Node } from 'tiptap';
 
-//import hljs from 'highlight.js'; //will import everything. alt can be: import javascript from 'highlight.js/lib/languages/javascript';
-import javascript from 'highlight.js/lib/languages/javascript'
-import css from 'highlight.js/lib/languages/css'
-import python from 'highlight.js/lib/languages/python'
-
 import {
   Blockquote,
   CodeBlock,
@@ -121,6 +116,15 @@ import {
   CodeBlockHighlight,
   Placeholder
 } from 'tiptap-extensions';
+
+//import hljs from 'highlight.js'; //will import everything. alt can be: import javascript from 'highlight.js/lib/languages/javascript';
+//full list here:https://github.com/highlightjs/highlight.js/blob/master/SUPPORTED_LANGUAGES.md
+//highlight needs to be "highlight.js": "^9.16.2" for it to work with lowlight in tiptap
+import javascript from 'highlight.js/lib/languages/javascript'
+import css from 'highlight.js/lib/languages/css'
+import xml from 'highlight.js/lib/languages/xml'
+import python from 'highlight.js/lib/languages/python' 
+import java from 'highlight.js/lib/languages/java'
 
 const defaultHtml = ``;
 
@@ -152,9 +156,13 @@ export default {
     return {
       editor: new Editor({
         extensions: [
+          new CodeBlockHighlight({
+            languages: {
+              javascript, css, xml, python, java
+            }
+          }),
           new Blockquote(),
           new BulletList(),
-          new CodeBlock(),
           new HardBreak(),
           new Heading({ levels: [1, 2, 3] }),
           new HorizontalRule(),
@@ -165,6 +173,7 @@ export default {
           new Link(),
           new Bold(),
           new Code(),
+          new CodeBlock(),
           new Italic(),
           new Strike(),
           new Underline(),
@@ -239,7 +248,9 @@ export default {
 </script>
 
 <style lang="scss">
-
+.editor{
+  max-width: 100em;
+}
 .editor p.is-editor-empty:first-child::before {
   content: attr(data-empty-text);
   float: left;

@@ -7,12 +7,6 @@ export default new Router({
   mode: "history",
   base: process.env.BASE_URL,
   routes: [
-    //for debug. delete me. rob
-    { 
-      path: "/text",
-      component: () => import(/* webpackChunkName: "home" */ "./components/TextEditor.vue")
-    },
-
     { 
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
