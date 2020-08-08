@@ -3,7 +3,7 @@
 - **Task coordination:** [Github Projects](https://github.com/feynman-project/explain-mit/projects) 
 
 **Hall of Fame** 
-- Hubert Wasilewski: Feynman's first collaborator. I worked front-end and he worked back-end since 2018 June-September. 
+- Hubert Wasilewski: My first ever collaborator on Feynman. Him and I worked backend/frontend during 2018 June-September. 
 - Tony Wang: built the first DoodleVideo by syncing blackboard strokes to audio. 
 - Lujing Cen: optimized the DoodleVideo sliding algorithm to sync blackboard points to audio. 
 
