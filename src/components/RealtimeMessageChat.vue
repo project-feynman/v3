@@ -88,7 +88,6 @@ export default {
     },
     watch : {
         chatMessages () {
-            console.log("sorting")
             this.sortedMessages = mapSort(
                 this.chatMessages,
                 (elem) => {
