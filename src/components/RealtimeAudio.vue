@@ -1,5 +1,33 @@
 <template>
 	<div v-if="hasJoinedMedia">
+		<v-dialog :value="permissionsPopupOpen">
+			<v-card>
+				<v-card-title>
+					Media Connection Error
+				</v-card-title>
+				<v-card-text>
+					Hmmm... Your video or audio failed to connect. Usually this is a problem with your browser permissions.
+					If you're on Chrome, look for a camera icon inside of the right side of your url bar. If that's not there,
+					there should be a lock icon at the left of your url bar. Clicking on either of these will hopefully allow 
+					you to change your permissions for your Camera and Microphone. You'll have to refresh your page after 
+					changing any permissions. 
+					Here are some support links for more info on changing your Media permissions:
+					<div>
+					Chrome: https://support.google.com/chrome/answer/2693767?co=GENIE.Platform%3DDesktop&hl=en
+					</div>
+					<div>
+					Safari: https://support.apple.com/guide/safari/websites-ibrwe2159f50/mac
+					</div>
+
+				</v-card-text>
+				<v-card-actions>
+					<v-spacer/>
+					<v-btn @click="permissionsPopupOpen = false">
+						exit
+					</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
 			<v-container v-show="!isMinimizedView" class="video-display">
 				<v-row>
@@ -99,7 +127,8 @@ export default {
 			isCameraOn: false,
 			isMicOn: false,
 			snapshotListeners: [],
-			roomParticipantsRef: null
+			roomParticipantsRef: null,
+			permissionsPopupOpen: false
 		}
 	},
 	computed: {
@@ -341,10 +370,15 @@ export default {
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			let room = await Twilio.connect(this.token, connectOptions);
-			this.onTwilioConnect(room)
-			this.$emit('media-connected')
-			this.loading = false;
+			Twilio.connect(this.token, connectOptions).then((room) => {
+				this.onTwilioConnect(room)
+				this.$emit('media-connected')
+				this.loading = false;
+			}).catch(error => {
+				console.log("Twilio Error", error);
+				this.permissionsPopupOpen = true;
+			});
+			
 		},
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);
