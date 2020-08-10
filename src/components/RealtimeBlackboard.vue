@@ -181,13 +181,11 @@ export default {
         else {
           // CASE 2a: stroke added by the user himself/herself
           if (snapshot.docs.length === this.strokesArray.length) {
-            console.log("my own stroke")
             // do nothing
           } 
 
           // CASE 2b: stroke added by someone else 
           else {
-            console.log("someone else's stroke");
             snapshot.docChanges().filter(change => change.type === "added").forEach(change => {
               this.strokesArray.push(
                 this.convertDocToStroke(change.doc)
