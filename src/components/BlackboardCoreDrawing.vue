@@ -28,7 +28,11 @@
 
 <script>
 /**
- * A HTML canvas that supports drawing with stylus/touch/mouse. 
+ * A HTML canvas that supports drawing with stylus/touch/mouse.
+ * 
+ * NOTE: this is NOT safe for concurrency: if `strokesArray` is reset while the user is still drawing,
+ * then the canvas UI will diverge from `strokesArray` (part of the stroke will be cut-off).
+ * However, this issue is minor in most practical situations, so will be ignored for now. 
  * 
  * Note that the local array and client array can deviate by 1 stroke (represents lag for example in the case of a realtime blackboard)
  *   localStrokesArray ahead: realtime database hasn't updated 
@@ -40,13 +44,14 @@
  *     case 1: a new stroke is pushed to `strokesArray`
  *         The watcher will draw it onto <canvas/> * and call `localStrokesArray.push(newStroke)`. 
  * 
- *     case 2: `strokesArray becomes empty
+ *     case 2: `strokesArray` becomes empty
  *         The watcher wipes the <canvas/> and calls `localStrokesArray = []`.
  * 
  *     Note that mutating / deleting existing strokes are both disallowed (which will be enforced by an ADT later).
  * 
  * UI => strokesArray:
  *     No matter how the user draws, `saveStrokeThenReset()` is called:
+ *     DANGER (TODO: refactor): eraser strokes does NOT pass `saveStrokeThenReset()`
  *         1. $emit("stroke-drawn", newStroke) // so the client's `strokesArray` will be updated via v-model.
  *         2. localStrokesArray.push(newStroke) // so when the above change propagates back down, the strokesArray watcher ignores it. 
  * 
@@ -55,7 +60,7 @@
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
-import { isIosSafari } from "@/helpers.js";
+import { getRandomId, isIosSafari } from "@/helpers.js";
 
 export default {
   props: {
@@ -150,14 +155,8 @@ export default {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
-    /**
-     * Note `localStrokesArray` can be arbitrarily ahead of `strokesArray`. For example, 
-     * if the user draws 5 strokes quickly, but the client is a realtime blackboard 
-     * that has to upload those 5 strokes to Firestore, then until those documents are uploaded,
-     * `strokesArray` and `localStrokesArray` will differ by 5. 
-     */
     checkRepInvariant () {
-      if (this.strokesArray.length - this.localStrokesArray.length > 1) {
+      if (this.strokesArray.length !== this.localStrokesArray.length) {
         throw new Error(
           `Rep invariant broken: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
         );
@@ -166,11 +165,14 @@ export default {
     // UI => strokesArray
     saveStrokeThenReset (e) {
       e.preventDefault()
-      if (this.currentStroke.points.length === 0) return;  // user is touching the screen despite that touch is disabled
+      // EDGE CASE: user is touching the screen despite that touch is disabled
+      if (this.currentStroke.points.length === 0) return;  
+
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
       this.localStrokesArray.push(this.currentStroke);
       this.$emit("stroke-drawn", this.currentStroke);
-      // reset 
+      
+      // reset variables
       this.currentStroke = { 
         points: [] 
       };
@@ -235,6 +237,7 @@ export default {
       e.preventDefault(); 
       
       this.currentStroke = {
+        id: getRandomId(),
         strokeNumber: this.strokesArray.length + 1,
         startTime: Number(this.currentTime.toFixed(1)),
         color: this.currentTool.color,
@@ -347,11 +350,14 @@ export default {
       this.$emit("stroke-start");
 
       const antiStroke = {
+        id: getRandomId(),
         strokeNumber: this.strokesArray.length + 1,
         isErasing: true,
         lineWidth: stroke.lineWidth + 2,
         points: stroke.points
       };
+
+      // TODO: refactor
       this.$_drawStroke(antiStroke);
       this.localStrokesArray.push(antiStroke);
       this.$emit("stroke-drawn", antiStroke);
