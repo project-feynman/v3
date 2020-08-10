@@ -14,10 +14,10 @@
       </v-tabs>
       <v-tabs-items v-model="activeBoard">
         <template
-          v-for="board in room.blackboards"
+          v-for="(board, i) in room.blackboards"
         >
           <v-tab-item :value="board">
-            <RealtimeSingleBlackboard :blackboardId="board"/>
+            <RealtimeBlackboard :strokesRef="strokesRefs[i]" :roomParticipants="roomParticipants"/>
           </v-tab-item>
         </template>
       </v-tabs-items>
@@ -32,11 +32,11 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
 import { mapState } from "vuex";
-import RealtimeSingleBlackboard from "@/components/RealtimeSingleBlackboard.vue"
+import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
   components: {
-    RealtimeSingleBlackboard
+    RealtimeBlackboard
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -55,6 +55,7 @@ export default {
       messagesOpen: false,
       activeBoard: 'tab-1',
       boards: [],
+      strokesRefs: [],
     }
   },
   computed: {
@@ -80,15 +81,15 @@ export default {
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-
-    // await this.roomRef.get().then(doc => {
-    //   console.log('the doc', doc.data().blackboards);
-    //   this.boards = doc.data().blackboards;
-    // })
-
     this.roomParticipantsRef = this.roomRef.collection("participants");
 
-    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
+    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
+    // this.room.strokesRefs = [];
+    for (const blackboard of this.room.blackboards) {
+      const blackboardRef = db.doc(`classes/${this.classId}/blackboards/${blackboard}`);
+      this.strokesRefs.push(blackboardRef.collection("strokes"));
+    }
+    console.log('strokes refs', this.strokesRefs.length);
 
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
@@ -157,7 +158,9 @@ export default {
         roomRef.update({
           blackboards: firebase.firestore.FieldValue.arrayUnion(result.id)
         });
-        this.activeBoard = result.id;
+        console.log('the result', result);
+        this.strokesRefs.push(db.doc(result.path).collection("strokes"));
+        // this.activeBoard = result.id;
       })
 
     }
