@@ -2,7 +2,25 @@
   <div id="room" class="room-wrapper">
     <portal-target name="video-chat"/>
     <div v-if="user">
-      <RealtimeBlackboard :strokesRef="strokesRef" :roomParticipants="roomParticipants"/>
+      <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
+        <template
+          v-for="(board, i) in room.blackboards"
+        >
+          <v-tab :href="'#'+board">
+            {{'Board #'+(i+1)}}
+          </v-tab>
+        </template>
+        <v-btn @click="newBoard()">+</v-btn>
+      </v-tabs>
+      <v-tabs-items v-model="activeBoard">
+        <template
+          v-for="(board, i) in room.blackboards"
+        >
+          <v-tab-item :value="board">
+            <RealtimeBlackboard :strokesRef="strokesRefs[i]" :roomParticipants="roomParticipants"/>
+          </v-tab-item>
+        </template>
+      </v-tabs-items>
     </div>
   </div>
 </template>
@@ -17,8 +35,7 @@ import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
-  components: { 
-    BaseButton,
+  components: {
     RealtimeBlackboard
   },
   mixins: [
@@ -32,12 +49,14 @@ export default {
       roomRef: null,
       classRef: null,
       roomParticipantsRef: null,
-      strokesRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
       firebaseRef: null,
       messagesOpen: false,
+      activeBoard: 'tab-1',
+      boards: [],
+      strokesRefs: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
     }
@@ -61,17 +80,18 @@ export default {
   // Why use a watch hook here? 
   watch: {
     room () {
-      this.$store.commit("SET_ROOM", this.room);    
+      this.$store.commit("SET_ROOM", this.room);
     }
   },
   async created () {
-    this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
-    this.classRef = db.doc(`classes/${this.classId}`);
-    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId)
+    this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+    this.roomParticipantsRef = this.roomRef.collection("participants");
 
-    this.strokesRef = this.roomRef.collection("strokes");
-
-    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
+    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
+    for (const blackboard of this.room.blackboards) {
+      const blackboardRef = db.doc(`classes/${this.classId}/blackboards/${blackboard}`);
+      this.strokesRefs.push(blackboardRef.collection("strokes"));
+    }
 
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
@@ -122,6 +142,22 @@ export default {
         })
         
       });
+    },
+    newBoard () {
+      const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+      const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
+      
+      const newBlackboard = blackboardsRef.add({
+        roomType: '',
+      });
+      newBlackboard.then(result => {
+        roomRef.update({
+          blackboards: firebase.firestore.FieldValue.arrayUnion(result.id)
+        });
+        this.strokesRefs.push(db.doc(result.path).collection("strokes"));
+        // this.activeBoard = result.id;
+      })
+
     }
   }
 };
