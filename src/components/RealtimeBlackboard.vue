@@ -170,12 +170,9 @@ export default {
            then the blackboard should NOT end up being empty. */
          if (snapshot.docs.length > 0) {
           snapshot.docs.forEach(doc => {
-            this.strokesArray.push({
-              id: doc.id,
-              ...doc.data(),
-              startTime: this.blackboard.currentTime,
-              endTime: 1 + this.blackboard.currentTime
-            });
+            this.strokesArray.push(
+              this.convertDocToStroke(doc)
+            );
           });
          }
         } 
@@ -192,12 +189,9 @@ export default {
           else {
             console.log("someone else's stroke");
             snapshot.docChanges().filter(change => change.type === "added").forEach(change => {
-              this.strokesArray.push({
-                id: change.doc.id,
-                ...change.doc.data(),
-                startTime: this.blackboard.currentTime,
-                endTime: 1 + this.blackboard.currentTime // make other people's strokes have a period of 1 second
-              });
+              this.strokesArray.push(
+                this.convertDocToStroke(change.doc)
+              );
             });
           }
         }
@@ -205,6 +199,29 @@ export default {
           this.hasFetchedStrokesFromDb = true;
         }
       });
+    },
+    /**
+     * Artifically smooths out new strokes that were created by other people 
+     * with a period of 1 second. 
+     * 
+     * Crucially, each strokesArray's timestamps are subjective i.e. based off of the user's currentTime,
+     * unlike Firestore which keeps track of objective time. This is so that whoever records a video, the order of strokes will be the same as
+     * what that user observed originally. 
+    */ 
+    convertDocToStroke (doc) {
+      const strokeObject = {
+        id: doc.id,
+        ...doc.data(),
+      };
+      // make the timestamp subjective
+      strokeObject.startTime = this.blackboard.currentTime; 
+      strokeObject.endTime = this.blackboard.currentTIme; 
+
+      if (!doc.data().isErasing) {
+        // artifically add a 1 second period to the stroke
+        strokeObject.endTime += 1;
+      } 
+      return strokeObject;
     },
     /**
      * Helps maintain the invariant that UI => RealtimeBlackboard's strokesArray,

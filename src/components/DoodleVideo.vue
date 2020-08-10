@@ -199,7 +199,6 @@ export default {
     },
     renderFrame ({ strokeIndex, pointIndex }) {
       const stroke = this.strokesArray[strokeIndex];
-      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
       this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
     }
   }
