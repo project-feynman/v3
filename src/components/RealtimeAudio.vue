@@ -1,33 +1,5 @@
 <template>
 	<div v-if="hasJoinedMedia">
-		<v-dialog :value="permissionsPopupOpen">
-			<v-card>
-				<v-card-title>
-					Media Connection Error
-				</v-card-title>
-				<v-card-text>
-					Hmmm... Your video or audio failed to connect. Usually this is a problem with your browser permissions.
-					If you're on Chrome, look for a camera icon inside of the right side of your url bar. If that's not there,
-					there should be a lock icon at the left of your url bar. Clicking on either of these will hopefully allow 
-					you to change your permissions for your Camera and Microphone. You'll have to refresh your page after 
-					changing any permissions. 
-					Here are some support links for more info on changing your Media permissions:
-					<div>
-					Chrome: https://support.google.com/chrome/answer/2693767?co=GENIE.Platform%3DDesktop&hl=en
-					</div>
-					<div>
-					Safari: https://support.apple.com/guide/safari/websites-ibrwe2159f50/mac
-					</div>
-
-				</v-card-text>
-				<v-card-actions>
-					<v-spacer/>
-					<v-btn @click="permissionsPopupOpen = false">
-						exit
-					</v-btn>
-				</v-card-actions>
-			</v-card>
-		</v-dialog>
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
 			<v-container v-show="!isMinimizedView" class="video-display">
 				<v-row>
@@ -97,7 +69,10 @@
 				</v-row>
 			</v-container>
 		</portal>
-		<!-- <portal-target name="video-chat-global"/> -->
+		<MediaErrorPopup
+		:popupOpen="permissionsPopupOpen"
+		@exit="permissionsPopupOpen = false"
+		/>
 	</div>
 </template> 
 
@@ -105,6 +80,7 @@
 import firebase from "firebase/app";
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import MediaErrorPopup from "@/components/MediaErrorPopup.vue";
 import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
@@ -118,6 +94,9 @@ export default {
 		roomParticipants: Array,
 		portalToLiveBoard: Boolean,
 		isMinimizedView: Boolean
+	},
+	components :{
+		MediaErrorPopup
 	},
 	data() {
 		return {
