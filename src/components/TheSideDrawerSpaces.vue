@@ -199,6 +199,7 @@ export default {
         const ind = this.roomTypes.indexOf(this.blackboardRoom.roomType)
         this.expandedPanels = [ind]
       }
+    },
     // TODO
     numberOfBlackboards () {
       this.blackboards.forEach(blackboard => {
@@ -209,7 +210,6 @@ export default {
           this.snapshotListeners.push(snapshotListener);
         });
       })
-
     }
   },
   created () {
