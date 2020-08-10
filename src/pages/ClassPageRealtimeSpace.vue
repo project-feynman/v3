@@ -84,12 +84,10 @@ export default {
     this.roomParticipantsRef = this.roomRef.collection("participants");
 
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
-    // this.room.strokesRefs = [];
     for (const blackboard of this.room.blackboards) {
       const blackboardRef = db.doc(`classes/${this.classId}/blackboards/${blackboard}`);
       this.strokesRefs.push(blackboardRef.collection("strokes"));
     }
-    console.log('strokes refs', this.strokesRefs.length);
 
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
@@ -158,7 +156,6 @@ export default {
         roomRef.update({
           blackboards: firebase.firestore.FieldValue.arrayUnion(result.id)
         });
-        console.log('the result', result);
         this.strokesRefs.push(db.doc(result.path).collection("strokes"));
         // this.activeBoard = result.id;
       })
