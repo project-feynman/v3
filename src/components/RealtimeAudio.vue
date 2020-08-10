@@ -178,14 +178,15 @@ export default {
 			}
 		},
 		updateMediaStatus () {
-			// console.log("Updating db", this.isMicOn, this.isCameraOn, this.hasJoinedMedia)
-			if (this.roomParticipantRef){
-				this.roomParticipantRef.update({
-					isMicOn: this.isMicOn,
-					isCameraOn: this.isCameraOn,
-					hasJoinedMedia: this.hasJoinedMedia
-				})
-			}
+			this.roomParticipantRef.get().then(doc => { 
+				if (doc.exists){ //this is just to prevent errors
+					this.roomParticipantRef.update({
+						isMicOn: this.isMicOn,
+						isCameraOn: this.isCameraOn,
+						hasJoinedMedia: this.hasJoinedMedia
+					})
+				}
+			})
 		},
 		getAccessToken() {
 				var AccessToken = require('twilio').jwt.AccessToken;
@@ -223,18 +224,14 @@ export default {
 						scaleAndAttachVideo(track, container);
 					}
 					
-					if (init){ //we dont want to set a bunch of event emitters
-						track.on('dimensionsChanged', (videoTrack) => { 
-							console.log("Track dimensions changed", videoTrack);
-							// scaleAndAttachVideo(track, container);
-						});
+					if (init){ //this is to prevent too many event listeners from being added
 						track.on('started', (videoTrack) => { 
-							console.log("Track started", videoTrack);
 							scaleAndAttachVideo(track, container);
 						});
 					}
 
 					function scaleAndAttachVideo (videoTrack, container) {
+						console.log("track attached", videoTrack)
 						var videoTag = videoTrack.attach();
 						const videoHeight = videoTrack.dimensions.height;
 						const videoWidth = videoTrack.dimensions.width;
@@ -277,18 +274,15 @@ export default {
 				console.log(publication.kind + ' track was unpublished.');
 		},
 		participantConnected(participant) {
-			this.$nextTick(() => {
-				var temp = document.getElementById(`remote-media-${participant.identity}`);
-
+			this.getMediaContainer(`remote-media-${participant.identity}`).then(container => {
 				participant.tracks.forEach((publication) => {
-					this.trackPublished(publication, temp);
+					this.trackPublished(publication, container);
 				});
 				participant.on('trackPublished', (publication) => {
-					this.trackPublished(publication, temp);
+					this.trackPublished(publication, container);
 				});
 				participant.on('trackUnpublished', this.trackUnpublished);
 			})
-				
 		},
 		detachParticipantTracks(participant) {
 				var tracks = this.getTracks(participant);
@@ -390,36 +384,27 @@ export default {
 					this.activeRoom = null;
 				});
 		},
-		connectAllTracksInRoom (room) {
-			this.recurseNextTickLocal(room, 0);
-
+		async connectAllTracksInRoom (room) {
+			this.getMediaContainer('local-media').then(previewContainer => {
+				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, false);
+			});
 			room.participants.forEach((participant) => {
-				this.recurseNextTickRemote(room, participant, 0);
+				this.getMediaContainer(`remote-media-${participant.identity}`).then(previewContainer => {
+					this.attachTracks(this.getTracks(participant), previewContainer, false, false);
+				})
 			});
 		},
-		recurseNextTickLocal(room, count) {
-			if (count < 5){
-				this.$nextTick( () => {
-					var previewContainer = document.getElementById('local-media');
-					if (previewContainer) {
-						this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, false);
-						return;
-					}
-					this.recurseNextTickLocal(room, count+1)
-				})
+		async getMediaContainer(containerId){
+			let count = 0;
+			while (count < 5){
+				await this.$nextTick();
+				const container = document.getElementById(containerId);
+				if (container){
+					return container;
+				}
+				count++;
 			}
-		},
-		recurseNextTickRemote(room, participant, count) {
-			if (count < 5){
-				this.$nextTick( () => {
-					var previewContainer = document.getElementById(`remote-media-${participant.identity}`);
-					if (previewContainer) {
-						this.attachTracks(this.getTracks(participant), previewContainer, false, false);
-						return;
-					}
-					this.recurseNextTickRemote(room, participant, count+1)
-				})
-			}
+			return "failed";
 		}
 	}
 }

@@ -165,7 +165,7 @@ export default {
           if (doc.exists){
             const userObj = doc.data();
             const isSameRoom = userObj.currentRoom === this.roomId;
-            console.log("doc exists!", userObj)
+            console.log("participant exists!", userObj)
             participantRef.update({
               currentRoom: "lecture-hall",
               isMicOn: isSameRoom ? userObj.isMicOn : false,
@@ -174,7 +174,7 @@ export default {
             })
           }
           else{
-            console.log("doc no exist")
+            console.log("participant no exist")
             participantRef.set({
               rToken: this.rToken,
               uid: this.user.uid,
