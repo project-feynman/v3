@@ -47,7 +47,6 @@ export default {
       roomParticipants: [],
       snapshotListeners: [],
       roomRef: null,
-      classRef: null,
       roomParticipantsRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
@@ -85,7 +84,7 @@ export default {
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-    this.roomParticipantsRef = this.roomRef.collection("participants");
+    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId)
 
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
     for (const blackboard of this.room.blackboards) {

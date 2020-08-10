@@ -207,11 +207,11 @@ export default {
       const connectedStudents = []; 
       const tableAssignments = []; 
       connectedStudents.push(...this.participants);
-      const query = this.classRef.collection("blackboards").where("roomType", "==", this.roomForRandom);
-      await query.get().then(blackboards => {
-        blackboards.forEach(blackboard => {
+      const query = this.classRef.collection("rooms").where("roomType", "==", this.roomForRandom);
+      await query.get().then(rooms => {
+        rooms.forEach(room => {
           tableAssignments.push({
-            roomID: blackboard.id,
+            roomID: room.id,
             assignees: []
           }); 
         })

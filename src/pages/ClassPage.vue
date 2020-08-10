@@ -154,7 +154,7 @@ export default {
   },
   data: () => ({
     drawer: true,
-    blackboards: [],
+    rooms: [],
     snapshotListeners: [],
     roomParticipantsMap: {},
     hasJoinedMedia: false,
@@ -190,16 +190,16 @@ export default {
       }
       return this.savedRoomId;
     },
-    numberOfBlackboards () {
-      return this.blackboards.length;
+    numberOfRooms () {
+      return this.rooms.length;
     }
   },
   watch : {
-    numberOfBlackboards () {
-      this.blackboards.forEach( blackboard => {
-        const roomParticipantsRef = this.classParticipantsRef.where("currentRoom", "==", blackboard.id);
-        Vue.set(this.roomParticipantsMap, blackboard.id, []) //this makes each entry in the object reactive.
-        this.$_listenToCollection(roomParticipantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
+    numberOfRooms () {
+      this.rooms.forEach( room => {
+        const roomParticipantsRef = this.classParticipantsRef.where("currentRoom", "==", room.id);
+        Vue.set(this.roomParticipantsMap, room.id, []) //this makes each entry in the object reactive.
+        this.$_listenToCollection(roomParticipantsRef, this.roomParticipantsMap, room.id).then(snapshotListener => {
           this.snapshotListeners.push(snapshotListener);
         });
       })
@@ -207,8 +207,8 @@ export default {
   },
   created () {
     this.classParticipantsRef = db.collection(`classes/${this.classID}/participants`)
-    const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-    this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
+    const roomsRef = db.collection(`classes/${this.classID}/rooms`);
+    this.$_listenToCollection(roomsRef, this, "rooms").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
     this.setUserDisconnectHook();
