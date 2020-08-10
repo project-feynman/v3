@@ -1,10 +1,13 @@
 <template>
   <div id="fullscreen-wrapper" @click="(e) => $_exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
     <div ref="VideoWrapper" class="video-container">
+      <!-- VISUAL DISPLAY -->
       <div ref="CanvasWrapper" style="position: relative;">
         <canvas ref="FrontCanvas" class="front-canvas"></canvas>
         <canvas ref="BackCanvas" class="background-canvas"></canvas>
       </div>
+
+      <!-- AUDIO SLIDER -->
       <audio v-if="audioUrl && strokesArray.length > 0"
         :src="audioUrl" 
         @play="initSyncing()"
