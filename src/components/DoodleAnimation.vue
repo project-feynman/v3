@@ -203,7 +203,6 @@ export default {
     },
     async renderFrame ({ strokeIndex, pointIndex }, instantly=false) {
       const stroke = this.strokesArray[strokeIndex];
-      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
       this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
       if (!instantly) {
         await new Promise(resolve => setTimeout(resolve, 10/this.playbackSpeed)); // Here the second parameter 10/this.playbackSpeed determines the number of frames rendered per second

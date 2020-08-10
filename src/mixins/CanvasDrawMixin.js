@@ -24,14 +24,16 @@ export default {
     */
     $_renderBackground (imageBlobUrl) {
       return new Promise(resolve => {
-        if (!imageBlobUrl) resolve();
+        if (!imageBlobUrl) {
+          resolve();
+        }
         const image = new Image();
         image.src = imageBlobUrl; 
         this.bgCanvas.width = this.canvas.width;
         this.bgCanvas.height = this.canvas.height;
         image.onload = () => {
           this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
-        resolve();
+          resolve();
         } 
       });
     },
@@ -54,10 +56,9 @@ export default {
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null, ctx = this.ctx) {
       return new Promise(async resolve => {
-        const newLineWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
-        this.$_setStyle(color, newLineWidth, ctx);
+        const normalizedWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
         for (let i = 1; i < points.length; i++) {
-          this.$_connectTwoPoints(points, i, isErasing, ctx);
+          this.$_connectTwoPoints(points, i, isErasing, ctx, color, normalizedWidth);
           if (pointPeriod !== null) { // delay for a duration of pointPeriod
             await new Promise(resolve => setTimeout(resolve, pointPeriod));
           }
@@ -65,13 +66,30 @@ export default {
         resolve();
       });
     },
-    $_setStyle (color = "white", lineWidth = 2, ctx = this.ctx) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = lineWidth;
+    $_setStrokeProperties (color, lineWidth, isEraserStroke, ctx) {
+      ctx.globalCompositeOperation = isEraserStroke ? 'destination-out' : 'source-over';
+      ctx.strokeStyle = color; 
+      ctx.lineWidth = lineWidth; 
       ctx.lineCap = "round"; // lines at different angles can join into each other
     },
-    $_connectTwoPoints (points, i, isErasing, ctx = this.ctx) {
-      // TODO: this silently fails for edge case if a stroke only has 1 point
+    /**
+     * Joins together 2 points using a straight line. 
+     * 
+     * The operation is *used* atomically, and so calling `$_setStrokesProperties()`
+     * makes the method safe for single-thread concurrency. 
+     * For example: when rendering two strokes "in parallel", the colors won't interfere.
+     * 
+     * @param {*} points NORMALIZED coordinates of the points to be joined i.e. { unitX: Number, unitY: Number } 
+     * @param {*} i 
+     * @param {*} isErasing 
+     * @param {*} ctx 
+     * @param {*} color 
+     * @param {*} lineWidth 
+     */
+    $_connectTwoPoints (points, i, isErasing, ctx = this.ctx, color = "white", lineWidth = 2) {
+      this.$_setStrokeProperties(color, lineWidth, isErasing, ctx);
+
+      // TODO: this line silently fails for edge case if a stroke only has 1 point
       const prevPoint = points[i - 1]; // this fails silently for the first point of the stroke i = 0
       const prevX = prevPoint.unitX * this.canvas.width;
       const prevY = prevPoint.unitY * this.canvas.height;
@@ -80,13 +98,16 @@ export default {
       const curX = curPoint.unitX * this.canvas.width;
       const curY = curPoint.unitY * this.canvas.height;
 
-      ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over';
       ctx.beginPath();
       ctx.moveTo(prevX, prevY);
       ctx.lineTo(curX, curY);
       ctx.stroke();
     },
-    $_getPointDuration (stroke) { // measured in seconds
+    /**
+     * Calculates how slowly two points should be traced out.
+     * Measured in seconds. 
+     */
+    $_getPointDuration (stroke) { 
       const strokePeriod = (stroke.endTime - stroke.startTime);
       return strokePeriod / stroke.points.length;
     },

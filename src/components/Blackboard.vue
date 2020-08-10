@@ -36,7 +36,7 @@
           
           <template v-slot:record-audio-slot>
             <slot name="blackboard-toolbar">
-
+            
             </slot> 
 
             <template v-if="currentState === RecordState.PRE_RECORD">
@@ -51,17 +51,24 @@
                 Add Background
               </BaseButton>
 
-              <!-- Reset button -->
-              <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
-                <template v-slot:activator-button="{ on }">
-                  <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
-                    Wipe Board
-                  </BaseButton>
-                </template>
-                <template v-slot:message-to-user>
-                  Are you sure you want to wipe everything?
-                </template> 
-              </BasePopupButton>
+              <!-- WIPE BOARD BUTTON -->
+              <!-- 
+                The slot below allows `RealtimeBlackboard.vue` to override behavior of "Wipe board";
+                Instead of wiping immediately, it wait until Firestore resolves the deletion request
+                before setting `strokesArray = []` to wipe the UI. 
+              -->
+              <slot name="wipe-board-button-slot"> 
+                <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
+                  <template v-slot:activator-button="{ on }">
+                    <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
+                      Wipe board
+                    </BaseButton>
+                  </template>
+                  <template v-slot:message-to-user>
+                    Are you sure you want to wipe everything?
+                  </template> 
+                </BasePopupButton>
+              </slot> 
 
               <!-- Record Button -->
               <BaseButton @click="startRecording()" icon="mdi-adjust" filled>
