@@ -69,7 +69,10 @@
 				</v-row>
 			</v-container>
 		</portal>
-		<!-- <portal-target name="video-chat-global"/> -->
+		<MediaErrorPopup
+		:popupOpen="permissionsPopupOpen"
+		@exit="permissionsPopupOpen = false"
+		/>
 	</div>
 </template> 
 
@@ -77,6 +80,7 @@
 import firebase from "firebase/app";
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import MediaErrorPopup from "@/components/MediaErrorPopup.vue";
 import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
@@ -91,6 +95,9 @@ export default {
 		portalToLiveBoard: Boolean,
 		isMinimizedView: Boolean
 	},
+	components :{
+		MediaErrorPopup
+	},
 	data() {
 		return {
 			loading: false,
@@ -99,7 +106,8 @@ export default {
 			isCameraOn: false,
 			isMicOn: false,
 			snapshotListeners: [],
-			roomParticipantsRef: null
+			roomParticipantsRef: null,
+			permissionsPopupOpen: false
 		}
 	},
 	computed: {
@@ -341,10 +349,15 @@ export default {
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			let room = await Twilio.connect(this.token, connectOptions);
-			this.onTwilioConnect(room)
-			this.$emit('media-connected')
-			this.loading = false;
+			Twilio.connect(this.token, connectOptions).then((room) => {
+				this.onTwilioConnect(room)
+				this.$emit('media-connected')
+				this.loading = false;
+			}).catch(error => {
+				console.log("Twilio Error", error);
+				this.permissionsPopupOpen = true;
+			});
+			
 		},
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);
