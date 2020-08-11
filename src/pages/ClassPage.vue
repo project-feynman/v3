@@ -220,6 +220,7 @@ export default {
     };
     this.classParticipantsRef.doc(this.rToken).delete()
     this.firebaseRef.onDisconnect().cancel();
+    window.removeEventListener('beforeunload', this.onBeforeUnload)
   },
   methods: {
     handleVideoViewToggle () {
@@ -283,7 +284,12 @@ export default {
           uid: "", 
           firstName: "" 
         });
+        window.addEventListener('beforeunload', this.onBeforeUnload)
       });
+    },
+    onBeforeUnload () {
+      this.firebaseRef.onDisconnect().cancel();
+      this.classParticipantsRef.doc(this.rToken).delete();
     }
   }
 }
