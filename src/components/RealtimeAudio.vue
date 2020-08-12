@@ -194,7 +194,7 @@ export default {
 		async startScreenShare (){
 			const stream = await navigator.mediaDevices.getDisplayMedia();
 			console.log("SCREEN SHARRE", stream.getTracks())
-			const screenTrack = new LocalVideoTrack(stream.getTracks()[0]);
+			let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: "screen-share"});
 			this.activeRoom.localParticipant.publishTrack(screenTrack);
 		},
 		// Trigger log events 
