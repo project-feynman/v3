@@ -1,11 +1,11 @@
 <template>
 	<div v-if="hasJoinedMedia">
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
-			<v-container v-show="!isMinimizedView" class="video-display">
+			<v-container class="video-display">
 				<v-row>
 					<v-col class="video-col">
-						<div class="video-container-wrapper">
-							<div id="local-media" class="video-container"/>
+						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'">
+							<div v-show="!isMinimizedView" id="local-media" class="video-container"/>
 							<div class="display-bar">
 								<div class="name-container">
 									{{user.firstName + " " + user.lastName}}
@@ -13,6 +13,7 @@
 								<div class="local-buttons-container">
 									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
 									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
+									<v-btn @click="startScreenShare()" x-small >SHARE</v-btn>
 								</div>
 							</div>
 						</div>
@@ -20,42 +21,9 @@
 					<v-col v-for="participant in roomParticipants.filter(p => (p.rToken !== rToken) && p.hasJoinedMedia)" 
 						:key="participant.rToken" 
 						class="video-col">
-						<div class="video-container-wrapper" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
-							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
-							<div class="display-bar">
-								<div class="name-container">
-									{{participant.firstName + " " + participant.lastName}}
-								</div>
-								<v-icon class="participant-mic">
-									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
-								</v-icon> 
-							</div>
-						</div>
-					</v-col>
-				</v-row>
-			</v-container>
-			<v-container v-show="isMinimizedView" class="video-display">
-				<v-row>
-					<v-col class="video-col">
-						<div class="mini-view-container">
-							<div class="display-bar">
-								<div class="name-container">
-									{{user.firstName + " " + user.lastName}}
-								</div>
-								<div class="local-buttons-container">
-									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
-									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
-								</div>
-							</div>
-						</div>
-					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.rToken !== rToken) && p.hasJoinedMedia)" 
-						:key="participant.rToken" 
-						class="video-col">
-						<div class="mini-view-container" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
-							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
+						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'" >
+							<div  v-show=" !isMinimizedView && participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
+							<v-icon v-show=" !isMinimizedView && !participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
 									{{participant.firstName + " " + participant.lastName}}
@@ -81,7 +49,7 @@ import firebase from "firebase/app";
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import MediaErrorPopup from "@/components/MediaErrorPopup.vue";
-import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
+import Twilio, { connect, createLocalTracks, createLocalVideoTrack, LocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
 
@@ -223,6 +191,12 @@ export default {
 				var jwt = accessToken.toJwt();
 				return jwt;
 		},
+		async startScreenShare (){
+			const stream = await navigator.mediaDevices.getDisplayMedia();
+			console.log("SCREEN SHARRE", stream.getTracks())
+			const screenTrack = new LocalVideoTrack(stream.getTracks()[0]);
+			this.activeRoom.localParticipant.publishTrack(screenTrack);
+		},
 		// Trigger log events 
 		attachTrack(track, container, isLocal, init) {
 			this.detachTrack(track) //remove any duplicate tracks
@@ -339,7 +313,6 @@ export default {
 		},
 		async enterAudioChat() {
 			this.loading = true;
-
 			let connectOptions = {
 				name: this.roomId,
 				audio: true,
