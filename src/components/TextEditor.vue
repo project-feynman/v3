@@ -1,6 +1,6 @@
 <template>
   <div class="editor">
-    <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
+    <editor-menu-bar v-show="editable" :editor="editor" v-slot="{ commands, isActive }">
       <div class="menubar">
         <v-btn @click="showImage = !showImage" icon>
           <v-icon>mdi-image</v-icon>
@@ -143,7 +143,8 @@ class Title extends Node {
 
 export default {
   props: {
-    injectedHtml: String
+    injectedHtml: String,
+    editable: Boolean
   },
   components: { 
     EditorContent, 
@@ -152,6 +153,7 @@ export default {
   data () {
     return {
       editor: new Editor({
+        editable: this.editable,
         extensions: [
           new CodeBlockHighlight({
             languages: {
@@ -201,7 +203,12 @@ export default {
     injectedHtml: {
       handler: "setup",
       immediate: true
-    }
+    },
+    editable() {
+      this.editor.setOptions({
+        editable: this.editable,
+      })
+    },
   },
   beforeDestroy() {
     this.editor.destroy()
