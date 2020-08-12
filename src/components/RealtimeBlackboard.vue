@@ -213,7 +213,7 @@ export default {
       };
       // make the timestamp subjective
       strokeObject.startTime = this.blackboard.currentTime; 
-      strokeObject.endTime = this.blackboard.currentTIme; 
+      strokeObject.endTime = this.blackboard.currentTime; 
 
       if (!doc.data().isErasing) {
         // artifically add a 1 second period to the stroke
