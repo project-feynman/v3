@@ -28,7 +28,6 @@ export default {
     */
     $_renderBackground (src) {
       return new Promise(resolve => {
-        console.log("src =", src);
         if (!src) resolve(); 
 
         const image = new Image();
