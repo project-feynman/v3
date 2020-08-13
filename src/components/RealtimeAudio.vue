@@ -153,9 +153,9 @@ export default {
 				var VideoGrant = AccessToken.VideoGrant;
 
 				// Substitute your Twilio AccountSid and ApiKey details
-				var ACCOUNT_SID = ""; //twilioCreds.ACCOUNT_SID;
-				var API_KEY_SID = ""; //twilioCreds.API_KEY_SID;
-				var API_KEY_SECRET = ""; //twilioCreds.API_KEY_SECRET;
+				var ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
+				var API_KEY_SID = twilioCreds.API_KEY_SID;
+				var API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
 
 				// Create an Access Token
 				var accessToken = new AccessToken(
