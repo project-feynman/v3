@@ -1,14 +1,15 @@
 <template>
   <div>
-    <p v-if="!hasFetchedStrokesFromDb">Loading the real-time blackboard...</p>
+    <p v-if="!hasFetchedBlackboardData">Loading the real-time blackboard...</p>
 
     <!-- Blackboard -->
+    <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <Blackboard v-else
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
+      :backgroundImage="backgroundImage" 
       isRealtime
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
-      @update:bgImageBlob="blob => blackboard.bgImageBlob = blob"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
       @record-end="handleRecordEnd()"
     >
@@ -20,9 +21,23 @@
         <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Blackboard</BaseButton>
       </template> 
 
+
+      <!-- Set Background (overrides the normal behavior) -->
+      <template v-slot:set-background-button-slot>
+        <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
+          <input 
+            @change="e => handleWhatUserUploaded(e)" 
+            style="display: none" 
+            type="file" 
+            ref="fileInput"
+          >
+          Set Background
+        </BaseButton>
+      </template>
+
       <!-- Wipe Board (overrides the normal, offline wiping behavior) -->
       <template v-slot:wipe-board-button-slot>
-        <BasePopupButton actionName="Wipe board" @action-do="deleteAllStrokesFromDb()">
+        <BasePopupButton actionName="Wipe board" @action-do="resetBlackboardOnFirestore()">
           <template v-slot:activator-button="{ on }">
             <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
               Wipe board
@@ -84,6 +99,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import RealtimeMessageChat from "@/components/RealtimeMessageChat.vue";
 import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
@@ -91,6 +107,10 @@ import { getRandomId } from "@/helpers.js";
 
 export default {
   props: {
+    blackboardRef: {
+      type: null,
+      required: true
+    },
     strokesRef: {
       type: null,
       required: true
@@ -98,10 +118,11 @@ export default {
     roomParticipants: {
       type: null,
       required: true
-    },
+    }
   },
   mixins: [
-    ExplUploadHelpers
+    ExplUploadHelpers,
+    DatabaseHelpersMixin
   ],
   components: {
     Blackboard,
@@ -112,13 +133,18 @@ export default {
   data () {
     return {
       hasFetchedStrokesFromDb: false,
+      hasFetchedBackgroundImage: false,
       strokesArray: [],
+      backgroundImage: {
+        downloadURL: null,
+        blob: null
+      },
       blackboard: {
-        bgImageBlob: null,
         audioBlob: null,
         getThumbnailBlob: null,
         currentTime: 0
       },
+      removeBackgroundImageListener: null,
       removeBlackboardStrokesListener: null,
       dialog: false,
       explTitle: "",
@@ -131,13 +157,28 @@ export default {
     ...mapState([
       "user",
       "mitClass"
-    ])
+    ]),
+    hasFetchedBlackboardData () {
+      return this.hasFetchedStrokesFromDb && this.hasFetchedBackgroundImage; 
+    }
   },
   created () {
     this.keepSyncingBoardWithDb(); 
+    // sync backgroundImage: if your friend changes the background image, you'll detect it here
+    this.removeBackgroundImageListener = this.blackboardRef.onSnapshot(blackboardDoc => {
+      // update `backgroundImage` prop so BlackboardCoreDrawing updates     
+      this.backgroundImage = {
+        downloadURL: blackboardDoc.data().backgroundImageDownloadURL,
+        blob: null
+      };
+      if (!this.hasFetchedBackgroundImage) {
+        this.hasFetchedBackgroundImage = true; 
+      }
+    });
   },
   destroyed () {
     this.removeBlackboardStrokesListener();
+    this.removeBackgroundImageListener(); 
   },
   methods: {
     /** 
@@ -240,20 +281,59 @@ export default {
         this.$root.$emit("show-snackbar", "Failed to upload stroke to database.");
       }
     },
+    // Background images
+    async handleWhatUserUploaded (e) {
+      const imageFile = e.target.files[0]; 
+      if (!imageFile) return; 
+      if (imageFile.type.split("/")[0] !== "image") {
+        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
+      } else {
+        this.$root.$emit("show-snackbar", "Uploading the background image...");
+        const backgroundImageDownloadURL = await this.$_saveToStorage(
+          this.blackboardRef.path,
+          imageFile
+        );
+        this.blackboardRef.update({ backgroundImageDownloadURL });
+      }
+    },
     async uploadExplanation () {
-      const thumbnailBlob = await this.blackboard.getThumbnailBlob();
+      // TODO: refactor backgroundImage so the blob is fetched once (otherwise display background will 
+      // make many calls to the internet during resizing which is highly inefficient). We can then
+      // just directly upload it instead of making another fetch from storage. 
+      const promises = [];
+      let thumbnailBlob;
+      let backgroundImageBlob;
+      promises.push(
+        this.blackboard.getThumbnailBlob().then(blob => thumbnailBlob = blob)
+      );
+      const { downloadURL } = this.backgroundImage; 
+      if (downloadURL) {
+        promises.push(
+          this.$_getBlobFromStorage(downloadURL).then(blob => backgroundImageBlob)
+        );
+      } 
+      await Promise.all(promises);
       this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
         audioBlob: this.blackboard.audioBlob,
+        backgroundImageBlob,
         html: "",
         title: this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleTimeString()})`, 
         tags: [],
         explRef: db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`)
       });
+      
+      // reset variables
       this.explTitle = ""; 
     },
+    async resetBlackboardOnFirestore () {
+      this.blackboardRef.update({
+        backgroundImageDownloadURL: ""
+      });
+      this.deleteAllStrokesFromDb();
+    },
     async deleteAllStrokesFromDb () {
-      console.log("deleteAllStrokesFromDb, strokesArray = ", this.strokesArray);
+      console.log("deleteAllStrokesFromDb(), strokesArray = ", this.strokesArray);
       const promises = [];
       const strokeDeleteRequests = [];
       let currentBatch = db.batch();

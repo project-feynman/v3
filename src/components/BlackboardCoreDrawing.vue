@@ -74,10 +74,17 @@ export default {
       type: Array,
       required: true
     },
-    isRealtime: Boolean,
     currentTime: {
       type: Number,
       default: () => 0
+    },
+    backgroundImage: {
+      type: Object
+      // don't set `required` to true yet to avoid minor crashes
+    },
+    isRealtime: {
+      type: Boolean,
+      default: () => false 
     }
   },
   mixins: [
@@ -105,6 +112,7 @@ export default {
       currentStroke: { 
         points: [] 
       },
+
       // initialize `prevPoint` to an invalid coordinate to signal that it's not defined initially
       prevPoint: { 
         x: -1, 
@@ -150,6 +158,27 @@ export default {
         this.localStrokesArray.push(newStroke);
       } 
       this.checkRepInvariant(); 
+    },
+    /**
+     * Updates the background image. 
+     * 
+     * Ensures <ClientComponent/> => <BlackboardCoreDrawing/>.
+     * For <BlackboardCoreDrawing/> => <ClientComponent/>, see the method "setImageAsBackground" 
+     * 
+     * @param downloadURL for image on Firebase storage 
+     * @param blob the blob representing the image
+     * @effect mutates the background canvas by displaying the image,
+     *         filling its height and width (and not necessarily preserving aspect ratio)
+     * 
+     * TODO: refactor with composition API
+     */
+    backgroundImage ({ downloadURL, blob }) {
+      this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+      if (downloadURL || blob) {
+        this.$_renderBackground(
+          blob ? URL.createObjectURL(blob) : downloadURL
+        );
+      }
     }
   },
   mounted () {
@@ -182,8 +211,8 @@ export default {
       this.bgCanvas = this.$refs.BackCanvas;
       this.ctx = this.canvas.getContext("2d");
       this.bgCtx = this.bgCanvas.getContext("2d");
-      this.resizeBlackboard();
-      this.$_drawStrokesInstantly();
+
+      this.resizeBlackboard(); // resizeBlackboard also re-renders everything
     },
     /**
      * 
@@ -355,15 +384,21 @@ export default {
      */
     getThumbnailBlob () {
       return new Promise(async resolve => {
-        if (this.imageBlob) { // has a background image
-          await this.$_renderBackground(this.imageBlobUrl);
+        const { blob, downloadURL } = this.backgroundImage;
+        if (blob || downloadURL) {
+          await this.$_renderBackground(
+            blob ? URL.createObjectURL(this.backgroundImage.blob) : downloadURL
+          );
         } else {
+          // make the background black-grey
           this.bgCtx.fillStyle = "rgb(62, 66, 66)";
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         }
         this.$_drawStrokesInstantly(this.bgCtx);
+
         // TODO: remove this quickfix (first introduced to avoid double drawing thumbnail)
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
         this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
     },
@@ -379,7 +414,19 @@ export default {
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly();
+
+      // render background
+      if (!this.backgroundImage) {
+        return; 
+      }
+      const { blob, downloadURL } = this.backgroundImage;
+      if (blob || downloadURL) {
+        this.$_renderBackground(
+          blob ? URL.createObjectURL(blob) : downloadURL
+        );
+      }
     },
+    // BACKGROUND IMAGE HANDLING CODE (WILL BE DEPRECATED)
     /**
      * By design, Handles the case if `imageFile` is empty.
      */
@@ -389,16 +436,10 @@ export default {
       if (imageFile.type.split("/")[0] !== "image") {
         this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
       } else {
-        this.displayImageFile(imageFile);
+        // this.displayImageFile(imageFile);
+        this.$_renderBackground(URL.createObjectURL(imageFile))
+        this.$emit("update:background-image", { blob: imageFile })
       }
-    },
-    /**
-     * TODO: Is imageFile a Blob or File type?
-     */
-    displayImageFile (imageFile) {
-      this.imageBlob = imageFile; 
-      this.$emit("update:bgImageBlob", this.imageBlob);
-      this.$_renderBackground(this.imageBlobUrl);
     },
     createCustomCusor () {
       const dummyCanvas = document.createElement("canvas");

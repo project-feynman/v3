@@ -2,6 +2,7 @@
   <div>
     <BlackboardCoreDrawing
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
+      :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
@@ -40,16 +41,19 @@
             </slot> 
 
             <template v-if="currentState === RecordState.PRE_RECORD">
-              <!-- Set background image -->
-              <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
-                <input 
-                  @change="e => handleImageFile(e)" 
-                  style="display: none" 
-                  type="file" 
-                  ref="fileInput"
-                >
-                Add Background
-              </BaseButton>
+
+              <!-- SET BACKGROUND IMAGE -->
+              <slot name="set-background-button-slot">
+                <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
+                  <input 
+                    @change="e => handleImageFile(e)" 
+                    style="display: none" 
+                    type="file" 
+                    ref="fileInput"
+                  >
+                  Set Background
+                </BaseButton>
+              </slot>
 
               <!-- WIPE BOARD BUTTON -->
               <!-- 
@@ -116,6 +120,10 @@ export default {
       type: Array,
       required: true
     },
+    backgroundImage: {
+      type: Object
+    },
+    // TODO: rename this variable
     isRealtime: {
       type: Boolean,
       required: true

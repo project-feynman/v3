@@ -3,21 +3,21 @@
     <portal-target name="video-chat"/>
     <div v-if="user">
       <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
-        <template
-          v-for="(board, i) in room.blackboards"
-        >
-          <v-tab :href="'#'+board">
-            {{'Board #'+(i+1)}}
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab :href="'#' + board">
+            {{ 'Board #' + (i+1) }}
           </v-tab>
         </template>
         <v-btn @click="newBoard()">+</v-btn>
       </v-tabs>
-      <v-tabs-items v-model="activeBoard">
-        <template
-          v-for="(board, i) in room.blackboards"
-        >
-          <v-tab-item :value="board">
-            <RealtimeBlackboard :strokesRef="strokesRefs[i]" :roomParticipants="roomParticipants"/>
+      <v-tabs-items v-model="activeBoard" touchless>
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab-item :value="board" :key="i">
+            <RealtimeBlackboard 
+              :blackboardRef="blackboardRefs[i]" 
+              :strokesRef="strokesRefs[i]" 
+              :roomParticipants="roomParticipants"
+            />
           </v-tab-item>
         </template>
       </v-tabs-items>
@@ -55,6 +55,7 @@ export default {
       messagesOpen: false,
       activeBoard: 'tab-1',
       boards: [],
+      blackboardRefs: [],
       strokesRefs: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
@@ -83,6 +84,7 @@ export default {
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
     for (const blackboard of this.room.blackboards) {
       const blackboardRef = db.doc(`classes/${this.classId}/blackboards/${blackboard}`);
+      this.blackboardRefs.push(blackboardRef);
       this.strokesRefs.push(blackboardRef.collection("strokes"));
     }
 
@@ -148,6 +150,7 @@ export default {
           blackboards: firebase.firestore.FieldValue.arrayUnion(result.id)
         });
         this.strokesRefs.push(db.doc(result.path).collection("strokes"));
+        this.blackboardRefs.push(db.doc(result.path));
         // this.activeBoard = result.id;
       })
 
