@@ -9,7 +9,13 @@
           </v-tab>
         </template>
         <v-btn @click="newBoard()">+</v-btn>
-        <v-btn @click="bringAllToRoom()" style="position: absolute; right: 0%"> Bring Students to room </v-btn>
+        <BaseButton 
+          @click="bringAllToRoom()" 
+          style="position: absolute; right: 0%" 
+          :icon="'mdi-account-arrow-left-outline'"
+          >
+          Bring All to Room
+        </BaseButton>
       </v-tabs>
       <v-tabs-items v-model="activeBoard" touchless>
         <template v-for="(board, i) in room.blackboards">
@@ -37,7 +43,8 @@ import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
   components: {
-    RealtimeBlackboard
+    RealtimeBlackboard,
+    BaseButton
   },
   mixins: [
     DatabaseHelpersMixin,
