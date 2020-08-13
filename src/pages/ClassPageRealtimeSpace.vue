@@ -64,16 +64,10 @@ export default {
     ...mapState([
       "user",
       "mitClass",
-      "rToken",
+      "session",
     ]),
-    simplifiedUser () {
-      if (!this.user) return; 
-      return {
-        email: this.user.email,
-        uid: this.user.uid,
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-      };
+    sessionID () {
+      return this.session.currentID;
     }
   },
   // Why use a watch hook here? 
@@ -111,7 +105,7 @@ export default {
         if (isUserConnected === false){
           return;
         } 
-        const participantRef = db.doc(`classes/${this.classId}/participants/${this.rToken}`);
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.sessionID}`);
         participantRef.get().then(doc => {
           if (doc.exists){
             const userObj = doc.data();
@@ -127,7 +121,7 @@ export default {
           else{
             console.log("participant no exist")
             participantRef.set({
-              rToken: this.rToken,
+              sessionID: this.sessionID,
               uid: this.user.uid,
               email: this.user.email,
               firstName: this.user.firstName,
