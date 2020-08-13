@@ -1,3 +1,5 @@
+import { startCase } from "lodash";
+
 export default {
   methods: {
     /**
@@ -21,20 +23,25 @@ export default {
     },
     /** 
      * Renders a background if one exists
+     * 
+     * @param src either a download URL or a blob URL 
     */
-    $_renderBackground (imageBlobUrl) {
+    $_renderBackground (src) {
       return new Promise(resolve => {
-        if (!imageBlobUrl) {
-          resolve();
-        }
+        console.log("src =", src);
+        if (!src) resolve(); 
+
         const image = new Image();
-        image.src = imageBlobUrl; 
-        this.bgCanvas.width = this.canvas.width;
-        this.bgCanvas.height = this.canvas.height;
-        image.onload = () => {
-          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
+        image.src = src;
+        
+        /* avoid the "tainted canvas may not be exported" error
+            https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported */
+        image.crossOrigin="anonymous";
+        
+        image.onload = () => { 
+          this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
           resolve();
-        } 
+        };
       });
     },
     /**
@@ -110,13 +117,6 @@ export default {
     $_getPointDuration (stroke) { 
       const strokePeriod = (stroke.endTime - stroke.startTime);
       return strokePeriod / stroke.points.length;
-    },
-    $_displayImage (src) {
-      const image = new Image();
-      image.src = src;
-      image.onload = () => { 
-        this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight)
-      };
     }
   }
 }

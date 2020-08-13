@@ -32,12 +32,13 @@ export default {
      * @params this contains the properties `postTitle`, `strokesArray`, etc. which defines the explanation 
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
-    async $_saveExplToCacheThenUpload ({ thumbnailBlob, audioBlob, html, title, tags, explRef }) {
+    async $_saveExplToCacheThenUpload ({ thumbnailBlob, audioBlob, backgroundImageBlob, html, title, tags, explRef }) {
+    
       const postOrder = parseInt(this.mitClass.maxOrder + 1) || 1
       this.$store.commit("ADD_EXPL_TO_CACHE", {
         ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads
         strokesArray: this.strokesArray,
-        backgroundImageBlob: this.blackboard.bgImageBlob,
+        backgroundImageBlob,
         thumbnailBlob,
         audioBlob,
         metadata: {
@@ -96,9 +97,7 @@ export default {
         if (!this.newReplyRef) { // this is not a reply
           explDoc.participants = [this.simplifiedUser];
           explDoc.hasReplies = false;
-          console.log("In new post")
         } else { // this is a reply
-          console.log("Adding to new")
           promises.push(
             this.newPostRef.update({ // this is a reply, and newPostRef is the original post
               participants: firebase.firestore.FieldValue.arrayUnion(this.simplifiedUser),
@@ -109,7 +108,6 @@ export default {
         promises.push(ref.set(explDoc));
         await Promise.all(promises);
         delete this.$store.state.explCache[ref.id];
-        console.log('we have reached this far',ref.id)
         this.$root.$emit("show-snackbar", "Successfully uploaded your explanation.");   
       } catch (error) {
         // TODO: send an error email to ExplainMIT core team
@@ -127,7 +125,7 @@ export default {
     /**
      * @param strokesArray an array of stroke objects
      * @param databaseRef location on Firestore where the stroke documents will be uploaded
-     * @effect uploads each stroke of the array to databaseRef 
+     * @effect uploads each stroke of the array to databaseRef, splitting into batches if necessary. 
      */
     $_uploadStrokesToDatabase (strokesArray, databaseRef) {
       return new Promise(async (resolve, reject) => {
