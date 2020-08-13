@@ -56,7 +56,7 @@ export default {
   },
   data () {
     return {
-      algoliaClient: algoliasearch("", ""), //algoliasearch(algoliaCreds.APP_SID, algoliaCreds.ADMIN_API_KEY),
+      algoliaClient: algoliasearch(algoliaCreds.APP_SID, algoliaCreds.ADMIN_API_KEY),
       searchInput: "",
       search: null,
       searchResults: [],
