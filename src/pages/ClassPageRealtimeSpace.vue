@@ -11,6 +11,14 @@
           </v-tab>
         </template>
         <v-btn @click="newBoard()">+</v-btn>
+        <BasePopupButton actionName="Make Announcement"
+          :inputFields="['Message']"
+          @action-do="payload => announce(payload)"
+        >
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-on="on" color="accent" text>Announce</v-btn>
+          </template>
+        </BasePopupButton>
       </v-tabs>
       <v-tabs-items v-model="activeBoard">
         <template
@@ -22,6 +30,25 @@
         </template>
       </v-tabs-items>
     </div>
+    <v-dialog v-model = "showAnnouncement" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Announcement!</v-card-title>
+        <v-card-text>
+          {{ this.room.announcement }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="accent darken-1"
+            text
+            @click="showAnnouncement = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
 </template>
 
@@ -32,11 +59,13 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
 import { mapState } from "vuex";
-import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
+import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue"; 
 
 export default {
   components: {
-    RealtimeBlackboard
+    RealtimeBlackboard,
+    BasePopupButton
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -58,6 +87,7 @@ export default {
       strokesRefs: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
+      showAnnouncement: false
     }
   },
   computed: {
@@ -78,8 +108,11 @@ export default {
   },
   // Why use a watch hook here? 
   watch: {
-    room () {
+    room (newVal, oldVal) {
       this.$store.commit("SET_ROOM", this.room);
+      console.log('the new value', newVal);
+      console.log('the old value', oldVal);
+      if ((oldVal.hasOwnProperty('announcement') && newVal.announcement !== oldVal.announcement)) this.showAnnouncement = true;
     }
   },
   async created () {
@@ -157,6 +190,21 @@ export default {
         // this.activeBoard = result.id;
       })
 
+    },
+    async announce (message) {
+      console.log('the announcement', message);
+      const category = this.room.roomType;
+      await db.collection(`classes/${this.classId}/rooms`).where('roomType', '==', category).get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          doc.ref.update({
+            announcement: message['Message']
+          })
+        });
+      });
+      // await db.doc(`classes/${this.classId}/rooms/${this.roomId}`).update({
+      //   announcement: message['Message']
+      // });
+      
     }
   }
 };
