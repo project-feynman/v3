@@ -168,8 +168,11 @@ export default {
     ...mapState([
       "user",
       "mitClass",
-      "rToken"
+      "session"
     ]),
+    sessionID () {
+      return this.session.currentID;
+    },
     isUserEnrolled () {
       if (!this.user) return; 
       if (!this.user.enrolledClasses) return; 
@@ -218,9 +221,8 @@ export default {
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     };
-    this.classParticipantsRef.doc(this.rToken).delete()
+    this.classParticipantsRef.doc(this.sessionID).delete()
     this.firebaseRef.onDisconnect().cancel();
-    window.removeEventListener('beforeunload', this.onBeforeUnload)
   },
   methods: {
     handleVideoViewToggle () {
@@ -274,7 +276,7 @@ export default {
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         
         // step 1 (step 2 is executed in Cloud Functions)
-        await this.firebaseRef.onDisconnect().set({ uid: this.rToken });
+        await this.firebaseRef.onDisconnect().set({ uid: this.sessionID });
 
         //user hasn't always been fetched, but uid and email are set
         console.log("Class Page set DC hook", this.user)
@@ -284,12 +286,7 @@ export default {
           uid: "", 
           firstName: "" 
         });
-        window.addEventListener('beforeunload', this.onBeforeUnload)
       });
-    },
-    onBeforeUnload () {
-      this.firebaseRef.onDisconnect().cancel();
-      this.classParticipantsRef.doc(this.rToken).delete();
     }
   }
 }

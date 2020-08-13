@@ -10,10 +10,11 @@ const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY)
 
 admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
-	databaseUrl: "https://feynman-mvp.firebaseio.com"
+	databaseURL: "https://feynman-mvp.firebaseio.com"
 });
 
 const firestore = admin.firestore();
+const firebaseDB = admin.database();
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 function sendEmail (to, subject, body) {

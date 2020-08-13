@@ -18,11 +18,11 @@
 							</div>
 						</div>
 					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.rToken !== rToken) && p.hasJoinedMedia)" 
-						:key="participant.rToken" 
+					<v-col v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
+						:key="participant.sessionID" 
 						class="video-col">
 						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'" >
-							<div  v-show=" !isMinimizedView && participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
+							<div  v-show=" !isMinimizedView && participant.isCameraOn" :id="`remote-media-${participant.sessionID}`"  class="video-container"/>
 							<v-icon v-show=" !isMinimizedView && !participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
@@ -81,10 +81,13 @@ export default {
 	computed: {
 	...mapState([
 			"user",
-			"rToken"
+			"session"
 		]),
+		sessionID () {
+			return this.session.currentID;
+		},
 		roomParticipantRef () {
-			return db.doc(`classes/${this.classId}/participants/${this.rToken}`);
+			return db.doc(`classes/${this.classId}/participants/${this.sessionID}`);
 		}
 	},
 	watch: {
@@ -180,7 +183,7 @@ export default {
 						API_KEY_SECRET
 				);
 
-				accessToken.identity = this.rToken;
+				accessToken.identity = this.sessionID;
 
 				// Grant access to Video
 				var grant = new VideoGrant();
