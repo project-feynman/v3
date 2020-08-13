@@ -93,7 +93,10 @@ export default new Vuex.Store({
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     async fetchUser (context, { uid, email, refreshToken }) {
       if (!uid) return;
-      context.commit('SET_SESSION', { currentID: getRandomId(), refreshToken: refreshToken });
+      context.commit('SET_SESSION', { 
+        currentID: getRandomId(), 
+        refreshToken: refreshToken.substring(refreshToken.length - 20) 
+      });
       context.commit('SET_USER', { uid, email }); // commit the user as soon as basic info has been fetched to avoid blocking page load
       const mirrorUserRef = db.collection('users').doc(uid);
       syncUserWithDb(mirrorUserRef, context);
