@@ -16,7 +16,7 @@
 								<div class="local-buttons-container">
 									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
 									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
-									<v-btn @click="startScreenShare()" x-small >SHARE</v-btn>
+									<v-btn @click="toggleScreenShare()" x-small >SHARE</v-btn>
 								</div>
 							</div>
 						</div>
@@ -76,6 +76,7 @@ export default {
 			token: null,
 			isCameraOn: false,
 			isMicOn: false,
+			isSharingScreen: false,
 			snapshotListeners: [],
 			roomParticipantsRef: null,
 			permissionsPopupOpen: false
@@ -115,6 +116,9 @@ export default {
 				this.updateMediaStatus();
 			}
 		},
+		isSharingScreen () {
+			console.log("screen share status", this.isSharingScreen)
+		},
 		portalToLiveBoard () {
 			if (this.activeRoom){
 				this.attachTracks(this.getTracks(this.activeRoom.localParticipant), this.sessionID);
@@ -122,6 +126,9 @@ export default {
 					this.attachTracks(this.getTracks(participant), participant.identity);
 				});
 			}
+		},
+		activeRoom (){
+			console.log('activeRToom', this.activeRoom)
 		}
 	},
 	created() {
@@ -159,6 +166,19 @@ export default {
 			else {
 				if (this.activeRoom){
 					this.disableTrack("video");
+				}
+			}
+		},
+		toggleScreenShare () {
+			if (!this.activeRoom) {
+				this.enterAudioChat();
+			}
+			else {
+				if (!this.isSharingScreen) {
+					this.startScreenShare();
+				}
+				else{
+					this.stopScreenShare();
 				}
 			}
 		},
@@ -205,6 +225,15 @@ export default {
 			console.log("SCREEN SHARRE", stream.getTracks())
 			let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: "screen-share"});
 			this.activeRoom.localParticipant.publishTrack(screenTrack);
+			this.isSharingScreen = true;
+		},
+		stopScreenShare () {
+			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
+				if (track.name === 'screen-share'){
+					this.activeRoom.localParticipant.unpublishTrack(track);
+					this.isSharingScreen = false;
+				}
+			})
 		},
 		// Trigger log events 
 		attachTrack(track, container, isLocal, init) {
@@ -232,11 +261,6 @@ export default {
 						if (track.name === 'screen-share'){
 							videoTag.setAttribute("controls", true);
 						}
-						
-						
-						// while (container.firstChild) {
-						// 	container.removeChild(container.lastChild);
-						// }
 						container.appendChild(videoTag);
 					}
 					
@@ -276,28 +300,16 @@ export default {
 		},
 		participantConnected(participant) {
 			participant.tracks.forEach((publication) => {
-				if (publication.trackName === 'screen-share'){
-					this.getMediaContainer("screen-share").then(container => {
-						this.trackPublished(publication, container);
-					})
-				}
-				else {
-					this.getMediaContainer(`remote-media-${participant.identity}`).then(container => {
-						this.trackPublished(publication, container);
-					})
-				}
+				const containerName = publication.trackName === 'screen-share' ? 'screen-share' : `remote-media-${participant.identity}`;
+				this.getMediaContainer(containerName).then(container => {
+					this.trackPublished(publication, container);
+				})
 			});
 			participant.on('trackPublished', (publication) => {
-				if (publication.trackName === 'screen-share'){
-					this.getMediaContainer("screen-share").then(container => {
-						this.trackPublished(publication, container);
-					})
-				}
-				else {
-					this.getMediaContainer(`remote-media-${participant.identity}`).then(container => {
-						this.trackPublished(publication, container);
-					})
-				}
+				const containerName = publication.trackName === 'screen-share' ? 'screen-share' : `remote-media-${participant.identity}`;
+				this.getMediaContainer(containerName).then(container => {
+					this.trackPublished(publication, container);
+				})
 			});
 			participant.on('trackUnpublished', this.trackUnpublished);
 		},
