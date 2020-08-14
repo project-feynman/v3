@@ -4,6 +4,7 @@ import firebase from 'firebase/app';
 import 'firebase/firestore';
 import 'firebase/database';
 import db from '@/database.js';
+import { getRandomId } from '@/helpers.js';
 
 Vue.use(Vuex);
 
@@ -51,7 +52,7 @@ export default new Vuex.Store({
     mitClass: null,
     explCache: {},
     blackboardRoom: null,
-    rToken: ""
+    session: {}
   },
   mutations: {
     SET_USER (state, user) {
@@ -64,8 +65,8 @@ export default new Vuex.Store({
     SET_ROOM (state, blackboardRoom) {
       state.blackboardRoom = blackboardRoom; 
     },
-    SET_RTOKEN (state, refreshToken){
-      state.rToken = refreshToken;
+    SET_SESSION (state, session){
+      state.session = session;
     },
     /**
      * Saves an explanation to the global cache so it can be accessed and uploaded to Firestore in the app background
@@ -92,7 +93,10 @@ export default new Vuex.Store({
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     async fetchUser (context, { uid, email, refreshToken }) {
       if (!uid) return;
-      context.commit('SET_RTOKEN', refreshToken.substring(refreshToken.length-20));
+      context.commit('SET_SESSION', { 
+        currentID: getRandomId(), 
+        refreshToken: refreshToken.substring(refreshToken.length - 20) 
+      });
       context.commit('SET_USER', { uid, email }); // commit the user as soon as basic info has been fetched to avoid blocking page load
       const mirrorUserRef = db.collection('users').doc(uid);
       syncUserWithDb(mirrorUserRef, context);

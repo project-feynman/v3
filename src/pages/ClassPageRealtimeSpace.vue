@@ -3,14 +3,13 @@
     <portal-target name="video-chat"/>
     <div v-if="user">
       <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
-        <template
-          v-for="(board, i) in room.blackboards"
-        >
-          <v-tab :href="'#'+board">
-            {{'Board #'+(i+1)}}
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab :href="'#' + board">
+            {{ 'Board #' + (i+1) }}
           </v-tab>
         </template>
         <v-btn @click="newBoard()">+</v-btn>
+
         <BasePopupButton actionName="Make Announcement"
           :inputFields="['Message']"
           @action-do="payload => announce(payload)"
@@ -19,13 +18,23 @@
             <v-btn v-on="on" color="accent" text>Announce</v-btn>
           </template>
         </BasePopupButton>
+        
+        <BaseButton 
+          @click="bringAllToRoom()" 
+          style="position: absolute; right: 0%" 
+          :icon="'mdi-account-arrow-left-outline'"
+          >
+          Bring All to Room
+        </BaseButton>
       </v-tabs>
-      <v-tabs-items v-model="activeBoard">
-        <template
-          v-for="(board, i) in room.blackboards"
-        >
-          <v-tab-item :value="board">
-            <RealtimeBlackboard :strokesRef="strokesRefs[i]" :roomParticipants="roomParticipants"/>
+      <v-tabs-items v-model="activeBoard" touchless>
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab-item :value="board" :key="i">
+            <RealtimeBlackboard 
+              :blackboardRef="blackboardRefs[i]" 
+              :strokesRef="strokesRefs[i]" 
+              :roomParticipants="roomParticipants"
+            />
           </v-tab-item>
         </template>
       </v-tabs-items>
@@ -66,6 +75,7 @@ export default {
   components: {
     RealtimeBlackboard,
     BasePopupButton
+    BaseButton
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -80,30 +90,25 @@ export default {
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
-      firebaseRef: null,
       messagesOpen: false,
       activeBoard: 'tab-1',
       boards: [],
+      blackboardRefs: [],
       strokesRefs: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
       showAnnouncement: false
+      allToRoomRef: null
     }
   },
   computed: {
     ...mapState([
       "user",
       "mitClass",
-      "rToken",
+      "session",
     ]),
-    simplifiedUser () {
-      if (!this.user) return; 
-      return {
-        email: this.user.email,
-        uid: this.user.uid,
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-      };
+    sessionID () {
+      return this.session.currentID;
     }
   },
   // Why use a watch hook here? 
@@ -122,6 +127,7 @@ export default {
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
     for (const blackboard of this.room.blackboards) {
       const blackboardRef = db.doc(`classes/${this.classId}/blackboards/${blackboard}`);
+      this.blackboardRefs.push(blackboardRef);
       this.strokesRefs.push(blackboardRef.collection("strokes"));
     }
 
@@ -136,6 +142,7 @@ export default {
       detachListener();
     }
     firebase.database().ref(".info/connected").off();
+    this.allToRoomRef.off();
   },
   methods: {
     setParticipant() {
@@ -144,7 +151,7 @@ export default {
         if (isUserConnected === false){
           return;
         } 
-        const participantRef = db.doc(`classes/${this.classId}/participants/${this.rToken}`);
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.sessionID}`);
         participantRef.get().then(doc => {
           if (doc.exists){
             const userObj = doc.data();
@@ -160,7 +167,8 @@ export default {
           else{
             console.log("participant no exist")
             participantRef.set({
-              rToken: this.rToken,
+              sessionID: this.sessionID,
+              refreshToken: this.session.refreshToken,
               uid: this.user.uid,
               email: this.user.email,
               firstName: this.user.firstName,
@@ -171,9 +179,40 @@ export default {
               hasJoinedMedia: false
             })
           }
+          const participantsRef = db.collection(`classes/${this.classId}/participants`);
+          participantsRef.where("refreshToken", "==", this.session.refreshToken).get().then( docs => {
+            if (docs.empty) {
+              return;
+            }  
+            docs.forEach(doc => {
+              const participant = doc.data();
+              if (participant.sessionID !== this.sessionID) {
+                participantsRef.doc(participant.sessionID).delete();
+              }
+            })
+          }) 
         })
-        
+        this.setMoveToRoomListener();
       });
+
+    },
+    bringAllToRoom () {
+      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+      this.allToRoomRef.set({ roomId: this.roomId }).then(() => {
+        this.allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
+      })
+    },
+    setMoveToRoomListener() {
+      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+      this.allToRoomRef.on("value", snapshot => {
+        if (snapshot.val()) {
+          const { roomId } = snapshot.val();
+          if (roomId && this.roomId !== roomId){ //only call this if a different room
+            this.$router.push(`/class/${this.classId}/room/${roomId}`); 
+            this.$root.$emit("show-snackbar", "You've been called to the main room!");
+          }
+        }
+      })
     },
     newBoard () {
       const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
@@ -187,6 +226,7 @@ export default {
           blackboards: firebase.firestore.FieldValue.arrayUnion(result.id)
         });
         this.strokesRefs.push(db.doc(result.path).collection("strokes"));
+        this.blackboardRefs.push(db.doc(result.path));
         // this.activeBoard = result.id;
       })
 

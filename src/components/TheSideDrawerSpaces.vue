@@ -43,11 +43,11 @@
                         <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
                           <div class="d-flex align-center py-2" :key="i">
                             <v-icon>mdi-account</v-icon>
-                            <div :class="['pl-1', 'col', 'py-0', participant.rToken === rToken ? 'font-weight-bold':'']">
+                            <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
                               {{ participant.firstName }}
                             </div>
 
-                            <template v-if="participant.rToken === rToken">
+                            <template v-if="participant.sessionID === sessionID">
                               <BaseButton @click="roomStatusPopup = true" outlined rounded icon="mdi-account-alert">
                                 Re-label Space
                               </BaseButton>
@@ -175,8 +175,11 @@ export default {
       "user",
       "blackboardRoom",
       "mitClass",
-      "rToken"
+      "session"
     ]),
+    sessionID () {
+      return this.session.currentID;
+    },
     classID () {
       return this.$route.params.class_id;
     },

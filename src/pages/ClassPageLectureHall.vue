@@ -100,8 +100,11 @@ export default {
       "user",
       "hasFetchedUser",
       "mitClass",
-      "rToken"
-    ])
+      "session"
+    ]),
+    sessionID () {
+      return this.session.currentID;
+    },
   },
   /*
     1. Distinguish between students and staff 
@@ -160,7 +163,7 @@ export default {
           return;
         } 
         this.listenForRoomAssignments();
-        const participantRef = db.doc(`classes/${this.classId}/participants/${this.rToken}`);
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.sessionID}`);
         participantRef.get().then(doc => {
           if (doc.exists){
             const userObj = doc.data();
@@ -176,7 +179,8 @@ export default {
           else{
             console.log("participant no exist")
             participantRef.set({
-              rToken: this.rToken,
+              sessionID: this.sessionID,
+              refreshToken: this.session.refreshToken,
               uid: this.user.uid,
               email: this.user.email,
               firstName: this.user.firstName,
@@ -187,6 +191,20 @@ export default {
               hasJoinedMedia: false
             })
           }
+          const participantsRef = db.collection(`classes/${this.classId}/participants`);
+          participantsRef.where("refreshToken", "==", this.session.refreshToken).get().then( docs => {
+            if (docs.empty) {
+              console.log('No matching documents.');
+              return;
+            }  
+            docs.forEach(doc => {
+              const participant = doc.data();
+              console.log("APRTS", participant)
+              if (participant.sessionID !== this.sessionID) {
+                participantsRef.doc(participant.sessionID).delete();
+              }
+            })
+          }) 
         })
         
       });

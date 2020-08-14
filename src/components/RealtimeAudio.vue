@@ -17,11 +17,11 @@
 							</div>
 						</div>
 					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.rToken !== rToken) && p.hasJoinedMedia)" 
-						:key="participant.rToken" 
+					<v-col v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
+						:key="participant.sessionID" 
 						class="video-col">
 						<div class="video-container-wrapper" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.sessionID}`"  class="video-container"/>
 							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
@@ -50,11 +50,11 @@
 							</div>
 						</div>
 					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.rToken !== rToken) && p.hasJoinedMedia)" 
-						:key="participant.rToken" 
+					<v-col v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
+						:key="participant.sessionID" 
 						class="video-col">
 						<div class="mini-view-container" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.rToken}`"  class="video-container"/>
+							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.sessionID}`"  class="video-container"/>
 							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
@@ -69,7 +69,10 @@
 				</v-row>
 			</v-container>
 		</portal>
-		<!-- <portal-target name="video-chat-global"/> -->
+		<MediaErrorPopup
+		:popupOpen="permissionsPopupOpen"
+		@exit="permissionsPopupOpen = false"
+		/>
 	</div>
 </template> 
 
@@ -77,6 +80,7 @@
 import firebase from "firebase/app";
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import MediaErrorPopup from "@/components/MediaErrorPopup.vue";
 import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
@@ -91,6 +95,9 @@ export default {
 		portalToLiveBoard: Boolean,
 		isMinimizedView: Boolean
 	},
+	components :{
+		MediaErrorPopup
+	},
 	data() {
 		return {
 			loading: false,
@@ -99,16 +106,20 @@ export default {
 			isCameraOn: false,
 			isMicOn: false,
 			snapshotListeners: [],
-			roomParticipantsRef: null
+			roomParticipantsRef: null,
+			permissionsPopupOpen: false
 		}
 	},
 	computed: {
 	...mapState([
 			"user",
-			"rToken"
+			"session"
 		]),
+		sessionID () {
+			return this.session.currentID;
+		},
 		roomParticipantRef () {
-			return db.doc(`classes/${this.classId}/participants/${this.rToken}`);
+			return db.doc(`classes/${this.classId}/participants/${this.sessionID}`);
 		}
 	},
 	watch: {
@@ -204,7 +215,7 @@ export default {
 						API_KEY_SECRET
 				);
 
-				accessToken.identity = this.rToken;
+				accessToken.identity = this.sessionID;
 
 				// Grant access to Video
 				var grant = new VideoGrant();
@@ -341,10 +352,15 @@ export default {
 			
 			// remove any remote track when joining a new room
 			console.log('About to connect: ');
-			let room = await Twilio.connect(this.token, connectOptions);
-			this.onTwilioConnect(room)
-			this.$emit('media-connected')
-			this.loading = false;
+			Twilio.connect(this.token, connectOptions).then((room) => {
+				this.onTwilioConnect(room)
+				this.$emit('media-connected')
+				this.loading = false;
+			}).catch(error => {
+				console.log("Twilio Error", error);
+				this.permissionsPopupOpen = true;
+			});
+			
 		},
 		onTwilioConnect(room) {
 				console.log('Successfully joined a Room: '+ room);

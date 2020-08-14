@@ -199,7 +199,14 @@ export default {
     },
     renderFrame ({ strokeIndex, pointIndex }) {
       const stroke = this.strokesArray[strokeIndex];
-      this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
+      this.$_connectTwoPoints(
+        stroke.points, 
+        pointIndex, 
+        stroke.isErasing, 
+        this.ctx,
+        stroke.color,
+        stroke.width
+      );
     }
   }
 }

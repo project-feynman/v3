@@ -268,6 +268,7 @@ export default {
       
       this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
+        backgroundImageBlob: this.blackboard.bgImageBlob,
         audioBlob: this.blackboard.audioBlob,
         html: this.html,
         title: this.postTitle,
@@ -284,12 +285,12 @@ export default {
     hardResetChildrenComponents () {
       this.postTitle = ""; 
       this.html = "";
-      this.blackboard = {
-        getThumbnailBlob: null,
-        audioBlob: null,
-        bgImageBlob: null,
-        currentTime: 0
-      };
+
+      // NOTE: do not reset `getThumbnailBlob`
+      this.blackboard.audioBlob = null;
+      this.blackboard.bgImageBlob = null;
+      this.blackboard.currentTime = 0; 
+
       this.strokesArray = [];
 
       // preview-related variables (to be refactored and eliminated in the future)
