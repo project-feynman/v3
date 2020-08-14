@@ -112,7 +112,6 @@ export default {
           if (doc.exists){
             const userObj = doc.data();
             const isSameRoom = userObj.currentRoom === this.roomId;
-            console.log("participant exists!", userObj)
             participantRef.update({
               currentRoom: this.roomId,
               isMicOn: isSameRoom ? userObj.isMicOn : false,
@@ -121,7 +120,6 @@ export default {
             })
           }
           else{
-            console.log("participant no exist")
             participantRef.set({
               sessionID: this.sessionID,
               refreshToken: this.session.refreshToken,
@@ -143,7 +141,6 @@ export default {
             }  
             docs.forEach(doc => {
               const participant = doc.data();
-              console.log("APRTS", participant)
               if (participant.sessionID !== this.sessionID) {
                 participantsRef.doc(participant.sessionID).delete();
               }

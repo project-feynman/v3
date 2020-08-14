@@ -279,7 +279,6 @@ export default {
         await this.firebaseRef.onDisconnect().set({ uid: this.sessionID });
 
         //user hasn't always been fetched, but uid and email are set
-        console.log("Class Page set DC hook", this.user)
         
         this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 

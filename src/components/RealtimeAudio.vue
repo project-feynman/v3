@@ -127,9 +127,9 @@ export default {
 				});
 			}
 		},
-		activeRoom (){
-			console.log('activeRToom', this.activeRoom)
-		}
+		// activeRoom (){
+		// 	console.log('activeRToom', this.activeRoom)
+		// }
 	},
 	created() {
 		this.token = this.getAccessToken();
@@ -140,7 +140,6 @@ export default {
 	},
 	methods: {
 		toggleMic () {
-			console.log("toggled mic", this.roomId, this.isMicOn )
 			if (!this.isMicOn){
 				if (this.activeRoom===null) {
 					this.enterAudioChat();
@@ -155,7 +154,6 @@ export default {
 			}
 		},
 		toggleCamera () {
-			console.log("toggled camera", this.roomId, this.isCameraOn)
 			if (!this.isCameraOn){
 				if (this.activeRoom===null) {
 					this.enterAudioChat();
@@ -237,37 +235,43 @@ export default {
 		},
 		// Trigger log events 
 		attachTrack(track, container, isLocal, init) {
+			if (!container){
+				console.log("This track will not be connected", track)
+				throw new Error("container was not found when trying to attach track")
+			}
+			const trackParticipantId = isLocal ? this.sessionID : container.id.substring(13);
+			const dbParticipant = this.roomParticipants.find(p => p.sessionID === trackParticipantId)
+			console.log(`attaching ${dbParticipant.firstName}'s ${track.kind} track to: ${container.id}; sessionID=`, trackParticipantId)
 			this.detachTrack(track) //remove any duplicate tracks
-				if (track.kind === "video") {
-					
-					if (track.isStarted) {
+			if (track.kind === "video") {
+				
+				if (track.isStarted) {
+					scaleAndAttachVideo(track, container);
+				}
+				
+				if (init){ //this is to prevent too many event listeners from being added
+					track.on('started', (videoTrack) => { 
 						scaleAndAttachVideo(track, container);
-					}
-					
-					if (init){ //this is to prevent too many event listeners from being added
-						track.on('started', (videoTrack) => { 
-							scaleAndAttachVideo(track, container);
-						});
-					}
+					});
+				}
 
-					function scaleAndAttachVideo (videoTrack, container) {
-						console.log("track attached", videoTrack)
-						var videoTag = videoTrack.attach();
-						const videoHeight = videoTrack.dimensions.height;
-						const videoWidth = videoTrack.dimensions.width;
-						const aspectRatio = videoWidth/videoHeight;
-						videoTag.setAttribute('style', 
-									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
-						if (track.name === 'screen-share'){
-							videoTag.setAttribute("controls", true);
-						}
-						container.appendChild(videoTag);
+				function scaleAndAttachVideo (videoTrack, container) {
+					var videoTag = videoTrack.attach();
+					const videoHeight = videoTrack.dimensions.height;
+					const videoWidth = videoTrack.dimensions.width;
+					const aspectRatio = videoWidth/videoHeight;
+					videoTag.setAttribute('style', 
+								`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
+					if (track.name === 'screen-share'){
+						videoTag.setAttribute("controls", true);
 					}
-					
+					container.appendChild(videoTag);
 				}
-				else {
-					container.appendChild(track.attach());
-				}
+				
+			}
+			else {
+				container.appendChild(track.attach());
+			}
 		},
 		attachTracks(tracks, identity, init=false) {
 			const isLocal = (identity === this.sessionID);
@@ -286,14 +290,13 @@ export default {
 				});
 		},
 		trackPublished(publication, container) {
-				if (publication.isSubscribed) {
-						this.attachTrack(publication.track, container, false, true);
-				}
-				publication.on('subscribed', (track) => {
-						console.log('Subscribed to ' + publication.kind + ' track');
-						this.attachTrack(track, container, false, true);
-				});
-				publication.on('unsubscribed', this.detachTrack);
+			if (publication.isSubscribed) {
+					this.attachTrack(publication.track, container, false, true);
+			}
+			publication.on('subscribed', (track) => {
+				this.attachTrack(track, container, false, true);
+			});
+			publication.on('unsubscribed', this.detachTrack);
 		},
 		trackUnpublished(publication) {
 				console.log(publication.kind + ' track was unpublished.');
@@ -355,7 +358,6 @@ export default {
 				this.isCameraOn = false;
 				this.isMicOn = false;
 				this.activeRoom.disconnect();
-				console.log("disconnecting");
 			}
 		},
 		async enterAudioChat() {
@@ -368,7 +370,6 @@ export default {
 			this.leaveRoomIfJoined();
 			
 			// remove any remote track when joining a new room
-			console.log('About to connect: ');
 			Twilio.connect(this.token, connectOptions).then((room) => {
 				this.onTwilioConnect(room)
 				this.$emit('media-connected')
@@ -390,15 +391,19 @@ export default {
 				this.isCameraOn = true;
 
 				room.participants.forEach((participant) => {
-						console.log("Already in Room: '" + participant.identity + "'");
-						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+					const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
+					if (dbParticipant){ //is this participant in the DB?
 						this.participantConnected(participant);
+						console.log("Already in Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
+					}
 				});
 
 				room.on('participantConnected', (participant) => {
-						console.log("Joining: '" + participant.identity + "'");
-						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
+					const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
+					if (dbParticipant){ //is this participant in the DB?
 						this.participantConnected(participant);
+						console.log("Joining Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
+					}
 				});
 
 				room.on('participantDisconnected', (participant) => {
@@ -408,7 +413,7 @@ export default {
 				});
 
 				room.on('disconnected', () => {
-					console.log('Left the rooom');
+					console.log('You Left the rooom');
 					this.isMicOn = false;
 					this.isCameraOn = false;
 					this.$emit('left-room')
@@ -427,7 +432,7 @@ export default {
 				}
 				count++;
 			}
-			return "failed";
+			return null;
 		}
 	}
 }
