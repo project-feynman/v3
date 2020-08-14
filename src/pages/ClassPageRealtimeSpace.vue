@@ -9,6 +9,13 @@
           </v-tab>
         </template>
         <v-btn @click="newBoard()">+</v-btn>
+        <BaseButton 
+          @click="bringAllToRoom()" 
+          style="position: absolute; right: 0%" 
+          :icon="'mdi-account-arrow-left-outline'"
+          >
+          Bring All to Room
+        </BaseButton>
       </v-tabs>
       <v-tabs-items v-model="activeBoard" touchless>
         <template v-for="(board, i) in room.blackboards">
@@ -36,7 +43,8 @@ import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
 
 export default {
   components: {
-    RealtimeBlackboard
+    RealtimeBlackboard,
+    BaseButton
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -51,7 +59,6 @@ export default {
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
-      firebaseRef: null,
       messagesOpen: false,
       activeBoard: 'tab-1',
       boards: [],
@@ -59,6 +66,7 @@ export default {
       strokesRefs: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
+      allToRoomRef: null
     }
   },
   computed: {
@@ -99,6 +107,7 @@ export default {
       detachListener();
     }
     firebase.database().ref(".info/connected").off();
+    this.allToRoomRef.off();
   },
   methods: {
     setParticipant() {
@@ -138,20 +147,37 @@ export default {
           const participantsRef = db.collection(`classes/${this.classId}/participants`);
           participantsRef.where("refreshToken", "==", this.session.refreshToken).get().then( docs => {
             if (docs.empty) {
-              console.log('No matching documents.');
               return;
             }  
             docs.forEach(doc => {
               const participant = doc.data();
-              console.log("APRTS", participant)
               if (participant.sessionID !== this.sessionID) {
                 participantsRef.doc(participant.sessionID).delete();
               }
             })
           }) 
         })
-        
+        this.setMoveToRoomListener();
       });
+
+    },
+    bringAllToRoom () {
+      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+      this.allToRoomRef.set({ roomId: this.roomId }).then(() => {
+        this.allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
+      })
+    },
+    setMoveToRoomListener() {
+      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+      this.allToRoomRef.on("value", snapshot => {
+        if (snapshot.val()) {
+          const { roomId } = snapshot.val();
+          if (roomId && this.roomId !== roomId){ //only call this if a different room
+            this.$router.push(`/class/${this.classId}/room/${roomId}`); 
+            this.$root.$emit("show-snackbar", "You've been called to the main room!");
+          }
+        }
+      })
     },
     newBoard () {
       const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
