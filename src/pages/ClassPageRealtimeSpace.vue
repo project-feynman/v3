@@ -4,7 +4,7 @@
     <div v-if="user">
       <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
         <template v-for="(board, i) in room.blackboards">
-          <v-tab :href="'#' + board">
+          <v-tab :href="'#' + board" :key="i">
             {{ 'Board #' + (i+1) }}
           </v-tab>
         </template>
@@ -74,7 +74,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 export default {
   components: {
     RealtimeBlackboard,
-    BasePopupButton
+    BasePopupButton,
     BaseButton
   },
   mixins: [
@@ -97,7 +97,7 @@ export default {
       strokesRefs: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
-      showAnnouncement: false
+      showAnnouncement: false,
       allToRoomRef: null
     }
   },
