@@ -194,27 +194,18 @@ export default {
 		getAccessToken() {
 				var AccessToken = require('twilio').jwt.AccessToken;
 				var VideoGrant = AccessToken.VideoGrant;
-
-				// Substitute your Twilio AccountSid and ApiKey details
 				var ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
 				var API_KEY_SID = twilioCreds.API_KEY_SID;
 				var API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
-
-				// Create an Access Token
 				var accessToken = new AccessToken(
 						ACCOUNT_SID,
 						API_KEY_SID,
 						API_KEY_SECRET
 				);
-
 				accessToken.identity = this.sessionID;
-
-				// Grant access to Video
 				var grant = new VideoGrant();
 				grant.room = this.roomId;
 				accessToken.addGrant(grant);
-
-				// Serialize the token as a JWT
 				var jwt = accessToken.toJwt();
 				return jwt;
 		},
@@ -244,11 +235,9 @@ export default {
 			console.log(`attaching ${dbParticipant.firstName}'s ${track.kind} track to: ${container.id}; sessionID=`, trackParticipantId)
 			this.detachTrack(track) //remove any duplicate tracks
 			if (track.kind === "video") {
-				
 				if (track.isStarted) {
 					scaleAndAttachVideo(track, container);
 				}
-				
 				if (init){ //this is to prevent too many event listeners from being added
 					track.on('started', (videoTrack) => { 
 						scaleAndAttachVideo(track, container);
@@ -269,8 +258,15 @@ export default {
 				}
 				
 			}
-			else {
-				container.appendChild(track.attach());
+			else { // this is an audio track
+				if (track.isStarted) {
+					container.appendChild(track.attach());
+				}
+				if (init){ //this is to prevent too many event listeners from being added
+					track.on('started', (videoTrack) => { 
+						container.appendChild(track.attach());
+					});
+				}
 			}
 		},
 		attachTracks(tracks, identity, init=false) {
@@ -285,16 +281,22 @@ export default {
 			});
 		},
 		detachTrack(track) {
-				track.detach().forEach((element) => {
-						element.remove();
-				});
+			track.detach().forEach((element) => {
+					element.remove();
+			});
 		},
-		trackPublished(publication, container) {
+		trackPublished(publication, participantId) {
 			if (publication.isSubscribed) {
+				const containerName = publication.trackName === 'screen-share' ? 'screen-share' : `remote-media-${participantId}`;
+				this.getMediaContainer(containerName).then(container => {
 					this.attachTrack(publication.track, container, false, true);
+				})
 			}
 			publication.on('subscribed', (track) => {
-				this.attachTrack(track, container, false, true);
+				const containerName = track.name === 'screen-share' ? 'screen-share' : `remote-media-${participantId}`;
+				this.getMediaContainer(containerName).then(container => {
+					this.attachTrack(track, container, false, true);
+				});
 			});
 			publication.on('unsubscribed', this.detachTrack);
 		},
@@ -303,16 +305,10 @@ export default {
 		},
 		participantConnected(participant) {
 			participant.tracks.forEach((publication) => {
-				const containerName = publication.trackName === 'screen-share' ? 'screen-share' : `remote-media-${participant.identity}`;
-				this.getMediaContainer(containerName).then(container => {
-					this.trackPublished(publication, container);
-				})
+				this.trackPublished(publication, participant.identity);
 			});
 			participant.on('trackPublished', (publication) => {
-				const containerName = publication.trackName === 'screen-share' ? 'screen-share' : `remote-media-${participant.identity}`;
-				this.getMediaContainer(containerName).then(container => {
-					this.trackPublished(publication, container);
-				})
+				this.trackPublished(publication, participant.identity);
 			});
 			participant.on('trackUnpublished', this.trackUnpublished);
 		},
@@ -368,7 +364,6 @@ export default {
 				video: true
 			};
 			this.leaveRoomIfJoined();
-			
 			// remove any remote track when joining a new room
 			Twilio.connect(this.token, connectOptions).then((room) => {
 				this.onTwilioConnect(room)
@@ -397,7 +392,6 @@ export default {
 						console.log("Already in Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
 					}
 				});
-
 				room.on('participantConnected', (participant) => {
 					const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
 					if (dbParticipant){ //is this participant in the DB?
@@ -405,13 +399,11 @@ export default {
 						console.log("Joining Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
 					}
 				});
-
 				room.on('participantDisconnected', (participant) => {
 						console.log("RemoteParticipant '" + participant.identity + "' left the room");
 
 						this.detachParticipantTracks(participant);
 				});
-
 				room.on('disconnected', () => {
 					console.log('You Left the rooom');
 					this.isMicOn = false;

@@ -115,8 +115,6 @@ export default {
   watch: {
     room (newVal, oldVal) {
       this.$store.commit("SET_ROOM", this.room);
-      console.log('the new value', newVal);
-      console.log('the old value', oldVal);
       if ((oldVal.hasOwnProperty('announcement') && newVal.announcement !== oldVal.announcement)) this.showAnnouncement = true;
     }
   },
