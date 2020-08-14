@@ -1,5 +1,8 @@
 <template>
 	<div v-if="hasJoinedMedia">
+		<div class="screen-share-container" id="screen-share">
+
+		</div>
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
 			<v-container class="video-display">
 				<v-row>
@@ -114,7 +117,10 @@ export default {
 		},
 		portalToLiveBoard () {
 			if (this.activeRoom){
-				this.connectAllTracksInRoom(this.activeRoom)
+				this.attachTracks(this.getTracks(this.activeRoom.localParticipant), this.sessionID);
+				this.activeRoom.participants.forEach((participant) => {
+					this.attachTracks(this.getTracks(participant), participant.identity);
+				});
 			}
 		}
 	},
@@ -223,6 +229,10 @@ export default {
 						const aspectRatio = videoWidth/videoHeight;
 						videoTag.setAttribute('style', 
 									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
+						if (track.name === 'screen-share'){
+							videoTag.setAttribute("controls", true);
+						}
+						
 						
 						// while (container.firstChild) {
 						// 	container.removeChild(container.lastChild);
@@ -235,10 +245,16 @@ export default {
 					container.appendChild(track.attach());
 				}
 		},
-		attachTracks(tracks, container, isLocal=false, init=false) {
-				tracks.forEach((track) => {
-						this.attachTrack(track, container, isLocal, init);
-				});
+		attachTracks(tracks, identity, init=false) {
+			const isLocal = (identity === this.sessionID);
+			tracks.forEach((track) => {
+				const containerName = track.name === 'screen-share' ? 'screen-share' : (isLocal ? 'local-media' : `remote-media-${identity}`);
+				if (!isLocal || containerName !== 'screen-share' ) {
+					this.getMediaContainer(containerName).then(container => {
+						this.attachTrack(track, container, isLocal, init)
+					})
+				}
+			});
 		},
 		detachTrack(track) {
 				track.detach().forEach((element) => {
@@ -259,15 +275,31 @@ export default {
 				console.log(publication.kind + ' track was unpublished.');
 		},
 		participantConnected(participant) {
-			this.getMediaContainer(`remote-media-${participant.identity}`).then(container => {
-				participant.tracks.forEach((publication) => {
-					this.trackPublished(publication, container);
-				});
-				participant.on('trackPublished', (publication) => {
-					this.trackPublished(publication, container);
-				});
-				participant.on('trackUnpublished', this.trackUnpublished);
-			})
+			participant.tracks.forEach((publication) => {
+				if (publication.trackName === 'screen-share'){
+					this.getMediaContainer("screen-share").then(container => {
+						this.trackPublished(publication, container);
+					})
+				}
+				else {
+					this.getMediaContainer(`remote-media-${participant.identity}`).then(container => {
+						this.trackPublished(publication, container);
+					})
+				}
+			});
+			participant.on('trackPublished', (publication) => {
+				if (publication.trackName === 'screen-share'){
+					this.getMediaContainer("screen-share").then(container => {
+						this.trackPublished(publication, container);
+					})
+				}
+				else {
+					this.getMediaContainer(`remote-media-${participant.identity}`).then(container => {
+						this.trackPublished(publication, container);
+					})
+				}
+			});
+			participant.on('trackUnpublished', this.trackUnpublished);
 		},
 		detachParticipantTracks(participant) {
 				var tracks = this.getTracks(participant);
@@ -341,7 +373,7 @@ export default {
 				
 				this.activeRoom = room;
 				var previewContainer = document.getElementById('local-media');
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, true);
+				this.attachTracks(this.getTracks(room.localParticipant), this.sessionID, true);
 				this.isMicOn = true;
 				this.isCameraOn = true;
 
@@ -373,16 +405,6 @@ export default {
 					this.activeRoom = null;
 				});
 		},
-		async connectAllTracksInRoom (room) {
-			this.getMediaContainer('local-media').then(previewContainer => {
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, false);
-			});
-			room.participants.forEach((participant) => {
-				this.getMediaContainer(`remote-media-${participant.identity}`).then(previewContainer => {
-					this.attachTracks(this.getTracks(participant), previewContainer, false, false);
-				})
-			});
-		},
 		async getMediaContainer(containerId){
 			let count = 0;
 			while (count < 5){
@@ -400,6 +422,9 @@ export default {
 </script>
 
 <style scoped>
+.screen-share-container{
+	height: 300px;
+}
 .video-display{
 	width: 100%;
 	bottom: 0%;
