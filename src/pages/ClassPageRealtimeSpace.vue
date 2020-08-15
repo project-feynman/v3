@@ -74,7 +74,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 export default {
   components: {
     RealtimeBlackboard,
-    BasePopupButton
+    BasePopupButton,
     BaseButton
   },
   mixins: [
@@ -97,7 +97,7 @@ export default {
       strokesRefs: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
-      showAnnouncement: false
+      showAnnouncement: false,
       allToRoomRef: null
     }
   },

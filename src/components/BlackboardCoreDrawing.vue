@@ -377,6 +377,9 @@ export default {
      *   1. Render the background image / grey background on the back canvas 
      *   2. Then draw on the strokes on the back canvas as well
      * 
+     *  Note that the thumbnail must be based only on ONE single canvas, whereas when we normally display the blackboard
+     *  there are TWO canvases. 
+     * 
      *   This implementation suffers from edge cases: 
      *     If eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
      *     I tried not using a background color, but then the white strokes will be invisible
@@ -384,21 +387,23 @@ export default {
      */
     getThumbnailBlob () {
       return new Promise(async resolve => {
-        const { blob, downloadURL } = this.backgroundImage;
-        if (blob || downloadURL) {
+        // TODO: better prop design for `backgroundImage = {};`
+        // should it be null? ask questions in the community. You need to ask questions. 
+        if (this.backgroundImage) {
+          const { blob, downloadURL } = this.backgroundImage;
           await this.$_renderBackground(
-            blob ? URL.createObjectURL(this.backgroundImage.blob) : downloadURL
+            blob ? URL.createObjectURL(blob) : downloadURL
           );
         } else {
           // make the background black-grey
           this.bgCtx.fillStyle = "rgb(62, 66, 66)";
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         }
+        // now draw the strokes
         this.$_drawStrokesInstantly(this.bgCtx);
 
         // TODO: remove this quickfix (first introduced to avoid double drawing thumbnail)
         // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
         this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
     },
