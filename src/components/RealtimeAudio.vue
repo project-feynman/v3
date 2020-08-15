@@ -1,11 +1,12 @@
 <template>
 	<div v-if="hasJoinedMedia">
-		<div class="screen-share-container" id="screen-share">
-
-		</div>
+		
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
-			<v-container class="video-display">
-				<v-row>
+			<v-container class="video-display" >
+				<div class="screen-share-container" id="screen-share">
+
+				</div>
+				<v-row class="video-row">
 					<v-col class="video-col">
 						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'">
 							<div v-show="!isMinimizedView" id="local-media" class="video-container"/>
@@ -116,11 +117,8 @@ export default {
 			}
 		},
 		isSharingScreen () {
-			if (!this.activeRoom) {
-				this.enterAudioChat();
-			}
-			else {
-				this.updateMediaStatus();
+			this.updateMediaStatus();
+			if (this.activeRoom){
 				if (this.isSharingScreen) {
 					this.startScreenShare();
 				}
@@ -213,7 +211,7 @@ export default {
 				this.$emit('screen-share-failed');
 				return;
 			}
-			navigator.mediaDevices.getDisplayMedia().then(stream => {
+			navigator.mediaDevices.getDisplayMedia( ).then(stream => {
 				let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
 				this.activeRoom.localParticipant.publishTrack(screenTrack);
 			}).catch(error => {
@@ -262,10 +260,13 @@ export default {
 					const videoHeight = videoTrack.dimensions.height;
 					const videoWidth = videoTrack.dimensions.width;
 					const aspectRatio = videoWidth/videoHeight;
-					videoTag.setAttribute('style', 
-								`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
 					if (track.name.includes('screen-share')){
+						videoTag.setAttribute('style', "width: 480px;")
 						videoTag.setAttribute("controls", true);
+					}
+					else {
+						videoTag.setAttribute('style', 
+								`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
 					}
 					container.appendChild(videoTag);
 				}
@@ -445,22 +446,37 @@ export default {
 
 <style scoped>
 .screen-share-container{
-	height: 300px;
+	/* height: 300px; */
 }
 .video-display{
-	width: 100%;
 	bottom: 0%;
 	/* position: fixed; */
 	opacity: 1;
 	z-index: 1000;
+	padding: 0;
+	/* border-style: solid; */
+	/* width: 100%; */
 	padding-bottom: 0;
 	padding-top: 0;
 	margin-left: 0%;
+}
+.video-row{
+	padding: 0;
+	margin: 0;
+	border-color:green;
+	border-style: solid;
+	/* float:right; */
+	/* overflow: auto; */
+	/* height : 150px; */
+	/* display: inline-block; */
 }
 .video-col{
 	flex-grow: 0;
 	padding-left: 2px;
 	padding-right: 2px;
+	padding-bottom: 2px;
+	padding-top: 2px;
+	margin: auto;
 }
 
 .video-container-wrapper{

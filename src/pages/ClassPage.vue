@@ -83,9 +83,8 @@
         :key="lastBlackboardRoomId"
         class="video-component"
       />
-      <div style="margin:auto">
-        
 
+      <div class="button-bar">
         <template v-if="hasLoadedMedia">
           <BaseButton
             @click="isMinimizedView = !isMinimizedView"
@@ -317,15 +316,23 @@ html {
 }
 .video-chat-container{
   /* border-style: solid;  */
-  border-radius: 10px;
+  /* border-radius: 10px; */
   z-index: 100; 
   position: fixed; 
   right: 0px; 
   bottom: 0px; 
-  background-color: #eee;
+  /* background-color: #eee; */
   text-align: right;
   /* height: 300px;
   width: 500px; */
+}
+.video-chat-container .button-bar{
+  margin:auto; 
+  background-color: #eee;
+  /* border-bottom-left-radius: 22px; */
+  border-radius: 25px;
+  /* display: inline-block; */
+  float: right;
 }
 /* .video-chat-container .video-component{
   position: absolute; 
