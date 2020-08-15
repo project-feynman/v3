@@ -353,12 +353,8 @@ export default {
         currentBatch.delete(this.strokesRef.doc(stroke.id));
         currentBatchSize += 1;
       }
-
       promises.push(currentBatch.commit()); 
-      // TODO: 
-      // promises.push(
-      //   this.roomRef.update({ imageUrl: "" })
-      // );
+      
       await Promise.all(promises);
       console.log("finished deleting everything")
     },

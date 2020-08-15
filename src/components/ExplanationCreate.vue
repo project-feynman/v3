@@ -275,9 +275,10 @@ export default {
       // console.log("backgroundImage =", this.blackboard.backgroundImage)
       // console.log("this.blackboard =", this.blackboard);
 
+      const { backgroundImage } = this.blackboard; 
       this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
-        backgroundImageBlob: this.blackboard.backgroundImage.blob,
+        backgroundImageBlob: backgroundImage ? backgroundImage.blob : null,
         audioBlob: this.blackboard.audioBlob,
         html: this.html,
         title: this.postTitle,
