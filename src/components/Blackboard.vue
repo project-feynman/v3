@@ -7,7 +7,6 @@
       :isRealtime="isRealtime"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
-      @update:bgImageBlob="blob => $emit('update:bgImageBlob', blob)"
       @board-reset="$emit('board-reset')"
     >
       <template v-slot:canvas-toolbar="{ 

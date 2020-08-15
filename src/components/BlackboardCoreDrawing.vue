@@ -420,7 +420,7 @@ export default {
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly();
 
-      // render background
+      // re-render background
       if (!this.backgroundImage) {
         return; 
       }
@@ -431,7 +431,7 @@ export default {
         );
       }
     },
-    // BACKGROUND IMAGE HANDLING CODE (WILL BE DEPRECATED)
+    // HANDLE BAXKGROUND IMAGE
     /**
      * By design, Handles the case if `imageFile` is empty.
      */
@@ -441,9 +441,10 @@ export default {
       if (imageFile.type.split("/")[0] !== "image") {
         this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
       } else {
-        // this.displayImageFile(imageFile);
-        this.$_renderBackground(URL.createObjectURL(imageFile))
-        this.$emit("update:background-image", { blob: imageFile })
+        this.$_renderBackground(URL.createObjectURL(imageFile));
+
+        // emit an event to keep the source of truth at the client
+        this.$emit("update:background-image", { blob: imageFile });
       }
     },
     createCustomCusor () {

@@ -21,7 +21,6 @@
         <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Blackboard</BaseButton>
       </template> 
 
-
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot>
         <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
@@ -303,16 +302,22 @@ export default {
       const promises = [];
       let thumbnailBlob;
       let backgroundImageBlob;
+      
       promises.push(
         this.blackboard.getThumbnailBlob().then(blob => thumbnailBlob = blob)
       );
+      
+      // need to upload an independent copy of the background image
+      // as the current blackboard's background image can be wiped and changed at any time on Firebase storage
       const { downloadURL } = this.backgroundImage; 
       if (downloadURL) {
         promises.push(
-          this.$_getBlobFromStorage(downloadURL).then(blob => backgroundImageBlob)
+          this.$_getBlobFromStorage(downloadURL).then(blob => backgroundImageBlob = blob)
         );
-      } 
+      }
+
       await Promise.all(promises);
+
       this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
         audioBlob: this.blackboard.audioBlob,

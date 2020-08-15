@@ -60,12 +60,11 @@
       <Blackboard v-show="!isPreviewing"
         :key="changeKeyToForceReset"
         :isRealtime="false"
-        :strokesArray="strokesArray" 
-        @stroke-drawn="stroke => strokesArray.push(stroke)"
+        :strokesArray="strokesArray" @stroke-drawn="stroke => strokesArray.push(stroke)"
+        :backgroundImage="blackboard.backgroundImage" @update:background-image="newImage => blackboard.backgroundImage = newImage"
         @board-reset="strokesArray = []"
         @mounted="blackboardMethods => bindBlackboardMethods(blackboardMethods)"
         @update:audioBlob="audioBlob => blackboard.audioBlob = audioBlob"
-        @update:bgImageBlob="bgImageBlob => blackboard.bgImageBlob = bgImageBlob"
         @update:currentTime="currentTime => blackboard.currentTime = currentTime"
         @record-start="isRecordingVideo = true"
         @record-end="showPreview()"
@@ -135,7 +134,7 @@ export default {
     blackboard: {
       getThumbnailBlob: null,
       audioBlob: null,
-      bgImageBlob: null,
+      backgroundImage: null,
       currentTime: 0
     },
     strokesArray: [],
@@ -254,8 +253,11 @@ export default {
       this.previewVideo = {
         strokesArray: this.strokesArray,
         audioBlob: this.blackboard.audioBlob,
-        imageBlob: this.blackboard.bgImageBlob
       };
+      const { backgroundImage } = this.blackboard;
+      if (backgroundImage) {
+        this.previewVideo.imageBlob = backgroundImage.blob;
+      }
       this.isRecordingVideo = false;
       this.isPreviewing = true;
     },
@@ -265,10 +267,17 @@ export default {
       }
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
-      
+
+      // REACTIVITY CAVEAT
+      // To avoid confusion, this.blackboard could have `null` to be backgroundImage
+      // but if you directly access this.blackboard.backgroundImage, it's actually defined. 
+      // That's only because Vue hasn't updated yet (object reactivity caveat)
+      // console.log("backgroundImage =", this.blackboard.backgroundImage)
+      // console.log("this.blackboard =", this.blackboard);
+
       this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
-        backgroundImageBlob: this.blackboard.bgImageBlob,
+        backgroundImageBlob: this.blackboard.backgroundImage.blob,
         audioBlob: this.blackboard.audioBlob,
         html: this.html,
         title: this.postTitle,
@@ -288,7 +297,7 @@ export default {
 
       // NOTE: do not reset `getThumbnailBlob`
       this.blackboard.audioBlob = null;
-      this.blackboard.bgImageBlob = null;
+      this.blackboard.backgroundImage = null;
       this.blackboard.currentTime = 0; 
 
       this.strokesArray = [];
