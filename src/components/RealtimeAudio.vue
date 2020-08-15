@@ -16,7 +16,6 @@
 								<div class="local-buttons-container">
 									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
 									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
-									<v-btn @click="toggleScreenShare()" x-small >SHARE</v-btn>
 								</div>
 							</div>
 						</div>
@@ -61,6 +60,7 @@ export default {
 	props: {
 		roomId: String,
 		classId: String,
+		isSharingScreen: Boolean,
 		hasJoinedMedia: Boolean,
 		roomParticipants: Array,
 		portalToLiveBoard: Boolean,
@@ -76,7 +76,6 @@ export default {
 			token: null,
 			isCameraOn: false,
 			isMicOn: false,
-			isSharingScreen: false,
 			snapshotListeners: [],
 			roomParticipantsRef: null,
 			permissionsPopupOpen: false
@@ -117,7 +116,18 @@ export default {
 			}
 		},
 		isSharingScreen () {
-			console.log("screen share status", this.isSharingScreen)
+			if (!this.activeRoom) {
+				this.enterAudioChat();
+			}
+			else {
+				this.updateMediaStatus();
+				if (this.isSharingScreen) {
+					this.startScreenShare();
+				}
+				else{
+					this.stopScreenShare();
+				}
+			}
 		},
 		portalToLiveBoard () {
 			if (this.activeRoom){
@@ -167,25 +177,13 @@ export default {
 				}
 			}
 		},
-		toggleScreenShare () {
-			if (!this.activeRoom) {
-				this.enterAudioChat();
-			}
-			else {
-				if (!this.isSharingScreen) {
-					this.startScreenShare();
-				}
-				else{
-					this.stopScreenShare();
-				}
-			}
-		},
 		updateMediaStatus () {
 			this.roomParticipantRef.get().then(doc => { 
 				if (doc.exists){ //this is just to prevent errors
 					this.roomParticipantRef.update({
 						isMicOn: this.isMicOn,
 						isCameraOn: this.isCameraOn,
+						isSharingScreen: this.isSharingScreen,
 						hasJoinedMedia: this.hasJoinedMedia
 					})
 				}
@@ -210,19 +208,29 @@ export default {
 				return jwt;
 		},
 		async startScreenShare (){
-			const stream = await navigator.mediaDevices.getDisplayMedia();
-			console.log("SCREEN SHARRE", stream.getTracks())
-			let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
-			this.activeRoom.localParticipant.publishTrack(screenTrack);
-			this.isSharingScreen = true;
+			if (this.participantSharingScreen()){
+				this.$root.$emit("show-snackbar", "It looks like someone else is already screen-sharing, try again once they are done.");
+				this.$emit('screen-share-failed');
+				return;
+			}
+			navigator.mediaDevices.getDisplayMedia().then(stream => {
+				let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
+				this.activeRoom.localParticipant.publishTrack(screenTrack);
+			}).catch(error => {
+				console.log('ERROR getting screen', error)
+				this.$emit('screen-share-failed');
+			});
 		},
 		stopScreenShare () {
 			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
 				if (track.name.includes('screen-share')){
 					this.activeRoom.localParticipant.unpublishTrack(track);
-					this.isSharingScreen = false;
 				}
 			})
+		},
+		participantSharingScreen () {
+			const filtered = this.roomParticipants.filter(p => p.isSharingScreen && p.sessionID !== this.sessionID);
+			return filtered.length > 0 ? filtered[0] : false
 		},
 		// Trigger log events 
 		attachTrack(track, container, isLocal, init) {

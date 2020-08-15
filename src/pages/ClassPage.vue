@@ -68,51 +68,69 @@
       v-model="drawer"
       :roomParticipantsMap="roomParticipantsMap"/>
     <div v-if="lastBlackboardRoomId" class="video-chat-container">
-        <RealtimeAudio 
-          v-if="user"
-          :roomId="lastBlackboardRoomId"
-          :classId="classID"
-          :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
-          :portalToLiveBoard="portalToLiveBoard"
-          :hasJoinedMedia="hasJoinedMedia"
-          :isMinimizedView="isMinimizedView"
-          @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
-          @media-connected="hasLoadedMedia=true"
-          :key="lastBlackboardRoomId"
-          class="video-component"
-        />
-      <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
-        :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
-        :outlined="hasJoinedMedia" 
-        rounded
-        :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
-      >
-        <template v-if="!hasLoadedMedia">
-          <template v-if="!hasJoinedMedia">Join Video Chat</template>
-          <v-progress-circular v-else indeterminate size="20" width="2"/>
-        </template>
+      <RealtimeAudio 
+        v-if="user"
+        :roomId="lastBlackboardRoomId"
+        :classId="classID"
+        :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
+        :portalToLiveBoard="portalToLiveBoard"
+        :hasJoinedMedia="hasJoinedMedia"
+        :isSharingScreen="isSharingScreen"
+        :isMinimizedView="isMinimizedView"
+        @left-room="hasJoinedMedia=false; hasLoadedMedia=false; isSharingScreen= false"
+        @media-connected="hasLoadedMedia=true"
+        @screen-share-failed="isSharingScreen = false"
+        :key="lastBlackboardRoomId"
+        class="video-component"
+      />
+      <div style="margin:auto">
         
-        <template v-else>Exit Video Chat</template>
-      </BaseButton>
-      <template v-if="hasLoadedMedia">
-        <BaseButton @click="handleVideoViewToggle()" 
-          color='accent'
+
+        <template v-if="hasLoadedMedia">
+          <BaseButton
+            @click="isMinimizedView = !isMinimizedView"
+            color='accent'
+            rounded
+            outlined
+            :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
+          >
+            {{isMinimizedView ? 'Normal View' : 'Mini View'}}
+          </BaseButton>
+
+          <BaseButton @click="handleVideoViewToggle()" 
+            color='accent'
+            rounded
+            outlined
+            :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
+          >
+          {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
+          </BaseButton>
+
+          <BaseButton @click="isSharingScreen = !isSharingScreen" 
+            color='accent'
+            rounded
+            outlined
+            :icon="isSharingScreen ? 'mdi-monitor-off' : 'mdi-monitor-screenshot'"
+          >
+          {{isSharingScreen ? 'Stop Screen Share' : 'Share Screen'}}
+          </BaseButton>
+        </template>
+
+        <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
+          :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
+          :outlined="hasJoinedMedia" 
           rounded
-          outlined
-          :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
+          :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
         >
-        {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
+          <template v-if="!hasLoadedMedia">
+            <template v-if="!hasJoinedMedia">Join Video Chat</template>
+            <v-progress-circular v-else indeterminate size="20" width="2"/>
+          </template>
+          
+          <template v-else>Exit Video Chat</template>
         </BaseButton>
-        <BaseButton
-          @click="isMinimizedView = !isMinimizedView"
-          color='accent'
-          rounded
-          outlined
-          :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
-        >
-          {{isMinimizedView ? 'Normal View' : 'Mini View'}}
-        </BaseButton>
-      </template>
+      </div>
+      
     </div>
     <v-content>
       <RouterView :key="$route.fullPath"/>
@@ -159,6 +177,7 @@ export default {
     roomParticipantsMap: {},
     hasJoinedMedia: false,
     hasLoadedMedia: false,
+    isSharingScreen: false,
     portalToLiveBoard: false,
     firebaseRef: null,
     classParticipantsRef: null,
@@ -304,6 +323,7 @@ html {
   right: 0px; 
   bottom: 0px; 
   background-color: #eee;
+  text-align: right;
   /* height: 300px;
   width: 500px; */
 }

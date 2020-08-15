@@ -158,6 +158,7 @@ export default {
               currentRoom: this.roomId,
               isMicOn: isSameRoom ? userObj.isMicOn : false,
               isCameraOn: isSameRoom ? userObj.isCameraOn : false,
+              isSharingScreen: isSameRoom ? userObj.isSharingScreen : false,
               hasJoinedMedia: isSameRoom ? userObj.hasJoinedMedia : false,
             })
           }
@@ -172,6 +173,7 @@ export default {
               currentRoom: this.roomId,
               isMicOn: false,
               isCameraOn: false,
+              isSharingScreen: false,
               hasJoinedMedia: false
             })
           }
