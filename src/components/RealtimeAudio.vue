@@ -212,13 +212,13 @@ export default {
 		async startScreenShare (){
 			const stream = await navigator.mediaDevices.getDisplayMedia();
 			console.log("SCREEN SHARRE", stream.getTracks())
-			let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: "screen-share"});
+			let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
 			this.activeRoom.localParticipant.publishTrack(screenTrack);
 			this.isSharingScreen = true;
 		},
 		stopScreenShare () {
 			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
-				if (track.name === 'screen-share'){
+				if (track.name.includes('screen-share')){
 					this.activeRoom.localParticipant.unpublishTrack(track);
 					this.isSharingScreen = false;
 				}
@@ -230,9 +230,14 @@ export default {
 				console.log("This track will not be connected", track)
 				throw new Error("container was not found when trying to attach track")
 			}
-			const trackParticipantId = isLocal ? this.sessionID : container.id.substring(13);
+			const trackParticipantId = isLocal ? this.sessionID : track.name.includes('screen-share') ? track.name.substring(13) : container.id.substring(13);
 			const dbParticipant = this.roomParticipants.find(p => p.sessionID === trackParticipantId)
-			console.log(`attaching ${dbParticipant.firstName}'s ${track.kind} track to: ${container.id}; sessionID=`, trackParticipantId)
+			if (dbParticipant) {
+				console.log(`attaching ${dbParticipant.firstName}'s ${track.kind} track to: ${container.id}; sessionID=`, trackParticipantId)
+			}
+			else {
+				console.log(`attaching unknown's ${track.kind} track to: ${container.id}; sessionID=`)
+			}
 			this.detachTrack(track) //remove any duplicate tracks
 			if (track.kind === "video") {
 				if (track.isStarted) {
@@ -251,7 +256,7 @@ export default {
 					const aspectRatio = videoWidth/videoHeight;
 					videoTag.setAttribute('style', 
 								`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
-					if (track.name === 'screen-share'){
+					if (track.name.includes('screen-share')){
 						videoTag.setAttribute("controls", true);
 					}
 					container.appendChild(videoTag);
@@ -272,7 +277,7 @@ export default {
 		attachTracks(tracks, identity, init=false) {
 			const isLocal = (identity === this.sessionID);
 			tracks.forEach((track) => {
-				const containerName = track.name === 'screen-share' ? 'screen-share' : (isLocal ? 'local-media' : `remote-media-${identity}`);
+				const containerName = track.name.includes('screen-share') ? 'screen-share' : (isLocal ? 'local-media' : `remote-media-${identity}`);
 				if (!isLocal || containerName !== 'screen-share' ) {
 					this.getMediaContainer(containerName).then(container => {
 						this.attachTrack(track, container, isLocal, init)
@@ -287,13 +292,13 @@ export default {
 		},
 		trackPublished(publication, participantId) {
 			if (publication.isSubscribed) {
-				const containerName = publication.trackName === 'screen-share' ? 'screen-share' : `remote-media-${participantId}`;
+				const containerName = publication.trackName.includes('screen-share') ? 'screen-share' : `remote-media-${participantId}`;
 				this.getMediaContainer(containerName).then(container => {
 					this.attachTrack(publication.track, container, false, true);
 				})
 			}
 			publication.on('subscribed', (track) => {
-				const containerName = track.name === 'screen-share' ? 'screen-share' : `remote-media-${participantId}`;
+				const containerName = track.name.includes('screen-share') ? 'screen-share' : `remote-media-${participantId}`;
 				this.getMediaContainer(containerName).then(container => {
 					this.attachTrack(track, container, false, true);
 				});
@@ -320,7 +325,7 @@ export default {
 			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
 				if (track.kind === type) {
 					track.disable();
-					if (type === 'video'){
+					if (type === 'video'){ //TODO: fix this with screen share if needed
 						this.isCameraOn = false;
 					}
 					else{
