@@ -4,7 +4,7 @@
     <div v-if="user">
       <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
         <template v-for="(board, i) in room.blackboards">
-          <v-tab :href="'#' + board">
+          <v-tab :href="'#' + board" :key="i">
             {{ 'Board #' + (i+1) }}
           </v-tab>
         </template>
