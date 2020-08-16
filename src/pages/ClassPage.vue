@@ -79,7 +79,7 @@
         :isMinimizedView="isMinimizedView"
         @left-room="hasJoinedMedia=false; hasLoadedMedia=false; isSharingScreen= false"
         @media-connected="hasLoadedMedia=true"
-        @screen-share-failed="isSharingScreen = false"
+        @screen-share-stopped="isSharingScreen = false"
         :key="lastBlackboardRoomId"
         class="video-component"
       />

@@ -214,15 +214,20 @@ export default {
 			navigator.mediaDevices.getDisplayMedia( ).then(stream => {
 				let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
 				this.activeRoom.localParticipant.publishTrack(screenTrack);
+				screenTrack.on('stopped', (track)=>{
+					this.stopScreenShare();
+				})
 			}).catch(error => {
 				console.log('ERROR getting screen', error)
-				this.$emit('screen-share-failed');
+				this.$emit('screen-share-stopped');
 			});
 		},
 		stopScreenShare () {
 			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
 				if (track.name.includes('screen-share')){
 					this.activeRoom.localParticipant.unpublishTrack(track);
+					track.stop();
+					this.$emit('screen-share-stopped');
 				}
 			})
 		},
@@ -296,7 +301,7 @@ export default {
 		},
 		detachTrack(track) {
 			track.detach().forEach((element) => {
-					element.remove();
+				element.remove();
 			});
 		},
 		trackPublished(publication, participantId) {
