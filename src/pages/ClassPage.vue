@@ -67,68 +67,71 @@
     <TheSideDrawer
       v-model="drawer"
       :roomParticipantsMap="roomParticipantsMap"/>
-    <div v-if="lastBlackboardRoomId" class="video-chat-container">
-      <RealtimeAudio 
-        v-if="user"
-        :roomId="lastBlackboardRoomId"
-        :classId="classID"
-        :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
-        :portalToLiveBoard="portalToLiveBoard"
-        :hasJoinedMedia="hasJoinedMedia"
-        :isSharingScreen="isSharingScreen"
-        :isMinimizedView="isMinimizedView"
-        @left-room="hasJoinedMedia=false; hasLoadedMedia=false; isSharingScreen= false"
-        @media-connected="hasLoadedMedia=true"
-        @screen-share-stopped="isSharingScreen = false"
-        :key="lastBlackboardRoomId"
-        class="video-component"
-      />
+    <div v-if="lastBlackboardRoomId" class="video-chat-container d-flex align-end">
+      <v-col>
+        <RealtimeAudio 
+          v-if="user"
+          :roomId="lastBlackboardRoomId"
+          :classId="classID"
+          :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
+          :portalToLiveBoard="portalToLiveBoard"
+          :hasJoinedMedia="hasJoinedMedia"
+          :isSharingScreen="isSharingScreen"
+          :isMinimizedView="isMinimizedView"
+          @left-room="hasJoinedMedia=false; hasLoadedMedia=false; isSharingScreen= false"
+          @media-connected="hasLoadedMedia=true"
+          @screen-share-stopped="isSharingScreen = false"
+          :key="lastBlackboardRoomId"
+          class="video-component"
+        />
+      </v-col>
+      <v-col cols="auto">
+        <div class="button-bar d-flex flex-column">
+          <template v-if="hasLoadedMedia">
+            <BaseButton
+              @click="isMinimizedView = !isMinimizedView"
+              color='accent'
+              rounded
+              outlined
+              :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
+            >
+              {{isMinimizedView ? 'Normal View' : 'Mini View'}}
+            </BaseButton>
 
-      <div class="button-bar">
-        <template v-if="hasLoadedMedia">
-          <BaseButton
-            @click="isMinimizedView = !isMinimizedView"
-            color='accent'
-            rounded
-            outlined
-            :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
-          >
-            {{isMinimizedView ? 'Normal View' : 'Mini View'}}
-          </BaseButton>
+            <BaseButton @click="handleVideoViewToggle()" 
+              color='accent'
+              rounded
+              outlined
+              :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
+            >
+            {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
+            </BaseButton>
 
-          <BaseButton @click="handleVideoViewToggle()" 
-            color='accent'
-            rounded
-            outlined
-            :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
-          >
-          {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
-          </BaseButton>
-
-          <BaseButton @click="isSharingScreen = !isSharingScreen" 
-            color='accent'
-            rounded
-            outlined
-            :icon="isSharingScreen ? 'mdi-monitor-off' : 'mdi-monitor-screenshot'"
-          >
-          {{isSharingScreen ? 'Stop Screen Share' : 'Share Screen'}}
-          </BaseButton>
-        </template>
-
-        <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
-          :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
-          :outlined="hasJoinedMedia" 
-          rounded
-          :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
-        >
-          <template v-if="!hasLoadedMedia">
-            <template v-if="!hasJoinedMedia">Join Video Chat</template>
-            <v-progress-circular v-else indeterminate size="20" width="2"/>
+            <BaseButton @click="isSharingScreen = !isSharingScreen" 
+              color='accent'
+              rounded
+              outlined
+              :icon="isSharingScreen ? 'mdi-monitor-off' : 'mdi-monitor-screenshot'"
+            >
+            {{isSharingScreen ? 'Stop Screen Share' : 'Share Screen'}}
+            </BaseButton>
           </template>
-          
-          <template v-else>Exit Video Chat</template>
-        </BaseButton>
-      </div>
+
+          <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
+            :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
+            :outlined="hasJoinedMedia" 
+            rounded
+            :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
+          >
+            <template v-if="!hasLoadedMedia">
+              <template v-if="!hasJoinedMedia">Join Video Chat</template>
+              <v-progress-circular v-else indeterminate size="20" width="2"/>
+            </template>
+            
+            <template v-else>Exit Video Chat</template>
+          </BaseButton>
+        </div>
+      </v-col>
       
     </div>
     <v-content>

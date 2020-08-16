@@ -6,8 +6,13 @@
 				<div class="screen-share-container" id="screen-share">
 
 				</div>
-				<v-row class="video-row">
-					<v-col class="video-col">
+				<Carousel
+					:paginationEnabled="false"
+					:navigationEnabled="true"
+					:perPageCustom="[[0, 1], [540, 2], [790, 3], [1040, 4], [1290, 5]]"
+					class="video-row"
+				>
+					<Slide class="video-col">
 						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'">
 							<div v-show="!isMinimizedView" id="local-media" class="video-container"/>
 							<div class="display-bar">
@@ -20,8 +25,8 @@
 								</div>
 							</div>
 						</div>
-					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
+					</Slide>
+					<Slide v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
 						:key="participant.sessionID" 
 						class="video-col">
 						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'" >
@@ -36,8 +41,8 @@
 								</v-icon> 
 							</div>
 						</div>
-					</v-col>
-				</v-row>
+					</Slide>
+				</Carousel>
 			</v-container>
 		</portal>
 		<MediaErrorPopup
@@ -55,7 +60,7 @@ import MediaErrorPopup from "@/components/MediaErrorPopup.vue";
 import Twilio, { connect, createLocalTracks, createLocalVideoTrack, LocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
-
+import { Carousel, Slide } from 'vue-carousel';
 
 export default {
 	props: {
@@ -68,7 +73,9 @@ export default {
 		isMinimizedView: Boolean
 	},
 	components :{
-		MediaErrorPopup
+		MediaErrorPopup,
+		Carousel,
+		Slide
 	},
 	data() {
 		return {
@@ -470,11 +477,28 @@ export default {
 	margin: 0;
 	border-color:green;
 	border-style: solid;
+	max-width: 980px;
 	/* float:right; */
 	/* overflow: auto; */
 	/* height : 150px; */
 	/* display: inline-block; */
 }
+@media (max-width: 540px) {
+	.video-row {
+		max-width: 245px;
+	}
+}
+@media (max-width: 790px) and (min-width: 541px) {
+	.video-row {
+		max-width: 490px;
+	}
+}
+@media (max-width: 1040px) and (min-width: 791px) {
+	.video-row {
+		max-width: 735px;
+	}
+}
+
 .video-col{
 	flex-grow: 0;
 	padding-left: 2px;
