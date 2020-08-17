@@ -74,6 +74,7 @@
       :roomParticipants="roomParticipants"
       :roomId="this.roomId"
       :classId="this.classId"
+      @on-closed="messagesOpen = false"
     />
   </div>
 </template>

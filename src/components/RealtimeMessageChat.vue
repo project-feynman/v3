@@ -2,23 +2,21 @@
 	<v-card :class="['chat-card', value ? '': 'd-none']">
 		<v-app-bar dense color="accent lighten-1" dark>
 			<v-icon left>mdi-chat</v-icon>
-      <v-toolbar-title>Messages</v-toolbar-title>
+            <v-toolbar-title>Messages</v-toolbar-title>
+            <v-spacer/>
+            <v-icon @click="$emit('on-closed')">mdi-close</v-icon>
 		</v-app-bar>
 		<div class ="chat-container-wrapper">
-				<!-- <v-list>
-						<v-list-item class="chat-container-wrapper"> -->
-				<div class="chat-container">
-						<div class="message" v-for="(message,i) in sortedMessages" v-bind:key="i" >
-								<div class="name-display" v-if="(i == 0 || sortedMessages[i-1].creator.uid != message.creator.uid) && user.uid !== message.creator.uid">
-										{{user.uid === message.creator.uid ? "Me" : message.creator.firstName+ " " + message.creator.lastName}}
-								</div>
-								<div :class="['content', user.uid === message.creator.uid ? 'current-user': '']" style="margin-top: 5px">
-										<div v-text="message.content"></div>
-								</div> 
-						</div>
-				</div>
-						<!-- </v-list-item>
-				</v-list> -->
+            <div class="chat-container">
+                    <div class="message" v-for="(message,i) in sortedMessages" v-bind:key="i" >
+                            <div class="name-display" v-if="(i == 0 || sortedMessages[i-1].creator.uid != message.creator.uid) && user.uid !== message.creator.uid">
+                                    {{user.uid === message.creator.uid ? "Me" : message.creator.firstName+ " " + message.creator.lastName}}
+                            </div>
+                            <div :class="['content', user.uid === message.creator.uid ? 'current-user': '']" style="margin-top: 5px">
+                                    <div v-text="message.content"></div>
+                            </div> 
+                    </div>
+            </div>
 		</div>
 		<div class="text-box-container d-flex">
 			<v-col class="text-container py-0 pr-0">
@@ -71,12 +69,17 @@ export default {
         sortedMessages: [],
         snapshotListeners: [],
         messagesRef: null,
-        currentText: ""
+        currentText: "",
+        hasInitializedMessages: false
     }),
     computed: {
         ...mapState([
-            "user"
+            "user",
+            "session"
         ]),
+        sessionID () {
+			return this.session.currentID;
+		},
         simplifiedUser () {
             return {
                 email: this.user.email,
@@ -88,6 +91,7 @@ export default {
     },
     watch : {
         chatMessages () {
+            const isNewMessage = this.sortedMessages.length !== this.chatMessages.length;
             this.sortedMessages = mapSort(
                 this.chatMessages,
                 (elem) => {
@@ -95,7 +99,12 @@ export default {
                 },
                 (a, b) => {
                     return (a.date > b.date) ? 1 : ((a.date < b.date) ? -1 : 0)
-	            })
+                });
+            const lastMessage = this.sortedMessages[this.sortedMessages.length-1]
+            if (isNewMessage && this.user.uid !== lastMessage.creator.uid && !this.value && this.hasInitializedMessages){
+                this.$root.$emit("show-snackbar", `${lastMessage.creator.firstName}: ${lastMessage.content}`);
+            }
+            this.hasInitializedMessages = true;
         }
     },
     created () {
@@ -132,7 +141,7 @@ export default {
 <style scoped>
 .chat-card {
 	position: absolute;
-	bottom: 0;
+	bottom: 20px;
 	right: 20px;
 	width: 350px;
 	height: 400px;
