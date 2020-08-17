@@ -212,7 +212,7 @@ export default {
 				this.$emit('screen-share-failed');
 				return;
 			}
-			navigator.mediaDevices.getDisplayMedia( ).then(stream => {
+			navigator.mediaDevices.getDisplayMedia().then(stream => {
 				const screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
 				this.activeRoom.localParticipant.publishTrack(screenTrack);
 				screenTrack.on('stopped', track => {
