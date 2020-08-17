@@ -1,6 +1,5 @@
 <template>
 	<div v-if="hasJoinedMedia">
-		
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
 			<v-container class="video-display" >
 				<div class="screen-share-container" id="screen-share">
@@ -28,16 +27,17 @@
 					</Slide>
 					<Slide v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
 						:key="participant.sessionID" 
-						class="video-col">
+						class="video-col"
+					>
 						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'" >
 							<div  v-show=" !isMinimizedView && participant.isCameraOn" :id="`remote-media-${participant.sessionID}`"  class="video-container"/>
 							<v-icon v-show=" !isMinimizedView && !participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
-									{{participant.firstName + " " + participant.lastName}}
+									{{ participant.firstName + " " + participant.lastName }}
 								</div>
 								<v-icon class="participant-mic">
-									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+									{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}
 								</v-icon> 
 							</div>
 						</div>
@@ -46,8 +46,8 @@
 			</v-container>
 		</portal>
 		<MediaErrorPopup
-		:popupOpen="permissionsPopupOpen"
-		@exit="permissionsPopupOpen = false"
+			:popupOpen="permissionsPopupOpen"
+			@exit="permissionsPopupOpen = false"
 		/>
 	</div>
 </template> 
@@ -77,7 +77,7 @@ export default {
 		Carousel,
 		Slide
 	},
-	data() {
+	data () {
 		return {
 			loading: false,
 			activeRoom: null,
@@ -104,10 +104,9 @@ export default {
 	watch: {
 		hasJoinedMedia () {
 			this.updateMediaStatus();
-			if(this.hasJoinedMedia){
+			if (this.hasJoinedMedia) { 
 				this.enterAudioChat();
-			}
-			else {
+			} else {
 				this.leaveRoomIfJoined();
 			}
 		},
@@ -128,25 +127,21 @@ export default {
 			if (this.activeRoom){
 				if (this.isSharingScreen) {
 					this.startScreenShare();
-				}
-				else{
+				} else {
 					this.stopScreenShare();
 				}
 			}
 		},
 		portalToLiveBoard () {
-			if (this.activeRoom){
+			if (this.activeRoom) {
 				this.attachTracks(this.getTracks(this.activeRoom.localParticipant), this.sessionID);
 				this.activeRoom.participants.forEach((participant) => {
 					this.attachTracks(this.getTracks(participant), participant.identity);
 				});
 			}
-		},
-		// activeRoom (){
-		// 	console.log('activeRToom', this.activeRoom)
-		// }
+		}
 	},
-	created() {
+	created () {
 		this.token = this.getAccessToken();
 	},
 	beforeDestroy () {
@@ -156,14 +151,14 @@ export default {
 	methods: {
 		toggleMic () {
 			if (!this.isMicOn){
-				if (this.activeRoom===null) {
+				if (this.activeRoom === null) {
 					this.enterAudioChat();
 				} else {
 					this.enableTrack("audio");
 				}
 			}
 			else {
-				if (this.activeRoom){
+				if (this.activeRoom) {
 					this.disableTrack("audio");
 				}
 			}
@@ -182,48 +177,47 @@ export default {
 				}
 			}
 		},
-		updateMediaStatus () {
-			this.roomParticipantRef.get().then(doc => { 
-				if (doc.exists){ //this is just to prevent errors
-					this.roomParticipantRef.update({
-						isMicOn: this.isMicOn,
-						isCameraOn: this.isCameraOn,
-						isSharingScreen: this.isSharingScreen,
-						hasJoinedMedia: this.hasJoinedMedia
-					})
-				}
-			})
+		async updateMediaStatus () {
+			const doc = await this.roomParticipantRef.get();
+			if (doc.exists) { //this is just to prevent errors
+				this.roomParticipantRef.update({
+					isMicOn: this.isMicOn,
+					isCameraOn: this.isCameraOn,
+					isSharingScreen: this.isSharingScreen,
+					hasJoinedMedia: this.hasJoinedMedia
+				});
+			}
 		},
-		getAccessToken() {
-				var AccessToken = require('twilio').jwt.AccessToken;
-				var VideoGrant = AccessToken.VideoGrant;
-				var ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
-				var API_KEY_SID = twilioCreds.API_KEY_SID;
-				var API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
-				var accessToken = new AccessToken(
-						ACCOUNT_SID,
-						API_KEY_SID,
-						API_KEY_SECRET
-				);
-				accessToken.identity = this.sessionID;
-				var grant = new VideoGrant();
-				grant.room = this.roomId;
-				accessToken.addGrant(grant);
-				var jwt = accessToken.toJwt();
-				return jwt;
+		getAccessToken () {
+			const AccessToken = require('twilio').jwt.AccessToken;
+			const VideoGrant = AccessToken.VideoGrant;
+			const ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
+			const API_KEY_SID = twilioCreds.API_KEY_SID;
+			const API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
+			const accessToken = new AccessToken(
+				ACCOUNT_SID,
+				API_KEY_SID,
+				API_KEY_SECRET
+			);
+			accessToken.identity = this.sessionID;
+			const grant = new VideoGrant();
+			grant.room = this.roomId;
+			accessToken.addGrant(grant);
+			const jwt = accessToken.toJwt();
+			return jwt;
 		},
-		async startScreenShare (){
+		async startScreenShare () {
 			if (this.participantSharingScreen()){
 				this.$root.$emit("show-snackbar", "It looks like someone else is already screen-sharing, try again once they are done.");
 				this.$emit('screen-share-failed');
 				return;
 			}
 			navigator.mediaDevices.getDisplayMedia( ).then(stream => {
-				let screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
+				const screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
 				this.activeRoom.localParticipant.publishTrack(screenTrack);
-				screenTrack.on('stopped', (track)=>{
+				screenTrack.on('stopped', track => {
 					this.stopScreenShare();
-				})
+				});
 			}).catch(error => {
 				console.log('ERROR getting screen', error)
 				this.$emit('screen-share-stopped');
@@ -231,20 +225,20 @@ export default {
 		},
 		stopScreenShare () {
 			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
-				if (track.name.includes('screen-share')){
+				if (track.name.includes('screen-share')) {
 					this.activeRoom.localParticipant.unpublishTrack(track);
 					track.stop();
 					this.$emit('screen-share-stopped');
 				}
-			})
+			});
 		},
 		participantSharingScreen () {
 			const filtered = this.roomParticipants.filter(p => p.isSharingScreen && p.sessionID !== this.sessionID);
-			return filtered.length > 0 ? filtered[0] : false
+			return filtered.length > 0 ? filtered[0] : false;
 		},
 		// Trigger log events 
 		attachTrack(track, container, isLocal, init) {
-			if (!container){
+			if (!container) {
 				console.log("This track will not be connected", track)
 				throw new Error("container was not found when trying to attach track")
 			}
@@ -297,12 +291,11 @@ export default {
 		},
 		attachTracks(tracks, identity, init=false) {
 			const isLocal = (identity === this.sessionID);
-			tracks.forEach((track) => {
+			tracks.forEach(async track => {
 				const containerName = track.name.includes('screen-share') ? 'screen-share' : (isLocal ? 'local-media' : `remote-media-${identity}`);
 				if (!isLocal || containerName !== 'screen-share' ) {
-					this.getMediaContainer(containerName).then(container => {
-						this.attachTrack(track, container, isLocal, init)
-					})
+					const container = await this.getMediaContainer(containerName);
+					this.attachTrack(track, container, isLocal, init);
 				}
 			});
 		},
@@ -311,45 +304,42 @@ export default {
 				element.remove();
 			});
 		},
-		trackPublished(publication, participantId) {
+		async trackPublished(publication, participantId) {
 			if (publication.isSubscribed) {
 				const containerName = publication.trackName.includes('screen-share') ? 'screen-share' : `remote-media-${participantId}`;
-				this.getMediaContainer(containerName).then(container => {
-					this.attachTrack(publication.track, container, false, true);
-				})
+				const container = await this.getMediaContainer(containerName);
+				this.attachTrack(publication.track, container, false, true);
 			}
-			publication.on('subscribed', (track) => {
+			publication.on('subscribed', async track => {
 				const containerName = track.name.includes('screen-share') ? 'screen-share' : `remote-media-${participantId}`;
-				this.getMediaContainer(containerName).then(container => {
-					this.attachTrack(track, container, false, true);
-				});
+				const container = await this.getMediaContainer(containerName);
+				this.attachTrack(track, container, false, true);
 			});
 			publication.on('unsubscribed', this.detachTrack);
 		},
-		trackUnpublished(publication) {
-				console.log(publication.kind + ' track was unpublished.');
+		trackUnpublished (publication) {
+			console.log(publication.kind + ' track was unpublished.');
 		},
-		participantConnected(participant) {
-			participant.tracks.forEach((publication) => {
+		participantConnected (participant) {
+			participant.tracks.forEach(publication => {
 				this.trackPublished(publication, participant.identity);
 			});
-			participant.on('trackPublished', (publication) => {
+			participant.on('trackPublished', publication => {
 				this.trackPublished(publication, participant.identity);
 			});
 			participant.on('trackUnpublished', this.trackUnpublished);
 		},
 		detachParticipantTracks(participant) {
-				var tracks = this.getTracks(participant);
-				tracks.forEach(this.detachTrack);
+			const tracks = this.getTracks(participant);
+			tracks.forEach(this.detachTrack);
 		},
 		disableTrack (type) {
-			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
+			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
 				if (track.kind === type) {
 					track.disable();
-					if (type === 'video'){ //TODO: fix this with screen share if needed
+					if (type === 'video') { //TODO: fix this with screen share if needed
 						this.isCameraOn = false;
-					}
-					else{
+					} else {
 						this.isMicOn = false;
 					}
 				}
@@ -361,19 +351,16 @@ export default {
 					track.enable();
 					if (type === 'video'){
 						this.isCameraOn = true;
-					}
-					else{
+					} else {
 						this.isMicOn = true;
 					}
 				}
 			});
 		},
-		getTracks(participant) {
-				return Array.from(participant.tracks.values()).filter((publication) => {
-						return publication.track;
-						}).map((publication) => {
-						return publication.track;
-						});
+		getTracks (participant) {
+			return Array.from(participant.tracks.values())
+				.filter(publication => publication.track)
+				.map(publication =>  publication.track);
 		},
 		leaveRoomIfJoined() {
 			if (this.activeRoom) {
@@ -384,68 +371,70 @@ export default {
 		},
 		async enterAudioChat() {
 			this.loading = true;
-			let connectOptions = {
+			const connectOptions = {
 				name: this.roomId,
 				audio: true,
 				video: true
 			};
 			this.leaveRoomIfJoined();
 			// remove any remote track when joining a new room
-			Twilio.connect(this.token, connectOptions).then((room) => {
-				this.onTwilioConnect(room)
-				this.$emit('media-connected')
+			try {
+				const room = await Twilio.connect(this.token, connectOptions);
+				this.onTwilioConnect(room);
+				this.$emit('media-connected');
 				this.loading = false;
-			}).catch(error => {
+			} catch {
 				console.log("Twilio Error", error);
-				this.permissionsPopupOpen = true;
-			});
-			
+			  this.permissionsPopupOpen = true;
+			}
 		},
 		onTwilioConnect(room) {
-				console.log('Successfully joined a Room: '+ room);
-				// set active toom
-				
-				this.activeRoom = room;
-				var previewContainer = document.getElementById('local-media');
-				this.attachTracks(this.getTracks(room.localParticipant), this.sessionID, true);
-				this.isMicOn = true;
-				this.isCameraOn = true;
+			console.log('Successfully joined a Room: '+ room);
+			// set active toom
+			
+			this.activeRoom = room;
+			
+			// TODO: use ref instead of ID
+			//       nextTick
+			const previewContainer = document.getElementById('local-media');
+			this.attachTracks(this.getTracks(room.localParticipant), this.sessionID, true);
+			this.isMicOn = true;
+			this.isCameraOn = true;
 
-				room.participants.forEach((participant) => {
-					const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
-					if (dbParticipant){ //is this participant in the DB?
-						this.participantConnected(participant);
-						console.log("Already in Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
-					}
-				});
-				room.on('participantConnected', (participant) => {
-					const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
-					if (dbParticipant){ //is this participant in the DB?
-						this.participantConnected(participant);
-						console.log("Joining Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
-					}
-				});
-				room.on('participantDisconnected', (participant) => {
-						console.log("RemoteParticipant '" + participant.identity + "' left the room");
-
-						this.detachParticipantTracks(participant);
-				});
-				room.on('disconnected', () => {
-					console.log('You Left the rooom');
-					this.isMicOn = false;
-					this.isCameraOn = false;
-					this.$emit('left-room')
-					this.detachParticipantTracks(room.localParticipant);
-					room.participants.forEach(this.detachParticipantTracks);
-					this.activeRoom = null;
-				});
+			room.participants.forEach(participant => {
+				const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
+				if (dbParticipant) { //is this participant in the DB?
+					this.participantConnected(participant);
+					console.log("Already in Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
+				}
+			});
+			room.on('participantConnected', participant => {
+				const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
+				if (dbParticipant){ //is this participant in the DB?
+					this.participantConnected(participant);
+					console.log("Joining Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
+				}
+			});
+			room.on('participantDisconnected', participant => {
+				console.log("RemoteParticipant '" + participant.identity + "' left the room");
+				this.detachParticipantTracks(participant);
+			});
+			room.on('disconnected', () => {
+				console.log('You Left the rooom');
+				this.isMicOn = false;
+				this.isCameraOn = false;
+				this.$emit('left-room')
+				this.detachParticipantTracks(room.localParticipant);
+				room.participants.forEach(this.detachParticipantTracks);
+				this.activeRoom = null;
+			});
 		},
 		async getMediaContainer(containerId){
 			let count = 0;
-			while (count < 5){
+			while (count < 5) {
 				await this.$nextTick();
 				const container = document.getElementById(containerId);
-				if (container){
+				if (container) {
 					return container;
 				}
 				count++;
