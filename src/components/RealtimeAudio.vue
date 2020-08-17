@@ -1,11 +1,19 @@
 <template>
 	<div v-if="hasJoinedMedia">
 		<portal to="video-chat" :disabled="!portalToLiveBoard">
-			<v-container v-show="!isMinimizedView" class="video-display">
-				<v-row>
-					<v-col class="video-col">
-						<div class="video-container-wrapper">
-							<div id="local-media" class="video-container"/>
+			<v-container class="video-display" >
+				<div class="screen-share-container" id="screen-share">
+
+				</div>
+				<Carousel
+					:paginationEnabled="false"
+					:navigationEnabled="true"
+					:perPageCustom="[[0, 1], [600, 2], [850, 3], [1100, 4], [1350, 5]]"
+					class="video-row"
+				>
+					<Slide class="video-col">
+						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'">
+							<div v-show="!isMinimizedView" id="local-media" class="video-container"/>
 							<div class="display-bar">
 								<div class="name-container">
 									{{user.firstName + " " + user.lastName}}
@@ -16,62 +24,30 @@
 								</div>
 							</div>
 						</div>
-					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
+					</Slide>
+					<Slide v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
 						:key="participant.sessionID" 
-						class="video-col">
-						<div class="video-container-wrapper" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.sessionID}`"  class="video-container"/>
-							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
+						class="video-col"
+					>
+						<div :class="isMinimizedView ? 'mini-view-container' : 'video-container-wrapper'" >
+							<div  v-show=" !isMinimizedView && participant.isCameraOn" :id="`remote-media-${participant.sessionID}`"  class="video-container"/>
+							<v-icon v-show=" !isMinimizedView && !participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
 							<div class="display-bar">
 								<div class="name-container">
-									{{participant.firstName + " " + participant.lastName}}
+									{{ participant.firstName + " " + participant.lastName }}
 								</div>
 								<v-icon class="participant-mic">
-									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
+									{{ participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off' }}
 								</v-icon> 
 							</div>
 						</div>
-					</v-col>
-				</v-row>
-			</v-container>
-			<v-container v-show="isMinimizedView" class="video-display">
-				<v-row>
-					<v-col class="video-col">
-						<div class="mini-view-container">
-							<div class="display-bar">
-								<div class="name-container">
-									{{user.firstName + " " + user.lastName}}
-								</div>
-								<div class="local-buttons-container">
-									<v-btn @click="toggleMic()" x-small><v-icon small>{{isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon></v-btn>
-									<v-btn @click="toggleCamera()" x-small ><v-icon small>{{isCameraOn ? 'mdi-video': 'mdi-video-off'}}</v-icon></v-btn>
-								</div>
-							</div>
-						</div>
-					</v-col>
-					<v-col v-for="participant in roomParticipants.filter(p => (p.sessionID !== sessionID) && p.hasJoinedMedia)" 
-						:key="participant.sessionID" 
-						class="video-col">
-						<div class="mini-view-container" >
-							<div  v-show="participant.isCameraOn" :id="`remote-media-${participant.sessionID}`"  class="video-container"/>
-							<v-icon v-show="!participant.isCameraOn" color="white" x-large style="width: 100%; height: 100%">mdi-video-off</v-icon>
-							<div class="display-bar">
-								<div class="name-container">
-									{{participant.firstName + " " + participant.lastName}}
-								</div>
-								<v-icon class="participant-mic">
-									{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}
-								</v-icon> 
-							</div>
-						</div>
-					</v-col>
-				</v-row>
+					</Slide>
+				</Carousel>
 			</v-container>
 		</portal>
 		<MediaErrorPopup
-		:popupOpen="permissionsPopupOpen"
-		@exit="permissionsPopupOpen = false"
+			:popupOpen="permissionsPopupOpen"
+			@exit="permissionsPopupOpen = false"
 		/>
 	</div>
 </template> 
@@ -81,24 +57,27 @@ import firebase from "firebase/app";
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import MediaErrorPopup from "@/components/MediaErrorPopup.vue";
-import Twilio, { connect, createLocalTracks, createLocalVideoTrack } from 'twilio-video';
+import Twilio, { connect, createLocalTracks, createLocalVideoTrack, LocalVideoTrack } from 'twilio-video';
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
-
+import { Carousel, Slide } from 'vue-carousel';
 
 export default {
 	props: {
 		roomId: String,
 		classId: String,
+		isSharingScreen: Boolean,
 		hasJoinedMedia: Boolean,
 		roomParticipants: Array,
 		portalToLiveBoard: Boolean,
 		isMinimizedView: Boolean
 	},
 	components :{
-		MediaErrorPopup
+		MediaErrorPopup,
+		Carousel,
+		Slide
 	},
-	data() {
+	data () {
 		return {
 			loading: false,
 			activeRoom: null,
@@ -125,10 +104,9 @@ export default {
 	watch: {
 		hasJoinedMedia () {
 			this.updateMediaStatus();
-			if(this.hasJoinedMedia){
+			if (this.hasJoinedMedia) { 
 				this.enterAudioChat();
-			}
-			else {
+			} else {
 				this.leaveRoomIfJoined();
 			}
 		},
@@ -144,13 +122,26 @@ export default {
 				this.updateMediaStatus();
 			}
 		},
-		portalToLiveBoard () {
+		isSharingScreen () {
+			this.updateMediaStatus();
 			if (this.activeRoom){
-				this.connectAllTracksInRoom(this.activeRoom)
+				if (this.isSharingScreen) {
+					this.startScreenShare();
+				} else {
+					this.stopScreenShare();
+				}
+			}
+		},
+		portalToLiveBoard () {
+			if (this.activeRoom) {
+				this.attachTracks(this.getTracks(this.activeRoom.localParticipant), this.sessionID);
+				this.activeRoom.participants.forEach((participant) => {
+					this.attachTracks(this.getTracks(participant), participant.identity);
+				});
 			}
 		}
 	},
-	created() {
+	created () {
 		this.token = this.getAccessToken();
 	},
 	beforeDestroy () {
@@ -159,22 +150,20 @@ export default {
 	},
 	methods: {
 		toggleMic () {
-			console.log("toggled mic", this.roomId, this.isMicOn )
 			if (!this.isMicOn){
-				if (this.activeRoom===null) {
+				if (this.activeRoom === null) {
 					this.enterAudioChat();
 				} else {
 					this.enableTrack("audio");
 				}
 			}
 			else {
-				if (this.activeRoom){
+				if (this.activeRoom) {
 					this.disableTrack("audio");
 				}
 			}
 		},
 		toggleCamera () {
-			console.log("toggled camera", this.roomId, this.isCameraOn)
 			if (!this.isCameraOn){
 				if (this.activeRoom===null) {
 					this.enterAudioChat();
@@ -188,125 +177,169 @@ export default {
 				}
 			}
 		},
-		updateMediaStatus () {
-			this.roomParticipantRef.get().then(doc => { 
-				if (doc.exists){ //this is just to prevent errors
-					this.roomParticipantRef.update({
-						isMicOn: this.isMicOn,
-						isCameraOn: this.isCameraOn,
-						hasJoinedMedia: this.hasJoinedMedia
-					})
-				}
-			})
+		async updateMediaStatus () {
+			const doc = await this.roomParticipantRef.get();
+			if (doc.exists) { //this is just to prevent errors
+				this.roomParticipantRef.update({
+					isMicOn: this.isMicOn,
+					isCameraOn: this.isCameraOn,
+					isSharingScreen: this.isSharingScreen,
+					hasJoinedMedia: this.hasJoinedMedia
+				});
+			}
 		},
-		getAccessToken() {
-				var AccessToken = require('twilio').jwt.AccessToken;
-				var VideoGrant = AccessToken.VideoGrant;
-
-				// Substitute your Twilio AccountSid and ApiKey details
-				var ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
-				var API_KEY_SID = twilioCreds.API_KEY_SID;
-				var API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
-
-				// Create an Access Token
-				var accessToken = new AccessToken(
-						ACCOUNT_SID,
-						API_KEY_SID,
-						API_KEY_SECRET
-				);
-
-				accessToken.identity = this.sessionID;
-
-				// Grant access to Video
-				var grant = new VideoGrant();
-				grant.room = this.roomId;
-				accessToken.addGrant(grant);
-
-				// Serialize the token as a JWT
-				var jwt = accessToken.toJwt();
-				return jwt;
+		getAccessToken () {
+			const AccessToken = require('twilio').jwt.AccessToken;
+			const VideoGrant = AccessToken.VideoGrant;
+			const ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
+			const API_KEY_SID = twilioCreds.API_KEY_SID;
+			const API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
+			const accessToken = new AccessToken(
+				ACCOUNT_SID,
+				API_KEY_SID,
+				API_KEY_SECRET
+			);
+			accessToken.identity = this.sessionID;
+			const grant = new VideoGrant();
+			grant.room = this.roomId;
+			accessToken.addGrant(grant);
+			const jwt = accessToken.toJwt();
+			return jwt;
+		},
+		async startScreenShare () {
+			if (this.participantSharingScreen()){
+				this.$root.$emit("show-snackbar", "It looks like someone else is already screen-sharing, try again once they are done.");
+				this.$emit('screen-share-failed');
+				return;
+			}
+			navigator.mediaDevices.getDisplayMedia().then(stream => {
+				const screenTrack = new LocalVideoTrack(stream.getTracks()[0], {name: `screen-share-${this.sessionID}`});
+				this.activeRoom.localParticipant.publishTrack(screenTrack);
+				screenTrack.on('stopped', track => {
+					this.stopScreenShare();
+				});
+			}).catch(error => {
+				console.log('ERROR getting screen', error)
+				this.$emit('screen-share-stopped');
+			});
+		},
+		stopScreenShare () {
+			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
+				if (track.name.includes('screen-share')) {
+					this.activeRoom.localParticipant.unpublishTrack(track);
+					track.stop();
+					this.$emit('screen-share-stopped');
+				}
+			});
+		},
+		participantSharingScreen () {
+			const filtered = this.roomParticipants.filter(p => p.isSharingScreen && p.sessionID !== this.sessionID);
+			return filtered.length > 0 ? filtered[0] : false;
 		},
 		// Trigger log events 
 		attachTrack(track, container, isLocal, init) {
+			if (!container) {
+				console.log("This track will not be connected", track)
+				throw new Error("container was not found when trying to attach track")
+			}
+			const trackParticipantId = isLocal ? this.sessionID : track.name.includes('screen-share') ? track.name.substring(13) : container.id.substring(13);
+			const dbParticipant = this.roomParticipants.find(p => p.sessionID === trackParticipantId)
+			if (dbParticipant) {
+				console.log(`attaching ${dbParticipant.firstName}'s ${track.kind} track to: ${container.id}; sessionID=`, trackParticipantId)
+			}
+			else {
+				console.log(`attaching unknown's ${track.kind} track to: ${container.id}; sessionID=`)
+			}
 			this.detachTrack(track) //remove any duplicate tracks
-				if (track.kind === "video") {
-					
-					if (track.isStarted) {
-						scaleAndAttachVideo(track, container);
-					}
-					
-					if (init){ //this is to prevent too many event listeners from being added
-						track.on('started', (videoTrack) => { 
-							scaleAndAttachVideo(track, container);
-						});
-					}
-
-					function scaleAndAttachVideo (videoTrack, container) {
-						console.log("track attached", videoTrack)
-						var videoTag = videoTrack.attach();
-						const videoHeight = videoTrack.dimensions.height;
-						const videoWidth = videoTrack.dimensions.width;
-						const aspectRatio = videoWidth/videoHeight;
-						videoTag.setAttribute('style', 
-									`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
-						
-						// while (container.firstChild) {
-						// 	container.removeChild(container.lastChild);
-						// }
-						container.appendChild(videoTag);
-					}
-					
+			if (track.kind === "video") {
+				if (track.isStarted) {
+					scaleAndAttachVideo(track, container);
 				}
-				else {
+				if (init){ //this is to prevent too many event listeners from being added
+					track.on('started', (videoTrack) => { 
+						scaleAndAttachVideo(track, container);
+					});
+				}
+
+				function scaleAndAttachVideo (videoTrack, container) {
+					var videoTag = videoTrack.attach();
+					const videoHeight = videoTrack.dimensions.height;
+					const videoWidth = videoTrack.dimensions.width;
+					const aspectRatio = videoWidth/videoHeight;
+					if (track.name.includes('screen-share')){
+						videoTag.setAttribute('style', "width: 480px;")
+						videoTag.setAttribute("controls", true);
+					}
+					else {
+						videoTag.setAttribute('style', 
+								`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
+					}
+					container.appendChild(videoTag);
+				}
+				
+			}
+			else { // this is an audio track
+				if (track.isStarted) {
 					container.appendChild(track.attach());
 				}
+				if (init){ //this is to prevent too many event listeners from being added
+					track.on('started', (videoTrack) => { 
+						container.appendChild(track.attach());
+					});
+				}
+			}
 		},
-		attachTracks(tracks, container, isLocal=false, init=false) {
-				tracks.forEach((track) => {
-						this.attachTrack(track, container, isLocal, init);
-				});
+		attachTracks(tracks, identity, init=false) {
+			const isLocal = (identity === this.sessionID);
+			tracks.forEach(async track => {
+				const containerName = track.name.includes('screen-share') ? 'screen-share' : (isLocal ? 'local-media' : `remote-media-${identity}`);
+				if (!isLocal || containerName !== 'screen-share' ) {
+					const container = await this.getMediaContainer(containerName);
+					this.attachTrack(track, container, isLocal, init);
+				}
+			});
 		},
 		detachTrack(track) {
-				track.detach().forEach((element) => {
-						element.remove();
-				});
+			track.detach().forEach((element) => {
+				element.remove();
+			});
 		},
-		trackPublished(publication, container) {
-				if (publication.isSubscribed) {
-						this.attachTrack(publication.track, container, false, true);
-				}
-				publication.on('subscribed', (track) => {
-						console.log('Subscribed to ' + publication.kind + ' track');
-						this.attachTrack(track, container, false, true);
-				});
-				publication.on('unsubscribed', this.detachTrack);
+		async trackPublished(publication, participantId) {
+			if (publication.isSubscribed) {
+				const containerName = publication.trackName.includes('screen-share') ? 'screen-share' : `remote-media-${participantId}`;
+				const container = await this.getMediaContainer(containerName);
+				this.attachTrack(publication.track, container, false, true);
+			}
+			publication.on('subscribed', async track => {
+				const containerName = track.name.includes('screen-share') ? 'screen-share' : `remote-media-${participantId}`;
+				const container = await this.getMediaContainer(containerName);
+				this.attachTrack(track, container, false, true);
+			});
+			publication.on('unsubscribed', this.detachTrack);
 		},
-		trackUnpublished(publication) {
-				console.log(publication.kind + ' track was unpublished.');
+		trackUnpublished (publication) {
+			console.log(publication.kind + ' track was unpublished.');
 		},
-		participantConnected(participant) {
-			this.getMediaContainer(`remote-media-${participant.identity}`).then(container => {
-				participant.tracks.forEach((publication) => {
-					this.trackPublished(publication, container);
-				});
-				participant.on('trackPublished', (publication) => {
-					this.trackPublished(publication, container);
-				});
-				participant.on('trackUnpublished', this.trackUnpublished);
-			})
+		participantConnected (participant) {
+			participant.tracks.forEach(publication => {
+				this.trackPublished(publication, participant.identity);
+			});
+			participant.on('trackPublished', publication => {
+				this.trackPublished(publication, participant.identity);
+			});
+			participant.on('trackUnpublished', this.trackUnpublished);
 		},
 		detachParticipantTracks(participant) {
-				var tracks = this.getTracks(participant);
-				tracks.forEach(this.detachTrack);
+			const tracks = this.getTracks(participant);
+			tracks.forEach(this.detachTrack);
 		},
 		disableTrack (type) {
-			this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
+			this.getTracks(this.activeRoom.localParticipant).forEach(track => {
 				if (track.kind === type) {
 					track.disable();
-					if (type === 'video'){
+					if (type === 'video') { //TODO: fix this with screen share if needed
 						this.isCameraOn = false;
-					}
-					else{
+					} else {
 						this.isMicOn = false;
 					}
 				}
@@ -318,129 +351,151 @@ export default {
 					track.enable();
 					if (type === 'video'){
 						this.isCameraOn = true;
-					}
-					else{
+					} else {
 						this.isMicOn = true;
 					}
 				}
 			});
 		},
-		getTracks(participant) {
-				return Array.from(participant.tracks.values()).filter((publication) => {
-						return publication.track;
-						}).map((publication) => {
-						return publication.track;
-						});
+		getTracks (participant) {
+			return Array.from(participant.tracks.values())
+				.filter(publication => publication.track)
+				.map(publication =>  publication.track);
 		},
 		leaveRoomIfJoined() {
 			if (this.activeRoom) {
 				this.isCameraOn = false;
 				this.isMicOn = false;
 				this.activeRoom.disconnect();
-				console.log("disconnecting");
 			}
 		},
 		async enterAudioChat() {
 			this.loading = true;
-
-			let connectOptions = {
+			const connectOptions = {
 				name: this.roomId,
 				audio: true,
 				video: true
 			};
 			this.leaveRoomIfJoined();
-			
 			// remove any remote track when joining a new room
-			console.log('About to connect: ');
-			Twilio.connect(this.token, connectOptions).then((room) => {
-				this.onTwilioConnect(room)
-				this.$emit('media-connected')
+			try {
+				const room = await Twilio.connect(this.token, connectOptions);
+				this.onTwilioConnect(room);
+				this.$emit('media-connected');
 				this.loading = false;
-			}).catch(error => {
+			} catch {
 				console.log("Twilio Error", error);
-				this.permissionsPopupOpen = true;
-			});
-			
+			  this.permissionsPopupOpen = true;
+			}
 		},
 		onTwilioConnect(room) {
-				console.log('Successfully joined a Room: '+ room);
-				// set active toom
-				
-				this.activeRoom = room;
-				var previewContainer = document.getElementById('local-media');
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, true);
-				this.isMicOn = true;
-				this.isCameraOn = true;
+			console.log('Successfully joined a Room: '+ room);
+			// set active toom
+			
+			this.activeRoom = room;
+			
+			// TODO: use ref instead of ID
+			//       nextTick
+			const previewContainer = document.getElementById('local-media');
+			this.attachTracks(this.getTracks(room.localParticipant), this.sessionID, true);
+			this.isMicOn = true;
+			this.isCameraOn = true;
 
-				room.participants.forEach((participant) => {
-						console.log("Already in Room: '" + participant.identity + "'");
-						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
-						this.participantConnected(participant);
-				});
-
-				room.on('participantConnected', (participant) => {
-						console.log("Joining: '" + participant.identity + "'");
-						// var remoteMediaContainer = document.getElementById(`remote-media-${participant.identity}`);
-						this.participantConnected(participant);
-				});
-
-				room.on('participantDisconnected', (participant) => {
-						console.log("RemoteParticipant '" + participant.identity + "' left the room");
-
-						this.detachParticipantTracks(participant);
-				});
-
-				room.on('disconnected', () => {
-					console.log('Left the rooom');
-					this.isMicOn = false;
-					this.isCameraOn = false;
-					this.$emit('left-room')
-					this.detachParticipantTracks(room.localParticipant);
-					room.participants.forEach(this.detachParticipantTracks);
-					this.activeRoom = null;
-				});
-		},
-		async connectAllTracksInRoom (room) {
-			this.getMediaContainer('local-media').then(previewContainer => {
-				this.attachTracks(this.getTracks(room.localParticipant), previewContainer, true, false);
+			room.participants.forEach(participant => {
+				const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
+				if (dbParticipant) { //is this participant in the DB?
+					this.participantConnected(participant);
+					console.log("Already in Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
+				}
 			});
-			room.participants.forEach((participant) => {
-				this.getMediaContainer(`remote-media-${participant.identity}`).then(previewContainer => {
-					this.attachTracks(this.getTracks(participant), previewContainer, false, false);
-				})
+			room.on('participantConnected', participant => {
+				const dbParticipant = this.roomParticipants.find(p => p.sessionID === participant.identity)
+				if (dbParticipant){ //is this participant in the DB?
+					this.participantConnected(participant);
+					console.log("Joining Room: '" + dbParticipant.firstName+ ", "+ dbParticipant.sessionID + "'");
+				}
+			});
+			room.on('participantDisconnected', participant => {
+				console.log("RemoteParticipant '" + participant.identity + "' left the room");
+				this.detachParticipantTracks(participant);
+			});
+			room.on('disconnected', () => {
+				console.log('You Left the rooom');
+				this.isMicOn = false;
+				this.isCameraOn = false;
+				this.$emit('left-room')
+				this.detachParticipantTracks(room.localParticipant);
+				room.participants.forEach(this.detachParticipantTracks);
+				this.activeRoom = null;
 			});
 		},
 		async getMediaContainer(containerId){
 			let count = 0;
-			while (count < 5){
+			while (count < 5) {
 				await this.$nextTick();
 				const container = document.getElementById(containerId);
-				if (container){
+				if (container) {
 					return container;
 				}
 				count++;
 			}
-			return "failed";
+			return null;
 		}
 	}
 }
 </script>
 
 <style scoped>
+.screen-share-container{
+	/* height: 300px; */
+}
 .video-display{
-	width: 100%;
 	bottom: 0%;
-	/* position: fixed; */
 	opacity: 1;
 	z-index: 1000;
-	padding-bottom: 0;
-	padding-top: 0;
-	margin-left: 0%;
+	padding: 0;
+	margin: 0;
 }
+.video-row{
+	padding: 0;
+	margin: auto;
+	margin-left: 35px;
+	max-width: 1224px;
+	left: 0%;
+}
+.video-chat-container .video-row{
+	background: rgba(255,255,255,0.5);
+	box-shadow: 0 0 10px;
+	border-radius: 10px;
+	padding: 2px;
+	margin: auto;
+}
+@media (max-width: 600px) {
+	.video-row {
+		max-width: 248px;
+	}
+}
+@media (max-width: 850px) and (min-width: 601px) {
+	.video-row {
+		max-width: 492px;
+	}
+}
+@media (max-width: 1100px) and (min-width: 851px) {
+	.video-row {
+		max-width: 736px;
+	}
+}
+@media (max-width: 1350px) and (min-width: 1101px) {
+	.video-row {
+		max-width: 980px;
+	}
+}
+
 .video-col{
-	flex-grow: 0;
-	padding-left: 2px;
-	padding-right: 2px;
+	padding: 2px;
+}
+.video-chat-container .video-col{
+	margin: auto;
 }
 
 .video-container-wrapper{
@@ -449,7 +504,7 @@ export default {
 	position: relative;
 	border-style: solid;
 	border-color: var(--v-accent-base);
-	background-color:black;
+	background-color: #333;
 	border-radius: 10px;
 }
 .video-container-wrapper .video-container{
@@ -498,5 +553,15 @@ export default {
 	border-color: var(--v-accent-base);
 	background-color:black;
 	border-radius: 10px;
+}
+</style>
+
+<style>
+.video-chat-container  .VueCarousel-navigation-button {
+	color: rgba(255,255,255,0.7) !important;
+}
+.video-chat-container  .VueCarousel-navigation-button {
+	color: white !important;
+	text-shadow: 0 0 10px;
 }
 </style>

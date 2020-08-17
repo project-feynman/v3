@@ -67,7 +67,8 @@
     <TheSideDrawer
       v-model="drawer"
       :roomParticipantsMap="roomParticipantsMap"/>
-    <div v-if="lastBlackboardRoomId" class="video-chat-container">
+    <div v-if="lastBlackboardRoomId" class="video-chat-container d-flex align-end">
+      <v-col>
         <RealtimeAudio 
           v-if="user"
           :roomId="lastBlackboardRoomId"
@@ -75,44 +76,65 @@
           :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
           :portalToLiveBoard="portalToLiveBoard"
           :hasJoinedMedia="hasJoinedMedia"
+          :isSharingScreen="isSharingScreen"
           :isMinimizedView="isMinimizedView"
-          @left-room="hasJoinedMedia=false; hasLoadedMedia=false;"
+          @left-room="hasJoinedMedia=false; hasLoadedMedia=false; isSharingScreen= false"
           @media-connected="hasLoadedMedia=true"
+          @screen-share-stopped="isSharingScreen = false"
           :key="lastBlackboardRoomId"
           class="video-component"
         />
-      <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
-        :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
-        :outlined="hasJoinedMedia" 
-        rounded
-        :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
-      >
-        <template v-if="!hasLoadedMedia">
-          <template v-if="!hasJoinedMedia">Join Video Chat</template>
-          <v-progress-circular v-else indeterminate size="20" width="2"/>
-        </template>
-        
-        <template v-else>Exit Video Chat</template>
-      </BaseButton>
-      <template v-if="hasLoadedMedia">
-        <BaseButton @click="handleVideoViewToggle()" 
-          color='accent'
-          rounded
-          outlined
-          :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
-        >
-        {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
-        </BaseButton>
-        <BaseButton
-          @click="isMinimizedView = !isMinimizedView"
-          color='accent'
-          rounded
-          outlined
-          :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
-        >
-          {{isMinimizedView ? 'Normal View' : 'Mini View'}}
-        </BaseButton>
-      </template>
+      </v-col>
+    </div>
+    <div  v-if="lastBlackboardRoomId" class="button-container d-flex align-end">
+      <v-col cols="auto">
+        <div class="button-bar d-flex flex-column">
+          <template v-if="hasLoadedMedia">
+            <BaseButton
+              @click="isMinimizedView = !isMinimizedView"
+              color='accent'
+              rounded
+              outlined
+              :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
+            >
+              {{isMinimizedView ? 'Normal View' : 'Mini View'}}
+            </BaseButton>
+
+            <BaseButton @click="handleVideoViewToggle()" 
+              color='accent'
+              rounded
+              outlined
+              :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
+            >
+            {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
+            </BaseButton>
+
+            <BaseButton @click="isSharingScreen = !isSharingScreen" 
+              color='accent'
+              rounded
+              outlined
+              :icon="isSharingScreen ? 'mdi-monitor-off' : 'mdi-monitor-screenshot'"
+            >
+            {{isSharingScreen ? 'Stop Screen Share' : 'Share Screen'}}
+            </BaseButton>
+          </template>
+
+          <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
+            :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
+            :outlined="hasJoinedMedia" 
+            rounded
+            :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
+          >
+            <template v-if="!hasLoadedMedia">
+              <template v-if="!hasJoinedMedia">Join Video Chat</template>
+              <v-progress-circular v-else indeterminate size="20" width="2"/>
+            </template>
+            
+            <template v-else>Exit Video Chat</template>
+          </BaseButton>
+        </div>
+      </v-col>
+      
     </div>
     <v-content>
       <RouterView :key="$route.fullPath"/>
@@ -159,6 +181,7 @@ export default {
     roomParticipantsMap: {},
     hasJoinedMedia: false,
     hasLoadedMedia: false,
+    isSharingScreen: false,
     portalToLiveBoard: false,
     firebaseRef: null,
     classParticipantsRef: null,
@@ -279,7 +302,6 @@ export default {
         await this.firebaseRef.onDisconnect().set({ uid: this.sessionID });
 
         //user hasn't always been fetched, but uid and email are set
-        console.log("Class Page set DC hook", this.user)
         
         this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
           email: "", 
@@ -298,15 +320,25 @@ html {
   overflow-y: auto; 
 }
 .video-chat-container{
-  /* border-style: solid;  */
-  border-radius: 10px;
+  z-index: 100; 
+  position: fixed; 
+  right: 100px; 
+  bottom: 0px; 
+  text-align: right;
+}
+.button-container{
   z-index: 100; 
   position: fixed; 
   right: 0px; 
-  bottom: 0px; 
-  background-color: #eee;
-  /* height: 300px;
-  width: 500px; */
+  bottom: 0px;
+  text-align: right;
+}
+.button-container .button-bar{
+  display: inline-block;
+  opacity: 0.7;
+}
+.video-chat-container .button-bar:hover{
+  opacity: 1
 }
 /* .video-chat-container .video-component{
   position: absolute; 
@@ -323,4 +355,8 @@ html {
 } */
 </style>
 
-
+<style>
+.button-bar .v-btn {
+  background: #eee;
+}
+</style>

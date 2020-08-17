@@ -115,8 +115,6 @@ export default {
   watch: {
     room (newVal, oldVal) {
       this.$store.commit("SET_ROOM", this.room);
-      console.log('the new value', newVal);
-      console.log('the old value', oldVal);
       if ((oldVal.hasOwnProperty('announcement') && newVal.announcement !== oldVal.announcement)) this.showAnnouncement = true;
     }
   },
@@ -156,16 +154,15 @@ export default {
           if (doc.exists){
             const userObj = doc.data();
             const isSameRoom = userObj.currentRoom === this.roomId;
-            console.log("participant exists!", userObj)
             participantRef.update({
               currentRoom: this.roomId,
               isMicOn: isSameRoom ? userObj.isMicOn : false,
               isCameraOn: isSameRoom ? userObj.isCameraOn : false,
+              isSharingScreen: isSameRoom ? userObj.isSharingScreen : false,
               hasJoinedMedia: isSameRoom ? userObj.hasJoinedMedia : false,
             })
           }
           else{
-            console.log("participant no exist")
             participantRef.set({
               sessionID: this.sessionID,
               refreshToken: this.session.refreshToken,
@@ -176,6 +173,7 @@ export default {
               currentRoom: this.roomId,
               isMicOn: false,
               isCameraOn: false,
+              isSharingScreen: false,
               hasJoinedMedia: false
             })
           }
