@@ -85,6 +85,8 @@
           class="video-component"
         />
       </v-col>
+    </div>
+    <div  v-if="lastBlackboardRoomId" class="button-container d-flex align-end">
       <v-col cols="auto">
         <div class="button-bar d-flex flex-column">
           <template v-if="hasLoadedMedia">
@@ -318,18 +320,20 @@ html {
   overflow-y: auto; 
 }
 .video-chat-container{
-  /* border-style: solid;  */
-  /* border-radius: 10px; */
+  z-index: 100; 
+  position: fixed; 
+  right: 100px; 
+  bottom: 0px; 
+  text-align: right;
+}
+.button-container{
   z-index: 100; 
   position: fixed; 
   right: 0px; 
-  bottom: 0px; 
-  /* background-color: #eee; */
+  bottom: 0px;
   text-align: right;
-  /* height: 300px;
-  width: 500px; */
 }
-.video-chat-container .button-bar{
+.button-container .button-bar{
   display: inline-block;
   opacity: 0.7;
 }

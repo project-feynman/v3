@@ -462,20 +462,17 @@ export default {
 }
 .video-display{
 	bottom: 0%;
-	/* position: fixed; */
 	opacity: 1;
 	z-index: 1000;
 	padding: 0;
-	/* border-style: solid; */
-	/* width: 100%; */
-	padding-bottom: 0;
-	padding-top: 0;
-	margin-left: 0%;
+	margin: 0;
 }
 .video-row{
 	padding: 0;
 	margin: auto;
+	margin-left: 35px;
 	max-width: 1224px;
+	left: 0%;
 }
 .video-chat-container .video-row{
 	background: rgba(255,255,255,0.5);
