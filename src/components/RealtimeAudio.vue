@@ -9,7 +9,7 @@
 				<Carousel
 					:paginationEnabled="false"
 					:navigationEnabled="true"
-					:perPageCustom="[[0, 1], [540, 2], [790, 3], [1040, 4], [1290, 5]]"
+					:perPageCustom="[[0, 1], [600, 2], [850, 3], [1100, 4], [1350, 5]]"
 					class="video-row"
 				>
 					<Slide class="video-col">
@@ -474,28 +474,34 @@ export default {
 }
 .video-row{
 	padding: 0;
-	margin: 0;
-	border-color:green;
-	border-style: solid;
-	max-width: 980px;
-	/* float:right; */
-	/* overflow: auto; */
-	/* height : 150px; */
-	/* display: inline-block; */
+	margin: auto;
+	max-width: 1224px;
 }
-@media (max-width: 540px) {
+.video-chat-container .video-row{
+	background: rgba(255,255,255,0.5);
+	box-shadow: 0 0 10px;
+	border-radius: 10px;
+	padding: 2px;
+	margin: auto;
+}
+@media (max-width: 600px) {
 	.video-row {
-		max-width: 245px;
+		max-width: 248px;
 	}
 }
-@media (max-width: 790px) and (min-width: 541px) {
+@media (max-width: 850px) and (min-width: 601px) {
 	.video-row {
-		max-width: 490px;
+		max-width: 492px;
 	}
 }
-@media (max-width: 1040px) and (min-width: 791px) {
+@media (max-width: 1100px) and (min-width: 851px) {
 	.video-row {
-		max-width: 735px;
+		max-width: 736px;
+	}
+}
+@media (max-width: 1350px) and (min-width: 1101px) {
+	.video-row {
+		max-width: 980px;
 	}
 }
 
@@ -514,7 +520,7 @@ export default {
 	position: relative;
 	border-style: solid;
 	border-color: var(--v-accent-base);
-	background-color:black;
+	background-color: #333;
 	border-radius: 10px;
 }
 .video-container-wrapper .video-container{
@@ -563,5 +569,15 @@ export default {
 	border-color: var(--v-accent-base);
 	background-color:black;
 	border-radius: 10px;
+}
+</style>
+
+<style>
+.VueCarousel-navigation-button {
+	color: rgba(255,255,255,0.7) !important;
+}
+.VueCarousel-navigation-button {
+	color: white !important;
+	text-shadow: 0 0 10px;
 }
 </style>

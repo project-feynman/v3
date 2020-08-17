@@ -330,12 +330,11 @@ html {
   width: 500px; */
 }
 .video-chat-container .button-bar{
-  margin:auto; 
-  background-color: #eee;
-  /* border-bottom-left-radius: 22px; */
-  border-radius: 25px;
-  /* display: inline-block; */
-  float: right;
+  display: inline-block;
+  opacity: 0.7;
+}
+.video-chat-container .button-bar:hover{
+  opacity: 1
 }
 /* .video-chat-container .video-component{
   position: absolute; 
@@ -352,4 +351,8 @@ html {
 } */
 </style>
 
-
+<style>
+.button-bar .v-btn {
+  background: #eee;
+}
+</style>
