@@ -19,6 +19,7 @@
     "lodash": "^4.17.15",
     "mapsort": "^1.0.3",
     "moment": "^2.26.0",
+    "pdfjs-dist": "^2.4.456",
     "portal-vue": "^2.1.7",
     "tiptap": "^1.26.6",
     "tiptap-extensions": "^1.28.6",

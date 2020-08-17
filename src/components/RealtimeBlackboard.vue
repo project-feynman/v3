@@ -284,16 +284,67 @@ export default {
     async handleWhatUserUploaded (e) {
       const imageFile = e.target.files[0]; 
       if (!imageFile) return; 
-      if (imageFile.type.split("/")[0] !== "image") {
-        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
-      } else {
+      if (imageFile.type.split("/")[0] === "image") {
         this.$root.$emit("show-snackbar", "Uploading the background image...");
         const backgroundImageDownloadURL = await this.$_saveToStorage(
           this.blackboardRef.path,
           imageFile
         );
         this.blackboardRef.update({ backgroundImageDownloadURL });
+      } else if (imageFile.type.split("/")[1] === "pdf") {
+        this.pdfToImage(imageFile);
+      } else {
+        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
       }
+    },
+    async pdfToImage (src) {
+      const pdfjs = require("pdfjs-dist/build/pdf.js");
+      // Not sure why the worker in node's directory is not working
+      // Some online forums do point to the way webpack resolves the package paths, and suggest using additional loaders
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
+      pdfjs.getDocument(URL.createObjectURL(src)).promise.then(doc=> {
+        doc.getPage(1).then((page) => {
+          // Render the page on a Node canvas with 100% scale.
+          var viewport = page.getViewport({ scale: 1.0 });
+          // console.log('the viewport', viewport);
+          const dummyCanvas = document.createElement("canvas");
+          dummyCanvas.width = viewport.width;
+          dummyCanvas.height = viewport.height;
+          const ctx = dummyCanvas.getContext("2d");
+          var renderContext = {
+              canvasContext: ctx,
+              viewport: viewport
+          };
+
+          // now, tap into the returned promise from render:
+          return page.render(renderContext).promise.then(async () => {
+            const dataURL = dummyCanvas.toDataURL("image/png");
+
+            const current_date = new Date();
+            const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
+            
+            const backgroundImageDownloadURL = await this.$_saveToStorage(
+              this.blackboardRef.path,
+              file
+            );
+            this.blackboardRef.update({ backgroundImageDownloadURL });
+          });
+
+          
+        });
+      }).catch(error => {
+        this.$root.$emit("show-snackbar", "Error: while trying to load pdf.");
+      });
+    },
+    // https://stackoverflow.com/questions/16968945/convert-base64-png-data-to-javascript-file-objects/16972036
+    // function to convert dataURL from canvas to file object
+    dataURLtoFile (dataurl, filename) {
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, {type:mime});
     },
     async uploadExplanation () {
       // TODO: refactor backgroundImage so the blob is fetched once (otherwise display background will 

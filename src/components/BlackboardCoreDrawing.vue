@@ -435,17 +435,64 @@ export default {
     /**
      * By design, Handles the case if `imageFile` is empty.
      */
-    handleImageFile (e) {
+    async handleImageFile (e) {
       const imageFile = e.target.files[0]; 
       if (!imageFile) return; 
-      if (imageFile.type.split("/")[0] !== "image") {
-        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
+      if (imageFile.type.split("/")[0] === "image") {
+        this.$_renderBackground(URL.createObjectURL(imageFile))
+        this.$emit("update:background-image", { blob: imageFile })
+      } else if (imageFile.type.split("/")[1] === "pdf") {
+        this.pdfToImage(imageFile);
       } else {
-        this.$_renderBackground(URL.createObjectURL(imageFile));
-
-        // emit an event to keep the source of truth at the client
-        this.$emit("update:background-image", { blob: imageFile });
+        this.$root.$emit("show-snackbar", "Error: only image or pdf files are supported for now.");
       }
+    },
+    async pdfToImage (src) {
+      const pdfjs = require("pdfjs-dist/build/pdf.js");
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
+      pdfjs.getDocument(URL.createObjectURL(src)).promise.then(doc=> {
+        doc.getPage(1).then((page) => {
+          // Render the page on a Node canvas with 100% scale.
+          var viewport = page.getViewport({ scale: 1.0 });
+          // console.log('the viewport', viewport);
+          const dummyCanvas = document.createElement("canvas");
+          dummyCanvas.width = viewport.width;
+          dummyCanvas.height = viewport.height;
+          const ctx = dummyCanvas.getContext("2d");
+          var renderContext = {
+              canvasContext: ctx,
+              viewport: viewport
+          };
+
+          // now, tap into the returned promise from render:
+          page.render(renderContext).promise.then(() => {
+            const dataURL = dummyCanvas.toDataURL("image/png");
+            const img = new Image();
+            img.src = dataURL;
+            /* avoid the "tainted canvas may not be exported" error
+                https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported */
+            img.crossOrigin="anonymous";
+            this.bgCtx.drawImage(img, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
+
+            const current_date = new Date();
+            const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
+            this.$emit("update:background-image", { blob: file });
+          });
+
+          
+        });
+      }).catch(error => {
+        console.log('the following error, ', error);
+      });
+    },
+    // https://stackoverflow.com/questions/16968945/convert-base64-png-data-to-javascript-file-objects/16972036
+    dataURLtoFile (dataurl, filename) {
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, {type:mime});
     },
     createCustomCusor () {
       const dummyCanvas = document.createElement("canvas");
