@@ -506,11 +506,9 @@ export default {
 }
 
 .video-col{
-	flex-grow: 0;
-	padding-left: 2px;
-	padding-right: 2px;
-	padding-bottom: 2px;
-	padding-top: 2px;
+	padding: 2px;
+}
+.video-chat-container .video-col{
 	margin: auto;
 }
 
@@ -573,10 +571,10 @@ export default {
 </style>
 
 <style>
-.VueCarousel-navigation-button {
+.video-chat-container  .VueCarousel-navigation-button {
 	color: rgba(255,255,255,0.7) !important;
 }
-.VueCarousel-navigation-button {
+.video-chat-container  .VueCarousel-navigation-button {
 	color: white !important;
 	text-shadow: 0 0 10px;
 }
