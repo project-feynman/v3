@@ -191,13 +191,10 @@ export default {
 		getAccessToken () {
 			const AccessToken = require('twilio').jwt.AccessToken;
 			const VideoGrant = AccessToken.VideoGrant;
-			const ACCOUNT_SID = twilioCreds.ACCOUNT_SID;
-			const API_KEY_SID = twilioCreds.API_KEY_SID;
-			const API_KEY_SECRET = twilioCreds.API_KEY_SECRET;
 			const accessToken = new AccessToken(
-				ACCOUNT_SID,
-				API_KEY_SID,
-				API_KEY_SECRET
+				twilioCreds.ACCOUNT_SID,
+				twilioCreds.API_KEY_SID,
+				twilioCreds.API_KEY_SECRET
 			);
 			accessToken.identity = this.sessionID;
 			const grant = new VideoGrant();
@@ -269,14 +266,15 @@ export default {
 					if (track.name.includes('screen-share')){
 						videoTag.setAttribute('style', "width: 480px;")
 						videoTag.setAttribute("controls", true);
-					}
-					else {
-						videoTag.setAttribute('style', 
-								`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`)
+					} else {
+						videoTag.setAttribute(
+							'style', 
+							`${aspectRatio < (16/9) ? 'height' : 'width'}: 100%; transform: ${isLocal ? 'scale(-1, 1)': ''}`
+						);
 					}
 					container.appendChild(videoTag);
 				}
-				
+	
 			}
 			else { // this is an audio track
 				if (track.isStarted) {
