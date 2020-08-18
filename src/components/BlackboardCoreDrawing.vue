@@ -434,56 +434,51 @@ export default {
     // HANDLE BAXKGROUND IMAGE
     /**
      * By design, Handles the case if `imageFile` is empty.
+     * 
+     *  Support all image file types and .pdf extension files 
+     * 
+     * TODO:
      */
     async handleImageFile (e) {
-      const imageFile = e.target.files[0]; 
-      if (!imageFile) return; 
-      if (imageFile.type.split("/")[0] === "image") {
-        this.$_renderBackground(URL.createObjectURL(imageFile))
-        this.$emit("update:background-image", { blob: imageFile })
-      } else if (imageFile.type.split("/")[1] === "pdf") {
-        this.pdfToImage(imageFile);
+      const uploadedFile = e.target.files[0];
+      if (!uploadedFile) return;
+      let imageFile;  
+      if (uploadedFile.type.split("/")[0] === "image") {
+        imageFile = uploadedFile; 
+      } else if (uploadedFile.type.split("/")[1] === "pdf") {
+        imageFile = await this.convertPdfToImageFile(uploadedFile);
       } else {
         this.$root.$emit("show-snackbar", "Error: only image or pdf files are supported for now.");
+        return; 
       }
+      console.log("imageFile =", imageFile);
+      this.$_renderBackground(URL.createObjectURL(imageFile));
+      this.$emit("update:background-image", { blob: imageFile });
     },
-    async pdfToImage (src) {
+    async convertPdfToImageFile (src) {
+      // TODO: fix npm errors and use normal imports
       const pdfjs = require("pdfjs-dist/build/pdf.js");
       pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
-      pdfjs.getDocument(URL.createObjectURL(src)).promise.then(doc=> {
-        doc.getPage(1).then((page) => {
-          // Render the page on a Node canvas with 100% scale.
-          var viewport = page.getViewport({ scale: 1.0 });
-          // console.log('the viewport', viewport);
-          const dummyCanvas = document.createElement("canvas");
-          dummyCanvas.width = viewport.width;
-          dummyCanvas.height = viewport.height;
-          const ctx = dummyCanvas.getContext("2d");
-          var renderContext = {
-              canvasContext: ctx,
-              viewport: viewport
-          };
-
-          // now, tap into the returned promise from render:
-          page.render(renderContext).promise.then(() => {
-            const dataURL = dummyCanvas.toDataURL("image/png");
-            const img = new Image();
-            img.src = dataURL;
-            /* avoid the "tainted canvas may not be exported" error
-                https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported */
-            img.crossOrigin="anonymous";
-            this.bgCtx.drawImage(img, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
-
-            const current_date = new Date();
-            const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
-            this.$emit("update:background-image", { blob: file });
-          });
-
-          
-        });
-      }).catch(error => {
-        console.log('the following error, ', error);
-      });
+      
+      const doc = await pdfjs.getDocument(URL.createObjectURL(src)).promise;
+      const page = await doc.getPage(1);
+      
+      // Render the page on a Node canvas with 100% scale.
+      const viewport = page.getViewport({ scale: 1.0 });
+      const dummyCanvas = document.createElement("canvas");
+      dummyCanvas.width = viewport.width;
+      dummyCanvas.height = viewport.height;
+      const ctx = dummyCanvas.getContext("2d");
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport
+      };
+      
+      await page.render(renderContext).promise
+      const dataURL = dummyCanvas.toDataURL("image/png");
+      const current_date = new Date();
+      const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
+      return file;
     },
     // https://stackoverflow.com/questions/16968945/convert-base64-png-data-to-javascript-file-objects/16972036
     dataURLtoFile (dataurl, filename) {

@@ -286,13 +286,14 @@ export default {
       const imageFile = e.target.files[0]; 
       if (!imageFile) return; 
       if (imageFile.type.split("/")[0] === "image") {
-        this.$root.$emit("show-snackbar", "Uploading the background image...");
+        this.$root.$emit("show-snackbar", "Uploading image as background...");
         const backgroundImageDownloadURL = await this.$_saveToStorage(
           this.blackboardRef.path,
           imageFile
         );
         this.blackboardRef.update({ backgroundImageDownloadURL });
       } else if (imageFile.type.split("/")[1] === "pdf") {
+        this.$root.$emit("show-snackbar", "Uploading the PDF as background...");
         this.pdfToImage(imageFile);
       } else {
         this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
