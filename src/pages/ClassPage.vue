@@ -322,7 +322,7 @@ html {
 .video-chat-container{
   z-index: 100; 
   position: fixed; 
-  right: 100px; 
+  right: 130px; 
   bottom: 0px; 
   text-align: right;
 }
