@@ -394,6 +394,13 @@ export default {
 	height: 20%;
 	width: 100%;
 }
+.video-chat-container  .VueCarousel-navigation-button {
+	color: rgba(255,255,255,0.7) !important;
+}
+.video-chat-container  .VueCarousel-navigation-button {
+	color: white !important;
+	text-shadow: 0 0 10px;
+}
 .display-bar .name-container{
 	background-color: rgb(31, 31, 31);
 	color: white; 
@@ -415,5 +422,14 @@ export default {
 	right: 0px;
 	color: white; 
 	bottom: 0px;
+}
+.mini-view-container{
+	height: 30px;
+	width: 240px;
+	position: relative;
+	border-style: solid;
+	border-color: var(--v-accent-base);
+	background-color:black;
+	border-radius: 10px;
 }
 </style>
