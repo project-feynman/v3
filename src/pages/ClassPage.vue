@@ -1,9 +1,11 @@
 <template>
   <v-app>
     <!-- `:key` attribute ensures components re-render when `class_id` changes -->
+    <!-- TODO: refactor e.g. drawer prop -->
     <TheAppBar 
       :key="$route.name + ($route.params.class_id || '')" 
       @toggle-drawer="drawer = !drawer"
+      :drawer="drawer"
     >
       <template v-if="!user">
         <BasePopupButton actionName="Log in" 
@@ -49,12 +51,12 @@
 
           <template v-slot:menu-buttons>
             <!-- Email notifications -->
-            <MenuEmailSettings>
+            <!-- <BaseButton :on="on" icon="mdi-bell">Email Settings</BaseButton> -->
+            <!-- <MenuEmailSettings>
               <template v-slot:activator="{ on }">
                 <v-btn v-on="on" block text color="accent">Email Settings</v-btn>
-                <!-- <BaseButton :on="on" icon="mdi-bell">Email Settings</BaseButton> -->
               </template>
-            </MenuEmailSettings>
+            </MenuEmailSettings> -->
             <v-divider/>
             <v-btn @click="leaveClass()" block text color="accent">
               {{ isUserEnrolled ? 'DROP' : 'JOIN' }} Class
@@ -63,79 +65,14 @@
         </TheDropdownMenu>
       </template>
     </TheAppBar>
-
+    
+    <!-- Open Spaces -->
     <TheSideDrawer
       v-model="drawer"
-      :roomParticipantsMap="roomParticipantsMap"/>
-    <div v-if="lastBlackboardRoomId" class="video-chat-container d-flex align-end">
-      <v-col>
-        <RealtimeAudio 
-          v-if="user"
-          :roomId="lastBlackboardRoomId"
-          :classId="classID"
-          :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
-          :portalToLiveBoard="portalToLiveBoard"
-          :hasJoinedMedia="hasJoinedMedia"
-          :isSharingScreen="isSharingScreen"
-          :isMinimizedView="isMinimizedView"
-          @left-room="hasJoinedMedia=false; hasLoadedMedia=false; isSharingScreen= false"
-          @media-connected="hasLoadedMedia=true"
-          @screen-share-stopped="isSharingScreen = false"
-          :key="lastBlackboardRoomId"
-          class="video-component"
-        />
-      </v-col>
-    </div>
-    <div  v-if="lastBlackboardRoomId" class="button-container d-flex align-end">
-      <v-col cols="auto">
-        <div class="button-bar d-flex flex-column">
-          <template v-if="hasLoadedMedia">
-            <BaseButton
-              @click="isMinimizedView = !isMinimizedView"
-              color='accent'
-              rounded
-              outlined
-              :icon="isMinimizedView ? 'mdi-arrow-expand' : 'mdi-arrow-collapse'"
-            >
-              {{isMinimizedView ? 'Normal View' : 'Mini View'}}
-            </BaseButton>
-
-            <BaseButton @click="handleVideoViewToggle()" 
-              color='accent'
-              rounded
-              outlined
-              :icon="portalToLiveBoard ? 'mdi-chevron-double-down' : 'mdi-chevron-double-up'"
-            >
-            {{portalToLiveBoard ? 'Display In Corner' : 'Display in Board'}}
-            </BaseButton>
-
-            <BaseButton @click="isSharingScreen = !isSharingScreen" 
-              color='accent'
-              rounded
-              outlined
-              :icon="isSharingScreen ? 'mdi-monitor-off' : 'mdi-monitor-screenshot'"
-            >
-            {{isSharingScreen ? 'Stop Screen Share' : 'Share Screen'}}
-            </BaseButton>
-          </template>
-
-          <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
-            :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
-            :outlined="hasJoinedMedia" 
-            rounded
-            :icon="hasJoinedMedia ? 'mdi-video': 'mdi-video-off'"
-          >
-            <template v-if="!hasLoadedMedia">
-              <template v-if="!hasJoinedMedia">Join Video Chat</template>
-              <v-progress-circular v-else indeterminate size="20" width="2"/>
-            </template>
-            
-            <template v-else>Exit Video Chat</template>
-          </BaseButton>
-        </div>
-      </v-col>
-      
-    </div>
+      :roomParticipantsMap="roomParticipantsMap"
+    />
+    
+    <!-- Router View -->
     <v-content>
       <RouterView :key="$route.fullPath"/>
     </v-content>
@@ -144,12 +81,11 @@
 
 <script>
 import MenuEmailSettings from "@/components/MenuEmailSettings.vue";
-import TheSideDrawer from "@/components/TheSideDrawer.vue";
+import TheSideDrawer from "@/components/TheSideDrawerBeta.vue";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import RealtimeAudio from "@/components/RealtimeAudio.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
@@ -171,8 +107,7 @@ export default {
     TheDropdownMenu,
     MenuEmailSettings,
     BaseButton,
-    BasePopupButton,
-    RealtimeAudio
+    BasePopupButton
   },
   data: () => ({
     drawer: true,

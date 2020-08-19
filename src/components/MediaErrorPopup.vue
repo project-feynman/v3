@@ -33,8 +33,8 @@
 
 <script>
 export default {
-    props :{
-        popupOpen: Boolean
-    }
+	props :{
+		popupOpen: Boolean
+	}
 }
 </script>

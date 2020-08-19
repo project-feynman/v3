@@ -1,8 +1,6 @@
 <template>
   <v-app-bar 
     app 
-    clipped-left 
-    clipped-right
     color="white" 
     elevate-on-scroll 
     class="app-banner" 
@@ -11,7 +9,9 @@
   >
     <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'" data-qa="toggle-drawer"
       @click.stop="$emit('toggle-drawer')"
-    />
+    >
+      <v-icon>{{ drawer ? "mdi-arrow-expand-left" : "mdi-arrow-expand-right" }}</v-icon>
+    </v-app-bar-nav-icon>
     <img src="/logo.png"
       height="50"
       @click="$router.push('/')"
@@ -26,7 +26,7 @@
 
     <v-spacer/>
 
-    <BasePopupButton actionName="Give Feedback" 
+    <!-- <BasePopupButton actionName="Give Feedback" 
       :inputFields="['Feedback']"
       @action-do="(bugReport) => submitBug(bugReport)"
     >
@@ -37,7 +37,7 @@
         Report a bug, suggest a feature, etc.
         We will be excited to read what you write and update you by email. 
       </template>
-    </BasePopupButton>
+    </BasePopupButton> -->
     <slot>
       
     </slot>
@@ -57,7 +57,8 @@ export default {
   props: {
     loading: Boolean,
     icon: String,
-    page: String
+    page: String,
+    drawer: Boolean
   },
   components: { 
     BasePopupButton,

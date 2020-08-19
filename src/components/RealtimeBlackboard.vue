@@ -17,8 +17,8 @@
         <slot name="blackboard-toolbar">
 
         </slot> 
-        <BaseButton @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</BaseButton>
-        <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Blackboard</BaseButton>
+        <!-- <BaseButton @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</BaseButton> -->
+        <!-- <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Blackboard</BaseButton> -->
       </template> 
 
       <!-- Set Background (overrides the normal behavior) -->
@@ -313,8 +313,8 @@ export default {
           dummyCanvas.height = viewport.height;
           const ctx = dummyCanvas.getContext("2d");
           var renderContext = {
-              canvasContext: ctx,
-              viewport: viewport
+            canvasContext: ctx,
+            viewport: viewport
           };
 
           // now, tap into the returned promise from render:
@@ -330,8 +330,6 @@ export default {
             );
             this.blackboardRef.update({ backgroundImageDownloadURL });
           });
-
-          
         });
       }).catch(error => {
         this.$root.$emit("show-snackbar", "Error: while trying to load pdf.");
