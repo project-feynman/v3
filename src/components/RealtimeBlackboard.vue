@@ -110,10 +110,6 @@ export default {
       type: null,
       required: true
     },
-    strokesRef: {
-      type: null,
-      required: true
-    },
     roomParticipants: {
       type: null,
       required: true
@@ -159,6 +155,9 @@ export default {
     ]),
     hasFetchedBlackboardData () {
       return this.hasFetchedStrokesFromDb && this.hasFetchedBackgroundImage; 
+    },
+    strokesRef () {
+      return this.blackboardRef.collection("strokes");
     }
   },
   created () {
