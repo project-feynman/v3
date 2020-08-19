@@ -17,7 +17,17 @@
         <v-expansion-panel :key="i">
           <v-expansion-panel-header>
             {{ category.title }} &nbsp;
-            <span class="active-count accent--text"> ({{category.rooms.length}} rooms) </span>
+            <span class="active-count accent--text"> ({{ category.rooms.length }} rooms) </span>
+            <template v-if="blackboardRoom.roomType === category.title">
+              <BasePopupButton actionName="Make Announcement"
+                :inputFields="['Message']"
+                @action-do="payload => makeAnnouncement(payload, category.title)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" color="accent" text>Announce</v-btn>
+                </template>
+              </BasePopupButton>
+            </template>
           </v-expansion-panel-header>
 
            <v-expansion-panel-content> 
@@ -305,6 +315,19 @@ export default {
           })
         })
       })
+    },
+    async makeAnnouncement (message, roomType) {
+      console.log('the announcement', message);
+      console.log("roomType =", roomType);
+      const querySnapshot = await db.collection(`classes/${this.classID}/rooms`).where('roomType', '==', roomType).get(); 
+      console.log("querySnapshot =", querySnapshot);
+      querySnapshot.forEach(doc => {
+        // expect this to be run 3 times
+        console.log("doc =", doc); 
+        doc.ref.update({
+          announcement: message['Message']
+        }); 
+      });
     }
   }
 };
