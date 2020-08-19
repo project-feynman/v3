@@ -2,8 +2,62 @@
   <div id="room" class="room-wrapper">
     <portal-target name="video-chat"/>
     <div v-if="user">
-      <RealtimeBlackboard :strokesRef="strokesRef" :roomParticipants="roomParticipants"/>
+      <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab :href="'#' + board" :key="i">
+            {{ 'Board #' + (i+1) }}
+          </v-tab>
+        </template>
+        <v-btn @click="newBoard()">+</v-btn>
+
+        <BasePopupButton actionName="Make Announcement"
+          :inputFields="['Message']"
+          @action-do="payload => announce(payload)"
+        >
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-on="on" color="accent" text>Announce</v-btn>
+          </template>
+        </BasePopupButton>
+        
+        <BaseButton 
+          @click="bringAllToRoom()" 
+          style="position: absolute; right: 0%" 
+          :icon="'mdi-account-arrow-left-outline'"
+          >
+          Bring All to Room
+        </BaseButton>
+      </v-tabs>
+      <v-tabs-items v-model="activeBoard" touchless>
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab-item :value="board" :key="i">
+            <RealtimeBlackboard 
+              :blackboardRef="blackboardRefs[i]" 
+              :strokesRef="strokesRefs[i]" 
+              :roomParticipants="roomParticipants"
+            />
+          </v-tab-item>
+        </template>
+      </v-tabs-items>
     </div>
+    <v-dialog v-model = "showAnnouncement" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Announcement!</v-card-title>
+        <v-card-text>
+          {{ this.room.announcement }}
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="accent darken-1"
+            text
+            @click="showAnnouncement = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
   </div>
 </template>
 
@@ -14,12 +68,14 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
 import { mapState } from "vuex";
-import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue"
+import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
+import BasePopupButton from "@/components/BasePopupButton.vue"; 
 
 export default {
-  components: { 
-    BaseButton,
-    RealtimeBlackboard
+  components: {
+    RealtimeBlackboard,
+    BasePopupButton,
+    BaseButton
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -31,97 +87,162 @@ export default {
       snapshotListeners: [],
       roomRef: null,
       roomParticipantsRef: null,
-      strokesRef: null,
       unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
-      firebaseRef: null,
       messagesOpen: false,
+      activeBoard: 'tab-1',
+      boards: [],
+      blackboardRefs: [],
+      strokesRefs: [],
+      hasUserBeenSet: false,
+      removeSetParticipantListener: null,
+      showAnnouncement: false,
+      allToRoomRef: null
     }
   },
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "session",
     ]),
-    simplifiedUser () {
-      if (!this.user) return; 
-      return {
-        email: this.user.email,
-        uid: this.user.uid,
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-      };
+    sessionID () {
+      return this.session.currentID;
     }
   },
   // Why use a watch hook here? 
   watch: {
-    room () {
-      this.$store.commit("SET_ROOM", this.room);    
+    room (newVal, oldVal) {
+      this.$store.commit("SET_ROOM", this.room);
+      if ((oldVal.hasOwnProperty('announcement') && newVal.announcement !== oldVal.announcement)) this.showAnnouncement = true;
     }
   },
   async created () {
-    this.roomRef = db.doc(`classes/${this.classId}/blackboards/${this.roomId}`);
-    this.roomParticipantsRef = this.roomRef.collection("participants");
-    this.strokesRef = this.roomRef.collection("strokes");
+    this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId)
 
-    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room"); 
+    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
+    for (const blackboard of this.room.blackboards) {
+      const blackboardRef = db.doc(`classes/${this.classId}/blackboards/${blackboard}`);
+      this.blackboardRefs.push(blackboardRef);
+      this.strokesRefs.push(blackboardRef.collection("strokes"));
+    }
 
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
-
-    this.setUserDisconnectHook();
+    this.setParticipant();
   },
   beforeDestroy () {
-    firebase.database().ref(".info/connected").off();
     this.unsubscribeRoomListener();
-    // this.roomRef.update({ //Filters out the current user
-    //   participants: this.room.participants.filter(participant => participant.uid !== this.user.uid) 
-    // });
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
-    this.roomParticipantsRef.doc(this.user.uid).delete();
-    this.firebaseRef.onDisconnect().cancel();
+    firebase.database().ref(".info/connected").off();
+    this.allToRoomRef.off();
   },
   methods: {
-    /**
-     * Push the user object onto the room's `participants` array, and ensures that 
-     * Firebase will remove the user object if he/she disconnects for whatever reason.
-     * 
-     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
-     * @see https://firebase.google.com/docs/firestore/solutions/presence
-     * @see https://firebase.google.com/docs/database/web/offline-capabilities
-     */
-    setUserDisconnectHook () {
-      // ".info/connected" is a special location on Firebase Realtime Database 
-      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
+    setParticipant() {
       firebase.database().ref(".info/connected").on("value", async snapshot => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false){
           return;
         } 
-        this.firebaseRef = firebase.database().ref(`/room/${this.classId}/${this.roomId}/participants`);
-        // 1. User leaves, and his/her identity is saved to Firebase
-        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
-        
-        // step 1 (step 2 is executed in Cloud Functions)
-        await this.firebaseRef.onDisconnect().set(this.simplifiedUser);
+        const participantRef = db.doc(`classes/${this.classId}/participants/${this.sessionID}`);
+        participantRef.get().then(doc => {
+          if (doc.exists){
+            const userObj = doc.data();
+            const isSameRoom = userObj.currentRoom === this.roomId;
+            participantRef.update({
+              currentRoom: this.roomId,
+              isMicOn: isSameRoom ? userObj.isMicOn : false,
+              isCameraOn: isSameRoom ? userObj.isCameraOn : false,
+              isSharingScreen: isSameRoom ? userObj.isSharingScreen : false,
+              hasJoinedMedia: isSameRoom ? userObj.hasJoinedMedia : false,
+            })
+          }
+          else{
+            participantRef.set({
+              sessionID: this.sessionID,
+              refreshToken: this.session.refreshToken,
+              uid: this.user.uid,
+              email: this.user.email,
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              currentRoom: this.roomId,
+              isMicOn: false,
+              isCameraOn: false,
+              isSharingScreen: false,
+              hasJoinedMedia: false
+            })
+          }
+          const participantsRef = db.collection(`classes/${this.classId}/participants`);
+          participantsRef.where("refreshToken", "==", this.session.refreshToken).get().then( docs => {
+            if (docs.empty) {
+              return;
+            }  
+            docs.forEach(doc => {
+              const participant = doc.data();
+              if (participant.sessionID !== this.sessionID) {
+                participantsRef.doc(participant.sessionID).delete();
+              }
+            })
+          }) 
+        })
+        this.setMoveToRoomListener();
+      });
 
-        // add the current user to the lounge
-        this.roomParticipantsRef.doc(this.user.uid).set({
-          ...this.simplifiedUser,
-          isMicOn: false,
-          isCameraOn: false,
-          hasJoinedMedia: false
-        }); 
-        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
-          email: "", 
-          uid: "", 
-          firstName: "" 
+    },
+    bringAllToRoom () {
+      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+      this.allToRoomRef.set({ roomId: this.roomId }).then(() => {
+        this.allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
+      })
+    },
+    setMoveToRoomListener() {
+      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+      this.allToRoomRef.on("value", snapshot => {
+        if (snapshot.val()) {
+          const { roomId } = snapshot.val();
+          if (roomId && this.roomId !== roomId){ //only call this if a different room
+            this.$router.push(`/class/${this.classId}/room/${roomId}`); 
+            this.$root.$emit("show-snackbar", "You've been called to the main room!");
+          }
+        }
+      })
+    },
+    newBoard () {
+      const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+      const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
+      
+      const newBlackboard = blackboardsRef.add({
+        roomType: '',
+      });
+      newBlackboard.then(result => {
+        roomRef.update({
+          blackboards: firebase.firestore.FieldValue.arrayUnion(result.id)
+        });
+        this.strokesRefs.push(db.doc(result.path).collection("strokes"));
+        this.blackboardRefs.push(db.doc(result.path));
+        // this.activeBoard = result.id;
+      })
+
+    },
+    async announce (message) {
+      console.log('the announcement', message);
+      const category = this.room.roomType;
+      await db.collection(`classes/${this.classId}/rooms`).where('roomType', '==', category).get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          doc.ref.update({
+            announcement: message['Message']
+          })
         });
       });
+      // await db.doc(`classes/${this.classId}/rooms/${this.roomId}`).update({
+      //   announcement: message['Message']
+      // });
+      
     }
   }
 };

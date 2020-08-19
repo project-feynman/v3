@@ -2,11 +2,11 @@
   <div>
     <BlackboardCoreDrawing
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
+      :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
       :isRealtime="isRealtime"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
-      @update:bgImageBlob="blob => $emit('update:bgImageBlob', blob)"
       @board-reset="$emit('board-reset')"
     >
       <template v-slot:canvas-toolbar="{ 
@@ -36,32 +36,42 @@
           
           <template v-slot:record-audio-slot>
             <slot name="blackboard-toolbar">
-
+            
             </slot> 
 
             <template v-if="currentState === RecordState.PRE_RECORD">
-              <!-- Set background image -->
-              <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
-                <input 
-                  @change="e => handleImageFile(e)" 
-                  style="display: none" 
-                  type="file" 
-                  ref="fileInput"
-                >
-                Add Background
-              </BaseButton>
 
-              <!-- Reset button -->
-              <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
-                <template v-slot:activator-button="{ on }">
-                  <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
-                    Wipe Board
-                  </BaseButton>
-                </template>
-                <template v-slot:message-to-user>
-                  Are you sure you want to wipe everything?
-                </template> 
-              </BasePopupButton>
+              <!-- SET BACKGROUND IMAGE -->
+              <slot name="set-background-button-slot">
+                <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
+                  <input 
+                    @change="e => handleImageFile(e)" 
+                    style="display: none" 
+                    type="file" 
+                    ref="fileInput"
+                  >
+                  Set Background
+                </BaseButton>
+              </slot>
+
+              <!-- WIPE BOARD BUTTON -->
+              <!-- 
+                The slot below allows `RealtimeBlackboard.vue` to override behavior of "Wipe board";
+                Instead of wiping immediately, it wait until Firestore resolves the deletion request
+                before setting `strokesArray = []` to wipe the UI. 
+              -->
+              <slot name="wipe-board-button-slot"> 
+                <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
+                  <template v-slot:activator-button="{ on }">
+                    <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
+                      Wipe board
+                    </BaseButton>
+                  </template>
+                  <template v-slot:message-to-user>
+                    Are you sure you want to wipe everything?
+                  </template> 
+                </BasePopupButton>
+              </slot> 
 
               <!-- Record Button -->
               <BaseButton @click="startRecording()" icon="mdi-adjust" filled>
@@ -109,6 +119,10 @@ export default {
       type: Array,
       required: true
     },
+    backgroundImage: {
+      type: Object
+    },
+    // TODO: rename this variable
     isRealtime: {
       type: Boolean,
       required: true

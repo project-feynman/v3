@@ -31,7 +31,7 @@ export default {
     isPenActive: Boolean,
     colors: {
       type: Array,
-      default: () => ["white", "orange", "#0AF2F2", "#ec1bf7"]
+      required: true
     }
   },
   components: { 

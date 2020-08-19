@@ -10,10 +10,11 @@ const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY)
 
 admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
-	databaseUrl: "https://feynman-mvp.firebaseio.com"
+	databaseURL: "https://feynman-mvp.firebaseio.com"
 });
 
 const firestore = admin.firestore();
+const firebaseDB = admin.database();
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 function sendEmail (to, subject, body) {
@@ -62,8 +63,9 @@ exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId
   workspaceRef.collection('participants').doc(userWhoLeft.uid).delete();
 })
 
-exports.onMainLobbyParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
+exports.onClassParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
+  console.log("user", userWhoLeft)
   if (!userWhoLeft.uid) { return; }
   const { classId } = context.params;
   firestore.doc(`/classes/${classId}/participants/${userWhoLeft.uid}`).delete();

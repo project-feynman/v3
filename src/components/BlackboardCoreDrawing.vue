@@ -5,10 +5,10 @@
       :isFullScreen="isFullScreen"
       :changeTool="changeTool"
       :handleImageFile="handleImageFile"
-      :resetBoard="resetBoard"
+      :resetBoard="resetBlackboard"
       :toggleFullScreen="toggleFullScreen"
       :setTouchDisabled="setTouchDisabled"
-      :touchDisabled="touchDisabled"
+      :touchDisabled="onlyAllowApplePencil"
     >
 
     </slot>
@@ -16,7 +16,7 @@
       <canvas ref="FrontCanvas" class="front-canvas" data-qa="front-canvas"
         @touchstart="e => touchStart(e)"
         @touchmove="e => touchMove(e)"
-        @touchend="e => touchEnd(e)"
+        @touchend="e => handleLiftingContactFromBlackboard(e)"
         @mousedown="e => mouseDown(e)"
         @mousemove="e => mouseMove(e)"
         @mouseup="e => mouseUp(e)"
@@ -28,34 +28,45 @@
 
 <script>
 /**
- * A HTML canvas that supports drawing with stylus/touch/mouse. 
+ * A HTML canvas that supports drawing with stylus/touch/mouse.
  * 
- * Note that the local array and client array can deviate by 1 stroke (represents lag for example in the case of a realtime blackboard)
- *   localStrokesArray ahead: realtime database hasn't updated 
- *   clientStrokesArray ahead: client wants to add a stroke programmaticaly on the canvas
+ * NOTE: this is NOT safe for concurrency: if `strokesArray` is reset while the user is still drawing,
+ * then the canvas UI will diverge from `strokesArray` (part of the stroke will be cut-off).
+ * However, this issue is minor in most practical situations, so will be ignored for now. 
  * 
  * Maintains the invariant that the UI exactly reflects the strokesArray (see proof):
  * 
- * strokesArray => UI:
+ * Start state: initially, strokesArray is empty, and the canvas is blank
+ * Transition states: 
+ *   1. `strokesArray` gets modified 
+ *   2. The user draws a stroke on the the canvas
+ *   3. The canvas resizes 
+ * 
+ * 1. strokesArray => UI:
  *     case 1: a new stroke is pushed to `strokesArray`
  *         The watcher will draw it onto <canvas/> * and call `localStrokesArray.push(newStroke)`. 
  * 
- *     case 2: `strokesArray becomes empty
+ *     case 2: `strokesArray` becomes empty
  *         The watcher wipes the <canvas/> and calls `localStrokesArray = []`.
  * 
  *     Note that mutating / deleting existing strokes are both disallowed (which will be enforced by an ADT later).
  * 
- * UI => strokesArray:
- *     No matter how the user draws, `saveStrokeThenReset()` is called:
+ * 2. UI => strokesArray:
+ *     No matter how the user draws, `handleEndOfStroke()` is called:
+ *     DANGER (TODO: refactor): eraser strokes does NOT pass `handleEndOfStroke()`
  *         1. $emit("stroke-drawn", newStroke) // so the client's `strokesArray` will be updated via v-model.
  *         2. localStrokesArray.push(newStroke) // so when the above change propagates back down, the strokesArray watcher ignores it. 
+ * 
+ * 3. The canvas resizes
+ *      HTML <canvas/> automatically wipes. However, our resize listener will 
+ *      re-render all the strokes on `strokesArray`. 
  * 
  * Therefore, strokesArray <=> UI. 
  */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
-import { isIosSafari } from "@/helpers.js";
+import { getRandomId, isIosSafari } from "@/helpers.js";
 
 export default {
   props: {
@@ -63,10 +74,17 @@ export default {
       type: Array,
       required: true
     },
-    isRealtime: Boolean,
     currentTime: {
       type: Number,
       default: () => 0
+    },
+    backgroundImage: {
+      type: Object
+      // don't set `required` to true yet to avoid minor crashes
+    },
+    isRealtime: {
+      type: Boolean,
+      default: () => false 
     }
   },
   mixins: [
@@ -87,15 +105,15 @@ export default {
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
-      touchDisabled: true, 
-      localStrokesArray: [...this.strokesArray], // ...creates a real copy, rather than an alias
+      onlyAllowApplePencil: true, 
+
+      // `[...strokesArray]` creates a fresh copy rather than an alias
+      localStrokesArray: [...this.strokesArray], 
       currentStroke: { 
         points: [] 
       },
-      currPoint: { 
-        x: 0, 
-        y: 0 
-      },
+
+      // initialize `prevPoint` to an invalid coordinate to signal that it's not defined initially
       prevPoint: { 
         x: -1, 
         y: -1 
@@ -108,21 +126,21 @@ export default {
     imageBlobUrl () {
       return this.imageBlob ? URL.createObjectURL(this.imageBlob) : "";
     },
-    isStrokeEraser () {
-      return this.currentTool.type === BlackboardTools.STROKE_ERASER;
+    isPen () {
+      return this.currentTool.type === BlackboardTools.PEN;
     },
     isNormalEraser () {
       return this.currentTool.type === BlackboardTools.NORMAL_ERASER;
     },
-    isPen () {
-      return this.currentTool.type === BlackboardTools.PEN;
+    isStrokeEraser () {
+      return this.currentTool.type === BlackboardTools.STROKE_ERASER;
     }
   },
   watch: {
     /**
      * Ensures `strokesArray => UI`, that is whenever the client mutates the `strokesArray` prop, we update <canvas/> accordingly`. 
      * 
-     * Note we must ignore the case where (n == this.localStrokesArray.length)
+     * Note we ignore the case where (n == this.localStrokesArray.length)
      * because it means that user drew on canvas --> emits event --> client changes --> triggers our own watch hook
      */
     strokesArray () {
@@ -132,16 +150,43 @@ export default {
         this.localStrokesArray = [];
       } else if (n - this.localStrokesArray.length === 1) { 
         const newStroke = this.strokesArray[n-1];
-        this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke));
+        if (newStroke.startTime === newStroke.endTime) {
+          this.$_drawStroke(newStroke, null) // instantly
+        } else {
+          this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); // smoothly 
+        }
         this.localStrokesArray.push(newStroke);
       } 
       this.checkRepInvariant(); 
+    },
+    /**
+     * Updates the background image. 
+     * 
+     * Ensures <ClientComponent/> => <BlackboardCoreDrawing/>.
+     * For <BlackboardCoreDrawing/> => <ClientComponent/>, see the method "setImageAsBackground" 
+     * 
+     * @param downloadURL for image on Firebase storage 
+     * @param blob the blob representing the image
+     * @effect mutates the background canvas by displaying the image,
+     *         filling its height and width (and not necessarily preserving aspect ratio)
+     * 
+     * TODO: refactor with composition API
+     */
+    backgroundImage ({ downloadURL, blob }) {
+      this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+      if (downloadURL || blob) {
+        this.$_renderBackground(
+          blob ? URL.createObjectURL(blob) : downloadURL
+        );
+      }
     }
   },
   mounted () {
     this.initializeCanvas();
     document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
     window.addEventListener("resize", this.resizeBlackboard, false); 
+    
+    // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
     }); 
@@ -150,50 +195,167 @@ export default {
     window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
-    /**
-     * Note `localStrokesArray` can be arbitrarily ahead of `strokesArray`. For example, 
-     * if the user draws 5 strokes quickly, but the client is a realtime blackboard 
-     * that has to upload those 5 strokes to Firestore, then until those documents are uploaded,
-     * `strokesArray` and `localStrokesArray` will differ by 5. 
+    /** 
+     * Ensures UI => strokesArray
+     * 
+     * All tools (pen, normal eraser, stroke eraser) will generate strokes.  
+     * Because every stroke is processed here, UI => strokesArray.
      */
-    checkRepInvariant () {
-      if (this.strokesArray.length - this.localStrokesArray.length > 1) {
-        throw new Error(
-          `Rep invariant broken: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
-        );
-      }
-    },
-    // UI => strokesArray
-    saveStrokeThenReset (e) {
-      e.preventDefault()
-      if (this.currentStroke.points.length === 0) return;  // user is touching the screen despite that touch is disabled
-      this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
-      this.localStrokesArray.push(this.currentStroke);
-      this.$emit("stroke-drawn", this.currentStroke);
-      // reset 
-      this.currentStroke = { 
-        points: [] 
-      };
-      this.prevPoint = { 
-        x: -1, 
-        y: -1 
-      };
+    handleEndOfStroke (newStroke) {
+      newStroke.id = getRandomId(); 
+      this.localStrokesArray.push(newStroke);
+      this.$emit("stroke-drawn", newStroke);
     },
     initializeCanvas () {
       this.canvas = this.$refs.FrontCanvas;
       this.bgCanvas = this.$refs.BackCanvas;
       this.ctx = this.canvas.getContext("2d");
       this.bgCtx = this.bgCanvas.getContext("2d");
-      this.resizeBlackboard();
-      this.$_drawStrokesInstantly();
+
+      this.resizeBlackboard(); // resizeBlackboard also re-renders everything
     },
-    changeTool (tool) {
-      this.currentTool = tool;
-      this.ctx.globalCompositeOperation = (this.isNormalEraser || this.isStrokeEraser) ? // isStrokeEraser now erases in the back like a normal eraser
-        "destination-out" : "source-over";
-      this.createCustomCusor();
+    /**
+     * 
+     * Mutates this.currentStroke
+     */
+    startNewStroke (e) {
+      e.preventDefault(); 
+
+      this.prevPoint = { // TODO: use an optional
+        x: -1, 
+        y: -1 
+      };
+      this.currentStroke = {
+        strokeNumber: this.strokesArray.length + 1,
+        startTime: Number(this.currentTime.toFixed(1)),
+        color: this.currentTool.color,
+        lineWidth: this.currentTool.lineWidth,
+        isErasing: this.isNormalEraser,
+        points: []
+      };
+
+      // TODO: This is a quickfix to prevent the pencil offset bug
+      if (this.$_rescaleCanvas()) {
+        this.$_drawStrokesInstantly();
+      }
     },
-    async resetBoard () {
+    touchStart (e) {
+      if (this.isNotValidTouch(e)) {
+        return; 
+      }
+      if (this.isDrawingWithApplePencil(e)) { 
+        // disable touch drawing so the user doesn't accidentally draw with his/her palm 
+        this.onlyAllowApplePencil = true; 
+      }
+      this.handleContactWithBlackboard(e, { isInitialContact: true });
+    },
+    mouseDown (e) {
+      this.isHoldingLeftClick = true;
+      this.handleContactWithBlackboard(e, { isInitialContact: true });
+    },
+    touchMove (e) {
+      if (this.isNotValidTouch(e)) {
+        return;  
+      }
+      this.handleContactWithBlackboard(e, { isInitialContact: false });
+    },
+    // TODO REFACTOR: can take an optional argument, and share the function with mouse and touch
+    mouseMove (e) {
+      if (!this.isHoldingLeftClick) {
+        return;
+      }
+      this.handleContactWithBlackboard(e, { isInitialContact: false });
+    },
+    /**
+     * TODO: Make `tool` an explicit parameter 
+     */
+    handleContactWithBlackboard (e, { isInitialContact }) {
+      e.preventDefault(); // don't know what will happen if e.preventDefault is here
+      const contactPoint = this.getStylusOrFingerOrMousePosition(e); // should make "isHoldingLeftClick" an explicit parameter
+      
+      if (this.isStrokeEraser) { 
+        this.eraseAllStrokesWithinRadius(e, contactPoint); 
+      } 
+      else {
+        if (isInitialContact) this.startNewStroke(e);
+        this.lengthenTheCurrentStroke(e, contactPoint);
+      }
+    },
+    lengthenTheCurrentStroke (e, contactPoint) {
+      // update state
+      this.currentStroke.points.push({ 
+        unitX: parseFloat(contactPoint.x / this.canvas.width).toFixed(4),
+        unitY: parseFloat(contactPoint.y / this.canvas.height).toFixed(4)
+      });
+
+      // update UI
+      if (this.prevPoint.x !== -1 && this.prevPoint.y !== -1) {
+        this.$_connectTwoPoints(
+          [this.normalizePoint(this.prevPoint), this.normalizePoint(contactPoint)], // `points`: note that the points have to be normalized for now before refactors
+          1, // `i`: note that setting i = 1 is a quick-fix (will refactor $_connectTwoPoints() in the future)
+          this.isNormalEraser || this.isStrokeEraser, // `isErasing`,
+          this.ctx,
+          this.currentTool.color,
+          this.currentTool.lineWidth,
+        );
+      }
+      this.prevPoint = contactPoint;
+    },
+    /**
+     * For each stroke that intersects with a circular region,
+     * draw an "anti-stroke" to effectively delete it. 
+     */
+    eraseAllStrokesWithinRadius (e, eraserPosition) {
+      for (const stroke of this.strokesArray) {
+        if (stroke.wasErased || stroke.isErasing) {  
+          continue;
+        }
+        for (const point of stroke.points) {
+          const deltaX = eraserPosition.x - point.unitX * this.canvas.width;
+          const deltaY = eraserPosition.y - point.unitY * this.canvas.height;
+          const radius = 10; 
+          if (Math.sqrt(deltaX**2 + deltaY**2) < radius) {
+            this.eraseStroke(stroke);
+            break; 
+          }
+        }
+      }
+    },
+    /**
+     * Create an anti-stroke that covers over another stroke, effectively erasing it. 
+     * 
+     * @param stroke the stroke to erase or cover over
+     * @effect mutates <canvas/> and `localStrokesArray` 
+     */
+    eraseStroke (stroke) {
+      // mark the stroke as erased so it can be ignored by future stroke erasers
+      stroke.wasErased = true;
+      const antiStroke = {
+        isErasing: true,
+        strokeNumber: this.strokesArray.length + 1,
+        lineWidth: stroke.lineWidth + 2,
+        points: stroke.points // points are normalized
+      };
+      this.$_drawStroke(antiStroke);
+      this.handleEndOfStroke(antiStroke);
+    },
+    mouseUp (e) {
+      this.isHoldingLeftClick = false;
+      this.handleLiftingContactFromBlackboard(e);
+    },
+    handleLiftingContactFromBlackboard (e) {
+      e.preventDefault(); 
+      // EDGE CASE: user is touching the screen despite that touch is disabled
+      if (this.currentStroke.points.length === 0) {
+        return; 
+      }
+      this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
+      this.handleEndOfStroke(this.currentStroke);
+    },
+    /**
+     * Reset the state and UI of this component itself. 
+     */
+    async resetBlackboard () {
       this.wipeUI();
       this.resetVariables(); 
       this.$emit("board-reset");
@@ -211,200 +373,37 @@ export default {
       this.imageBlob = null;
     },
     /**
-     * By design, Handles the case if `imageFile` is empty.
-     */
-    handleImageFile (e) {
-      const imageFile = e.target.files[0]; 
-      if (!imageFile) return; 
-      if (imageFile.type.split("/")[0] !== "image") {
-        this.$root.$emit("show-snackbar", "Error: only image files are supported for now.");
-      } else {
-        this.displayImageFile(imageFile);
-      }
-    },
-    /**
-     * TODO: Is imageFile a Blob or File type? 
-     */
-    displayImageFile (imageFile) {
-      this.imageBlob = imageFile; 
-      this.$emit("update:bgImageBlob", this.imageBlob);
-      this.$_renderBackground(this.imageBlobUrl);
-    },
-    startNewStroke (e) {
-      this.$emit("stroke-start");
-      e.preventDefault(); 
-      
-      this.currentStroke = {
-        strokeNumber: this.strokesArray.length + 1,
-        startTime: Number(this.currentTime.toFixed(1)),
-        color: this.currentTool.color,
-        lineWidth: this.currentTool.lineWidth,
-        isErasing: this.isNormalEraser,
-        points: []
-      };
-      // TODO: ensure commenting out the below does not re-introduce the pencil offset bug
-      if (this.$_rescaleCanvas()) {
-        this.$_drawStrokesInstantly();
-      }
-      this.$_setStyle(this.currentTool.color, this.currentTool.lineWidth);
-    },
-    touchStart (e) {
-      if (this.isNotValidTouch(e)) return; 
-      if (e.touches[0].touchType === "stylus") { 
-        this.touchDisabled = true; 
-      }
-      if (this.isStrokeEraser) { 
-        this.eraseStrokesWithinRadius(e); 
-      } else {
-        this.startNewStroke(e);
-        this.drawToPointAndSave(e);
-      }
-    },
-    touchMove (e) {
-      if (this.isNotValidTouch(e)) return;  
-      if (this.isStrokeEraser) this.eraseStrokesWithinRadius(e); 
-      else this.drawToPointAndSave(e);  
-    },
-    touchEnd (e) { 
-      this.saveStrokeThenReset(e); 
-    },
-    mouseDown (e) {
-      this.isHoldingLeftClick = true;
-      if (this.isStrokeEraser) { 
-        this.eraseStrokesWithinRadius(e); 
-      } else {
-        this.startNewStroke(e);
-        const isMouse = true;
-        this.drawToPointAndSave(e, isMouse);
-      }
-    },
-    mouseMove (e) {
-      if (!this.isHoldingLeftClick) return; 
-      if (this.isStrokeEraser) { 
-        this.eraseStrokesWithinRadius(e); 
-      } else {
-        const isMouse = true;
-        this.drawToPointAndSave(e, isMouse);
-      }
-    },
-    mouseUp (e) {
-      this.isHoldingLeftClick = false;
-      this.saveStrokeThenReset(e);
-    },
-    drawToPointAndSave (e, isMouse) {
-      e.preventDefault();
-      if (isMouse) { 
-        this.currPoint = { 
-          x: e.offsetX, 
-          y: e.offsetY 
-        }; 
-      } else { 
-        this.getTouchPos(e); // mutates this.currPoint
-      }
-      this.convertAndSavePoint(this.currPoint.x, this.currPoint.y);
-      this.drawToPoint(this.currPoint);
-    },
-    convertAndSavePoint (x, y) {
-      const unitX = parseFloat(x / this.canvas.width).toFixed(4);
-      const unitY = parseFloat(y / this.canvas.height).toFixed(4);
-      this.currentStroke.points.push({ unitX, unitY });
-    },
-    eraseStrokesWithinRadius (e) {
-      e.preventDefault();
-      let eraserCenter = {};
-      if (this.isHoldingLeftClick) {
-        eraserCenter = { 
-          x: e.offsetX, 
-          y: e.offsetY 
-        };
-      } else {
-        const finger1 = e.touches[0];
-        const { left, top } = this.canvas.getBoundingClientRect();
-        eraserCenter = {
-          x: finger1.pageX - left - window.scrollX,
-          y: finger1.pageY - top - window.scrollY
-        };
-      }
-      for (let i = 0; i < this.strokesArray.length; i++) {
-        const stroke = this.strokesArray[i];
-        // don't undo eraser strokes
-        if (stroke.wasErased || stroke.isErasing) {  
-          continue;
-        }
-        for (const point of stroke.points) {
-          const deltaX = eraserCenter.x - point.unitX * this.canvas.width;
-          const deltaY = eraserCenter.y - point.unitY * this.canvas.height;
-          const radius = 10; 
-          if (Math.sqrt(deltaX**2 + deltaY**2) < radius) {
-            this.eraseStroke(stroke);
-            break; 
-          }
-        }
-      }
-    },
-    eraseStroke (stroke) {
-      stroke.wasErased = true;
-      this.$emit("stroke-start");
-
-      const antiStroke = {
-        strokeNumber: this.strokesArray.length + 1,
-        isErasing: true,
-        lineWidth: stroke.lineWidth + 2,
-        points: stroke.points
-      };
-      this.$_drawStroke(antiStroke);
-      this.localStrokesArray.push(antiStroke);
-      this.$emit("stroke-drawn", antiStroke);
-    },
-    getTouchPos (e) {
-      const finger1 = e.touches[0];
-      const { left, top } = this.canvas.getBoundingClientRect();
-      this.currPoint.x = finger1.pageX - left - window.scrollX;
-      this.currPoint.y = finger1.pageY - top - window.scrollY;
-    },
-    isNotValidTouch (e) {
-      if (e.touches.length !== 1) return true; // multiple fingers not allowed
-      return this.isFinger(e) && this.touchDisabled;
-    },
-    isApplePencil (e) {
-      return e.touches[0].touchType === "stylus";
-    },
-    isFinger (e) { // not true: could be Surface pen
-      return e.touches[0].touchType !== "stylus";
-    },
-    drawToPoint ({ x, y }) {
-      if (this.prevPoint.x !== -1) { // start of stroke, don't connect previous points
-        this.traceLineTo(x, y);
-        this.ctx.stroke();
-      }
-      this.prevPoint = { x, y };
-    },
-    traceLineTo (x, y) {
-      this.ctx.beginPath();
-      this.ctx.moveTo(this.prevPoint.x, this.prevPoint.y);
-      this.ctx.lineTo(x, y);
-    },
-    /**
      * Generates a thumbnail by: 
      *   1. Render the background image / grey background on the back canvas 
      *   2. Then draw on the strokes on the back canvas as well
      * 
-     *   this implementation suffers from edge cases: 
-     *   If eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
-     *   I tried not using a background color, but then the white strokes will be invisible
-     *   I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
+     *  Note that the thumbnail must be based only on ONE single canvas, whereas when we normally display the blackboard
+     *  there are TWO canvases. 
+     * 
+     *   This implementation suffers from edge cases: 
+     *     If eraser strokes are ignored, then strokes covered by the normal eraser will then be visible when rendered as a thumbnail
+     *     I tried not using a background color, but then the white strokes will be invisible
+     *     I tried not ignoring eraser strokes, but then the eraser strokes will damage not only the strokes but the background as well
      */
     getThumbnailBlob () {
       return new Promise(async resolve => {
-        if (this.imageBlob) { // has a background image
-          await this.$_renderBackground(this.imageBlobUrl);
+        // TODO: better prop design for `backgroundImage = {};`
+        // should it be null? ask questions in the community. You need to ask questions. 
+        if (this.backgroundImage) {
+          const { blob, downloadURL } = this.backgroundImage;
+          await this.$_renderBackground(
+            blob ? URL.createObjectURL(blob) : downloadURL
+          );
         } else {
+          // make the background black-grey
           this.bgCtx.fillStyle = "rgb(62, 66, 66)";
           this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         }
+        // now draw the strokes
         this.$_drawStrokesInstantly(this.bgCtx);
+
         // TODO: remove this quickfix (first introduced to avoid double drawing thumbnail)
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
     },
@@ -420,6 +419,75 @@ export default {
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly();
+
+      // re-render background
+      if (!this.backgroundImage) {
+        return; 
+      }
+      const { blob, downloadURL } = this.backgroundImage;
+      if (blob || downloadURL) {
+        this.$_renderBackground(
+          blob ? URL.createObjectURL(blob) : downloadURL
+        );
+      }
+    },
+    // HANDLE BAXKGROUND IMAGE
+    /**
+     * By design, Handles the case if `imageFile` is empty.
+     * 
+     *  Support all image file types and .pdf extension files 
+     * 
+     * TODO:
+     */
+    async handleImageFile (e) {
+      const uploadedFile = e.target.files[0];
+      if (!uploadedFile) return;
+      let imageFile;  
+      if (uploadedFile.type.split("/")[0] === "image") {
+        imageFile = uploadedFile; 
+      } else if (uploadedFile.type.split("/")[1] === "pdf") {
+        imageFile = await this.convertPdfToImageFile(uploadedFile);
+      } else {
+        this.$root.$emit("show-snackbar", "Error: only image or pdf files are supported for now.");
+        return; 
+      }
+      console.log("imageFile =", imageFile);
+      this.$_renderBackground(URL.createObjectURL(imageFile));
+      this.$emit("update:background-image", { blob: imageFile });
+    },
+    async convertPdfToImageFile (src) {
+      // TODO: fix npm errors and use normal imports
+      const pdfjs = require("pdfjs-dist/build/pdf.js");
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
+      
+      const doc = await pdfjs.getDocument(URL.createObjectURL(src)).promise;
+      const page = await doc.getPage(1);
+      
+      // Render the page on a Node canvas with 100% scale.
+      const viewport = page.getViewport({ scale: 1.0 });
+      const dummyCanvas = document.createElement("canvas");
+      dummyCanvas.width = viewport.width;
+      dummyCanvas.height = viewport.height;
+      const ctx = dummyCanvas.getContext("2d");
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport
+      };
+      
+      await page.render(renderContext).promise
+      const dataURL = dummyCanvas.toDataURL("image/png");
+      const current_date = new Date();
+      const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
+      return file;
+    },
+    // https://stackoverflow.com/questions/16968945/convert-base64-png-data-to-javascript-file-objects/16972036
+    dataURLtoFile (dataurl, filename) {
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, {type:mime});
     },
     createCustomCusor () {
       const dummyCanvas = document.createElement("canvas");
@@ -441,8 +509,69 @@ export default {
       window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
     },
     setTouchDisabled (newBoolean) {
-      this.touchDisabled = newBoolean; 
-    }
+      this.onlyAllowApplePencil = newBoolean; 
+    },
+    checkRepInvariant () {
+      if (this.strokesArray.length !== this.localStrokesArray.length) {
+        throw new Error(
+          `Rep invariant violated: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
+        );
+      }
+    },
+    isNotValidTouch (e) {
+      // disallow drawing with multiple fingers 
+      if (e.touches.length !== 1) {
+        return true;
+      } 
+      if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) {
+        this.$root.$emit(
+          "show-snackbar", 
+          `To draw with your finger/stylus, press "Enable Touch" next to the eraser.`);
+        return true; 
+      }
+    },
+    /**
+     * Note that a Surface Pen will register as "touch" rather than "stylus" 
+     */
+    isDrawingWithApplePencil (e) {
+      return e.touches[0].touchType === "stylus";
+    },
+    /**
+     * Sets the current tool, which directly affects:
+     *   1. The behavior of `setStrokeProperties()`
+     *   2. The cursor icon (for laptop users)
+     */
+    changeTool (tool) {
+      this.currentTool = tool;
+      this.createCustomCusor();
+    },
+    /**
+     * Get (x, y) position of stylus/touch/mouse
+     */
+    getStylusOrFingerOrMousePosition(e) {
+      // mouse
+      if (this.isHoldingLeftClick) {
+        return { 
+          x: e.offsetX, 
+          y: e.offsetY 
+        };
+      } 
+      // stylus/finger
+      else {
+        const { left, top } = this.canvas.getBoundingClientRect();
+        return {
+          x: e.touches[0].pageX - left - window.scrollX,
+          y: e.touches[0].pageY - top - window.scrollY
+        };
+      }
+    },
+    normalizePoint ({ x, y }) {
+      return {
+        unitX: x / this.canvas.width,
+        unitY: y / this.canvas.height
+      };
+    },
+    // MIGHT BE USEFUL LATER TO REUSE DRAWINGS
     // convertAllStrokesToBeInitialStrokes () {
     //   for (const stroke of this.strokesArray) {
     //     [stroke.startTime, stroke.endTime] = [0, 0];

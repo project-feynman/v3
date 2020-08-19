@@ -1,10 +1,12 @@
 <template>
 <div id="fullscreen-wrapper" @click="(e) => $_exitFullscreen(e)" :class="isFullScreen ? 'fullscreen-video' : 'video-wrapper'">
   <div ref="VideoWrapper" class="video-container">
+    <!-- VISUAL -->
     <div ref="CanvasWrapper" style="position: relative;">
       <canvas ref="FrontCanvas" class="front-canvas" data-qa="doodle-canvas"></canvas>
       <canvas ref="BackCanvas" class="background-canvas"></canvas>
     </div>
+
     <div class="d-flex animation-controls">
       <v-col cols="auto" class="px-1">
         <v-btn @click="pausePlay()" color="#333" text>
@@ -163,7 +165,7 @@ export default {
         this.isSeeking = false;
         this.playAnimation();
         }, 0
-      )
+      );
     },
     pausePlay () {
       this.isPlaying = !this.isPlaying;
@@ -201,10 +203,16 @@ export default {
         await this.renderFrame(this.allFrames[i], true); // draw 1 stroke per event loop
       }
     },
-    async renderFrame ({ strokeIndex, pointIndex }, instantly=false) {
+    async renderFrame ({ strokeIndex, pointIndex }, instantly = false) {
       const stroke = this.strokesArray[strokeIndex];
-      this.$_setStyle(stroke.color, stroke.lineWidth); // since multiple strokes can be drawn simultaneously.
-      this.$_connectTwoPoints(stroke.points, pointIndex, stroke.isErasing);
+      this.$_connectTwoPoints(
+        stroke.points, 
+        pointIndex, 
+        stroke.isErasing, 
+        this.ctx,
+        stroke.color,
+        stroke.width
+      );
       if (!instantly) {
         await new Promise(resolve => setTimeout(resolve, 10/this.playbackSpeed)); // Here the second parameter 10/this.playbackSpeed determines the number of frames rendered per second
       }

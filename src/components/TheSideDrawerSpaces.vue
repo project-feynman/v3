@@ -43,11 +43,11 @@
                         <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
                           <div class="d-flex align-center py-2" :key="i">
                             <v-icon>mdi-account</v-icon>
-                            <div :class="['pl-1', 'col', 'py-0', participant.uid === user.uid ? 'font-weight-bold':'']">
+                            <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
                               {{ participant.firstName }}
                             </div>
 
-                            <template v-if="user.uid === participant.uid">
+                            <template v-if="participant.sessionID === sessionID">
                               <BaseButton @click="roomStatusPopup = true" outlined rounded icon="mdi-account-alert">
                                 Re-label Space
                               </BaseButton>
@@ -77,7 +77,7 @@
                                 </v-card>
                               </v-dialog>
                                                 
-                              <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
+                              <!-- <BaseButton @click="hasJoinedMedia=!hasJoinedMedia" 
                                 :color="hasJoinedMedia ? 'accent' : 'accent lighten-1'" 
                                 :outlined="hasJoinedMedia" 
                                 rounded
@@ -89,7 +89,7 @@
                                 </template>
                                 
                                 <template v-else>Exit Video Chat</template>
-                              </BaseButton>
+                              </BaseButton> -->
                             </template>
                             <template v-else>
                               <v-icon style="right: 7%">{{participant.isMicOn ? 'mdi-microphone': 'mdi-microphone-off'}}</v-icon>
@@ -112,7 +112,6 @@
       outlined
       large
       block
-      :disabled="blackboards.length > 20" 
       @click="isCreatePopupOpen = true"
       color="secondary"
     >
@@ -126,18 +125,6 @@
       @create-blackboard="roomType => createBlackboard(roomType)"
     />
   </v-list>
-
-  <!-- TODO: refactor -->
-    <RealtimeAudio v-if="user"
-      :roomId="lastBlackboardRoomId"
-      :classId="classID"
-      :roomParticipants="roomParticipantsMap[lastBlackboardRoomId]"
-      :hasJoinedMedia="hasJoinedMedia"
-      :blackboardRoom="blackboardRoom"
-      :key="lastBlackboardRoomId"
-      @left-room="hasJoinedMedia = false; hasLoadedMedia = false;"
-      @media-connected="hasLoadedMedia = true"
-    />
   </div>
 </template>
 
@@ -154,6 +141,9 @@ import { mapState } from "vuex";
 import Vue from 'vue';
 
 export default {
+  props: {
+    roomParticipantsMap: Object
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -168,15 +158,14 @@ export default {
       snapshotListeners: [],
       centerTableParticipants: [],
       blackboards: [],
-      hasLoadedMedia: false,
-      hasJoinedMedia: false,
+      // hasLoadedMedia: false,
+      // hasJoinedMedia: false,
       savedRoomId: "",
       roomTypes: [],
       roomCategories: [],
       expandedPanels: [],
       roomStatusPopup: false,
       updatedStatus: "",
-      roomParticipantsMap: {},
       mitClassDoc: {},
       isCreatePopupOpen: false,
     };
@@ -185,23 +174,18 @@ export default {
     ...mapState([
       "user",
       "blackboardRoom",
-      "mitClass"
+      "mitClass",
+      "session"
     ]),
+    sessionID () {
+      return this.session.currentID;
+    },
     classID () {
       return this.$route.params.class_id;
     },
     roomID () {
       return this.$route.params.room_id;
     },
-    lastBlackboardRoomId () {
-      if (this.roomID) {
-        this.savedRoomId = this.roomID;
-      }
-      return this.savedRoomId;
-    },
-    numberOfBlackboards () {
-      return this.blackboards.length
-    }
   },
   watch: {
     blackboards () {
@@ -222,7 +206,7 @@ export default {
     // TODO
     numberOfBlackboards () {
       this.blackboards.forEach(blackboard => {
-        const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+        const blackboardsRef = db.collection(`classes/${this.classID}/rooms`);
         const participantsRef = blackboardsRef.doc(blackboard.id).collection("participants");
         Vue.set(this.roomParticipantsMap, blackboard.id, []); // this makes each entry in the object reactive.
         this.$_listenToCollection(participantsRef, this.roomParticipantsMap, blackboard.id).then(snapshotListener => {
@@ -232,7 +216,7 @@ export default {
     }
   },
   created () {
-    const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+    const blackboardsRef = db.collection(`classes/${this.classID}/rooms`);
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
     const classRef = db.doc(`classes/${this.classID}`)
 
@@ -245,6 +229,7 @@ export default {
     this.$_listenToDoc(classRef, this, "mitClassDoc").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
+    this.initSlides();
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -267,12 +252,13 @@ export default {
       }
     },
     setRoomStatus (status) {
-      db.doc(`classes/${this.classID}/blackboards/${this.roomID}`).update({
+      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({
         status
       });
       this.roomStatusPopup = false;
     },
     createBlackboard (roomType) {
+      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       if (roomType) {
         if (!this.roomTypes.find(type => type === roomType)) {
@@ -281,14 +267,44 @@ export default {
             roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
           });
         }
+        // Create a new room and initialize it with a new board
         const newBlackboard = blackboardsRef.add({
           roomType: roomType
         });
+        newBlackboard.then(result => {
+          const newRoom = roomsRef.add({
+            roomType: roomType,
+            blackboards: [result.id]
+          });
+        })
         this.isCreatePopupOpen = false;
       }
       else {
         this.$root.$emit("show-snackbar", "Error: Not a valid room type name")
       }
+    },
+    async initSlides () {
+      console.log('initialize the Slides');
+      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
+      // Return if rooms already exists in a class
+      let initialized = false;
+      await roomsRef.limit(1).get().then(querySnapshot => {
+        if (!querySnapshot.empty) initialized = true;
+      })
+      if (initialized) return;
+      
+      await db.collection(`classes/${this.classID}/blackboards`).get().then(querySnapshot => {
+        console.log('inside the query', querySnapshot.empty)
+        querySnapshot.forEach(doc => {
+          console.log('the doc', doc.id);
+          roomsRef.add({
+            participants: doc.data().participants || [],
+            roomType: doc.data().roomType,
+            status: doc.data().status || '',
+            blackboards: [doc.id],
+          })
+        })
+      })
     }
   }
 };
