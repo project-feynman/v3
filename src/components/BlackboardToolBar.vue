@@ -11,29 +11,9 @@
                 @select-color="newColor => changePenColor(newColor)" 
               />
             </v-col>
-            <v-card :color="'#eee'" class="rounded-card">
-              <BaseButton v-show="lastEraserNormal" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
-                Eraser
-              </BaseButton>
-              <BaseButton v-show="!lastEraserNormal" :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser" data-qa="stroke-eraser">
-                Stroke Eraser
-              </BaseButton>
-              <v-menu :offset-y="true">
-                <template v-slot:activator="{ on, attrs }" style="width: 100%">
-                  <v-icon v-bind="attrs" v-on="on">
-                    mdi-chevron-down
-                  </v-icon>
-                </template>
-                <v-list :color="'#eee'">
-                  <BaseButton v-show="!lastEraserNormal" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
-                    Eraser
-                  </BaseButton>
-                  <BaseButton v-show="lastEraserNormal" :filled="isStrokeEraser" @click="selectStrokeEraser()" icon="mdi-eraser" data-qa="stroke-eraser">
-                    Stroke Eraser
-                  </BaseButton>
-                </v-list>
-              </v-menu>
-            </v-card>
+            <BaseButton v-show="lastEraserNormal" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
+              Eraser
+            </BaseButton>
             <slot name="touch-slot">
 
             </slot>
@@ -43,7 +23,7 @@
 
         </slot>
         <BaseButton @click="fullScreen()" :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
-          {{ isFullScreen ? 'Exit' : '' }} Full Screen
+          {{ isFullScreen ? 'Exit' : '' }} Full screen
         </BaseButton>
       </v-row>
     </v-container>
@@ -76,7 +56,7 @@ export default {
       color: "white",
       colors: ["white", "orange", "#0AF2F2", "#ec1bf7", "yellow", "black"],
       colorPaletteExpanded: false,
-      lastEraserNormal: false
+      lastEraserNormal: true
     }
   },
   computed: {

@@ -1,32 +1,24 @@
 <template>
   <div id="room" class="room-wrapper">
     <portal-target name="video-chat"/>
+
+    <!-- Twilio Room component -->
+    <RealtimeSpaceTwilioRoom v-if="user"
+      :roomID="$route.params.room_id"
+    />
+
     <div v-if="user">
+      <!-- Tabs for different blackboards -->
       <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
         <template v-for="(board, i) in room.blackboards">
           <v-tab :href="'#' + board" :key="i">
-            {{ 'Board #' + (i+1) }}
+            {{ 'BOARD #' + (i+1) }}
           </v-tab>
         </template>
         <v-btn @click="newBoard()">+</v-btn>
-
-        <BasePopupButton actionName="Make Announcement"
-          :inputFields="['Message']"
-          @action-do="payload => announce(payload)"
-        >
-          <template v-slot:activator-button="{ on }">
-            <v-btn v-on="on" color="accent" text>Announce</v-btn>
-          </template>
-        </BasePopupButton>
-        
-        <BaseButton 
-          @click="bringAllToRoom()" 
-          style="position: absolute; right: 0%" 
-          :icon="'mdi-account-arrow-left-outline'"
-          >
-          Bring All to Room
-        </BaseButton>
       </v-tabs>
+
+      <!-- The actual blackboards -->
       <v-tabs-items v-model="activeBoard" touchless>
         <template v-for="(board, i) in room.blackboards">
           <v-tab-item :value="board" :key="i">
@@ -39,6 +31,8 @@
         </template>
       </v-tabs-items>
     </div>
+
+    <!-- Announcement dialog -->
     <v-dialog v-model = "showAnnouncement" max-width="500px">
       <v-card>
         <v-card-title class="headline">Announcement!</v-card-title>
@@ -57,7 +51,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
   </div>
 </template>
 
@@ -69,11 +62,13 @@ import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
+import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 
 export default {
   components: {
     RealtimeBlackboard,
+    RealtimeSpaceTwilioRoom,
     BasePopupButton,
     BaseButton
   },
@@ -142,8 +137,12 @@ export default {
     firebase.database().ref(".info/connected").off();
     this.allToRoomRef.off();
   },
-  methods: {
-    setParticipant() {
+  methods: { 
+    /**
+     * TODO: refactor
+     * 
+     */
+    setParticipant () {
       firebase.database().ref(".info/connected").on("value", async snapshot => {
         const isUserConnected = snapshot.val(); 
         if (isUserConnected === false){
@@ -151,7 +150,7 @@ export default {
         } 
         const participantRef = db.doc(`classes/${this.classId}/participants/${this.sessionID}`);
         participantRef.get().then(doc => {
-          if (doc.exists){
+          if (doc.exists) {
             const userObj = doc.data();
             const isSameRoom = userObj.currentRoom === this.roomId;
             participantRef.update({
@@ -161,8 +160,7 @@ export default {
               isSharingScreen: isSameRoom ? userObj.isSharingScreen : false,
               hasJoinedMedia: isSameRoom ? userObj.hasJoinedMedia : false,
             })
-          }
-          else{
+          } else {
             participantRef.set({
               sessionID: this.sessionID,
               refreshToken: this.session.refreshToken,
@@ -175,10 +173,10 @@ export default {
               isCameraOn: false,
               isSharingScreen: false,
               hasJoinedMedia: false
-            })
+            });
           }
           const participantsRef = db.collection(`classes/${this.classId}/participants`);
-          participantsRef.where("refreshToken", "==", this.session.refreshToken).get().then( docs => {
+          participantsRef.where("refreshToken", "==", this.session.refreshToken).get().then(docs => {
             if (docs.empty) {
               return;
             }  
@@ -187,12 +185,11 @@ export default {
               if (participant.sessionID !== this.sessionID) {
                 participantsRef.doc(participant.sessionID).delete();
               }
-            })
+            });
           }) 
         })
         this.setMoveToRoomListener();
       });
-
     },
     bringAllToRoom () {
       this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);

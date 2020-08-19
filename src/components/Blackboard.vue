@@ -30,7 +30,7 @@
         >
           <template v-slot:touch-slot>
             <BaseButton @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
-              {{ touchDisabled ? "Enable" : "Disable" }} Touch
+              {{ touchDisabled ? "Enable" : "Disable" }} touch
             </BaseButton>
           </template>
           
@@ -50,7 +50,7 @@
                     type="file" 
                     ref="fileInput"
                   >
-                  Set Background
+                  Set background
                 </BaseButton>
               </slot>
 
@@ -74,9 +74,9 @@
               </slot> 
 
               <!-- Record Button -->
-              <BaseButton @click="startRecording()" icon="mdi-adjust" filled>
+              <!-- <BaseButton @click="startRecording()" icon="mdi-adjust" filled>
                 Record Audio
-              </BaseButton>
+              </BaseButton> -->
             </template>
 
             <!-- Finish Record Button -->
