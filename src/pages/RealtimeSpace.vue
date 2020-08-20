@@ -16,23 +16,6 @@
           </v-tab>
         </template>
         <v-btn @click="createNewBoard()">+</v-btn>
-
-        <BasePopupButton actionName="Make Announcement"
-          :inputFields="['Message']"
-          @action-do="payload => announce(payload)"
-        >
-          <template v-slot:activator-button="{ on }">
-            <v-btn v-on="on" color="accent" text>Announce</v-btn>
-          </template>
-        </BasePopupButton>
-        
-        <BaseButton 
-          @click="bringAllToRoom()" 
-          style="position: absolute; right: 0%" 
-          :icon="'mdi-account-arrow-left-outline'"
-          >
-          Bring All to Room
-        </BaseButton>
       </v-tabs>
 
       <!-- The actual blackboards -->

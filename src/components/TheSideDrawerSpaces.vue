@@ -140,6 +140,7 @@
                             <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
                               {{ participant.firstName }}
                             </div>
+                            
                           </div>
                         </template>
                       </div>
@@ -285,6 +286,12 @@ export default {
     }
   },
   methods: {
+    async shareAudio () {
+      const { createLocalAudioTrack } = require('twilio-video');
+      createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
+      const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
+      this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
+    },
     setRoomCategories () {
       if (this.roomTypes) {
         this.roomCategories = [];
@@ -344,7 +351,6 @@ export default {
       }
     },
     async initSlides () {
-      console.log('initialize the Slides');
       const roomsRef = db.collection(`classes/${this.classID}/rooms`);
       // Return if rooms already exists in a class
       let initialized = false;

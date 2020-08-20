@@ -52,6 +52,7 @@ export default new Vuex.Store({
     mitClass: null,
     explCache: {},
     blackboardRoom: null,
+    twilioRoom: null,
     session: {}
   },
   mutations: {
@@ -65,8 +66,11 @@ export default new Vuex.Store({
     SET_ROOM (state, blackboardRoom) {
       state.blackboardRoom = blackboardRoom; 
     },
-    SET_SESSION (state, session){
+    SET_SESSION (state, session) {
       state.session = session;
+    },
+    SET_TWILIO_ROOM (state, twilioRoom) {
+      state.twilioRoom = twilioRoom; 
     },
     /**
      * Saves an explanation to the global cache so it can be accessed and uploaded to Firestore in the app background
