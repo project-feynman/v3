@@ -135,7 +135,6 @@
 
                       <div class="active-blackboard-users pl-4">
                         <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
-<<<<<<< HEAD
                           <div class="d-flex align-center py-1" :key="i">
                             <v-col class="d-flex px-0 align-center py-0">
                               <v-icon>mdi-account</v-icon>
@@ -151,13 +150,6 @@
                                 Disconnect Audio
                               </BaseIconButton>
                             </v-col>
-=======
-                          <div class="d-flex align-center py-2" :key="i">
-                            <v-icon>mdi-account</v-icon>
-                            <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
-                              {{ participant.firstName }}
-                            </div>
->>>>>>> c7351d055ae5856bd0080793ece770ae74aaee85
                           </div>
                         </template>
                       </div>
