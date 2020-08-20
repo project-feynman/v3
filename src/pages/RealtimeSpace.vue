@@ -228,7 +228,7 @@ export default {
         if (snapshot.val()) {
           const { roomId } = snapshot.val();
           if (roomId && this.roomId !== roomId){ //only call this if a different room
-            this.$router.push(`/class/${this.classId}/room/${roomId}`); 
+            this.$router.push(`/class/${this.classId}/room/${roomId}`);
             this.$root.$emit("show-snackbar", "You've been called to the main room!");
           }
         }

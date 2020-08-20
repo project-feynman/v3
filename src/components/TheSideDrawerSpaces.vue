@@ -1,116 +1,163 @@
 <template>
-  <div>
-    <v-list>    
-      <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels">
-        <template v-for="(category, i) in roomCategories">
-          <v-expansion-panel :key="i">
-            <v-expansion-panel-header>
-              {{ category.title }} &nbsp;
-              <!-- <span class="active-count accent--text"> ({{category.rooms.length}} rooms) </span> -->
-              <template v-if="blackboardRoom && blackboardRoom.roomType === category.title">
-                <BasePopupButton actionName="Make Announcement"
-                  :inputFields="['Message']"
-                  @action-do="payload => makeAnnouncement(payload, category.title)"
-                >
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" color="accent" text>Announce</v-btn>
-                  </template>
-                </BasePopupButton>
-              </template>
-            </v-expansion-panel-header>
-
-            <v-expansion-panel-content> 
-              <v-list>
-                <template v-for="(blackboard, i) in category.rooms">
-                  <!-- we use `$router.push` instead of the `:to` attribute 
-                      see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/HQamsmNvtAcYv8xsOIwb 
-                  -->
-                  <!-- @click="$router.push(`/class/${classID}/room/${blackboard.id}`)" -->
-                    <v-list-item
-                      :to="`/class/${classID}/room/${blackboard.id}`"
-                      :key="blackboard.id"
-                      color="accent"
-                      active-class="active-blackboard"
+  <div class="spaces-list">   
+    <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels" accordion>
+      <template v-for="(category, i) in roomCategories">
+        <v-expansion-panel :key="i">
+          <v-expansion-panel-header>
+            <v-row align="center">
+              <v-col class="py-0">
+                <span class="panel-header-title">
+                  {{ category.title }} &nbsp;
+                  <!-- <span class="active-count accent--text"> ({{category.rooms.length}} rooms) </span> -->
+                </span>
+              </v-col>
+              <v-col cols="auto" class="py-0 mr-1">
+                <template v-if="blackboardRoom && blackboardRoom.roomType === category.title">
+                  <BaseIconButton 
+                    @click="roomStatusPopup = true"
+                    icon="mdi-bullhorn"
+                    class="mx-1"
+                  ></BaseIconButton>
+                  
+                  <BaseButton 
+                    @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
+                    icon="mdi-share-variant"
+                    outlined
+                    rounded
+                    small
                     >
-                      <v-list-item-content>
-                        <v-list-item-title>
+                    Send to Rooms
+                  </BaseButton>
+                  <!--<BasePopupButton actionName="Make Announcement"
+                    :inputFields="['Message']"
+                    @action-do="payload => makeAnnouncement(payload, category.title)"
+                  >
+                    <template v-slot:activator-button="{ on }">
+                      <v-btn v-on="on" color="accent" text>Announce</v-btn>
+                    </template>
+                  </BasePopupButton>-->
+                </template>
+              </v-col>
+            </v-row>
+          </v-expansion-panel-header>
+
+          <v-expansion-panel-content> 
+            <v-list dense>
+              <template v-for="(blackboard, i) in category.rooms">
+                <!-- we use `$router.push` instead of the `:to` attribute 
+                    see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/HQamsmNvtAcYv8xsOIwb 
+                -->
+                <!-- @click="$router.push(`/class/${classID}/room/${blackboard.id}`)" -->
+                  <v-list-item
+                    :to="`/class/${classID}/room/${blackboard.id}`"
+                    :key="blackboard.id"
+                    color="accent"
+                    active-class="active-blackboard"
+                  >
+                    <v-list-item-icon>
+                      <v-icon>mdi-monitor-screenshot</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title class="d-flex align-center room-title mb-2">
+                        <v-col class="px-0 pb-0 pt-1">
                           {{ category.title.substring(0, category.title.length) }} {{ i }}
                           <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                           <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
-                        </v-list-item-title>
-
-<!-- 
-                        <template v-if="blackboardRoom"> -->
-                          
-                          <!-- TODO: causes an infinite loop for some reason -->
-                          <!-- <BaseButton v-if="blackboardRoom.id === blackboard.id" @click="roomStatusPopup = true" outlined rounded icon="mdi-account-alert">
-                            Update status
-                          </BaseButton> -->
-
-                          <!-- Update status popup -->
-                          <!-- <v-dialog v-model="roomStatusPopup" persistent max-width="600px">
-                            <v-card>
-                              <v-card-title>
-                                <span class="headline">
-                                  Update status
-                                </span>
-                              </v-card-title>
-                              <v-card-text>
-                                <v-text-field v-model="updatedStatus"/>
-                              </v-card-text>
-                              <v-card-actions>
-                                <v-spacer/>
-                                <v-btn @click="roomStatusPopup = false" color="secondary" text>
-                                  Cancel
-                                </v-btn>
-                                <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
-                                  Update status
-                                </v-btn>
-                              </v-card-actions>
-                            </v-card>
-                          </v-dialog>
-                        </template> -->
-
-
-                        <div class="active-blackboard-users pl-4 pt-2">
-                          <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
-                            <div class="d-flex align-center py-2" :key="i">
-                              <v-icon>mdi-account</v-icon>
-                              <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
-                                {{ participant.firstName }}
-                              </div>
-                            </div>
+                        </v-col>
+                        <v-col cols="auto" class="px-1 py-0">
+                          <template v-if="blackboardRoom">
+                            
+                            <!-- TODO: causes an infinite loop for some reason -->
+                            <BaseButton 
+                              v-if="blackboardRoom.id === blackboard.id"
+                              @click="roomStatusPopup = true"
+                              outlined
+                              rounded
+                              small
+                              icon="mdi-message-alert"
+                              color="#555"
+                              class="mx-1"
+                            >
+                              Label Room
+                            </BaseButton>
+                            
+                            <BaseButton 
+                              v-if="blackboardRoom.id === blackboard.id"
+                              @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
+                              :icon="'mdi-account-arrow-left-outline'"
+                              outlined
+                              rounded
+                              small
+                              color="#555"
+                              >
+                              Bring All to Room
+                            </BaseButton>
+                            <!-- Update status popup -->
+                            <v-dialog v-model="roomStatusPopup" persistent max-width="600px">
+                              <v-card>
+                                <v-card-title>
+                                  <span class="headline">
+                                    Update status
+                                  </span>
+                                </v-card-title>
+                                <v-card-text>
+                                  <v-text-field v-model="updatedStatus"/>
+                                </v-card-text>
+                                <v-card-actions>
+                                  <v-spacer/>
+                                  <v-btn @click="roomStatusPopup = false" color="secondary" text>
+                                    Cancel
+                                  </v-btn>
+                                  <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
+                                    Update status
+                                  </v-btn>
+                                </v-card-actions>
+                              </v-card>
+                            </v-dialog>
                           </template>
-                        </div>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
-                </template>
-              </v-list>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </template>
-      </v-expansion-panels>
+                        </v-col>
+                      </v-list-item-title>
 
 
-      <!-- Create blackboard -->
-      <!-- <v-btn v-if="blackboards"
-        outlined
-        large
-        block
-        @click="isCreatePopupOpen = true"
-        color="secondary"
-      >
-        <v-icon class="pr-2">mdi-plus</v-icon>
-        Create Open Space
-      </v-btn>
-      <CreateBlackboardPopup 
-        :isCreatePopupOpen="isCreatePopupOpen"
-        :roomTypes="roomTypes"
-        @popup-closed="isCreatePopupOpen = false"
-        @create-blackboard="roomType => createBlackboard(roomType)"
-      /> -->
-    </v-list>
+
+                      <div class="active-blackboard-users pl-4">
+                        <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
+                          <div class="d-flex align-center py-2" :key="i">
+                            <v-icon>mdi-account</v-icon>
+                            <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
+                              {{ participant.firstName }}
+                            </div>
+                          </div>
+                        </template>
+                      </div>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
+              </template>
+            </v-list>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </template>
+    </v-expansion-panels>
+
+
+    <!-- Create blackboard -->
+    <!-- <v-btn v-if="blackboards"
+      outlined
+      large
+      block
+      @click="isCreatePopupOpen = true"
+      color="secondary"
+    >
+      <v-icon class="pr-2">mdi-plus</v-icon>
+      Create Open Space
+    </v-btn>
+    <CreateBlackboardPopup 
+      :isCreatePopupOpen="isCreatePopupOpen"
+      :roomTypes="roomTypes"
+      @popup-closed="isCreatePopupOpen = false"
+      @create-blackboard="roomType => createBlackboard(roomType)"
+    /> -->
   </div>
 </template>
 
@@ -120,6 +167,7 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
+import BaseIconButton from "@/components/BaseIconButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import CreateBlackboardPopup from "@/components/CreateBlackboardPopup.vue";
 import { mapState } from "vuex";
@@ -135,6 +183,7 @@ export default {
   components: {
     BasePopupButton,
     BaseButton,
+    BaseIconButton,
     CreateBlackboardPopup
   },
   data () {
@@ -302,7 +351,42 @@ export default {
           announcement: message['Message']
         }); 
       });
-    }
+    },
+    bringAllToRoom (roomId, roomType) {
+      const allToRoomRef = firebase.database().ref(`class/${this.classId}/${roomType}/toRoom`);
+      allToRoomRef.set({ roomId: roomId }).then(() => {
+        allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
+      })
+    },
   }
 };
 </script>
+
+<style scoped>
+.panel-header-title {
+  font-size: 1.1em;
+  font-weight: 700;
+}
+.room-title {
+  font-size: 1em !important;
+  font-weight: 400;
+}
+.room-title .active-count {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.9em;
+}
+</style>
+
+<style>
+.spaces-list .v-expansion-panel-header {
+  background: #f5f5f5;
+}
+.spaces-list .v-expansion-panel-content__wrap {
+  padding: 0 5px;
+}
+.spaces-list .v-expansion-panel--active > .v-expansion-panel-header {
+  min-height: unset;
+  background-color: #d8d8d8 !important;
+}
+</style>

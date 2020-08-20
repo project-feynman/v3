@@ -1,6 +1,8 @@
 <template>
   <div>
-    <v-btn @click="shareScreen()">Share screen</v-btn>
+    <p>{{ user.uid }}</p>
+    <v-btn @click="shareScreen()">Share screen</v-btn>   
+    <v-btn @click="shareAudio()">Share audio</v-btn>
     	<!-- <Carousel
         :paginationEnabled="false"
         :navigationEnabled="true"
@@ -71,7 +73,7 @@
  * Therefore, all states will be correct. 
  */
 import { Carousel, Slide } from 'vue-carousel';
-import { connect, LocalVideoTrack } from "twilio-video";
+import { connect, LocalVideoTrack, createLocalTracks } from "twilio-video";
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
 import { getRandomId } from "@/helpers.js";
@@ -101,7 +103,11 @@ export default {
   async created () {
     // connect to the Twilio room
     try {
-      this.twilioRoom = await connect(this.getAccessToken(), { name: this.roomID, audio: true }); // video: { width: 640 }
+      // const localTracks = createLocalTracks({
+      //   audio: true,
+      //   video: { width: 640 }
+      // });
+      this.twilioRoom = await connect(this.getAccessToken(), { name: this.roomID, audio: true, video: { width: 640 } }); // video: { width: 640 }, audio: true
       console.log("Successfully joined Twilio room =", this.twilioRoom);
       this.$root.$emit("show-snackbar", "Successfully connected to the voice chat.");
     } catch (error) {
@@ -121,8 +127,11 @@ export default {
 
     // handle future participants
     this.twilioRoom.on(
-      'participantConnected', 
-      participant => this.listenToRemoteParticipant(participant)
+      "participantConnected", 
+      participant => {
+        console.log("detected new participant");
+        this.listenToRemoteParticipant(participant)
+      }
     );
     
     // whenever people disconnect, remove their streams
@@ -144,9 +153,11 @@ export default {
      */
     listenToRemoteParticipant (participant) {
       // handle current tracks
-      console.log("listenToRemoteParticipant(), participant =", participant);
+      console.log("listenToRemoteParticipant(), participant =", participant.identity);
       participant.tracks.forEach(publication => {
+        console.log("publication =", publication);
         if (publication.isSubscribed) {
+          console.log("Successfully received a track from remoteParticipant =", participant.identity);
           this.mountToDOM({ div: "remote-media-div", track });
         }
       });
@@ -188,8 +199,13 @@ export default {
      * 
      */
     mountToDOM ({ div, track }) {
-      console.log("track.attach() =", track.attach());
+      console.log("track.attach() =", track);
       document.getElementById(div).appendChild(track.attach());
+    },
+    async shareAudio () {
+      const { createLocalAudioTrack } = require('twilio-video');
+      const localAudioTrack = await createLocalAudioTrack({ name:'john-audio-track' });
+      console.log(`Created LocalAudioTrack with id ${localAudioTrack.id}`)
     },
     // TODO: move it to sidedrawer
     async shareScreen () {
@@ -210,7 +226,8 @@ export default {
         twilioCreds.API_KEY_SID,
         twilioCreds.API_KEY_SECRET
       );
-      token.identity = this.user.uid;
+      // TODO: want unique identifiers for each device
+      token.identity = this.user.uid; 
 
       // Create a Video grant which enables a client to use Video 
       const videoGrant = new VideoGrant();
