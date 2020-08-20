@@ -1,7 +1,14 @@
 <template>
-  <v-btn @click="$emit('click')" outlined>
-    <v-icon>{{ icon }}</v-icon>
-  </v-btn>
+  <v-tooltip bottom>
+    <template v-slot:activator="{ on }">
+      <v-btn v-on="on" @click="$emit('click')" outlined :color="color" class="icon-button px-0 mx-1 align-center justify-center">
+        <v-icon>{{ icon }}</v-icon>
+      </v-btn>
+    </template>
+    <span>
+      <slot></slot>
+    </span>
+  </v-tooltip>
 </template>
 
 <script>
@@ -24,5 +31,10 @@ export default {
 </script>
 
 <style>
-
+.icon-button {
+  height: 40px !important;
+  width: 40px !important;
+  display: inline-flex;
+  border-radius: 50%;
+}
 </style>

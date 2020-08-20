@@ -60,7 +60,7 @@ export default {
   z-index: 1;
 }
 .the-side-drawer {
-  z-index: 10;
+  z-index: 8;
   max-width: 75%;
 }
 </style>

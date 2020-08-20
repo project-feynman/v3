@@ -107,7 +107,7 @@ export default {
       //   audio: true,
       //   video: { width: 640 }
       // });
-      this.twilioRoom = await connect(this.getAccessToken(), { name: this.roomID, audio: true, video: { width: 640 } }); // video: { width: 640 }, audio: true
+      this.twilioRoom = await connect(this.getAccessToken(), { name: this.roomID, audio: true }); // video: { width: 640 }, audio: true
       console.log("Successfully joined Twilio room =", this.twilioRoom);
       this.$root.$emit("show-snackbar", "Successfully connected to the voice chat.");
     } catch (error) {

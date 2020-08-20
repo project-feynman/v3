@@ -14,20 +14,40 @@
               <v-col cols="auto" class="py-0 mr-1">
                 <template v-if="blackboardRoom && blackboardRoom.roomType === category.title">
                   <BaseIconButton 
-                    @click="roomStatusPopup = true"
+                    @click="setAnnouncementPopup(true, category.title)"
                     icon="mdi-bullhorn"
-                    class="mx-1"
-                  ></BaseIconButton>
+                    color="accent"
+                  >Make Announcement</BaseIconButton>
                   
-                  <BaseButton 
+                  <BaseIconButton 
                     @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                     icon="mdi-share-variant"
-                    outlined
-                    rounded
-                    small
-                    >
-                    Send to Rooms
-                  </BaseButton>
+                  >Break-out to rooms
+                  </BaseIconButton>
+                  
+                  
+                  <v-dialog :value="(announcementPopup.show && (announcementPopup.roomType === category.title))" persistent max-width="600px">
+                    <v-card>
+                      <v-card-title>
+                        <span class="headline">
+                          Make Announcement
+                        </span>
+                      </v-card-title>
+                      <v-card-text>
+                        <v-text-field v-model="updatedAnnouncement"/>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-spacer/>
+                        <v-btn @click="setAnnouncementPopup(false)" color="secondary" text>
+                          Cancel
+                        </v-btn>
+                        <v-btn @click="makeAnnouncement(updatedAnnouncement, category.title)" color="secondary" text>
+                          Update status
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </v-dialog>
+
                   <!--<BasePopupButton actionName="Make Announcement"
                     :inputFields="['Message']"
                     @action-do="payload => makeAnnouncement(payload, category.title)"
@@ -55,7 +75,7 @@
                     active-class="active-blackboard"
                   >
                     <v-list-item-icon>
-                      <v-icon>mdi-monitor-screenshot</v-icon>
+                      <v-icon class="pt-2">mdi-monitor-screenshot</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title class="d-flex align-center room-title mb-2">
@@ -68,32 +88,25 @@
                           <template v-if="blackboardRoom">
                             
                             <!-- TODO: causes an infinite loop for some reason -->
-                            <BaseButton 
+                            <BaseIconButton 
                               v-if="blackboardRoom.id === blackboard.id"
-                              @click="roomStatusPopup = true"
-                              outlined
-                              rounded
-                              small
+                              @click="setRoomStatusPopup(true, blackboard.id)"
                               icon="mdi-message-alert"
                               color="#555"
-                              class="mx-1"
                             >
                               Label Room
-                            </BaseButton>
+                            </BaseIconButton>
                             
-                            <BaseButton 
+                            <BaseIconButton 
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
-                              :icon="'mdi-account-arrow-left-outline'"
-                              outlined
-                              rounded
-                              small
+                              icon="mdi-account-arrow-left-outline"
                               color="#555"
                               >
                               Bring All to Room
-                            </BaseButton>
+                            </BaseIconButton>
                             <!-- Update status popup -->
-                            <v-dialog v-model="roomStatusPopup" persistent max-width="600px">
+                            <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
                               <v-card>
                                 <v-card-title>
                                   <span class="headline">
@@ -105,7 +118,7 @@
                                 </v-card-text>
                                 <v-card-actions>
                                   <v-spacer/>
-                                  <v-btn @click="roomStatusPopup = false" color="secondary" text>
+                                  <v-btn @click="setRoomStatusPopup(false)" color="secondary" text>
                                     Cancel
                                   </v-btn>
                                   <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
@@ -197,8 +210,10 @@ export default {
       roomTypes: [],
       roomCategories: [],
       expandedPanels: [],
-      roomStatusPopup: false,
+      roomStatusPopup: {show: false, roomID: null},
+      announcementPopup: {show: false, roomType: null},
       updatedStatus: "",
+      updatedAnnouncement: "",
       mitClassDoc: {},
       isCreatePopupOpen: false,
     };
@@ -284,11 +299,23 @@ export default {
         this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }];
       }
     },
+    setRoomStatusPopup (show, room=null) {
+      this.roomStatusPopup = {
+        show: show,
+        roomID: room
+      }
+    },
     setRoomStatus (status) {
       db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({
         status
       });
-      this.roomStatusPopup = false;
+      this.roomStatusPopup['show'] = false;
+    },
+    setAnnouncementPopup (show, roomType=null) {
+      this.announcementPopup = {
+        show: show,
+        roomType: roomType
+      }
     },
     createBlackboard (roomType) {
       const roomsRef = db.collection(`classes/${this.classID}/rooms`);
@@ -348,9 +375,10 @@ export default {
         // expect this to be run 3 times
         console.log("doc =", doc); 
         doc.ref.update({
-          announcement: message['Message']
+          announcement: message
         }); 
       });
+      this.announcementPopup['show'] = false;
     },
     bringAllToRoom (roomId, roomType) {
       const allToRoomRef = firebase.database().ref(`class/${this.classId}/${roomType}/toRoom`);
