@@ -169,9 +169,10 @@ export default {
       }
 
       // handle disconnections so other participants get notified immediately 
-      window.addEventListener("beforeunload", this.twilioRoom.disconnect);
-      window.addEventListener("pagehide", this.twilioRoom.disconnect);
-
+      if (this.twilioRoom) {
+        window.addEventListener("beforeunload", this.twilioRoom.disconnect);
+        window.addEventListener("pagehide", this.twilioRoom.disconnect);
+      }
       this.shareAudio();
       // mute ourselves to prevent feedback echoes
       this.twilioRoom.localParticipant.audioTracks.forEach(publication => {

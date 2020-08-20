@@ -17,13 +17,27 @@
                     @click="setAnnouncementPopup(true, category.title)"
                     icon="mdi-bullhorn"
                     color="accent"
-                  >Make Announcement</BaseIconButton>
-                  
-                  <BaseIconButton 
-                    @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
-                    icon="mdi-share-variant"
-                  >Break-out to rooms
+                  >
+                    Make Announcement
                   </BaseIconButton>
+
+                   <BaseIconButton
+                    @click="moveStudentsToRooms(category.title)"
+                    icon="mdi-share-variant"
+                  >
+                    Break-out to rooms
+                  </BaseIconButton>
+                  
+                  <!-- TODO: use ID instead of title -->     
+                  <!-- <v-btn
+                    @click.stop="moveStudentsToRooms(category.title)"
+               
+                  >
+                    Break-out to rooms
+                  </v-btn> -->
+
+
+
                   
                   
                   <v-dialog :value="(announcementPopup.show && (announcementPopup.roomType === category.title))" persistent max-width="600px">
@@ -131,8 +145,6 @@
                         </v-col>
                       </v-list-item-title>
 
-
-
                       <div class="active-blackboard-users pl-4">
                         <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
                           <div class="d-flex align-center py-1" :key="i">
@@ -162,7 +174,6 @@
         </v-expansion-panel>
       </template>
     </v-expansion-panels>
-
 
     <!-- Create blackboard -->
     <!-- <v-btn v-if="blackboards"
@@ -220,12 +231,20 @@ export default {
       roomTypes: [],
       roomCategories: [],
       expandedPanels: [],
-      roomStatusPopup: {show: false, roomID: null},
-      announcementPopup: {show: false, roomType: null},
+      roomStatusPopup: { show: false, roomID: null },
+      announcementPopup: { show: false, roomType: null },
       updatedStatus: "",
       updatedAnnouncement: "",
       mitClassDoc: {},
       isCreatePopupOpen: false,
+
+      // random assignment 
+      roomForRandom: "",
+      groupSizeForRandom: 3,
+      groupSizeList: [],
+
+      // TODO: assign all participants who are currently in the category
+
     };
   },
   computed: {
@@ -257,8 +276,8 @@ export default {
     },
     blackboardRoom () {
       if (this.expandedPanels.length <= 0) { //only for init we open the panels of where the user is
-        const ind = this.roomTypes.indexOf(this.blackboardRoom.roomType)
-        this.expandedPanels = [ind]
+        const ind = this.roomTypes.indexOf(this.blackboardRoom.roomType);
+        this.expandedPanels = [ind];
       }
     },
     // TODO
@@ -278,6 +297,8 @@ export default {
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
     const classRef = db.doc(`classes/${this.classID}`)
 
+    this.listenForRoomAssignments();
+
     this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
@@ -295,6 +316,75 @@ export default {
     }
   },
   methods: {
+    listenForRoomAssignments () {
+      // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
+      let onlyJustJoined = true; 
+      const classRef = db.doc(`classes/${this.$route.params.class_id}`);
+      this.removeClassDocListener = classRef.onSnapshot(doc => {
+        if (onlyJustJoined) {
+          onlyJustJoined = false; 
+          return; 
+        }
+        for (const roomAssignment of doc.data().tableAssignments) {
+          if (roomAssignment.assignees.includes(this.user.uid)) {
+            this.removeClassDocListener(); 
+            this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
+            this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)");
+          }
+        }
+      });
+    },
+    async moveStudentsToRooms (categoryID) {
+      /**
+       * Shuffles array in place. ES6 version
+       * @param {Array} a array containing items.
+       * @see https://stackoverflow.com/a/6274381
+       */
+      function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      // roomParticipantsMap 
+      // { <blackboardID>: [<participant-object>]] }
+      // participant-object: firstName, sessionID
+      // assign everyone in the class into random groups within this category
+      const tableAssignments = []; 
+      const connectedStudents = []; 
+      Object.values(this.roomParticipantsMap).forEach(participantsInTheRoom => {
+        connectedStudents.push(...participantsInTheRoom);
+      });
+    
+      const classRef = db.doc(`classes/${this.$route.params.class_id}`);
+      const query = classRef.collection("rooms").where("roomType", "==", categoryID);
+      const rooms = await query.get();
+      rooms.forEach(room => {
+        tableAssignments.push({
+          roomID: room.id,
+          assignees: []
+        }); 
+      });
+      shuffle(connectedStudents); 
+      shuffle(tableAssignments);
+
+      // `tableAssignments` has the structure of: [{ roomID: "123", "assignees": ["345", "abc"] }]
+      let i = 0; 
+      for (const student of connectedStudents) {
+        if (tableAssignments[i].assignees.length >= this.groupSizeForRandom) {
+          i = (i+1) % tableAssignments.length; // leftover students just get pushed onto a table
+        }
+        tableAssignments[i].assignees.push(student.uid); 
+      }
+      // update the class doc, so each connected user will detect the change and be redirected.
+      await classRef.update({
+        tableAssignments
+      });
+      // Here we used to batch delete all of the participants, but we dont need that anymore as particpants are deleted on destroy
+    },
+    // above here is randomization code
     async shareAudio () {
       const { createLocalAudioTrack } = require('twilio-video');
       createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
@@ -315,7 +405,7 @@ export default {
         this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }];
       }
     },
-    setRoomStatusPopup (show, room=null) {
+    setRoomStatusPopup (show, room = null) {
       this.roomStatusPopup = {
         show: show,
         roomID: room

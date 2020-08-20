@@ -22,10 +22,9 @@
     >
       {{ mitClass.name }}
     </v-toolbar-title>
-    <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent" />
-
+    <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent"/>
+    
     <v-spacer/>
-
     <!-- <BasePopupButton actionName="Give Feedback" 
       :inputFields="['Feedback']"
       @action-do="(bugReport) => submitBug(bugReport)"
@@ -38,6 +37,8 @@
         We will be excited to read what you write and update you by email. 
       </template>
     </BasePopupButton> -->
+    <v-btn>Library</v-btn>
+  
     <slot>
       
     </slot>
