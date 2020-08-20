@@ -4,7 +4,7 @@
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
           <v-expansion-panel-header>
-            <v-row align="center">
+            <v-row align="center" style="overflow: hidden;">
               <v-col class="py-0">
                 <span class="panel-header-title">
                   {{ category.title }} &nbsp;
@@ -85,15 +85,14 @@
                   <v-list-item
                     :to="`/class/${classID}/room/${blackboard.id}`"
                     :key="blackboard.id"
-                    color="accent"
                     active-class="active-blackboard"
                   >
-                    <v-list-item-icon>
+                    <v-list-item-icon style="margin-right: 16px;">
                       <v-icon class="pt-2">mdi-monitor-screenshot</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title class="d-flex align-center room-title mb-2">
-                        <v-col class="px-0 pb-0 pt-1">
+                        <v-col class="px-0 pb-0 pt-1" style="overflow: hidden;">
                           {{ category.title.substring(0, category.title.length) }} {{ i }}
                           <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                           <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
@@ -107,6 +106,7 @@
                               @click="setRoomStatusPopup(true, blackboard.id)"
                               icon="mdi-message-alert"
                               color="#555"
+                              :stopPropagation="false"
                             >
                               Label Room
                             </BaseIconButton>
@@ -116,6 +116,7 @@
                               @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                               icon="mdi-account-arrow-left-outline"
                               color="#555"
+                              :stopPropagation="false"
                               >
                               Bring All to Room
                             </BaseIconButton>
@@ -368,7 +369,7 @@ export default {
         }); 
       });
       shuffle(connectedStudents); 
-      shuffle(tableAssignments);
+      // shuffle(tableAssignments);
 
       // `tableAssignments` has the structure of: [{ roomID: "123", "assignees": ["345", "abc"] }]
       let i = 0; 
@@ -486,7 +487,7 @@ export default {
       this.announcementPopup['show'] = false;
     },
     bringAllToRoom (roomId, roomType) {
-      const allToRoomRef = firebase.database().ref(`class/${this.classId}/${roomType}/toRoom`);
+      const allToRoomRef = firebase.database().ref(`class/${this.classID}/${roomType}/toRoom`);
       allToRoomRef.set({ roomId: roomId }).then(() => {
         allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
       })
@@ -503,6 +504,17 @@ export default {
 .room-title {
   font-size: 1em !important;
   font-weight: 400;
+  color: #555;
+}
+.active-blackboard  {
+  color: #555;
+}
+.active-blackboard:before  {
+  background: var(--v-accent-base);
+}
+.active-blackboard .room-title {
+  color: black;
+  font-weight: 700;
 }
 .room-title .active-count {
   font-style: italic;

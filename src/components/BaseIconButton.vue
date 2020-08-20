@@ -1,7 +1,10 @@
 <template>
   <v-tooltip bottom>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" @click.stop="$emit('click')" outlined :color="color" class="icon-button px-0 mx-1 align-center justify-center">
+      <v-btn v-if="stopPropagation" v-on="on" @click.stop="$emit('click')" outlined :color="color" class="icon-button px-0 mx-1 align-center justify-center">
+        <v-icon>{{ icon }}</v-icon>
+      </v-btn>
+      <v-btn v-else v-on="on" @click="$emit('click')" outlined :color="color" class="icon-button px-0 mx-1 align-center justify-center">
         <v-icon>{{ icon }}</v-icon>
       </v-btn>
     </template>
@@ -24,6 +27,12 @@ export default {
       type: String,
       default () {
         return 'accent'
+      }
+    },
+    stopPropagation: {
+      type: Boolean,
+      default () {
+        return true
       }
     },
   }
