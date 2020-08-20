@@ -27,11 +27,27 @@
         </div>
       </template> -->
     </template>
-
-    <v-btn @click="shareScreen()">Share screen</v-btn>   
+    <!-- <v-btn @click="shareScreen()">Share screen</v-btn>    -->
     <div id="remote-media-div">
 
     </div>
+
+    <v-dialog max-width="600px" v-model="isShowingConnectOptionsPopup">
+      <v-card>
+        <v-card-title>
+          Connect to the voice chat?
+        </v-card-title>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="connectToTwilioRoom()" text color="secondary">
+            Yes
+          </v-btn>
+          <v-btn @click="isShowingConnectOptionsPopup = false" text color="secondary">
+            No
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Helps user fix audio issues if an error shows up -->
     <v-dialog persistent max-width="600px" v-model="isShowingErrorPopup"> 
@@ -47,7 +63,9 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
-          <v-btn @click="isShowingErrorPopup = false" text color="secondary">GOT IT</v-btn>
+          <v-btn @click="isShowingErrorPopup = false" text color="secondary">
+            GOT IT
+          </v-btn>
         </v-card-actions>
       </v-card> 
     </v-dialog> 
@@ -100,6 +118,7 @@ export default {
   data () {
     return {
       isShowingErrorPopup: false,
+      isShowingConnectOptionsPopup: true,
       whyItFailed: "",
       howToFix: ""
     };
@@ -112,57 +131,7 @@ export default {
     ])
   },
   async created () {
-    // check browser support
-    if (!Twilio.isSupported) {
-      this.isShowingErrorPopup = true; 
-      this.whyItFailed = "Your browser/device combination does not support audio/video/screensharing."; 
-      this.howToFix = `
-        For iPads, use iOS Safari. 
-        For MacBooks, use MacOS Chrome, Firefox or Safari. 
-        For Windows, use Chrome or Firefox. 
-        For Linux, use Chrome or Firefox. 
-      `;
-    }
-    // TODO: handle the autoplay issue
-    try {
-      const twilioRoom = await Twilio.connect(this.getAccessToken(), { 
-        name: this.roomID, 
-        audio: true,
-        video: true
-      }); // video: { width: 640 }
-      this.$store.commit("SET_TWILIO_ROOM", twilioRoom);
-      console.log("Joined Twilio room =", this.twilioRoom);
-      this.$root.$emit("show-snackbar", "Connected to the voice chat.");
-    } catch (error) {
-      this.tellUserHowToFixError(error);
-      return;
-    }
-
-    // handle disconnections so other participants get notified immediately 
-    window.addEventListener("beforeunload", this.twilioRoom.disconnect);
-    window.addEventListener("pagehide", this.twilioRoom.disconnect);
-
-    this.shareAudio();
-
-    // mute ourselves to prevent feedback echoes
-    this.twilioRoom.localParticipant.audioTracks.forEach(publication => {
-      publication.track.disable();
-    });
-    
-    // handle existing participants
-    this.twilioRoom.participants.forEach(participant => {
-      this.listenToRemoteParticipant(participant);
-    });
-
-    // handle future participants
-    this.twilioRoom.on("participantConnected", participant => {
-      this.listenToRemoteParticipant(participant)
-    });
-    
-    // whenever people disconnect, remove their streams
-    this.twilioRoom.on('participantDisconnected', participant => {
-      this.$root.$emit("show-snackbar", "Someone disconnected."); 
-    });
+    // nothing for now
   },
   destroyed () {
     if (this.twilioRoom) {
@@ -172,16 +141,65 @@ export default {
     }
   },
   methods: {
+    async connectToTwilioRoom () {
+      this.isShowingConnectOptionsPopup = false; 
+      // check browser support
+      if (!Twilio.isSupported) {
+        this.isShowingErrorPopup = true; 
+        this.whyItFailed = "Your browser/device combination does not support audio/video/screensharing."; 
+        this.howToFix = `
+          For iPads, use iOS Safari. 
+          For MacBooks, use MacOS Chrome, Firefox or Safari. 
+          For Windows, use Chrome or Firefox. 
+          For Linux, use Chrome or Firefox. 
+        `;
+      }
+      // TODO: handle the autoplay issue
+      try {
+        const twilioRoom = await Twilio.connect(this.getAccessToken(), { 
+          name: this.roomID, 
+          audio: true
+        }); // video: { width: 640 }
+        this.$store.commit("SET_TWILIO_ROOM", twilioRoom);
+        console.log("Joined Twilio room =", this.twilioRoom);
+        this.$root.$emit("show-snackbar", "Connected to the voice chat.");
+      } catch (error) {
+        this.tellUserHowToFixError(error);
+        return;
+      }
+
+      // handle disconnections so other participants get notified immediately 
+      window.addEventListener("beforeunload", this.twilioRoom.disconnect);
+      window.addEventListener("pagehide", this.twilioRoom.disconnect);
+
+      this.shareAudio();
+      // mute ourselves to prevent feedback echoes
+      this.twilioRoom.localParticipant.audioTracks.forEach(publication => {
+        publication.track.disable();
+      });
+      
+      // handle existing participants
+      this.twilioRoom.participants.forEach(participant => {
+        this.listenToRemoteParticipant(participant);
+      });
+
+      // handle future participants
+      this.twilioRoom.on("participantConnected", participant => {
+        this.listenToRemoteParticipant(participant)
+      });
+      
+      // whenever people disconnect, remove their streams
+      this.twilioRoom.on('participantDisconnected', participant => {
+        this.$root.$emit("show-snackbar", "Someone disconnected."); 
+      });
+    },
     /**
      * Handles to current tracks. 
      * Listens to for future tracks (publish or unpublish)
      */
     listenToRemoteParticipant (participant) {
       // handle current tracks
-      console.log("handling new participant =", participant);
       participant.tracks.forEach(publication => {
-        // why can the publication.track be null? 
-        // console.log("publication =", publication);
         if (publication.isSubscribed) {
           console.log("received a track from remoteParticipant =", participant.identity);
           this.mountToDOM({ 

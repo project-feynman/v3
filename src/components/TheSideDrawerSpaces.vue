@@ -140,7 +140,6 @@
                             <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
                               {{ participant.firstName }}
                             </div>
-                            
                           </div>
                         </template>
                       </div>
