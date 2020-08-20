@@ -135,12 +135,21 @@
 
                       <div class="active-blackboard-users pl-4">
                         <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
-                          <div class="d-flex align-center py-2" :key="i">
-                            <v-icon>mdi-account</v-icon>
-                            <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
-                              {{ participant.firstName }}
-                            </div>
-                            
+                          <div class="d-flex align-center py-1" :key="i">
+                            <v-col class="d-flex px-0 align-center py-0">
+                              <v-icon>mdi-account</v-icon>
+                              <div :class="['pl-1', 'col', 'py-0', participant.sessionID === sessionID ? 'font-weight-bold':'']">
+                                {{ participant.firstName }}
+                              </div>
+                            </v-col>
+                            <v-col cols="auto" class="py-0" v-if="participant.sessionID === sessionID">
+                              <BaseIconButton
+                                @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
+                                icon="mdi-microphone"
+                                >
+                                Disconnect Audio
+                              </BaseIconButton>
+                            </v-col>
                           </div>
                         </template>
                       </div>
