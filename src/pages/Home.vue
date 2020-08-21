@@ -6,14 +6,16 @@
         <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
           BLOG
         </v-btn> -->
-        <BasePopupButton actionName="Create class" 
+
+        <!-- Create class -->
+        <!-- <BasePopupButton actionName="Create class" 
           @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
             <BaseButton :on="on" icon="mdi-plus">Create Class</BaseButton>
           </template>
-        </BasePopupButton>
+        </BasePopupButton> -->
 
         <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:activator="{ on }">

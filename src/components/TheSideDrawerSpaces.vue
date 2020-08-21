@@ -35,9 +35,6 @@
                   >
                     Break-out to rooms
                   </v-btn> -->
-
-
-
                   
                   
                   <v-dialog :value="(announcementPopup.show && (announcementPopup.roomType === category.title))" persistent max-width="600px">
@@ -99,9 +96,8 @@
                         </v-col>
                         <v-col cols="auto" class="px-1 py-0">
                           <template v-if="blackboardRoom">
-                            
                             <!-- TODO: causes an infinite loop for some reason -->
-                            <BaseIconButton 
+                            <!-- <BaseIconButton 
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="setRoomStatusPopup(true, blackboard.id)"
                               icon="mdi-message-alert"
@@ -109,9 +105,15 @@
                               :stopPropagation="false"
                             >
                               Label Room
-                            </BaseIconButton>
-                            
-                            <BaseIconButton 
+                            </BaseIconButton> -->
+
+                            <v-btn v-if="blackboardRoom.id === blackboard.id"
+                              @click="setRoomStatusPopup(true, blackboard.id)"
+                            >
+                              Label room
+                            </v-btn>
+
+                            <!-- <BaseIconButton 
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                               icon="mdi-account-arrow-left-outline"
@@ -119,7 +121,8 @@
                               :stopPropagation="false"
                               >
                               Bring All to Room
-                            </BaseIconButton>
+                            </BaseIconButton> -->
+
                             <!-- Update status popup -->
                             <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
                               <v-card>
@@ -156,12 +159,20 @@
                               </div>
                             </v-col>
                             <v-col cols="auto" class="py-0" v-if="participant.sessionID === sessionID">
-                              <BaseIconButton
+
+                              
+                              <!-- <BaseIconButton
                                 @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                                 icon="mdi-microphone"
-                                >
+                              >
                                 Disconnect Audio
-                              </BaseIconButton>
+                              </BaseIconButton> -->
+                              <v-btn @click="muteOrUnmute()">
+                                Mute / Unmute
+                              </v-btn>
+
+                             <!-- TODO: show "connect to audio" if the user isn't currently connected -->
+                    
                             </v-col>
                           </div>
                         </template>
@@ -176,7 +187,7 @@
       </template>
     </v-expansion-panels>
 
-    <!-- Create blackboard -->
+    <!-- CREATE BLACKBOARD -->
     <!-- <v-btn v-if="blackboards"
       outlined
       large
@@ -245,13 +256,13 @@ export default {
       groupSizeList: [],
 
       // TODO: assign all participants who are currently in the category
-
     };
   },
   computed: {
     ...mapState([
       "user",
       "blackboardRoom",
+      "twilioRoom",
       "mitClass",
       "session"
     ]),
@@ -317,6 +328,54 @@ export default {
     }
   },
   methods: {
+    /**
+     * TODO: 
+     *  1. DRY: the same method is currently re-declared in TheSiderawerSpaces.vue and RealtimeSpaceTwilioRoom.vue
+     *  2. Apparently the mic does not turn off even when you leave explain.mit.edu
+     */
+    async shareAudio () {
+      const { createLocalAudioTrack } = require('twilio-video');
+      createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
+      const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
+      this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
+    },
+    /**
+     * Allow the user to decide to join the audio later. 
+     * 
+     * 
+     */
+    muteOrUnmute () {
+      console.log("twilioRoom =", this.twilioRoom);
+      // source of truth (can it detect mutations: on it can't, there are reactivity caveats)
+      // there are lots of caveats to figure out
+      this.twilioRoom.localParticipant.tracks.values().forEach(publication => {
+        console.log("publication =", publication);
+        if (publication.track) {
+          console.log("publication.track (audio) =", publication.track);
+          publication.track.enable(); 
+        }
+      });
+
+      // 	return Array.from(participant.tracks.values()).filter((publication) => {
+      //     return publication.track;
+      //     }).map((publication) => {
+      //   return publication.track;
+      //   });
+
+      // this
+
+      // this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
+			// 	if (track.kind === type) {
+			// 		track.enable();
+			// 		if (type === 'video'){
+			// 			this.isCameraOn = true;
+			// 		}
+			// 		else{
+			// 			this.isMicOn = true;
+			// 		}
+			// 	}
+			// });
+    },  
     listenForRoomAssignments () {
       // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
       let onlyJustJoined = true; 
