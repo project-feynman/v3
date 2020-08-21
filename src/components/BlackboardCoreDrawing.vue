@@ -67,6 +67,7 @@ import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
 import { getRandomId, isIosSafari } from "@/helpers.js";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   props: {
@@ -123,6 +124,9 @@ export default {
     }
   },
   computed: {
+    ...mapState([
+      'canvasDimensions'
+    ]),
     imageBlobUrl () {
       return this.imageBlob ? URL.createObjectURL(this.imageBlob) : "";
     },
@@ -189,7 +193,7 @@ export default {
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
-    }); 
+    });
   },
   destroyed () {
     window.removeEventListener("resize", this.resizeBlackboard);
@@ -201,6 +205,9 @@ export default {
      * All tools (pen, normal eraser, stroke eraser) will generate strokes.  
      * Because every stroke is processed here, UI => strokesArray.
      */
+    ...mapMutations([
+      'SET_CANVAS_DIMENSIONS',
+    ]),
     handleEndOfStroke (newStroke) {
       newStroke.id = getRandomId(); 
       this.localStrokesArray.push(newStroke);

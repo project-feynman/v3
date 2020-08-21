@@ -53,7 +53,8 @@ export default new Vuex.Store({
     explCache: {},
     blackboardRoom: null,
     twilioRoom: null,
-    session: {}
+    session: {},
+    canvasDimensions: {'height': 0, 'width': 0}
   },
   mutations: {
     SET_USER (state, user) {
@@ -71,6 +72,9 @@ export default new Vuex.Store({
     },
     SET_TWILIO_ROOM (state, twilioRoom) {
       state.twilioRoom = twilioRoom; 
+    },
+    SET_CANVAS_DIMENSIONS (state, dimensions) {
+      state.canvasDimensions = dimensions;
     },
     /**
      * Saves an explanation to the global cache so it can be accessed and uploaded to Firestore in the app background

@@ -12,6 +12,7 @@
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
       @record-end="handleRecordEnd()"
+      :isActive="isActive"
     >
       <template v-slot:blackboard-toolbar>
         <slot name="blackboard-toolbar">
@@ -113,6 +114,12 @@ export default {
     roomParticipants: {
       type: null,
       required: true
+    },
+    isActive: {
+      type: Boolean,
+      default () {
+        return true
+      }
     }
   },
   mixins: [
@@ -173,6 +180,7 @@ export default {
         this.hasFetchedBackgroundImage = true; 
       }
     });
+    console.log('created blackboard with id', this.blackboardRef.im.path.segments[3]);
   },
   destroyed () {
     this.removeBlackboardStrokesListener();
