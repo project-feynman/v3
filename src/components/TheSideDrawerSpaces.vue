@@ -97,7 +97,7 @@
                         <v-col cols="auto" class="px-1 py-0">
                           <template v-if="blackboardRoom">
                             <!-- TODO: causes an infinite loop for some reason -->
-                            <!-- <BaseIconButton 
+                            <BaseIconButton 
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="setRoomStatusPopup(true, blackboard.id)"
                               icon="mdi-message-alert"
@@ -105,15 +105,9 @@
                               :stopPropagation="false"
                             >
                               Label Room
-                            </BaseIconButton> -->
+                            </BaseIconButton>
 
-                            <v-btn v-if="blackboardRoom.id === blackboard.id"
-                              @click="setRoomStatusPopup(true, blackboard.id)"
-                            >
-                              Label room
-                            </v-btn>
-
-                            <!-- <BaseIconButton 
+                            <BaseIconButton 
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                               icon="mdi-account-arrow-left-outline"
@@ -121,7 +115,7 @@
                               :stopPropagation="false"
                               >
                               Bring All to Room
-                            </BaseIconButton> -->
+                            </BaseIconButton>
 
                             <!-- Update status popup -->
                             <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
