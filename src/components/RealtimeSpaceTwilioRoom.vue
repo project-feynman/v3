@@ -173,7 +173,10 @@ export default {
         window.addEventListener("beforeunload", this.twilioRoom.disconnect);
         window.addEventListener("pagehide", this.twilioRoom.disconnect);
       }
+
+      // this is not redundant: the track shared will be "enabled"
       this.shareAudio();
+
       // mute ourselves to prevent feedback echoes
       this.twilioRoom.localParticipant.audioTracks.forEach(publication => {
         publication.track.disable();
@@ -252,6 +255,7 @@ export default {
       createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
       const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
       this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
+      this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", true);
     },
     // TODO: move it to sidedrawer
     async shareScreen () {

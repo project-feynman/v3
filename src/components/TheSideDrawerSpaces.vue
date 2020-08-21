@@ -167,10 +167,14 @@
                               >
                                 Disconnect Audio
                               </BaseIconButton> -->
-                              <v-btn @click="muteOrUnmute()">
-                                Mute / Unmute
+
+                              <v-btn v-if="isConnectedToAudio" @click="muteMicrophone()">
+                                Mute
                               </v-btn>
 
+                              <v-btn v-else @click="shareAudio()">
+                                Connect audio
+                              </v-btn>
                              <!-- TODO: show "connect to audio" if the user isn't currently connected -->
                     
                             </v-col>
@@ -263,6 +267,7 @@ export default {
       "user",
       "blackboardRoom",
       "twilioRoom",
+      "isConnectedToAudio",
       "mitClass",
       "session"
     ]),
@@ -334,48 +339,48 @@ export default {
      *  2. Apparently the mic does not turn off even when you leave explain.mit.edu
      */
     async shareAudio () {
+      console.log("shareAudio");
       const { createLocalAudioTrack } = require('twilio-video');
       createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
       const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
       this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
+      this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", true);
     },
     /**
-     * Allow the user to decide to join the audio later. 
-     * 
+     * Mutes/unmutes the user's microphone
      * 
      */
-    muteOrUnmute () {
-      console.log("twilioRoom =", this.twilioRoom);
-      // source of truth (can it detect mutations: on it can't, there are reactivity caveats)
-      // there are lots of caveats to figure out
-      this.twilioRoom.localParticipant.tracks.values().forEach(publication => {
-        console.log("publication =", publication);
-        if (publication.track) {
-          console.log("publication.track (audio) =", publication.track);
-          publication.track.enable(); 
-        }
+    muteMicrophone () {
+      console.log("muteMicrophone() twilioRoom =", this.twilioRoom);
+      const { audioTracks } = this.twilioRoom.localParticipant; 
+      audioTracks.forEach(audioTrack => {
+        audioTrack.unpublish();
+        console.log("audioTrack is now unpublished =", audioTrack);
       });
-
-      // 	return Array.from(participant.tracks.values()).filter((publication) => {
-      //     return publication.track;
-      //     }).map((publication) => {
-      //   return publication.track;
-      //   });
-
-      // this
-
-      // this.getTracks(this.activeRoom.localParticipant).forEach((track) => {
-			// 	if (track.kind === type) {
-			// 		track.enable();
-			// 		if (type === 'video'){
-			// 			this.isCameraOn = true;
-			// 		}
-			// 		else{
-			// 			this.isMicOn = true;
-			// 		}
-			// 	}
-			// });
+      console.log("after muting, twilioRoom =", this.twilioRoom);
+      this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", false);
     },  
+    // TODO: put the method in Vuex
+    tellUserHowToFixError (error) {
+      this.isShowingErrorPopup = true; 
+
+      // give a specific, helpful error message
+      if (error.name === "NotFoundError") {
+        this.whyItFailed = `Your laptop or iPad's audio device is currently disabled in this browser.`;
+        this.howToFix = `Enable your audio device for the browser in the system settings.`;
+      } else if (error.name === "NotAllowedError") {
+        this.whyItFailed = `At some point, you dismissed or denied the popup that asked for access to your microphone`
+        this.howToFix = `
+          Give access to your microphone by doing the following steps: 
+            1. Click the small, circular "i" button near the left of "https://explain.mit.edu/...." 
+            2. Find the settings somewhere for the audio microphone and switch to "allow" 
+            3. Reload the entire website. 
+        `;
+      } else {
+        this.whyItFailed = `Failed to acquire audio media because: ${error.message}`;
+        this.howToFix = ""; 
+      }
+    },
     listenForRoomAssignments () {
       // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
       let onlyJustJoined = true; 
@@ -445,12 +450,6 @@ export default {
       // Here we used to batch delete all of the participants, but we dont need that anymore as particpants are deleted on destroy
     },
     // above here is randomization code
-    async shareAudio () {
-      const { createLocalAudioTrack } = require('twilio-video');
-      createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
-      const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
-      this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
-    },
     setRoomCategories () {
       if (this.roomTypes) {
         this.roomCategories = [];
