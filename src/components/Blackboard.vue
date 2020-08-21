@@ -8,7 +8,6 @@
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
-      :isActive="isActive"
     >
       <template v-slot:canvas-toolbar="{ 
         currentTool,
@@ -128,12 +127,6 @@ export default {
       type: Boolean,
       required: true
     },
-    isActive: {
-      type: Boolean,
-      default () {
-        return true
-      }
-    }
   },
   components: { 
     BlackboardToolBar,
