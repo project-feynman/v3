@@ -54,7 +54,8 @@ export default new Vuex.Store({
     blackboardRoom: null,
     twilioRoom: null,
     session: {},
-    isConnectedToAudio: false
+    isConnectedToAudio: false,
+    canvasDimensions: {'height': 0, 'width': 0}
   },
   mutations: {
     SET_USER (state, user) {
@@ -75,6 +76,9 @@ export default new Vuex.Store({
     },
     SET_IS_CONNECTED_TO_AUDIO (state, isConnectedToAudio) {
       state.isConnectedToAudio = isConnectedToAudio;
+    },
+    SET_CANVAS_DIMENSIONS (state, dimensions) {
+      state.canvasDimensions = dimensions;
     },
     /**
      * Saves an explanation to the global cache so it can be accessed and uploaded to Firestore in the app background

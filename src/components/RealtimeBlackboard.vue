@@ -173,6 +173,7 @@ export default {
         this.hasFetchedBackgroundImage = true; 
       }
     });
+    console.log('created blackboard with id', this.blackboardRef.im.path.segments[3]);
   },
   destroyed () {
     this.removeBlackboardStrokesListener();

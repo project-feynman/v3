@@ -126,7 +126,7 @@ export default {
     isRealtime: {
       type: Boolean,
       required: true
-    }
+    },
   },
   components: { 
     BlackboardToolBar,
