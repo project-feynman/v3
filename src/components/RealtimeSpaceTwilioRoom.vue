@@ -237,11 +237,7 @@ export default {
     },
     participantOnConnect (participant) {
       console.log("Participant onConnect", participant.identity);
-      console.log(this.roomParticipantData);
-      console.log(this.roomParticipantData[participant.identity]);
       
-      // See https://github.com/twilio/video-quickstart-js/blob/master/quickstart/src/joinroom.js
-      // for an example implementation that this function is heavily insipired from.
       const tryHandleAudioTrack = (track) => {
         if (track.kind != "audio") return;
         const audioTrack = track;
