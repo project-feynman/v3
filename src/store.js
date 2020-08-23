@@ -54,6 +54,7 @@ export default new Vuex.Store({
     blackboardRoom: null,
     twilioRoom: null,
     session: {},
+    isConnectedToAudio: false,
     canvasDimensions: {'height': 0, 'width': 0}
   },
   mutations: {
@@ -72,6 +73,9 @@ export default new Vuex.Store({
     },
     SET_TWILIO_ROOM (state, twilioRoom) {
       state.twilioRoom = twilioRoom; 
+    },
+    SET_IS_CONNECTED_TO_AUDIO (state, isConnectedToAudio) {
+      state.isConnectedToAudio = isConnectedToAudio;
     },
     SET_CANVAS_DIMENSIONS (state, dimensions) {
       state.canvasDimensions = dimensions;
