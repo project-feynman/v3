@@ -107,9 +107,7 @@ export default {
     },
     roomParticipantData() {
       return new Map(
-        this.roomParticipants.map(
-          p => [p.uid, p]
-        )
+        this.roomParticipants.map(p => [p.uid, p])
       );
     }
   },

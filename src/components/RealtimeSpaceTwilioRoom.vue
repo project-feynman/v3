@@ -28,7 +28,7 @@
       
       <template v-for="[uid, micStatus] in Object.entries(participantAudioStatus)">
         <div :key="uid">
-        <p>participantName: {{uid}}</p>
+        <p>participantName: {{roomParticipantData.get(uid).firstName}}</p>
         <p>micStatus: {{micStatus}}</p>
         </div>
       </template>
@@ -237,6 +237,8 @@ export default {
     },
     participantOnConnect (participant) {
       console.log("Participant onConnect", participant.identity);
+      console.log(this.roomParticipantData);
+      console.log(this.roomParticipantData[participant.identity]);
       
       // See https://github.com/twilio/video-quickstart-js/blob/master/quickstart/src/joinroom.js
       // for an example implementation that this function is heavily insipired from.
