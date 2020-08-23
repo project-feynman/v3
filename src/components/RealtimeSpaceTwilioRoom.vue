@@ -1,18 +1,48 @@
 <template>
   <div>
-    <template v-if="twilioRoom">
-      <!-- <h2>Me</h2>
-      <p>my ID: {{ twilioRoom.localParticipant.identity }}</p>
-      <p>my connection state: {{ twilioRoom.localParticipant.state }}</p>
-      <template v-for="trackObject in twilioRoom.localParticipant.tracks.values()">
-        <div :key="trackObject.id"> 
+    <template v-if="!twilioRoom">
+      <h2>Connecting to Twilio...</h2>
+    </template>
+    <template v-else>
+      <h2>Connected to Twilio!</h2>
+
+      <template v-if="isMicEnabled">
+        <BaseIconButton 
+        @click="toggleIsMicEnabled()"
+        icon="mdi-microphone"
+        color="black"
+        >
+          Mute microphone
+        </BaseIconButton>
+      </template>
+      <template v-else>
+        <!-- TODO: Make this color prettier -->
+        <BaseIconButton 
+        @click="toggleIsMicEnabled()"
+        icon="mdi-microphone-off"
+        color="red" 
+        >
+          Unmute microphone
+        </BaseIconButton>
+      </template>
+      
+      <template v-for="[uid, micStatus] in Object.entries(participantAudioStatus)">
+        <div :key="uid">
+        <p>participantName: {{uid}}</p>
+        <p>micStatus: {{micStatus}}</p>
+        </div>
+      </template>
+
+      <!--<template v-for="trackObject in twilioRoom.localParticipant.tracks.values()">
+        <div :key="trackObject.id">
+          <p>trackName: {{ trackObject.trackName }}</p>
           <p>type of data: {{ trackObject.kind }}</p>
           <p>isEnabled: {{ trackObject.track.isEnabled }}</p>
           <p>isStarted: {{ trackObject.track.isStarted }}</p>
           <p>isStopped: {{ trackObject.track.isStopped }}</p>
         </div>
-      </template> -->
-      <!-- <h2>Other people</h2>
+      </template>-->
+      <!--<h2>Other people</h2>
       <template v-for="participant in twilioRoom.participants.values()">
         <div :key="participant.identity">
           <p>his/her ID: {{ participant.identity }}</p>
@@ -25,29 +55,12 @@
             </div>
           </template> 
         </div>
-      </template> -->
+      </template>-->
     </template>
     <!-- <v-btn @click="shareScreen()">Share screen</v-btn>    -->
-    <div id="remote-media-div">
 
+    <div id="remote-audio-div">
     </div>
-
-    <v-dialog max-width="600px" v-model="isShowingConnectOptionsPopup">
-      <v-card>
-        <v-card-title>
-          Connect to the voice chat?
-        </v-card-title>
-        <v-card-actions>
-          <v-spacer/>
-          <v-btn @click="connectToTwilioRoom()" text color="secondary">
-            Yes
-          </v-btn>
-          <v-btn @click="isShowingConnectOptionsPopup = false" text color="secondary">
-            No
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
     <!-- Helps user fix audio issues if an error shows up -->
     <v-dialog persistent max-width="600px" v-model="isShowingErrorPopup"> 
@@ -87,7 +100,7 @@
  * Correctness proof: 
  * 
  * Initial state: 
- *    - Local user publishes his/her tracks. 
+ *    - Local user publishes his/her tracks.
  *    - Local user fetches other people's tracks. 
  *    - Therefore initial state is correct. 
  * 
@@ -99,28 +112,39 @@
  * Therefore, all states will be correct. 
  */
 import { Carousel, Slide } from 'vue-carousel';
-import Twilio, { connect, LocalVideoTrack, createLocalTracks } from "twilio-video";
+import Twilio from "twilio-video";
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
-import { getRandomId } from "@/helpers.js";
+import BaseIconButton from "@/components/BaseIconButton.vue";
+import Vue from "vue";
 
 export default {
   props: {
     roomID: {
       type: String,
       required: true
+    },
+    roomParticipantData: {
+      type: Map, // Maps uid to userData
+      required: true
     }
   },
   components: {
     Carousel,
-    Slide
+    Slide,
+    BaseIconButton
   },
   data () {
     return {
       isShowingErrorPopup: false,
-      isShowingConnectOptionsPopup: true,
       whyItFailed: "",
-      howToFix: ""
+      howToFix: "",
+      isLocalAudioTrackCreated: false,
+      isMicEnabled: true,
+      
+      // Contains connected participants with a published audio stream
+      // Maps uid to the remote participants isMicEnabled value
+      participantAudioStatus: {}
     };
   },
   computed: {
@@ -130,8 +154,8 @@ export default {
       "session",
     ])
   },
-  async created () {
-    // nothing for now
+  created () {
+    this.connectToTwilioRoom();
   },
   destroyed () {
     if (this.twilioRoom) {
@@ -140,10 +164,13 @@ export default {
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
     }
   },
+  watch: {
+    isMicEnabled: {
+      handler: 'isMicEnabledHandler'
+    }
+  },
   methods: {
     async connectToTwilioRoom () {
-      this.isShowingConnectOptionsPopup = false; 
-      // check browser support
       if (!Twilio.isSupported) {
         this.isShowingErrorPopup = true; 
         this.whyItFailed = "Your browser/device combination does not support audio/video/screensharing."; 
@@ -153,120 +180,143 @@ export default {
           For Windows, use Chrome or Firefox. 
           For Linux, use Chrome or Firefox. 
         `;
+        return;
       }
-      // TODO: handle the autoplay issue
+      
+      // You can succesfully connect only if you give mic permissions
       try {
         const twilioRoom = await Twilio.connect(this.getAccessToken(), { 
-          name: this.roomID, 
+          name: this.roomID,
           audio: true
         }); // video: { width: 640 }
         this.$store.commit("SET_TWILIO_ROOM", twilioRoom);
-        console.log("Joined Twilio room =", this.twilioRoom);
-        this.$root.$emit("show-snackbar", "Connected to the voice chat.");
       } catch (error) {
         this.tellUserHowToFixError(error);
         return;
       }
-
+      
+      // Report succesful connection
+      console.log("Joined Twilio room =", this.twilioRoom);
+      console.log("localParticipant identity: ", this.twilioRoom.localParticipant.identity);
+      this.$root.$emit("show-snackbar", "Connected to the voice chat.");
+  
       // handle disconnections so other participants get notified immediately 
-      if (this.twilioRoom) {
-        window.addEventListener("beforeunload", this.twilioRoom.disconnect);
-        window.addEventListener("pagehide", this.twilioRoom.disconnect);
-      }
-
-      // this is not redundant: the track shared will be "enabled"
-      this.shareAudio();
-
-      // mute ourselves to prevent feedback echoes
-      this.twilioRoom.localParticipant.audioTracks.forEach(publication => {
-        publication.track.disable();
-      });
-      
+      window.addEventListener("beforeunload", this.twilioRoom.disconnect);
+      window.addEventListener("pagehide", this.twilioRoom.disconnect);
+            
       // handle existing participants
-      this.twilioRoom.participants.forEach(participant => {
-        this.listenToRemoteParticipant(participant);
-      });
-
-      // handle future participants
-      this.twilioRoom.on("participantConnected", participant => {
-        this.listenToRemoteParticipant(participant)
-      });
+      this.twilioRoom.participants.forEach(
+        participant => this.participantOnConnect(participant)
+      );
+      // handle future participant connecting
+      this.twilioRoom.on("participantConnected", 
+        participant => this.participantOnConnect(participant)
+      );
       
-      // whenever people disconnect, remove their streams
-      this.twilioRoom.on('participantDisconnected', participant => {
-        this.$root.$emit("show-snackbar", "Someone disconnected."); 
+      // handle future participants disconnecting
+      this.twilioRoom.on("participantDisconnected", participant => {
+        this.participantOnDisconnect(participant);
+        this.$root.$emit("show-snackbar", "Someone disconnected."); // TODO: Remove
       });
     },
-    /**
-     * Handles to current tracks. 
-     * Listens to for future tracks (publish or unpublish)
-     */
-    listenToRemoteParticipant (participant) {
-      // handle current tracks
-      participant.tracks.forEach(publication => {
+    toggleIsMicEnabled () {
+      this.isMicEnabled = !this.isMicEnabled;
+    },
+    // Updates localParticipant audioTracks based on passed in val
+    isMicEnabledHandler (val) {
+      if (!this.twilioRoom) return;
+      if (val) {
+        this.twilioRoom.localParticipant.audioTracks.forEach(
+          publication => publication.track.enable()
+        );
+      } else {
+        this.twilioRoom.localParticipant.audioTracks.forEach(
+          publication => publication.track.disable()
+        );
+      }
+    },
+    participantOnConnect (participant) {
+      console.log("Participant onConnect", participant.identity);
+      
+      // See https://github.com/twilio/video-quickstart-js/blob/master/quickstart/src/joinroom.js
+      // for an example implementation that this function is heavily insipired from.
+      const tryHandleAudioTrack = (track) => {
+        if (track.kind != "audio") return;
+        const audioTrack = track;
+        console.log("Handling audioTrack: ", audioTrack.name);
+        
+        const setStatus = () => Vue.set(
+          this.participantAudioStatus,
+          participant.identity,
+          audioTrack.isEnabled
+        );
+        setStatus();
+        audioTrack.on('disabled', setStatus);
+        audioTrack.on('enabled', setStatus);
+        
+        this.mountAudioTrack(audioTrack);
+      };
+      
+      const handleTrack = (track) => {
+        tryHandleAudioTrack(track);
+        // TODO: Add tryHandleVideoTrack
+      }
+      
+      const handlePublication = (publication) => {
+        console.log("Handling publication...");
         if (publication.isSubscribed) {
-          console.log("received a track from remoteParticipant =", participant.identity);
-          this.mountToDOM({ 
-            div: "remote-media-div", 
-            track: publication.track 
-          });
+          handleTrack(publication.track);
         }
-      });
-      this.handleFutureTracks(participant);
+        publication.on('subscribed', handleTrack);
+      }
+      
+      participant.tracks.forEach(handlePublication);
+      participant.on("trackSubscribed", handleTrack);
+    },
+    participantOnDisconnect(participant) {
+      console.log("Participant onDisconnect", participant.identity);
+      Vue.delete(this.participantAudioStatus, participant.identity);
+      this.unmountParticipantTracks(participant);
     },
     /**
-     * Twilio => client
-     * 
-     * Given a remote participant, react to any of his/her published/unpublished tracks.
-     * 
-     * Note Twilio-Video's APIs are designed to be first person. Therefore, `remoteTrack` refers to a track from someone else.
-     * 
-     * @param remoteParticipant
-     * 
-     */
-    handleFutureTracks (remoteParticipant) {
-      // if someone else adds a stream, you receive it
-      remoteParticipant.on("trackSubscribed", remoteTrack => {
-        this.mountToDOM({ div: "remote-media-div", track: remoteTrack })
-      });
-
-      // if someone else removes their stream, you receive it
-      remoteParticipant.on("trackUnsubscribed", remoteTrack => {
-        remoteTrack.detach().forEach(element => element.remove());
-      });
-    },
-    /**
-     * Given a stream of data e.g. audio, video or screenshare, make it 
-     * "observable" to the user. 
+     * The functions below takes in a track (audio or video)
+     * and makes it observable or not observable to the user.
      * 
      * track.attach() = 
      *   <audio autoplay></audio>
      *   <video autoplay playsinline></video>
      *   ...etc.
      * 
-     * TODO: modify CSS depending on whether the stream is an audio, video or screenshare
-     * 
+     * TODO: Add support for mounting video tracks
      */
-    mountToDOM ({ div, track }) {
-      document.getElementById(div).appendChild(track.attach());
+    mountAudioTrack (audioTrack) {
+      console.assert(audioTrack.kind == "audio");
+      document.getElementById(
+        "remote-audio-div"
+      ).appendChild(audioTrack.attach());
     },
-    async shareAudio () {
-      const { createLocalAudioTrack } = require('twilio-video');
-      createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
-      const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
-      this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
-      this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", true);
+    unmountTrack (track) {
+      const htmlElements = track.detach();
+      for (const e of htmlElements) {
+        e.remove();
+      }
     },
-    // TODO: move it to sidedrawer
-    async shareScreen () {
+    unmountParticipantTracks (participant) {
+      // Unmounts published tracks by the participant
+      // should be called when the participant disconnects
+      for (const publication in participant.tracks) {
+        this.unmountTrack(participant);
+      }
+    },
+    /*async shareScreen () {
       try {
         const stream = await navigator.mediaDevices.getDisplayMedia();
-        const screenTrack = new LocalVideoTrack(stream.getTracks()[0]);
+        const screenTrack = new Twilio.LocalVideoTrack(stream.getTracks()[0]);
         this.twilioRoom.localParticipant.publishTrack(screenTrack);
       } catch (error) {
         this.tellUserHowToFixError(error);
       }
-    },
+    },*/
     /**
      * Creates an "access token" that is required to join a Twilio room.
      * 
@@ -290,16 +340,6 @@ export default {
       // Serialize the token to a JWT string
       return token.toJwt();
     },
-    /**
-     * TODO: not sure if necessary
-     * 
-     * Publish a local track i.e. client => Twilio
-     *   e.g. screenshare, 
-     */
-    async publishTrackToTwilioRoom (localTrack) {
-      await this.twilioRoom.publishTrack(localTrack);
-      console.log("successfully published local track");
-    },
     tellUserHowToFixError (error) {
       this.isShowingErrorPopup = true; 
 
@@ -313,7 +353,7 @@ export default {
           Give access to your microphone by doing the following steps: 
             1. Click the small, circular "i" button near the left of "https://explain.mit.edu/...." 
             2. Find the settings somewhere for the audio microphone and switch to "allow" 
-            3. Reload the entire website. 
+            3. Reload the entire website.
         `;
       } else {
         this.whyItFailed = `Failed to acquire audio media because: ${error.message}`;

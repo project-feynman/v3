@@ -5,6 +5,7 @@
     <!-- Twilio Room component -->
     <RealtimeSpaceTwilioRoom v-if="user"
       :roomID="$route.params.room_id"
+      :roomParticipantData="roomParticipantData"
     />
 
     <div v-if="user">
@@ -103,6 +104,13 @@ export default {
     ]),
     sessionID () {
       return this.session.currentID;
+    },
+    roomParticipantData() {
+      return new Map(
+        this.roomParticipants.map(
+          p => [p.uid, p]
+        )
+      );
     }
   },
   // database => state 

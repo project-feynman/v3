@@ -167,13 +167,13 @@
                                 Disconnect Audio
                               </BaseIconButton> -->
 
-                              <v-btn v-if="isConnectedToAudio" @click="muteMicrophone()">
+                              <!--<v-btn v-if="isConnectedToAudio" @click="muteMicrophone()">
                                 Mute
-                              </v-btn>
+                              </v-btn>-->
 
-                              <v-btn v-else @click="shareAudio()">
+                              <!--<v-btn v-else @click="shareAudio()">
                                 Connect audio
-                              </v-btn>
+                              </v-btn>-->
                              <!-- TODO: show "connect to audio" if the user isn't currently connected -->
                     
                             </v-col>
@@ -345,19 +345,19 @@ export default {
      *  1. DRY: the same method is currently re-declared in TheSiderawerSpaces.vue and RealtimeSpaceTwilioRoom.vue
      *  2. Apparently the mic does not turn off even when you leave explain.mit.edu
      */
-    async shareAudio () {
+    /*async shareAudio () {
       console.log("shareAudio");
       const { createLocalAudioTrack } = require('twilio-video');
       createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
       const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
       this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
       this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", true);
-    },
+    },*/
     /**
      * Mutes/unmutes the user's microphone
      * 
      */
-    muteMicrophone () {
+    /*muteMicrophone () {
       console.log("muteMicrophone() twilioRoom =", this.twilioRoom);
       const { audioTracks } = this.twilioRoom.localParticipant; 
       audioTracks.forEach(audioTrack => {
@@ -366,9 +366,9 @@ export default {
       });
       console.log("after muting, twilioRoom =", this.twilioRoom);
       this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", false);
-    },  
+    },*/
     // TODO: put the method in Vuex
-    tellUserHowToFixError (error) {
+    /*tellUserHowToFixError (error) {
       this.isShowingErrorPopup = true; 
 
       // give a specific, helpful error message
@@ -385,9 +385,9 @@ export default {
         `;
       } else {
         this.whyItFailed = `Failed to acquire audio media because: ${error.message}`;
-        this.howToFix = ""; 
+        this.howToFix = "";
       }
-    },
+    },*/
     listenForRoomAssignments () {
       // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
       let onlyJustJoined = true; 
