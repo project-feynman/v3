@@ -6,25 +6,25 @@
     <template v-else>
       <h2>Connected to Twilio!</h2>
 
-      <template v-if="isMicEnabled">
-        <BaseIconButton 
-        @click="toggleIsMicEnabled()"
-        icon="mdi-microphone"
-        color="black"
-        >
-          Mute microphone
-        </BaseIconButton>
-      </template>
-      <template v-else>
-        <!-- TODO: Make this color prettier -->
-        <BaseIconButton 
-        @click="toggleIsMicEnabled()"
-        icon="mdi-microphone-off"
-        color="red" 
-        >
-          Unmute microphone
-        </BaseIconButton>
-      </template>
+      <BaseIconButton v-if="isMicEnabled"
+      @click="toggleIsMicEnabled()"
+      icon="mdi-microphone"
+      color="black"
+      >
+        Mute microphone
+      </BaseIconButton>
+      <BaseIconButton v-else
+      @click="toggleIsMicEnabled()"
+      icon="mdi-microphone-off"
+      color="red" 
+      >
+      <!-- TODO: Make this color prettier -->
+        Unmute microphone
+      </BaseIconButton>
+      
+      <h3 v-if="dominantParticipantUid">
+        Dominant speaker: {{roomParticipantData.get(dominantParticipantUid).firstName}}
+      </h3>
       
       <template v-for="[uid, micStatus] in Object.entries(participantAudioStatus)">
         <div :key="uid">
@@ -144,7 +144,10 @@ export default {
       
       // Contains connected participants with a published audio stream
       // Maps uid to the remote participants isMicEnabled value
-      participantAudioStatus: {}
+      participantAudioStatus: {},
+      
+      // The remote participant with the loudest audioTrack
+      dominantParticipantUid: null
     };
   },
   computed: {
@@ -187,7 +190,8 @@ export default {
       try {
         const twilioRoom = await Twilio.connect(this.getAccessToken(), { 
           name: this.roomID,
-          audio: true
+          audio: true,
+          dominantSpeaker: true
         }); // video: { width: 640 }
         this.$store.commit("SET_TWILIO_ROOM", twilioRoom);
       } catch (error) {
@@ -218,6 +222,11 @@ export default {
         this.participantOnDisconnect(participant);
         this.$root.$emit("show-snackbar", "Someone disconnected."); // TODO: Remove
       });
+      
+      // handle dominant speaker changing
+      this.twilioRoom.on('dominantSpeakerChanged',
+        participant => this.onDominantSpeakerChanged(participant)
+      );
     },
     toggleIsMicEnabled () {
       this.isMicEnabled = !this.isMicEnabled;
@@ -275,6 +284,9 @@ export default {
       console.log("Participant onDisconnect", participant.identity);
       Vue.delete(this.participantAudioStatus, participant.identity);
       this.unmountParticipantTracks(participant);
+    },
+    onDominantSpeakerChanged(participant) {
+      this.dominantParticipantUid = participant.identity;
     },
     /**
      * The functions below takes in a track (audio or video)
