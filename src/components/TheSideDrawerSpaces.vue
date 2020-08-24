@@ -1,6 +1,7 @@
 <template>
-  <div class="spaces-list">
-    <v-expansion-panels v-if="roomCategories.length !== 0" multiple v-model="expandedPanels" accordion>
+  <div class="spaces-list">   
+    <h2>Blackboard Spaces</h2>
+    <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels" accordion>
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
           <v-expansion-panel-header :class="(blackboardRoom && blackboardRoom.roomType === category.title) ? 'py-2': ''">
@@ -32,6 +33,16 @@
                     Break-out
                   </BaseButton>
                   
+                  <BaseButton 
+                    @click="muteParticipantsInRooms(category.title)"
+                    icon="mdi-microphone-off"
+                    color="accent"
+                    small
+                    :stopPropagation="true"
+                  >
+                    Mute all
+                  </BaseButton>
+                  
                   <!-- TODO: use ID instead of title -->     
                   <!-- <v-btn
                     @click.stop="moveStudentsToRooms(category.title)"
@@ -39,7 +50,6 @@
                   >
                     Break-out to rooms
                   </v-btn> -->
-                  
                   
                   <v-dialog :value="(announcementPopup.show && (announcementPopup.roomType === category.title))" persistent max-width="600px">
                     <v-card>
@@ -551,6 +561,26 @@ export default {
         }); 
       });
       this.announcementPopup['show'] = false;
+    },
+    /**
+     * Mutes all participants in rooms of roomType
+     * Does this by incrementing a counter in each targeted room.
+     * This counter is watched by participants inside the rooms.
+     * TODO: Can be refactored such that there is a single counter for each
+     *       roomType and participants all watch the roomType counter.
+     */
+    async muteParticipantsInRooms(roomType) {
+      console.log("Muting all participants in roomType:", roomType);
+      const querySnapshot = await db
+        .collection(`classes/${this.classID}/rooms`)
+        .where('roomType', '==', roomType)
+        .get();
+      for (const docSnapshot of querySnapshot.docs) {
+        docSnapshot.ref.update(
+          "muteAllCounter",
+          firebase.firestore.FieldValue.increment(1)
+        );
+      }
     },
     bringAllToRoom (roomId, roomType) {
       const allToRoomRef = firebase.database().ref(`class/${this.classID}/${roomType}/toRoom`);

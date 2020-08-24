@@ -30,7 +30,7 @@
         >
           <template v-slot:touch-slot>
             <BaseButton @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
-              {{ touchDisabled ? "Enable" : "Disable" }} touch
+              {{ touchDisabled ? "Apple Pencil mode" : "Normal mode" }}
             </BaseButton>
           </template>
           

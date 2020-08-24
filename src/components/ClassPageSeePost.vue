@@ -4,10 +4,10 @@
       :expl="originalPost"
       hasTitle
     />
-    <ExplanationDisplay v-for="expl in sortedExplanations" :key="expl.id"
+    <ExplanationDisplay v-for="expl in sortedExplanations" 
       :expl="expl" 
+      :key="expl.id"
     />
-    <!-- Need to be logged-in to reply to existing posts -->
     <ExplanationCreate v-if="user" 
       explType="reply"
     />
@@ -22,6 +22,12 @@ import db from "@/database.js";
 import { mapState } from "vuex";
 
 export default {
+  props: {
+    postID: {
+      type: String,
+      required: true
+    }
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -42,15 +48,13 @@ export default {
     ]),
     sortedExplanations () {
       return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
-    },
-    postID () {
-      return this.$route.query.library;
     }
   },
   async created () {
-    const class_id = this.$route.params.class_id;
-    const post_id = this.$route.query.library;
-    const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
+    // const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
+    const type = "posts";
+    const { class_id } = this.$route.params;
+    console.log("ClassPageSeePost created(), postID =", this.postID);
     this.postRef = db.doc(`classes/${class_id}/${type}/${this.postID}`);
     this.explanationsRef = this.postRef.collection("explanations");
 

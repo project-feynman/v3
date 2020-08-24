@@ -52,7 +52,7 @@ export default new Vuex.Store({
     mitClass: null,
     explCache: {},
     blackboardRoom: null,
-    twilioRoom: null,
+    //twilioRoom: null,
     session: {},
     isConnectedToAudio: false,
     canvasDimensions: {'height': 0, 'width': 0}
@@ -71,12 +71,12 @@ export default new Vuex.Store({
     SET_SESSION (state, session) {
       state.session = session;
     },
-    SET_TWILIO_ROOM (state, twilioRoom) {
+    /*SET_TWILIO_ROOM (state, twilioRoom) {
       state.twilioRoom = twilioRoom; 
-    },
-    SET_IS_CONNECTED_TO_AUDIO (state, isConnectedToAudio) {
+    },*/
+    /*SET_IS_CONNECTED_TO_AUDIO (state, isConnectedToAudio) {
       state.isConnectedToAudio = isConnectedToAudio;
-    },
+    },*/
     SET_CANVAS_DIMENSIONS (state, dimensions) {
       state.canvasDimensions = dimensions;
     },

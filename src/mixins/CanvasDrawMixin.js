@@ -17,7 +17,10 @@ export default {
           this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
           this.canvas.height = this.canvas.scrollHeight;
           if (this.isRealtime) {
-            this.SET_CANVAS_DIMENSIONS({'height': this.canvas.height, 'width': this.canvas.width});
+            this.SET_CANVAS_DIMENSIONS({ 
+              height: this.canvas.height, 
+              width: this.canvas.width
+            });
           }
         }
         // Note: for the time being the scrollHeights and scrollWidths seem to be synced
