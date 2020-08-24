@@ -1,5 +1,6 @@
 <template>
   <div class="spaces-list">   
+    <h2>Blackboard Rooms</h2>
     <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels" accordion>
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
@@ -35,7 +36,6 @@
                   >
                     Break-out to rooms
                   </v-btn> -->
-                  
                   
                   <v-dialog :value="(announcementPopup.show && (announcementPopup.roomType === category.title))" persistent max-width="600px">
                     <v-card>

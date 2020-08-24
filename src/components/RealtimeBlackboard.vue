@@ -38,7 +38,7 @@
       <template v-slot:wipe-board-button-slot>
         <BasePopupButton actionName="Wipe board" @action-do="resetBlackboardOnFirestore()">
           <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
+            <BaseButton :on="on" icon="mdi-delete">
               Wipe board
             </BaseButton>
           </template>
@@ -197,7 +197,7 @@ export default {
         // CASE 1: wipe board operation
         const removedDocs = snapshot.docChanges().filter(change => change.type === "removed"); 
         if (removedDocs.length > 0) {
-          this.$root.$emit("show-snackbar", "The board was wiped by someone.");
+          this.$root.$emit("show-snackbar", "Someone wiped a blackboard.");
           // trigger <Blackboard/> to wipe the canvas UI via resetting `strokesArray` 
           this.strokesArray = []; 
 
@@ -275,8 +275,7 @@ export default {
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           ...stroke
         });
-      } 
-      catch (error) {
+      } catch (error) {
         this.$root.$emit("show-snackbar", "Failed to upload stroke to database.");
       }
     },
@@ -382,13 +381,10 @@ export default {
       this.explTitle = ""; 
     },
     async resetBlackboardOnFirestore () {
-      this.blackboardRef.update({
-        backgroundImageDownloadURL: ""
-      });
+      this.blackboardRef.update({ backgroundImageDownloadURL: "" });
       this.deleteAllStrokesFromDb();
     },
     async deleteAllStrokesFromDb () {
-      console.log("deleteAllStrokesFromDb(), strokesArray = ", this.strokesArray);
       const promises = [];
       const strokeDeleteRequests = [];
       let currentBatch = db.batch();
@@ -404,6 +400,8 @@ export default {
         currentBatchSize += 1;
       }
       promises.push(currentBatch.commit()); 
+      console.log("number of strokes =", this.strokesArray.length);
+      console.log("number of batches to be deleted =", currentBatchSize); 
       
       await Promise.all(promises);
       console.log("finished deleting everything")
