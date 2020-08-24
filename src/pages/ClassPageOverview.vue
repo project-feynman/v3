@@ -1,5 +1,10 @@
 <template>
-  <v-card>
+  <v-content>
+    <v-toolbar flat style="border-bottom: 1px solid var(--v-accent-lighten2);">
+      <v-avatar @click.stop="$emit('toggle-drawer')" color="white" style="box-shadow: 0 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" size="38">
+        <v-icon color="accent">{{ drawer ? 'mdi-backburger' : 'mdi-menu' }}</v-icon>
+      </v-avatar>
+    </v-toolbar>
     <ExplanationDisplay v-if="tutorialExpl" :expl="tutorialExpl"/>
     <!-- <v-card-title>Class</v-card-title>
     <v-card-text>
@@ -7,7 +12,7 @@
         {{ `${classmate.firstName} ${classmate.lastName}` }}
       </p>
     </v-card-text> -->
-  </v-card>
+  </v-content>
 </template>
 
 <script>
@@ -17,6 +22,9 @@ import { tutorial } from "@/CONSTANTS.js";
 import db from "@/database.js";
 
 export default {
+  props: {
+    drawer: Boolean,
+  },
   mixins: [DatabaseHelpersMixin],
   components: { 
     ExplanationDisplay 

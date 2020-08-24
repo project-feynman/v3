@@ -103,7 +103,7 @@
                     <v-list-item-content>
                       <v-list-item-title class="d-flex align-center room-title mb-2">
                         <v-col class="px-0 py-1" style="overflow: hidden;">
-                          <div :class="['pb-1', (blackboardRoom.id === blackboard.id) ? 'accent--text' : '']">Room {{ i+1 }}</div>
+                          <div :class="['pb-1', (blackboardRoom && blackboardRoom.id === blackboard.id) ? 'accent--text' : '']">Room {{ i+1 }}</div>
                           <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                           <span class="active-count" v-if="blackboard.status">{{ blackboard.status }}</span>
                         </v-col>
@@ -328,7 +328,7 @@ export default {
     const blackboardsRef = db.collection(`classes/${this.classID}/rooms`);
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
     const classRef = db.doc(`classes/${this.classID}`)
-
+    
     this.listenForRoomAssignments();
 
     this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
@@ -340,7 +340,6 @@ export default {
     this.$_listenToDoc(classRef, this, "mitClassDoc").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
-    console.log('this.mitClassDoc', this.mitClassDoc);
     this.initSlides();
   },
   beforeDestroy () {

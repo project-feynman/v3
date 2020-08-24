@@ -14,7 +14,7 @@
         meaning created () and destroyed () hooks won't be called,
         and watch hooks have to be used, making the code hard to reason about.
        -->
-      <RouterView :key="$route.params.room_id" @toggle-drawer="drawer = !drawer"/>
+      <RouterView :key="$route.params.room_id" @toggle-drawer="drawer = !drawer" :drawer="drawer"/>
   </v-app>
 </template>
 
