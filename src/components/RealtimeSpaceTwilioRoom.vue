@@ -1,6 +1,6 @@
 <template>
   <div>
-    <template v-if="!twilioRoom">
+    <template v-if="!twilioInitialized">
       <h2>Connecting to Twilio...</h2>
     </template>
     <template v-else>
@@ -97,6 +97,8 @@
  * @see API https://www.twilio.com/docs/video/tutorials/understanding-video-rooms-apis
  * @see BestPractices https://www.twilio.com/docs/video/build-js-video-application-recommendations-and-best-practices
  */
+import db from "@/database.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { Carousel, Slide } from 'vue-carousel';
 import Twilio from "twilio-video";
 import { twilioCreds } from "@/twiliocreds.js";
@@ -115,6 +117,9 @@ export default {
       required: true
     }
   },
+  mixins: [
+    DatabaseHelpersMixin
+  ],
   components: {
     Carousel,
     Slide,
@@ -122,10 +127,19 @@ export default {
   },
   data () {
     return {
+      firebaseUnsubscribeFuncs: [],
+      
+      // Begin firebase documents
+      roomDoc: null,
+      // End firebase documents
+      
       isShowingErrorPopup: false,
       whyItFailed: "",
       howToFix: "",
-      isLocalAudioTrackCreated: false,
+      
+      twilioRoom: null,
+      twilioInitialized: false,
+      
       isMicEnabled: true,
       
       // Contains connected participants with a published audio stream
@@ -139,14 +153,25 @@ export default {
     };
   },
   computed: {
-    ...mapState([
-      "twilioRoom",
-      "user",
-      "session",
-    ])
+    ...mapState(["user"]),
+    classId () {
+      return this.$route.params.class_id;
+    },
+    roomId () {
+      return this.$route.params.room_id;
+    },
   },
-  created () {
-    this.connectToTwilioRoom();
+  async created () {
+    await this.connectToTwilioRoom();
+    
+    const roomDocRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+    this.$_listenToDoc(roomDocRef, this, "roomDoc")
+        .then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
+  },
+  beforeDestroy () {
+    for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
+      unsubscribe();
+    }
   },
   destroyed () {
     if (this.twilioRoom) {
@@ -158,7 +183,16 @@ export default {
   watch: {
     isMicEnabled: {
       handler: 'isMicEnabledHandler'
-    }
+    },
+    roomDoc (newVal, oldVal) {
+      // Check if we need to enable trigger a muteAll
+      if (oldVal !== null && newVal.muteAllCounter != oldVal.muteAllCounter) {
+        if (this.isMicEnabled) {
+          this.isMicEnabled = false;
+          this.$root.$emit("show-snackbar", "You were muted by an admin.");
+        }
+      }
+    },
   },
   methods: {
     async connectToTwilioRoom () {
@@ -176,12 +210,11 @@ export default {
       
       // You can succesfully connect only if you give mic permissions
       try {
-        const twilioRoom = await Twilio.connect(this.getAccessToken(), { 
+        this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
           name: this.roomID,
           audio: true,
           dominantSpeaker: true
         }); // video: { width: 640 }
-        this.$store.commit("SET_TWILIO_ROOM", twilioRoom);
       } catch (error) {
         this.tellUserHowToFixError(error);
         return;
@@ -196,10 +229,13 @@ export default {
       window.addEventListener("beforeunload", this.twilioRoom.disconnect);
       window.addEventListener("pagehide", this.twilioRoom.disconnect);
             
+      // Set up event handlers
       this.twilioRoom.participants.forEach(this.participantOnConnect); // existing participants
       this.twilioRoom.on("participantConnected", this.participantOnConnect);
       this.twilioRoom.on("participantDisconnected", this.participantOnDisconnect);
       this.twilioRoom.on("dominantSpeakerChanged", this.onDominantSpeakerChanged);
+      
+      this.twilioInitialized = true;
     },
     toggleIsMicEnabled () {
       this.isMicEnabled = !this.isMicEnabled;
