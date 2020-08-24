@@ -7,10 +7,6 @@ export default {
      * Assumes there is a back canvas, and will redraw the background but not the strokes
     */
     $_rescaleCanvas () {
-<<<<<<< HEAD
-      // console.log('the attrs', this.$attrs);
-=======
->>>>>>> bd9fe5d59d605409e20aa4d547207854f83d9f2f
       const { width, scrollWidth, height, scrollHeight } = this.canvas; 
       if (Math.round(width) !== Math.round(scrollWidth) || Math.round(height) !== Math.round(scrollHeight)) {
         // This is a bit sketchy solution, but just here for the time being
