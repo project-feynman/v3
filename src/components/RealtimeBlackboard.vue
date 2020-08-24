@@ -18,7 +18,7 @@
 
         </slot> 
         <!-- <BaseButton @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</BaseButton> -->
-        <!-- <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save Blackboard</BaseButton> -->
+        <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save blackboard</BaseButton>
       </template> 
 
       <!-- Set Background (overrides the normal behavior) -->

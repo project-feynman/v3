@@ -6,30 +6,28 @@
     >
       <v-expansion-panel-header ripple color="#f8f8f8">{{ week.name }}</v-expansion-panel-header>
       <v-expansion-panel-content>
-        <template
-          v-if="week.isLoading"
-        >
+        <template v-if="week.isLoading">
           <div class="text-center py-2">
-            <v-progress-circular
-              indeterminate
-              color="accent"
-            ></v-progress-circular>
+            <v-progress-circular indeterminate color="accent"/>
           </div>
         </template>
         <v-list v-else shaped>
-          <template 
-            v-for="post in week.children"
-          >
+          <template v-for="post in week.children">
+            <!-- :to="`/class/${classID}/room/${roomID}/posts/${post.id}`" -->
             <v-list-item
-              :to="`${routePath.endsWith('/') ? routePath.slice(0,-1) : routePath}?library=${post.id}`" dense
-              two-line
+              @click="$emit('post-was-clicked', post.id)"
               :class="(collection === 'questions') && !post.hasReplies ? 'unanswered' : 'answered'"
+              two-line
+              dense
+              :key="post.id"
             >
               <v-list-item-icon>
                 <v-icon>{{ collection === 'questions' ? 'mdi-file-question-outline' : 'mdi-file-document-box-outline'}}</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title style="font-size:1em; color: #555; padding-bottom: 5px;">{{ post.name }}</v-list-item-title>
+                <v-list-item-title style="font-size:1em; color: #555; padding-bottom: 5px;">
+                  {{ post.name }}
+                </v-list-item-title>
                 <v-list-item-subtitle class="post-metaData">
                   <span v-if="getFolder(post)">
                     <v-icon small>mdi-folder-open</v-icon>
@@ -84,7 +82,8 @@ export default {
       openedWeeks: [],
       weeksMounted: false,
       routePath: this.$route.path,
-      classID: this.$route.path.class_id,
+      classID: this.$route.params.class_id,
+      roomID: this.$route.params.room_id
     }
   },
   watch: {

@@ -87,7 +87,13 @@
     
     <!-- Router View -->
     <v-content>
-      <RouterView :key="$route.fullPath"/>
+      <!-- 
+        Without :key="$route.params.room_id", <RealtimeSpace/> will persist
+        when the user is switching between different rooms,
+        meaning created () and destroyed () hooks won't be called,
+        and watch hooks have to be used, making the code hard to reason about.
+       -->
+      <RouterView :key="$route.params.room_id"/>
     </v-content>
   </v-app>
 </template>

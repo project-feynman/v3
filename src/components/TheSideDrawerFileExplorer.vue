@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-layout>
+    <!-- <v-layout>
       <v-flex>
         <BaseButton @click="groupBy='date'" icon="mdi-calendar-range">Group By Date</BaseButton>
       </v-flex>
@@ -14,11 +14,10 @@
         >
           <template v-slot:activator-button="{ on }">
             <BaseButton :on="on" color="accent" icon="mdi-folder-plus">Create Folder</BaseButton>
-            <!-- <v-btn v-on="on" color="secondary" text>Create Folder</v-btn> -->
           </template>
         </BasePopupButton>
       </v-flex>
-      <!--<v-flex>
+      <v-flex>
         <BaseButton 
           icon="mdi-shape-square-plus"
           :disabled="!user"
@@ -27,17 +26,20 @@
         > 
           New {{ type }}
         </BaseButton>
-      </v-flex>-->
-    </v-layout>
+      </v-flex>
+    </v-layout> -->
     
     <!-- SEARCH BAR -->
     <v-divider/>
-    <TheSideDrawerSearchBar :postType="type"/>
+      <TheSideDrawerSearchBar :postType="type"/>
     <v-divider/>
 
     <template v-if="mitClass">
-      <TheSideDrawerGroupByDate :collection="type" v-if="groupBy==='date'"/>
-      <TheSideDrawerGroupByFolders :collection="type" v-else/>
+      <TheSideDrawerGroupByDate v-if="groupBy === 'date'" 
+        :collection="type"
+        @post-was-clicked="postID => $emit('post-was-clicked', postID)"
+      />
+      <!-- <TheSideDrawerGroupByFolders v-else :collection="type"/> -->
     </template>
     </div>
 </template>
@@ -100,7 +102,6 @@ export default {
         this.tagPostToTagId([])
         return;
       }
-
       const tags = this.mitClass.tags;
       const newTags = [];
       if (tags.length && typeof tags[0] === 'string') {
