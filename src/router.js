@@ -40,10 +40,10 @@ export default new Router({
             };  
           }
         },
-        {
-          path: "posts/:post_id",
-          component: () => import(/* webpackChunkName: "post" */ "./pages/ClassPageSeePost.vue")
-        },
+        // {
+        //   path: "posts/:post_id",
+        //   component: () => import(/* webpackChunkName: "post" */ "./pages/ClassPageSeePost.vue")
+        // },
         {
           path: "questions/:question_id",
           component: () => import(/* webpackChunkName: "question" */ "./pages/ClassPageSeeQuestion.vue")

@@ -42,12 +42,16 @@ export default {
     ]),
     sortedExplanations () {
       return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
+    },
+    postID () {
+      return this.$route.query.library;
     }
   },
   async created () {
-    const { class_id, post_id } = this.$route.params;
+    const class_id = this.$route.params.class_id;
+    const post_id = this.$route.query.library;
     const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
-    this.postRef = db.doc(`classes/${class_id}/${type}/${post_id}`);
+    this.postRef = db.doc(`classes/${class_id}/${type}/${this.postID}`);
     this.explanationsRef = this.postRef.collection("explanations");
 
     this.$_listenToDoc(this.postRef, this, "originalPost").then(listener => {

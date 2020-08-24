@@ -7,6 +7,19 @@
       @toggle-drawer="drawer = !drawer"
       :drawer="drawer"
     >
+      <v-dialog v-model="showLibrary">
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            color="accent lighten-2"
+            dark
+            v-bind="attrs"
+            v-on="on"
+          >
+            Library
+          </v-btn>
+        </template>
+        <LibraryDialog></LibraryDialog>
+      </v-dialog>
       <template v-if="!user">
         <BasePopupButton actionName="Log in" 
           :inputFields="['email', 'password']" 
@@ -86,6 +99,7 @@ import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import LibraryDialog from "@/components/LibraryDialog.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
@@ -107,7 +121,8 @@ export default {
     TheDropdownMenu,
     MenuEmailSettings,
     BaseButton,
-    BasePopupButton
+    BasePopupButton,
+    LibraryDialog,
   },
   data: () => ({
     drawer: true,
@@ -120,7 +135,8 @@ export default {
     portalToLiveBoard: false,
     firebaseRef: null,
     classParticipantsRef: null,
-    isMinimizedView: false
+    isMinimizedView: false,
+    showLibrary: false,
   }),
   computed: {
     ...mapState([

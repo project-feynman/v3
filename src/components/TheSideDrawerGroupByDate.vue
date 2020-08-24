@@ -21,7 +21,7 @@
             v-for="post in week.children"
           >
             <v-list-item
-              :to="`/class/${mitClass.id}/${collection}/${post.id}`" dense
+              :to="`${routePath.endsWith('/') ? routePath.slice(0,-1) : routePath}?library=${post.id}`" dense
               two-line
               :class="(collection === 'questions') && !post.hasReplies ? 'unanswered' : 'answered'"
             >
@@ -83,6 +83,8 @@ export default {
       snapshotListeners: [],
       openedWeeks: [],
       weeksMounted: false,
+      routePath: this.$route.path,
+      classID: this.$route.path.class_id,
     }
   },
   watch: {
