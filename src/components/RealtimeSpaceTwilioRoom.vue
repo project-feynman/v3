@@ -97,6 +97,8 @@
  * @see API https://www.twilio.com/docs/video/tutorials/understanding-video-rooms-apis
  * @see BestPractices https://www.twilio.com/docs/video/build-js-video-application-recommendations-and-best-practices
  */
+import db from "@/database.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { Carousel, Slide } from 'vue-carousel';
 import Twilio from "twilio-video";
 import { twilioCreds } from "@/twiliocreds.js";
@@ -115,6 +117,9 @@ export default {
       required: true
     }
   },
+  mixins: [
+    DatabaseHelpersMixin
+  ],
   components: {
     Carousel,
     Slide,
@@ -122,6 +127,12 @@ export default {
   },
   data () {
     return {
+      firebaseUnsubscribeFuncs: [],
+      
+      // Begin firebase documents
+      roomDoc: null,
+      // End firebase documents
+      
       isShowingErrorPopup: false,
       whyItFailed: "",
       howToFix: "",
@@ -142,10 +153,25 @@ export default {
     };
   },
   computed: {
-    ...mapState(["user"])
+    ...mapState(["user"]),
+    classId () {
+      return this.$route.params.class_id;
+    },
+    roomId () {
+      return this.$route.params.room_id;
+    },
   },
-  created () {
-    this.connectToTwilioRoom();
+  async created () {
+    await this.connectToTwilioRoom();
+    
+    const roomDocRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+    this.$_listenToDoc(roomDocRef, this, "roomDoc")
+        .then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
+  },
+  beforeDestroy () {
+    for (const unsubscribe in this.firebaseUnsubscribeFuncs) {
+      unsubscribe();
+    }
   },
   destroyed () {
     if (this.twilioRoom) {
@@ -157,7 +183,16 @@ export default {
   watch: {
     isMicEnabled: {
       handler: 'isMicEnabledHandler'
-    }
+    },
+    roomDoc (newVal, oldVal) {
+      // Check if we need to enable trigger a muteAll
+      if (oldVal !== null && newVal.muteAllCounter != oldVal.muteAllCounter) {
+        if (this.isMicEnabled) {
+          this.isMicEnabled = false;
+          this.$root.$emit("show-snackbar", "You were muted by an admin.");
+        }
+      }
+    },
   },
   methods: {
     async connectToTwilioRoom () {
