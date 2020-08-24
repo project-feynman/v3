@@ -169,7 +169,7 @@ export default {
         .then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
   },
   beforeDestroy () {
-    for (const unsubscribe in this.firebaseUnsubscribeFuncs) {
+    for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
       unsubscribe();
     }
   },

@@ -575,12 +575,12 @@ export default {
         .collection(`classes/${this.classID}/rooms`)
         .where('roomType', '==', roomType)
         .get();
-      querySnapshot.forEach( docSnapshot => {
+      for (const docSnapshot of querySnapshot.docs) {
         docSnapshot.ref.update(
           "muteAllCounter",
           firebase.firestore.FieldValue.increment(1)
         );
-      });
+      }
     },
     bringAllToRoom (roomId, roomType) {
       const allToRoomRef = firebase.database().ref(`class/${this.classID}/${roomType}/toRoom`);
