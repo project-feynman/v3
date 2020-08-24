@@ -1,5 +1,26 @@
 <template>
   <v-btn 
+    v-if="stopPropagation"
+    @click.stop="$emit('click')"
+    v-on="on"
+    v-bind="$attrs"
+    class="button-custom" 
+    :outlined="outlined" 
+    :color="color" 
+    :text="!outlined && !filled"
+    :class="small ? 'small-btn':''"
+  >
+    <div class="d-flex flex-column">
+      <v-icon v-if="icon!=='none'">{{ icon }}</v-icon>
+      <span :class="icon!=='none' ? 'd-none d-sm-block':''">
+        <slot>
+
+        </slot>
+      </span>
+    </div>
+  </v-btn>
+  <v-btn 
+    v-else
     @click="$emit('click')"
     v-on="on"
     v-bind="$attrs"
@@ -50,6 +71,12 @@ export default {
       }
     },
     small: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
+    stopPropagation: {
       type: Boolean,
       default () {
         return false

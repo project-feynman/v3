@@ -7,17 +7,17 @@ export default {
      * Assumes there is a back canvas, and will redraw the background but not the strokes
     */
     $_rescaleCanvas () {
+<<<<<<< HEAD
       // console.log('the attrs', this.$attrs);
+=======
+>>>>>>> bd9fe5d59d605409e20aa4d547207854f83d9f2f
       const { width, scrollWidth, height, scrollHeight } = this.canvas; 
       if (Math.round(width) !== Math.round(scrollWidth) || Math.round(height) !== Math.round(scrollHeight)) {
         // This is a bit sketchy solution, but just here for the time being
-        console.log('this.canvasDimensions', this.canvas.scrollWidth);
         if (this.isRealtime && (this.canvas.scrollWidth === 0) && this.canvasDimensions.hasOwnProperty('width')) {
-          console.log('in here')
           this.canvas.width = this.canvasDimensions.width; // width = internal coordinate system 1:1, scrollWidth = external dimension
           this.canvas.height = this.canvasDimensions.height;
         } else {
-          console.log('out there');
           this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
           this.canvas.height = this.canvas.scrollHeight;
           if (this.isRealtime) {

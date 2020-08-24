@@ -1,10 +1,10 @@
 <template>
   <div class="spaces-list">   
-    <h2>Blackboard Rooms</h2>
+    <h2>Blackboard Spaces</h2>
     <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels" accordion>
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
-          <v-expansion-panel-header>
+          <v-expansion-panel-header :class="(blackboardRoom && blackboardRoom.roomType === category.title) ? 'py-2': ''">
             <v-row align="center" style="overflow: hidden;">
               <v-col class="py-0">
                 <span class="panel-header-title">
@@ -14,20 +14,24 @@
               </v-col>
               <v-col cols="auto" class="py-0 mr-1">
                 <template v-if="blackboardRoom && blackboardRoom.roomType === category.title">
-                  <BaseIconButton 
+                  <BaseButton 
                     @click="setAnnouncementPopup(true, category.title)"
                     icon="mdi-bullhorn"
                     color="accent"
+                    small
+                    :stopPropagation="true"
                   >
-                    Make Announcement
-                  </BaseIconButton>
+                    Announce
+                  </BaseButton>
 
-                   <BaseIconButton
+                   <BaseButton
                     @click="moveStudentsToRooms(category.title)"
                     icon="mdi-share-variant"
+                    small
+                    :stopPropagation="true"
                   >
-                    Break-out to rooms
-                  </BaseIconButton>
+                    Break-out
+                  </BaseButton>
                   
                   <!-- TODO: use ID instead of title -->     
                   <!-- <v-btn
@@ -89,33 +93,33 @@
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title class="d-flex align-center room-title mb-2">
-                        <v-col class="px-0 pb-0 pt-1" style="overflow: hidden;">
-                          {{ category.title.substring(0, category.title.length) }} {{ i }}
+                        <v-col class="px-0 py-1" style="overflow: hidden;">
+                          <div class="pb-1">Room {{ i+1 }}</div>
                           <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
-                          <span class="active-count accent--text" v-if="blackboard.status">{{ blackboard.status }}</span>
+                          <span class="active-count" v-if="blackboard.status">{{ blackboard.status }}</span>
                         </v-col>
                         <v-col cols="auto" class="px-1 py-0">
                           <template v-if="blackboardRoom">
                             <!-- TODO: causes an infinite loop for some reason -->
-                            <BaseIconButton 
+                            <BaseButton 
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="setRoomStatusPopup(true, blackboard.id)"
                               icon="mdi-message-alert"
                               color="#555"
-                              :stopPropagation="false"
+                              small
                             >
-                              Label Room
-                            </BaseIconButton>
+                              Label
+                            </BaseButton>
 
-                            <BaseIconButton 
+                            <BaseButton 
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                               icon="mdi-account-arrow-left-outline"
                               color="#555"
-                              :stopPropagation="false"
+                              small
                               >
-                              Bring All to Room
-                            </BaseIconButton>
+                              Bring to Room
+                            </BaseButton>
 
                             <!-- Update status popup -->
                             <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
@@ -162,13 +166,13 @@
                                 Disconnect Audio
                               </BaseIconButton> -->
 
-                              <v-btn v-if="isConnectedToAudio" @click="muteMicrophone()">
+                              <!--<v-btn v-if="isConnectedToAudio" @click="muteMicrophone()">
                                 Mute
-                              </v-btn>
+                              </v-btn>-->
 
-                              <v-btn v-else @click="shareAudio()">
+                              <!--<v-btn v-else @click="shareAudio()">
                                 Connect audio
-                              </v-btn>
+                              </v-btn>-->
                              <!-- TODO: show "connect to audio" if the user isn't currently connected -->
                     
                             </v-col>
@@ -279,8 +283,16 @@ export default {
     blackboards () {
       this.setRoomCategories() // reconstruct the roomCategories
     },
-    mitClassDoc () {
+    mitClassDoc (newVal, oldVal) {
       this.roomTypes = this.mitClassDoc.roomTypes;
+      if ((oldVal.hasOwnProperty("tableAssignments") && newVal.tableAssignments !== oldVal.tableAssignments)) {
+        for (const roomAssignment of newVal.tableAssignments) {
+          if (roomAssignment.assignees.includes(this.user.uid)) {
+            this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
+            this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)");
+          }
+        }
+      }
     },
     roomTypes () {
       this.setRoomCategories() //reconstruct the roomCategories: warning may be race conditions between this and blackboard watch hook
@@ -332,19 +344,19 @@ export default {
      *  1. DRY: the same method is currently re-declared in TheSiderawerSpaces.vue and RealtimeSpaceTwilioRoom.vue
      *  2. Apparently the mic does not turn off even when you leave explain.mit.edu
      */
-    async shareAudio () {
+    /*async shareAudio () {
       console.log("shareAudio");
       const { createLocalAudioTrack } = require('twilio-video');
       createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
       const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
       this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
       this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", true);
-    },
+    },*/
     /**
      * Mutes/unmutes the user's microphone
      * 
      */
-    muteMicrophone () {
+    /*muteMicrophone () {
       console.log("muteMicrophone() twilioRoom =", this.twilioRoom);
       const { audioTracks } = this.twilioRoom.localParticipant; 
       audioTracks.forEach(audioTrack => {
@@ -353,9 +365,9 @@ export default {
       });
       console.log("after muting, twilioRoom =", this.twilioRoom);
       this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", false);
-    },  
+    },*/
     // TODO: put the method in Vuex
-    tellUserHowToFixError (error) {
+    /*tellUserHowToFixError (error) {
       this.isShowingErrorPopup = true; 
 
       // give a specific, helpful error message
@@ -372,18 +384,20 @@ export default {
         `;
       } else {
         this.whyItFailed = `Failed to acquire audio media because: ${error.message}`;
-        this.howToFix = ""; 
+        this.howToFix = "";
       }
-    },
+    },*/
     listenForRoomAssignments () {
       // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
       let onlyJustJoined = true; 
       const classRef = db.doc(`classes/${this.$route.params.class_id}`);
       this.removeClassDocListener = classRef.onSnapshot(doc => {
+        console.log('snapshot changed', doc);
         if (onlyJustJoined) {
           onlyJustJoined = false; 
           return; 
         }
+        console.log('pushing router', doc.data());
         for (const roomAssignment of doc.data().tableAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
             this.removeClassDocListener(); 
@@ -431,12 +445,14 @@ export default {
 
       // `tableAssignments` has the structure of: [{ roomID: "123", "assignees": ["345", "abc"] }]
       let i = 0; 
+      this.groupSizeForRandom = 1;
       for (const student of connectedStudents) {
         if (tableAssignments[i].assignees.length >= this.groupSizeForRandom) {
           i = (i+1) % tableAssignments.length; // leftover students just get pushed onto a table
         }
         tableAssignments[i].assignees.push(student.uid); 
       }
+      console.log('the table assignment', tableAssignments);
       // update the class doc, so each connected user will detect the change and be redirected.
       await classRef.update({
         tableAssignments
@@ -525,8 +541,6 @@ export default {
       })
     },
     async makeAnnouncement (message, roomType) {
-      console.log('the announcement', message);
-      console.log("roomType =", roomType);
       const querySnapshot = await db.collection(`classes/${this.classID}/rooms`).where('roomType', '==', roomType).get(); 
       console.log("querySnapshot =", querySnapshot);
       querySnapshot.forEach(doc => {
@@ -571,7 +585,11 @@ export default {
 .room-title .active-count {
   font-style: italic;
   font-weight: 400;
-  font-size: 0.9em;
+  font-size: 0.85em;
+  background: var(--v-accent-lighten4);
+  padding: 1px 6px 1px 4px;
+  border-radius: 5px;
+  color: #222;
 }
 </style>
 
