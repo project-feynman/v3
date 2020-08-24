@@ -1,6 +1,6 @@
 <template>
   <div>
-    <template v-if="!twilioRoom">
+    <template v-if="!twilioInitialized">
       <h2>Connecting to Twilio...</h2>
     </template>
     <template v-else>
@@ -125,7 +125,10 @@ export default {
       isShowingErrorPopup: false,
       whyItFailed: "",
       howToFix: "",
-      isLocalAudioTrackCreated: false,
+      
+      twilioRoom: null,
+      twilioInitialized: false,
+      
       isMicEnabled: true,
       
       // Contains connected participants with a published audio stream
@@ -139,11 +142,7 @@ export default {
     };
   },
   computed: {
-    ...mapState([
-      "twilioRoom",
-      "user",
-      "session",
-    ])
+    ...mapState(["user"])
   },
   created () {
     this.connectToTwilioRoom();
@@ -176,12 +175,11 @@ export default {
       
       // You can succesfully connect only if you give mic permissions
       try {
-        const twilioRoom = await Twilio.connect(this.getAccessToken(), { 
+        this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
           name: this.roomID,
           audio: true,
           dominantSpeaker: true
         }); // video: { width: 640 }
-        this.$store.commit("SET_TWILIO_ROOM", twilioRoom);
       } catch (error) {
         this.tellUserHowToFixError(error);
         return;
@@ -196,10 +194,13 @@ export default {
       window.addEventListener("beforeunload", this.twilioRoom.disconnect);
       window.addEventListener("pagehide", this.twilioRoom.disconnect);
             
+      // Set up event handlers
       this.twilioRoom.participants.forEach(this.participantOnConnect); // existing participants
       this.twilioRoom.on("participantConnected", this.participantOnConnect);
       this.twilioRoom.on("participantDisconnected", this.participantOnDisconnect);
       this.twilioRoom.on("dominantSpeakerChanged", this.onDominantSpeakerChanged);
+      
+      this.twilioInitialized = true;
     },
     toggleIsMicEnabled () {
       this.isMicEnabled = !this.isMicEnabled;
