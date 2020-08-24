@@ -1,6 +1,5 @@
 <template>
-  <div class="spaces-list">   
-    {{user.uid}}
+  <div class="spaces-list">
     <v-expansion-panels v-if="roomCategories.length !== 0" multiple v-model="expandedPanels" accordion>
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
