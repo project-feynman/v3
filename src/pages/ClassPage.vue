@@ -109,7 +109,12 @@ export default {
     }
   },
   created () {
-    this.classParticipantsRef = db.collection(`classes/${this.classID}/participants`)
+    const { class_id } = this.$route.params; 
+    if (class_id) {
+      this.$store.commit("SET_CLASS", null);
+      this.$store.dispatch("fetchClass", class_id);  
+    }
+    this.classParticipantsRef = db.collection(`classes/${this.classID}/participants`);
     const roomsRef = db.collection(`classes/${this.classID}/rooms`);
     this.$_listenToCollection(roomsRef, this, "rooms").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
