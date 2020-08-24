@@ -45,7 +45,8 @@ export default {
     }
   },
   async created () {
-    const { class_id, post_id } = this.$route.params;
+    const class_id = this.$route.params.class_id;
+    const post_id = this.$route.query.library;
     const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
     this.postRef = db.doc(`classes/${class_id}/${type}/${post_id}`);
     this.explanationsRef = this.postRef.collection("explanations");

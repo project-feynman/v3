@@ -18,7 +18,7 @@
           </template>
         </BasePopupButton>
       </v-flex>
-      <v-flex>
+      <!--<v-flex>
         <BaseButton 
           icon="mdi-shape-square-plus"
           :disabled="!user"
@@ -27,7 +27,7 @@
         > 
           New {{ type }}
         </BaseButton>
-      </v-flex>
+      </v-flex>-->
     </v-layout>
     
     <!-- SEARCH BAR -->
@@ -84,7 +84,7 @@ export default {
   data: function () {
     return {
       search: null,
-      groupBy: (this.type === 'posts') ? 'tag' : 'date',
+      groupBy: 'date',
     }
   },
   methods: {
