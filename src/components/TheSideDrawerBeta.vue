@@ -7,7 +7,7 @@
       width="380"
       class="the-side-drawer"
     >
-      <v-app-bar color="accent lighten-2" dark class="mb-4">
+      <v-app-bar color="accent lighten-3" dark class="mb-4">
         <template v-if="!user">
           <BasePopupButton actionName="Log in" 
             :inputFields="['email', 'password']" 
@@ -116,6 +116,9 @@ export default {
     value: Boolean,
     roomParticipantsMap: Object
   },
+  mixins: [
+    AuthHelpers
+  ],
   components: {
     TheSideDrawerSpaces,
     TheDropdownMenu,

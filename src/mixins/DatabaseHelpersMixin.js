@@ -56,6 +56,9 @@ export default {
               obj[val] = undefined;
               throw new Error("Document doesn't exist");
             }
+            console.log('the val here', val);
+            console.log('the doc here', doc.id);
+            console.log('the obj here', obj[val]);
             obj[val] = { 
               id: doc.id, 
               ref: doc.ref.path, 

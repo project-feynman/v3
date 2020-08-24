@@ -1,84 +1,6 @@
 <template>
   <v-app>
-    <!-- `:key` attribute ensures components re-render when `class_id` changes -->
-    <!-- TODO: refactor e.g. drawer prop -->
-    <TheAppBar 
-      :key="$route.name + ($route.params.class_id || '')" 
-      @toggle-drawer="drawer = !drawer"
-      :drawer="drawer"
-    >
-      <v-dialog v-model="showLibrary">
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            color="accent lighten-2"
-            dark
-            v-bind="attrs"
-            v-on="on"
-          >
-            Library
-          </v-btn>
-        </template>
-        <LibraryDialog></LibraryDialog>
-      </v-dialog>
-      <template v-if="!user">
-        <BasePopupButton actionName="Log in" 
-          :inputFields="['email', 'password']" 
-          @action-do="user => $_logIn(user)"
-          outlined
-          color="secondary"
-        >
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</BaseButton>
-          </template>
-        </BasePopupButton>
-
-         <BasePopupButton actionName="Sign Up" 
-            :inputFields="['first name', 'last name', 'email', 'password']" 
-            @action-do="user => $_signUp(user)"
-            outlined
-            color="secondary"
-          >
-            <template v-slot:activator-button="{ on }">
-              <BaseButton :on="on" icon="mdi-account-circle">Sign Up</BaseButton>
-            </template>
-            <template v-slot:message-to-user>
-              Sign up for an account so you can enroll in classes to ask questions and create explanations. 
-              Passwords are handled by Google Firebase Authentication.
-            </template>
-          </BasePopupButton>
-      </template>
-
-      <template v-else>
-        <!-- Account Circle -->
-        <TheDropdownMenu 
-          @sign-out="$_signOut()" 
-          @settings-changed="(S) => updateSettings(S)"
-        > 
-          <template v-slot:activator="{ on }">
-            <v-avatar v-if="user" v-on="on" color="#ff5b24" style="cursor: pointer;">
-              <span v-if="user.firstName && user.lastName" class="white--text headline">
-                {{ user.firstName[0] + user.lastName[0] }}
-              </span>
-            </v-avatar>
-          </template>
-
-          <template v-slot:menu-buttons>
-            <!-- Email notifications -->
-            <!-- <BaseButton :on="on" icon="mdi-bell">Email Settings</BaseButton> -->
-            <!-- <MenuEmailSettings>
-              <template v-slot:activator="{ on }">
-                <v-btn v-on="on" block text color="accent">Email Settings</v-btn>
-              </template>
-            </MenuEmailSettings> -->
-            <v-divider/>
-            <v-btn @click="leaveClass()" block text color="accent">
-              {{ isUserEnrolled ? 'DROP' : 'JOIN' }} Class
-            </v-btn>
-          </template>
-        </TheDropdownMenu>
-      </template>
-    </TheAppBar>
-    
+    <!-- `:key` attribute ensures components re-render when `class_id` changes -->    
     <!-- Open Spaces -->
     <TheSideDrawer
       v-model="drawer"
@@ -86,15 +8,13 @@
     />
     
     <!-- Router View -->
-    <v-content>
       <!-- 
         Without :key="$route.params.room_id", <RealtimeSpace/> will persist
         when the user is switching between different rooms,
         meaning created () and destroyed () hooks won't be called,
         and watch hooks have to be used, making the code hard to reason about.
        -->
-      <RouterView :key="$route.params.room_id"/>
-    </v-content>
+      <RouterView :key="$route.params.room_id" @toggle-drawer="drawer = !drawer"/>
   </v-app>
 </template>
 

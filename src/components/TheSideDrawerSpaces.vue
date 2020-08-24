@@ -36,7 +36,6 @@
                   <BaseButton 
                     @click="muteParticipantsInRooms(category.title)"
                     icon="mdi-microphone-off"
-                    color="accent"
                     small
                     :stopPropagation="true"
                   >
@@ -104,7 +103,7 @@
                     <v-list-item-content>
                       <v-list-item-title class="d-flex align-center room-title mb-2">
                         <v-col class="px-0 py-1" style="overflow: hidden;">
-                          <div class="pb-1">Room {{ i+1 }}</div>
+                          <div :class="['pb-1', (blackboardRoom.id === blackboard.id) ? 'accent--text' : '']">Room {{ i+1 }}</div>
                           <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                           <span class="active-count" v-if="blackboard.status">{{ blackboard.status }}</span>
                         </v-col>
@@ -115,8 +114,8 @@
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="setRoomStatusPopup(true, blackboard.id)"
                               icon="mdi-message-alert"
-                              color="#555"
                               small
+                              color="#444"
                             >
                               Label
                             </BaseButton>
@@ -125,8 +124,8 @@
                               v-if="blackboardRoom.id === blackboard.id"
                               @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                               icon="mdi-account-arrow-left-outline"
-                              color="#555"
                               small
+                              color="#444"
                               >
                               Bring to Room
                             </BaseButton>
@@ -341,6 +340,7 @@ export default {
     this.$_listenToDoc(classRef, this, "mitClassDoc").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
+    console.log('this.mitClassDoc', this.mitClassDoc);
     this.initSlides();
   },
   beforeDestroy () {
@@ -474,6 +474,7 @@ export default {
       if (this.roomTypes) {
         this.roomCategories = [];
         for (const type of this.roomTypes) {
+          console.log(this.blackboards)
           this.roomCategories.push({
             title: type, 
             rooms: this.blackboards.filter(room => room.roomType === type)
@@ -503,6 +504,7 @@ export default {
       }
     },
     createBlackboard (roomType) {
+      console.log('the roomtype', roomType);
       const roomsRef = db.collection(`classes/${this.classID}/rooms`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       if (roomType) {
@@ -594,8 +596,9 @@ export default {
 
 <style scoped>
 .panel-header-title {
-  font-size: 1.1em;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #777;
 }
 .room-title {
   font-size: 1em !important;

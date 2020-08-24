@@ -1,40 +1,59 @@
 <template>
-  <div>
+  <div class="twilio-container">
     <template v-if="!twilioInitialized">
-      <h2>Connecting to Twilio...</h2>
+      <div class="px-3 py-3">Connecting Voice Chat...</div>
     </template>
     <template v-else>
-      <h2>Connected to Twilio!</h2>
-
-      <BaseIconButton v-if="isMicEnabled"
-      @click="toggleIsMicEnabled()"
-      icon="mdi-microphone"
-      color="black"
-      >
-        Mute microphone
-      </BaseIconButton>
-      <BaseIconButton v-else
-      @click="toggleIsMicEnabled()"
-      icon="mdi-microphone-off"
-      color="red" 
-      >
-      <!-- TODO: Make this color prettier -->
-        Unmute microphone
-      </BaseIconButton>
+      <!--<h2>Connected to Twilio!</h2>-->
+      <v-row class="mx-0">
+        <BaseButton v-if="isMicEnabled"
+          @click="toggleIsMicEnabled()"
+          icon="mdi-microphone"
+          color="#555"
+          small
+          class="px-4"
+        >
+          Mute
+        </BaseButton>
+        <BaseButton v-else
+          @click="toggleIsMicEnabled()"
+          icon="mdi-microphone-off"
+          color="red"
+          small
+          class="px-4"
+        >
+        <!-- TODO: Make this color prettier -->
+          Unmute
+        </BaseButton>
+        <div class="dominant-speaker">
+          <div class="speaker-name">
+            <span v-if="roomParticipantData.has(dominantParticipantUid)">{{roomParticipantData.get(dominantParticipantUid).firstName}}</span>
+            <span v-else>None</span>
+          </div>
+        </div>
+        <!--<v-text-field
+          :value="roomParticipantData.has(dominantParticipantUid) ? roomParticipantData.get(dominantParticipantUid).firstName : 'None'"
+          label="Currently Speaking"
+          filled
+          readonly
+          dense
+          color=""
+          class="mt-3"
+        ></v-text-field>
+        <h3 v-if="roomParticipantData.has(dominantParticipantUid)">
+          Dominant speaker: {{roomParticipantData.get(dominantParticipantUid).firstName}}
+        </h3>
+        <h3 v-else>
+          No dominant speaker.
+        </h3>-->
+      </v-row>
       
-      <h3 v-if="roomParticipantData.has(dominantParticipantUid)">
-        Dominant speaker: {{roomParticipantData.get(dominantParticipantUid).firstName}}
-      </h3>
-      <h3 v-else>
-        No dominant speaker.
-      </h3>
-      
-      <template v-for="[uid, micStatus] in Object.entries(participantAudioStatus)">
+      <!--<template v-for="[uid, micStatus] in Object.entries(participantAudioStatus)">
         <div :key="uid" v-if="roomParticipantData.has(uid)">
         <p>participantName: {{roomParticipantData.get(uid).firstName}}</p>
         <p>micStatus: {{micStatus}}</p>
         </div>
-      </template>
+      </template>-->
 
       <!--<template v-for="trackObject in twilioRoom.localParticipant.tracks.values()">
         <div :key="trackObject.id">
@@ -103,7 +122,7 @@ import { Carousel, Slide } from 'vue-carousel';
 import Twilio from "twilio-video";
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
-import BaseIconButton from "@/components/BaseIconButton.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import Vue from "vue";
 
 export default {
@@ -123,7 +142,7 @@ export default {
   components: {
     Carousel,
     Slide,
-    BaseIconButton
+    BaseButton,
   },
   data () {
     return {
@@ -501,6 +520,38 @@ export default {
 	border-color: var(--v-accent-base);
 	background-color:black;
 	border-radius: 10px;
+}
+.twilio-container {
+  border: 1px solid var(--v-accent-lighten1);
+  border-radius: 5px;
+  margin: 5px;
+  padding: 0;
+  width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.twilio-container .dominant-speaker {
+  border-left: 1px solid var(--v-accent-lighten1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  flex-grow: 1;
+}
+.twilio-container .dominant-speaker .speaker-name {
+  position: relative;
+  top: 5px;
+  width: 100%;
+  text-align: center;
+}
+.twilio-container .dominant-speaker .speaker-name:before {
+  position: absolute;
+  top: -15px;
+  left: 0;
+  content: 'Current Speaker';
+  font-size: 0.7em;
+  color: #888;
 }
 </style>
 

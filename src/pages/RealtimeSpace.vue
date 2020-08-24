@@ -1,57 +1,70 @@
 <template>
-  <div id="room" class="room-wrapper">
-    <portal-target name="video-chat"/>
-
-    <!-- Twilio Room component -->
-    <RealtimeSpaceTwilioRoom v-if="user"
-      :roomID="$route.params.room_id"
-      :roomParticipantData="roomParticipantData"
-    />
-
-    <div v-if="user">
+  <v-content>    
+    <v-toolbar flat style="border-bottom: 1px solid var(--v-accent-lighten2);">
+      <v-avatar @click.stop="$emit('toggle-drawer')" color="white" style="box-shadow: 0 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" size="38">
+        <v-icon color="accent">mdi-menu</v-icon>
+      </v-avatar>
+      <v-spacer/>
       <!-- Tabs for different blackboards -->
-      <v-tabs v-model="activeBoard" active-class="accent--text" slider-color="accent">
-        <template v-for="(board, i) in room.blackboards">
-          <v-tab :href="'#' + board" :key="i">
-            {{ 'BOARD #' + (i+1) }}
-          </v-tab>
-        </template>
-        <v-btn @click="createNewBoard()">+</v-btn>
-      </v-tabs>
+      <v-col cols="8" class="py-2 d-flex align-center blackboard-tabs">
+        <v-tabs v-if="user" v-model="activeBoard" fixed-tabs background-color="#f5f5f5" class="tabs-wrapper" active-class="accent--text" slider-color="accent">
+          <template v-for="(board, i) in room.blackboards">
+            <v-tab :href="'#' + board" :key="i">
+              {{ 'BOARD #' + (i+1) }}
+            </v-tab>
+          </template>
+        </v-tabs>
+        <BaseIconButton @click="createNewBoard()" icon="mdi-plus" small>Add New Board</BaseIconButton>
+      </v-col>
+      <v-spacer/>
+      <v-col cols="auto" class="p-0">
+        <RealtimeSpaceTwilioRoom v-if="user"
+          :roomID="$route.params.room_id"
+          :roomParticipantData="roomParticipantData"
+        />
+      </v-col>
+    </v-toolbar>
+    <div id="room" class="room-wrapper">
+      <portal-target name="video-chat"/>
 
-      <!-- The actual blackboards -->
-      <v-tabs-items v-model="activeBoard" touchless>
-        <template v-for="(board, i) in room.blackboards">
-          <v-tab-item :value="board" :key="i">
-            <RealtimeBlackboard 
-              :blackboardRef="blackboardRefs[i]"
-              :roomParticipants="roomParticipants"
-            />
-          </v-tab-item>
-        </template>
-      </v-tabs-items>
+      <!-- Twilio Room component -->
+
+      <div v-if="user">
+
+        <!-- The actual blackboards -->
+        <v-tabs-items v-model="activeBoard" touchless>
+          <template v-for="(board, i) in room.blackboards">
+            <v-tab-item :value="board" :key="i">
+              <RealtimeBlackboard 
+                :blackboardRef="blackboardRefs[i]"
+                :roomParticipants="roomParticipants"
+              />
+            </v-tab-item>
+          </template>
+        </v-tabs-items>
+      </div>
+
+      <!-- Announcement dialog -->
+      <v-dialog v-model = "showAnnouncement" max-width="500px">
+        <v-card>
+          <v-card-title class="headline">Announcement!</v-card-title>
+          <v-card-text>
+            {{ this.room.announcement }}
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="accent darken-1"
+              text
+              @click="showAnnouncement = false"
+            >
+              Close
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </div>
-
-    <!-- Announcement dialog -->
-    <v-dialog v-model = "showAnnouncement" max-width="500px">
-      <v-card>
-        <v-card-title class="headline">Announcement!</v-card-title>
-        <v-card-text>
-          {{ this.room.announcement }}
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="accent darken-1"
-            text
-            @click="showAnnouncement = false"
-          >
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
+  </v-content>
 </template>
 
 <script>
@@ -60,6 +73,7 @@ import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
+import BaseIconButton from "@/components/BaseIconButton.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom";
@@ -71,7 +85,8 @@ export default {
     RealtimeBlackboard,
     RealtimeSpaceTwilioRoom,
     BasePopupButton,
-    BaseButton
+    BaseButton,
+    BaseIconButton,
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -280,6 +295,16 @@ export default {
   height: 50px;
   margin-top: 5px;
   z-index: 7; /* this z-index is under the app-bar but over the weird blackboard stuff*/
+}
+.blackboard-tabs {
+  background: #f5f5f5;
+  border: 1px solid var(--v-accent-lighten2);
+  border-bottom: none;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+.blackboard-tabs .tabs-wrapper {
+  max-width: calc(100% - 40px);
 }
 </style>
 

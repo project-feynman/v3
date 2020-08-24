@@ -1,10 +1,23 @@
 <template>
   <v-tooltip bottom>
     <template v-slot:activator="{ on }">
-      <v-btn v-if="stopPropagation" v-on="on" @click.stop="$emit('click')" outlined :color="color" class="icon-button px-0 mx-1 align-center justify-center">
+      <v-btn
+        v-if="stopPropagation"
+        v-on="on"
+        @click.stop="$emit('click')"
+        outlined
+        :color="color"
+        :class="['icon-button px-0 mx-1 align-center justify-center', small ? 'small' : '']"
+      >
         <v-icon>{{ icon }}</v-icon>
       </v-btn>
-      <v-btn v-else v-on="on" @click="$emit('click')" outlined :color="color" class="icon-button px-0 mx-1 align-center justify-center">
+      <v-btn 
+        v-else 
+        v-on="on" 
+        @click="$emit('click')" 
+        outlined 
+        :color="color" 
+        :class="['icon-button px-0 mx-1 align-center justify-center', small ? 'small' : '']">
         <v-icon>{{ icon }}</v-icon>
       </v-btn>
     </template>
@@ -35,6 +48,12 @@ export default {
         return true
       }
     },
+    small: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
   }
 }
 </script>
@@ -45,5 +64,9 @@ export default {
   width: 40px !important;
   display: inline-flex;
   border-radius: 50%;
+}
+.icon-button.small {
+  height: 34px !important;
+  width: 34px !important;
 }
 </style>
