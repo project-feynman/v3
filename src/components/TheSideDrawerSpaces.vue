@@ -552,15 +552,17 @@ export default {
       })
     },
     async makeAnnouncement (message, roomType) {
-      const querySnapshot = await db.collection(`classes/${this.classID}/rooms`).where('roomType', '==', roomType).get(); 
-      console.log("querySnapshot =", querySnapshot);
-      querySnapshot.forEach(doc => {
-        // expect this to be run 3 times
-        console.log("doc =", doc); 
-        doc.ref.update({
-          announcement: message
-        }); 
-      });
+      console.log("Making announcement:", message);
+      const querySnapshot = await db
+        .collection(`classes/${this.classID}/rooms`)
+        .where('roomType', '==', roomType)
+        .get(); 
+      for (const docSnapshot of querySnapshot.docs) {
+        docSnapshot.ref.update({
+          announcement: message,
+          announcementCounter: firebase.firestore.FieldValue.increment(1)
+        });
+      }
       this.announcementPopup['show'] = false;
     },
     /**

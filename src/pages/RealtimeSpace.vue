@@ -96,7 +96,7 @@ export default {
   ],
   data () {
     return {
-      room: {},
+      room: null,
       blackboardRefs: [],
       roomParticipants: [],
       snapshotListeners: [],
@@ -133,14 +133,16 @@ export default {
   watch: {
     room (newVal, oldVal) {
       this.$store.commit("SET_ROOM", this.room);
+      
       // announcement code
       console.log('the new Value', newVal);
-      if ((oldVal.hasOwnProperty("announcement") && newVal.announcement !== oldVal.announcement)) {
-        console.log('should show announcement');
+      if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
+        console.log('Showing announcement');
         this.showAnnouncement = true;
       }
+      
       // new blackboards
-      if (newVal.blackboards !== oldVal.blackboards) {
+      if (oldVal !== null && newVal.blackboards !== oldVal.blackboards) {
         this.blackboardRefs = [];
         for (const blackboard of newVal.blackboards) {
           this.blackboardRefs.push(
