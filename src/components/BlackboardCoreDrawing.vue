@@ -533,7 +533,7 @@ export default {
       if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) {
         this.$root.$emit(
           "show-snackbar", 
-          `To draw with your finger or stylus, turn off "Apple Pencil mode" next to the eraser.`);
+          `Switch off "Pencil mode" to draw with your finger or non-Apple stylus`);
         return true; 
       }
     },

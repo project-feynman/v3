@@ -11,7 +11,8 @@
                 @select-color="newColor => changePenColor(newColor)" 
               />
             </v-col>
-            <BaseButton v-show="lastEraserNormal" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser" data-qa="eraser">
+            <!-- :filled="isNormalEraser" -->
+            <BaseButton v-show="lastEraserNormal"  @click="selectNormalEraser()" icon="mdi-eraser-variant" color="black">
               Eraser
             </BaseButton>
             <slot name="touch-slot">
@@ -22,8 +23,9 @@
         <slot name="record-audio-slot">
 
         </slot>
-        <BaseButton @click="fullScreen()" :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
-          {{ isFullScreen ? 'Exit' : '' }} Full screen
+        <!-- Make the fullscreen stand out -->
+        <BaseButton @click="fullScreen()" filled :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
+          {{ isFullScreen ? 'Exit' : '' }} Fullscreen
         </BaseButton>
       </v-row>
     </v-container>
@@ -54,7 +56,8 @@ export default {
       BlackboardTools,
       toolbarHeight,
       color: "orange",
-      colors: ["orange", "white", "#0AF2F2", "#ec1bf7", "yellow", "black"],
+      // colors: ["orange", "white", "#0AF2F2", "#ec1bf7", "yellow", "black"],
+      colors: ["orange", "white", "#ec1bf7", "#0AF2F2"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }

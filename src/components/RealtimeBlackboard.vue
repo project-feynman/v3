@@ -17,20 +17,30 @@
         <slot name="blackboard-toolbar">
 
         </slot> 
-        <!-- <BaseButton @click="toggleChat()" icon="mdi-chat" :filled="messagesOpen">Chat</BaseButton> -->
-        <BaseButton @click="uploadExplanation()" icon="mdi-upload">Save blackboard</BaseButton>
+     
+
+        <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
+          <template v-slot:activator-button="{ on }">
+            <BaseButton :on="on" icon="mdi-content-save" color="black">
+              Save blackboard
+            </BaseButton>
+          </template>
+          <template v-slot:message-to-user>
+            <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
+          </template> 
+        </BasePopupButton>
       </template> 
 
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot>
-        <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
+        <BaseButton @click="$refs.fileInput.click()" icon="mdi-upload" color="black">
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
             type="file" 
             ref="fileInput"
           >
-          Set Background
+          Upload background
         </BaseButton>
       </template>
 
@@ -38,7 +48,7 @@
       <template v-slot:wipe-board-button-slot>
         <BasePopupButton actionName="Wipe board" @action-do="resetBlackboardOnFirestore()">
           <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-delete">
+            <BaseButton :on="on" icon="mdi-delete" color="black">
               Wipe board
             </BaseButton>
           </template>

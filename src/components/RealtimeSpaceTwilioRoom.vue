@@ -1,88 +1,15 @@
 <template>
-  <div class="twilio-container">
-    <template v-if="!twilioInitialized">
-      <div class="px-3 py-3">Connecting Voice Chat...</div>
-    </template>
-    <template v-else>
-      <!--<h2>Connected to Twilio!</h2>-->
-      <v-row class="mx-0">
-        <BaseButton v-if="isMicEnabled"
-          @click="toggleIsMicEnabled()"
-          icon="mdi-microphone"
-          color="#555"
-          small
-          class="px-4"
-        >
-          Mute
-        </BaseButton>
-        <BaseButton v-else
-          @click="toggleIsMicEnabled()"
-          icon="mdi-microphone-off"
-          color="red"
-          small
-          class="px-4"
-        >
-        <!-- TODO: Make this color prettier -->
-          Unmute
-        </BaseButton>
-        <div class="dominant-speaker">
-          <div class="speaker-name">
-            <span v-if="roomParticipantData.has(dominantParticipantUid)">{{roomParticipantData.get(dominantParticipantUid).firstName}}</span>
-            <span v-else>None</span>
-          </div>
-        </div>
-        <!--<v-text-field
-          :value="roomParticipantData.has(dominantParticipantUid) ? roomParticipantData.get(dominantParticipantUid).firstName : 'None'"
-          label="Currently Speaking"
-          filled
-          readonly
-          dense
-          color=""
-          class="mt-3"
-        ></v-text-field>
-        <h3 v-if="roomParticipantData.has(dominantParticipantUid)">
-          Dominant speaker: {{roomParticipantData.get(dominantParticipantUid).firstName}}
-        </h3>
-        <h3 v-else>
-          No dominant speaker.
-        </h3>-->
-      </v-row>
-      
-      <!--<template v-for="[uid, micStatus] in Object.entries(participantAudioStatus)">
-        <div :key="uid" v-if="roomParticipantData.has(uid)">
-        <p>participantName: {{roomParticipantData.get(uid).firstName}}</p>
-        <p>micStatus: {{micStatus}}</p>
-        </div>
-      </template>-->
+  <div>
+    <slot
+      :dominantSpeakerUID="dominantParticipantUid"
+      :hasConnectedToTwilio="twilioInitialized"
+      :toggleMute="toggleIsMicEnabled"
+      :isMuted="!isMicEnabled"
+    >
 
-      <!--<template v-for="trackObject in twilioRoom.localParticipant.tracks.values()">
-        <div :key="trackObject.id">
-          <p>trackName: {{ trackObject.trackName }}</p>
-          <p>type of data: {{ trackObject.kind }}</p>
-          <p>isEnabled: {{ trackObject.track.isEnabled }}</p>
-          <p>isStarted: {{ trackObject.track.isStarted }}</p>
-          <p>isStopped: {{ trackObject.track.isStopped }}</p>
-        </div>
-      </template>-->
-      <!--<h2>Other people</h2>
-      <template v-for="participant in twilioRoom.participants.values()">
-        <div :key="participant.identity">
-          <p>his/her ID: {{ participant.identity }}</p>
-          <p>his/her connection state: {{ participant.state }}</p>
-          <p>HIS/HER PUBLISHED TRACKS</p>
-          <template v-for="(track, i) in participant.tracks.values()">
-            <div :key="i">
-              <p>type of data: {{ track.kind }}</p>
-              <p>I'm subscribed: {{ track.isSubscribed }}</p>
-            </div>
-          </template> 
-        </div>
-      </template>-->
-    </template>
-    <!-- <v-btn @click="shareScreen()">Share screen</v-btn>    -->
-
-    <div id="remote-audio-div">
-    </div>
+    </slot>
+    <!-- audio and video streams will be injected into this element -->
+    <div id="remote-audio-div"></div>
 
     <!-- Helps user fix audio issues if an error shows up -->
     <v-dialog persistent max-width="600px" v-model="isShowingErrorPopup"> 
@@ -109,7 +36,6 @@
 
 <script>
 /**
- * TODO: Enable screensharing 
  * 
  * @see screencapture https://www.twilio.com/docs/video/screen-capture-chrome
  * @see https://www.twilio.com/docs/video
@@ -129,10 +55,6 @@ export default {
   props: {
     roomID: {
       type: String,
-      required: true
-    },
-    roomParticipantData: {
-      type: Map, // Maps uid to userData
       required: true
     }
   },
@@ -320,7 +242,9 @@ export default {
       this.unmountParticipantTracks(participant);
     },
     onDominantSpeakerChanged(participant) {
+      console.log("dominantSpeakerChanged =", participant);
       this.dominantParticipantUid = participant ? participant.identity : null;
+      this.$store.commit("SET_DOMINANT_SPEAKER_UID", this.dominantParticipantUid);
     },
     /**
      * The functions below takes in a track (audio or video)
@@ -520,38 +444,6 @@ export default {
 	border-color: var(--v-accent-base);
 	background-color:black;
 	border-radius: 10px;
-}
-.twilio-container {
-  border: 1px solid var(--v-accent-lighten1);
-  border-radius: 5px;
-  margin: 5px;
-  padding: 0;
-  width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.twilio-container .dominant-speaker {
-  border-left: 1px solid var(--v-accent-lighten1);
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  flex-grow: 1;
-}
-.twilio-container .dominant-speaker .speaker-name {
-  position: relative;
-  top: 5px;
-  width: 100%;
-  text-align: center;
-}
-.twilio-container .dominant-speaker .speaker-name:before {
-  position: absolute;
-  top: -15px;
-  left: 0;
-  content: 'Current Speaker';
-  font-size: 0.7em;
-  color: #888;
 }
 </style>
 

@@ -1,21 +1,12 @@
 <template>
   <v-app>
-    <!-- `:key` attribute ensures components re-render when `class_id` changes -->    
-    <!-- Open Spaces -->
     <TheSideDrawer
       v-model="drawer"
       :roomParticipantsMap="roomParticipantsMap"
     />
-    
-    <!-- Router View -->
     <v-content>
-      <!-- 
-        Without :key="$route.params.room_id", <RealtimeSpace/> will persist
-        when the user is switching between different rooms,
-        meaning created () and destroyed () hooks won't be called,
-        and watch hooks have to be used, making the code hard to reason about.
-       -->
-      <RouterView :key="$route.params.room_id" @toggle-drawer="drawer = !drawer" :drawer="drawer"/>
+      <!-- :key="$route.params.room_id", forces <RealtimeSpace/> to re-render -->
+      <RouterView :key="$route.params.room_id"/>
     </v-content>
   </v-app>
 </template>
@@ -89,8 +80,7 @@ export default {
     lastBlackboardRoomId () {
       if (this.roomID) {
         this.savedRoomId = this.roomID;
-      }
-      else{
+      } else {
         this.portalToLiveBoard = false;
       }
       return this.savedRoomId;
@@ -100,14 +90,22 @@ export default {
     }
   },
   watch : {
-    numberOfRooms () {
-      this.rooms.forEach( room => {
-        const roomParticipantsRef = this.classParticipantsRef.where("currentRoom", "==", room.id);
-        Vue.set(this.roomParticipantsMap, room.id, []) //this makes each entry in the object reactive.
-        this.$_listenToCollection(roomParticipantsRef, this.roomParticipantsMap, room.id).then(snapshotListener => {
-          this.snapshotListeners.push(snapshotListener);
-        });
-      })
+    /**
+      * TODO: refactor
+    */
+    numberOfRooms: {
+      immediate: true,
+      handler () {
+        console.log("numberOfRooms triggered");
+        this.rooms.forEach(room => {
+          const roomParticipantsRef = this.classParticipantsRef.where("currentRoom", "==", room.id);
+          Vue.set(this.roomParticipantsMap, room.id, []) //this makes each entry in the object reactive.
+          this.$_listenToCollection(roomParticipantsRef, this.roomParticipantsMap, room.id).then(snapshotListener => {
+            this.snapshotListeners.push(snapshotListener);
+            console.log("this.roomParticipantsMap =", this.roomParticipantsMap);
+          });
+        })
+      }
     }
   },
   created () {

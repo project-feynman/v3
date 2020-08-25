@@ -1,17 +1,12 @@
 <template>
   <div>
-    <v-toolbar flat style="border-bottom: 1px solid var(--v-accent-lighten2);">
-      <v-avatar @click.stop="$emit('toggle-drawer')" color="white" style="box-shadow: 0 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" size="38">
+    <v-toolbar>
+      <!-- <v-avatar @click.stop="$emit('toggle-drawer')" color="white" style="box-shadow: 0 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" size="38">
         <v-icon color="accent">{{ drawer ? 'mdi-backburger' : 'mdi-menu' }}</v-icon>
-      </v-avatar>
+      </v-avatar> -->
     </v-toolbar>
-    <ExplanationDisplay v-if="tutorialExpl" :expl="tutorialExpl"/>
-    <!-- <v-card-title>Class</v-card-title>
-    <v-card-text>
-      <p v-for="classmate in classmates" :key="classmate.id">
-        {{ `${classmate.firstName} ${classmate.lastName}` }}
-      </p>
-    </v-card-text> -->
+    <!-- TODO: make a cleaner tutorial -->
+    <!-- <ExplanationDisplay v-if="tutorialExpl" :expl="tutorialExpl"/> -->
   </div>
 </template>
 

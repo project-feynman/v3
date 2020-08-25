@@ -1,100 +1,61 @@
 <template>
   <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
   <v-card >
+    <!-- A width of 260 is needed otherwise the 4 button's don't fit when the scrolling up and down thingy appears -->
     <v-navigation-drawer 
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
-      width="250"
+      width="260"
       class="the-side-drawer"
+      permanent
     >
-      <v-app-bar color="accent lighten-3" dark class="mb-4">
-        <template v-if="!user">
-          <BasePopupButton actionName="Log in" 
-            :inputFields="['email', 'password']" 
-            @action-do="user => $_logIn(user)"
-            outlined
-            color="secondary"
-          >
-            <template v-slot:activator-button="{ on }">
-              <BaseButton :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</BaseButton>
-            </template>
-          </BasePopupButton>
-
-          <BasePopupButton actionName="Sign Up" 
-              :inputFields="['first name', 'last name', 'email', 'password']" 
-              @action-do="user => $_signUp(user)"
-              outlined
-              color="secondary"
-            >
-              <template v-slot:activator-button="{ on }">
-                <BaseButton :on="on" icon="mdi-account-circle">Sign Up</BaseButton>
-              </template>
-              <template v-slot:message-to-user>
-                Sign up for an account so you can enroll in classes to ask questions and create explanations. 
-                Passwords are handled by Google Firebase Authentication.
-              </template>
-            </BasePopupButton>
-        </template>
-
-        <template v-else>
-          <!-- Account Circle -->
-          <TheDropdownMenu 
-            @sign-out="$_signOut()" 
-            @settings-changed="(S) => updateSettings(S)"
-          > 
-            <template v-slot:activator="{ on }">
-              <v-avatar v-if="user" v-on="on" style="border: 2px solid white; cursor: pointer;">
-                <span v-if="user.firstName && user.lastName" class="white--text headline">
-                  {{ user.firstName[0] + user.lastName[0] }}
-                </span>
-              </v-avatar>
-            </template>
-
-            <template v-slot:menu-buttons>
-              <!-- Email notifications -->
-              <!-- <BaseButton :on="on" icon="mdi-bell">Email Settings</BaseButton> -->
-              <!-- <MenuEmailSettings>
-                <template v-slot:activator="{ on }">
-                  <v-btn v-on="on" block text color="accent">Email Settings</v-btn>
-                </template>
-              </MenuEmailSettings> -->
-              <v-divider/>
-              <v-btn @click="leaveClass()" block text color="accent">
-                {{ isUserEnrolled ? 'DROP' : 'JOIN' }} Class
-              </v-btn>
-            </template>
-          </TheDropdownMenu>
-        </template>
-        
+      <v-app-bar class="mb-4">
         <img src="/logo.png"
           height="40"
           @click="$router.push('/')"
           class="home-logo pl-2"
           style="filter:drop-shadow(0px 0px 10px white) contrast(2); cursor: pointer;"
         />
-        <!--<v-toolbar-title v-if="mitClass" 
+        <v-toolbar-title v-if="mitClass" 
           :class="['headline', 'ml-2']"
         >
           {{ mitClass.name }}
-        </v-toolbar-title>-->
+        </v-toolbar-title>
         <v-spacer/>
+
+        <!-- Create new space -->
+        <!-- <BaseButton 
+          :on="on"
+          icon="mdi-plus"
+          v-bind="attrs"
+          small
+          color="secondary"
+        >
+          Create new space
+        </BaseButton> -->
+
+
         <v-dialog v-model="showLibrary">
           <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              color="white"
-              outlined
+            <BaseButton 
+              :on="on"
+              icon="mdi-bookshelf"
               v-bind="attrs"
-              v-on="on"
+              small
+              filled
+              color="accent"
             >
-              Library
-            </v-btn>
+              Go to library
+            </BaseButton>
           </template>
-          <LibraryDialog></LibraryDialog>
+
+          <!-- Library of saved explanations -->
+          <LibraryDialog/>
         </v-dialog>
       </v-app-bar>
-      <TheSideDrawerSpaces
-        :roomParticipantsMap="roomParticipantsMap"
-      />
+
+      <!-- Sidedrawer Spaces -->
+      <TheSideDrawerSpaces :roomParticipantsMap="roomParticipantsMap"/>
     </v-navigation-drawer>
   </v-card>
 </template>

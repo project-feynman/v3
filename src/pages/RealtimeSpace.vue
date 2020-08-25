@@ -1,55 +1,46 @@
 <template>
   <div>    
-    <v-toolbar flat style="border-bottom: 1px solid var(--v-accent-lighten2);">
-      <v-avatar @click.stop="$emit('toggle-drawer')" color="white" style="box-shadow: 0 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" size="38">
-        <v-icon color="accent">{{ drawer ? 'mdi-backburger' : 'mdi-menu' }}</v-icon>
-      </v-avatar>
-      <v-spacer/>
+    <v-toolbar>
+      <!-- <BaseButton @click="$emit('toggle-drawer')" color="secondary" :icon="drawer ? 'mdi-backburger' : 'mdi-forwardburger'">
+        {{ drawer ? "Hide" : "Show" }} spaces
+      </BaseButton> -->
+      
       <!-- Tabs for different blackboards -->
-      <v-col cols="8" class="py-2 d-flex align-center blackboard-tabs">
-        <v-tabs v-if="user" v-model="activeBoard" fixed-tabs background-color="#f5f5f5" class="tabs-wrapper" active-class="accent--text" slider-color="accent">
-          <template v-for="(board, i) in room.blackboards">
-            <v-tab :href="'#' + board" :key="i">
-              {{ 'BOARD #' + (i+1) }}
-            </v-tab>
-          </template>
-        </v-tabs>
-        <BaseIconButton @click="createNewBoard()" icon="mdi-plus" small>Add New Board</BaseIconButton>
-      </v-col>
-      <v-spacer/>
-      <v-col cols="auto" class="p-0">
-        <RealtimeSpaceTwilioRoom v-if="user"
-          :roomID="$route.params.room_id"
-          :roomParticipantData="roomParticipantData"
-        />
-      </v-col>
+      <v-tabs v-if="user && room" v-model="activeBoard" active-class="accent--text" slider-color="accent">
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab :href="'#' + board" :key="i">
+            {{ 'BOARD #' + (i+1) }}
+          </v-tab>
+        </template>
+        <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
+          New blackboard
+        </BaseButton>
+      </v-tabs>
     </v-toolbar>
+
     <div id="room" class="room-wrapper">
-      <portal-target name="video-chat"/>
-
-      <!-- Twilio Room component -->
-
       <div v-if="user">
-
         <!-- The actual blackboards -->
         <v-tabs-items v-model="activeBoard" touchless>
-          <template v-for="(board, i) in room.blackboards">
-            <v-tab-item :value="board" :key="i">
-              <RealtimeBlackboard 
-                :blackboardRef="blackboardRefs[i]"
-                :roomParticipants="roomParticipants"
-              />
-            </v-tab-item>
+          <template v-if="blackboardRefs.length !== 0 && room">
+            <template v-for="(board, i) in room.blackboards">
+              <v-tab-item :value="board" :key="i">
+                <RealtimeBlackboard 
+                  :blackboardRef="blackboardRefs[i]"
+                  :roomParticipants="roomParticipants"
+                />
+              </v-tab-item>
+            </template>
           </template>
         </v-tabs-items>
       </div>
 
       <!-- Announcement dialog -->
-      <v-dialog v-model = "showAnnouncement" max-width="500px">
+      <v-dialog v-model="showAnnouncement" max-width="500px">
         <v-card>
           <v-card-title class="headline">Announcement!</v-card-title>
-          <v-card-text>
-            {{ this.room.announcement }}
+          <v-card-text v-if="room">
+            {{ room.announcement }}
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -135,7 +126,6 @@ export default {
       this.$store.commit("SET_ROOM", this.room);
       
       // announcement code
-      console.log('the new Value', newVal);
       if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
         console.log('Showing announcement');
         this.showAnnouncement = true;
@@ -143,20 +133,30 @@ export default {
       
       // new blackboards
       if (oldVal !== null && newVal.blackboards !== oldVal.blackboards) {
-        this.blackboardRefs = [];
+        const newBlackboardRefs = []; 
         for (const blackboard of newVal.blackboards) {
-          this.blackboardRefs.push(
+          newBlackboardRefs.push(
             db.doc(`classes/${this.classId}/blackboards/${blackboard}`)
           );
         }
+        this.blackboardRefs = newBlackboardRefs; 
       }
     }
   },
   async created () {
+    console.log("roomParticipantsMap =", this.roomParticipantsMap);
     this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId)
-
+    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId);
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
+
+    // TODO: refactor 
+    const newBlackboardRefs = []; 
+    for (const blackboard of this.room.blackboards) {
+      newBlackboardRefs.push(
+        db.doc(`classes/${this.classId}/blackboards/${blackboard}`)
+      );
+    }
+    this.blackboardRefs = newBlackboardRefs; 
 
     this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
@@ -301,7 +301,7 @@ export default {
   margin-top: 5px;
   z-index: 7; /* this z-index is under the app-bar but over the weird blackboard stuff*/
 }
-.blackboard-tabs {
+/* .blackboard-tabs {
   background: #f5f5f5;
   border: 1px solid var(--v-accent-lighten2);
   border-bottom: none;
@@ -310,6 +310,6 @@ export default {
 }
 .blackboard-tabs .tabs-wrapper {
   max-width: calc(100% - 40px);
-}
+} */
 </style>
 
