@@ -102,7 +102,7 @@ export default {
       bgCtx: null,
       currentTool: { 
         type: BlackboardTools.PEN,
-        color: "white",
+        color: "orange",
         lineWidth: 2.5
       },
       isHoldingLeftClick: false,
