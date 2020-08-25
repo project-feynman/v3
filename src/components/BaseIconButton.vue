@@ -8,6 +8,8 @@
         outlined
         :color="color"
         :class="['icon-button px-0 mx-1 align-center justify-center', small ? 'small' : '']"
+        icon
+        :small="small"
       >
         <v-icon>{{ icon }}</v-icon>
       </v-btn>
@@ -17,7 +19,10 @@
         @click="$emit('click')" 
         outlined 
         :color="color" 
-        :class="['icon-button px-0 mx-1 align-center justify-center', small ? 'small' : '']">
+        :class="['icon-button px-0 mx-1 align-center justify-center', small ? 'small' : '']"
+        icon
+        :small="small"
+      >
         <v-icon>{{ icon }}</v-icon>
       </v-btn>
     </template>

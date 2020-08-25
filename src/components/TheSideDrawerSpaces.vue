@@ -1,18 +1,18 @@
 <template>
   <div class="spaces-list">   
-    <h2>Blackboard Spaces</h2>
+    <h2>{{ mitClassDoc.name }} Spaces</h2>
     <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels" accordion>
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
-          <v-expansion-panel-header :class="(blackboardRoom && blackboardRoom.roomType === category.title) ? 'py-2': ''">
+          <v-expansion-panel-header :class="(blackboardRoom && blackboardRoom.roomType === category.title) ? 'py-2 px-4': 'px-4'">
             <v-row align="center" style="overflow: hidden;">
-              <v-col class="py-0">
+              <v-col cols="12" class="py-0">
                 <span class="panel-header-title">
                   {{ category.title }} &nbsp;
                   <!-- <span class="active-count accent--text"> ({{category.rooms.length}} rooms) </span> -->
                 </span>
               </v-col>
-              <v-col cols="auto" class="py-0 mr-1">
+              <v-col cols="12" class="py-0 px-0 mr-1">
                 <template v-if="blackboardRoom && blackboardRoom.roomType === category.title">
                   <BaseButton 
                     @click="setAnnouncementPopup(true, category.title)"
@@ -97,17 +97,17 @@
                     :key="blackboard.id"
                     active-class="active-blackboard"
                   >
-                    <v-list-item-icon style="margin-right: 16px;">
+                    <!--<v-list-item-icon style="margin-right: 16px;">
                       <v-icon class="pt-2">mdi-monitor-screenshot</v-icon>
-                    </v-list-item-icon>
+                    </v-list-item-icon>-->
                     <v-list-item-content>
-                      <v-list-item-title class="d-flex align-center room-title mb-2">
-                        <v-col class="px-0 py-1" style="overflow: hidden;">
+                      <v-list-item-title class="d-flex align-center room-title mb-2" style="flex-wrap: wrap;">
+                        <v-col cols="12" class="px-0 py-1" style="overflow: hidden;">
                           <div :class="['pb-1', (blackboardRoom && blackboardRoom.id === blackboard.id) ? 'accent--text' : '']">Room {{ i+1 }}</div>
                           <!-- <span class="active-count accent--text">({{ blackboard.participants.length }} active)</span> -->
                           <span class="active-count" v-if="blackboard.status">{{ blackboard.status }}</span>
                         </v-col>
-                        <v-col cols="auto" class="px-1 py-0">
+                        <v-col cols="auto" class="px-1 py-0 align-self-end">
                           <template v-if="blackboardRoom">
                             <!-- TODO: causes an infinite loop for some reason -->
                             <BaseButton 
@@ -115,6 +115,7 @@
                               @click="setRoomStatusPopup(true, blackboard.id)"
                               icon="mdi-message-alert"
                               small
+                              outlined
                               color="#444"
                             >
                               Label
@@ -125,6 +126,7 @@
                               @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
                               icon="mdi-account-arrow-left-outline"
                               small
+                              outlined
                               color="#444"
                               >
                               Bring to Room
@@ -156,7 +158,7 @@
                         </v-col>
                       </v-list-item-title>
 
-                      <div class="active-blackboard-users pl-4">
+                      <div class="active-blackboard-users pl-2">
                         <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
                           <div class="d-flex align-center py-1" :key="i">
                             <v-col class="d-flex px-0 align-center py-0">
@@ -165,15 +167,20 @@
                                 {{ participant.firstName }}
                               </div>
                             </v-col>
-                            <v-col cols="auto" class="py-0" v-if="participant.sessionID === sessionID">
+                            <v-col cols="auto" class="py-0 px-0" v-if="blackboardRoom && blackboardRoom.id === blackboard.id">
 
                               
-                              <!-- <BaseIconButton
-                                @click="bringAllToRoom(blackboardRoom.id, blackboardRoom.roomType)"
+                              <BaseIconButton
+                                v-if="participant.sessionID === sessionID"
+                                @click="mute(blackboardRoom.id, blackboardRoom.roomType)"
                                 icon="mdi-microphone"
+                                small
+                                :stopPropagation="false"
                               >
-                                Disconnect Audio
-                              </BaseIconButton> -->
+                                Mute
+                              </BaseIconButton>
+
+                              <v-icon v-else class="pr-3">mdi-microphone-off</v-icon>
 
                               <!--<v-btn v-if="isConnectedToAudio" @click="muteMicrophone()">
                                 Mute

@@ -4,7 +4,7 @@
     <v-navigation-drawer 
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
-      width="380"
+      width="250"
       class="the-side-drawer"
     >
       <v-app-bar color="accent lighten-3" dark class="mb-4">
@@ -72,11 +72,11 @@
           class="home-logo pl-2"
           style="filter:drop-shadow(0px 0px 10px white) contrast(2); cursor: pointer;"
         />
-        <v-toolbar-title v-if="mitClass" 
+        <!--<v-toolbar-title v-if="mitClass" 
           :class="['headline', 'ml-2']"
         >
           {{ mitClass.name }}
-        </v-toolbar-title>
+        </v-toolbar-title>-->
         <v-spacer/>
         <v-dialog v-model="showLibrary">
           <template v-slot:activator="{ on, attrs }">
