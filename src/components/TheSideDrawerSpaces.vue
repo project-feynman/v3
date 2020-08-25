@@ -138,13 +138,17 @@
                           isMuted
                         }"
                         >
-                          <div class="accent--text headline">Room {{ i+1 }}</div>
-                          <v-col class="d-flex accent--text"> 
-                            {{ blackboard.status }}
-                            <BaseButton @click="setRoomStatusPopup(true, blackboard.id)" icon="mdi-message-alert" color="black">
-                              Update status
-                            </BaseButton>
-                          </v-col> 
+                          <div class="d-flex room-title">
+                            <v-col class="px-0">
+                              <div class="accent--text headline">Room {{ i+1 }}</div>
+                              <span class="active-count">{{ blackboard.status }}</span>
+                            </v-col>
+                            <v-col cols="auto" class="d-flex px-0 accent--text"> 
+                              <BaseButton @click="setRoomStatusPopup(true, blackboard.id)" icon="mdi-message-alert" color="black">
+                                Update status
+                              </BaseButton>
+                            </v-col> 
+                          </div>
                           <v-divider/>
                       
                           <v-list-item-content>
@@ -190,9 +194,9 @@
                     <!-- OTHER ROOMS -->
                     <template v-else>
                       <div class="d-flex flex-column">
-                        <div>
+                        <div class="room-title">
                           <div>Room {{ i+1 }}</div>
-                          <div>{{ blackboard.status }}</div>
+                          <div v-if="blackboard.status" class="active-count">{{ blackboard.status }}</div>
                         </div>
                         <div v-for="(participant, i) in roomParticipantsMap[blackboard.id]" class="d-flex" :key="i">
                           <v-icon>mdi-account</v-icon>
