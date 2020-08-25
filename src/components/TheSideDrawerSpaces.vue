@@ -120,8 +120,6 @@
                     </v-dialog>
                   </template>
 
-
-
                   <!-- 
                     THE CURRENT ROOM 
                   -->
