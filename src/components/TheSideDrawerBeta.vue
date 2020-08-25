@@ -5,7 +5,7 @@
     <v-navigation-drawer 
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
-      width="260"
+      width="270"
       class="the-side-drawer"
       permanent
     >

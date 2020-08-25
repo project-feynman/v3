@@ -33,7 +33,8 @@
     
         <v-tab-item v-if="user" value="rooms">
           <TheSideDrawerSpaces
-            :roomParticipantsMap="roomParticipantsMap"/>
+            :roomParticipantsMap="roomParticipantsMap"
+          />
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>

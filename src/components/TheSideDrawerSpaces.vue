@@ -1,7 +1,6 @@
 <template>
   <div class="spaces-list">   
-    <!-- <h2>Blackboard Spaces</h2> -->
-    <v-expansion-panels v-if="roomCategories.length !== 0" multiple :value="expandedPanels" accordion>
+    <v-expansion-panels v-if="roomCategories.length !== 0" :value="expandedPanels" multiple accordion>
       <template v-for="(category, i) in roomCategories">
         <v-expansion-panel :key="i">
           <v-expansion-panel-header :class="(blackboardRoom && blackboardRoom.roomType === category.title) ? 'py-2 px-4': 'px-4'">
@@ -64,6 +63,7 @@
                     Break-out to rooms
                   </v-btn> -->
                   
+                  <!-- Announcement Popup-->
                   <v-dialog :value="(announcementPopup.show && (announcementPopup.roomType === category.title))" persistent max-width="600px">
                     <v-card>
                       <v-card-title>
@@ -80,7 +80,7 @@
                           Cancel
                         </v-btn>
                         <v-btn @click="makeAnnouncement(updatedAnnouncement, category.title)" color="secondary" text>
-                          Update status
+                          Make announcement
                         </v-btn>
                       </v-card-actions>
                     </v-card>
@@ -94,6 +94,34 @@
             <v-list dense>
               <template v-for="(blackboard, i) in category.rooms">
                 <v-list-item :to="`/class/${classID}/room/${blackboard.id}`" :key="blackboard.id">
+
+                  <!-- Update status popup -->
+                  <template v-if="blackboardRoom">
+                    <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
+                      <v-card>
+                        <v-card-title>
+                          <span class="headline">
+                            Update status
+                          </span>
+                        </v-card-title>
+                        <v-card-text>
+                          <v-text-field v-model="updatedStatus"/>
+                        </v-card-text>
+                        <v-card-actions>
+                          <v-spacer/>
+                          <v-btn @click="setRoomStatusPopup(false)" color="secondary" text>
+                            Cancel
+                          </v-btn>
+                          <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
+                            Update status
+                          </v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </template>
+
+
+
                   <!-- 
                     THE CURRENT ROOM 
                   -->
@@ -200,32 +228,6 @@
       @popup-closed="isCreatePopupOpen = false"
       @create-blackboard="roomType => createBlackboard(roomType)"
     />
-
-    <!-- Update status popup -->
-    <template v-if="blackboardRoom">
-      <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
-        <v-card>
-          <v-card-title>
-            <span class="headline">
-              Update status
-            </span>
-          </v-card-title>
-          <v-card-text>
-            <v-text-field v-model="updatedStatus"/>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer/>
-            <v-btn @click="setRoomStatusPopup(false)" color="secondary" text>
-              Cancel
-            </v-btn>
-            <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
-              Update status
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </template>
-
   </div>
 </template>
 
