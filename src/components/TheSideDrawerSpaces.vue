@@ -25,7 +25,7 @@
                   </BaseButton>
 
                    <BaseButton
-                    @click="moveStudentsToRooms(category.title)"
+                    @click="shuffleParticipants(category.title)"
                     icon="mdi-share-variant"
                     small
                     :stopPropagation="true"
@@ -265,15 +265,10 @@ export default {
       announcementPopup: { show: false, roomType: null },
       updatedStatus: "",
       updatedAnnouncement: "",
-      mitClassDoc: {},
+      mitClassDoc: null,
       isCreatePopupOpen: false,
 
-      // random assignment 
-      roomForRandom: "",
-      groupSizeForRandom: 3,
-      groupSizeList: [],
-
-      // TODO: assign all participants who are currently in the category
+      minRoomSizeOnShuffle: 2, // at least 2 so people aren't lonely
     };
   },
   computed: {
@@ -301,11 +296,18 @@ export default {
     },
     mitClassDoc (newVal, oldVal) {
       this.roomTypes = this.mitClassDoc.roomTypes;
-      if ((oldVal.hasOwnProperty("tableAssignments") && newVal.tableAssignments !== oldVal.tableAssignments)) {
-        for (const roomAssignment of newVal.tableAssignments) {
+            
+      // Check for new roomAssignments
+      // Currently only done for random shuffling.
+      // Change snackbar message if this is used for other things.
+      if (oldVal !== null
+          && newVal.roomAssignmentsCounter != oldVal.roomAssignmentsCounter) {
+        this.$root.$emit("show-snackbar", "You have been put in random room with other people. Have fun :)");
+        for (const roomAssignment of newVal.roomAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
-            this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
-            this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)");
+            if (this.roomID != roomAssignment.roomID) {
+              this.$router.push(`/class/${this.classID}/room/${roomAssignment.roomID}`); 
+            }
           }
         }
       }
@@ -336,8 +338,6 @@ export default {
     const participantsRef = db.collection(`classes/${this.classID}/participants`);
     const classRef = db.doc(`classes/${this.classID}`)
     
-    this.listenForRoomAssignments();
-
     this.$_listenToCollection(blackboardsRef, this, "blackboards").then(snapshotListener => {
       this.snapshotListeners.push(snapshotListener);
     });
@@ -403,27 +403,12 @@ export default {
         this.howToFix = "";
       }
     },*/
-    listenForRoomAssignments () {
-      // we use `.set()` rather than `.add()` because if a student uses multiple devices, we want her to only be assigned to 1 table
-      let onlyJustJoined = true; 
-      const classRef = db.doc(`classes/${this.$route.params.class_id}`);
-      this.removeClassDocListener = classRef.onSnapshot(doc => {
-        console.log('snapshot changed', doc);
-        if (onlyJustJoined) {
-          onlyJustJoined = false; 
-          return; 
-        }
-        console.log('pushing router', doc.data());
-        for (const roomAssignment of doc.data().tableAssignments) {
-          if (roomAssignment.assignees.includes(this.user.uid)) {
-            this.removeClassDocListener(); 
-            this.$router.push(`/class/${this.$route.params.class_id}/room/${roomAssignment.roomID}`); 
-            this.$root.$emit("show-snackbar", "You've been assigned to a random group. Have fun :)");
-          }
-        }
-      });
-    },
-    async moveStudentsToRooms (categoryID) {
+    /**
+     * Assigns all participants in rooms of roomType to a random room of
+     * roomType. After shuffling, each room has at minimum minRoomSizeOnShuffle
+     * participants.
+     * */ 
+    async shuffleParticipants (roomType) {
       /**
        * Shuffles array in place. ES6 version
        * @param {Array} a array containing items.
@@ -436,46 +421,51 @@ export default {
         }
         return a;
       }
-
-      // roomParticipantsMap 
-      // { <blackboardID>: [<participant-object>]] }
-      // participant-object: firstName, sessionID
-      // assign everyone in the class into random groups within this category
-      const tableAssignments = []; 
-      const connectedStudents = []; 
-      Object.values(this.roomParticipantsMap).forEach(participantsInTheRoom => {
-        connectedStudents.push(...participantsInTheRoom);
-      });
-    
-      const classRef = db.doc(`classes/${this.$route.params.class_id}`);
-      const query = classRef.collection("rooms").where("roomType", "==", categoryID);
-      const rooms = await query.get();
-      rooms.forEach(room => {
-        tableAssignments.push({
-          roomID: room.id,
-          assignees: []
-        }); 
-      });
-      shuffle(connectedStudents); 
-      // shuffle(tableAssignments);
-
-      // `tableAssignments` has the structure of: [{ roomID: "123", "assignees": ["345", "abc"] }]
-      let i = 0; 
-      this.groupSizeForRandom = 1;
-      for (const student of connectedStudents) {
-        if (tableAssignments[i].assignees.length >= this.groupSizeForRandom) {
-          i = (i+1) % tableAssignments.length; // leftover students just get pushed onto a table
+      
+      // Get all rooms of roomType
+      const querySnapshot = await db
+        .collection(`classes/${this.classID}/rooms`)
+        .where('roomType', '==', roomType)
+        .get();
+      const targetRoomIds = querySnapshot.docs.map(doc => doc.id);
+      
+      // Get all participants in rooms of roomType
+      // roomParticipantsMap : { <roomId>: List<participant-object> }
+      const participants = [];
+      for (const [roomId, participantList]
+            of Object.entries(this.roomParticipantsMap)) {
+        if (targetRoomIds.includes(roomId)) {
+          participants.push(...participantList);
         }
-        tableAssignments[i].assignees.push(student.uid); 
       }
-      console.log('the table assignment', tableAssignments);
-      // update the class doc, so each connected user will detect the change and be redirected.
-      await classRef.update({
-        tableAssignments
+      console.log("Breaking out participants:", participants);
+    
+      // Initialize roomAssignments
+      const roomAssignments = [];
+      for (const roomId of targetRoomIds) {
+        roomAssignments.push({
+          roomID: roomId,
+          assignees: []
+        });
+      }
+      
+      const numRoomsToUse = Math.max(1, Math.min(
+        targetRoomIds.length,
+        Math.floor(participants.length / this.minRoomSizeOnShuffle)
+      ));
+      shuffle(participants);
+      for (const [idx, participant] of participants.entries()) {
+        roomAssignments[idx % numRoomsToUse].assignees.push(participant.uid);
+      }
+
+      console.log('The room assignments:', roomAssignments);
+      // update the class doc
+      // each connected user will detect the change and be redirected.
+      await db.doc(`classes/${this.classID}`).update({
+        roomAssignments: roomAssignments,
+        roomAssignmentsCounter: firebase.firestore.FieldValue.increment(1)
       });
-      // Here we used to batch delete all of the participants, but we dont need that anymore as particpants are deleted on destroy
     },
-    // above here is randomization code
     setRoomCategories () {
       if (this.roomTypes) {
         this.roomCategories = [];
@@ -576,7 +566,7 @@ export default {
      * This counter is watched by participants inside the rooms.
      * TODO: Can be refactored such that there is a single counter for each
      *       roomType and participants all watch the roomType counter.
-     */
+     * */
     async muteParticipantsInRooms(roomType) {
       console.log("Muting all participants in roomType:", roomType);
       const querySnapshot = await db
