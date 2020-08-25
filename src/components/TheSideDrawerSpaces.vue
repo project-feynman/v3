@@ -398,7 +398,8 @@ export default {
     },*/
     /**
      * Assigns all participants in rooms of roomType to a random room of
-     * roomType. After shuffling, each room has at minimum minRoomSizeOnShuffle.
+     * roomType. After shuffling, each room has at minimum minRoomSizeOnShuffle
+     * participants.
      * */ 
     async shuffleParticipants (roomType) {
       /**
