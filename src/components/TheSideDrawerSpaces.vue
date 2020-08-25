@@ -34,15 +34,6 @@
                     >
                       Announce
                     </BaseButton>
-
-                    <!-- TODO: Bring everyone back to common room -->
-                    <!-- <BaseButton 
-                      icon="mdi-account-group"
-                      small
-                      color="black"
-                    >
-                      Re-group
-                    </BaseButton> -->
                     
                     <BaseButton 
                       @click="muteParticipantsInRooms(category.title)"
@@ -54,14 +45,6 @@
                       Mute all
                     </BaseButton>
                   </template>
-                  
-                  <!-- TODO: use ID instead of title -->     
-                  <!-- <v-btn
-                    @click.stop="moveStudentsToRooms(category.title)"
-               
-                  >
-                    Break-out to rooms
-                  </v-btn> -->
                   
                   <!-- Announcement Popup-->
                   <v-dialog :value="(announcementPopup.show && (announcementPopup.roomType === category.title))" persistent max-width="600px">
@@ -93,119 +76,118 @@
           <v-expansion-panel-content> 
             <v-list dense>
               <template v-for="(blackboard, i) in category.rooms">
-                <v-list-item :to="`/class/${classID}/room/${blackboard.id}`" :key="blackboard.id">
+                  <v-list-item :to="`/class/${classID}/room/${blackboard.id}`" :key="blackboard.id">
+                    <p v-if="!blackboardRoom">Room {{ i }}</p>
+                    <!-- Update status popup -->
+                    <template v-if="blackboardRoom">
+                      <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
+                        <v-card>
+                          <v-card-title>
+                            <span class="headline">
+                              Update status
+                            </span>
+                          </v-card-title>
+                          <v-card-text>
+                            <v-text-field v-model="updatedStatus"/>
+                          </v-card-text>
+                          <v-card-actions>
+                            <v-spacer/>
+                            <v-btn @click="setRoomStatusPopup(false)" color="secondary" text>
+                              Cancel
+                            </v-btn>
+                            <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
+                              Update status
+                            </v-btn>
+                          </v-card-actions>
+                        </v-card>
+                      </v-dialog>
+                    </template>
 
-                  <!-- Update status popup -->
-                  <template v-if="blackboardRoom">
-                    <v-dialog :value="(roomStatusPopup.show && (roomStatusPopup.roomID === blackboard.id))" persistent max-width="600px">
-                      <v-card>
-                        <v-card-title>
-                          <span class="headline">
-                            Update status
-                          </span>
-                        </v-card-title>
-                        <v-card-text>
-                          <v-text-field v-model="updatedStatus"/>
-                        </v-card-text>
-                        <v-card-actions>
-                          <v-spacer/>
-                          <v-btn @click="setRoomStatusPopup(false)" color="secondary" text>
-                            Cancel
-                          </v-btn>
-                          <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
-                            Update status
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
-                  </template>
-
-
-
-                  <!-- 
-                    THE CURRENT ROOM 
-                  -->
-                  <template v-if="blackboardRoom">
-                    <template v-if="blackboard.id === blackboardRoom.id">
-                      <!-- 
-                        :key ensures <TwilioRoom/> is destroyed and re-created when the user moves 
-                      -->
-                      <RealtimeSpaceTwilioRoom :roomID="blackboardRoom.id" :key="blackboardRoom.id">
-                        <template v-slot="{ 
-                          hasConnectedToTwilio,
-                          dominantSpeakerUID,
-                          toggleMute,
-                          isMuted
-                        }"
-                        >
-                          <div class="d-flex room-title">
-                            <v-col class="px-0">
-                              <div class="accent--text headline">Room {{ i+1 }}</div>
-                              <span class="active-count">{{ blackboard.status }}</span>
-                            </v-col>
-                            <v-col cols="auto" class="d-flex px-0 accent--text"> 
-                              <BaseButton @click="setRoomStatusPopup(true, blackboard.id)" icon="mdi-message-alert" color="black">
-                                Update status
-                              </BaseButton>
-                            </v-col> 
-                          </div>
-                          <v-divider/>
-                      
-                          <v-list-item-content>
-                            <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
-                              <div :key="i">
-                                <!-- MYSELF -->
-                                <template v-if="participant.sessionID === sessionID">
-                                  <v-col class="d-flex">
-                                    <v-icon>mdi-account</v-icon>
-
-                                    <p class="font-weight-bold">{{ participant.firstName }} </p>
-
-                                    <p v-if="!hasConnectedToTwilio">Connecting audio...</p>
-
-                                    <BaseButton v-else
-                                      @click="toggleMute()" 
-                                      :icon="isMuted ? 'mdi-microphone' : 'mdi-microphone-off'" 
-                                      color="black" 
-                                      :stopPropagation="false"
-                                    >
-                                      {{ isMuted ? "Unmute" : "Mute" }}
-                                    </BaseButton>
-                                  </v-col>
-                                </template>
+                    <!-- 
+                      THE CURRENT ROOM 
+                    -->
+                    <template v-if="blackboardRoom">
+                      <template v-if="blackboard.id === blackboardRoom.id">
+                        <!-- 
+                          :key ensures <TwilioRoom/> is destroyed and re-created when the user moves 
+                        -->
+                        <RealtimeSpaceTwilioRoom :roomID="blackboardRoom.id" :key="blackboardRoom.id">
+                          <template v-slot="{ 
+                            hasConnectedToTwilio,
+                            dominantSpeakerUID,
+                            toggleMute,
+                            isMuted
+                          }"
+                          >
+                            <div class="d-flex">
+                              <v-col class="px-0">
+                                <div class="accent--text headline">Room {{ i+1 }}</div>
+                                <span class="active-count">{{ blackboard.status }}</span>
+                              </v-col>
+                              <v-col class="d-flex accent--text px-0"> 
                                 
-                                <!-- OTHER PEOPLE -->
-                                <template v-else>
-                                  <v-col class="d-flex">
-                                    <v-icon>mdi-account</v-icon>
-                                    {{ participant.firstName }} 
-                                    <v-icon :color="dominantSpeakerUID === participant.uid ? 'accent' : 'black'">
-                                      mdi-microphone
-                                    </v-icon>    
-                                  </v-col>
-                                </template>               
-                              </div>
-                            </template>
-                          </v-list-item-content>
-                        </template>
-                      </RealtimeSpaceTwilioRoom>
-                    </template>
+                                <BaseButton @click="setRoomStatusPopup(true, blackboard.id)" icon="mdi-message-alert" color="black">
+                                  Update status
+                                </BaseButton>
+                              </v-col>
+                            </div>
+                            <v-divider/>
+                        
+                            <v-list-item-content>
+                              <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
+                                <div :key="i">
+                                  <!-- MYSELF -->
+                                  <template v-if="participant.sessionID === sessionID">
+                                    <v-col class="d-flex">
+                                      <v-icon>mdi-account</v-icon>
 
-                    <!-- OTHER ROOMS -->
-                    <template v-else>
-                      <div class="d-flex flex-column">
-                        <div class="room-title">
-                          <div>Room {{ i+1 }}</div>
-                          <div v-if="blackboard.status" class="active-count">{{ blackboard.status }}</div>
+                                      <p class="font-weight-bold">{{ participant.firstName }} </p>
+
+                                      <p v-if="!hasConnectedToTwilio">Connecting audio...</p>
+
+                                      <BaseButton v-else
+                                        @click="toggleMute()" 
+                                        :icon="isMuted ? 'mdi-microphone' : 'mdi-microphone-off'" 
+                                        color="black" 
+                                        :stopPropagation="false"
+                                      >
+                                        {{ isMuted ? "Unmute" : "Mute" }}
+                                      </BaseButton>
+                                    </v-col>
+                                  </template>
+                                  
+                                  <!-- OTHER PEOPLE -->
+                                  <template v-else>
+                                    <v-col class="d-flex">
+                                      <v-icon>mdi-account</v-icon>
+                                      {{ participant.firstName }} 
+                                      <v-icon :color="dominantSpeakerUID === participant.uid ? 'accent' : 'black'">
+                                        mdi-microphone
+                                      </v-icon>    
+                                    </v-col>
+                                  </template>               
+                                </div>
+                              </template>
+                            </v-list-item-content>
+                          </template>
+                        </RealtimeSpaceTwilioRoom>
+                      </template>
+
+                      <!-- OTHER ROOMS -->
+                      <template v-else>
+                        <div class="d-flex flex-column">
+                          <div class="room-title">
+                            <div>Room {{ i+1 }}</div>
+                            <div v-if="blackboard.status" class="active-count">{{ blackboard.status }}</div>
+                          </div>
+                          <div v-for="(participant, i) in roomParticipantsMap[blackboard.id]" class="d-flex" :key="i">
+                            <v-icon>mdi-account</v-icon>
+                            {{ participant.firstName }}
+                          </div>
                         </div>
-                        <div v-for="(participant, i) in roomParticipantsMap[blackboard.id]" class="d-flex" :key="i">
-                          <v-icon>mdi-account</v-icon>
-                          {{ participant.firstName }}
-                        </div>
-                      </div>
+                      </template>
                     </template>
-                  </template>
-                </v-list-item>
+                  </v-list-item>
                 <v-divider v-if="i + 1 < blackboards.length" :key="i"/>
               </template>
             </v-list>
