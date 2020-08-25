@@ -53,8 +53,8 @@ export default {
     return {
       BlackboardTools,
       toolbarHeight,
-      color: "white",
-      colors: ["white", "orange", "#0AF2F2", "#ec1bf7", "yellow", "black"],
+      color: "orange",
+      colors: ["orange", "white", "#0AF2F2", "#ec1bf7", "yellow", "black"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
