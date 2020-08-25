@@ -29,21 +29,17 @@
           @toggle-fullScreen="toggleFullScreen()"
         >
           <template v-slot:touch-slot>
-            <BaseButton @click="setTouchDisabled(!touchDisabled)" icon="mdi-fingerprint">
-              {{ touchDisabled ? "Apple Pencil mode" : "Normal mode" }}
+            <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black">
+              {{ touchDisabled ? "Pencil mode" : "Any mode" }}
             </BaseButton>
           </template>
           
           <template v-slot:record-audio-slot>
-            <slot name="blackboard-toolbar">
-            
-            </slot> 
-
             <template v-if="currentState === RecordState.PRE_RECORD">
 
               <!-- SET BACKGROUND IMAGE -->
               <slot name="set-background-button-slot">
-                <BaseButton @click="$refs.fileInput.click()" icon="mdi-image">
+                <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black">
                   <input 
                     @change="e => handleImageFile(e)" 
                     style="display: none" 
@@ -71,6 +67,10 @@
                     Are you sure you want to wipe everything?
                   </template> 
                 </BasePopupButton>
+              </slot> 
+
+              <slot name="blackboard-toolbar">
+            
               </slot> 
 
               <!-- Record Button -->

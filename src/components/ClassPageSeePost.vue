@@ -8,9 +8,9 @@
       :expl="expl" 
       :key="expl.id"
     />
-    <ExplanationCreate v-if="user" 
+    <!-- <ExplanationCreate v-if="user" 
       explType="reply"
-    />
+    /> -->
   </div>
 </template>
 

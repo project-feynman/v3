@@ -1,88 +1,7 @@
 <template>
   <div class="twilio-container">
-    <template v-if="!twilioInitialized">
-      <div class="px-3 py-3">Connecting Voice Chat...</div>
-    </template>
-    <template v-else>
-      <!--<h2>Connected to Twilio!</h2>-->
-      <v-row class="mx-0">
-        <BaseButton v-if="isMicEnabled"
-          @click="toggleIsMicEnabled()"
-          icon="mdi-microphone"
-          color="#555"
-          small
-          class="px-4"
-        >
-          Mute
-        </BaseButton>
-        <BaseButton v-else
-          @click="toggleIsMicEnabled()"
-          icon="mdi-microphone-off"
-          color="red"
-          small
-          class="px-4"
-        >
-        <!-- TODO: Make this color prettier -->
-          Unmute
-        </BaseButton>
-        <div class="dominant-speaker">
-          <div class="speaker-name">
-            <span v-if="roomParticipantData.has(dominantParticipantUid)">{{roomParticipantData.get(dominantParticipantUid).firstName}}</span>
-            <span v-else>None</span>
-          </div>
-        </div>
-        <!--<v-text-field
-          :value="roomParticipantData.has(dominantParticipantUid) ? roomParticipantData.get(dominantParticipantUid).firstName : 'None'"
-          label="Currently Speaking"
-          filled
-          readonly
-          dense
-          color=""
-          class="mt-3"
-        ></v-text-field>
-        <h3 v-if="roomParticipantData.has(dominantParticipantUid)">
-          Dominant speaker: {{roomParticipantData.get(dominantParticipantUid).firstName}}
-        </h3>
-        <h3 v-else>
-          No dominant speaker.
-        </h3>-->
-      </v-row>
-      
-      <!--<template v-for="[uid, micStatus] in Object.entries(participantAudioStatus)">
-        <div :key="uid" v-if="roomParticipantData.has(uid)">
-        <p>participantName: {{roomParticipantData.get(uid).firstName}}</p>
-        <p>micStatus: {{micStatus}}</p>
-        </div>
-      </template>-->
-
-      <!--<template v-for="trackObject in twilioRoom.localParticipant.tracks.values()">
-        <div :key="trackObject.id">
-          <p>trackName: {{ trackObject.trackName }}</p>
-          <p>type of data: {{ trackObject.kind }}</p>
-          <p>isEnabled: {{ trackObject.track.isEnabled }}</p>
-          <p>isStarted: {{ trackObject.track.isStarted }}</p>
-          <p>isStopped: {{ trackObject.track.isStopped }}</p>
-        </div>
-      </template>-->
-      <!--<h2>Other people</h2>
-      <template v-for="participant in twilioRoom.participants.values()">
-        <div :key="participant.identity">
-          <p>his/her ID: {{ participant.identity }}</p>
-          <p>his/her connection state: {{ participant.state }}</p>
-          <p>HIS/HER PUBLISHED TRACKS</p>
-          <template v-for="(track, i) in participant.tracks.values()">
-            <div :key="i">
-              <p>type of data: {{ track.kind }}</p>
-              <p>I'm subscribed: {{ track.isSubscribed }}</p>
-            </div>
-          </template> 
-        </div>
-      </template>-->
-    </template>
-    <!-- <v-btn @click="shareScreen()">Share screen</v-btn>    -->
-
-    <div id="remote-audio-div">
-    </div>
+    <!-- audio and video streams will be injected into this element -->
+    <div id="remote-audio-div"></div>
 
     <!-- Helps user fix audio issues if an error shows up -->
     <v-dialog persistent max-width="600px" v-model="isShowingErrorPopup"> 
@@ -255,6 +174,7 @@ export default {
       this.twilioRoom.on("dominantSpeakerChanged", this.onDominantSpeakerChanged);
       
       this.twilioInitialized = true;
+      // this.$store.commit("SET_TWILIO_INITIALIZED", this.dominantParticipantUid);
     },
     toggleIsMicEnabled () {
       this.isMicEnabled = !this.isMicEnabled;
@@ -321,6 +241,7 @@ export default {
     },
     onDominantSpeakerChanged(participant) {
       this.dominantParticipantUid = participant ? participant.identity : null;
+      this.$store.commit("SET_DOMINANT_SPEAKER_UID", this.dominantParticipantUid);
     },
     /**
      * The functions below takes in a track (audio or video)
@@ -521,7 +442,7 @@ export default {
 	background-color:black;
 	border-radius: 10px;
 }
-.twilio-container {
+/* .twilio-container {
   border: 1px solid var(--v-accent-lighten1);
   border-radius: 5px;
   margin: 5px;
@@ -530,7 +451,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
+} */
 .twilio-container .dominant-speaker {
   border-left: 1px solid var(--v-accent-lighten1);
   position: relative;

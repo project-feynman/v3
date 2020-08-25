@@ -55,7 +55,8 @@ export default new Vuex.Store({
     //twilioRoom: null,
     session: {},
     isConnectedToAudio: false,
-    canvasDimensions: {'height': 0, 'width': 0}
+    canvasDimensions: { 'height': 0, 'width': 0 },
+    dominantSpeakerUID: null
   },
   mutations: {
     SET_USER (state, user) {
@@ -89,6 +90,10 @@ export default new Vuex.Store({
      */
     ADD_EXPL_TO_CACHE (state, expl) {
       state.explCache[expl.ref.id] = expl;
+    },
+    SET_DOMINANT_SPEAKER_UID (state, dominantSpeakerUID) {
+      state.dominantSpeakerUID = dominantSpeakerUID; 
+      console.log("state.dominantSpeakerUID =", state.dominantSpeakerUID);
     }
   },
   actions: {
