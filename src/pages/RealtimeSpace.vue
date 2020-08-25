@@ -4,34 +4,22 @@
       <!-- <BaseButton @click="$emit('toggle-drawer')" color="secondary" :icon="drawer ? 'mdi-backburger' : 'mdi-forwardburger'">
         {{ drawer ? "Hide" : "Show" }} spaces
       </BaseButton> -->
-      <v-spacer/>
+      
       <!-- Tabs for different blackboards -->
-      <v-col cols="8" class="py-2 d-flex align-center blackboard-tabs">
-        <v-tabs v-if="user && room" v-model="activeBoard" fixed-tabs background-color="#f5f5f5" active-class="accent--text" slider-color="accent">
-          <template v-for="(board, i) in room.blackboards">
-            <v-tab :href="'#' + board" :key="i">
-              {{ 'BLACKBOARD #' + (i+1) }}
-            </v-tab>
-          </template>
-        </v-tabs>
+      <v-tabs v-if="user && room" v-model="activeBoard" active-class="accent--text" slider-color="accent">
+        <template v-for="(board, i) in room.blackboards">
+          <v-tab :href="'#' + board" :key="i">
+            {{ 'BOARD #' + (i+1) }}
+          </v-tab>
+        </template>
         <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
           New blackboard
         </BaseButton>
-      </v-col>
-      <v-spacer/>
-      <v-col cols="auto" class="p-0">
-        <!-- <RealtimeSpaceTwilioRoom v-if="user"
-          :roomID="$route.params.room_id"
-          :roomParticipantData="roomParticipantData"
-        /> -->
-      </v-col>
+      </v-tabs>
     </v-toolbar>
+
     <div id="room" class="room-wrapper">
-      <portal-target name="video-chat"/>
-
-      <!-- Twilio Room component -->
       <div v-if="user">
-
         <!-- The actual blackboards -->
         <v-tabs-items v-model="activeBoard" touchless>
           <template v-if="blackboardRefs.length !== 0 && room">
@@ -152,18 +140,14 @@ export default {
           );
         }
         this.blackboardRefs = newBlackboardRefs; 
-        console.log("blackboardRefs =", this.blackboardRefs);
       }
     }
   },
   async created () {
+    console.log("roomParticipantsMap =", this.roomParticipantsMap);
     this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-
-
-    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId)
-
+    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId);
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
-    console.log("room =", this.room);
 
     // TODO: refactor 
     const newBlackboardRefs = []; 

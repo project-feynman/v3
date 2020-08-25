@@ -1,5 +1,13 @@
 <template>
-  <div class="twilio-container">
+  <div>
+    <slot
+      :dominantSpeakerUID="dominantParticipantUid"
+      :hasConnectedToTwilio="twilioInitialized"
+      :toggleMute="toggleIsMicEnabled"
+      :isMuted="!isMicEnabled"
+    >
+
+    </slot>
     <!-- audio and video streams will be injected into this element -->
     <div id="remote-audio-div"></div>
 
@@ -28,7 +36,6 @@
 
 <script>
 /**
- * TODO: Enable screensharing 
  * 
  * @see screencapture https://www.twilio.com/docs/video/screen-capture-chrome
  * @see https://www.twilio.com/docs/video
@@ -48,10 +55,6 @@ export default {
   props: {
     roomID: {
       type: String,
-      required: true
-    },
-    roomParticipantData: {
-      type: Map, // Maps uid to userData
       required: true
     }
   },
@@ -174,7 +177,6 @@ export default {
       this.twilioRoom.on("dominantSpeakerChanged", this.onDominantSpeakerChanged);
       
       this.twilioInitialized = true;
-      // this.$store.commit("SET_TWILIO_INITIALIZED", this.dominantParticipantUid);
     },
     toggleIsMicEnabled () {
       this.isMicEnabled = !this.isMicEnabled;
@@ -240,6 +242,7 @@ export default {
       this.unmountParticipantTracks(participant);
     },
     onDominantSpeakerChanged(participant) {
+      console.log("dominantSpeakerChanged =", participant);
       this.dominantParticipantUid = participant ? participant.identity : null;
       this.$store.commit("SET_DOMINANT_SPEAKER_UID", this.dominantParticipantUid);
     },
@@ -441,38 +444,6 @@ export default {
 	border-color: var(--v-accent-base);
 	background-color:black;
 	border-radius: 10px;
-}
-/* .twilio-container {
-  border: 1px solid var(--v-accent-lighten1);
-  border-radius: 5px;
-  margin: 5px;
-  padding: 0;
-  width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-} */
-.twilio-container .dominant-speaker {
-  border-left: 1px solid var(--v-accent-lighten1);
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  flex-grow: 1;
-}
-.twilio-container .dominant-speaker .speaker-name {
-  position: relative;
-  top: 5px;
-  width: 100%;
-  text-align: center;
-}
-.twilio-container .dominant-speaker .speaker-name:before {
-  position: absolute;
-  top: -15px;
-  left: 0;
-  content: 'Current Speaker';
-  font-size: 0.7em;
-  color: #888;
 }
 </style>
 

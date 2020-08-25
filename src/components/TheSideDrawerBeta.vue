@@ -1,71 +1,15 @@
 <template>
   <!-- Commented out z-index so dropdown menus will show, but now tabs are submerged-->
   <v-card >
-    <!-- 260 is needed otherwise the 4 button's don't fit when the scrolling up and down thingy appears -->
+    <!-- A width of 260 is needed otherwise the 4 button's don't fit when the scrolling up and down thingy appears -->
     <v-navigation-drawer 
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
-      width="300"
+      width="260"
       class="the-side-drawer"
       permanent
     >
       <v-app-bar class="mb-4">
-        <!-- <template v-if="!user"> -->
-          <!-- <BasePopupButton actionName="Log in" 
-            :inputFields="['email', 'password']" 
-            @action-do="user => $_logIn(user)"
-            outlined
-            color="secondary"
-          >
-            <template v-slot:activator-button="{ on }">
-              <BaseButton :on="on" icon="mdi-account-circle" data-qa="log-in-btn">Log In</BaseButton>
-            </template>
-          </BasePopupButton> -->
-
-          <!-- <BasePopupButton actionName="Sign Up" 
-              :inputFields="['first name', 'last name', 'email', 'password']" 
-              @action-do="user => $_signUp(user)"
-              outlined
-              color="secondary"
-            >
-              <template v-slot:activator-button="{ on }">
-                <BaseButton :on="on" icon="mdi-account-circle">Sign Up</BaseButton>
-              </template>
-              <template v-slot:message-to-user>
-                Sign up for an account so you can enroll in classes to ask questions and create explanations. 
-                Passwords are handled by Google Firebase Authentication.
-              </template>
-            </BasePopupButton> -->
-        <!-- </template> -->
-
-        <!-- <template v-else> -->
-          <!-- Account Circle -->
-          <!-- <TheDropdownMenu 
-            @sign-out="$_signOut()" 
-            @settings-changed="(S) => updateSettings(S)"
-          > 
-            <template v-slot:activator="{ on }">
-              <v-avatar v-if="user" v-on="on" style="border: 2px solid white; cursor: pointer;">
-                <span v-if="user.firstName && user.lastName" class="white--text headline">
-                  {{ user.firstName[0] + user.lastName[0] }}
-                </span>
-              </v-avatar>
-            </template>
-
-            <template v-slot:menu-buttons>
-              <MenuEmailSettings>
-                <template v-slot:activator="{ on }">
-                  <v-btn v-on="on" block text color="accent">Email Settings</v-btn>
-                </template>
-              </MenuEmailSettings>
-              <v-divider/>
-              <v-btn @click="leaveClass()" block text color="accent">
-                {{ isUserEnrolled ? 'DROP' : 'JOIN' }} Class
-              </v-btn>
-            </template>
-          </TheDropdownMenu> -->
-        <!-- </template> -->
-        
         <img src="/logo.png"
           height="40"
           @click="$router.push('/')"
