@@ -187,12 +187,16 @@
 
                     <!-- OTHER ROOMS -->
                     <template v-else>
-                      <div>Room {{ i+1 }}</div>
-                      <div>{{ blackboard.status }}</div>
-                      <v-col v-for="(participant, i) in roomParticipantsMap[blackboard.id]" class="d-flex" :key="i">
-                        <v-icon>mdi-account</v-icon>
-                        {{ participant.firstName }}
-                      </v-col>
+                      <div class="d-flex flex-column">
+                        <div>
+                          <div>Room {{ i+1 }}</div>
+                          <div>{{ blackboard.status }}</div>
+                        </div>
+                        <div v-for="(participant, i) in roomParticipantsMap[blackboard.id]" class="d-flex" :key="i">
+                          <v-icon>mdi-account</v-icon>
+                          {{ participant.firstName }}
+                        </div>
+                      </div>
                     </template>
                   </template>
                 </v-list-item>
