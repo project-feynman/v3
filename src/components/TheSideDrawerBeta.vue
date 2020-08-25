@@ -104,6 +104,7 @@ import TheSideDrawerSpaces from "@/components/TheSideDrawerSpaces.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import LibraryDialog from "@/components/LibraryDialog.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import firebase from "firebase/app";
@@ -123,7 +124,8 @@ export default {
     TheSideDrawerSpaces,
     TheDropdownMenu,
     BasePopupButton,
-    BaseButton
+    BaseButton,
+    LibraryDialog
   },
   data () {
     return {

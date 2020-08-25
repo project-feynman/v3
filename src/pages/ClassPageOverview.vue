@@ -1,5 +1,5 @@
 <template>
-  <v-content>
+  <div>
     <v-toolbar flat style="border-bottom: 1px solid var(--v-accent-lighten2);">
       <v-avatar @click.stop="$emit('toggle-drawer')" color="white" style="box-shadow: 0 0 1px 2px rgba(0,0,0,0.05); cursor: pointer;" size="38">
         <v-icon color="accent">{{ drawer ? 'mdi-backburger' : 'mdi-menu' }}</v-icon>
@@ -12,7 +12,7 @@
         {{ `${classmate.firstName} ${classmate.lastName}` }}
       </p>
     </v-card-text> -->
-  </v-content>
+  </div>
 </template>
 
 <script>

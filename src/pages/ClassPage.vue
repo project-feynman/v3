@@ -8,6 +8,7 @@
     />
     
     <!-- Router View -->
+    <v-content>
       <!-- 
         Without :key="$route.params.room_id", <RealtimeSpace/> will persist
         when the user is switching between different rooms,
@@ -15,6 +16,7 @@
         and watch hooks have to be used, making the code hard to reason about.
        -->
       <RouterView :key="$route.params.room_id" @toggle-drawer="drawer = !drawer" :drawer="drawer"/>
+    </v-content>
   </v-app>
 </template>
 
