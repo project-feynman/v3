@@ -13,15 +13,15 @@
               <v-col cols="12" class="py-0 px-0 mr-1">
                 <template v-if="blackboardRoom && blackboardRoom.roomType === category.title">
                   <template v-if="user.lastName === 'Dourmashkin' || user.lastName === 'Lin'">
-                    <!-- Split to random groups -->
+                    <!-- Shuffle everyone to groups -->
                     <BaseButton
                       @click="shuffleParticipants(category.title)"
-                      icon="mdi-call-split"
+                      icon="mdi-shuffle-variant"
                       small
                       :stopPropagation="true"
                       color="black"
                     >
-                      Split up
+                      Shuffle
                     </BaseButton>
 
                     <!-- Make announcement -->
@@ -125,14 +125,12 @@
                                 <span class="active-count">{{ blackboard.status }}</span>
                               </v-col>
                               <v-col class="d-flex accent--text px-0"> 
-                                
                                 <BaseButton @click="setRoomStatusPopup(true, blackboard.id)" icon="mdi-message-alert" color="black">
                                   Update status
                                 </BaseButton>
                               </v-col>
                             </div>
                             <v-divider/>
-                        
                             <v-list-item-content>
                               <template v-for="(participant, i) in roomParticipantsMap[blackboard.id]">
                                 <div :key="i">
@@ -147,7 +145,7 @@
 
                                       <BaseButton v-else
                                         @click="toggleMute()" 
-                                        :icon="isMuted ? 'mdi-microphone' : 'mdi-microphone-off'" 
+                                        :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" 
                                         color="black" 
                                         :stopPropagation="false"
                                       >
