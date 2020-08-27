@@ -18,9 +18,15 @@
           Announce
         </BaseButton>
         
-        <!-- <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-microphone-off" small :stopPropagation="true" color="black">
+        <BaseButton
+          @click="muteParticipantsInRooms(roomType)"
+          icon="mdi-microphone-off"
+          small
+          :stopPropagation="true"
+          color="black"
+        >
           Mute all
-        </BaseButton> -->
+        </BaseButton>
       </v-expansion-panel-header>
 
       <v-expansion-panel-content>
