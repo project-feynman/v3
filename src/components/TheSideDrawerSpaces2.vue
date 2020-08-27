@@ -6,13 +6,19 @@
         
         <!-- <BaseButton @click="shuffleParticipants(roomType)" icon="mdi-shuffle-variant" small :stopPropagation="true" color="black">
           Shuffle
-        </BaseButton>
+        </BaseButton> -->
 
-        <BaseButton @click="setAnnouncementPopup(true, roomType)" icon="mdi-bullhorn" small color="black" :stopPropagation="true">
+        <BaseButton
+          @click="triggerAnnouncementPopup(roomType)"
+          icon="mdi-bullhorn"
+          small
+          color="black"
+          :stopPropagation="true"
+        >
           Announce
         </BaseButton>
         
-        <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-microphone-off" small :stopPropagation="true" color="black">
+        <!-- <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-microphone-off" small :stopPropagation="true" color="black">
           Mute all
         </BaseButton> -->
       </v-expansion-panel-header>
@@ -101,6 +107,35 @@
       </v-dialog>
     </template>
     
+    <!-- Announcement popup -->
+    <v-dialog :value="announcementPopup.show" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">
+            Make Announcement
+          </span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="announcementPopup.announceMessage"
+            placeholder="Type announcement here..."
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="announcementPopup.show = false" color="secondary" text>
+            Cancel
+          </v-btn>
+          <v-btn
+            @click="makeAnnouncement(announcementPopup.announceMessage, announcementPopup.roomType)"
+            color="secondary"
+            text
+          >
+            Make announcement
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     
     <!-- Create new room stuff -->
     <v-btn
@@ -120,6 +155,7 @@
       @create-room="roomType => createRoom(roomType)"
     />
   </v-expansion-panels>
+  
 </template>
 
 <script>
@@ -164,6 +200,12 @@ export default {
       // Panel expansion
       isExpandedPanelsInitialized: false,
       expandedPanels: [],
+      
+      announcementPopup: {
+        show: false,
+        roomType: null,
+        announceMessage: null
+      },
     };
   },
   computed: {
@@ -354,18 +396,26 @@ export default {
       });
       this.isCreatePopupOpen = false;
     },
-    setAnnouncementPopup (show, roomType=null) {
+    triggerAnnouncementPopup (roomType) {
       this.announcementPopup = {
-        show: show,
+        show: true,
         roomType: roomType
       }
     },
     async makeAnnouncement (message, roomType) {
-      console.log("Making announcement:", message);
+      console.log("Making announcement...");
+      console.log("Announcement message:", message);
+      console.log("Annoucement roomType:", roomType);
+      
+      if (!message) {
+        this.$root.$emit("show-snackbar", "Invalid announcement message");
+        return;
+      }
+      
       const querySnapshot = await db
         .collection(`classes/${this.classID}/rooms`)
         .where('roomType', '==', roomType)
-        .get(); 
+        .get();
       for (const docSnapshot of querySnapshot.docs) {
         docSnapshot.ref.update({
           announcement: message,
