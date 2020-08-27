@@ -119,6 +119,7 @@ export default {
       this.twilioRoom.disconnect();
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
+      console.log("Disconnected from Twilio room");
     }
   },
   watch: {
