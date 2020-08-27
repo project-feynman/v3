@@ -1,20 +1,20 @@
 <template>
-  <v-card width="260">
-    <v-card-title class="orange--text pb-0">
-      <p>Room {{ i }}</p>
-    </v-card-title>
-    <v-card-text>
+  <div>
+    <div class="room-title accent--text pb-0">
+      <h3>Room {{ i }}</h3>
       <slot>
 
       </slot>
-      <v-container fluid>
+    </div>
+    <div>
+      <v-container class="pr-0" fluid>
         <div class="d-flex">
           <p :class="['align-self-center', `${hasConnectedToTwilioRoom ? 'mb-0' : '' }`]">
             {{ currentClient.name }}
           </p>
           <v-spacer/> 
           <template v-if="!hasConnectedToTwilioRoom">
-            <p class="orange--text">Connecting audio...</p>
+            <p class="accent--text">Connecting audio...</p>
           </template>
           <template v-else>
             <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" color="black" :stopPropagation="false" small>
@@ -29,7 +29,7 @@
 
       <v-divider/>
 
-      <v-container v-if="hasConnectedToTwilioRoom">
+      <v-container class="pr-0" v-if="hasConnectedToTwilioRoom">
         <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.id === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
           <template v-if="p.uid !== currentClient.uid">
             {{ p.firstName + " " + p.lastName }}
@@ -42,8 +42,8 @@
           </template>
         </div>
       </v-container>
-    </v-card-text>
-  </v-card>
+    </div>
+  </div>
 </template>
 
 <script>

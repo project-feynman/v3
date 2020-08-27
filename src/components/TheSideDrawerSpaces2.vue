@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panels v-if="isDataReady" multiple accordion>
+  <v-expansion-panels v-if="isDataReady" multiple accordion class="spaces-list">
     <v-expansion-panel v-for="roomType in mitClass.roomTypes" :value="expandedPanels" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         {{ roomType }}
@@ -22,13 +22,15 @@
           <v-list-item v-for="(room, i) in roomTypeToRooms[roomType]"
             :to="`/class/${$route.params.class_id}/room/${room.id}`"
             :key="room.id"
+            active-class="active-blackboard"
+            class="py-3"
           >
             <template v-if="room.id !== roomID">
               <PresentationalRoomUI4
                 :i="i+1"
                 :allClients="roomIDToParticipants[room.id]"
               >
-                <p class="blue--text">
+                <p class="active-count">
                   {{ room.status }}
                 </p>
               </PresentationalRoomUI4>
@@ -51,16 +53,16 @@
                     :dominantSpeakerUID="dominantSpeakerUID"
                     :uidToIsMicEnabled="uidToIsMicEnabled"
                     :isMuted="isMuted"
-                    @mute-button-pressed="toggleMute()"  
+                    @mute-button-pressed="toggleMute()" 
                   >
                     <div class="d-flex">
-                      <p class="align-self-center mb-0 blue--text">
+                      <p class="align-self-center mb-0 active-count">
                         {{ room.status }}
                       </p>
                       <v-spacer/>
                       <BaseButton
                         @click="setRoomStatusPopup(true, room.id)"
-                        icon="mdi-message-alert" color="blue"
+                        icon="mdi-message-alert" color="#555"
                       >
                         Update room status
                       </BaseButton>
@@ -428,7 +430,7 @@ export default {
   color: #555;
 }
 .active-blackboard {
-  color: #EB8800
+  color: #555;
 }
 .active-blackboard:before  {
   background: var(--v-accent-base);
