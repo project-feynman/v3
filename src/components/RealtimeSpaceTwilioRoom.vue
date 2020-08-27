@@ -119,7 +119,7 @@ export default {
       this.twilioRoom.disconnect();
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
-      console.log("Disconnected from Twilio room");
+      console.log("Disconnected from Twilio room.");
     }
   },
   watch: {
@@ -163,6 +163,7 @@ export default {
       }
       
       // Report succesful connection
+      console.log("Connected to Twilio room.");
       this.$root.$emit("show-snackbar", "Connected to the voice chat.");
   
       // handle disconnections so other participants get notified immediately 

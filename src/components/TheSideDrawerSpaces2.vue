@@ -1,6 +1,6 @@
 <template>
   <v-expansion-panels v-if="isDataReady" multiple accordion>
-    <v-expansion-panel v-for="roomType in mitClass.roomTypes" :value="expandedPanels" :key="roomType">
+    <v-expansion-panel v-for="roomType in roomTypes" :value="expandedPanels" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         {{ roomType }}
         
@@ -100,6 +100,25 @@
         </v-card>
       </v-dialog>
     </template>
+    
+    
+    <!-- Create new room stuff -->
+    <v-btn
+      outlined
+      large
+      block
+      @click="isCreateRoomPopupOpen = true"
+      color="secondary"
+    >
+      <v-icon class="pr-2">mdi-plus</v-icon>
+      Create New Room
+    </v-btn>
+    <CreateRoomPopup 
+      :isCreatePopupOpen="isCreateRoomPopupOpen"
+      :roomTypes="roomTypes"
+      @popup-closed="isCreateRoomPopupOpen = false"
+      @create-room="roomType => createRoom(roomType)"
+    />
   </v-expansion-panels>
 </template>
 
@@ -112,6 +131,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom.vue";
 import PresentationalRoomUI3 from "@/components/PresentationalRoomUI3.vue";
 import PresentationalRoomUI4 from "@/components/PresentationalRoomUI4.vue";
+import CreateRoomPopup from "@/components/CreateRoomPopup.vue";
 
 export default {
   mixins: [
@@ -121,18 +141,24 @@ export default {
     BaseButton,
     RealtimeSpaceTwilioRoom,
     PresentationalRoomUI3,
-    PresentationalRoomUI4
+    PresentationalRoomUI4,
+    CreateRoomPopup
   },
   data () {
     return {
       unsubFuncs: [],
       expandedPanels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      
       // Firebase doc objects
       roomDocs: null,
       participantDocs: null,
 
+      // Room status state
       roomStatusPopup: { show: false, roomID: null },
       updatedStatus: "",
+      
+      // Create room state
+      isCreateRoomPopupOpen: false,
     };
   },
   computed: {
@@ -145,6 +171,7 @@ export default {
     classID () { return this.$route.params.class_id; },
     isInRoom () { return "room_id" in this.$route.params; },
     roomID () { return this.$route.params.room_id; },
+    roomTypes () { return this.mitClass.roomTypes; },
     isDataReady () {
       return this.roomDocs !== null && this.participantDocs !== null;
     },
@@ -154,7 +181,7 @@ export default {
      */
     roomTypeToRooms () {
       const roomTypeToRooms = {};
-      for (const roomType of this.mitClass.roomTypes) {
+      for (const roomType of this.roomTypes) {
         roomTypeToRooms[roomType] =
           this.roomDocs.filter(r => r.roomType === roomType);
       }
@@ -191,6 +218,7 @@ export default {
   },
   async created () {
     const classRef = db.doc(`/classes/${this.classID}`);
+
     this.unsubFuncs.push(
       await this.$_listenToCollection(
         classRef.collection("rooms"), this, "roomDocs"
@@ -209,7 +237,6 @@ export default {
     }
   },
   methods: {
-    // TODO: refactor this is so bad
     setRoomStatusPopup (show, roomID = null) {
       console.log("show =", show);
       console.log("roomID =", roomID);
@@ -285,90 +312,42 @@ export default {
         roomAssignmentsCounter: firebase.firestore.FieldValue.increment(1)
       });
     },
-    setRoomCategories () {
-      if (this.roomTypes) {
-        // this.roomCategories = [];
-        const tempArray = [];
-        for (const type of this.roomTypes) {
-          tempArray.push({
-            title: type, 
-            rooms: this.blackboards.filter(room => room.roomType === type)
-          });
-        }
-        this.roomCategories = tempArray;
-        console.log("setRoomCategories =", this.roomCategories);
-      } else {
-        this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }];
+    /**
+     * Creates a new room of type roomType.
+     */
+    createRoom (roomType) {
+      console.log(`Creating room of roomType={roomType}`, roomType);
+      
+      if (!roomType) {
+        this.$root.$emit("show-snackbar", "Error: Not a valid room type name");
+        return;
       }
-    },
-    setRoomStatusPopup (show, room = null) {
-      console.log("show =", show);
-      console.log("roomID =", room);
-      this.roomStatusPopup = {
-        show: show,
-        roomID: room
+      
+      if (!this.roomTypes.includes(roomType)) {     
+        // Add new roomType to firestore   
+        db.doc(`classes/${this.classID}`).update({
+          roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
+        });
       }
-    },
-    setRoomStatus (status) {
-      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({
-        status
+      
+      // Create a new blackboard and a new room
+      // Then link the two together
+      const newBlackboard = db
+        .collection(`classes/${this.classID}/blackboards`)
+        .add({roomType: roomType});
+      newBlackboard.then(result => {
+        db.collection(`classes/${this.classID}/rooms`).add({
+          roomType: roomType,
+          blackboards: [result.id]
+        });
       });
-      this.roomStatusPopup['show'] = false;
+      this.isCreatePopupOpen = false;
     },
     setAnnouncementPopup (show, roomType=null) {
       this.announcementPopup = {
         show: show,
         roomType: roomType
       }
-    },
-    createBlackboard (roomType) {
-      console.log('the roomtype', roomType);
-      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
-      const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-      if (roomType) {
-        if (!this.roomTypes.find(type => type === roomType)) {
-          const classRef = db.doc(`classes/${this.classID}`);
-          classRef.update({
-            roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
-          });
-        }
-        // Create a new room and initialize it with a new board
-        const newBlackboard = blackboardsRef.add({
-          roomType: roomType
-        });
-        newBlackboard.then(result => {
-          const newRoom = roomsRef.add({
-            roomType: roomType,
-            blackboards: [result.id]
-          });
-        })
-        this.isCreatePopupOpen = false;
-      }
-      else {
-        this.$root.$emit("show-snackbar", "Error: Not a valid room type name")
-      }
-    },
-    async initSlides () {
-      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
-      // Return if rooms already exists in a class
-      let initialized = false;
-      await roomsRef.limit(1).get().then(querySnapshot => {
-        if (!querySnapshot.empty) initialized = true;
-      })
-      if (initialized) return;
-      
-      await db.collection(`classes/${this.classID}/blackboards`).get().then(querySnapshot => {
-        console.log('inside the query', querySnapshot.empty)
-        querySnapshot.forEach(doc => {
-          console.log('the doc', doc.id);
-          roomsRef.add({
-            participants: doc.data().participants || [],
-            roomType: doc.data().roomType,
-            status: doc.data().status || '',
-            blackboards: [doc.id],
-          })
-        })
-      })
     },
     async makeAnnouncement (message, roomType) {
       console.log("Making announcement:", message);
@@ -404,11 +383,12 @@ export default {
         );
       }
     },
+    // TODO: Change to use firestore
     bringAllToRoom (roomId, roomType) {
       const allToRoomRef = firebase.database().ref(`class/${this.classID}/${roomType}/toRoom`);
       allToRoomRef.set({ roomId: roomId }).then(() => {
         allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
-      })
+      });
     }
   }
 }
