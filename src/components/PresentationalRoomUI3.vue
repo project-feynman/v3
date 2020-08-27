@@ -1,5 +1,5 @@
 <template>
-  <v-card width="280">
+  <v-card width="260">
     <v-card-title class="orange--text pb-0">
       <p>Room {{ i }}</p>
     </v-card-title>

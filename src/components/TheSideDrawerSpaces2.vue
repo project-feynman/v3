@@ -58,12 +58,11 @@
                         {{ room.status }}
                       </p>
                       <v-spacer/>
-                      <!-- <span class="active-count">{{ room.status }}</span> -->
                       <BaseButton
                         @click="setRoomStatusPopup(true, room.id)"
-                        icon="mdi-message-alert" color="black"
+                        icon="mdi-message-alert" color="blue"
                       >
-                        Update status
+                        Update room status
                       </BaseButton>
                     </div>
                   </PresentationalRoomUI3>
@@ -422,6 +421,7 @@ export default {
   color: #777;
   font-size: 0.8em;
 }
+
 .room-title {
   font-size: 1em !important;
   font-weight: 400;
@@ -449,6 +449,10 @@ export default {
 </style>
 
 <style>
+.v-expansion-panel-content__wrap {
+  padding: 0
+}
+
 .spaces-list .v-expansion-panel-header {
   background: #f5f5f5;
 }
