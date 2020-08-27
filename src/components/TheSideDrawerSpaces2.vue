@@ -1,6 +1,6 @@
 <template>
-  <v-expansion-panels v-if="isDataReady" multiple accordion>
-    <v-expansion-panel v-for="roomType in roomTypes" :value="expandedPanels" :key="roomType">
+  <v-expansion-panels v-if="isDataReady" multiple :value="expandedPanels" accordion>
+    <v-expansion-panel v-for="roomType in roomTypes" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         {{ roomType }}
         
@@ -123,8 +123,9 @@
 </template>
 
 <script>
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import firebase from "firebase/app";
 import db from "@/database.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { mapState } from "vuex";
 
 import BaseButton from "@/components/BaseButton.vue";
@@ -147,9 +148,9 @@ export default {
   data () {
     return {
       unsubFuncs: [],
-      expandedPanels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       
       // Firebase doc objects
+      classDoc: null,
       roomDocs: null,
       participantDocs: null,
 
@@ -159,21 +160,31 @@ export default {
       
       // Create room state
       isCreateRoomPopupOpen: false,
+      
+      // Panel expansion
+      isExpandedPanelsInitialized: false,
+      expandedPanels: [],
     };
   },
   computed: {
     ...mapState([
       "user",
-      "mitClass",
       "session"
     ]),
     sessionID () { return this.session.currentID; },
     classID () { return this.$route.params.class_id; },
     isInRoom () { return "room_id" in this.$route.params; },
     roomID () { return this.$route.params.room_id; },
-    roomTypes () { return this.mitClass.roomTypes; },
     isDataReady () {
-      return this.roomDocs !== null && this.participantDocs !== null;
+      return ![
+        this.classDoc,
+        this.roomDocs,
+        this.participantDocs
+      ].includes(null);
+    },
+    // Computed properties below should only be used after data is ready.
+    roomTypes () {
+      return this.classDoc.roomTypes;
     },
     /**
      * GENERAL FORM: { <roomType>: [<room-1>, ..., <room-n>] }.
@@ -198,26 +209,26 @@ export default {
   },
   watch: {
     isDataReady (isReady) {
-      if (isReady) {
-        this.expandedPanels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // quickfix
-        // TODO: expand the panel so when the user refreshes within a room he will see where he is
-        // find which roomType the current user is in
-        // for (let i = 0; i < this.roomDocs.length; i++) {
-
-        // }
-        // const { room_id } = this.$route.params; 
-        // if (room_id) {
-        //   const currentRoom = this.roomDocs.filter(r => r.id === room_id);
-        //   console.log("currentRoom =", currentRoom);
-        //   console.log("this.mitClass.roomTypes =", this.mitClass.roomTypes);
-        //   this.expandedPanels = [this.mitClass.roomTypes.indexOf(currentRoom.roomType)]
-        //   console.log("expandedPanels =", this.expandedPanels);
-        // }
+      if (isReady && this.isInRoom && !this.isExpandedPanelsInitialized) {
+        for (const room of this.roomDocs) {
+          if (room.id === this.roomID) {
+            for (const [idx, roomType] of this.roomTypes.entries()) {
+              if (roomType === room.roomType) {
+                this.expandedPanels = [idx];
+              }
+            }
+          }
+          this.isExpandedPanelsInitialized = true;
+        }
       }
     }
   },
   async created () {
     const classRef = db.doc(`/classes/${this.classID}`);
+    
+    this.unsubFuncs.push(
+      await this.$_listenToDoc(classRef, this, "classDoc")
+    );
 
     this.unsubFuncs.push(
       await this.$_listenToCollection(
@@ -232,7 +243,7 @@ export default {
     );
   },
   beforeDestroy () {
-    for (const unsubFunc in this.unsubFuncs) {
+    for (const unsubFunc of this.unsubFuncs) {
       unsubFunc();
     }
   },
