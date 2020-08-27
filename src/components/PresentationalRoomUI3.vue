@@ -1,5 +1,5 @@
 <template>
-  <v-card max-width="300">
+  <v-card width="280">
     <v-card-title class="orange--text pb-0">
       <p>Room {{ i }}</p>
     </v-card-title>
@@ -17,14 +17,10 @@
             <p class="orange--text">Connecting audio...</p>
           </template>
           <template v-else>
-            <BaseButton @click="$emit('mute-button-pressed')"
-              :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'"
-              color="black"
-              :stopPropagation="false"
-            >
+            <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" color="black" :stopPropagation="false" small>
               {{ isMuted ? "Unmute" : "Mute" }}
             </BaseButton>
-            <BaseButton @click="$router.push(`/class/${$route.params.class_id}`)" icon="mdi-phone-off" color="red" :stopPropagation="false">
+            <BaseButton @click="$router.push(`/class/${$route.params.class_id}`)" small icon="mdi-phone-off" color="red" :stopPropagation="false">
               Disconnect
             </BaseButton>
           </template>

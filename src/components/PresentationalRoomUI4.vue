@@ -1,6 +1,6 @@
 <template>
   <!-- Other rooms that I'm not currently in -->
-  <v-card>
+  <v-card width="280">
     <v-card-subtitle class="pb-0">
       <p>Room {{ i }}</p>
     </v-card-subtitle>
