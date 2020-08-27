@@ -27,7 +27,11 @@
               <PresentationalRoomUI4
                 :i="i+1"
                 :allClients="roomIDToParticipants[room.id]"
-              />
+              >
+                <p class="blue--text">
+                  {{ room.status }}
+                </p>
+              </PresentationalRoomUI4>
             </template>
 
             <template v-else>
@@ -50,7 +54,11 @@
                     @mute-button-pressed="toggleMute()"  
                   >
                     <div class="d-flex">
-                      <span class="active-count">{{ room.status }}</span>
+                      <p class="align-self-center mb-0 blue--text">
+                        {{ room.status }}
+                      </p>
+                      <v-spacer/>
+                      <!-- <span class="active-count">{{ room.status }}</span> -->
                       <BaseButton
                         @click="setRoomStatusPopup(true, room.id)"
                         icon="mdi-message-alert" color="black"

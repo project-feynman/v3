@@ -3,6 +3,9 @@
   <v-card width="280">
     <v-card-subtitle class="pb-0">
       <p>Room {{ i }}</p>
+      <slot>
+
+      </slot>
     </v-card-subtitle>
     <v-card-text>
       <v-container>
