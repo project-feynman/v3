@@ -45,7 +45,7 @@
               filled
               color="accent"
             >
-              Go to library
+              Library
             </BaseButton>
           </template>
 

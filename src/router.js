@@ -11,6 +11,10 @@ export default new Router({
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
+    { 
+      path: "/playground3",
+      component: () => import(/* webpackChunkName: "home" */ "./components/PresentationalRoomUI3.vue")
+    },
     {
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-page" */ "./pages/ClassPage.vue"),
