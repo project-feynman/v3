@@ -195,7 +195,7 @@
     </v-expansion-panels>
 
     <!-- CREATE BLACKBOARD -->
-    <!-- <v-btn v-if="blackboards"
+    <v-btn v-if="blackboards"
       outlined
       large
       block
@@ -204,7 +204,7 @@
     >
       <v-icon class="pr-2">mdi-plus</v-icon>
       Create Open Space
-    </v-btn> -->
+    </v-btn>
 
     <CreateBlackboardPopup 
       :isCreatePopupOpen="isCreatePopupOpen"
