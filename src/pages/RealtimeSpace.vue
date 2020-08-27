@@ -144,7 +144,6 @@ export default {
     }
   },
   async created () {
-    console.log("roomParticipantsMap =", this.roomParticipantsMap);
     this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
     this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId);
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");

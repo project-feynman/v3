@@ -96,13 +96,13 @@ export default {
     numberOfRooms: {
       immediate: true,
       handler () {
-        console.log("numberOfRooms triggered");
+        // console.log("numberOfRooms triggered");
         this.rooms.forEach(room => {
           const roomParticipantsRef = this.classParticipantsRef.where("currentRoom", "==", room.id);
           Vue.set(this.roomParticipantsMap, room.id, []) //this makes each entry in the object reactive.
           this.$_listenToCollection(roomParticipantsRef, this.roomParticipantsMap, room.id).then(snapshotListener => {
             this.snapshotListeners.push(snapshotListener);
-            console.log("this.roomParticipantsMap =", this.roomParticipantsMap);
+            // console.log("this.roomParticipantsMap =", this.roomParticipantsMap);
           });
         })
       }
