@@ -4,9 +4,15 @@
       <v-expansion-panel-header class="panel-header">
         {{ roomType }}
         
-        <!-- <BaseButton @click="shuffleParticipants(roomType)" icon="mdi-shuffle-variant" small :stopPropagation="true" color="black">
+        <BaseButton
+          @click="shuffleParticipants(roomType)"
+          icon="mdi-shuffle-variant"
+          small
+          :stopPropagation="true"
+          color="black"
+        >
           Shuffle
-        </BaseButton> -->
+        </BaseButton>
 
         <BaseButton
           @click="triggerAnnouncementPopup(roomType)"
@@ -207,6 +213,9 @@ export default {
       isExpandedPanelsInitialized: false,
       expandedPanels: [],
       
+      // For shuffling
+      minRoomSizeOnShuffle: 2, // at least 2 so people aren't lonely
+      
       announcementPopup: {
         show: false,
         roomType: null,
@@ -269,6 +278,22 @@ export default {
           this.isExpandedPanelsInitialized = true;
         }
       }
+    },
+    classDoc (newVal, oldVal) {      
+      // Check for new roomAssignments
+      // Currently only done for random shuffling.
+      // Change snackbar message if this is used for other things.
+      if (oldVal !== null
+          && newVal.roomAssignmentsCounter != oldVal.roomAssignmentsCounter) {
+        this.$root.$emit("show-snackbar", "You have been put in random room with other people. Have fun :)");
+        for (const roomAssignment of newVal.roomAssignments) {
+          if (roomAssignment.assignees.includes(this.user.uid)) {
+            if (this.roomID != roomAssignment.roomID) {
+              this.$router.push(`/class/${this.classID}/room/${roomAssignment.roomID}`); 
+            }
+          }
+        }
+      }
     }
   },
   async created () {
@@ -328,42 +353,33 @@ export default {
       }
       
       // Get all rooms of roomType
-      const querySnapshot = await db
-        .collection(`classes/${this.classID}/rooms`)
-        .where('roomType', '==', roomType)
-        .get();
-      const targetRoomIds = querySnapshot.docs.map(doc => doc.id);
-      
-      // Get all participants in rooms of roomType
-      // roomParticipantsMap : { <roomId>: List<participant-object> }
-      const participants = [];
-      for (const [roomId, participantList]
-            of Object.entries(this.roomParticipantsMap)) {
-        if (targetRoomIds.includes(roomId)) {
-          participants.push(...participantList);
-        }
+      const targetRooms = this.roomTypeToRooms[roomType];
+      const targetParticipants = [];
+      for (const room of targetRooms) {
+        targetParticipants.push(...this.roomIDToParticipants[room.id]);
       }
-      console.log("Breaking out participants:", participants);
+      console.log("Breaking out participants:", targetParticipants);
     
       // Initialize roomAssignments
       const roomAssignments = [];
-      for (const roomId of targetRoomIds) {
+      for (const room of targetRooms) {
         roomAssignments.push({
-          roomID: roomId,
+          roomID: room.id,
           assignees: []
         });
       }
       
       const numRoomsToUse = Math.max(1, Math.min(
-        targetRoomIds.length,
-        Math.floor(participants.length / this.minRoomSizeOnShuffle)
+        targetRooms.length,
+        Math.floor(targetParticipants.length / this.minRoomSizeOnShuffle)
       ));
-      shuffle(participants);
-      for (const [idx, participant] of participants.entries()) {
+      console.log(`Shuffling to ${numRoomsToUse} rooms...`);
+      
+      shuffle(targetParticipants);
+      for (const [idx, participant] of targetParticipants.entries()) {
         roomAssignments[idx % numRoomsToUse].assignees.push(participant.uid);
       }
 
-      console.log('The room assignments:', roomAssignments);
       // update the class doc
       // each connected user will detect the change and be redirected.
       await db.doc(`classes/${this.classID}`).update({
