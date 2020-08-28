@@ -12,7 +12,7 @@
               />
             </v-col>
             <!-- :filled="isNormalEraser" -->
-            <BaseButton v-show="lastEraserNormal"  @click="selectNormalEraser()" icon="mdi-eraser-variant" color="black">
+            <BaseButton v-show="lastEraserNormal" :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
               Eraser
             </BaseButton>
             <slot name="touch-slot">
