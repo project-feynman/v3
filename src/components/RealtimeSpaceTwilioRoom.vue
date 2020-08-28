@@ -157,8 +157,10 @@ export default {
       
       // You can succesfully connect only if you give mic permissions
       try {
+        // const localAudioTracks = Twilio.createLocalTracks({ audio: { deviceId: this.audioDevices.input }});
         this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
           name: this.roomID,
+          // tracks: localAudioTracks,
           audio: true,
           dominantSpeaker: true
         }); // video: { width: 640 }
