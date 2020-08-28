@@ -12,7 +12,7 @@
               </v-col>
               <v-col cols="12" class="py-0 px-0 mr-1">
                 <template v-if="blackboardRoom && blackboardRoom.roomType === category.title">
-                  <template>
+                  <template v-if="user.lastName === 'Dourmashkin' || user.lastName === 'Lin' || user.lastName === 'Kafle' || user.lastName === 'Wang'">
                     <!-- Shuffle everyone to groups -->
                     <BaseButton
                       @click="shuffleParticipants(category.title)"
