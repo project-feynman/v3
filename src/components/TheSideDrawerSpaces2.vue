@@ -1,20 +1,38 @@
 <template>
-  <v-expansion-panels v-if="isDataReady" multiple accordion class="spaces-list">
-    <v-expansion-panel v-for="roomType in mitClass.roomTypes" :value="expandedPanels" :key="roomType">
+  <v-expansion-panels v-if="isDataReady" :value="expandedPanels" multiple accordion class="spaces-list">
+    <v-expansion-panel v-for="roomType in roomTypes" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         {{ roomType }}
         
-        <!-- <BaseButton @click="shuffleParticipants(roomType)" icon="mdi-shuffle-variant" small :stopPropagation="true" color="black">
+        <BaseButton
+          @click="shuffleParticipants(roomType)"
+          icon="mdi-shuffle-variant"
+          small
+          :stopPropagation="true"
+          color="black"
+        >
           Shuffle
         </BaseButton>
 
-        <BaseButton @click="setAnnouncementPopup(true, roomType)" icon="mdi-bullhorn" small color="black" :stopPropagation="true">
+        <BaseButton
+          @click="showMakeAnnouncementPopup(roomType)"
+          icon="mdi-bullhorn"
+          small
+          color="black"
+          :stopPropagation="true"
+        >
           Announce
         </BaseButton>
         
-        <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-microphone-off" small :stopPropagation="true" color="black">
+        <BaseButton
+          @click="muteParticipantsInRooms(roomType)"
+          icon="mdi-microphone-off"
+          small
+          :stopPropagation="true"
+          color="black"
+        >
           Mute all
-        </BaseButton> -->
+        </BaseButton>
       </v-expansion-panel-header>
 
       <v-expansion-panel-content>
@@ -104,18 +122,88 @@
         </v-card>
       </v-dialog>
     </template>
+    
+    <!-- Announcement creation popup -->
+    <v-dialog :value="makeAnnouncementPopup.show" persistent max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="headline">
+            Make Announcement
+          </span>
+        </v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="makeAnnouncementPopup.message"
+            placeholder="Type announcement here..."
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="makeAnnouncementPopup.show = false" color="secondary" text>
+            Cancel
+          </v-btn>
+          <v-btn
+            @click="makeAnnouncement(makeAnnouncementPopup.message, makeAnnouncementPopup.roomType)"
+            color="secondary"
+            text
+          >
+            Make announcement
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Announcement dialog -->
+    <v-dialog v-model="announcementPopup.show" persistent max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Announcement!</v-card-title>
+        <p>{{ announcementPopup.author.firstName }} made an announcement:</p>
+        <p>{{ announcementPopup.message }}</p>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="accent darken-1"
+            text
+            @click="announcementPopup.show = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    
+    <!-- Create new room stuff -->
+    <v-btn
+      outlined
+      large
+      block
+      @click="isCreateRoomPopupOpen = true"
+      color="secondary"
+    >
+      <v-icon class="pr-2">mdi-plus</v-icon>
+      Create New Room
+    </v-btn>
+    <CreateRoomPopup 
+      :isCreatePopupOpen="isCreateRoomPopupOpen"
+      :roomTypes="roomTypes"
+      @popup-closed="isCreateRoomPopupOpen = false"
+      @create-room="roomType => createRoom(roomType)"
+    />
   </v-expansion-panels>
+  
 </template>
 
 <script>
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import firebase from "firebase/app";
 import db from "@/database.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { mapState } from "vuex";
 
 import BaseButton from "@/components/BaseButton.vue";
 import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom.vue";
 import PresentationalRoomUI3 from "@/components/PresentationalRoomUI3.vue";
 import PresentationalRoomUI4 from "@/components/PresentationalRoomUI4.vue";
+import CreateRoomPopup from "@/components/CreateRoomPopup.vue";
 
 export default {
   mixins: [
@@ -125,32 +213,62 @@ export default {
     BaseButton,
     RealtimeSpaceTwilioRoom,
     PresentationalRoomUI3,
-    PresentationalRoomUI4
+    PresentationalRoomUI4,
+    CreateRoomPopup
   },
   data () {
     return {
       unsubFuncs: [],
-      expandedPanels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      
       // Firebase doc objects
+      classDoc: null,
       roomDocs: null,
       participantDocs: null,
 
+      // Room status state
       roomStatusPopup: { show: false, roomID: null },
       updatedStatus: "",
+      
+      // Create room state
+      isCreateRoomPopupOpen: false,
+      
+      // Panel expansion
+      isExpandedPanelsInitialized: false,
+      expandedPanels: [],
+      
+      // For shuffling
+      minRoomSizeOnShuffle: 2, // at least 2 so people aren't lonely
+      
+      // Announcement stuff
+      makeAnnouncementPopup: {
+        show: false,
+        roomType: null,
+        message: null
+      },
+      announcementPopup: {
+        show: false,
+        message: null,
+        author: {},
+      },
     };
   },
   computed: {
     ...mapState([
       "user",
-      "mitClass",
       "session"
     ]),
     sessionID () { return this.session.currentID; },
     classID () { return this.$route.params.class_id; },
-    isInRoom () { return "room_id" in this.$route.params; },
-    roomID () { return this.$route.params.room_id; },
     isDataReady () {
-      return this.roomDocs !== null && this.participantDocs !== null;
+      return ![
+        this.classDoc,
+        this.roomDocs,
+        this.participantDocs
+      ].includes(null);
+    },
+    // Computed properties below should only be used after data is ready.
+    roomTypes () {      
+      return this.classDoc.roomTypes;
     },
     /**
      * GENERAL FORM: { <roomType>: [<room-1>, ..., <room-n>] }.
@@ -158,7 +276,7 @@ export default {
      */
     roomTypeToRooms () {
       const roomTypeToRooms = {};
-      for (const roomType of this.mitClass.roomTypes) {
+      for (const roomType of this.roomTypes) {
         roomTypeToRooms[roomType] =
           this.roomDocs.filter(r => r.roomType === roomType);
       }
@@ -171,30 +289,74 @@ export default {
           this.participantDocs.filter(p => p.currentRoom === room.id);
       }
       return roomIDToParticipants;
+    },
+    
+    // BEGIN properties that rely on isInRoom
+    isInRoom () { return "room_id" in this.$route.params; },
+    roomID () {
+      if (!this.isInRoom) return null;
+      return this.$route.params.room_id;
+    },
+    roomDoc () {
+      if (!this.isInRoom || this.roomDocs === null) return null;
+      for (const roomDoc of this.roomDocs) {
+        if (this.roomID === roomDoc.id) {
+          return roomDoc;
+        }
+      }
+      return null;
     }
+    // END properties that rely on isInRoom
   },
   watch: {
     isDataReady (isReady) {
-      if (isReady) {
-        this.expandedPanels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // quickfix
-        // TODO: expand the panel so when the user refreshes within a room he will see where he is
-        // find which roomType the current user is in
-        // for (let i = 0; i < this.roomDocs.length; i++) {
-
-        // }
-        // const { room_id } = this.$route.params; 
-        // if (room_id) {
-        //   const currentRoom = this.roomDocs.filter(r => r.id === room_id);
-        //   console.log("currentRoom =", currentRoom);
-        //   console.log("this.mitClass.roomTypes =", this.mitClass.roomTypes);
-        //   this.expandedPanels = [this.mitClass.roomTypes.indexOf(currentRoom.roomType)]
-        //   console.log("expandedPanels =", this.expandedPanels);
-        // }
+      if (isReady && this.isInRoom && !this.isExpandedPanelsInitialized) {
+        for (const room of this.roomDocs) {
+          if (room.id === this.roomID) {
+            for (const [idx, roomType] of this.roomTypes.entries()) {
+              if (roomType === room.roomType) {
+                this.expandedPanels = [idx];
+              }
+            }
+          }
+          this.isExpandedPanelsInitialized = true;
+        }
+      }
+    },
+    classDoc (newVal, oldVal) {      
+      // Check for new roomAssignments
+      // Currently only done for random shuffling.
+      // Change snackbar message if this is used for other things.
+      if (oldVal !== null
+          && newVal.roomAssignmentsCounter != oldVal.roomAssignmentsCounter) {
+        this.$root.$emit("show-snackbar", "You have been put in random room with other people. Have fun :)");
+        for (const roomAssignment of newVal.roomAssignments) {
+          if (roomAssignment.assignees.includes(this.user.uid)) {
+            if (this.roomID != roomAssignment.roomID) {
+              this.$router.push(`/class/${this.classID}/room/${roomAssignment.roomID}`); 
+            }
+          }
+        }
+      }
+    },
+    roomDoc (newVal, oldVal) {
+      if (newVal === null) return;
+      // Check for announcement code
+      if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
+        console.log('Showing announcement');
+        this.announcementPopup.show = true;
+        this.announcementPopup.message = newVal.announcement.message;
+        this.announcementPopup.author = newVal.announcement.author;
       }
     }
   },
   async created () {
     const classRef = db.doc(`/classes/${this.classID}`);
+    
+    this.unsubFuncs.push(
+      await this.$_listenToDoc(classRef, this, "classDoc")
+    );
+
     this.unsubFuncs.push(
       await this.$_listenToCollection(
         classRef.collection("rooms"), this, "roomDocs"
@@ -208,12 +370,11 @@ export default {
     );
   },
   beforeDestroy () {
-    for (const unsubFunc in this.unsubFuncs) {
+    for (const unsubFunc of this.unsubFuncs) {
       unsubFunc();
     }
   },
   methods: {
-    // TODO: refactor this is so bad
     setRoomStatusPopup (show, roomID = null) {
       console.log("show =", show);
       console.log("roomID =", roomID);
@@ -246,42 +407,33 @@ export default {
       }
       
       // Get all rooms of roomType
-      const querySnapshot = await db
-        .collection(`classes/${this.classID}/rooms`)
-        .where('roomType', '==', roomType)
-        .get();
-      const targetRoomIds = querySnapshot.docs.map(doc => doc.id);
-      
-      // Get all participants in rooms of roomType
-      // roomParticipantsMap : { <roomId>: List<participant-object> }
-      const participants = [];
-      for (const [roomId, participantList]
-            of Object.entries(this.roomParticipantsMap)) {
-        if (targetRoomIds.includes(roomId)) {
-          participants.push(...participantList);
-        }
+      const targetRooms = this.roomTypeToRooms[roomType];
+      const targetParticipants = [];
+      for (const room of targetRooms) {
+        targetParticipants.push(...this.roomIDToParticipants[room.id]);
       }
-      console.log("Breaking out participants:", participants);
+      console.log("Breaking out participants:", targetParticipants);
     
       // Initialize roomAssignments
       const roomAssignments = [];
-      for (const roomId of targetRoomIds) {
+      for (const room of targetRooms) {
         roomAssignments.push({
-          roomID: roomId,
+          roomID: room.id,
           assignees: []
         });
       }
       
       const numRoomsToUse = Math.max(1, Math.min(
-        targetRoomIds.length,
-        Math.floor(participants.length / this.minRoomSizeOnShuffle)
+        targetRooms.length,
+        Math.floor(targetParticipants.length / this.minRoomSizeOnShuffle)
       ));
-      shuffle(participants);
-      for (const [idx, participant] of participants.entries()) {
+      console.log(`Shuffling to ${numRoomsToUse} rooms...`);
+      
+      shuffle(targetParticipants);
+      for (const [idx, participant] of targetParticipants.entries()) {
         roomAssignments[idx % numRoomsToUse].assignees.push(participant.uid);
       }
 
-      console.log('The room assignments:', roomAssignments);
       // update the class doc
       // each connected user will detect the change and be redirected.
       await db.doc(`classes/${this.classID}`).update({
@@ -289,104 +441,76 @@ export default {
         roomAssignmentsCounter: firebase.firestore.FieldValue.increment(1)
       });
     },
-    setRoomCategories () {
-      if (this.roomTypes) {
-        // this.roomCategories = [];
-        const tempArray = [];
-        for (const type of this.roomTypes) {
-          tempArray.push({
-            title: type, 
-            rooms: this.blackboards.filter(room => room.roomType === type)
-          });
-        }
-        this.roomCategories = tempArray;
-        console.log("setRoomCategories =", this.roomCategories);
-      } else {
-        this.roomCategories = [{ title: "Blackboard Rooms", rooms: this.blackboards }];
+    /**
+     * Creates a new room of type roomType.
+     */
+    createRoom (roomType) {
+      console.log(`Creating room of roomType={roomType}`, roomType);
+      
+      if (!roomType) {
+        this.$root.$emit("show-snackbar", "Error: Not a valid room type name");
+        return;
       }
-    },
-    setRoomStatusPopup (show, room = null) {
-      console.log("show =", show);
-      console.log("roomID =", room);
-      this.roomStatusPopup = {
-        show: show,
-        roomID: room
+      
+      if (!this.roomTypes.includes(roomType)) {     
+        // Add new roomType to firestore   
+        db.doc(`classes/${this.classID}`).update({
+          roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
+        });
       }
-    },
-    setRoomStatus (status) {
-      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({
-        status
+      
+      // Create a new blackboard and a new room
+      // Then link the two together
+      const newBlackboard = db
+        .collection(`classes/${this.classID}/blackboards`)
+        .add({roomType: roomType});
+      newBlackboard.then(result => {
+        db.collection(`classes/${this.classID}/rooms`).add({
+          roomType: roomType,
+          blackboards: [result.id]
+        });
       });
-      this.roomStatusPopup['show'] = false;
+      this.isCreatePopupOpen = false;
     },
-    setAnnouncementPopup (show, roomType=null) {
-      this.announcementPopup = {
-        show: show,
+    showMakeAnnouncementPopup (roomType) {
+      this.makeAnnouncementPopup = {
+        show: true,
         roomType: roomType
       }
     },
-    createBlackboard (roomType) {
-      console.log('the roomtype', roomType);
-      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
-      const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-      if (roomType) {
-        if (!this.roomTypes.find(type => type === roomType)) {
-          const classRef = db.doc(`classes/${this.classID}`);
-          classRef.update({
-            roomTypes: firebase.firestore.FieldValue.arrayUnion(roomType)
-          });
-        }
-        // Create a new room and initialize it with a new board
-        const newBlackboard = blackboardsRef.add({
-          roomType: roomType
-        });
-        newBlackboard.then(result => {
-          const newRoom = roomsRef.add({
-            roomType: roomType,
-            blackboards: [result.id]
-          });
-        })
-        this.isCreatePopupOpen = false;
-      }
-      else {
-        this.$root.$emit("show-snackbar", "Error: Not a valid room type name")
-      }
-    },
-    async initSlides () {
-      const roomsRef = db.collection(`classes/${this.classID}/rooms`);
-      // Return if rooms already exists in a class
-      let initialized = false;
-      await roomsRef.limit(1).get().then(querySnapshot => {
-        if (!querySnapshot.empty) initialized = true;
-      })
-      if (initialized) return;
-      
-      await db.collection(`classes/${this.classID}/blackboards`).get().then(querySnapshot => {
-        console.log('inside the query', querySnapshot.empty)
-        querySnapshot.forEach(doc => {
-          console.log('the doc', doc.id);
-          roomsRef.add({
-            participants: doc.data().participants || [],
-            roomType: doc.data().roomType,
-            status: doc.data().status || '',
-            blackboards: [doc.id],
-          })
-        })
-      })
-    },
     async makeAnnouncement (message, roomType) {
-      console.log("Making announcement:", message);
+      console.log("Making announcement...");
+      console.log("Announcement message:", message);
+      console.log("Annoucement roomType:", roomType);
+      
+      if (!message) {
+        this.$root.$emit("show-snackbar", "Invalid announcement message");
+        return;
+      }
+      
       const querySnapshot = await db
         .collection(`classes/${this.classID}/rooms`)
         .where('roomType', '==', roomType)
-        .get(); 
+        .get();
       for (const docSnapshot of querySnapshot.docs) {
         docSnapshot.ref.update({
-          announcement: message,
+          announcement: {
+            message: message,
+            
+            // TODO: Change this to just writing uid
+            // To do this, we need to provide a global way to get information
+            // about a user from their uid. This is needed because the author
+            // could disconnect after sending an announcement.
+            author: {
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              uid: this.user.uid
+            }
+          },
           announcementCounter: firebase.firestore.FieldValue.increment(1)
         });
       }
-      this.announcementPopup['show'] = false;
+      this.makeAnnouncementPopup['show'] = false;
     },
     /**
      * Mutes all participants in rooms of roomType
@@ -408,11 +532,12 @@ export default {
         );
       }
     },
+    // TODO: Change to use firestore
     bringAllToRoom (roomId, roomType) {
       const allToRoomRef = firebase.database().ref(`class/${this.classID}/${roomType}/toRoom`);
       allToRoomRef.set({ roomId: roomId }).then(() => {
         allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
-      })
+      });
     }
   }
 }

@@ -46,7 +46,9 @@ export default {
     this.unsubscribe = await this.$_listenToDoc(tutorialExplRef, this, "tutorialExpl");
   },
   beforeDestroy () {
-    this.unsubscribe();
+    if (this.unsubscribe !== null) {
+      this.unsubscribe();
+    }
   },
   methods: {
     fetchClassmates () {}
