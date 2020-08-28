@@ -3,39 +3,19 @@
     <v-expansion-panel v-for="(roomType, j) in roomTypes" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         <div class="d-flex flex-column">
-          <div>{{ roomType }}</div>
-          <div class="pt-2">
-            <template v-if="expandedPanels.includes(j)">
-              <BaseButton
-                @click="shuffleParticipants(roomType)"
-                icon="mdi-shuffle-variant"
-                small
-                :stopPropagation="true"
-                color="black"
-              >
-                Shuffle
-              </BaseButton>
+          <div style="text-transform: uppercase;">{{ roomType }}</div>
+          <div v-if="expandedPanels.includes(j)" class="pt-2">
+            <BaseButton @click="shuffleParticipants(roomType)" icon="mdi-shuffle-variant" :stopPropagation="true" color="black">
+              Shuffle
+            </BaseButton>
 
-              <BaseButton
-                @click="showMakeAnnouncementPopup(roomType)"
-                icon="mdi-bullhorn"
-                small
-                color="black"
-                :stopPropagation="true"
-              >
-                Announce
-              </BaseButton>
-              
-              <BaseButton
-                @click="muteParticipantsInRooms(roomType)"
-                icon="mdi-microphone-off"
-                small
-                :stopPropagation="true"
-                color="black"
-              >
-                Mute all
-              </BaseButton>
-            </template>
+            <BaseButton @click="showMakeAnnouncementPopup(roomType)" icon="mdi-bullhorn" color="black" :stopPropagation="true">
+              Announce
+            </BaseButton>
+            
+            <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-volume-mute" :stopPropagation="true" color="black">
+              Mute all
+            </BaseButton>
           </div>
         </div>
       </v-expansion-panel-header>
@@ -54,9 +34,9 @@
                   :i="i+1"
                   :allClients="roomIDToParticipants[room.id]"
                 >
-                  <span v-if="room.status" class="active-count">
+                  <v-chip v-if="room.status" color="secondary" small>
                     {{ room.status }}
-                  </span>
+                  </v-chip>
                 </PresentationalRoomUI4>
               </template>
 
@@ -81,14 +61,11 @@
                       @audio-device-change="devices => changeAudioDevices(devices)"
                     >
                       <div class="d-flex">
-                        <span v-if="room.status" class="align-self-center mb-0 active-count">
+                        <v-chip v-if="room.status" color="secondary" class="mt-2" small>
                           {{ room.status }}
-                        </span>
+                        </v-chip>
                         <v-spacer/>
-                        <BaseButton
-                          @click="setRoomStatusPopup(true, room.id)"
-                          icon="mdi-message-alert" color="#555"
-                        >
+                        <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="secondary">
                           Update room status
                         </BaseButton>
                       </div>
@@ -114,7 +91,7 @@
             </span>
           </v-card-title>
           <v-card-text>
-            <v-text-field v-model="updatedStatus"/>
+            <v-text-field v-model="updatedStatus" placeholder="(You can empty the status by entering nothing.)"/>
           </v-card-text>
           <v-card-actions>
             <v-spacer/>
@@ -162,9 +139,15 @@
     <!-- Announcement dialog -->
     <v-dialog v-model="announcementPopup.show" persistent max-width="500px">
       <v-card>
-        <v-card-title class="headline">Announcement!</v-card-title>
-        <p>{{ announcementPopup.author.firstName }} made an announcement:</p>
-        <p>{{ announcementPopup.message }}</p>
+        <v-card-title class="headline">
+          {{ announcementPopup.author.firstName }}
+          made an announcement...
+        </v-card-title>
+        <v-card-text>
+          <h2>
+            {{ announcementPopup.message }}
+          </h2>
+        </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -561,10 +544,12 @@ export default {
 
 <style scoped>
 .panel-header {
+  /* font-weight: 500; */
   font-weight: 500;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   color: #555;
-  font-size: 0.9em;
+  /* font-size: 0.9em; */
+  font-size: 0.8em;
 }
 .panel-header.v-expansion-panel-header--active {
   color: var(--v-accent-darken1);
@@ -595,10 +580,12 @@ export default {
   font-style: italic;
   font-weight: 400;
   font-size: 0.85em;
-  background: var(--v-accent-lighten4);
+  background: blue;
+  /* background: var(--v-accent-lighten4); */
   padding: 1px 6px 1px 4px;
   border-radius: 5px;
-  color: #222;
+  /* color: #222; */
+  color: white;
 }
 </style>
 

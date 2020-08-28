@@ -9,48 +9,43 @@
     <div>
       <v-container class="pr-0" fluid>
         <div class="d-flex flex-column">
-          <p :class="[`${hasConnectedToTwilioRoom ? 'mb-0' : '' }`]">
+          <p class="mb-0 black--text">
             {{ currentClient.name }}
           </p>
-          <div>
-            <template v-if="!hasConnectedToTwilioRoom">
-              <p class="accent--text">Connecting audio...</p>
-            </template>
-            <template v-else>
-              <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" color="#555" :stopPropagation="false" small>
-                {{ isMuted ? "Unmute" : "Mute" }}
-              </BaseButton>
-              <BaseButton
-                small icon="mdi-phone-off" color="red"
-                :stopPropagation="false"
-                :to="`/class/${$route.params.class_id}`"
-                @click.native="$root.$emit(`show-snackbar`, `Disconnected from room.`)"
-              >
-                Disconnect
-              </BaseButton>
 
-            </template>
-            <BaseButton
-              small icon="mdi-settings" color="#555"
-              :stopPropagation="false"
-              @click="audioSettingsPopup = true"
-            >
+          <v-divider/>
+          
+          <p v-if="!hasConnectedToTwilioRoom" class="accent--text">
+            Connecting audio...
+          </p>
+
+          <div v-else>
+            <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" color="black" :stopPropagation="false">
+              {{ isMuted ? "Unmute" : "Mute" }}
+            </BaseButton>
+
+            <BaseButton @click.native="$root.$emit(`show-snackbar`, `Disconnected from room.`)" :to="`/class/${$route.params.class_id}`" icon="mdi-phone-off" color="black" :stopPropagation="false">
+              Disconnect
+            </BaseButton>
+
+            <BaseButton @click="audioSettingsPopup = true" icon="mdi-settings" color="black" :stopPropagation="false">
               Settings
             </BaseButton>
           </div>
-          
+<!--           
+          <v-divider/> -->
+
         </div>
       </v-container>
 
-      <v-divider/>
       <v-container class="pr-0" v-if="hasConnectedToTwilioRoom">
-        <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.id === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
+        <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.uid === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
           <template v-if="p.uid !== currentClient.uid">
             {{ p.firstName + " " + p.lastName }}
 
             <v-spacer/>
 
-            <v-icon v-if="uidToIsMicEnabled.hasOwnProperty(p.uid)" small>
+            <v-icon v-if="uidToIsMicEnabled.hasOwnProperty(p.uid)">
               {{ uidToIsMicEnabled[p.uid] ? 'mdi-microphone' : 'mdi-microphone-off' }}
             </v-icon>
           </template>
