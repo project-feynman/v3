@@ -35,7 +35,7 @@
               :stopPropagation="false"
               @click="audioSettingsPopup = true"
             >
-              Audio Settings
+              Settings
             </BaseButton>
           </div>
           
