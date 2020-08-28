@@ -161,10 +161,9 @@ export default {
         this.tellUserHowToFixError(error);
         return;
       }
-      
-      // Report succesful connection
-      console.log("Connected to Twilio room.");
-      this.$root.$emit("show-snackbar", "Connected to the voice chat.");
+
+      // don't tell the user "successfully connected" because they'll expect that they can hear and talk,
+      // but actually it takes another 1-3 seconds to be able to
   
       // handle disconnections so other participants get notified immediately 
       window.addEventListener("beforeunload", this.twilioRoom.disconnect);
