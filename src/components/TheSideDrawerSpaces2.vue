@@ -8,9 +8,29 @@
           </div>
 
           <div v-if="roomType === currentRoomType">
-            <BaseButton @click="shuffleParticipants(roomType)" icon="mdi-shuffle-variant" :stopPropagation="true" color="black">
-              Shuffle
-            </BaseButton>
+            <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomType)">
+              <template v-slot:activator-button="{ on }">
+                <BaseButton :on="on" icon="mdi-shuffle-variant" :stopPropagation="true" color="black">
+                  Shuffle
+                </BaseButton>
+              </template>
+              <template v-slot:message-to-user>
+                <v-row>
+                  <v-col cols="12" sm="4">
+                    <v-overflow-btn 
+                      label="2"
+                      :items="[1, 2, 3, 4, 5, 6]"
+                      @change="groupSize => minRoomSizeOnShuffle = groupSize"
+                    />
+                  </v-col>
+                  <v-col>
+                    <h3 class="mt-5">
+                      people per group
+                    </h3>
+                  </v-col>
+                </v-row>
+              </template> 
+            </BasePopupButton>
 
             <BaseButton @click="showMakeAnnouncementPopup(roomType)" icon="mdi-bullhorn" small color="black" :stopPropagation="true">
               Announce
@@ -174,6 +194,7 @@ import PresentationalRoomUI3 from "@/components/PresentationalRoomUI3.vue";
 import PresentationalRoomUI4 from "@/components/PresentationalRoomUI4.vue";
 import CreateRoomPopup from "@/components/CreateRoomPopup.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
+import BasePopupButton from "@/components/BasePopupButton.vue";
 
 export default {
   mixins: [
@@ -181,6 +202,7 @@ export default {
   ],
   components: {
     BaseButton,
+    BasePopupButton,
     RealtimeSpaceTwilioRoom,
     PresentationalRoomUI3,
     PresentationalRoomUI4,
@@ -211,7 +233,7 @@ export default {
       expandedPanels: [],
       
       // For shuffling
-      minRoomSizeOnShuffle: 2, // at least 2 so people aren't lonely
+      minRoomSizeOnShuffle: 2, // at least 2 so people aren't lonely AHAHAHAHA
       
       // Announcement stuff
       makeAnnouncementPopup: {
