@@ -348,54 +348,6 @@ export default {
   },
   methods: {
     /**
-     * TODO: 
-     *  1. DRY: the same method is currently re-declared in TheSiderawerSpaces.vue and TwilioRoom.vue
-     *  2. Apparently the mic does not turn off even when you leave explain.mit.edu
-     */
-    /*async shareAudio () {
-      console.log("shareAudio");
-      const { createLocalAudioTrack } = require('twilio-video');
-      createLocalAudioTrack().catch(error => this.tellUserHowToFixError(error));
-      const localAudioTrack = await createLocalAudioTrack({ name: `${this.user.firstName}'s audio stream` });
-      this.twilioRoom.localParticipant.publishTrack(localAudioTrack);
-      this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", true);
-    },*/
-    /**
-     * Mutes/unmutes the user's microphone
-     * 
-     */
-    /*muteMicrophone () {
-      console.log("muteMicrophone() twilioRoom =", this.twilioRoom);
-      const { audioTracks } = this.twilioRoom.localParticipant; 
-      audioTracks.forEach(audioTrack => {
-        audioTrack.unpublish();
-        console.log("audioTrack is now unpublished =", audioTrack);
-      });
-      console.log("after muting, twilioRoom =", this.twilioRoom);
-      this.$store.commit("SET_IS_CONNECTED_TO_AUDIO", false);
-    },*/
-    // TODO: put the method in Vuex
-    /*tellUserHowToFixError (error) {
-      this.isShowingErrorPopup = true; 
-
-      // give a specific, helpful error message
-      if (error.name === "NotFoundError") {
-        this.whyItFailed = `Your laptop or iPad's audio device is currently disabled in this browser.`;
-        this.howToFix = `Enable your audio device for the browser in the system settings.`;
-      } else if (error.name === "NotAllowedError") {
-        this.whyItFailed = `At some point, you dismissed or denied the popup that asked for access to your microphone`
-        this.howToFix = `
-          Give access to your microphone by doing the following steps: 
-            1. Click the small, circular "i" button near the left of "https://explain.mit.edu/...." 
-            2. Find the settings somewhere for the audio microphone and switch to "allow" 
-            3. Reload the entire website. 
-        `;
-      } else {
-        this.whyItFailed = `Failed to acquire audio media because: ${error.message}`;
-        this.howToFix = "";
-      }
-    },*/
-    /**
      * Assigns all participants in rooms of roomType to a random room of
      * roomType. After shuffling, each room has at minimum minRoomSizeOnShuffle
      * participants.

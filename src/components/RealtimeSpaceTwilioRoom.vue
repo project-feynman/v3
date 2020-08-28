@@ -5,6 +5,7 @@
       :hasConnectedToTwilio="twilioInitialized"
       :toggleMute="toggleIsMicEnabled"
       :isMuted="!isMicEnabled"
+      :uidToIsMicEnabled="participantAudioStatus"
     >
 
     </slot>
@@ -104,7 +105,6 @@ export default {
   },
   async created () {
     await this.connectToTwilioRoom();
-    
     const roomDocRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
     this.$_listenToDoc(roomDocRef, this, "roomDoc")
         .then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
@@ -119,6 +119,7 @@ export default {
       this.twilioRoom.disconnect();
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
+      console.log("Disconnected from Twilio room.");
     }
   },
   watch: {
@@ -162,8 +163,7 @@ export default {
       }
       
       // Report succesful connection
-      console.log("Joined Twilio room =", this.twilioRoom);
-      console.log("localParticipant identity:", this.twilioRoom.localParticipant.identity);
+      console.log("Connected to Twilio room.");
       this.$root.$emit("show-snackbar", "Connected to the voice chat.");
   
       // handle disconnections so other participants get notified immediately 

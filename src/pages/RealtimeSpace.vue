@@ -34,26 +34,6 @@
           </template>
         </v-tabs-items>
       </div>
-
-      <!-- Announcement dialog -->
-      <v-dialog v-model="showAnnouncement" max-width="500px">
-        <v-card>
-          <v-card-title class="headline">Announcement!</v-card-title>
-          <v-card-text v-if="room">
-            {{ room.announcement }}
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn
-              color="accent darken-1"
-              text
-              @click="showAnnouncement = false"
-            >
-              Close
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </div>
   </div>
 </template>
@@ -101,7 +81,6 @@ export default {
       boards: [],
       hasUserBeenSet: false,
       removeSetParticipantListener: null,
-      showAnnouncement: false,
       allToRoomRef: null
     }
   },
@@ -125,12 +104,6 @@ export default {
     room (newVal, oldVal) {
       this.$store.commit("SET_ROOM", this.room);
       
-      // announcement code
-      if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
-        console.log('Showing announcement');
-        this.showAnnouncement = true;
-      }
-      
       // new blackboards
       if (oldVal !== null && newVal.blackboards !== oldVal.blackboards) {
         const newBlackboardRefs = []; 
@@ -144,7 +117,6 @@ export default {
     }
   },
   async created () {
-    console.log("roomParticipantsMap =", this.roomParticipantsMap);
     this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
     this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId);
     this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
@@ -168,6 +140,7 @@ export default {
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
+    db.doc(`classes/${this.classId}/participants/${this.sessionID}`).delete();
     firebase.database().ref(".info/connected").off();
     if (this.allToRoomRef) {
       this.allToRoomRef.off();
@@ -255,7 +228,6 @@ export default {
       promises.push(
         blackboardsRef.doc(newID).set({
           roomType: '',
-          announcement: '',
         })
       );
       promises.push(
@@ -267,21 +239,6 @@ export default {
 
       this.activeBoard = newID;
     },
-    // async announce (message) {
-    //   console.log('the announcement', message);
-    //   const category = this.room.roomType;
-    //   await db.collection(`classes/${this.classId}/rooms`).where('roomType', '==', category).get().then(querySnapshot => {
-    //     querySnapshot.forEach(doc => {
-    //       doc.ref.update({
-    //         announcement: message['Message']
-    //       })
-    //     });
-    //   });
-    //   // await db.doc(`classes/${this.classId}/rooms/${this.roomId}`).update({
-    //   //   announcement: message['Message']
-    //   // });
-      
-    // }
   }
 };
 </script>
