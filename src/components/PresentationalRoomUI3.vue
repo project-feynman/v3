@@ -42,10 +42,10 @@
       <v-divider/>
 
       <v-container class="pr-0" v-if="hasConnectedToTwilioRoom">
-        <div v-for="p in otherClients" :key="p.sessionID" :class="['d-flex', `${ p.sessionID === dominantParticipantSessionID ? 'font-weight-black' : '' }`]">
+        <div v-for="p in otherClients" :key="p.sessionID" :class="['d-flex', `${ p.sessionID === dominantSpeakerSessionID ? 'font-weight-black' : '' }`]">
           <template v-if="p.sessionID !== currentClient.sessionID">
             {{ p.firstName + " " + p.lastName }}
-
+            
             <v-spacer/>
 
             <v-icon v-if="sessionIDToIsMicEnabled.hasOwnProperty(p.sessionID)" small>
@@ -117,8 +117,9 @@ export default {
       type: Boolean,
       required: true
     },
-    dominantParticipantSessionID: {
-      type: null
+    dominantSpeakerSessionID: {
+      type: null,
+      required: true
     },
     sessionIDToIsMicEnabled: {
       type: Object

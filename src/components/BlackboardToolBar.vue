@@ -11,7 +11,6 @@
                 @select-color="newColor => changePenColor(newColor)" 
               />
             </v-col>
-            <!-- :filled="isNormalEraser" -->
             <BaseButton v-show="lastEraserNormal" :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
               Eraser
             </BaseButton>
