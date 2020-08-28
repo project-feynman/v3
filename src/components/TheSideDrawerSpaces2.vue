@@ -1,38 +1,39 @@
 <template>
-  <v-expansion-panels v-if="isDataReady" :value="expandedPanels" multiple accordion class="spaces-list">
-    <v-expansion-panel v-for="roomType in roomTypes" :key="roomType">
+  <v-expansion-panels v-if="isDataReady" multiple :value="expandedPanels" accordion class="spaces-list">
+    <v-expansion-panel v-for="(roomType, j) in roomTypes" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         {{ roomType }}
-        
-        <BaseButton
-          @click="shuffleParticipants(roomType)"
-          icon="mdi-shuffle-variant"
-          small
-          :stopPropagation="true"
-          color="black"
-        >
-          Shuffle
-        </BaseButton>
+        <template v-if="expandedPanels.includes(j)">
+          <BaseButton
+            @click="shuffleParticipants(roomType)"
+            icon="mdi-shuffle-variant"
+            small
+            :stopPropagation="true"
+            color="black"
+          >
+            Shuffle
+          </BaseButton>
 
-        <BaseButton
-          @click="showMakeAnnouncementPopup(roomType)"
-          icon="mdi-bullhorn"
-          small
-          color="black"
-          :stopPropagation="true"
-        >
-          Announce
-        </BaseButton>
-        
-        <BaseButton
-          @click="muteParticipantsInRooms(roomType)"
-          icon="mdi-microphone-off"
-          small
-          :stopPropagation="true"
-          color="black"
-        >
-          Mute all
-        </BaseButton>
+          <BaseButton
+            @click="showMakeAnnouncementPopup(roomType)"
+            icon="mdi-bullhorn"
+            small
+            color="black"
+            :stopPropagation="true"
+          >
+            Announce
+          </BaseButton>
+          
+          <BaseButton
+            @click="muteParticipantsInRooms(roomType)"
+            icon="mdi-microphone-off"
+            small
+            :stopPropagation="true"
+            color="black"
+          >
+            Mute all
+          </BaseButton>
+        </template>
       </v-expansion-panel-header>
 
       <v-expansion-panel-content>

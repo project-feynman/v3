@@ -33,8 +33,14 @@
       </v-container>
 
       <v-divider/>
+<<<<<<< HEAD
       <v-container class="pr-0" v-if="hasConnectedToTwilioRoom">
         <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.id === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
+=======
+
+      <v-container v-if="hasConnectedToTwilioRoom">
+        <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.uid === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
+>>>>>>> cec80ef4cd43c6a295591b87f715ba86875d1294
           <template v-if="p.uid !== currentClient.uid">
             {{ p.firstName + " " + p.lastName }}
 
