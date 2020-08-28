@@ -1,11 +1,11 @@
 <template>
   <div style="width: 100%;">
     <slot
-      :dominantSpeakerUID="dominantParticipantUid"
+      :dominantSpeakerSessionID="dominantParticipantSessionID"
       :hasConnectedToTwilio="twilioInitialized"
       :toggleMute="toggleIsMicEnabled"
       :isMuted="!isMicEnabled"
-      :uidToIsMicEnabled="participantAudioStatus"
+      :sessionIDToIsMicEnabled="participantAudioStatus"
     >
 
     </slot>
@@ -86,23 +86,23 @@ export default {
       isMicEnabled: true,
       
       // Contains connected participants with a published audio stream
-      // Maps uid to the remote participants isMicEnabled value
+      // Maps sessionID to the remote participants isMicEnabled value
       participantAudioStatus: {},
       
-      // The remote participant uid with the loudest audioTrack
-      // null means either there are no participants,
+      // The remote participant sessionID with the loudest audioTrack
+      // null means either there are no other participants,
       // or no participants are speaking
-      dominantParticipantUid: null
+      dominantParticipantSessionID: null
     };
   },
   computed: {
-    ...mapState(["user"]),
-    classId () {
-      return this.$route.params.class_id;
-    },
-    roomId () {
-      return this.$route.params.room_id;
-    },
+    ...mapState([
+      "user",
+      "session"
+    ]),
+    sessionID () { return this.session.currentID; },
+    classId () { return this.$route.params.class_id; },
+    roomId () { return this.$route.params.room_id; },
   },
   async created () {
     await this.connectToTwilioRoom();
@@ -249,8 +249,7 @@ export default {
     },
     onDominantSpeakerChanged(participant) {
       console.log("dominantSpeakerChanged =", participant);
-      this.dominantParticipantUid = participant ? participant.identity : null;
-      this.$store.commit("SET_DOMINANT_SPEAKER_UID", this.dominantParticipantUid);
+      this.dominantParticipantSessionID = participant ? participant.identity : null;
     },
     /**
      * The functions below takes in a track (audio or video)
@@ -311,7 +310,7 @@ export default {
         twilioCreds.API_KEY_SECRET
       );
       // TODO: want unique identifiers for each device
-      token.identity = this.user.uid; 
+      token.identity = this.sessionID;
 
       // Create a Video grant which enables a client to use Video 
       const videoGrant = new VideoGrant();

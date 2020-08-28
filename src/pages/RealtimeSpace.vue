@@ -184,7 +184,7 @@ export default {
               hasJoinedMedia: false
             });
           }
-          const participantsRef = db.collection(`classes/${this.classId}/participants`);
+          /*const participantsRef = db.collection(`classes/${this.classId}/participants`);
           participantsRef.where("refreshToken", "==", this.session.refreshToken).get().then(docs => {
             if (docs.empty) {
               return;
@@ -195,7 +195,7 @@ export default {
                 participantsRef.doc(participant.sessionID).delete();
               }
             });
-          }) 
+          })*/
         })
         this.setMoveToRoomListener();
       });

@@ -4,7 +4,8 @@
       <v-expansion-panel-header class="panel-header">
         <div class="d-flex flex-column">
           <div style="text-transform: uppercase;">{{ roomType }}</div>
-          <div v-if="expandedPanels.includes(j)" class="pt-2">
+
+          <template v-if="roomType === currentRoomType">
             <BaseButton @click="shuffleParticipants(roomType)" icon="mdi-shuffle-variant" :stopPropagation="true" color="black">
               Shuffle
             </BaseButton>
@@ -16,7 +17,7 @@
             <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-volume-mute" :stopPropagation="true" color="black">
               Mute all
             </BaseButton>
-          </div>
+          </template>
         </div>
       </v-expansion-panel-header>
 
@@ -24,12 +25,12 @@
         <v-list dense>
           <template v-for="(room, i) in roomTypeToRooms[roomType]">
             <v-list-item 
-              :to="`/class/${$route.params.class_id}/room/${room.id}`"
+              :to="`/class/${classID}/room/${room.id}`"
               :key="room.id"
               active-class="active-blackboard"
               class="py-2 single-room"
             >
-              <template v-if="room.id !== roomID">
+              <template v-if="room.id !== currentRoomID">
                 <PresentationalRoomUI4
                   :i="i+1"
                   :allClients="roomIDToParticipants[room.id]"
@@ -44,18 +45,18 @@
                 <RealtimeSpaceTwilioRoom :roomID="room.id" :key="room.id" :audioDevices="audioDevices">
                   <template v-slot="{
                     hasConnectedToTwilio,
-                    dominantSpeakerUID,
+                    dominantSpeakerSessionID,
                     toggleMute,
                     isMuted,
-                    uidToIsMicEnabled
+                    sessionIDToIsMicEnabled
                   }">
                     <PresentationalRoomUI3
                       :i="i+1"
                       :hasConnectedToTwilioRoom="hasConnectedToTwilio"
-                      :currentClient="{ uid: user.uid, name: user.firstName + ' ' + user.lastName }"
+                      :currentClient="{ sessionID: sessionID, name: user.firstName + ' ' + user.lastName }"
                       :otherClients="roomIDToParticipants[room.id]"
-                      :dominantSpeakerUID="dominantSpeakerUID"
-                      :uidToIsMicEnabled="uidToIsMicEnabled"
+                      :dominantSpeakerSessionID="dominantSpeakerSessionID"
+                      :sessionIDToIsMicEnabled="sessionIDToIsMicEnabled"
                       :isMuted="isMuted"
                       @mute-button-pressed="toggleMute()"
                       @audio-device-change="devices => changeAudioDevices(devices)"
@@ -91,14 +92,14 @@
             </span>
           </v-card-title>
           <v-card-text>
-            <v-text-field v-model="updatedStatus" placeholder="(You can empty the status by entering nothing.)"/>
+            <v-text-field v-model="roomStatusPopup.status" placeholder="(You can empty the status by entering nothing.)"/>
           </v-card-text>
           <v-card-actions>
             <v-spacer/>
-            <v-btn @click="setRoomStatusPopup(false)" color="secondary" text>
+            <v-btn @click="roomStatusPopup.show = false" color="secondary" text>
               Cancel
             </v-btn>
-            <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
+            <v-btn @click="setRoomStatus(roomStatusPopup.status)" color="secondary" text>
               Update status
             </v-btn>
           </v-card-actions>
@@ -215,8 +216,11 @@ export default {
       participantDocs: null,
 
       // Room status state
-      roomStatusPopup: { show: false, roomID: null },
-      updatedStatus: "",
+      roomStatusPopup: {
+        show: false,
+        roomID: null,
+        status: ""
+      },
       
       // Create room state
       isCreateRoomPopupOpen: false,
@@ -270,54 +274,42 @@ export default {
      * EXAMPLE: { "L01 Dourmashkin": [{ id: "123", status: "Done!" }, { id: "abc", status: "Help!"}] }
      */
     roomTypeToRooms () {
-      const roomTypeToRooms = {};
+      const ret = {};
       for (const roomType of this.roomTypes) {
-        roomTypeToRooms[roomType] =
-          this.roomDocs.filter(r => r.roomType === roomType);
+        ret[roomType] = this.roomDocs.filter(r => r.roomType === roomType);
       }
-      return roomTypeToRooms;
+      return ret;
     },
     roomIDToParticipants () {
-      const roomIDToParticipants = {};
+      const ret = {};
       for (const room of this.roomDocs) {
-        roomIDToParticipants[room.id] =
-          this.participantDocs.filter(p => p.currentRoom === room.id);
+        ret[room.id] = this.participantDocs.filter(p => p.currentRoom === room.id);
       }
-      return roomIDToParticipants;
+      return ret;
     },
     
     // BEGIN properties that rely on isInRoom
     isInRoom () { return "room_id" in this.$route.params; },
-    roomID () {
+    currentRoomID () {
       if (!this.isInRoom) return null;
       return this.$route.params.room_id;
     },
-    roomDoc () {
-      if (!this.isInRoom || this.roomDocs === null) return null;
+    currentRoomDoc () {
+      if (!this.isInRoom || !this.isDataReady) return null;
       for (const roomDoc of this.roomDocs) {
-        if (this.roomID === roomDoc.id) {
+        if (roomDoc.id === this.currentRoomID) {
           return roomDoc;
         }
       }
       return null;
+    },
+    currentRoomType () {
+      if (this.currentRoomDoc === null) return null;
+      return this.currentRoomDoc.roomType;
     }
     // END properties that rely on isInRoom
   },
   watch: {
-    isDataReady (isReady) {
-      if (isReady && this.isInRoom && !this.isExpandedPanelsInitialized) {
-        for (const room of this.roomDocs) {
-          if (room.id === this.roomID) {
-            for (const [idx, roomType] of this.roomTypes.entries()) {
-              if (roomType === room.roomType) {
-                this.expandedPanels = [idx];
-              }
-            }
-          }
-          this.isExpandedPanelsInitialized = true;
-        }
-      }
-    },
     classDoc (newVal, oldVal) {      
       // Check for new roomAssignments
       // Currently only done for random shuffling.
@@ -327,17 +319,31 @@ export default {
         this.$root.$emit("show-snackbar", "You have been put in random room with other people. Have fun :)");
         for (const roomAssignment of newVal.roomAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
-            if (this.roomID != roomAssignment.roomID) {
+            if (this.currentRoomID != roomAssignment.roomID) {
               this.$router.push(`/class/${this.classID}/room/${roomAssignment.roomID}`); 
             }
           }
         }
       }
     },
-    roomDoc (newVal, oldVal) {
+    currentRoomDoc (newVal, oldVal) {
       if (newVal === null) return;
+      
+      // Initialize expandedPanels
+      if (!this.isExpandedPanelsInitialized) {
+        for (const [idx, roomType] of this.roomTypes.entries()) {
+          if (roomType === newVal.roomType) {
+            this.expandedPanels = [idx];
+          }
+        }
+        this.isExpandedPanelsInitialized = true;
+      }
+      
       // Check for announcement code
-      if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
+      if (    oldVal !== null
+           && newVal.id === oldVal.id
+           && newVal.announcementCounter != oldVal.announcementCounter
+      ) {
         console.log('Showing announcement');
         this.announcementPopup.show = true;
         this.announcementPopup.message = newVal.announcement.message;
@@ -370,7 +376,7 @@ export default {
     }
   },
   methods: {
-    setRoomStatusPopup (show, roomID = null) {
+    setRoomStatusPopup (show, roomID) {
       console.log("show =", show);
       console.log("roomID =", roomID);
       this.roomStatusPopup = {
@@ -379,7 +385,7 @@ export default {
       };
     },
     setRoomStatus (status) {
-      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({status});
+      db.doc(`classes/${this.classID}/rooms/${this.roomStatusPopup.roomID}`).update({status});
       this.roomStatusPopup['show'] = false;
     },
     /**
@@ -403,11 +409,16 @@ export default {
       
       // Get all rooms of roomType
       const targetRooms = this.roomTypeToRooms[roomType];
-      const targetParticipants = [];
+      
+      // Get all UIDs in rooms or roomType, no duplicates
+      const targetUIDSet = new Set();
       for (const room of targetRooms) {
-        targetParticipants.push(...this.roomIDToParticipants[room.id]);
+        for (const participant of this.roomIDToParticipants[room.id]) {
+          targetUIDSet.add(participant.uid);
+        }
       }
-      console.log("Breaking out participants:", targetParticipants);
+      const targetUIDs = Array.from(targetUIDSet);
+      console.log("Breaking out participants:", targetUIDs);
     
       // Initialize roomAssignments
       const roomAssignments = [];
@@ -420,13 +431,13 @@ export default {
       
       const numRoomsToUse = Math.max(1, Math.min(
         targetRooms.length,
-        Math.floor(targetParticipants.length / this.minRoomSizeOnShuffle)
+        Math.floor(targetUIDs.length / this.minRoomSizeOnShuffle)
       ));
       console.log(`Shuffling to ${numRoomsToUse} rooms...`);
       
-      shuffle(targetParticipants);
-      for (const [idx, participant] of targetParticipants.entries()) {
-        roomAssignments[idx % numRoomsToUse].assignees.push(participant.uid);
+      shuffle(targetUIDs);
+      for (const [idx, uid] of targetUIDs.entries()) {
+        roomAssignments[idx % numRoomsToUse].assignees.push(uid);
       }
 
       // update the class doc
@@ -499,7 +510,6 @@ export default {
             author: {
               firstName: this.user.firstName,
               lastName: this.user.lastName,
-              uid: this.user.uid
             }
           },
           announcementCounter: firebase.firestore.FieldValue.increment(1)
