@@ -114,14 +114,14 @@
             </span>
           </v-card-title>
           <v-card-text>
-            <v-text-field v-model="updatedStatus"/>
+            <v-text-field v-model="roomStatusPopup.status"/>
           </v-card-text>
           <v-card-actions>
             <v-spacer/>
-            <v-btn @click="setRoomStatusPopup(false)" color="secondary" text>
+            <v-btn @click="roomStatusPopup.show = false" color="secondary" text>
               Cancel
             </v-btn>
-            <v-btn @click="setRoomStatus(updatedStatus)" color="secondary" text>
+            <v-btn @click="setRoomStatus(roomStatusPopup.status)" color="secondary" text>
               Update status
             </v-btn>
           </v-card-actions>
@@ -232,8 +232,11 @@ export default {
       participantDocs: null,
 
       // Room status state
-      roomStatusPopup: { show: false, roomID: null },
-      updatedStatus: "",
+      roomStatusPopup: {
+        show: false,
+        roomID: null,
+        status: ""
+      },
       
       // Create room state
       isCreateRoomPopupOpen: false,
@@ -287,40 +290,38 @@ export default {
      * EXAMPLE: { "L01 Dourmashkin": [{ id: "123", status: "Done!" }, { id: "abc", status: "Help!"}] }
      */
     roomTypeToRooms () {
-      const roomTypeToRooms = {};
+      const ret = {};
       for (const roomType of this.roomTypes) {
-        roomTypeToRooms[roomType] =
-          this.roomDocs.filter(r => r.roomType === roomType);
+        ret[roomType] = this.roomDocs.filter(r => r.roomType === roomType);
       }
-      return roomTypeToRooms;
+      return ret;
     },
     roomIDToParticipants () {
-      const roomIDToParticipants = {};
+      const ret = {};
       for (const room of this.roomDocs) {
-        roomIDToParticipants[room.id] =
-          this.participantDocs.filter(p => p.currentRoom === room.id);
+        ret[room.id] = this.participantDocs.filter(p => p.currentRoom === room.id);
       }
-      return roomIDToParticipants;
+      return ret;
     },
     
     // BEGIN properties that rely on isInRoom
     isInRoom () { return "room_id" in this.$route.params; },
-    roomID () {
+    currentRoomID () {
       if (!this.isInRoom) return null;
       return this.$route.params.room_id;
     },
-    roomDoc () {
+    currentRoomDoc () {
       if (!this.isInRoom || !this.isDataReady) return null;
       for (const roomDoc of this.roomDocs) {
-        if (this.roomID === roomDoc.id) {
+        if (roomDoc.id === this.currentRoomID) {
           return roomDoc;
         }
       }
       return null;
     },
     currentRoomType () {
-      if (this.roomDoc === null) return null;
-      return roomDoc.roomType;
+      if (this.currentRoomDoc === null) return null;
+      return this.currentRoomDoc.roomType;
     }
     // END properties that rely on isInRoom
   },
@@ -334,14 +335,14 @@ export default {
         this.$root.$emit("show-snackbar", "You have been put in random room with other people. Have fun :)");
         for (const roomAssignment of newVal.roomAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
-            if (this.roomID != roomAssignment.roomID) {
+            if (this.currentRoomID != roomAssignment.roomID) {
               this.$router.push(`/class/${this.classID}/room/${roomAssignment.roomID}`); 
             }
           }
         }
       }
     },
-    roomDoc (newVal, oldVal) {
+    currentRoomDoc (newVal, oldVal) {
       if (newVal === null) return;
       
       // Initialize expandedPanels
@@ -355,7 +356,10 @@ export default {
       }
       
       // Check for announcement code
-      if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
+      if (    oldVal !== null
+           && newVal.id === oldVal.id
+           && newVal.announcementCounter != oldVal.announcementCounter
+      ) {
         console.log('Showing announcement');
         this.announcementPopup.show = true;
         this.announcementPopup.message = newVal.announcement.message;
@@ -388,7 +392,7 @@ export default {
     }
   },
   methods: {
-    setRoomStatusPopup (show, roomID = null) {
+    setRoomStatusPopup (show, roomID) {
       console.log("show =", show);
       console.log("roomID =", roomID);
       this.roomStatusPopup = {
@@ -397,7 +401,7 @@ export default {
       };
     },
     setRoomStatus (status) {
-      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({status});
+      db.doc(`classes/${this.classID}/rooms/${this.roomStatusPopup.roomID}`).update({status});
       this.roomStatusPopup['show'] = false;
     },
     /**
@@ -421,11 +425,16 @@ export default {
       
       // Get all rooms of roomType
       const targetRooms = this.roomTypeToRooms[roomType];
-      const targetParticipants = []; // TODO: Support duplicated uids.
+      
+      // Get all UIDs in rooms or roomType, no duplicates
+      const targetUIDSet = new Set();
       for (const room of targetRooms) {
-        targetParticipants.push(...this.roomIDToParticipants[room.id]);
+        for (const participant of this.roomIDToParticipants[room.id]) {
+          targetUIDSet.add(participant.uid);
+        }
       }
-      console.log("Breaking out participants:", targetParticipants);
+      const targetUIDs = Array.from(targetUIDSet);
+      console.log("Breaking out participants:", targetUIDs);
     
       // Initialize roomAssignments
       const roomAssignments = [];
@@ -438,13 +447,13 @@ export default {
       
       const numRoomsToUse = Math.max(1, Math.min(
         targetRooms.length,
-        Math.floor(targetParticipants.length / this.minRoomSizeOnShuffle)
+        Math.floor(targetUIDs.length / this.minRoomSizeOnShuffle)
       ));
       console.log(`Shuffling to ${numRoomsToUse} rooms...`);
       
-      shuffle(targetParticipants);
-      for (const [idx, participant] of targetParticipants.entries()) {
-        roomAssignments[idx % numRoomsToUse].assignees.push(participant.uid);
+      shuffle(targetUIDs);
+      for (const [idx, uid] of targetUIDs.entries()) {
+        roomAssignments[idx % numRoomsToUse].assignees.push(uid);
       }
 
       // update the class doc
