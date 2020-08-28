@@ -167,6 +167,7 @@ export default {
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
+    db.doc(`classes/${this.classId}/participants/${this.sessionID}`).delete();
     firebase.database().ref(".info/connected").off();
     if (this.allToRoomRef) {
       this.allToRoomRef.off();

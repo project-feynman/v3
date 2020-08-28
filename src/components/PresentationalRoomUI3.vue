@@ -20,7 +20,12 @@
             <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" color="black" :stopPropagation="false" small>
               {{ isMuted ? "Unmute" : "Mute" }}
             </BaseButton>
-            <BaseButton @click="$router.push(`/class/${$route.params.class_id}`)" small icon="mdi-phone-off" color="red" :stopPropagation="false">
+            <BaseButton
+              small icon="mdi-phone-off" color="red"
+              :stopPropagation="false"
+              :to="`/class/${$route.params.class_id}`"
+              @click.native="$root.$emit(`show-snackbar`, `Disconnected from room.`)"
+            >
               Disconnect
             </BaseButton>
           </template>
