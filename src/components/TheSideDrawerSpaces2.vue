@@ -5,7 +5,7 @@
         <div class="d-flex flex-column">
           <div>{{ roomType }}</div>
           <div class="pt-2">
-            <template v-if="roomDoc.roomType === currentRoomType">
+            <template v-if="roomType === currentRoomType">
               <BaseButton
                 @click="shuffleParticipants(roomType)"
                 icon="mdi-shuffle-variant"
@@ -44,12 +44,12 @@
         <v-list dense>
           <template v-for="(room, i) in roomTypeToRooms[roomType]">
             <v-list-item 
-              :to="`/class/${$route.params.class_id}/room/${room.id}`"
+              :to="`/class/${classID}/room/${room.id}`"
               :key="room.id"
               active-class="active-blackboard"
               class="py-2 single-room"
             >
-              <template v-if="room.id !== roomID">
+              <template v-if="room.id !== currentRoomID">
                 <PresentationalRoomUI4
                   :i="i+1"
                   :allClients="roomIDToParticipants[room.id]"
