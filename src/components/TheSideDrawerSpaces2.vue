@@ -21,7 +21,7 @@
             </BaseButton>
 
             <BaseButton @click="clearRoomStatuses(roomType)" icon="mdi-comment-remove" small :stopPropagation="true" color="black">
-              Clear
+              Clear status
             </BaseButton>
           </div>
         </div>

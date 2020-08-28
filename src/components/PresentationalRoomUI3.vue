@@ -21,15 +21,17 @@
             <div style="display: flex;">
               <p class="green--text mt-1">{{ isMuted ? 'Muted' : 'Connected' }}</p>
 
-              <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" small color="black" :stopPropagation="false">
-                {{ isMuted ? "Unmute" : "Mute" }}
-              </BaseButton>
+              <v-spacer/>
 
-              <BaseButton @click="audioSettingsPopup = true" icon="mdi-settings" small color="black" :stopPropagation="false">
-                Settings
-              </BaseButton>
+              <v-btn @click.stop.prevent="$emit('mute-button-pressed')" icon color="black">
+                <v-icon>{{ isMuted ? 'mdi-microphone-off' : 'mdi-microphone'  }}</v-icon>
+              </v-btn>
 
-              <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" outlined color="red" icon>
+              <v-btn @click.stop.prevent="audioSettingsPopup = true" color="black" icon>
+                <v-icon>mdi-settings</v-icon>
+              </v-btn>
+
+              <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" color="black" icon>
                 <v-icon>mdi-phone-off</v-icon>
               </v-btn>
             </div>
