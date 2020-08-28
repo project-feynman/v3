@@ -30,11 +30,12 @@
               <v-btn @click.stop.prevent="audioSettingsPopup = true" color="black" icon>
                 <v-icon>mdi-settings</v-icon>
               </v-btn>
-
-              <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" color="black" icon>
-                <v-icon>mdi-phone-off</v-icon>
-              </v-btn>
             </div>
+
+            <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" block color="red" class="white--text">
+              Disconnect
+              <v-icon>mdi-phone-off</v-icon>
+            </v-btn>
           </div>
         </div>
       </v-container>
