@@ -23,15 +23,15 @@
 
               <v-spacer/>
 
-              <v-btn @click.stop.prevent="$emit('mute-button-pressed')" fab small color="grey" class="white--text">
+              <v-btn @click.stop.prevent="$emit('mute-button-pressed')" fab small color="grey" class="white--text" depressed>
                 <v-icon>{{ isMuted ? 'mdi-microphone-off' : 'mdi-microphone'  }}</v-icon>
               </v-btn>
 
-              <v-btn @click.stop.prevent="audioSettingsPopup = true" color="grey" fab class="white--text" small> 
+              <v-btn @click.stop.prevent="audioSettingsPopup = true" color="grey" fab class="white--text" small depressed> 
                 <v-icon>mdi-settings</v-icon>
               </v-btn>
 
-              <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" fab color="red" small class="white--text">
+              <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" fab color="red" small class="white--text" depressed>
                 <v-icon>mdi-phone-hangup</v-icon>
               </v-btn>
             </div>
@@ -45,7 +45,7 @@
         <div v-for="p in otherClients" :key="p.sessionID" :class="['d-flex', `${ p.sessionID === dominantSpeakerSessionID ? 'font-weight-black' : '' }`]">
           <template v-if="p.sessionID !== currentClient.sessionID">
             {{ p.firstName + " " + p.lastName }}
-            
+
             <v-spacer/>
 
             <v-icon v-if="sessionIDToIsMicEnabled.hasOwnProperty(p.sessionID)" small>
