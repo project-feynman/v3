@@ -87,7 +87,7 @@ export default {
         if (isUserConnected === false) {
           return;
         } 
-        this.firebaseRef = firebase.database().ref(`/class/${this.classID}/participants`);
+        this.firebaseRef = firebase.database().ref(`/class/${this.classID}/participants/${this.sessionID}`);
         // 1. User leaves, and his/her identity is saved to Firebase
         // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
         

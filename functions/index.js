@@ -41,7 +41,7 @@ function getDocFromDb (ref) {
     } else {
       reject(); 
     }
-  })
+  });
 }
 
 exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(async (change, context) => {
@@ -54,7 +54,6 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(a
   else { firestoreUserRef.update(eventStatus); }
 });
 
-
 exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId}/{roomId}/participants").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
   if (!userWhoLeft.uid) return; // under what situations would `.uid` be undefined?
@@ -63,11 +62,12 @@ exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId
   workspaceRef.collection('participants').doc(userWhoLeft.uid).delete();
 })
 
-exports.onClassParticipantsChanged = functions.database.ref("/class/{classId}/participants").onWrite((change,context) => {
+exports.onClassParticipantsChanged = functions.database.ref("/class/{classId}/participants/{sessionID}").onWrite((change,context) => {
   const userWhoLeft = change.after.val();
-  console.log("user", userWhoLeft)
-  if (!userWhoLeft.uid) { return; }
-  const { classId } = context.params;
+  // the user UID is actually the sessionID (look at frontend code)
+  // assert sessionID = userWhoLeft.uid
+  if (!userWhoLeft.uid) return;
+  const { classId, sessionID } = context.params;
   firestore.doc(`/classes/${classId}/participants/${userWhoLeft.uid}`).delete();
 })
 
