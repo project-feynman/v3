@@ -81,8 +81,8 @@ export default {
               })
             });
             obj[val] = resultDocs;
-            resolve(unsubscribeListener);
           });
+          resolve(unsubscribeListener);
         } catch (error) {
           this.$root.$emit("show-snackbar", error.message);
           reject(error);

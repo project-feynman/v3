@@ -5,7 +5,7 @@
     <v-navigation-drawer 
       :value="value" @input="newVal => $emit('input', newVal)" 
       app 
-      width="270"
+      width="300"
       class="the-side-drawer"
       permanent
     >
@@ -45,7 +45,7 @@
               filled
               color="accent"
             >
-              Go to library
+              Library
             </BaseButton>
           </template>
 
@@ -55,13 +55,15 @@
       </v-app-bar>
 
       <!-- Sidedrawer Spaces -->
-      <TheSideDrawerSpaces :roomParticipantsMap="roomParticipantsMap"/>
+      <!-- <TheSideDrawerSpaces :roomParticipantsMap="roomParticipantsMap"/> -->
+      <TheSideDrawerSpaces2/>
     </v-navigation-drawer>
   </v-card>
 </template>
 
 <script>
 import TheSideDrawerSpaces from "@/components/TheSideDrawerSpaces.vue";
+import TheSideDrawerSpaces2 from "@/components/TheSideDrawerSpaces2.vue"; 
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
@@ -83,6 +85,7 @@ export default {
   ],
   components: {
     TheSideDrawerSpaces,
+    TheSideDrawerSpaces2,
     TheDropdownMenu,
     BasePopupButton,
     BaseButton,
