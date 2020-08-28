@@ -2,7 +2,7 @@
   <!-- Other rooms that I'm not currently in -->
   <div style="width: 100%;">
     <div class="d-flex">
-      <div class="room-title">Room {{ i }}</div>
+      <div class="text-uppercase font-weight-medium">Room {{ i }}</div>
       <v-spacer/>
       <slot>
 

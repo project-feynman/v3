@@ -1,7 +1,7 @@
 <template>
   <div style="width: 100%">
     <div class="room-title accent--text pb-0">
-      <h3>Room {{ i }}</h3>
+      <h3 class="text-uppercase">Room {{ i }}</h3>
       <slot>
 
       </slot>
@@ -32,8 +32,6 @@
               Settings
             </BaseButton>
           </div>
-<!--           
-          <v-divider/> -->
 
         </div>
       </v-container>
