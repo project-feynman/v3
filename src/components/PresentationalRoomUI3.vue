@@ -1,7 +1,7 @@
 <template>
   <v-card width="260">
     <v-card-title class="orange--text pb-0">
-      <p>Room {{ i }}</p>
+      <p class="text-uppercase mb-0">Room {{ i }}</p>
     </v-card-title>
     <v-card-text>
       <slot>
@@ -35,7 +35,7 @@
       <v-divider/>
 
       <v-container v-if="hasConnectedToTwilioRoom">
-        <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.id === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
+        <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.uid === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
           <template v-if="p.uid !== currentClient.uid">
             {{ p.firstName + " " + p.lastName }}
 

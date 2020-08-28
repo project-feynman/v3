@@ -2,7 +2,7 @@
   <!-- Other rooms that I'm not currently in -->
   <v-card width="260">
     <v-card-subtitle class="pb-0">
-      <p>Room {{ i }}</p>
+      <p class="font-weight-bold text-uppercase">Room {{ i }}</p>
       <slot>
 
       </slot>
