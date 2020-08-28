@@ -19,23 +19,22 @@
 
           <div v-else>
             <div style="display: flex;">
-              <p class="green--text mt-1">{{ isMuted ? 'Muted' : 'Connected' }}</p>
+              <p class="green--text mt-1">Connected</p>
 
               <v-spacer/>
 
-              <v-btn @click.stop.prevent="$emit('mute-button-pressed')" icon color="black">
+              <v-btn @click.stop.prevent="$emit('mute-button-pressed')" fab small color="grey" class="white--text">
                 <v-icon>{{ isMuted ? 'mdi-microphone-off' : 'mdi-microphone'  }}</v-icon>
               </v-btn>
 
-              <v-btn @click.stop.prevent="audioSettingsPopup = true" color="black" icon>
+              <v-btn @click.stop.prevent="audioSettingsPopup = true" color="grey" fab class="white--text" small> 
                 <v-icon>mdi-settings</v-icon>
               </v-btn>
-            </div>
 
-            <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" block color="red" class="white--text">
-              Disconnect
-              <v-icon>mdi-phone-off</v-icon>
-            </v-btn>
+              <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" fab color="red" small class="white--text">
+                <v-icon>mdi-phone-hangup</v-icon>
+              </v-btn>
+            </div>
           </div>
         </div>
       </v-container>
