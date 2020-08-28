@@ -15,7 +15,7 @@
         </BaseButton>
 
         <BaseButton
-          @click="triggerAnnouncementPopup(roomType)"
+          @click="showMakeAnnouncementPopup(roomType)"
           icon="mdi-bullhorn"
           small
           color="black"
@@ -119,8 +119,8 @@
       </v-dialog>
     </template>
     
-    <!-- Announcement popup -->
-    <v-dialog :value="announcementPopup.show" persistent max-width="600px">
+    <!-- Announcement creation popup -->
+    <v-dialog :value="makeAnnouncementPopup.show" persistent max-width="600px">
       <v-card>
         <v-card-title>
           <span class="headline">
@@ -129,21 +129,40 @@
         </v-card-title>
         <v-card-text>
           <v-text-field
-            v-model="announcementPopup.announceMessage"
+            v-model="makeAnnouncementPopup.message"
             placeholder="Type announcement here..."
           />
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
-          <v-btn @click="announcementPopup.show = false" color="secondary" text>
+          <v-btn @click="makeAnnouncementPopup.show = false" color="secondary" text>
             Cancel
           </v-btn>
           <v-btn
-            @click="makeAnnouncement(announcementPopup.announceMessage, announcementPopup.roomType)"
+            @click="makeAnnouncement(makeAnnouncementPopup.message, makeAnnouncementPopup.roomType)"
             color="secondary"
             text
           >
             Make announcement
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Announcement dialog -->
+    <v-dialog v-model="announcementPopup.show" persistent max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Announcement!</v-card-title>
+        <p>{{ announcementPopup.author.firstName }} made an announcement:</p>
+        <p>{{ announcementPopup.message }}</p>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="accent darken-1"
+            text
+            @click="announcementPopup.show = false"
+          >
+            Close
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -216,10 +235,16 @@ export default {
       // For shuffling
       minRoomSizeOnShuffle: 2, // at least 2 so people aren't lonely
       
-      announcementPopup: {
+      // Announcement stuff
+      makeAnnouncementPopup: {
         show: false,
         roomType: null,
-        announceMessage: null
+        message: null
+      },
+      announcementPopup: {
+        show: false,
+        message: null,
+        author: {},
       },
     };
   },
@@ -230,8 +255,6 @@ export default {
     ]),
     sessionID () { return this.session.currentID; },
     classID () { return this.$route.params.class_id; },
-    isInRoom () { return "room_id" in this.$route.params; },
-    roomID () { return this.$route.params.room_id; },
     isDataReady () {
       return ![
         this.classDoc,
@@ -240,7 +263,7 @@ export default {
       ].includes(null);
     },
     // Computed properties below should only be used after data is ready.
-    roomTypes () {
+    roomTypes () {      
       return this.classDoc.roomTypes;
     },
     /**
@@ -262,7 +285,24 @@ export default {
           this.participantDocs.filter(p => p.currentRoom === room.id);
       }
       return roomIDToParticipants;
+    },
+    
+    // BEGIN properties that rely on isInRoom
+    isInRoom () { return "room_id" in this.$route.params; },
+    roomID () {
+      if (!this.isInRoom) return null;
+      return this.$route.params.room_id;
+    },
+    roomDoc () {
+      if (!this.isInRoom || this.roomDocs === null) return null;
+      for (const roomDoc of this.roomDocs) {
+        if (this.roomID === roomDoc.id) {
+          return roomDoc;
+        }
+      }
+      return null;
     }
+    // END properties that rely on isInRoom
   },
   watch: {
     isDataReady (isReady) {
@@ -293,6 +333,16 @@ export default {
             }
           }
         }
+      }
+    },
+    roomDoc (newVal, oldVal) {
+      if (newVal === null) return;
+      // Check for announcement code
+      if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
+        console.log('Showing announcement');
+        this.announcementPopup.show = true;
+        this.announcementPopup.message = newVal.announcement.message;
+        this.announcementPopup.author = newVal.announcement.author;
       }
     }
   },
@@ -418,8 +468,8 @@ export default {
       });
       this.isCreatePopupOpen = false;
     },
-    triggerAnnouncementPopup (roomType) {
-      this.announcementPopup = {
+    showMakeAnnouncementPopup (roomType) {
+      this.makeAnnouncementPopup = {
         show: true,
         roomType: roomType
       }
@@ -440,11 +490,23 @@ export default {
         .get();
       for (const docSnapshot of querySnapshot.docs) {
         docSnapshot.ref.update({
-          announcement: message,
+          announcement: {
+            message: message,
+            
+            // TODO: Change this to just writing uid
+            // To do this, we need to provide a global way to get information
+            // about a user from their uid. This is needed because the author
+            // could disconnect after sending an announcement.
+            author: {
+              firstName: this.user.firstName,
+              lastName: this.user.lastName,
+              uid: this.user.uid
+            }
+          },
           announcementCounter: firebase.firestore.FieldValue.increment(1)
         });
       }
-      this.announcementPopup['show'] = false;
+      this.makeAnnouncementPopup['show'] = false;
     },
     /**
      * Mutes all participants in rooms of roomType
