@@ -5,7 +5,7 @@
         <div class="d-flex flex-column">
           <div>{{ roomType }}</div>
           <div class="pt-2">
-            <template v-if="expandedPanels.includes(j)">
+            <template v-if="roomDoc.roomType === currentRoomType">
               <BaseButton
                 @click="shuffleParticipants(roomType)"
                 icon="mdi-shuffle-variant"
@@ -64,18 +64,18 @@
                 <RealtimeSpaceTwilioRoom :roomID="room.id" :key="room.id" :audioDevices="audioDevices">
                   <template v-slot="{
                     hasConnectedToTwilio,
-                    dominantSpeakerUID,
+                    dominantSpeakerSessionID,
                     toggleMute,
                     isMuted,
-                    uidToIsMicEnabled
+                    sessionIDToIsMicEnabled
                   }">
                     <PresentationalRoomUI3
                       :i="i+1"
                       :hasConnectedToTwilioRoom="hasConnectedToTwilio"
-                      :currentClient="{ uid: user.uid, name: user.firstName + ' ' + user.lastName }"
+                      :currentClient="{ sessionID: sessionID, name: user.firstName + ' ' + user.lastName }"
                       :otherClients="roomIDToParticipants[room.id]"
-                      :dominantSpeakerUID="dominantSpeakerUID"
-                      :uidToIsMicEnabled="uidToIsMicEnabled"
+                      :dominantSpeakerSessionID="dominantSpeakerSessionID"
+                      :sessionIDToIsMicEnabled="sessionIDToIsMicEnabled"
                       :isMuted="isMuted"
                       @mute-button-pressed="toggleMute()"
                       @audio-device-change="devices => changeAudioDevices(devices)"
@@ -310,31 +310,21 @@ export default {
       return this.$route.params.room_id;
     },
     roomDoc () {
-      if (!this.isInRoom || this.roomDocs === null) return null;
+      if (!this.isInRoom || !this.isDataReady) return null;
       for (const roomDoc of this.roomDocs) {
         if (this.roomID === roomDoc.id) {
           return roomDoc;
         }
       }
       return null;
+    },
+    currentRoomType () {
+      if (this.roomDoc === null) return null;
+      return roomDoc.roomType;
     }
     // END properties that rely on isInRoom
   },
   watch: {
-    isDataReady (isReady) {
-      if (isReady && this.isInRoom && !this.isExpandedPanelsInitialized) {
-        for (const room of this.roomDocs) {
-          if (room.id === this.roomID) {
-            for (const [idx, roomType] of this.roomTypes.entries()) {
-              if (roomType === room.roomType) {
-                this.expandedPanels = [idx];
-              }
-            }
-          }
-          this.isExpandedPanelsInitialized = true;
-        }
-      }
-    },
     classDoc (newVal, oldVal) {      
       // Check for new roomAssignments
       // Currently only done for random shuffling.
@@ -353,6 +343,17 @@ export default {
     },
     roomDoc (newVal, oldVal) {
       if (newVal === null) return;
+      
+      // Initialize expandedPanels
+      if (!this.isExpandedPanelsInitialized) {
+        for (const [idx, roomType] of this.roomTypes.entries()) {
+          if (roomType === newVal.roomType) {
+            this.expandedPanels = [idx];
+          }
+        }
+        this.isExpandedPanelsInitialized = true;
+      }
+      
       // Check for announcement code
       if (oldVal !== null && newVal.announcementCounter != oldVal.announcementCounter) {
         console.log('Showing announcement');
@@ -420,7 +421,7 @@ export default {
       
       // Get all rooms of roomType
       const targetRooms = this.roomTypeToRooms[roomType];
-      const targetParticipants = [];
+      const targetParticipants = []; // TODO: Support duplicated uids.
       for (const room of targetRooms) {
         targetParticipants.push(...this.roomIDToParticipants[room.id]);
       }
@@ -516,7 +517,6 @@ export default {
             author: {
               firstName: this.user.firstName,
               lastName: this.user.lastName,
-              uid: this.user.uid
             }
           },
           announcementCounter: firebase.firestore.FieldValue.increment(1)
