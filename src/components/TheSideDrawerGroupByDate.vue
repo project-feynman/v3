@@ -116,19 +116,20 @@ export default {
       const collectionRef = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`);
       // Get the first and last post posted in the class
       let firstDate, lastDate;
-      await collectionRef.orderBy('date', 'asc').limit(1).get().then(querySnapshot => {
+      const getFirstDate =  collectionRef.orderBy('date', 'asc').limit(1).get().then(querySnapshot => {
         if (querySnapshot.empty) return;
         querySnapshot.forEach(doc => {
           firstDate = new Date(doc.data().date);
         });
       });
-
-      await collectionRef.orderBy('date', 'desc').limit(1).get().then(querySnapshot => {
+      const getLastDate = collectionRef.orderBy('date', 'desc').limit(1).get().then(querySnapshot => {
         if (querySnapshot.empty) return;
         querySnapshot.forEach(doc => {
           lastDate = moment(doc.data().date);
         });
       });
+
+      await Promise.all([getFirstDate, getLastDate]);
 
       let startOfNextWeek  = moment()
           .isoWeekYear(lastDate.year())
@@ -137,25 +138,35 @@ export default {
           .add(1, 'week')
           .toDate();
       
-      while ( startOfNextWeek > firstDate ) {
+      const weekPromises = [];
+
+      while (startOfNextWeek > firstDate) {
         const endOfThisWeek = new Date(startOfNextWeek.getTime());
         endOfThisWeek.setDate(endOfThisWeek.getDate() - 1);
         const startOfThisWeek = new Date(startOfNextWeek.getTime());
         startOfThisWeek.setDate(startOfNextWeek.getDate() - 7);
 
-        await collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
-          if (!querySnapshot.empty) {
-            this.weeks.push({
-              name: 'Week ' + moment(startOfThisWeek).format('MMM D') + ' - ' + moment(endOfThisWeek).format('MMM D'),
-              start: startOfThisWeek,
-              end: startOfNextWeek,
-              isLoading: false,
-              children: [],
-            })
-          }
-        });
+        weekPromises.push(
+          collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
+            if (!querySnapshot.empty) {
+              // Because by the time query is run, the variables have already changed, we retrive them from the query itself
+              const {filters} = querySnapshot.Pm.query
+              const start = new Date(filters.filter(x => x.op.name === '>=')[0].value.Ht);
+              const end = new Date(filters.filter(x => x.op.name === '<')[0].value.Ht);
+              this.weeks.push({
+                name: 'Week ' + moment(startOfThisWeek).format('MMM D') + ' - ' + moment(endOfThisWeek).format('MMM D'),
+                start: start,
+                end: end,
+                isLoading: false,
+                children: []
+              });
+            }
+          })
+        );
         startOfNextWeek = startOfThisWeek;
       }
+      await Promise.all(weekPromises);
+
       this.weeksMounted = true;
     },
     async openThisWeek (week) {
@@ -167,11 +178,12 @@ export default {
       // const endTime = endDate.toISOString();
       const startDate = week.start.toISOString();
       const endDate = week.end.toISOString();
-      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startDate).where("date", "<=", endDate);
+      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startDate).where("date", "<=", endDate).orderBy('date', 'desc');
       const posts = [];
       await new Promise(resolve => {
         const snapshotListener = postsQuery.onSnapshot(snapshot => {
           if (snapshot.empty) {
+            week.isLoading= false
             resolve();
             return;
           }
@@ -185,7 +197,6 @@ export default {
               tag: doc.data().tags[0],
             });
           });
-          week.children.sort((a, b) => b.date-a.date);
           week.isLoading= false
           resolve();
         });
