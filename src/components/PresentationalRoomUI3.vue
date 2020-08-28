@@ -28,7 +28,6 @@
       </v-container>
 
       <v-divider/>
-
       <v-container class="pr-0" v-if="hasConnectedToTwilioRoom">
         <div v-for="p in otherClients" :key="p.uid" :class="['d-flex', `${ p.id === dominantSpeakerUID ? 'font-weight-black' : '' }`]">
           <template v-if="p.uid !== currentClient.uid">
@@ -36,8 +35,8 @@
 
             <v-spacer/>
 
-            <v-icon v-if="!uidToIsMicEnabled[p.uid]" small>
-              mdi-microphone-off
+            <v-icon v-if="uidToIsMicEnabled.hasOwnProperty(p.uid)" small>
+              {{ uidToIsMicEnabled[p.uid] ? 'mdi-microphone' : 'mdi-microphone-off' }}
             </v-icon>
           </template>
         </div>

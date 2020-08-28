@@ -19,60 +19,62 @@
 
       <v-expansion-panel-content>
         <v-list dense>
-          <v-list-item v-for="(room, i) in roomTypeToRooms[roomType]"
-            :to="`/class/${$route.params.class_id}/room/${room.id}`"
-            :key="room.id"
-            active-class="active-blackboard"
-            class="py-3"
-          >
-            <template v-if="room.id !== roomID">
-              <PresentationalRoomUI4
-                :i="i+1"
-                :allClients="roomIDToParticipants[room.id]"
-              >
-                <p class="active-count">
-                  {{ room.status }}
-                </p>
-              </PresentationalRoomUI4>
-            </template>
+          <template v-for="(room, i) in roomTypeToRooms[roomType]">
+            <v-list-item 
+              :to="`/class/${$route.params.class_id}/room/${room.id}`"
+              :key="room.id"
+              active-class="active-blackboard"
+              class="py-2"
+            >
+              <template v-if="room.id !== roomID">
+                <PresentationalRoomUI4
+                  :i="i+1"
+                  :allClients="roomIDToParticipants[room.id]"
+                >
+                  <span v-if="room.status" class="active-count">
+                    {{ room.status }}
+                  </span>
+                </PresentationalRoomUI4>
+              </template>
 
-            <template v-else>
-              <RealtimeSpaceTwilioRoom :roomID="room.id" :key="room.id">
-                <template v-slot="{
-                  hasConnectedToTwilio,
-                  dominantSpeakerUID,
-                  toggleMute,
-                  isMuted,
-                  uidToIsMicEnabled
-                }">
-                  <PresentationalRoomUI3
-                    :i="i+1"
-                    :hasConnectedToTwilioRoom="hasConnectedToTwilio"
-                    :currentClient="{ uid: user.uid, name: user.firstName + ' ' + user.lastName }"
-                    :otherClients="roomIDToParticipants[room.id]"
-                    :dominantSpeakerUID="dominantSpeakerUID"
-                    :uidToIsMicEnabled="uidToIsMicEnabled"
-                    :isMuted="isMuted"
-                    @mute-button-pressed="toggleMute()" 
-                  >
-                    <div class="d-flex">
-                      <p class="align-self-center mb-0 active-count">
-                        {{ room.status }}
-                      </p>
-                      <v-spacer/>
-                      <BaseButton
-                        @click="setRoomStatusPopup(true, room.id)"
-                        icon="mdi-message-alert" color="#555"
-                      >
-                        Update room status
-                      </BaseButton>
-                    </div>
-                  </PresentationalRoomUI3>
-                </template>
-              </RealtimeSpaceTwilioRoom>
-            </template>
-          </v-list-item>
-          <!-- <v-divider v-if="i + 1 < roomDocs.length" :key="i"/> -->
+              <template v-else>
+                <RealtimeSpaceTwilioRoom :roomID="room.id" :key="room.id">
+                  <template v-slot="{
+                    hasConnectedToTwilio,
+                    dominantSpeakerUID,
+                    toggleMute,
+                    isMuted,
+                    uidToIsMicEnabled
+                  }">
+                    <PresentationalRoomUI3
+                      :i="i+1"
+                      :hasConnectedToTwilioRoom="hasConnectedToTwilio"
+                      :currentClient="{ uid: user.uid, name: user.firstName + ' ' + user.lastName }"
+                      :otherClients="roomIDToParticipants[room.id]"
+                      :dominantSpeakerUID="dominantSpeakerUID"
+                      :uidToIsMicEnabled="uidToIsMicEnabled"
+                      :isMuted="isMuted"
+                      @mute-button-pressed="toggleMute()" 
+                    >
+                      <div class="d-flex">
+                        <span v-if="room.status" class="align-self-center mb-0 active-count">
+                          {{ room.status }}
+                        </span>
+                        <v-spacer/>
+                        <BaseButton
+                          @click="setRoomStatusPopup(true, room.id)"
+                          icon="mdi-message-alert" color="#555"
+                        >
+                          Update room status
+                        </BaseButton>
+                      </div>
+                    </PresentationalRoomUI3>
+                  </template>
+                </RealtimeSpaceTwilioRoom>
+              </template>
+            </v-list-item>
+          <v-divider v-if="i + 1 < roomDocs.length" :key="i"/>
+          </template>
         </v-list>
       </v-expansion-panel-content>
     </v-expansion-panel>
