@@ -1,20 +1,18 @@
 <template>
   <!-- Other rooms that I'm not currently in -->
-  <v-card width="260">
-    <v-card-subtitle class="pb-0">
-      <p class="font-weight-bold text-uppercase">Room {{ i }}</p>
+  <div>
+    <div class="room-title pt-2">
+      <div>Room {{ i }}</div>
       <slot>
 
       </slot>
-    </v-card-subtitle>
-    <v-card-text>
-      <v-container>
-        <div v-for="p in allClients" :key="p.id">
-          {{ p.firstName + " " + p.lastName }}
-        </div>
-      </v-container>
-    </v-card-text>
-  </v-card>
+    </div>
+    <div class="pl-3">
+      <div v-for="p in allClients" :key="p.id">
+        {{ p.firstName + " " + p.lastName }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
