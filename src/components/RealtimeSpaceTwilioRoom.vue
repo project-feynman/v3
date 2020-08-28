@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="width: 100%;">
     <slot
       :dominantSpeakerUID="dominantParticipantUid"
       :hasConnectedToTwilio="twilioInitialized"
@@ -57,7 +57,8 @@ export default {
     roomID: {
       type: String,
       required: true
-    }
+    },
+    audioDevices: Object,
   },
   mixins: [
     DatabaseHelpersMixin
@@ -135,6 +136,10 @@ export default {
         }
       }
     },
+    audioDevices () {
+      console.log('connecting');
+      this.connectToTwilioRoom();
+    }
   },
   methods: {
     async connectToTwilioRoom () {
@@ -257,11 +262,13 @@ export default {
      * 
      * TODO: Add support for mounting video tracks
      */
-    mountAudioTrack (audioTrack) {
+    async mountAudioTrack (audioTrack) {
       console.assert(audioTrack.kind == "audio");
+      const audioElement = audioTrack.attach();
+      if ( this.audioDevices && this.audioDevices.output ) await audioElement.setSinkId(this.audioDevices.output);
       document.getElementById(
         "remote-audio-div"
-      ).appendChild(audioTrack.attach());
+      ).appendChild(audioElement);
     },
     unmountTrack (track) {
       console.log("Unmounting track:", track.name);

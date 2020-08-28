@@ -2,38 +2,42 @@
   <v-expansion-panels v-if="isDataReady" multiple :value="expandedPanels" accordion class="spaces-list">
     <v-expansion-panel v-for="(roomType, j) in roomTypes" :key="roomType">
       <v-expansion-panel-header class="panel-header">
-        {{ roomType }}
-        <template v-if="expandedPanels.includes(j)">
-          <BaseButton
-            @click="shuffleParticipants(roomType)"
-            icon="mdi-shuffle-variant"
-            small
-            :stopPropagation="true"
-            color="black"
-          >
-            Shuffle
-          </BaseButton>
+        <div class="d-flex flex-column">
+          <div>{{ roomType }}</div>
+          <div class="pt-2">
+            <template v-if="expandedPanels.includes(j)">
+              <BaseButton
+                @click="shuffleParticipants(roomType)"
+                icon="mdi-shuffle-variant"
+                small
+                :stopPropagation="true"
+                color="black"
+              >
+                Shuffle
+              </BaseButton>
 
-          <BaseButton
-            @click="showMakeAnnouncementPopup(roomType)"
-            icon="mdi-bullhorn"
-            small
-            color="black"
-            :stopPropagation="true"
-          >
-            Announce
-          </BaseButton>
-          
-          <BaseButton
-            @click="muteParticipantsInRooms(roomType)"
-            icon="mdi-microphone-off"
-            small
-            :stopPropagation="true"
-            color="black"
-          >
-            Mute all
-          </BaseButton>
-        </template>
+              <BaseButton
+                @click="showMakeAnnouncementPopup(roomType)"
+                icon="mdi-bullhorn"
+                small
+                color="black"
+                :stopPropagation="true"
+              >
+                Announce
+              </BaseButton>
+              
+              <BaseButton
+                @click="muteParticipantsInRooms(roomType)"
+                icon="mdi-microphone-off"
+                small
+                :stopPropagation="true"
+                color="black"
+              >
+                Mute all
+              </BaseButton>
+            </template>
+          </div>
+        </div>
       </v-expansion-panel-header>
 
       <v-expansion-panel-content>
@@ -43,7 +47,7 @@
               :to="`/class/${$route.params.class_id}/room/${room.id}`"
               :key="room.id"
               active-class="active-blackboard"
-              class="py-2"
+              class="py-2 single-room"
             >
               <template v-if="room.id !== roomID">
                 <PresentationalRoomUI4
@@ -57,7 +61,7 @@
               </template>
 
               <template v-else>
-                <RealtimeSpaceTwilioRoom :roomID="room.id" :key="room.id">
+                <RealtimeSpaceTwilioRoom :roomID="room.id" :key="room.id" :audioDevices="audioDevices">
                   <template v-slot="{
                     hasConnectedToTwilio,
                     dominantSpeakerUID,
@@ -73,7 +77,8 @@
                       :dominantSpeakerUID="dominantSpeakerUID"
                       :uidToIsMicEnabled="uidToIsMicEnabled"
                       :isMuted="isMuted"
-                      @mute-button-pressed="toggleMute()" 
+                      @mute-button-pressed="toggleMute()"
+                      @audio-device-change="devices => changeAudioDevices(devices)"
                     >
                       <div class="d-flex">
                         <span v-if="room.status" class="align-self-center mb-0 active-count">
@@ -251,6 +256,12 @@ export default {
         message: null,
         author: {},
       },
+
+      //Which audio devices is being used
+      audioDevices: {
+        input: '',
+        output: '',
+      }
     };
   },
   computed: {
@@ -539,6 +550,10 @@ export default {
       allToRoomRef.set({ roomId: roomId }).then(() => {
         allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
       });
+    },
+    changeAudioDevices (devices) {
+      console.log('new audio devices', devices);
+      this.audioDevices = devices;
     }
   }
 }
@@ -548,8 +563,11 @@ export default {
 .panel-header {
   font-weight: 500;
   text-transform: uppercase;
-  color: #777;
-  font-size: 0.8em;
+  color: #555;
+  font-size: 0.9em;
+}
+.panel-header.v-expansion-panel-header--active {
+  color: var(--v-accent-darken1);
 }
 
 .room-title {
@@ -557,11 +575,17 @@ export default {
   font-weight: 400;
   color: #555;
 }
+.single-room:not(.active-blackboard) {
+  background: #f5f5f5;
+}
 .active-blackboard {
   color: #555;
+  position: relative;
+  left: -3px;
+  border-left: 4px solid var(--v-accent-base);
 }
 .active-blackboard:before  {
-  background: var(--v-accent-base);
+  background: white;
 }
 .active-blackboard .room-title {
   color: black;
@@ -584,7 +608,7 @@ export default {
 }
 
 .spaces-list .v-expansion-panel-header {
-  background: #f5f5f5;
+  background: white;
 }
 .spaces-list .v-expansion-panel-content__wrap {
   padding: 0 5px;
