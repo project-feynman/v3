@@ -20,17 +20,21 @@
           </p>
 
           <div v-else>
-            <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" color="black" :stopPropagation="false">
-              {{ isMuted ? "Unmute" : "Mute" }}
-            </BaseButton>
+            <div style="display: flex;">
+              <p class="green--text mt-1">{{ isMuted ? 'Muted' : 'Connected' }}</p>
 
-            <BaseButton @click.native="$root.$emit(`show-snackbar`, `Disconnected from room.`)" :to="`/class/${$route.params.class_id}`" icon="mdi-phone-off" color="black" :stopPropagation="false">
-              Disconnect
-            </BaseButton>
+              <BaseButton @click="$emit('mute-button-pressed')" :icon="isMuted ? 'mdi-microphone-off' : 'mdi-microphone'" small color="black" :stopPropagation="false">
+                {{ isMuted ? "Unmute" : "Mute" }}
+              </BaseButton>
 
-            <BaseButton @click="audioSettingsPopup = true" icon="mdi-settings" color="black" :stopPropagation="false">
-              Settings
-            </BaseButton>
+              <BaseButton @click="audioSettingsPopup = true" icon="mdi-settings" small color="black" :stopPropagation="false">
+                Settings
+              </BaseButton>
+
+              <v-btn @click.stop.prevent="$emit('disconnect-button-clicked')" outlined color="red" icon>
+                <v-icon>mdi-phone-off</v-icon>
+              </v-btn>
+            </div>
           </div>
 
         </div>

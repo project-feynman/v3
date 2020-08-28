@@ -3,21 +3,27 @@
     <v-expansion-panel v-for="(roomType, j) in roomTypes" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         <div class="d-flex flex-column">
-          <div style="text-transform: uppercase;">{{ roomType }}</div>
+          <div style="text-transform: uppercase;">
+            {{ roomType }}
+          </div>
 
-          <template v-if="roomType === currentRoomType">
+          <div v-if="roomType === currentRoomType">
             <BaseButton @click="shuffleParticipants(roomType)" icon="mdi-shuffle-variant" :stopPropagation="true" color="black">
               Shuffle
             </BaseButton>
 
-            <BaseButton @click="showMakeAnnouncementPopup(roomType)" icon="mdi-bullhorn" color="black" :stopPropagation="true">
+            <BaseButton @click="showMakeAnnouncementPopup(roomType)" icon="mdi-bullhorn" small color="black" :stopPropagation="true">
               Announce
             </BaseButton>
             
-            <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-volume-mute" :stopPropagation="true" color="black">
+            <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-volume-mute" small :stopPropagation="true" color="black">
               Mute all
             </BaseButton>
-          </template>
+
+            <BaseButton @click="clearRoomStatuses(roomType)" icon="mdi-comment-remove" small :stopPropagation="true" color="black">
+              Clear
+            </BaseButton>
+          </div>
         </div>
       </v-expansion-panel-header>
 
@@ -50,7 +56,7 @@
                     isMuted,
                     sessionIDToIsMicEnabled
                   }">
-                    <PresentationalRoomUI3
+                    <PresentationalRoomUI3 v-if="user"
                       :i="i+1"
                       :hasConnectedToTwilioRoom="hasConnectedToTwilio"
                       :currentClient="{ sessionID: sessionID, name: user.firstName + ' ' + user.lastName }"
@@ -59,6 +65,7 @@
                       :sessionIDToIsMicEnabled="sessionIDToIsMicEnabled"
                       :isMuted="isMuted"
                       @mute-button-pressed="toggleMute()"
+                      @disconnect-button-clicked="disconnectFromRoom()"
                       @audio-device-change="devices => changeAudioDevices(devices)"
                     >
                       <div class="d-flex">
@@ -136,43 +143,15 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Announcement dialog -->
-    <v-dialog v-model="announcementPopup.show" persistent max-width="500px">
-      <v-card>
-        <v-card-title class="headline">
-          {{ announcementPopup.author.firstName }}
-          made an announcement...
-        </v-card-title>
-        <v-card-text>
-          <h2>
-            {{ announcementPopup.message }}
-          </h2>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="accent darken-1"
-            text
-            @click="announcementPopup.show = false"
-          >
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
     
-    <!-- Create new room stuff -->
-    <v-btn
-      outlined
-      large
-      block
-      @click="isCreateRoomPopupOpen = true"
-      color="secondary"
-    >
+    <HandleAnnouncements v-if="currentRoomDoc" :roomDoc="currentRoomDoc" :key="currentRoomID"/>
+
+    <!-- CREATE NEW ROOM -->
+    <v-btn @click="isCreateRoomPopupOpen = true" outlined large block color="secondary">
       <v-icon class="pr-2">mdi-plus</v-icon>
       Create New Room
     </v-btn>
+
     <CreateRoomPopup 
       :isCreatePopupOpen="isCreateRoomPopupOpen"
       :roomTypes="roomTypes"
@@ -194,6 +173,7 @@ import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom.vue";
 import PresentationalRoomUI3 from "@/components/PresentationalRoomUI3.vue";
 import PresentationalRoomUI4 from "@/components/PresentationalRoomUI4.vue";
 import CreateRoomPopup from "@/components/CreateRoomPopup.vue";
+import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
 
 export default {
   mixins: [
@@ -204,7 +184,8 @@ export default {
     RealtimeSpaceTwilioRoom,
     PresentationalRoomUI3,
     PresentationalRoomUI4,
-    CreateRoomPopup
+    CreateRoomPopup,
+    HandleAnnouncements
   },
   data () {
     return {
@@ -238,13 +219,8 @@ export default {
         roomType: null,
         message: null
       },
-      announcementPopup: {
-        show: false,
-        message: null,
-        author: {},
-      },
 
-      //Which audio devices is being used
+      // Which audio devices is being used
       audioDevices: {
         input: '',
         output: '',
@@ -338,17 +314,6 @@ export default {
         }
         this.isExpandedPanelsInitialized = true;
       }
-      
-      // Check for announcement code
-      if (    oldVal !== null
-           && newVal.id === oldVal.id
-           && newVal.announcementCounter != oldVal.announcementCounter
-      ) {
-        console.log('Showing announcement');
-        this.announcementPopup.show = true;
-        this.announcementPopup.message = newVal.announcement.message;
-        this.announcementPopup.author = newVal.announcement.author;
-      }
     }
   },
   async created () {
@@ -357,13 +322,11 @@ export default {
     this.unsubFuncs.push(
       await this.$_listenToDoc(classRef, this, "classDoc")
     );
-
     this.unsubFuncs.push(
       await this.$_listenToCollection(
         classRef.collection("rooms"), this, "roomDocs"
       )
     );
-
     this.unsubFuncs.push(
       await this.$_listenToCollection(
         classRef.collection("participants"), this, "participantDocs"
@@ -376,6 +339,23 @@ export default {
     }
   },
   methods: {
+    disconnectFromRoom () {
+      console.log("disconnectFromRoom()")
+      this.$router.push(`/class/${this.$route.params.class_id}`);
+      this.$root.$emit(`show-snackbar`, `Succesfully disconnected from the room.`);
+    },
+    async clearRoomStatuses (roomType) {
+      const querySnapshot = await db
+        .collection(`classes/${this.classID}/rooms`)
+        .where('roomType', '==', roomType)
+        .get();
+
+      for (const docSnapshot of querySnapshot.docs) {
+        docSnapshot.ref.update({
+          status: ""
+        });
+      }
+    },
     setRoomStatusPopup (show, roomID) {
       console.log("show =", show);
       console.log("roomID =", roomID);
@@ -538,12 +518,12 @@ export default {
       }
     },
     // TODO: Change to use firestore
-    bringAllToRoom (roomId, roomType) {
-      const allToRoomRef = firebase.database().ref(`class/${this.classID}/${roomType}/toRoom`);
-      allToRoomRef.set({ roomId: roomId }).then(() => {
-        allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
-      });
-    },
+    // bringAllToRoom (roomId, roomType) {
+    //   const allToRoomRef = firebase.database().ref(`class/${this.classID}/${roomType}/toRoom`);
+    //   allToRoomRef.set({ roomId: roomId }).then(() => {
+    //     allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
+    //   });
+    // },
     changeAudioDevices (devices) {
       console.log('new audio devices', devices);
       this.audioDevices = devices;
