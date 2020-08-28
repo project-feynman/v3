@@ -9,6 +9,23 @@ export default {
     };
   },
   methods: {
+    async $_logInWithTouchstone () {
+      const provider = new firebase.auth.SAMLAuthProvider("saml.mit-touchstone"); 
+      firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+          console.log("result =", result);
+          // User is signed in.
+          // Identity provider data available in result.additionalUserInfo.profile,
+          // or from the user's ID token obtained from result.user.getIdToken()
+          // as an object in the firebase.sign_in_attributes custom claim
+          // This is also available from result.user.getIdTokenResult()
+          // idTokenResult.claims.firebase.sign_in_attributes.
+        })
+        .catch((error) => {
+          console.log("error =", error);
+          // Handle error.
+        });
+    },
     async $_signUp ({ "first name": firstName, "last name": lastName, email, password }) {
       if (!firstName || !lastName) { 
         this.$root.$emit(

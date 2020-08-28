@@ -58,7 +58,8 @@
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="!user">
-                <v-col cols="auto">
+                <v-btn @click="$_logInWithTouchstone">Kerberos Login</v-btn>
+                <!-- <v-col cols="auto">
                   <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
                     @action-do="user => $_signUp(user)"
@@ -77,7 +78,7 @@
                       Sign up for an account to create new classes or join existing classes. Passwords are handled by Google Firebase Authentication.
                     </template>
                   </BasePopupButton>
-                </v-col>
+                </v-col> -->
               </template>
 
               <!-- Search Bar -->

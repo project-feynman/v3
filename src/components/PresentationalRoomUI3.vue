@@ -12,8 +12,6 @@
           <p class="mb-0 black--text">
             {{ currentClient.name }}
           </p>
-
-          <v-divider/>
           
           <p v-if="!hasConnectedToTwilioRoom" class="accent--text">
             Connecting audio...
@@ -36,7 +34,6 @@
               </v-btn>
             </div>
           </div>
-
         </div>
       </v-container>
 
@@ -135,11 +132,6 @@ export default {
       audioInputDevices: [],
       audioInput: '',
       audioOutput: '',
-      // people: [
-      //   { id: "123", name: "Richard Feynman", isMuted: true, isSpeaking: true },
-      //   { id: "xyc", name: "Peter Dourmashkin", isMuted: false, isSpeaking: false },
-      //   { id: "abc", name: "Joseph Formaggio", isMuted: true, isSpeaking: true }
-      // ]
     };
   },
   async created () {
