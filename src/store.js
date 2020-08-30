@@ -9,22 +9,22 @@ import { getRandomId } from '@/helpers.js';
 Vue.use(Vuex);
 
 function setDisconnectHook (user) {
-	const firebaseRef = firebase.database().ref('/status/' + user.uid);
-	firebase.database().ref('.info/connected').on('value', async snapshot => {
-    if (snapshot.val() === false) return; // copied from Firebase, no idea why it's needed  
-    await firebaseRef.onDisconnect().set({ isOnline: false }); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
-    firebaseRef.set({ isOnline: true });
-    firebase.firestore().collection('users').doc(user.uid).update({
-      isOnline: true // updating firestore directly is much faster, don't wait for mirroring
-    });
-  });
+	// const firebaseRef = firebase.database().ref('/status/' + user.uid);
+	// firebase.database().ref('.info/connected').on('value', async snapshot => {
+  //   if (snapshot.val() === false) return; // copied from Firebase, no idea why it's needed  
+  //   await firebaseRef.onDisconnect().set({ isOnline: false }); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
+  //   firebaseRef.set({ isOnline: true });
+  //   firebase.firestore().collection('users').doc(user.uid).update({
+  //     isOnline: true // updating firestore directly is much faster, don't wait for mirroring
+  //   });
+  // });
 }
 
 function syncUserWithDb (userRef, context) {
   userRef.onSnapshot(user => {
     if (!user.exists) return; 
-    context.commit('SET_USER', user.data());
-    setDisconnectHook(user.data()); // TODO: delete previous onDisconnect() hook 
+    context.commit("SET_USER", user.data());
+    // setDisconnectHook(user.data()); // TODO: delete previous onDisconnect() hook 
   });
 }
 
@@ -52,7 +52,6 @@ export default new Vuex.Store({
     mitClass: null,
     explCache: {},
     blackboardRoom: null,
-    //twilioRoom: null,
     session: {},
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
@@ -72,12 +71,6 @@ export default new Vuex.Store({
     SET_SESSION (state, session) {
       state.session = session;
     },
-    /*SET_TWILIO_ROOM (state, twilioRoom) {
-      state.twilioRoom = twilioRoom; 
-    },*/
-    /*SET_IS_CONNECTED_TO_AUDIO (state, isConnectedToAudio) {
-      state.isConnectedToAudio = isConnectedToAudio;
-    },*/
     SET_CANVAS_DIMENSIONS (state, dimensions) {
       state.canvasDimensions = dimensions;
     },
@@ -110,11 +103,14 @@ export default new Vuex.Store({
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     async fetchUser (context, { uid, email, refreshToken }) {
       if (!uid) return;
-      context.commit('SET_SESSION', { 
-        currentID: getRandomId(), 
-        refreshToken: refreshToken.substring(refreshToken.length - 20) 
-      });
-      context.commit('SET_USER', { uid, email }); // commit the user as soon as basic info has been fetched to avoid blocking page load
+      const sessionObject = {
+        currentID: getRandomId()
+      };
+      if (refreshToken) {
+        sessionObject.refreshToken = refreshToken.substring(refreshToken.length - 20) 
+      }
+      context.commit('SET_SESSION', sessionObject);
+      // context.commit('SET_USER', { uid, email  }); // commit the user as soon as basic info has been fetched to avoid blocking page load
       const mirrorUserRef = db.collection('users').doc(uid);
       syncUserWithDb(mirrorUserRef, context);
     }

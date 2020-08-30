@@ -19,26 +19,13 @@
 
         <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:activator="{ on }">
-             <v-avatar v-if="user" v-on="on" color="#ff5b24" style="cursor: pointer;">
+             <v-avatar v-if="user" v-on="on" color="grey" style="cursor: pointer;">
               <span v-if="user.firstName && user.lastName" class="white--text headline">
                 {{ user.firstName[0] + user.lastName[0] }}
               </span>
             </v-avatar>
           </template>
         </TheDropdownMenu>
-      </template>
-
-      <template v-else>
-        <BasePopupButton actionName="Log in" 
-          :inputFields="['email', 'password']" 
-          @action-do="user => $_logIn(user)"
-          outlined
-          color="secondary"
-        >
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-account-circle" color="secondary" data-qa="log-in-btn">Log In</BaseButton>
-          </template>
-        </BasePopupButton>
       </template>
     </TheAppBar>
     
@@ -58,7 +45,9 @@
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="!user">
-                <v-btn @click="$_logInWithTouchstone">Kerberos Login</v-btn>
+                <v-btn @click="$_logInWithTouchstone()" color="#79BA61" class="white--text">
+                  TOUCHSTONE LOGIN
+                </v-btn>
                 <!-- <v-col cols="auto">
                   <BasePopupButton actionName="Sign Up" 
                     :inputFields="['first name', 'last name', 'email', 'password']" 
@@ -262,20 +251,18 @@ export default {
           if (classObj.id === id) return; 
         }
       }
-
       // update the user document to reflect the class enrollment
       const userUpdateObject = {};
       userUpdateObject.enrolledClasses = firebase.firestore.FieldValue.arrayUnion({
         id, 
         name
       });
-      for (let [emailOption, isEnabled] of Object.entries(DefaultEmailSettings)) {
-        if (isEnabled) {
-          userUpdateObject[emailOption] = firebase.firestore.FieldValue.arrayUnion(id);
-        }
-      }
+      // for (let [emailOption, isEnabled] of Object.entries(DefaultEmailSettings)) {
+      //   if (isEnabled) {
+      //     userUpdateObject[emailOption] = firebase.firestore.FieldValue.arrayUnion(id);
+      //   }
+      // }
       await db.collection("users").doc(this.user.uid).update(userUpdateObject);
-      this.$root.$emit("show-snackbar", "Successfully added the class to the home page.");
     },
     async updateSettings (payload) {
       this.userRef.update({ enrolledClasses: payload })

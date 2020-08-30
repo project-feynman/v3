@@ -9,17 +9,53 @@ export default {
     };
   },
   methods: {
+    /**
+     * If the user logs in with Touchstone for the first time ever,
+     * Firebase Auth needs to register it, and it will receive a UID. 
+     * But we also store a mirror user document, and that UID must be the same. 
+     * 
+     * Subsequent log-ins will cause Firebase Auth to see that the user is already registered (through cookies or something),
+     * and so firebase.onAuthStateChanged(user => ) the user's UID will be lookable from the Firestore. 
+     */
     async $_logInWithTouchstone () {
       const provider = new firebase.auth.SAMLAuthProvider("saml.mit-touchstone"); 
       firebase.auth().signInWithPopup(provider)
-        .then((result) => {
+        .then(async result => {
           console.log("result =", result);
-          // User is signed in.
-          // Identity provider data available in result.additionalUserInfo.profile,
-          // or from the user's ID token obtained from result.user.getIdToken()
-          // as an object in the firebase.sign_in_attributes custom claim
-          // This is also available from result.user.getIdTokenResult()
-          // idTokenResult.claims.firebase.sign_in_attributes.
+
+          const userInfo = result.additionalUserInfo.profile; 
+          const fullName = userInfo["urn:oid:2.16.840.1.113730.3.1.241"];
+          const firstName = fullName.split(" ")[0];
+          const lastName = fullName.split(" ")[1];
+          const email = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.6"];
+          const userObject = {
+            firstName,
+            lastName,
+            email,
+            year: userInfo["urn:oid:1.2.840.113554.1.4.1.1.15"],
+            kind: userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"] // "student", or "faculty"
+          };
+
+          const queryResult = await db.collection("users").where("email", "==", email).get();
+          if (queryResult.empty) {
+            await this.$_createAccount({
+              firstName,
+              lastName,
+              email,
+              uid: result.user.uid
+            });
+            this.$store.dispatch("fetchUser", { 
+              uid: result.user.uid,
+              email 
+            });
+            this.$root.$emit("show-snackbar", "Successfully created account");
+          } else {
+            this.$store.dispatch("fetchUser", { 
+              uid: queryResult.docs[0].id,
+              email 
+            });
+            this.$root.$emit("show-snackbar", "Welcome back!");
+          }
         })
         .catch((error) => {
           console.log("error =", error);
@@ -47,23 +83,15 @@ export default {
       }
     },
     $_createAccount ({ uid, email, firstName, lastName }) {
-      function getRandomColor () {
-        const letters = "0123456789ABCDEF";
-        let color = "#";
-        for (let i = 0; i < 6; i++) {
-          color += letters[Math.floor(Math.random() * 16)];
-        }
-        return color;
-      }
-      const color = getRandomColor();
-      const enrolledClasses = [];
-      db.collection("users").doc(uid).set({ 
-        uid, 
-        email, 
-        firstName, 
-        lastName, 
-        color, 
-        enrolledClasses 
+      return new Promise(async resolve => {
+        await db.collection("users").doc(uid).set({ 
+          uid, 
+          email, 
+          firstName, 
+          lastName, 
+          enrolledClasses: []
+        });
+        resolve();
       });
     },
     $_logIn ({ email, password }) {

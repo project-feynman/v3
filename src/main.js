@@ -10,8 +10,12 @@ import PortalVue from 'portal-vue';
 Vue.config.productionTip = false;
 
 firebase.auth().onAuthStateChanged(user => {
-  if (user) store.dispatch("fetchUser", user); 
-  else store.commit('SET_USER', null); // necessary for detecting when the user logs out
+  if (user) {
+    store.dispatch("fetchUser", { uid: user.uid }); 
+  } else { 
+    // user logged out
+    store.commit('SET_USER', null);
+  }
 })
 
 new Vue({ 

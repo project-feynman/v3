@@ -172,7 +172,7 @@ export default {
           } else {
             participantRef.set({
               sessionID: this.sessionID,
-              refreshToken: this.session.refreshToken,
+              // refreshToken: this.session.refreshToken,
               uid: this.user.uid,
               email: this.user.email,
               firstName: this.user.firstName,
