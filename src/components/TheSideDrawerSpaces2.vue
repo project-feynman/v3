@@ -77,6 +77,7 @@
                     isMuted,
                     isVideoEnabled,
                     sessionIDToIsMicEnabled,
+                    sessionIDToIsVideoEnabled,
                     toggleDeafen,
                     isDeafened,
                     shareScreen
@@ -88,6 +89,7 @@
                       :otherClients="roomIDToParticipants[room.id]"
                       :dominantSpeakerSessionID="dominantSpeakerSessionID"
                       :sessionIDToIsMicEnabled="sessionIDToIsMicEnabled"
+                      :sessionIDToIsVideoEnabled="sessionIDToIsVideoEnabled"
                       :isMuted="isMuted"
                       :isDeafened="isDeafened"
                       @mute-button-pressed="toggleMute()"
@@ -104,18 +106,14 @@
                         </BaseButton>
                       </div>
                       
-                      <!-- Share screen -->
                       <v-btn @click="shareScreen()">
                         Share screen
                       </v-btn>
 
-
-                      <!-- Share video -->
                       <v-btn @click="toggleVideo()">
                         {{ isVideoEnabled ? 'Turn off' : 'Turn on' }} Video
                       </v-btn>
 
-                      <!-- Deafen -->
                       <v-btn @click="toggleDeafen()">
                         {{ isDeafened ? 'Undeafen' : 'Deafen' }}
                       </v-btn>

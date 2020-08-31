@@ -17,7 +17,6 @@
         <slot name="blackboard-toolbar">
 
         </slot> 
-     
 
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on }">

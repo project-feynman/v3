@@ -8,6 +8,7 @@
       :isMuted="!isMicEnabled"
       :isVideoEnabled="isVideoEnabled"
       :sessionIDToIsMicEnabled="participantAudioStatus"
+      :sessionIDToIsVideoEnabled="participantVideoStatus"
       :toggleDeafen="toggleDeafen"
       :isDeafened="isDeafened"
       :shareScreen="shareScreen"
@@ -103,6 +104,7 @@ export default {
       // Maps sessionID to the remote participants isMicEnabled value
       participantAudioStatus: {},
       participantVideoStatus: {},
+      participantDeafenedStatus: {},
       
       // The remote participant sessionID with the loudest audioTrack
       // null means either there are no other participants,

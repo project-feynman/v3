@@ -48,6 +48,10 @@
 
             <v-spacer/>
 
+            <v-icon v-if="sessionIDToIsVideoEnabled.hasOwnProperty(p.sessionID)" small>
+              {{ sessionIDToIsVideoEnabled[p.sessionID] ? 'mdi-video' : 'mdi-video-off' }}
+            </v-icon>
+
             <v-icon v-if="sessionIDToIsMicEnabled.hasOwnProperty(p.sessionID)" small>
               {{ sessionIDToIsMicEnabled[p.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
             </v-icon>
@@ -122,6 +126,9 @@ export default {
       required: true
     },
     sessionIDToIsMicEnabled: {
+      type: Object
+    },
+    sessionIDToIsVideoEnabled: {
       type: Object
     }
   },
