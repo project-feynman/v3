@@ -36,41 +36,42 @@
           the project is <a href="https://github.com/feynman-project/explain-mit" target="_blank">open source</a> 
           and I'd love for more help.
         </template>
+
       </BasePopupButton>  
 
         <!-- Create new space -->
-        <!-- <BaseButton 
-          :on="on"
-          icon="mdi-plus"
-          v-bind="attrs"
-          small
-          color="secondary"
-        >
+        <!-- <BaseButton :on="on" icon="mdi-plus" v-bind="attrs" small color="secondary">
           Create new space
         </BaseButton> -->
 
-
+        <!-- Library of saved explanations -->
         <v-dialog v-model="showLibrary">
           <template v-slot:activator="{ on, attrs }">
-            <BaseButton 
-              :on="on"
-              icon="mdi-bookshelf"
-              v-bind="attrs"
-              small
-              filled
-              color="accent"
-            >
+            <BaseButton :on="on" icon="mdi-bookshelf" v-bind="attrs" small filled color="accent">
               Library
             </BaseButton>
           </template>
 
-          <!-- Library of saved explanations -->
           <LibraryDialog/>
         </v-dialog>
       </v-app-bar>
 
-      <!-- Sidedrawer Spaces -->
+      <!-- Permanently displays the current user status -->
+      <v-card color="black">
+        <v-card-title class="mb-0 pb-0 white--text">
+          {{ user.firstName + " " + user.lastName }}
+        </v-card-title>
+
+        <v-card-text>
+          <portal-target name="destination2">
+
+          </portal-target>
+        </v-card-text>
+      </v-card>
+
+      <!-- Displays all the open spaces -->
       <TheSideDrawerSpaces2/>
+
     </v-navigation-drawer>
   </v-card>
 </template>

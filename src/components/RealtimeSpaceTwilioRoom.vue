@@ -1,22 +1,6 @@
 <template>
-  <div style="width: 100%;">
-    <slot
-      :dominantSpeakerSessionID="dominantParticipantSessionID"
-      :hasConnectedToTwilio="twilioInitialized"
-      :toggleMute="toggleIsMicEnabled"
-      :toggleVideo="toggleIsVideoEnabled"
-      :isMuted="!isMicEnabled"
-      :isVideoEnabled="isVideoEnabled"
-      :sessionIDToIsMicEnabled="participantAudioStatus"
-      :sessionIDToIsVideoEnabled="participantVideoStatus"
-      :toggleDeafen="toggleDeafen"
-      :isDeafened="isDeafened"
-      :shareScreen="shareScreen"
-    >
-
-    </slot>
-
-    <!-- audio and video streams will be injected into this element -->
+  <div>
+    <!-- Display videos above the shared blackboard -->
     <portal to="destination">
       <div id="local-video"> </div>
 
@@ -24,6 +8,62 @@
     </portal>
 
     <div id="remote-audio-div"> </div>
+
+
+    <!-- Display current user's connection state and options -->
+    <portal to="destination2">
+      <p v-if="!twilioInitialized" class="accent--text">
+        Connecting audio...
+      </p>
+      <template v-else>
+        <p class="green--text mt-1">
+          Connected
+        </p>
+        <v-row class="d-flex" justify="center">
+          <v-btn @click="isMicEnabled = !isMicEnabled" fab small color="grey" class="white--text" depressed>
+            <v-icon>{{ isMicEnabled ? 'mdi-microphone' : 'mdi-microphone-off'  }}</v-icon>
+          </v-btn>
+
+          <v-btn @click="isDeafened = !isDeafened" fab small color="grey" class="white--text" depressed>
+            <v-icon>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
+          </v-btn>
+
+          <v-btn @click="isVideoEnabled = !isVideoEnabled" fab small color="grey" class="white--text" depressed>
+            <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
+          </v-btn>
+
+          <v-btn fab small color="grey" class="white--text" depressed>
+            <v-icon>{{ isVideoEnabled ? 'mdi-monitor' : 'mdi-monitor-speaker-off' }}</v-icon>
+          </v-btn>
+
+          <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}`)" fab color="red" small class="white--text" depressed>
+            <v-icon>mdi-phone-hangup</v-icon>
+          </v-btn>
+        </v-row>
+      </template>
+    </portal>
+
+    <portal to="destination3">
+      <template v-for="client in allClients">
+        <div class="d-flex" :key="client.id">
+          <p :class="['mt-3 mb-0', 'text--secondary', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]" 
+              style="font-weight: 400; font-size: 0.8em"
+          >
+            {{ client.firstName + " " + client.lastName }}
+          </p>
+
+          <v-spacer/>
+
+          <v-icon v-if="allClientVideoStatuses.hasOwnProperty(client.sessionID)" small>
+            {{ participantVideoStatus[client.sessionID] ? 'mdi-video' : 'mdi-video-off' }}
+          </v-icon>
+
+          <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small>
+            {{ participantAudioStatus[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
+          </v-icon>
+        </div>
+      </template>
+    </portal>
 
     <!-- Helps user fix audio issues if an error shows up -->
     <v-dialog persistent max-width="600px" v-model="isShowingErrorPopup"> 
@@ -69,6 +109,10 @@ export default {
   props: {
     roomID: {
       type: String,
+      required: true
+    },
+    allClients: {
+      type: Array,
       required: true
     },
     audioDevices: Object,
@@ -120,8 +164,21 @@ export default {
     sessionID () { return this.session.currentID; },
     classId () { return this.$route.params.class_id; },
     roomId () { return this.$route.params.room_id; },
+    allClientAudioStatuses () {
+      return {
+        [this.sessionID]: this.isMicEnabled,
+        ...this.participantAudioStatus
+      };  
+    },
+    allClientVideoStatuses () {
+      return {
+        [this.sessionID]: this.isVideoEnabled,
+        ...this.participantVideoStatus
+      };
+    }
   },
   async created () {
+    console.log("allClients =", this.allClients);
     await this.connectToTwilioRoom();
     const roomDocRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
     this.$_listenToDoc(roomDocRef, this, "roomDoc")

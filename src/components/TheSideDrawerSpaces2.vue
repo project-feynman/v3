@@ -50,17 +50,13 @@
       <v-expansion-panel-content>
         <v-list dense>
           <template v-for="(room, i) in roomTypeToRooms[roomType]">
-            <v-list-item 
-              :to="`/class/${classID}/room/${room.id}`"
+            <v-list-item :to="`/class/${classID}/room/${room.id}`"
               :key="room.id"
               active-class="active-blackboard"
               class="py-2 single-room"
             >
               <template v-if="room.id !== currentRoomID">
-                <PresentationalRoomUI4
-                  :i="i+1"
-                  :allClients="roomIDToParticipants[room.id]"
-                >
+                <PresentationalRoomUI4 :i="i+1" :allClients="roomIDToParticipants[room.id]">
                   <v-chip v-if="room.status" color="secondary" small>
                     {{ room.status }}
                   </v-chip>
@@ -68,60 +64,31 @@
               </template>
 
               <template v-else>
-                <RealtimeSpaceTwilioRoom :roomID="room.id" :key="room.id" :audioDevices="audioDevices">
-                  <template v-slot="{
-                    hasConnectedToTwilio,
-                    dominantSpeakerSessionID,
-                    toggleMute,
-                    toggleVideo,
-                    isMuted,
-                    isVideoEnabled,
-                    sessionIDToIsMicEnabled,
-                    sessionIDToIsVideoEnabled,
-                    toggleDeafen,
-                    isDeafened,
-                    shareScreen
-                  }">
-                    <PresentationalRoomUI3 v-if="user"
-                      :i="i+1"
-                      :hasConnectedToTwilioRoom="hasConnectedToTwilio"
-                      :currentClient="{ sessionID: sessionID, name: user.firstName + ' ' + user.lastName }"
-                      :otherClients="roomIDToParticipants[room.id]"
-                      :dominantSpeakerSessionID="dominantSpeakerSessionID"
-                      :sessionIDToIsMicEnabled="sessionIDToIsMicEnabled"
-                      :sessionIDToIsVideoEnabled="sessionIDToIsVideoEnabled"
-                      :isMuted="isMuted"
-                      :isDeafened="isDeafened"
-                      @mute-button-pressed="toggleMute()"
-                      @disconnect-button-clicked="disconnectFromRoom()"
-                      @audio-device-change="devices => changeAudioDevices(devices)"
-                    >
-                      <div class="d-flex">
-                        <v-chip v-if="room.status" color="secondary" class="mt-2" small>
-                          {{ room.status }}
-                        </v-chip>
-                        <v-spacer/>
-                        <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="secondary">
-                          Update room status
-                        </BaseButton>
-                      </div>
-                      
-                      <v-btn @click="shareScreen()">
-                        Share screen
-                      </v-btn>
+                <RealtimeSpaceTwilioRoom 
+                  :roomID="room.id" 
+                  :key="room.id" 
+                  :audioDevices="audioDevices"
+                  :allClients="roomIDToParticipants[room.id]"
+                />
+                <div style="width: 100%">
+                  <div class="text-uppercase font-weight-medium accent--text">
+                    Room {{ i + 1 }}
+                  </div>
 
-                      <v-btn @click="toggleVideo()">
-                        {{ isVideoEnabled ? 'Turn off' : 'Turn on' }} Video
-                      </v-btn>
+                  <div class="d-flex">
+                    <v-chip v-if="room.status" color="secondary" class="mt-2" small>
+                      {{ room.status }}
+                    </v-chip>
+                    <v-spacer/>
+                    <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="secondary">
+                      Update room status
+                    </BaseButton>
+                  </div>
+                    <!-- Display the list of users -->
+                  <portal-target name="destination3">
 
-                      <v-btn @click="toggleDeafen()">
-                        {{ isDeafened ? 'Undeafen' : 'Deafen' }}
-                      </v-btn>
-
-                      <!-- The rest of the buttons -->
-                      </PresentationalRoomUI3>
-                  </template>
-                </RealtimeSpaceTwilioRoom>
+                  </portal-target>
+                </div>
               </template>
             </v-list-item>
           <v-divider v-if="i + 1 < roomDocs.length" :key="i"/>
