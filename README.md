@@ -21,7 +21,7 @@ That magical Eureka moment, the inexplicable journey from chaos to clarity that 
 
 "Thank you for that - my friends and I really struggled with the last few lectures..." "Happy to help. If your friends still have problems with this, just try explaining to them the same thing. Remember what Richard Feynman said - if you can't explain it simply, you don't understand it." "Yes." "And, one more thing, in case you forget what I said..."
 
-The devil presses a button, and right before their eyes, the messy scribbles on the whiteboard clear up. Then strokes start reappearing and rearranging themselves. Venn diagrams, Directed Acylic Graphs and equations, everything that he talked about and scribbled came back to life - like a vivid dance of words and numbers, moving in harmony to convey meaning in the most elegant of ways. It was as if you relived the journey once more.
+The devil presses a button, and right before their eyes, the messy scribbles on the whiteboard clear up. Then strokes start reappearing and rearranging themselves. Venn diagrams, Directed Acylic Graphs and equations, everything that he talked about and scribbled came back to life - like a vivid dance of words and numbers, moving in harmony to convey meaning in the most elegant of ways. It was as if they relived the journey towards clarity once more.
 
 "Good luck for your midterm. Remember, always spread the joy of learning to the people around you!"
 
