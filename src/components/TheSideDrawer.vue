@@ -34,7 +34,12 @@
         </template>
         <template v-slot:message-to-user>
           If you need quick help with any problems, write here or email eltonlin@mit.edu. 
-          I'll reply ASAP (with exception to 1 pm - 8:30 pm).
+          I'll reply ASAP (with exception to 1 pm - 8:30 pm). 
+          <br>
+          <br>
+          If you are a fellow hacker and know how to fix the issue,
+          the project is <a href="https://github.com/feynman-project/explain-mit" target="_blank">open source</a> 
+          and I'd love for more help.
         </template>
       </BasePopupButton>  
 

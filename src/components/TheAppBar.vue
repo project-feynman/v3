@@ -39,8 +39,8 @@
         <br>
         <br>
         If you are a fellow hacker and know how to fix the issue,
-        the project is open source: https://github.com/feynman-project/explain-mit.
-        I'd certainly appreciate the help :) 
+        the project is <a href="https://github.com/feynman-project/explain-mit" target="_blank">open source</a> 
+        and I'd love for more help.
       </template>
     </BasePopupButton>  
     <slot>
