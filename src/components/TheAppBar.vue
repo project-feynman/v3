@@ -34,7 +34,7 @@
         </BaseButton>
       </template>
       <template v-slot:message-to-user>
-        If you need quick help with any problems, write here or email eltonlin@mit.edu. 
+        If you need quick help with any problems, write here or email <u>eltonlin@mit.edu</u>
         I'll reply ASAP (with exception to 1 pm - 8:30 pm). 
         <br>
         <br>
