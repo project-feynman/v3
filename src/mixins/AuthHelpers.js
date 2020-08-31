@@ -44,22 +44,15 @@ export default {
               email,
               uid: result.user.uid
             });
-            this.$store.dispatch("fetchUser", { 
-              uid: result.user.uid,
-              email 
-            });
+            this.$store.dispatch("fetchUser", { uid: result.user.uid });
             this.$root.$emit("show-snackbar", "Successfully created account");
           } else {
-            this.$store.dispatch("fetchUser", { 
-              uid: queryResult.docs[0].id,
-              email 
-            });
+            this.$store.dispatch("fetchUser", { uid: queryResult.docs[0].id });
             this.$root.$emit("show-snackbar", "Welcome back!");
           }
         })
-        .catch((error) => {
+        .catch(error => {
           console.log("error =", error);
-          // Handle error.
         });
     },
     async $_signUp ({ "first name": firstName, "last name": lastName, email, password }) {

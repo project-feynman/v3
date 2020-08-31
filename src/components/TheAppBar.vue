@@ -10,35 +10,39 @@
     <v-app-bar-nav-icon v-if="!icon && $route.path !== '/'" data-qa="toggle-drawer"
       @click.stop="$emit('toggle-drawer')"
     >
-      <v-icon>{{ drawer ? "mdi-arrow-expand-left" : "mdi-arrow-expand-right" }}</v-icon>
+      <!-- <v-icon>{{ drawer ? "mdi-arrow-expand-left" : "mdi-arrow-expand-right" }}</v-icon> -->
     </v-app-bar-nav-icon>
     <img src="/logo.png"
       height="50"
       @click="$router.push('/')"
       :class="['home-logo', page === 'realtime' ? 'd-none d-sm-block' : '']"
     />
-    <v-toolbar-title v-if="mitClass && $route.path !== '/'" 
-      :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']"
-    >
+    <v-toolbar-title v-if="mitClass && $route.path !== '/'" :class="['headline', 'font-weight-regular', 'ml-2', page === 'realtime'? 'd-none d-md-block' : '']">
       {{ mitClass.name }}
     </v-toolbar-title>
     <v-progress-linear :active="loading" :indeterminate="loading" absolute bottom color="accent"/>
     
     <v-spacer/>
-    <!-- <BasePopupButton actionName="Give Feedback" 
-      :inputFields="['Feedback']"
+
+    <BasePopupButton actionName="Help" 
+      :inputFields="['Describe your problem']"
       @action-do="(bugReport) => submitBug(bugReport)"
     >
       <template v-slot:activator-button="{ on }">
-        <BaseButton :on="on" icon="mdi-message">Give Feedback</BaseButton>
+        <BaseButton :on="on" icon="mdi-help" color="secondary">
+          Help
+        </BaseButton>
       </template>
       <template v-slot:message-to-user>
-        Report a bug, suggest a feature, etc.
-        We will be excited to read what you write and update you by email. 
+        If you need quick help with any problems, write here or email eltonlin@mit.edu. 
+        I'll reply ASAP (with exception to 1 pm - 8:30 pm). 
+        <br>
+        <br>
+        If you are a fellow hacker and know how to fix the issue,
+        the project is open source: https://github.com/feynman-project/explain-mit.
+        I'd certainly appreciate the help :) 
       </template>
-    </BasePopupButton> -->
-    <!-- <v-btn>Library</v-btn> -->
-  
+    </BasePopupButton>  
     <slot>
       
     </slot>
@@ -85,7 +89,7 @@ export default {
     }
   },
   methods: {
-    async submitBug ({ "Feedback": title }) {
+    async submitBug ({ "Describe your problem": title }) {
       if (!title) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write something")
         return;

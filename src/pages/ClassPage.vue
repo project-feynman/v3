@@ -9,32 +9,20 @@
 </template>
 
 <script>
-import MenuEmailSettings from "@/components/MenuEmailSettings.vue";
-import TheSideDrawer from "@/components/TheSideDrawerBeta.vue";
-import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import BasePopupButton from "@/components/BasePopupButton.vue";
+import TheSideDrawer from "@/components/TheSideDrawer.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import "firebase/auth";
-import AuthHelpers from "@/mixins/AuthHelpers.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
-import Vue from 'vue';
 
 export default {
   mixins: [
-    AuthHelpers,
     DatabaseHelpersMixin
   ],
   components: { 
-    TheSideDrawer,
-    TheDropdownMenu,
-    MenuEmailSettings,
-    BaseButton,
-    BasePopupButton
+    TheSideDrawer
   },
   data: () => ({
     drawer: true,
@@ -103,11 +91,21 @@ export default {
         });
       });
     },
-    async updateSettings (payload) {
-      const userRef = db.doc(`users/${this.user.uid}`);
-      userRef.update({ 
-        enrolledClasses: payload 
+    async submitBug ({ "Describe your problem": title }) {
+      if (!title) {
+        this.$root.$emit("show-snackbar", "Error: don't forget to write something")
+        return;
+      }
+      const sendEmailToTeam = firebase.functions().httpsCallable("sendEmailToCoreTeam");
+      sendEmailToTeam({ 
+        userEmail: this.user ? this.user.email : "anonymous@mit.edu",
+        userFeedback: title  
       });
+      await db.collection("bugs").add({ 
+        title,
+        email: this.user ? this.user.email : "anonymous@mit.edu"
+      }); 
+      this.$root.$emit("show-snackbar", "Successfully sent feedback.");
     },
     async leaveClass () {
       const emailSettingsUpdate = {};

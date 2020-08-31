@@ -20,14 +20,6 @@ function setDisconnectHook (user) {
   // });
 }
 
-function syncUserWithDb (userRef, context) {
-  userRef.onSnapshot(user => {
-    if (!user.exists) return; 
-    context.commit("SET_USER", user.data());
-    // setDisconnectHook(user.data()); // TODO: delete previous onDisconnect() hook 
-  });
-}
-
 // function syncMitClassWithDb (mitClassRef, context) {
 //   mitClassRef.onSnapshot(mitClass => {
 //     if (!mitClass.exists) return; 
@@ -101,18 +93,28 @@ export default new Vuex.Store({
       });
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
-    async fetchUser (context, { uid, email, refreshToken }) {
-      if (!uid) return;
-      const sessionObject = {
-        currentID: getRandomId()
-      };
-      if (refreshToken) {
-        sessionObject.refreshToken = refreshToken.substring(refreshToken.length - 20) 
-      }
-      context.commit('SET_SESSION', sessionObject);
-      // context.commit('SET_USER', { uid, email  }); // commit the user as soon as basic info has been fetched to avoid blocking page load
-      const mirrorUserRef = db.collection('users').doc(uid);
-      syncUserWithDb(mirrorUserRef, context);
+    async fetchUser (context, { uid, refreshToken }) {
+      return new Promise((resolve, reject) => {
+        const sessionObject = {
+          currentID: getRandomId()
+        };
+        if (refreshToken) {
+          sessionObject.refreshToken = refreshToken.substring(refreshToken.length - 20) 
+        }
+        context.commit('SET_SESSION', sessionObject);
+        const mirrorUserRef = db.collection('users').doc(uid);
+        mirrorUserRef.onSnapshot(userDoc => {
+          console.log("userDoc =", userDoc);
+          if (!userDoc.exists) {
+            // throw new Error("User's Firestore record no longer exists");
+            reject("Can't find user's Firestore doc with given UID");
+            context.commit("SET_USER", null);
+          } else {
+            context.commit("SET_USER", userDoc.data());
+            resolve();
+          }
+        });
+      });
     }
   }
 })

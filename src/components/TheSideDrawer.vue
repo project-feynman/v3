@@ -23,6 +23,21 @@
         </v-toolbar-title>
         <v-spacer/>
 
+        <BasePopupButton actionName="Help" 
+          :inputFields="['Describe your problem']"
+          @action-do="bugReport => submitBug(bugReport)"
+        >
+        <template v-slot:activator-button="{ on }">
+          <BaseButton :on="on" icon="mdi-help" color="secondary">
+            Help
+          </BaseButton>
+        </template>
+        <template v-slot:message-to-user>
+          If you need quick help with any problems, write here or email eltonlin@mit.edu. 
+          I'll reply ASAP (with exception to 1 pm - 8:30 pm).
+        </template>
+      </BasePopupButton>  
+
         <!-- Create new space -->
         <!-- <BaseButton 
           :on="on"
