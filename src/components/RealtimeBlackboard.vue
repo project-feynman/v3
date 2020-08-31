@@ -33,14 +33,14 @@
 
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot>
-        <BaseButton @click="$refs.fileInput.click()" icon="mdi-upload" color="black">
+        <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black">
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
             type="file" 
             ref="fileInput"
           >
-          Upload background
+          Background
         </BaseButton>
       </template>
 
@@ -49,7 +49,7 @@
         <BasePopupButton actionName="Wipe board" @action-do="resetBlackboardOnFirestore()">
           <template v-slot:activator-button="{ on }">
             <BaseButton :on="on" icon="mdi-delete" color="black">
-              Wipe board
+              Wipe
             </BaseButton>
           </template>
           <template v-slot:message-to-user>

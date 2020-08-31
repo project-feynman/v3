@@ -19,7 +19,7 @@
                   <v-col cols="12" sm="4">
                     <v-overflow-btn 
                       label="2"
-                      :items="[1, 2, 3, 4, 5, 6]"
+                      :items="[2, 3, 4, 5]"
                       @change="groupSize => minRoomSizeOnShuffle = groupSize"
                     />
                   </v-col>
@@ -73,8 +73,13 @@
                     hasConnectedToTwilio,
                     dominantSpeakerSessionID,
                     toggleMute,
+                    toggleVideo,
                     isMuted,
-                    sessionIDToIsMicEnabled
+                    isVideoEnabled,
+                    sessionIDToIsMicEnabled,
+                    toggleDeafen,
+                    isDeafened,
+                    shareScreen
                   }">
                     <PresentationalRoomUI3 v-if="user"
                       :i="i+1"
@@ -84,6 +89,7 @@
                       :dominantSpeakerSessionID="dominantSpeakerSessionID"
                       :sessionIDToIsMicEnabled="sessionIDToIsMicEnabled"
                       :isMuted="isMuted"
+                      :isDeafened="isDeafened"
                       @mute-button-pressed="toggleMute()"
                       @disconnect-button-clicked="disconnectFromRoom()"
                       @audio-device-change="devices => changeAudioDevices(devices)"
@@ -97,7 +103,25 @@
                           Update room status
                         </BaseButton>
                       </div>
-                    </PresentationalRoomUI3>
+                      
+                      <!-- Share screen -->
+                      <v-btn @click="shareScreen()">
+                        Share screen
+                      </v-btn>
+
+
+                      <!-- Share video -->
+                      <v-btn @click="toggleVideo()">
+                        {{ isVideoEnabled ? 'Turn off' : 'Turn on' }} Video
+                      </v-btn>
+
+                      <!-- Deafen -->
+                      <v-btn @click="toggleDeafen()">
+                        {{ isDeafened ? 'Undeafen' : 'Deafen' }}
+                      </v-btn>
+
+                      <!-- The rest of the buttons -->
+                      </PresentationalRoomUI3>
                   </template>
                 </RealtimeSpaceTwilioRoom>
               </template>
@@ -486,11 +510,7 @@ export default {
         roomType: roomType
       }
     },
-    async makeAnnouncement (message, roomType) {
-      console.log("Making announcement...");
-      console.log("Announcement message:", message);
-      console.log("Annoucement roomType:", roomType);
-      
+    async makeAnnouncement (message, roomType) {      
       if (!message) {
         this.$root.$emit("show-snackbar", "Invalid announcement message");
         return;

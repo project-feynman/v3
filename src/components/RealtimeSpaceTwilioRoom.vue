@@ -4,13 +4,25 @@
       :dominantSpeakerSessionID="dominantParticipantSessionID"
       :hasConnectedToTwilio="twilioInitialized"
       :toggleMute="toggleIsMicEnabled"
+      :toggleVideo="toggleIsVideoEnabled"
       :isMuted="!isMicEnabled"
+      :isVideoEnabled="isVideoEnabled"
       :sessionIDToIsMicEnabled="participantAudioStatus"
+      :toggleDeafen="toggleDeafen"
+      :isDeafened="isDeafened"
+      :shareScreen="shareScreen"
     >
 
     </slot>
+
     <!-- audio and video streams will be injected into this element -->
-    <div id="remote-audio-div"></div>
+    <portal to="destination">
+      <div id="local-video"> </div>
+
+      <div id="remote-video-div"> </div>
+    </portal>
+
+    <div id="remote-audio-div"> </div>
 
     <!-- Helps user fix audio issues if an error shows up -->
     <v-dialog persistent max-width="600px" v-model="isShowingErrorPopup"> 
@@ -84,10 +96,13 @@ export default {
       twilioInitialized: false,
       
       isMicEnabled: true,
+      isVideoEnabled: false,
+      isDeafened: false,
       
       // Contains connected participants with a published audio stream
       // Maps sessionID to the remote participants isMicEnabled value
       participantAudioStatus: {},
+      participantVideoStatus: {},
       
       // The remote participant sessionID with the loudest audioTrack
       // null means either there are no other participants,
@@ -124,8 +139,62 @@ export default {
     }
   },
   watch: {
-    isMicEnabled: {
-      handler: 'isMicEnabledHandler'
+    isMicEnabled (isEnabled) {
+      if (!this.twilioRoom) return;
+      if (isEnabled) {
+        this.twilioRoom.localParticipant.audioTracks.forEach(
+          publication => publication.track.enable()
+        );
+      } else {
+        this.twilioRoom.localParticipant.audioTracks.forEach(
+          publication => publication.track.disable()
+        );
+      }
+    },
+    async isVideoEnabled (isEnabled) {
+      if (isEnabled) {
+        const { createLocalVideoTrack } = require('twilio-video');
+        const videoTrack = await createLocalVideoTrack();
+        videoTrack.enable();
+
+        // Display the video preview.
+        const divContainer = document.getElementById('local-video');
+        const videoElement = videoTrack.attach();
+        videoElement.height = 100; 
+        videoElement.width = 200;
+        divContainer.appendChild(videoElement);
+            
+        // publish the video tracks to other people
+        this.twilioRoom.localParticipant.publishTrack(videoTrack);
+      } 
+      else {
+        this.twilioRoom.localParticipant.videoTracks.forEach(publication => {
+          publication.track.disable(); // other people
+          this.unmountTrack(publication.track); // hide local preview
+        });
+      }
+    },
+    isDeafened (isDeafened) {
+      if (isDeafened) {
+        this.isMicEnabled = false; // mute myself 
+
+        // silence other people
+        this.twilioRoom.participants.forEach(person => {
+          person.audioTracks.forEach(publication => this.unmountTrack(publication.track));
+        }); 
+      } 
+      else {
+        this.isMicEnabled = true; // unmute myself
+        
+        // unsilence other people 
+        this.twilioRoom.participants.forEach(person => {
+          person.audioTracks.forEach(publication => {
+            if (publication.isSubscribed) {
+              this.mountAudioTrack(publication.track);
+            }
+          });
+        }); 
+      }
     },
     roomDoc (newVal, oldVal) {
       // Check if we need to enable trigger a muteAll
@@ -137,7 +206,6 @@ export default {
       }
     },
     audioDevices () {
-      console.log('connecting');
       this.connectToTwilioRoom();
     }
   },
@@ -154,13 +222,11 @@ export default {
         `;
         return;
       }
-      
+
       // You can succesfully connect only if you give mic permissions
       try {
-        // const localAudioTracks = Twilio.createLocalTracks({ audio: { deviceId: this.audioDevices.input }});
         this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
           name: this.roomID,
-          // tracks: localAudioTracks,
           audio: true,
           dominantSpeaker: true
         }); // video: { width: 640 }
@@ -169,9 +235,6 @@ export default {
         return;
       }
 
-      // don't tell the user "successfully connected" because they'll expect that they can hear and talk,
-      // but actually it takes another 1-3 seconds to be able to
-  
       // handle disconnections so other participants get notified immediately 
       window.addEventListener("beforeunload", this.twilioRoom.disconnect);
       window.addEventListener("pagehide", this.twilioRoom.disconnect);
@@ -187,18 +250,11 @@ export default {
     toggleIsMicEnabled () {
       this.isMicEnabled = !this.isMicEnabled;
     },
-    // Updates localParticipant audioTracks based on passed in val
-    isMicEnabledHandler (val) {
-      if (!this.twilioRoom) return;
-      if (val) {
-        this.twilioRoom.localParticipant.audioTracks.forEach(
-          publication => publication.track.enable()
-        );
-      } else {
-        this.twilioRoom.localParticipant.audioTracks.forEach(
-          publication => publication.track.disable()
-        );
-      }
+    toggleDeafen () {
+      this.isDeafened = !this.isDeafened;
+    },
+    toggleIsVideoEnabled () {
+      this.isVideoEnabled = !this.isVideoEnabled;
     },
     /*
      * A track is a stream of bytes that contain the data generated by a multimedia source such as a microphone or a camera.
@@ -212,7 +268,6 @@ export default {
       const tryHandleAudioTrack = (track) => {
         if (track.kind != "audio") return;
         const audioTrack = track;
-        console.log("Handling audioTrack:", audioTrack.name);
         
         const setStatus = () => Vue.set(
           this.participantAudioStatus,
@@ -225,30 +280,61 @@ export default {
         
         this.mountAudioTrack(audioTrack);
       };
+
+      const tryHandleVideoTrack = (track) => {
+        if (track.kind != "video") return;
+        const videoTrack = track;
+        
+        const setStatus = () => {
+          Vue.set(
+            this.participantVideoStatus,
+            participant.identity,
+            videoTrack.isEnabled
+          );
+
+           // quick-fix: it's necessary but should be refactored
+           // however this is confusing and hard to understand
+          // when someone else turns off their video, I will unmount their video from DOM
+          if (!videoTrack.isEnabled) {
+            console.log("someone turned off their video");
+            this.unmountTrack(videoTrack);
+          }
+        
+        }
+        setStatus();
+
+        videoTrack.on('disabled', setStatus);
+        videoTrack.on('enabled', setStatus);
+        
+        this.mountVideoTrack(videoTrack);
+      };
       
       const handleTrack = (track) => {
+        console.log("handleTrack track =", track);
         tryHandleAudioTrack(track);
-        // TODO: Add tryHandleVideoTrack
+        tryHandleVideoTrack(track); 
       }
       
       const handlePublication = (publication) => {
-        console.log("Handling publication...");
         if (publication.isSubscribed) {
           handleTrack(publication.track);
         }
       }
       
       participant.tracks.forEach(handlePublication);
+
+      // whenever someone publishes a track i.e. audio/video/screen, we'll be informed (automatically subscribed)
       participant.on("trackSubscribed", handleTrack);
+
+      // whenever someone else unpublishes a track, we'll remove it
       participant.on("trackUnsubscribed", this.unmountTrack);
     },
     participantOnDisconnect(participant) {
-      console.log("Participant onDisconnect", participant.identity);
       Vue.delete(this.participantAudioStatus, participant.identity);
+      Vue.delete(this.participantVideoStatus, participant.identity);
       this.unmountParticipantTracks(participant);
     },
     onDominantSpeakerChanged(participant) {
-      console.log("dominantSpeakerChanged =", participant);
       this.dominantParticipantSessionID = participant ? participant.identity : null;
     },
     /**
@@ -265,10 +351,21 @@ export default {
     async mountAudioTrack (audioTrack) {
       console.assert(audioTrack.kind == "audio");
       const audioElement = audioTrack.attach();
-      if ( this.audioDevices && this.audioDevices.output ) await audioElement.setSinkId(this.audioDevices.output);
+      if (this.audioDevices && this.audioDevices.output) {
+        await audioElement.setSinkId(this.audioDevices.output);
+      }
       document.getElementById(
         "remote-audio-div"
       ).appendChild(audioElement);
+    },
+    async mountVideoTrack (videoTrack) {
+      console.assert(videoTrack.kind == "video");
+      const videoElement = videoTrack.attach();
+      // make smaller
+      videoElement.height = 150;
+      videoElement.width = 300;
+      videoElement.controls = true; // allow the user to fullscreen
+      document.getElementById("remote-video-div").appendChild(videoElement);
     },
     unmountTrack (track) {
       console.log("Unmounting track:", track.name);
@@ -280,14 +377,16 @@ export default {
     unmountParticipantTracks (participant) {
       // Unmounts published tracks by the participant
       // should be called when the participant disconnects
-      console.log("Unmounting participant:", participant.identity);
       for (const publication in participant.tracks) {
         if (publication.track) {
           this.unmountTrack(publication.track);
         }
       }
     },
-    /*async shareScreen () {
+    /**
+     * No need to display local feedback as the browser already says "Currently sharing screen"
+     */
+    async shareScreen () {
       try {
         const stream = await navigator.mediaDevices.getDisplayMedia();
         const screenTrack = new Twilio.LocalVideoTrack(stream.getTracks()[0]);
@@ -295,7 +394,7 @@ export default {
       } catch (error) {
         this.tellUserHowToFixError(error);
       }
-    },*/
+    },
     /**
      * Creates an "access token" that is required to join a Twilio room.
      * 

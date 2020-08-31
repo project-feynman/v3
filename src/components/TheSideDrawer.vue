@@ -10,17 +10,12 @@
       permanent
     >
       <v-app-bar class="mb-4">
-        <img src="/logo.png"
-          height="40"
-          @click="$router.push('/')"
-          class="home-logo pl-2"
-          style="filter:drop-shadow(0px 0px 10px white) contrast(2); cursor: pointer;"
-        />
-        <v-toolbar-title v-if="mitClass" 
-          :class="['headline', 'ml-2']"
-        >
+        <img src="/logo.png" @click="$router.push('/')" height="40" class="home-logo pl-2" style="filter:drop-shadow(0px 0px 10px white) contrast(2); cursor: pointer;"/>
+        
+        <v-toolbar-title v-if="mitClass" :class="['headline', 'ml-2']">
           {{ mitClass.name }}
         </v-toolbar-title>
+
         <v-spacer/>
 
         <BasePopupButton actionName="Help" 

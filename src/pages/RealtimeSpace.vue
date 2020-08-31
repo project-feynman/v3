@@ -1,10 +1,11 @@
 <template>
   <div>    
+    <!-- Video sharing -->
+    <portal-target name="destination">
+    
+    </portal-target>
+
     <v-toolbar>
-      <!-- <BaseButton @click="$emit('toggle-drawer')" color="secondary" :icon="drawer ? 'mdi-backburger' : 'mdi-forwardburger'">
-        {{ drawer ? "Hide" : "Show" }} spaces
-      </BaseButton> -->
-      
       <!-- Tabs for different blackboards -->
       <v-tabs v-if="user && room" v-model="activeBoard" active-class="accent--text" slider-color="accent">
         <template v-for="(board, i) in room.blackboards">
