@@ -39,7 +39,7 @@
             type="file" 
             ref="fileInput"
           >
-          Background
+          Annotate
         </BaseButton>
       </template>
 

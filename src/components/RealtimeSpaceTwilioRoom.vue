@@ -2,13 +2,19 @@
   <div>
     <!-- Display videos above the shared blackboard -->
     <portal to="destination">
-      <div id="local-video"> </div>
+      <div class="d-flex">
+        <div id="local-video"> 
 
-      <div id="remote-video-div"> </div>
+        </div>
+        <div id="remote-video-div"> 
+
+        </div>
+      </div>
     </portal>
 
-    <div id="remote-audio-div"> </div>
+    <div id="remote-audio-div"> 
 
+    </div>
 
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
@@ -24,16 +30,16 @@
             <v-icon>{{ isMicEnabled ? 'mdi-microphone' : 'mdi-microphone-off'  }}</v-icon>
           </v-btn>
 
-          <v-btn @click="isDeafened = !isDeafened" fab small color="grey" class="white--text" depressed>
-            <v-icon>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
-          </v-btn>
-
-          <v-btn @click="isVideoEnabled = !isVideoEnabled" fab small color="grey" class="white--text" depressed>
+          <v-btn v-if="Object.keys(allClientVideoStatuses).length < 3" @click="isVideoEnabled = !isVideoEnabled" fab small color="grey" class="white--text" depressed>
             <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
           </v-btn>
 
-          <v-btn fab small color="grey" class="white--text" depressed>
+          <v-btn @click="shareScreen()" fab small color="grey" class="white--text" depressed>
             <v-icon>{{ isVideoEnabled ? 'mdi-monitor' : 'mdi-monitor-speaker-off' }}</v-icon>
+          </v-btn>
+
+          <v-btn @click="isDeafened = !isDeafened" fab small color="grey" class="white--text" depressed>
+            <v-icon>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
           </v-btn>
 
           <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}`)" fab color="red" small class="white--text" depressed>
@@ -45,21 +51,20 @@
 
     <portal to="destination3">
       <template v-for="client in allClients">
-        <div class="d-flex" :key="client.id">
-          <p :class="['mt-3 mb-0', 'text--secondary', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]" 
-              style="font-weight: 400; font-size: 0.8em"
-          >
-            {{ client.firstName + " " + client.lastName }}
-          </p>
+        <div class="d-flex" :key="client.id" 
+          :class="[`${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
+          style="font-size: 0.8em"
+        >
+          {{ client.firstName + " " + client.lastName }}
 
           <v-spacer/>
 
           <v-icon v-if="allClientVideoStatuses.hasOwnProperty(client.sessionID)" small>
-            {{ participantVideoStatus[client.sessionID] ? 'mdi-video' : 'mdi-video-off' }}
+            {{ allClientVideoStatuses[client.sessionID] ? 'mdi-video' : 'mdi-video-off' }}
           </v-icon>
 
           <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small>
-            {{ participantAudioStatus[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
+            {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
           </v-icon>
         </div>
       </template>
@@ -171,10 +176,9 @@ export default {
       };  
     },
     allClientVideoStatuses () {
-      return {
-        [this.sessionID]: this.isVideoEnabled,
-        ...this.participantVideoStatus
-      };
+      const copy = { ...this.participantVideoStatus };
+      copy[this.sessionID] = this.isVideoEnabled; 
+      return copy;
     }
   },
   async created () {
@@ -219,8 +223,8 @@ export default {
         // Display the video preview.
         const divContainer = document.getElementById('local-video');
         const videoElement = videoTrack.attach();
-        videoElement.height = 100; 
-        videoElement.width = 200;
+        videoElement.height = 150; 
+        videoElement.width = 210;
         divContainer.appendChild(videoElement);
             
         // publish the video tracks to other people
@@ -230,6 +234,7 @@ export default {
         this.twilioRoom.localParticipant.videoTracks.forEach(publication => {
           publication.track.disable(); // other people
           this.unmountTrack(publication.track); // hide local preview
+          publication.unpublish();
         });
       }
     },
@@ -422,7 +427,7 @@ export default {
       const videoElement = videoTrack.attach();
       // make smaller
       videoElement.height = 150;
-      videoElement.width = 300;
+      videoElement.width = 210;
       videoElement.controls = true; // allow the user to fullscreen
       document.getElementById("remote-video-div").appendChild(videoElement);
     },
