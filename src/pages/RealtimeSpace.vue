@@ -198,27 +198,27 @@ export default {
             });
           })*/
         })
-        this.setMoveToRoomListener();
+        // this.setMoveToRoomListener();
       });
     },
-    bringAllToRoom () {
-      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
-      this.allToRoomRef.set({ roomId: this.roomId }).then(() => {
-        this.allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
-      })
-    },
-    setMoveToRoomListener() {
-      this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
-      this.allToRoomRef.on("value", snapshot => {
-        if (snapshot.val()) {
-          const { roomId } = snapshot.val();
-          if (roomId && this.roomId !== roomId){ //only call this if a different room
-            this.$router.push(`/class/${this.classId}/room/${roomId}`);
-            this.$root.$emit("show-snackbar", "You've been called to the main room!");
-          }
-        }
-      })
-    },
+    // bringAllToRoom () {
+    //   this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+    //   this.allToRoomRef.set({ roomId: this.roomId }).then(() => {
+    //     this.allToRoomRef.set( { roomId: "" }); //We want to clear it after it notifies everyone
+    //   })
+    // },
+    // setMoveToRoomListener() {
+    //   this.allToRoomRef = firebase.database().ref(`class/${this.classId}/${this.room.roomType}/toRoom`);
+    //   this.allToRoomRef.on("value", snapshot => {
+    //     if (snapshot.val()) {
+    //       const { roomId } = snapshot.val();
+    //       if (roomId && this.roomId !== roomId){ //only call this if a different room
+    //         this.$router.push(`/class/${this.classId}/room/${roomId}`);
+    //         this.$root.$emit("show-snackbar", "You've been called to the main room!");
+    //       }
+    //     }
+    //   })
+    // },
     // state => database
     async createNewBoard () {
       const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);

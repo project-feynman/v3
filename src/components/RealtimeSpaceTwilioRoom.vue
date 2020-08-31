@@ -23,14 +23,15 @@
       </p>
       <template v-else>
         <p class="green--text mt-1">
-          Connected
+          Connected 
         </p>
         <v-row class="d-flex" justify="center">
           <v-btn @click="isMicEnabled = !isMicEnabled" fab small color="grey" class="white--text" depressed>
             <v-icon>{{ isMicEnabled ? 'mdi-microphone' : 'mdi-microphone-off'  }}</v-icon>
           </v-btn>
 
-          <v-btn v-if="Object.keys(allClientVideoStatuses).length < 3" @click="isVideoEnabled = !isVideoEnabled" fab small color="grey" class="white--text" depressed>
+          <!-- This logic is not correct: count the number of true instead -->
+          <v-btn v-if="Object.keys(allClientVideoStatuses).length < 7" @click="isVideoEnabled = !isVideoEnabled" fab small color="grey" class="white--text" depressed>
             <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
           </v-btn>
 
@@ -59,9 +60,9 @@
 
           <v-spacer/>
 
-          <v-icon v-if="allClientVideoStatuses.hasOwnProperty(client.sessionID)" small>
-            {{ allClientVideoStatuses[client.sessionID] ? 'mdi-video' : 'mdi-video-off' }}
-          </v-icon>
+          <!-- <v-icon v-if="allClientVideoStatuses.hasOwnProperty(client.sessionID)" small>
+            {{ allClientVideoStatuses[client.sessionID] ? 'mdi-video' : '' }}
+          </v-icon> -->
 
           <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small>
             {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
@@ -391,7 +392,10 @@ export default {
       participant.on("trackSubscribed", handleTrack);
 
       // whenever someone else unpublishes a track, we'll remove it
-      participant.on("trackUnsubscribed", this.unmountTrack);
+      participant.on("trackUnsubscribed", track => {
+        // TODO: update videoStatus
+        this.unmountTrack(track);
+      });
     },
     participantOnDisconnect(participant) {
       Vue.delete(this.participantAudioStatus, participant.identity);
@@ -432,7 +436,6 @@ export default {
       document.getElementById("remote-video-div").appendChild(videoElement);
     },
     unmountTrack (track) {
-      console.log("Unmounting track:", track.name);
       const htmlElements = track.detach();
       for (const element of htmlElements) {
         element.remove();
