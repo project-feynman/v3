@@ -18,8 +18,8 @@
                 <v-row>
                   <v-col cols="12" sm="4">
                     <v-overflow-btn 
-                      label="2"
-                      :items="[2, 3, 4, 5]"
+                      label="3"
+                      :items="[3]"
                       @change="groupSize => minRoomSizeOnShuffle = groupSize"
                     />
                   </v-col>
@@ -41,7 +41,7 @@
             </BaseButton>
 
             <BaseButton @click="clearRoomStatuses(roomType)" icon="mdi-comment-remove" small :stopPropagation="true" color="black">
-              Clear status
+              Clear
             </BaseButton>
           </div>
         </div>
