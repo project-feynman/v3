@@ -22,7 +22,7 @@
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on }">
             <BaseButton :on="on" icon="mdi-content-save" color="black">
-              Save blackboard
+              Save
             </BaseButton>
           </template>
           <template v-slot:message-to-user>

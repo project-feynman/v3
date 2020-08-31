@@ -329,10 +329,12 @@ export default {
       } else if (error.name === "NotAllowedError") {
         this.whyItFailed = `At some point, you dismissed or denied the popup that asked for access to your microphone`
         this.howToFix = `
-          Give access to your microphone by doing the following steps: 
-            1. Click the small, circular "i" button near the left of "https://explain.mit.edu/...." 
+          Try to find the settings for your microphone, and click enable. The below steps usually works:
+            1. Find a button (a lock icon or an "i" button or something else) near the left of "https://explain.mit.edu/...." 
             2. Find the settings somewhere for the audio microphone and switch to "allow" 
-            3. Reload the entire website.
+            3. Reload the entire website. 
+          If that doesn't work, try switching browsers e.g. flip between Safari and Chrome. 
+          If that still doesn't work, you can Facetime me +886 965 602 567. 
         `;
       } else {
         this.whyItFailed = `Failed to acquire audio media because: ${error.message}`;
