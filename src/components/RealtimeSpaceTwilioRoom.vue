@@ -352,7 +352,10 @@ export default {
         audioTrack.on('disabled', setStatus);
         audioTrack.on('enabled', setStatus);
         
-        this.mountAudioTrack(audioTrack);
+        // quickfix for deafen
+        if (!this.isDeafened) {
+          this.mountAudioTrack(audioTrack);
+        }
       };
 
       const tryHandleVideoTrack = (track) => {
@@ -365,15 +368,13 @@ export default {
             participant.identity,
             videoTrack.isEnabled
           );
-
-           // quick-fix: it's necessary but should be refactored
-           // however this is confusing and hard to understand
+          // quick-fix: it's necessary but should be refactored
+          // however this is confusing and hard to understand
           // when someone else turns off their video, I will unmount their video from DOM
           if (!videoTrack.isEnabled) {
             console.log("someone turned off their video");
             this.unmountTrack(videoTrack);
           }
-        
         }
         setStatus();
 

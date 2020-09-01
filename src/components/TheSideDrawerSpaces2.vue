@@ -8,7 +8,7 @@
           </div>
 
           <portal to="instructor-only-buttons">
-            <div v-if="roomType === currentRoomType">
+            <div v-if="roomType === currentRoomType && superUserLastNames.includes(user.lastName)">
               <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomType)">
                 <template v-slot:activator-button="{ on }">
                   <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
@@ -203,6 +203,30 @@ export default {
   },
   data () {
     return {
+      superUserLastNames: [
+        'Dourmashkin',
+        'Erik',
+        'Tan',
+        'Lin',
+        'Benedikt',
+        'Bacanu',
+        'Joshua',
+        'Somboonpanyakul',
+        'Chatterjee',
+        'Owen',
+        'June',
+        'Romeo',
+        'Formaggio',
+        'J',
+        'I',
+        'Hen',
+        'Abdelhafez',
+        'MacDonagh',
+        'Velez',
+        'C',
+        'Ruth',
+        'Dunn'
+      ],
       unsubFuncs: [],
       
       // Firebase doc objects
