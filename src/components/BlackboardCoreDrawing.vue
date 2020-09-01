@@ -177,7 +177,7 @@ export default {
      * TODO: refactor with composition API
      */
     backgroundImage ({ downloadURL, blob }) {
-      this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight);
+      this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
       if (downloadURL || blob) {
         this.$_renderBackground(
           blob ? URL.createObjectURL(blob) : downloadURL
