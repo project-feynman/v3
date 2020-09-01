@@ -22,22 +22,21 @@
           :inputFields="['Describe your problem']"
           @action-do="bugReport => submitBug(bugReport)"
         >
-        <template v-slot:activator-button="{ on }">
-          <BaseButton :on="on" icon="mdi-help" color="secondary">
-            Help
-          </BaseButton>
-        </template>
-        <template v-slot:message-to-user>
-          If you need quick help with any problems, write here or email <u>eltonlin@mit.edu</u>. 
-          I'll reply ASAP (with exception to 1 pm - 8:30 pm). 
-          <br>
-          <br>
-          If you are a fellow hacker and know how to fix the issue,
-          the project is <a href="https://github.com/feynman-project/explain-mit" target="_blank">open source</a> 
-          and I'd love for more help.
-        </template>
-
-      </BasePopupButton>  
+          <template v-slot:activator-button="{ on }">
+            <BaseButton :on="on" icon="mdi-help" color="secondary">
+              Help
+            </BaseButton>
+          </template>
+          <template v-slot:message-to-user>
+            If you need quick help with any problems, write here or email <u>eltonlin@mit.edu</u>. 
+            I'll reply ASAP (with exception to 1 pm - 8:30 pm). 
+            <br>
+            <br>
+            If you are a fellow hacker and know how to fix the issue,
+            the project is <a href="https://github.com/feynman-project/explain-mit" target="_blank">open source</a> 
+            and I'd love for more help.
+          </template>
+        </BasePopupButton>  
 
         <!-- Create new space -->
         <!-- <BaseButton :on="on" icon="mdi-plus" v-bind="attrs" small color="secondary">
@@ -56,22 +55,27 @@
         </v-dialog>
       </v-app-bar>
 
-      <!-- Permanently displays the current user status -->
-      <v-card color="black">
-        <v-card-title class="mb-0 pb-0 white--text">
-          {{ user.firstName + " " + user.lastName }}
-        </v-card-title>
-
-        <v-card-text>
-          <portal-target name="destination2">
-
-          </portal-target>
-        </v-card-text>
-      </v-card>
-
       <!-- Displays all the open spaces -->
       <TheSideDrawerSpaces2/>
 
+      <template v-slot:append>
+        <!-- Permanently displays the current user status -->
+        <v-card color="black"  >
+          <v-card-title class="mb-0 pb-0 white--text">
+            {{ user.firstName + " " + user.lastName }}
+          </v-card-title>
+
+          <v-card-text>
+            <portal-target name="destination2">
+
+            </portal-target>
+
+            <portal-target name="instructor-only-buttons">
+
+            </portal-target>
+          </v-card-text>
+        </v-card>
+      </template>
     </v-navigation-drawer>
   </v-card>
 </template>
@@ -107,7 +111,7 @@ export default {
   data () {
     return {
       activeTab: "rooms",
-      showLibrary: false,
+      showLibrary: false
     }
   },
   computed: { 

@@ -25,27 +25,35 @@
         <p class="green--text mt-1">
           Connected 
         </p>
-        <v-row class="d-flex" justify="center">
-          <v-btn @click="isMicEnabled = !isMicEnabled" fab small color="grey" class="white--text" depressed>
-            <v-icon>{{ isMicEnabled ? 'mdi-microphone' : 'mdi-microphone-off'  }}</v-icon>
+        <v-row class="d-flex" justify="space-around">
+          <v-btn @click="isMicEnabled = !isMicEnabled" fab color="grey" class="white--text" depressed>
+            <v-icon large>{{ isMicEnabled ? 'mdi-microphone' : 'mdi-microphone-off'  }}</v-icon>
           </v-btn>
 
-          <!-- This logic is not correct: count the number of true instead -->
-          <v-btn v-if="Object.keys(allClientVideoStatuses).length < 7" @click="isVideoEnabled = !isVideoEnabled" fab small color="grey" class="white--text" depressed>
+          <v-btn @click="isDeafened = !isDeafened" fab color="grey" class="white--text" depressed>
+            <v-icon large>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
+          </v-btn>
+
+          <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}`)" fab color="red" class="white--text" depressed>
+            <v-icon large>mdi-phone-hangup</v-icon>
+          </v-btn>
+        </v-row>
+
+        <v-row class="d-flex mt-2" justify="space-around">
+          <v-btn @click="isVideoEnabled = !isVideoEnabled" class="ma-2" large tile outlined color="white">
+            <v-icon left>mdi-video</v-icon> Video
+          </v-btn>
+
+          <v-btn @click="shareScreen()" class="ma-2" tile outlined large color="white">
+            <v-icon left>mdi-monitor</v-icon> Screen
+          </v-btn>
+          <!-- <v-btn @click="isVideoEnabled = !isVideoEnabled" fab small color="grey" class="white--text" depressed>
             <v-icon>{{ isVideoEnabled ? 'mdi-video' : 'mdi-video-off' }}</v-icon>
           </v-btn>
 
           <v-btn @click="shareScreen()" fab small color="grey" class="white--text" depressed>
-            <v-icon>{{ isVideoEnabled ? 'mdi-monitor' : 'mdi-monitor-speaker-off' }}</v-icon>
-          </v-btn>
-
-          <v-btn @click="isDeafened = !isDeafened" fab small color="grey" class="white--text" depressed>
-            <v-icon>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
-          </v-btn>
-
-          <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}`)" fab color="red" small class="white--text" depressed>
-            <v-icon>mdi-phone-hangup</v-icon>
-          </v-btn>
+            <v-icon>{{ isSharingScreen ? 'mdi-monitor' : 'mdi-monitor-speaker-off' }}</v-icon>
+          </v-btn> -->
         </v-row>
       </template>
     </portal>
@@ -149,6 +157,7 @@ export default {
       isMicEnabled: true,
       isVideoEnabled: false,
       isDeafened: false,
+      isSharingScreen: false,
       
       // Contains connected participants with a published audio stream
       // Maps sessionID to the remote participants isMicEnabled value
@@ -452,12 +461,17 @@ export default {
     },
     /**
      * No need to display local feedback as the browser already says "Currently sharing screen"
+     * 
      */
     async shareScreen () {
       try {
-        const stream = await navigator.mediaDevices.getDisplayMedia();
+        // audio: false is needed for MacOS Safari to work
+        const stream = await navigator.mediaDevices.getDisplayMedia({ audio: false });
         const screenTrack = new Twilio.LocalVideoTrack(stream.getTracks()[0]);
         this.twilioRoom.localParticipant.publishTrack(screenTrack);
+
+        // quick-fix
+        this.isSharingScreen = true; 
       } catch (error) {
         this.tellUserHowToFixError(error);
       }

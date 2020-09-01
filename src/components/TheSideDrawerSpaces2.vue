@@ -1,49 +1,51 @@
 <template>
   <v-expansion-panels v-if="isDataReady" multiple :value="expandedPanels" accordion class="spaces-list">
-    <v-expansion-panel v-for="(roomType, j) in roomTypes" :key="roomType">
+    <v-expansion-panel v-for="roomType in roomTypes" :key="roomType">
       <v-expansion-panel-header class="panel-header">
         <div class="d-flex flex-column">
-          <div style="text-transform: uppercase;">
+          <div :class="roomType === currentRoomType ? '' : 'text--disabled'" style="text-transform: uppercase;">
             {{ roomType }}
           </div>
 
-          <div v-if="roomType === currentRoomType">
-            <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomType)">
-              <template v-slot:activator-button="{ on }">
-                <BaseButton :on="on" icon="mdi-shuffle-variant" :stopPropagation="true" color="black">
-                  Shuffle
-                </BaseButton>
-              </template>
-              <template v-slot:message-to-user>
-                <v-row>
-                  <v-col cols="12" sm="4">
-                    <v-overflow-btn 
-                      label="3"
-                      :items="[3]"
-                      @change="groupSize => minRoomSizeOnShuffle = groupSize"
-                    />
-                  </v-col>
-                  <v-col>
-                    <h3 class="mt-5">
-                      people per group
-                    </h3>
-                  </v-col>
-                </v-row>
-              </template> 
-            </BasePopupButton>
+          <portal to="instructor-only-buttons">
+            <div v-if="roomType === currentRoomType">
+              <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomType)">
+                <template v-slot:activator-button="{ on }">
+                  <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
+                    Shuffle people
+                  </BaseButton>
+                </template>
+                <template v-slot:message-to-user>
+                  <v-row>
+                    <v-col cols="12" sm="4">
+                      <v-overflow-btn 
+                        label="3"
+                        :items="[3]"
+                        @change="groupSize => minRoomSizeOnShuffle = groupSize"
+                      />
+                    </v-col>
+                    <v-col>
+                      <h3 class="mt-5">
+                        people per group
+                      </h3>
+                    </v-col>
+                  </v-row>
+                </template> 
+              </BasePopupButton>
 
-            <BaseButton @click="showMakeAnnouncementPopup(roomType)" icon="mdi-bullhorn" small color="black" :stopPropagation="true">
-              Announce
-            </BaseButton>
-            
-            <BaseButton @click="muteParticipantsInRooms(roomType)" icon="mdi-volume-mute" small :stopPropagation="true" color="black">
-              Mute all
-            </BaseButton>
+              <BaseButton @click="showMakeAnnouncementPopup(roomType)" small icon="mdi-bullhorn" outlined color="white">
+                Do announcement
+              </BaseButton>
+              
+              <BaseButton @click="muteParticipantsInRooms(roomType)" small icon="mdi-volume-mute" outlined color="white">
+                Mute everyone
+              </BaseButton>
 
-            <BaseButton @click="clearRoomStatuses(roomType)" icon="mdi-comment-remove" small :stopPropagation="true" color="black">
-              Clear
-            </BaseButton>
-          </div>
+              <BaseButton @click="clearRoomStatuses(roomType)" small icon="mdi-comment-remove" outlined color="white">
+                Clear statuses
+              </BaseButton>
+            </div>
+          </portal>
         </div>
       </v-expansion-panel-header>
 
@@ -71,7 +73,7 @@
                   :allClients="roomIDToParticipants[room.id]"
                 />
                 <div style="width: 100%">
-                  <div class="text-uppercase font-weight-medium accent--text">
+                  <div class="text-uppercase font-weight-medium accent--text" style="font-size: 0.75em">
                     Room {{ i + 1 }}
                   </div>
 
@@ -84,7 +86,8 @@
                       Update room status
                     </BaseButton>
                   </div>
-                    <!-- Display the list of users -->
+
+                  <!-- Display list of participants -->
                   <portal-target name="destination3">
 
                   </portal-target>
