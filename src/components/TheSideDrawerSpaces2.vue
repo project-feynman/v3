@@ -8,7 +8,7 @@
           </div>
 
           <portal to="instructor-only-buttons">
-            <div v-if="roomType === currentRoomType && superUserLastNames.includes(user.lastName)">
+            <div v-if="roomType === currentRoomType">
               <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomType)">
                 <template v-slot:activator-button="{ on }">
                   <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
@@ -225,7 +225,7 @@ export default {
         'Velez',
         'C',
         'Ruth',
-        'Dunn'
+        'Dunn',
       ],
       unsubFuncs: [],
       

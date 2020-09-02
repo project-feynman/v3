@@ -73,14 +73,14 @@
             
               </slot> 
 
-              <BaseButton @click="startRecording()" icon="mdi-adjust" color="secondary" class="white--text">
+              <!-- <BaseButton @click="startRecording()" icon="mdi-adjust" color="secondary" class="white--text">
                 Record
-              </BaseButton>
+              </BaseButton> -->
             </template>
 
-            <BaseButton v-if="currentState === RecordState.MID_RECORD" @click="stopRecording()" color="secondary" class="white--text" icon="mdi-stop">
+            <!-- <BaseButton v-if="currentState === RecordState.MID_RECORD" @click="stopRecording()" color="secondary" class="white--text" icon="mdi-stop">
               Finish
-            </BaseButton>
+            </BaseButton> -->
           </template>
         </BlackboardToolBar>
       </template>
