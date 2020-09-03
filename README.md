@@ -1,5 +1,5 @@
 # Feynman
-Our mission is to make MIT a vibrant place where everyone helps each other, so nobody has to stay up late studying alone. In doing so, we will the world's transition into open education. 
+Our mission is to make MIT a vibrant place where everyone helps each other, so nobody has to stay up late studying alone. In doing so, we will accelerate the world's transition into open education. 
 
 ## Technology
 Explanation videos are 10-50x lighter because we represent them with sparse blackboard strokes rather than exhaustive pixel colors. 
