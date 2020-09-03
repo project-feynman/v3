@@ -8,7 +8,7 @@
           </div>
 
           <portal to="instructor-only-buttons">
-            <div v-if="roomType === currentRoomType && superUserEmails.includes(user.email)">
+            <div v-if="roomType === currentRoomType && SUPER_USER_EMAILS.includes(user.email)">
               <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomType)">
                 <template v-slot:activator-button="{ on }">
                   <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
@@ -187,6 +187,7 @@ import PresentationalRoomUI4 from "@/components/PresentationalRoomUI4.vue";
 import CreateRoomPopup from "@/components/CreateRoomPopup.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import { SUPER_USER_EMAILS } from "@/CONSTANTS.js";
 
 export default {
   mixins: [
@@ -203,51 +204,7 @@ export default {
   },
   data () {
     return {
-      superUserEmails: [
-        "eltonlin@mit.edu",
-        // 8.01 
-        // S1~2
-        "josephf@mit.edu",
-        "pbarral@mit.edu", 
-        
-        // S3~4
-        "rfletch@mit.edu",  // Richard Fletcher
-        "nromeo@mit.edu", // Nicolas Romeo
-
-        // S5~6
-        "icisse@mit.edu",
-        "oandrews@mit.edu", // Owen Andrews
-        
-        // S7-8
-        "hen@mit.edu", // Henderson
-        "bacanua@mit.edu", // Alexandru Bacanu
-
-        // S9/S10
-        "tegmark@mit.edu", // Max Tegmark 
-        "aktan@mit.edu", // Andrew Tan
-        
-        // S11 - 12
-        "padour@mit.edu", // Peter Dourmashkin
-        "rmurdock@mit.edu", // Richard Joshua Murdock
-
-        // S13 - 14
-        "mohamedr@mit.edu", // Mohamed Abdelhafez
-        "crabb@mit.edu", // Emily Crabb
-
-        // utility TAs
-        "sgh256@mit.edu", // Simon Grosse-Holz
-        "taweewat@mit.edu", // taweewat@mit.edu
-        "achatt@mit.edu", // Arkya Chatterjee
- 
-        // 18.01
-        "larryg@mit.edu",
-        "sanjoy@mit.edu",
-        "xueyingy@mit.edu",
-
-        // ESG
-        "pao@mit.edu", // Paula Rabusco
-        "jorloff@mit.edu", // Jeremy Orloff
-      ],
+      SUPER_USER_EMAILS,
       superUserLastNames: [
         'Dourmashkin',
         'Erik',

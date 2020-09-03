@@ -73,14 +73,14 @@
             
               </slot> 
 
-              <!-- <BaseButton @click="startRecording()" icon="mdi-adjust" color="secondary" class="white--text">
+              <BaseButton v-if="SUPER_USER_EMAILS.includes(user.email)" @click="startRecording()" icon="mdi-adjust" color="secondary" class="white--text">
                 Record
-              </BaseButton> -->
+              </BaseButton>
             </template>
 
-            <!-- <BaseButton v-if="currentState === RecordState.MID_RECORD" @click="stopRecording()" color="secondary" class="white--text" icon="mdi-stop">
+            <BaseButton v-if="SUPER_USER_EMAILS.includes(user.email) && currentState === RecordState.MID_RECORD" @click="stopRecording()" color="secondary" class="white--text" icon="mdi-stop">
               Finish
-            </BaseButton> -->
+            </BaseButton>
           </template>
         </BlackboardToolBar>
       </template>
@@ -108,7 +108,7 @@ import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import { RecordState } from "@/CONSTANTS.js";
+import { RecordState, SUPER_USER_EMAILS } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
 
 export default {
@@ -135,6 +135,7 @@ export default {
   },
   data () {
     return {
+      SUPER_USER_EMAILS,
       audioRecorder: {
         startRecording: null,
         stopRecording: null
