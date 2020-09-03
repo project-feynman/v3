@@ -28,8 +28,11 @@
             </BaseButton>
           </template>
           <template v-slot:message-to-user>
-            If you need quick help with any problems, write here or email <u>eltonlin@mit.edu</u>. 
-            I'll reply ASAP (with exception to 1 pm - 8:30 pm). 
+            For help with problems, write here or email <u>eltonlin@mit.edu</u>. 
+            I'll reply ASAP (with exception to 2:30 pm - 9:30 pm). 
+            <br>
+            <br>
+            Meanwhile, <u>closing the website and re-opening it</u> is the best quickfix for most problems.
             <br>
             <br>
             If you are a fellow hacker and know how to fix the issue,
