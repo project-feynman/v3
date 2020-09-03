@@ -197,7 +197,7 @@ export default {
 
     this.twilioRoom.on("participantDisconnected", participant => {
       Vue.delete(this.participantAudioStatus, participant.identity);
-      this.unmountParticipantTracks(participant);
+      this.removeHisOrHerSharedTracks(participant);
     });
 
     this.twilioRoom.on("dominantSpeakerChanged", participant => {
@@ -383,7 +383,7 @@ export default {
       videoElement.controls = true; // allow the user to fullscreen
       document.getElementById("remote-video-div").appendChild(videoElement);
     },
-    unmountParticipantTracks (participant) {
+    removeHisOrHerSharedTracks (participant) {
       for (const publication in participant.tracks) {
         if (publication.track) {
           this.unmountTrack(publication.track);

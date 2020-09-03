@@ -8,14 +8,14 @@
         </v-btn> -->
 
         <!-- Create class -->
-        <!-- <BasePopupButton actionName="Create class" 
+        <BasePopupButton actionName="Create class" 
           @action-do="(C) => createClass(C)"
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
             <BaseButton :on="on" icon="mdi-plus">Create Class</BaseButton>
           </template>
-        </BasePopupButton> -->
+        </BasePopupButton>
 
         <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
           <template v-slot:activator="{ on }">
