@@ -68,7 +68,7 @@
               <template v-else>
                 <RealtimeSpaceTwilioRoom 
                   :roomID="room.id" 
-                  :key="room.id" 
+                  :key="room.id"
                   :audioDevices="audioDevices"
                   :allClients="roomIDToParticipants[room.id]"
                 />
@@ -94,7 +94,8 @@
                 </div>
               </template>
             </v-list-item>
-          <v-divider v-if="i + 1 < roomDocs.length" :key="i"/>
+
+            <v-divider v-if="i + 1 < roomDocs.length" :key="i"/>
           </template>
         </v-list>
       </v-expansion-panel-content>
@@ -156,7 +157,10 @@
       </v-card>
     </v-dialog>
     
-    <HandleAnnouncements v-if="currentRoomDoc" :roomDoc="currentRoomDoc" :key="currentRoomID"/>
+    <HandleAnnouncements v-if="currentRoomDoc" 
+      :roomDoc="currentRoomDoc" 
+      :key="currentRoomID"
+    />
 
     <!-- CREATE NEW ROOM -->
     <v-btn @click="isCreateRoomPopupOpen = true" outlined large block color="secondary">
@@ -205,30 +209,6 @@ export default {
   data () {
     return {
       SUPER_USER_EMAILS,
-      superUserLastNames: [
-        'Dourmashkin',
-        'Erik',
-        'Tan',
-        'Lin',
-        'Benedikt',
-        'Bacanu',
-        'Joshua',
-        'Somboonpanyakul',
-        'Chatterjee',
-        'Owen',
-        'June',
-        'Romeo',
-        'Formaggio',
-        'J',
-        'I',
-        'Hen',
-        'Abdelhafez',
-        'MacDonagh',
-        'Velez',
-        'C',
-        'Ruth',
-        'Dunn',
-      ],
       unsubFuncs: [],
       
       // Firebase doc objects
@@ -243,7 +223,6 @@ export default {
         status: ""
       },
       
-      // Create room state
       isCreateRoomPopupOpen: false,
       
       // Panel expansion
@@ -396,16 +375,18 @@ export default {
         });
       }
     },
+    // TODO: refactor
     setRoomStatusPopup (show, roomID) {
-      console.log("show =", show);
-      console.log("roomID =", roomID);
       this.roomStatusPopup = {
         show: show,
-        roomID: roomID
+        roomID: roomID,
+        status: ""
       };
     },
     setRoomStatus (status) {
-      db.doc(`classes/${this.classID}/rooms/${this.roomStatusPopup.roomID}`).update({status});
+      db.doc(`classes/${this.classID}/rooms/${this.roomStatusPopup.roomID}`).update({ 
+        status 
+      });
       this.roomStatusPopup['show'] = false;
     },
     /**
@@ -471,8 +452,6 @@ export default {
      * Creates a new room of type roomType.
      */
     createRoom (roomType) {
-      console.log(`Creating room of roomType={roomType}`, roomType);
-      
       if (!roomType) {
         this.$root.$emit("show-snackbar", "Error: Not a valid room type name");
         return;
