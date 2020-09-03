@@ -1,5 +1,5 @@
-# ExplainMIT
-Our mission is to create a place where everyone helps each other, so nobody has to stay up late studying alone.
+# Feynman
+Our mission is to make MIT a vibrant place where everyone helps each other, so nobody has to stay up late studying alone. In doing so, we will the world's transition into open education. 
 
 ## Technology
 Explanation videos are 10-50x lighter because we represent them with sparse blackboard strokes rather than exhaustive pixel colors. 
@@ -35,7 +35,7 @@ Current members:
 We are recruiting (email eltonlin@mit.edu)!
 
 <p float="left">
-  <img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/>
+<!--   <img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/> -->
 <!--   <img src="documentation/Winston.jpg" alt="member photo" height="170"/> -->
 </p>
 
