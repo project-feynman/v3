@@ -239,9 +239,14 @@ export default {
         "taweewat@mit.edu", // taweewat@mit.edu
         "achatt@mit.edu", // Arkya Chatterjee
  
+        // 18.01
+        "larryg@mit.edu",
+        "sanjoy@mit.edu",
+        "xueyingy@mit.edu",
+
         // ESG
-        // Paula Rabusco
-        // Jeremy Orloff
+        "pao@mit.edu", // Paula Rabusco
+        "jorloff@mit.edu", // Jeremy Orloff
       ],
       superUserLastNames: [
         'Dourmashkin',
