@@ -154,6 +154,11 @@ export default {
       return this.currentState === RecordState.MID_RECORD; 
     }
   },
+  watch: {
+    currentTime () {
+      this.$emit("update:currentTime", this.currentTime);
+    }
+  },
   methods: {
     bindAudioRecorderMethods (startRecording, stopRecording) {
       this.audioRecorder.startRecording = startRecording;
@@ -163,10 +168,7 @@ export default {
       this.audioRecorder.startRecording();
       this.currentTime = 0;
       this.timer = setInterval(
-        () => { 
-          this.currentTime += 0.1;
-          this.$emit("update:currentTime", this.currentTime);
-        }, 
+        () => this.currentTime += 0.1,
         100
       );   
       this.currentState = RecordState.MID_RECORD;
