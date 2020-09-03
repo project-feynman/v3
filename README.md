@@ -8,7 +8,9 @@ Here are some consequences:
 - Sliding to any part of a video requires no buffering
 - Visual explanations are not separate entities (e.g. displayed one at a time on Youtube), but instead fully-integrated utilized among text and images
 
-## Philosophy 
+## Book inspirations
+The project was inspired by[The Number Devil](https://booksjar.com/pdf-epub-the-number-devil-a-mathematical-adventure-download/) and [Surely You're Joking Mr Feynman](https://b-ok.global/book/1673299/ae9bd9?regionChanged=&redirect=20279758). 
+
 Everything starts with a question. "What is the intuition behind P = NP?". The Number Devil responds, and invites you to a classroom. The devil draws on the whiteboard, and soon the doodles come to life.
 
 The devil focuses on the thought process: "Notice that the complexity class of the oracle machine is ... that's exactly the same as ..." "Why do the sets intersect there?" "Ah, I'm glad that you asked that, it's because..." ... ... ... "There's a very interesting quote about the concept if you want to hear:
@@ -31,8 +33,6 @@ And just like that, the devil disappears.
 Current members: 
 - Prabhakar Kafle
 - Elton Lin
-
-We are recruiting (email eltonlin@mit.edu)!
 
 <p float="left">
 <!--   <img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/> -->
