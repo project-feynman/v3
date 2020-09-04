@@ -1,15 +1,9 @@
 <template>
-  <v-app>
-    <TheSideDrawer v-model="drawer"/>
-    <v-content>
-      <!-- :key="...room_id" forces <RealtimeSpace/> to re-render -->
-      <RouterView :key="$route.params.room_id"/>
-    </v-content>
-  </v-app>
+  <!-- :key="...class_id" forces <router-view/> to re-render -->
+  <router-view v-if="mitClass" :key="$route.params.class_id"/>
 </template>
 
 <script>
-import TheSideDrawer from "@/components/TheSideDrawer.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
@@ -21,9 +15,6 @@ export default {
   mixins: [
     DatabaseHelpersMixin
   ],
-  components: { 
-    TheSideDrawer
-  },
   data: () => ({
     drawer: true,
     firebaseRef: null,
@@ -35,62 +26,21 @@ export default {
       "mitClass",
       "session"
     ]),
-    sessionID () { return this.session.currentID; },
-    classID () { return this.$route.params.class_id; },
-    roomID () { return this.$route.params.room_id; },
-    isUserEnrolled () {
-      if (!this.user) return; 
-      if (!this.user.enrolledClasses) return; 
-      return this.user.enrolledClasses.filter((course) => course.id === this.$route.params.class_id).length === 1;
-    }
+    sessionID () { 
+      return this.session.currentID; 
+    },
+    classID () { 
+      return this.$route.params.class_id; 
+    },
   },
   created () {
     const { class_id } = this.$route.params; 
     if (class_id) {
-      this.$store.commit("SET_CLASS", null);
+      this.$store.commit("SET_CLASS", null); // otherwise the other class lingers for 1 second
       this.$store.dispatch("fetchClass", class_id);  
     }
-    this.classParticipantsRef = db.collection(`classes/${this.classID}/participants`);
-    this.setUserDisconnectHook();
-  },
-  beforeDestroy () {
-    firebase.database().ref(".info/connected").off();
-    this.classParticipantsRef.doc(this.sessionID).delete()
-    this.firebaseRef.onDisconnect().cancel();
   },
   methods: {
-    /**
-     * Push the user object onto the room's `participants` array, and ensures that 
-     * Firebase will remove the user object if he/she disconnects for whatever reason.
-     * 
-     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
-     * @see https://firebase.google.com/docs/firestore/solutions/presence
-     * @see https://firebase.google.com/docs/database/web/offline-capabilities
-     */
-    setUserDisconnectHook () {
-      // ".info/connected" is a special location on Firebase Realtime Database 
-      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
-      firebase.database().ref(".info/connected").on("value", async snapshot => {
-        const isUserConnected = snapshot.val(); 
-        if (isUserConnected === false) {
-          return;
-        } 
-        this.firebaseRef = firebase.database().ref(`/class/${this.classID}/participants/${this.sessionID}`);
-        // 1. User leaves, and his/her identity is saved to Firebase
-        // 2. Firestore detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
-        
-        // step 1 (step 2 is executed in Cloud Functions)
-        await this.firebaseRef.onDisconnect().set({ uid: this.sessionID });
-
-        //user hasn't always been fetched, but uid and email are set
-        
-        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
-          email: "", 
-          uid: "", 
-          firstName: "" 
-        });
-      });
-    },
     async submitBug ({ "Describe your problem": title }) {
       if (!title) {
         this.$root.$emit("show-snackbar", "Error: don't forget to write something")

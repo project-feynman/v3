@@ -1,5 +1,10 @@
 <template>
-  <div>    
+  <div>  
+    <!-- This will handle everything to do with participants -->
+    <HandleUpdatingParticipants/>
+
+    <RealtimeSpaceTwilioRoom :roomID="$route.params.room_id"/>
+
     <!-- Video sharing -->
     <portal-target name="destination">
     
@@ -28,7 +33,6 @@
               <v-tab-item :value="board" :key="i">
                 <RealtimeBlackboard 
                   :blackboardRef="blackboardRefs[i]"
-                  :roomParticipants="roomParticipants"
                 />
               </v-tab-item>
             </template>
@@ -50,13 +54,12 @@ import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
+import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.vue";
 import { getRandomId } from "@/helpers.js";
 
 export default {
-  props: {
-    drawer: Boolean,
-  },
   components: {
+    HandleUpdatingParticipants,
     RealtimeBlackboard,
     RealtimeSpaceTwilioRoom,
     BasePopupButton,
@@ -70,19 +73,12 @@ export default {
     return {
       room: null,
       blackboardRefs: [],
-      roomParticipants: [],
       snapshotListeners: [],
       roomRef: null,
-      roomParticipantsRef: null,
-      unsubscribeRoomListener: null,
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
-      messagesOpen: false,
       activeBoard: 'tab-1',
-      boards: [],
-      hasUserBeenSet: false,
-      removeSetParticipantListener: null,
-      allToRoomRef: null
+      boards: []
     }
   },
   computed: {
@@ -93,61 +89,39 @@ export default {
     ]),
     sessionID () {
       return this.session.currentID;
-    },
-    roomParticipantData() {
-      return new Map(
-        this.roomParticipants.map(p => [p.uid, p])
-      );
     }
   },
   // database => state 
   watch: {
-    room (newVal, oldVal) {
-      this.$store.commit("SET_ROOM", this.room);
-      
-      // new blackboards
-      if (oldVal !== null && newVal.blackboards !== oldVal.blackboards) {
-        const newBlackboardRefs = []; 
-        for (const blackboard of newVal.blackboards) {
-          newBlackboardRefs.push(
-            db.doc(`classes/${this.classId}/blackboards/${blackboard}`)
-          );
+    immediate: true,
+    room: {
+      handler (newVal, oldVal) {
+        this.$store.commit("SET_ROOM", this.room);
+        if (newVal.blackboards) {
+          const newBlackboardRefs = []; 
+          for (const blackboard of newVal.blackboards) {
+            newBlackboardRefs.push(
+              db.doc(`classes/${this.classId}/blackboards/${blackboard}`)
+            );
+          }
+          this.blackboardRefs = newBlackboardRefs; 
         }
-        this.blackboardRefs = newBlackboardRefs; 
       }
     }
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-    this.roomParticipantsRef = db.collection(`classes/${this.classId}/participants`).where("currentRoom", "==", this.roomId);
-    this.unsubscribeRoomListener = await this.$_listenToDoc(this.roomRef, this, "room");
-
-    // TODO: refactor 
-    const newBlackboardRefs = []; 
-    for (const blackboard of this.room.blackboards) {
-      newBlackboardRefs.push(
-        db.doc(`classes/${this.classId}/blackboards/${blackboard}`)
-      );
-    }
-    this.blackboardRefs = newBlackboardRefs; 
-
-    this.$_listenToCollection(this.roomParticipantsRef, this, "roomParticipants").then(snapshotListener => {
-      this.snapshotListeners.push(snapshotListener);
+    this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
+      this.snapshotListeners.push(unsubFunc);
     });
-    this.setParticipant();
   },
   destroyed () {
-    this.unsubscribeRoomListener();
     for (const detachListener of this.snapshotListeners) {
       detachListener();
     }
-    db.doc(`classes/${this.classId}/participants/${this.sessionID}`).delete();
-    firebase.database().ref(".info/connected").off();
-    if (this.allToRoomRef) {
-      this.allToRoomRef.off();
-    }
   },
   methods: { 
+<<<<<<< Updated upstream
     /**
      * TODO: refactor
      * 
@@ -219,6 +193,8 @@ export default {
         }
       })
     },
+=======
+>>>>>>> Stashed changes
     // state => database
     async createNewBoard () {
       const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
@@ -237,7 +213,7 @@ export default {
         })
       );
       await Promise.all(promises);
-
+      
       this.activeBoard = newID;
     },
   }
@@ -246,28 +222,7 @@ export default {
 
 <style scoped>
 .room-wrapper{
-  /* position: absolute;  */
-  /* width: 50%;  */
   height: 100px;
 }
-.chat-btn{
-  position: absolute; 
-  right: 0%; 
-  top: 0%; 
-  border-style: solid; 
-  height: 50px;
-  margin-top: 5px;
-  z-index: 7; /* this z-index is under the app-bar but over the weird blackboard stuff*/
-}
-/* .blackboard-tabs {
-  background: #f5f5f5;
-  border: 1px solid var(--v-accent-lighten2);
-  border-bottom: none;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
-.blackboard-tabs .tabs-wrapper {
-  max-width: calc(100% - 40px);
-} */
 </style>
 
