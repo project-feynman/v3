@@ -76,14 +76,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Realtime Messaging -->
-    <RealtimeMessageChat
-      v-model="messagesOpen"
-      :roomParticipants="roomParticipants"
-      :roomId="this.roomId"
-      :classId="this.classId"
-    />
   </div>
 </template>
 
@@ -116,10 +108,6 @@ import { getRandomId } from "@/helpers.js";
 export default {
   props: {
     blackboardRef: {
-      type: null,
-      required: true
-    },
-    roomParticipants: {
       type: null,
       required: true
     }

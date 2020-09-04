@@ -13,7 +13,7 @@
           :inputFields="['class name', 'class description']"
         >
           <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-plus">Create Class</BaseButton>
+            <BaseButton :on="on" icon="mdi-plus" color="secondary">Create Class</BaseButton>
           </template>
         </BasePopupButton>
 

@@ -11,22 +11,32 @@ export default new Router({
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
-    { 
-      path: "/playground3",
-      component: () => import(/* webpackChunkName: "home" */ "./components/PresentationalRoomUI3.vue")
-    },
     {
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-page" */ "./pages/ClassPage.vue"),
       children: [
         {
           path: "",
-          component: () => import(/* webpackChunkName: "class-page-overview" */ "./pages/ClassPageOverview.vue") 
+          component: () => import(/* webpackChunkName: "class-spaces" */ "./pages/ClassSections.vue") 
         },
         {
-          path: "room/:room_id",
-          component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/RealtimeSpace.vue")
+          path: "section/:section_id",
+          component: () => import(/* webpackChunkName: "class-section" */ "./pages/ClassSection.vue"),
+          children: [
+            {
+              path: "",
+              component: () => import(/* webpackChunkName: "empty-tutorial" */ "./pages/ClassPageOverview.vue")
+            },
+            {
+              path: "room/:room_id",
+              component: () => import(/* webpackChunkName: "" */ "./pages/RealtimeSpace.vue")
+            }
+          ]
         },
+        // {
+        //   path: "room/:room_id",
+        //   component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/RealtimeSpace.vue")
+        // },
         // {
         //   // when /user/:id/posts is matched
         //   path: "new",

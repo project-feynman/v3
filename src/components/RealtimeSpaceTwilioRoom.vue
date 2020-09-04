@@ -30,11 +30,13 @@
           <v-btn @click="isMicEnabled = !isMicEnabled" fab color="grey" class="white--text" depressed>
             <v-icon large>{{ isMicEnabled ? 'mdi-microphone' : 'mdi-microphone-off'  }}</v-icon>
           </v-btn>
-
+          
+          <!-- Deafen button -->
           <v-btn @click="isDeafened = !isDeafened" fab color="grey" class="white--text" depressed>
             <v-icon large>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
           </v-btn>
 
+          <!-- Disconnect button -->
           <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}`)" fab color="red" class="white--text" depressed>
             <v-icon large>mdi-phone-hangup</v-icon>
           </v-btn>
@@ -55,19 +57,21 @@
     </portal>
 
     <portal to="destination3">
-      <div v-for="client in allClients"
-        :key="client.id" 
-        :class="['d-flex', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
-        style="font-size: 0.8em"
-      >
-        {{ client.firstName + " " + client.lastName }}
+      <template v-if="allClients">
+        <div v-for="client in allClients"
+          :key="client.id" 
+          :class="['d-flex', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
+          style="font-size: 0.8em"
+        >
+          {{ client.firstName + " " + client.lastName }}
 
-        <v-spacer/>
+          <v-spacer/>
 
-        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small>
-          {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
-        </v-icon>
-      </div>
+          <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small>
+            {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
+          </v-icon>
+        </div>
+      </template>
     </portal>
 
     <!-- Helps user fix audio issues if an error shows up -->
@@ -117,18 +121,15 @@ export default {
     roomID: {
       type: String,
       required: true
-    },
-    allClients: {
-      type: Array,
-      required: true
-    },
-    audioDevices: Object,
+    }
   },
   mixins: [
     DatabaseHelpersMixin
   ],
   data () {
     return {
+      allClients: null,
+
       roomDoc: null,
 
       firebaseUnsubscribeFuncs: [],
@@ -144,14 +145,17 @@ export default {
       isCameraEnabled: false,
       isDeafened: false,
       isSharingScreen: false,
+
+      cameraTrack: null,
+      micTrack: null,
+      screenTrack: null,
       
       // Contains connected participants with a published audio stream
       // Maps sessionID to the remote participants isMicEnabled value
       participantAudioStatus: {},
       
       // The remote participant sessionID with the loudest audioTrack
-      // null means either there are no other participants,
-      // or no participants are speaking
+      // null means either there are no other participants, or no participants are speaking
       dominantParticipantSessionID: null
     };
   },
@@ -170,14 +174,28 @@ export default {
       };  
     }
   },
+  watch: {
+    allClients () {
+      console.log("allClients changed =", this.allClients); 
+    }
+  },
   async created () {
+    // quickfix for the missing prop this.allClients
+    const participantsQuery = db.collection(`/class/${this.$route.params.class_id}/participants`)
+      .where("curentRoom", "==", this.$route.params.room_id);
+
+    // then the watch hook will do the trick
+    this.$_listenToCollection(participantsQuery, this, "allClients").then(unsubFunc => {
+      this.firebaseUnsubscribeFuncs.push(unsubFunc);
+    });
+
     if (!this.isTwilioSupportedByBrowser()) {
       return; 
     }
     try {
       this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
         name: this.roomID,
-        audio: true,
+        audio: true, // should be able to just connect without anything
         dominantSpeaker: true
         // video: { width: 640 }
       }); 
@@ -219,12 +237,23 @@ export default {
     this.twilioInitialized = true;
   },
   beforeDestroy () {
+    // remove the "mute everyone" listener
     for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
       unsubscribe();
     }
-  },
-  destroyed () {
+
+    // disable camera, mic, etc. to turn off the lights
+    if (this.cameraTrack) this.cameraTrack.stop();
+    if (this.micTrack) this.micTrack.stop();
+    if (this.screenTrack) this.screenTrack.stop(); 
+
     if (this.twilioRoom) {
+      // stop displaying other people's tracks
+      this.twilioRoom.participants.forEach(otherPerson => {
+        this.removeHisOrHerSharedTracks(otherPerson);
+      });
+
+      // notify other people that I disconnected
       this.twilioRoom.disconnect();
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
@@ -255,9 +284,9 @@ export default {
     },
     async isCameraEnabled (newValue) {
       if (newValue) {
-        const cameraTrack = await Twilio.createLocalVideoTrack();
-        cameraTrack.enable();
-        this.shareMyVisualTrackWithEveryone(cameraTrack);
+        this.cameraTrack = await Twilio.createLocalVideoTrack();
+        this.cameraTrack.enable();
+        this.shareMyVisualTrackWithEveryone(this.cameraTrack);
       } 
       else {
         this.stopSharingMyVisualTracks();
@@ -346,7 +375,7 @@ export default {
       const htmlVideoElement = visualTrack.attach();
       htmlVideoElement.height = 150; 
       htmlVideoElement.width = 210;
-      document.getElementById('local-video').appendChild(htmlVideoElement);
+      document.getElementById("local-video").appendChild(htmlVideoElement);
     },
     stopSharingMyVisualTracks () {
       this.twilioRoom.localParticipant.videoTracks.forEach(publication => {

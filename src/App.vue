@@ -1,12 +1,10 @@
 <template>
   <v-app>
     <router-view v-if="!isFetchingUser"/>
-
+    
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>
-        CLOSE
-      </v-btn>
+      <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
   </v-app>
 </template>
