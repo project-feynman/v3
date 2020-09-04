@@ -182,7 +182,7 @@ export default {
   async created () {
     // quickfix for the missing prop this.allClients
     const participantsQuery = db.collection(`/class/${this.$route.params.class_id}/participants`)
-      .where("curentRoom", "==", this.$route.params.room_id);
+      .where("currentRoom", "==", this.$route.params.room_id);
 
     // then the watch hook will do the trick
     this.$_listenToCollection(participantsQuery, this, "allClients").then(unsubFunc => {

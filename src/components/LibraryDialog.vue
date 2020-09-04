@@ -4,6 +4,7 @@
       <v-col cols="3">
         <TheSideDrawerFileExplorer @post-was-clicked="postID => currentPostID = postID" type="posts"/>
       </v-col>
+      
       <v-col>
         <ClassPageSeePost v-if="currentPostID"
           :postID="currentPostID"

@@ -6,10 +6,14 @@
 
 <script>
 /**
- * There is only one way for the user to join. 
- * There are 2 ways for the user to disconnect:
- *   - Switching away 
- *   - Disconnecting
+ * CORRECTNESS ARGUMENT
+ * 
+ * Initial state: 
+ *   - If the user successfully connected
+ * 
+ * Transitional States:
+ *   - Switch to a different part of the app: destroyed () 
+ *   - Disconnection: disconnect hook
  */
 import db from "@/database.js";
 import firebase from "firebase/app";
