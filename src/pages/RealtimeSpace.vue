@@ -122,6 +122,7 @@ export default {
   },
   methods: { 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     /**
      * TODO: refactor
      * 
@@ -193,6 +194,8 @@ export default {
         }
       })
     },
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     // state => database

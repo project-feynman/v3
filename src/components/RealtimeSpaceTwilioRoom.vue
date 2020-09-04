@@ -170,7 +170,13 @@ export default {
       console.log("allClients changed =", this.allClients); 
     }
   },
+  watch: {
+    allClients () {
+      console.log("allClients changed =", this.allClients); 
+    }
+  },
   async created () {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
     await this.connectToTwilioRoom();
     const roomDocRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
@@ -180,6 +186,11 @@ export default {
     // quickfix for the missing prop this.allClients
     const participantsQuery = db.collection(`/class/${this.$route.params.class_id}/participants`)
       .where("currentRoom", "==", this.$route.params.room_id);
+=======
+    // quickfix for the missing prop this.allClients
+    const participantsQuery = db.collection(`/class/${this.$route.params.class_id}/participants`)
+      .where("curentRoom", "==", this.$route.params.room_id);
+>>>>>>> Stashed changes
 
     // then the watch hook will do the trick
     this.$_listenToCollection(participantsQuery, this, "allClients").then(unsubFunc => {
