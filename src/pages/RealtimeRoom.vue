@@ -3,7 +3,10 @@
     <!-- This will handle everything to do with participants -->
     <HandleUpdatingParticipants/>
 
-    <RealtimeSpaceTwilioRoom :roomID="$route.params.room_id"/>
+    <RealtimeSpaceTwilioRoom 
+      :roomID="$route.params.room_id"
+      :willMuteByDefault="true"
+    />
 
     <!-- Video sharing -->
     <portal-target name="destination">

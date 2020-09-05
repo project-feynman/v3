@@ -1,155 +1,102 @@
 <template>
-  <v-app v-if="roomTypeDoc">
-    <v-navigation-drawer app width="300" permanent>
-      <SmallAppBar></SmallAppBar>
-      
-      <v-row justify="center" align="center" class="px-5">
-        <v-btn @click="$router.push(`/class/${classID}`)" icon>
-          <v-icon>mdi-arrow-left</v-icon>
-        </v-btn>
+  <portal v-if="roomTypeDoc" to="side-drawer">
+    <v-row justify="center" align="center" class="px-5">
+      <v-btn @click="$router.push(`/class/${classID}`)" icon>
+        <v-icon>mdi-arrow-left</v-icon>
+      </v-btn>
 
-        <v-subheader class="accent--text pl-2" style="font-size: 1em">
-          {{ roomTypeDoc.name }}
-        </v-subheader>
+      <v-subheader class="accent--text pl-2" style="font-size: 1em">
+        {{ roomTypeDoc.name }}
+      </v-subheader>
 
-        <v-spacer/>
+      <v-spacer/>
 
-        <BaseButton v-if="isAdmin" @click="createNewRoom()" small icon="mdi-plus" color="grey">
+      <portal to="app-bar">
+        <BaseButton v-if="isAdmin" @click="createNewRoom()" small icon="mdi-plus" color="black">
           New room
         </BaseButton>
-      </v-row>
+      </portal>
+    </v-row>
 
-      <v-divider/>
+    <v-divider/>
 
-      <!-- COMMON ROOM-->
-      <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
-        exact
-        :to="`/class/${classID}/section/${sectionID}/`"
-        exact-active-class="active-blackboard accent--text"
-      >
-        <div class="font-weight-medium" style="font-size: 0.75em">
-          COMMON ROOM
-        </div>
-      </v-list-item> 
+    <!-- COMMON ROOM-->
+    <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
+      exact
+      :to="`/class/${classID}/section/${sectionID}/`"
+      exact-active-class="active-blackboard accent--text"
+    >
+      <div class="font-weight-medium" style="font-size: 0.75em">
+        COMMON ROOM
+      </div>
+    </v-list-item> 
 
-      <!-- LIST OF ROOMS -->
-      <v-list-item v-for="(room, i) in nonCommonRooms" :key="room.id"
-        :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
-        active-class="active-blackboard accent--text"
-      >
-        <!-- CASE 1: I'm in the room -->
-        <template v-if="room.id === currentRoomID">
-          <div class="py-3" style="width: 100%">
-            <div class="text-uppercase font-weight-medium" style="font-size: 0.75em">
-              Room {{ i + 1 }}
-            </div>
-
-            <div class="d-flex">
-              <v-chip v-if="room.status" color="secondary" class="mt-2" small>
-                {{ room.status }}
-              </v-chip>
-
-              <v-spacer/>
-
-              <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="secondary">
-                Update status
-              </BaseButton>
-            </div>
-            <!-- list of participants -->
-            <portal-target name="destination3">
-
-            </portal-target>
+    <!-- LIST OF ROOMS -->
+    <v-list-item v-for="(room, i) in nonCommonRooms" :key="room.id"
+      :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
+      active-class="active-blackboard accent--text"
+    >
+      <!-- CASE 1: I'm in the room -->
+      <template v-if="room.id === currentRoomID">
+        <div class="py-3" style="width: 100%">
+          <div class="text-uppercase font-weight-medium" style="font-size: 0.75em">
+            Room {{ i + 1 }}
           </div>
-        </template>
 
-        <!-- CASE 2: I'm not in the room-->
-        <template v-else>
-          <div style="width: 100%;">
-            <div class="d-flex">
-              <div class="text-uppercase font-weight-medium text--secondary" style="font-size: 0.75em">
-                Room {{ i+1 }}
-              </div>
-              <v-spacer/>
-
-              <v-chip v-if="room.status" color="secondary" small>
+          <div class="d-flex">
+            <v-chip v-if="room.status" color="secondary" class="mt-2" small>
               {{ room.status }}
-              </v-chip>
-            </div>
+            </v-chip>
 
-            <div class="pl-3">
-              <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-                style="font-weight: 400; font-size: 0.8em"
-                class="text--secondary mb-0"
-              >
-                {{ p.firstName + " " + p.lastName }}
-              </p>
-            </div>
+            <v-spacer/>
+
+            <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="secondary">
+              Update status
+            </BaseButton>
           </div>
-        </template>
 
-      </v-list-item>  
+          <!-- list of participants -->
+          <portal-target name="destination3">
 
-      <!-- CONTROL DASHBOARD -->
-      <template v-slot:append>
-        <v-card color="black"  >
-          <v-card-title class="mb-0 pb-0 white--text">
-            {{ user.firstName + " " + user.lastName }}
-          </v-card-title>
-
-          <v-card-text>
-
-            <!-- User mute/deafen/etc. buttons -->
-            <portal-target name="destination2">
-
-            </portal-target>
-
-            <template v-if="isAdmin">
-              <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
-                <template v-slot:activator-button="{ on }">
-                  <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
-                    Shuffle people
-                  </BaseButton>
-                </template>
-                
-                <template v-slot:message-to-user>
-                  <v-row>
-                    <v-col cols="12" sm="4">
-                      <v-overflow-btn 
-                        label="3"
-                        :items="[3]"
-                        @change="groupSize => minRoomSizeOnShuffle = groupSize"
-                      />
-                    </v-col>
-                    <v-col>
-                      <h3 class="mt-5">
-                        people per group
-                      </h3>
-                    </v-col>
-                  </v-row>
-                </template> 
-              </BasePopupButton>
-
-              <BaseButton @click="showMakeAnnouncementPopup(roomTypeDoc.id)" small icon="mdi-bullhorn" outlined color="white">
-                Do announcement
-              </BaseButton>
-              
-              <BaseButton @click="muteParticipantsInRooms(roomTypeDoc.id)" small icon="mdi-volume-mute" outlined color="white">
-                Mute everyone
-              </BaseButton>
-
-              <BaseButton @click="clearRoomStatuses(roomTypeDoc.id)" small icon="mdi-comment-remove" outlined color="white">
-                Clear statuses
-              </BaseButton>
-            </template>
-          </v-card-text>
-        </v-card>
+          </portal-target>
+        </div>
       </template>
-    </v-navigation-drawer>
+
+      <!-- CASE 2: I'm not in the room-->
+      <template v-else>
+        <div style="width: 100%;">
+          <div class="d-flex">
+            <div class="text-uppercase font-weight-medium text--secondary" style="font-size: 0.75em">
+              Room {{ i+1 }}
+            </div>
+            <v-spacer/>
+
+            <v-chip v-if="room.status" color="secondary" small>
+            {{ room.status }}
+            </v-chip>
+          </div>
+
+          <div class="pl-3">
+            <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+              style="font-weight: 400; font-size: 0.8em"
+              class="text--secondary mb-0"
+            >
+              {{ p.firstName + " " + p.lastName }}
+            </p>
+          </div>
+        </div>
+      </template>
+
+    </v-list-item>  
+
+    <portal to="main-content">
+      <router-view :key="$route.params.room_id"/>
+    </portal>
 
     <!-- TwilioRoom and Collaborative Blackboard -->
-    <v-content>
+    <!-- <v-content>
       <router-view :key="$route.params.room_id"/>
-    </v-content>
+    </v-content> -->
 
     <!-- Update status popup TODO: use base popupButto-->
     <template v-if="isInRoom">
@@ -210,9 +157,65 @@
     <!-- Refactor into RealtimeSpace -->
     <HandleAnnouncements v-if="currentRoomDoc" 
       :roomDoc="currentRoomDoc" 
-      :key="currentRoomID"
+      :key="currentRoomID + '1'"
     />
-  </v-app>
+
+    <!-- CONTROL DASHBOARD -->
+    <portal to="side-drawer-bottom-region">
+      <v-card color="black"  >
+        <v-card-title class="mb-0 pb-0 white--text">
+          {{ user.firstName + " " + user.lastName }}
+        </v-card-title>
+
+        <v-card-text>
+
+          <!-- User mute/deafen/etc. buttons -->
+          <portal-target name="destination2">
+
+          </portal-target>
+
+          <template v-if="isAdmin">
+            <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+              <template v-slot:activator-button="{ on }">
+                <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
+                  Shuffle people
+                </BaseButton>
+              </template>
+              
+              <template v-slot:message-to-user>
+                <v-row>
+                  <v-col cols="12" sm="4">
+                    <v-overflow-btn 
+                      label="3"
+                      :items="[3]"
+                      @change="groupSize => minRoomSizeOnShuffle = groupSize"
+                    />
+                  </v-col>
+                  <v-col>
+                    <h3 class="mt-5">
+                      people per group
+                    </h3>
+                  </v-col>
+                </v-row>
+              </template> 
+            </BasePopupButton>
+
+            <BaseButton @click="showMakeAnnouncementPopup(roomTypeDoc.id)" small icon="mdi-bullhorn" outlined color="white">
+              Do announcement
+            </BaseButton>
+            
+            <BaseButton @click="muteParticipantsInRooms(roomTypeDoc.id)" small icon="mdi-volume-mute" outlined color="white">
+              Mute everyone
+            </BaseButton>
+
+            <BaseButton @click="clearRoomStatuses(roomTypeDoc.id)" small icon="mdi-comment-remove" outlined color="white">
+              Clear statuses
+            </BaseButton>
+          </template>
+        </v-card-text>
+      </v-card>
+    </portal>
+  </portal>
 </template>
 
 <script>

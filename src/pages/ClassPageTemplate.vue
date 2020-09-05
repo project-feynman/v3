@@ -1,6 +1,33 @@
 <template>
-  <!-- :key="...class_id" forces <router-view/> to re-render -->
-  <router-view v-if="mitClass" :key="$route.params.class_id"/>
+  <v-app>
+    <v-navigation-drawer app width="300" permanent>
+      <SmallAppBar>
+        <portal-target name="app-bar">
+
+        </portal-target>
+      </SmallAppBar>
+      <portal-target name="side-drawer">
+
+      </portal-target>
+
+      <template v-slot:append>
+        <portal-target name="side-drawer-bottom-region">
+
+        </portal-target>
+      </template>
+
+    </v-navigation-drawer>
+
+    <v-content>
+      <portal-target name="main-content">
+
+      </portal-target>
+    </v-content>
+
+    <!-- :key="...class_id" forces <router-view/> to re-render -->
+    <!-- Many things from <router-view> will teleport to the portals above -->
+    <router-view v-if="mitClass" :key="$route.params.class_id"/>
+  </v-app>
 </template>
 
 <script>
@@ -10,12 +37,16 @@ import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
+import SmallAppBar from "@/components/SmallAppBar.vue"; 
 
 export default {
   name: "ClassOverview",
   mixins: [
     DatabaseHelpersMixin
   ],
+  components: {
+    SmallAppBar
+  },
   data: () => ({
     firebaseRef: null,
     classParticipantsRef: null,

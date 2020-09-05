@@ -1,44 +1,40 @@
 <template>
-  <v-app>
-    <v-navigation-drawer app permanent width="300">
-      <SmallAppBar>
-        <BasePopupButton actionName="Create new open space"
-          :inputFields="['name']" 
-          @action-do="({ name }) => createNewRoomType(name)"
-        >
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-plus" color="secondary">New Space</BaseButton>
-            <!-- <v-btn v-on="on">New Space</v-btn> -->
-          </template> 
-        </BasePopupButton>
-      </SmallAppBar>
+  <portal to="side-drawer">
+    <portal to="app-bar">
+      <BasePopupButton actionName="Create new open space"
+        :inputFields="['name']" 
+        @action-do="({ name }) => createNewRoomType(name)"
+      >
+        <template v-slot:activator-button="{ on }">
+          <BaseButton :on="on" icon="mdi-plus" small color="black">New Space</BaseButton>
+        </template> 
+      </BasePopupButton>
+    </portal>
 
-      <v-list>
-        <v-list-item v-for="roomType in roomTypes" 
-          :to="(`section/${roomType.id}`)"
-          append
-          :key="roomType.id"
-        >
-          <v-list-item-content>
-            {{ roomType.name }}
-          </v-list-item-content>
+    <v-list>
+      <v-list-item v-for="roomType in roomTypes" 
+        :to="(`section/${roomType.id}`)"
+        append
+        :key="roomType.id"
+      >
+        <v-list-item-content>
+          {{ roomType.name }}
+        </v-list-item-content>
 
-          <v-list-item-action>
-            <v-row>
-              <!-- <v-btn @click.submit.prevent="editNameOfRoomType()" icon>
-                <v-icon color="grey">mdi-pencil</v-icon>
-              </v-btn> -->
+        <v-list-item-action>
+          <v-row>
+            <!-- <v-btn @click.submit.prevent="editNameOfRoomType()" icon>
+              <v-icon color="grey">mdi-pencil</v-icon>
+            </v-btn> -->
 
-              <v-btn v-if="isAdmin" @click.submit.prevent="deleteRoomType(roomType.id)" icon>
-                <v-icon color="red">mdi-close</v-icon>
-              </v-btn>
-            </v-row>
-          </v-list-item-action>
-        </v-list-item>
-
-      </v-list>
-    </v-navigation-drawer>
-  </v-app>
+            <!-- <v-btn v-if="isAdmin" @click.submit.prevent="deleteRoomType(roomType.id)" icon>
+              <v-icon color="red">mdi-close</v-icon>
+            </v-btn> -->
+          </v-row>
+        </v-list-item-action>
+      </v-list-item>
+    </v-list>
+  </portal>
 </template>
 
 <script>

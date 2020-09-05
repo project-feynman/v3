@@ -48,6 +48,26 @@
                 <v-btn @click="$_logInWithTouchstone()" color="#79BA61" class="white--text">
                   TOUCHSTONE LOGIN
                 </v-btn>
+
+                <!-- Email Sign Up -->
+                <BasePopupButton actionName="Sign up with email" 
+                  :inputFields="['first name', 'last name', 'email', 'password']" 
+                  @action-do="user => $_signUp(user)"
+                  class="white--text"
+                  color="secondary"
+                >
+                  <template v-slot:message-to-user>
+                    To provide an <u>exceptional</u> experience, we plan to serve a limited number of classes for the initial closed-beta, where we watch every class session closely, anticipate needs and problems,
+                    provide near 24/7 customer support, and fix bugs/implement new features within hourly/daily cycles.
+                    <br>
+                    <br>
+                    However, <u>every class can use explain.mit.edu for free</u> and automatically 
+                    benefit from the software upgrades driven by the closed-beta.
+                    <br>
+                    <br>
+                    Sign up for an account to create new classes or join existing classes. Passwords are handled by Google Firebase Authentication.
+                  </template>
+                </BasePopupButton>
               </template>
 
               <!-- Search Bar -->

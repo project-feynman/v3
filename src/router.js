@@ -13,7 +13,7 @@ export default new Router({
     },
     {
       path: "/class/:class_id",
-      component: () => import(/* webpackChunkName: "class-overview" */ "./pages/ClassOverview.vue"),
+      component: () => import(/* webpackChunkName: "class-overview" */ "./pages/ClassPageTemplate.vue"),
       children: [
         {
           path: "",

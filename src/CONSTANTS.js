@@ -5,6 +5,7 @@ const TUTORIAL_ID = "FVdgjuywaFgxvyylISt2";
 
 export const SUPER_USER_EMAILS = [
   "eltonlin@mit.edu",
+  "eltonlin1998@gmail.com",
   // 8.01 
   // S1~2
   "josephf@mit.edu",

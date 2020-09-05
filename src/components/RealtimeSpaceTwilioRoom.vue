@@ -121,6 +121,10 @@ export default {
     roomID: {
       type: String,
       required: true
+    },
+    willMuteByDefault: {
+      type: Boolean,
+      required: true
     }
   },
   mixins: [
@@ -141,7 +145,7 @@ export default {
       twilioRoom: null,
       twilioInitialized: false,
       
-      isMicEnabled: true,
+      isMicEnabled: !this.willMuteByDefault,
       isCameraEnabled: false,
       isDeafened: false,
       isSharingScreen: false,
@@ -184,10 +188,9 @@ export default {
     const { class_id } = this.$route.params; 
     this.firebaseUnsubscribeFuncs.push(
       this.$_bindVarToDB({
-        component: this,
         varName: "allClients",
-        dbRef: db.collection(`/classes/${class_id}/participants`)
-          .where("currentRoom", "==", this.$route.params.room_id)
+        dbRef: db.collection(`/classes/${class_id}/participants`).where("currentRoom", "==", this.$route.params.room_id),
+        component: this
       })
     ); 
 
@@ -197,7 +200,7 @@ export default {
     try {
       this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
         name: this.roomID,
-        audio: true, // should be able to just connect without anything
+        audio: !this.willMuteByDefault, // should be able to just connect without anything
         dominantSpeaker: true
         // video: { width: 640 }
       }); 
@@ -205,6 +208,8 @@ export default {
       this.tellUserHowToFixError(error);
       return;
     }
+
+    console.log("twilioRoom =", this.twilioRoom);
     
     // others => me
     this.twilioRoom.participants.forEach(
@@ -282,6 +287,7 @@ export default {
       if (!this.twilioRoom) return;
       if (newValue) {
         this.twilioRoom.localParticipant.audioTracks.forEach(
+          console.log("audioTrack =", audioTrack); 
           publication => publication.track.enable()
         );
       } else {
