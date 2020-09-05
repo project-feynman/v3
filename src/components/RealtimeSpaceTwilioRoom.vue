@@ -190,7 +190,6 @@ export default {
           .where("currentRoom", "==", this.$route.params.room_id)
       })
     ); 
-    console.log("binding allClients to the ref");
 
     if (!this.isTwilioSupportedByBrowser()) {
       return; 
@@ -256,7 +255,7 @@ export default {
       this.twilioRoom.localParticipant.audioTracks.forEach(audioTrack => {
         publication => publication.track.stop(); 
       }); 
-      
+
       // stop displaying other people's tracks
       this.twilioRoom.participants.forEach(otherPerson => {
         this.removeHisOrHerSharedTracks(otherPerson);
