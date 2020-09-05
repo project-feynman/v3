@@ -18,18 +18,11 @@
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/database";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { mapState } from "vuex";
 
 export default {
-  data () {
-    return {
-      classID: this.$route.params.class_id,
-      roomID: this.$route.params.room_id,
-      classParticipantsRef: db.collection(`classes/${this.classID}/participants`),
-      firebaseRef: firebase.database().ref(`/class/${this.classID}/participants/${this.sessionID}`)
-    };
-  },
   computed: {
     ...mapState([
       "user",
@@ -37,6 +30,18 @@ export default {
     ]),
     sessionID () {
       return this.session.currentID; 
+    },
+    classID () {
+      return this.$route.params.class_id;
+    },
+    roomID () {
+      return this.$route.params.room_id
+    },
+    classParticipantsRef () {
+      return db.collection(`classes/${this.classID}/participants`);
+    },
+    firebaseRef () {
+      return firebase.database().ref(`/class/${this.classID}/participants/${this.sessionID}`); 
     }
   },
   created () {

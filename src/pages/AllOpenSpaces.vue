@@ -19,8 +19,23 @@
           append
           :key="roomType.id"
         >
-          {{ roomType.name }}
+          <v-list-item-content>
+            {{ roomType.name }}
+          </v-list-item-content>
+
+          <v-list-item-action>
+            <v-row>
+              <!-- <v-btn @click.submit.prevent="editNameOfRoomType()" icon>
+                <v-icon color="grey">mdi-pencil</v-icon>
+              </v-btn> -->
+
+              <v-btn v-if="isAdmin" @click.submit.prevent="deleteRoomType(roomType.id)" icon>
+                <v-icon color="red">mdi-close</v-icon>
+              </v-btn>
+            </v-row>
+          </v-list-item-action>
         </v-list-item>
+
       </v-list>
     </v-navigation-drawer>
   </v-app>
@@ -33,7 +48,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import SmallAppBar from "@/components/SmallAppBar.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
   name: "AllOpenSpaces",
@@ -54,6 +69,9 @@ export default {
   computed: {
     ...mapState([
       "mitClass"
+    ]),
+    ...mapGetters([
+      "isAdmin"
     ]),
     classID () {
       return this.$route.params.class_id;
@@ -84,6 +102,12 @@ export default {
         id,
         name
       });
+    },
+    deleteRoomType (roomTypeID) {
+      this.classDocRef.collection("roomTypes").doc(roomTypeID).delete();
+    },
+    editNameOfRoomType (newName) {
+      console.log("editNameOfRoomType()");
     }
   }
 }

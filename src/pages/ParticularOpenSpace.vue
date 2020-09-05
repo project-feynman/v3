@@ -14,15 +14,9 @@
 
         <v-spacer/>
 
-        <BaseButton v-if="SUPER_USER_EMAILS.includes(user.email)" @click="createNewRoom()" small icon="mdi-plus" color="grey">
+        <BaseButton v-if="isAdmin" @click="createNewRoom()" small icon="mdi-plus" color="grey">
           New room
         </BaseButton>
-
-
-
-        <!-- <v-btn @click="$router.push(`/class/${classID}`)" small class="mr-3">
-          BACK
-        </v-btn> -->
       </v-row>
 
       <v-divider/>
@@ -109,8 +103,8 @@
 
             </portal-target>
 
-            <template v-if="SUPER_USER_EMAILS.includes(user.email)">
-              <!-- <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+            <template v-if="isAdmin">
+              <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
                 <template v-slot:activator-button="{ on }">
                   <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
                     Shuffle people
@@ -133,7 +127,7 @@
                     </v-col>
                   </v-row>
                 </template> 
-              </BasePopupButton> -->
+              </BasePopupButton>
 
               <BaseButton @click="showMakeAnnouncementPopup(roomTypeDoc.id)" small icon="mdi-bullhorn" outlined color="white">
                 Do announcement
@@ -224,9 +218,8 @@
 <script>
 import db from "@/database.js";
 import { getRandomId } from "@/helpers.js";
-import { SUPER_USER_EMAILS } from "@/CONSTANTS.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import { mapState } from "vuex"; 
+import { mapState, mapGetters } from "vuex"; 
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
@@ -234,6 +227,7 @@ import SmallAppBar from "@/components/SmallAppBar.vue";
 import firebase from "firebase/app";
 
 export default {
+  name: "ParticularOpenSpace",
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -245,7 +239,6 @@ export default {
   },
   data () {
     return {
-      SUPER_USER_EMAILS,
       classID: this.$route.params.class_id,
       roomTypeDoc: null,
       rooms: [],
@@ -269,6 +262,9 @@ export default {
     ...mapState([
       "user",
       "mitClass"
+    ]),
+    ...mapGetters([
+      "isAdmin"
     ]),
     nonCommonRooms () {
       return this.rooms.filter(room => !room.isCommonRoom)

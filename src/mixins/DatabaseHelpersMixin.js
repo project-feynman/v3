@@ -75,7 +75,6 @@ export default {
      */
     $_bindVarToDB ({ varName, dbRef, component }) {
       const unsubscribeListener = dbRef.onSnapshot(snapshot => {
-        console.log("new snapshot =", snapshot);
         const resultDocs = []; 
         snapshot.forEach(doc => {
           resultDocs.push({

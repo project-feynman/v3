@@ -1,10 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import 'firebase/database';
 import db from '@/database.js';
 import { getRandomId } from '@/helpers.js';
+import { SUPER_USER_EMAILS } from "@/CONSTANTS.js";
 
 Vue.use(Vuex);
 
@@ -48,6 +46,11 @@ export default new Vuex.Store({
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
     dominantSpeakerUID: null
+  },
+  getters: {
+    isAdmin: state => {
+      return SUPER_USER_EMAILS.includes(state.user.email);
+    }
   },
   mutations: {
     SET_USER (state, user) {
