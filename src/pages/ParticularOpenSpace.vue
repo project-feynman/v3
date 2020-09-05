@@ -1,22 +1,28 @@
 <template>
   <v-app v-if="roomTypeDoc">
     <v-navigation-drawer app width="300" permanent>
-      <SmallAppBar>
-        <BaseButton v-if="SUPER_USER_EMAILS.includes(user.email)" @click="createNewRoom()" small icon="mdi-plus" color="secondary">
-          New room
-        </BaseButton>
-      </SmallAppBar>
+      <SmallAppBar></SmallAppBar>
       
-      <v-row align="center" class="px-3">
-        <v-subheader class="accent--text">
+      <v-row justify="center" align="center" class="px-5">
+        <v-btn @click="$router.push(`/class/${classID}`)" icon>
+          <v-icon>mdi-arrow-left</v-icon>
+        </v-btn>
+
+        <v-subheader class="accent--text pl-2" style="font-size: 1em">
           {{ roomTypeDoc.name }}
         </v-subheader>
 
         <v-spacer/>
 
-        <v-btn @click="$router.push(`/class/${classID}`)">
+        <BaseButton v-if="SUPER_USER_EMAILS.includes(user.email)" @click="createNewRoom()" small icon="mdi-plus" color="grey">
+          New room
+        </BaseButton>
+
+
+
+        <!-- <v-btn @click="$router.push(`/class/${classID}`)" small class="mr-3">
           BACK
-        </v-btn>
+        </v-btn> -->
       </v-row>
 
       <v-divider/>
@@ -39,7 +45,7 @@
       >
         <!-- CASE 1: I'm in the room -->
         <template v-if="room.id === currentRoomID">
-          <v-container>
+          <div class="py-3" style="width: 100%">
             <div class="text-uppercase font-weight-medium" style="font-size: 0.75em">
               Room {{ i + 1 }}
             </div>
@@ -59,7 +65,7 @@
             <portal-target name="destination3">
 
             </portal-target>
-          </v-container>
+          </div>
         </template>
 
         <!-- CASE 2: I'm not in the room-->
@@ -492,8 +498,7 @@ export default {
 
 <style scoped>
 .active-blackboard {
-  color: #555;
   position: relative;
-  border-left: 2px solid var(--v-accent-base);
+  border-left: 1px solid var(--v-accent-base);
 }
 </style>

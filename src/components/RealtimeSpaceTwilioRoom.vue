@@ -37,7 +37,7 @@
           </v-btn>
 
           <!-- Disconnect button -->
-          <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}`)" fab color="red" class="white--text" depressed>
+          <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}/section/${$route.params.section_id}`)" fab color="red" class="white--text" depressed>
             <v-icon large>mdi-phone-hangup</v-icon>
           </v-btn>
         </v-row>
@@ -181,13 +181,15 @@ export default {
   },
   async created () {
     // quickfix for the missing prop this.allClients
-    const participantsQuery = db.collection(`/classes/${this.$route.params.class_id}/participants`)
-      .where("currentRoom", "==", this.$route.params.room_id);
-
-    // then the watch hook will do the trick
-    this.$_listenToCollection(participantsQuery, this, "allClients").then(unsubFunc => {
-      this.firebaseUnsubscribeFuncs.push(unsubFunc);
-    });
+    const { class_id } = this.$route.params; 
+    this.firebaseUnsubscribeFuncs.push(
+      this.$_bindVarToDB({
+        component: this,
+        varName: "allClients",
+        dbRef: db.collection(`/classes/${class_id}/participants`)
+          .where("currentRoom", "==", this.$route.params.room_id)
+      })
+    )
 
     if (!this.isTwilioSupportedByBrowser()) {
       return; 
