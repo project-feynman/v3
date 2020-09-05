@@ -189,7 +189,8 @@ export default {
         dbRef: db.collection(`/classes/${class_id}/participants`)
           .where("currentRoom", "==", this.$route.params.room_id)
       })
-    )
+    ); 
+    console.log("binding allClients to the ref");
 
     if (!this.isTwilioSupportedByBrowser()) {
       return; 
@@ -246,10 +247,16 @@ export default {
 
     // disable camera, mic, etc. to turn off the lights
     if (this.cameraTrack) this.cameraTrack.stop();
-    if (this.micTrack) this.micTrack.stop();
+
+    // if (this.micTrack) this.micTrack.stop();
     if (this.screenTrack) this.screenTrack.stop(); 
 
     if (this.twilioRoom) {
+      // disable mic
+      this.twilioRoom.localParticipant.audioTracks.forEach(audioTrack => {
+        publication => publication.track.stop(); 
+      }); 
+      
       // stop displaying other people's tracks
       this.twilioRoom.participants.forEach(otherPerson => {
         this.removeHisOrHerSharedTracks(otherPerson);
