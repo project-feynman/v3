@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar class="mb-4">
+  <v-app-bar flat color="white">
     <img src="/logo.png" @click="$router.push('/')" height="40" class="pl-2" style="cursor: pointer;"/>
     
     <v-toolbar-title v-if="mitClass" :class="['headline', 'ml-2']">
@@ -48,5 +48,5 @@ export default {
       showLibrary: false
     };
   }
-}
+};
 </script>

@@ -32,6 +32,7 @@
     "vue-loader": "^15.7.0",
     "vue-router": "^3.0.1",
     "vue-swatches": "^1.0.2",
+    "vue-youtube": "^1.4.0",
     "vuetify": "^2.2.19",
     "vuex": "^3.0.1"
   },

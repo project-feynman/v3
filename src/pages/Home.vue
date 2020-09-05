@@ -1,5 +1,8 @@
 <template>
   <div id="home-page">
+    <MusicPlayer v-show="false"
+      :youtubeURL="randomMusicURL"
+    />
     <TheAppBar>
       <template v-if="user">
         <!-- target="_blank" opens a new tab -->
@@ -151,6 +154,7 @@ import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
 import BaseButton from "@/components/BaseButton.vue";
+import MusicPlayer from "@/components/MusicPlayer.vue"; 
 
 export default {
   components: {
@@ -161,23 +165,20 @@ export default {
     TheAppBar,
     TheDropdownMenu,
     TheSearchBar,
-    BaseButton
+    BaseButton,
+    MusicPlayer
   },
   mixins: [
     AuthHelpers,
     DatabaseHelpersMixin
   ],
-  computed: {
-    ...mapState([
-      "user", 
-      "isFetchingUser"
-    ]),
-    userRef () { 
-      return db.collection("users").doc(this.user.uid); 
-    }
-  },
   data () {
     return {
+      favoriteMusicPieces: [
+        "https://www.youtube.com/watch?v=j1wQ8ZMZq60", // Holberg Suite
+        "https://www.youtube.com/watch?v=QAxz16D4BlE", // Schubert Impromptu No. 3
+        "https://www.youtube.com/watch?v=DhUdOO9UNwY" // Raindrop Forest
+      ],
       schoolClasses: [],
       demoVideo: null,
       demoVideo2: null,
@@ -188,6 +189,20 @@ export default {
       attemptToJoinClassName: "",
       hasEnteredPassword: false
     };
+  },
+  computed: {
+    ...mapState([
+      "user", 
+      "isFetchingUser"
+    ]),
+    randomMusicURL () {  
+      const n = this.favoriteMusicPieces.length; 
+      const randomNumber = Math.floor(Math.random() * n);
+      return this.favoriteMusicPieces[randomNumber];
+    },
+    userRef () { 
+      return db.collection("users").doc(this.user.uid); 
+    }
   },
   async created () { 
     this.fetchClasses(); 

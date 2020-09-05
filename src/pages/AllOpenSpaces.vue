@@ -6,7 +6,7 @@
         @action-do="({ name }) => createNewRoomType(name)"
       >
         <template v-slot:activator-button="{ on }">
-          <BaseButton :on="on" icon="mdi-plus" small color="black">New Space</BaseButton>
+          <BaseButton :on="on" icon="mdi-plus" small color="black">New space</BaseButton>
         </template> 
       </BasePopupButton>
     </portal>

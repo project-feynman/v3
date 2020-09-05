@@ -1,5 +1,11 @@
 <template>
   <portal v-if="roomTypeDoc" to="side-drawer">
+    <portal to="app-bar">
+      <BaseButton v-if="isAdmin" @click="createNewRoom()" small icon="mdi-plus" color="black">
+        New room
+      </BaseButton>
+    </portal>
+
     <v-row justify="center" align="center" class="px-5">
       <v-btn @click="$router.push(`/class/${classID}`)" icon>
         <v-icon>mdi-arrow-left</v-icon>
@@ -10,14 +16,48 @@
       </v-subheader>
 
       <v-spacer/>
-
-      <portal to="app-bar">
-        <BaseButton v-if="isAdmin" @click="createNewRoom()" small icon="mdi-plus" color="black">
-          New room
-        </BaseButton>
-      </portal>
     </v-row>
 
+    <v-row v-if="isAdmin" justify="center">
+      <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+        <template v-slot:activator-button="{ on }">
+          <BaseButton :on="on" icon="mdi-shuffle-variant" small color="purple">
+            Shuffle people
+          </BaseButton>
+        </template>
+        
+        <template v-slot:message-to-user>
+          <v-row>
+            <v-col cols="12" sm="4">
+              <v-overflow-btn 
+                label="3"
+                :items="[3]"
+                @change="groupSize => minRoomSizeOnShuffle = groupSize"
+              />
+            </v-col>
+            <v-col>
+              <h3 class="mt-5">
+                people per group
+              </h3>
+            </v-col>
+          </v-row>
+        </template> 
+      </BasePopupButton>
+
+      <BaseButton @click="showMakeAnnouncementPopup(roomTypeDoc.id)" small icon="mdi-bullhorn" color="purple">
+        Announce
+      </BaseButton>
+      
+      <BaseButton @click="muteParticipantsInRooms(roomTypeDoc.id)" small icon="mdi-volume-mute" color="purple">
+        Mute all
+      </BaseButton>
+
+      <BaseButton @click="clearRoomStatuses(roomTypeDoc.id)" small icon="mdi-comment-remove" color="purple">
+        Clear statuses
+      </BaseButton>
+    </v-row>
+
+    <v-divider/>
     <v-divider/>
 
     <!-- COMMON ROOM-->
@@ -89,16 +129,12 @@
 
     </v-list-item>  
 
+    <!-- Twilio Room with Collaborative Blackboard -->
     <portal to="main-content">
       <router-view :key="$route.params.room_id"/>
     </portal>
 
-    <!-- TwilioRoom and Collaborative Blackboard -->
-    <!-- <v-content>
-      <router-view :key="$route.params.room_id"/>
-    </v-content> -->
-
-    <!-- Update status popup TODO: use base popupButto-->
+    <!-- Update status popup TODO: use base popupButton -->
     <template v-if="isInRoom">
       <v-dialog :value="roomStatusPopup.show" persistent max-width="600px">
         <v-card>
@@ -173,45 +209,6 @@
           <portal-target name="destination2">
 
           </portal-target>
-
-          <template v-if="isAdmin">
-            <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
-              <template v-slot:activator-button="{ on }">
-                <BaseButton :on="on" icon="mdi-shuffle-variant" small outlined color="white">
-                  Shuffle people
-                </BaseButton>
-              </template>
-              
-              <template v-slot:message-to-user>
-                <v-row>
-                  <v-col cols="12" sm="4">
-                    <v-overflow-btn 
-                      label="3"
-                      :items="[3]"
-                      @change="groupSize => minRoomSizeOnShuffle = groupSize"
-                    />
-                  </v-col>
-                  <v-col>
-                    <h3 class="mt-5">
-                      people per group
-                    </h3>
-                  </v-col>
-                </v-row>
-              </template> 
-            </BasePopupButton>
-
-            <BaseButton @click="showMakeAnnouncementPopup(roomTypeDoc.id)" small icon="mdi-bullhorn" outlined color="white">
-              Do announcement
-            </BaseButton>
-            
-            <BaseButton @click="muteParticipantsInRooms(roomTypeDoc.id)" small icon="mdi-volume-mute" outlined color="white">
-              Mute everyone
-            </BaseButton>
-
-            <BaseButton @click="clearRoomStatuses(roomTypeDoc.id)" small icon="mdi-comment-remove" outlined color="white">
-              Clear statuses
-            </BaseButton>
-          </template>
         </v-card-text>
       </v-card>
     </portal>
@@ -242,7 +239,6 @@ export default {
   },
   data () {
     return {
-      classID: this.$route.params.class_id,
       roomTypeDoc: null,
       rooms: [],
       participants: [],
@@ -269,6 +265,9 @@ export default {
     ...mapGetters([
       "isAdmin"
     ]),
+    classID () {
+      return this.$route.params.class_id; 
+    },
     nonCommonRooms () {
       return this.rooms.filter(room => !room.isCommonRoom)
     },

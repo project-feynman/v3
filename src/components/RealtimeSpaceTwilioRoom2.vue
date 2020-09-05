@@ -19,7 +19,7 @@
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
       <p v-if="!twilioInitialized" class="accent--text">
-        Connecting audio...
+        Connecting to room...
       </p>
       <template v-else>
         <p class="green--text mt-1">
@@ -189,7 +189,7 @@ export default {
     this.firebaseUnsubscribeFuncs.push(
       this.$_bindVarToDB({
         varName: "allClients",
-        dbRef: db.collection(`/classes/${class_id}/participants`).where("currentRoom", "==", this.$route.params.room_id),
+        dbRef: db.collection(`/classes/${class_id}/participants`).where("currentRoom", "==", this.roomID),
         component: this
       })
     ); 
