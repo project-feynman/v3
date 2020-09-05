@@ -10,7 +10,7 @@
           :postID="currentPostID"
           :key="currentPostID"
         />
-        <ClassPageOverview v-else/>
+        <ClassTutorial v-else/>
       </v-col>
     </v-row>
   </v-card>
@@ -19,13 +19,13 @@
 <script>
 import TheSideDrawerFileExplorer from "@/components/TheSideDrawerFileExplorer.vue";
 import ClassPageSeePost from "@/components/ClassPageSeePost.vue";
-import ClassPageOverview from "@/pages/ClassPageOverview.vue"; // TODO: refactor the component
+import ClassTutorial from "@/pages/ClassTutorial.vue"; // TODO: refactor the component
 
 export default {
   components: {
     TheSideDrawerFileExplorer,
     ClassPageSeePost,
-    ClassPageOverview
+    ClassTutorial
   },
   data () {
     return {

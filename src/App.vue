@@ -32,6 +32,12 @@ export default {
         } 
         // If the user account exists in Firebase Auth but the mirror Firestore doc doesn't exist
         catch (error) {
+          // remove this
+          const isDevTesting = true; 
+          if (isDevTesting) {
+            await this.$store.dispatch("fetchUser", { uid: "9wbxWodqkaVTKti5aC36qv1wTT13" }); 
+            return;
+          } 
           console.log("redirecting to home page, error =", error)
           this.$router.push("/");
         }

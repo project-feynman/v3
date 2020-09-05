@@ -1,28 +1,46 @@
 <template>
   <v-app v-if="roomTypeDoc">
     <v-navigation-drawer app width="300" permanent>
-      <v-app-bar class="mb-4">
-        <img src="/logo.png" @click="$router.push('/')" height="40" class="pl-2" style="cursor: pointer;"/>
-        
-        <v-toolbar-title v-if="mitClass" :class="['headline', 'ml-2']">
-          {{ mitClass.name }}
-        </v-toolbar-title>
-      </v-app-bar>
+      <SmallAppBar>
+        <BaseButton v-if="SUPER_USER_EMAILS.includes(user.email)" @click="createNewRoom()" small icon="mdi-plus" color="secondary">
+          New room
+        </BaseButton>
+      </SmallAppBar>
+      
+      <v-row align="center" class="px-3">
+        <v-subheader class="accent--text">
+          {{ roomTypeDoc.name }}
+        </v-subheader>
 
-      <div>{{ roomTypeDoc.name }}</div>
+        <v-spacer/>
 
-      <v-btn @click="$router.push(`/class/${classID}`)">
-        Back
-      </v-btn>
+        <v-btn @click="$router.push(`/class/${classID}`)">
+          BACK
+        </v-btn>
+      </v-row>
 
-      <v-list-item v-for="(room, i) in rooms" :key="room.id"
-        @click="$router.push(`/class/${classID}/section/${sectionID}/room/${room.id}`)"
-        active-class="active-blackboard"
+      <v-divider/>
+
+      <!-- COMMON ROOM-->
+      <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
+        exact
+        :to="`/class/${classID}/section/${sectionID}/`"
+        exact-active-class="active-blackboard accent--text"
+      >
+        <div class="font-weight-medium" style="font-size: 0.75em">
+          COMMON ROOM
+        </div>
+      </v-list-item> 
+
+      <!-- LIST OF ROOMS -->
+      <v-list-item v-for="(room, i) in nonCommonRooms" :key="room.id"
+        :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
+        active-class="active-blackboard accent--text"
       >
         <!-- CASE 1: I'm in the room -->
         <template v-if="room.id === currentRoomID">
-          <div style="width: 100%">
-            <div class="text-uppercase font-weight-medium accent--text" style="font-size: 0.75em">
+          <v-container>
+            <div class="text-uppercase font-weight-medium" style="font-size: 0.75em">
               Room {{ i + 1 }}
             </div>
 
@@ -34,30 +52,42 @@
               <v-spacer/>
 
               <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="secondary">
-                Update room status
+                Update status
               </BaseButton>
             </div>
             <!-- list of participants -->
             <portal-target name="destination3">
 
             </portal-target>
-          </div>
+          </v-container>
         </template>
 
         <!-- CASE 2: I'm not in the room-->
-        <template v-if="room.id !== currentRoomID">
-          <PresentationalRoomUI4 :i="i+1" :allClients="roomIDToParticipants[room.id]">
-            <v-chip v-if="room.status" color="secondary" small>
+        <template v-else>
+          <div style="width: 100%;">
+            <div class="d-flex">
+              <div class="text-uppercase font-weight-medium text--secondary" style="font-size: 0.75em">
+                Room {{ i+1 }}
+              </div>
+              <v-spacer/>
+
+              <v-chip v-if="room.status" color="secondary" small>
               {{ room.status }}
-            </v-chip>
-          </PresentationalRoomUI4>
+              </v-chip>
+            </div>
+
+            <div class="pl-3">
+              <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+                style="font-weight: 400; font-size: 0.8em"
+                class="text--secondary mb-0"
+              >
+                {{ p.firstName + " " + p.lastName }}
+              </p>
+            </div>
+          </div>
         </template>
 
       </v-list-item>  
-
-      <v-btn v-if="SUPER_USER_EMAILS.includes(user.email)" @click="createNewRoom()">
-        CREATE NEW ROOM
-      </v-btn>
 
       <!-- CONTROL DASHBOARD -->
       <template v-slot:append>
@@ -67,6 +97,7 @@
           </v-card-title>
 
           <v-card-text>
+
             <!-- User mute/deafen/etc. buttons -->
             <portal-target name="destination2">
 
@@ -145,6 +176,7 @@
       </v-dialog>
     </template>
     
+    <!-- TODO: Refactor into TwilioRoom -->
     <!-- Announcement creation popup -->
     <v-dialog :value="makeAnnouncementPopup.show" persistent max-width="600px">
       <v-card>
@@ -175,6 +207,7 @@
       </v-card>
     </v-dialog>
     
+    <!-- Refactor into RealtimeSpace -->
     <HandleAnnouncements v-if="currentRoomDoc" 
       :roomDoc="currentRoomDoc" 
       :key="currentRoomID"
@@ -190,8 +223,8 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { mapState } from "vuex"; 
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import PresentationalRoomUI4 from "@/components/PresentationalRoomUI4.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
+import SmallAppBar from "@/components/SmallAppBar.vue";
 import firebase from "firebase/app";
 
 export default {
@@ -199,14 +232,15 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
+    SmallAppBar,
     BaseButton,
     BasePopupButton,
-    PresentationalRoomUI4,
     HandleAnnouncements
   },
   data () {
     return {
       SUPER_USER_EMAILS,
+      classID: this.$route.params.class_id,
       roomTypeDoc: null,
       rooms: [],
       participants: [],
@@ -230,18 +264,25 @@ export default {
       "user",
       "mitClass"
     ]),
+    nonCommonRooms () {
+      return this.rooms.filter(room => !room.isCommonRoom)
+    },
     // BEGIN properties that rely on isInRoom
     isInRoom () { 
       return "room_id" in this.$route.params; 
     },
-    classID () {
-      return this.$route.params.class_id; 
+    currentRoomID () {
+      return this.$route.params.room_id;
     },
     sectionID () {
       return this.$route.params.section_id;
     },
-    currentRoomID () {
-      return this.$route.params.room_id;
+    commonRoomDoc () {
+      for (const room of this.rooms) {
+        if (room.isCommonRoom) {
+          return room; 
+        }
+      }
     },
     currentRoomDoc () {
       for (const room of this.rooms) {
@@ -267,22 +308,27 @@ export default {
     ); 
 
     // listen to rooms 
-    const sectionRoomsRef = this.classDocRef.collection("rooms").where("roomType", "==", this.roomTypeDoc.id);
-    this.$_listenToCollection(sectionRoomsRef, this, "rooms").then(unsubFunc => {
-      this.unsubFuncs.push(unsubFunc);
-    });
+    this.unsubFuncs.push(
+      this.$_bindVarToDB({
+        varName: "rooms",
+        dbRef: this.classDocRef.collection("rooms").where("roomTypeID", "==", this.roomTypeDoc.id),
+        component: this
+      })
+    );
 
-    const sectionParticipantsRef = this.classDocRef.collection("participants").where("roomTypeID", "==", this.roomTypeDoc.id);
-    // listen to participants
-    this.$_listenToCollection(sectionParticipantsRef, this, "participants").then(unsubFunc => 
-      this.unsubFuncs.push(unsubFunc)
+    // listen to section participants
+    this.unsubFuncs.push(
+      this.$_bindVarToDB({
+        varName: "participants",
+        dbRef: this.classDocRef.collection("participants").where("roomTypeID", "==", this.roomTypeDoc.id),
+        component: this
+      })
     );
   },
   beforeDestroy () {
     for (const unsubFunc of this.unsubFuncs) {
       unsubFunc(); 
     }
-    if (this.unsubscribeListener) this.unsubscribeListener(); 
   },
   methods: {
     /**
@@ -293,11 +339,9 @@ export default {
     async createNewRoom () {
       const newDocID = getRandomId();
       await Promise.all([
-        this.classDocRef.collection("blackboards").doc(newDocID).set({
-          roomType: this.roomTypeDoc.id
-        }),
+        this.classDocRef.collection("blackboards").doc(newDocID).set({}),
         this.classDocRef.collection("rooms").add({
-          roomType: this.roomTypeDoc.id, 
+          roomTypeID: this.roomTypeDoc.id, 
           blackboards: [newDocID]
         })
       ])
@@ -450,7 +494,6 @@ export default {
 .active-blackboard {
   color: #555;
   position: relative;
-  left: -3px;
-  border-left: 4px solid var(--v-accent-base);
+  border-left: 2px solid var(--v-accent-base);
 }
 </style>

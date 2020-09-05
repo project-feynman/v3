@@ -68,6 +68,26 @@ export default {
         } 
       });
     },
+    /**
+     * Binds a component property to a collection of documents in Firestore
+     * 
+     * TODO: resolve the promise when the data is populated
+     */
+    $_bindVarToDB ({ varName, dbRef, component }) {
+      const unsubscribeListener = dbRef.onSnapshot(snapshot => {
+        console.log("new snapshot =", snapshot);
+        const resultDocs = []; 
+        snapshot.forEach(doc => {
+          resultDocs.push({
+            id: doc.id,
+            ref: doc.ref.path,
+            ...doc.data()
+          });
+        });
+        component[varName] = resultDocs; 
+      });
+      return unsubscribeListener; 
+    },
     async $_listenToCollection (ref, obj, val) {
       return new Promise(async (resolve, reject) => {
         try {

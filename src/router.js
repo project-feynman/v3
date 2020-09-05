@@ -13,30 +13,26 @@ export default new Router({
     },
     {
       path: "/class/:class_id",
-      component: () => import(/* webpackChunkName: "class-page" */ "./pages/ClassPage.vue"),
+      component: () => import(/* webpackChunkName: "class-overview" */ "./pages/ClassOverview.vue"),
       children: [
         {
           path: "",
-          component: () => import(/* webpackChunkName: "class-spaces" */ "./pages/ClassSections.vue") 
+          component: () => import(/* webpackChunkName: "all-open-spaces" */ "./pages/AllOpenSpaces.vue") 
         },
         {
           path: "section/:section_id",
-          component: () => import(/* webpackChunkName: "class-section" */ "./pages/ClassSection.vue"),
+          component: () => import(/* webpackChunkName: "particular-open-space" */ "./pages/ParticularOpenSpace.vue"),
           children: [
             {
               path: "",
-              component: () => import(/* webpackChunkName: "empty-tutorial" */ "./pages/ClassPageOverview.vue")
+              component: () => import(/* webpackChunkName: "common-room" */ "./pages/CommonRoom.vue")
             },
             {
               path: "room/:room_id",
-              component: () => import(/* webpackChunkName: "" */ "./pages/RealtimeSpace.vue")
+              component: () => import(/* webpackChunkName: "realtime-room" */ "./pages/RealtimeRoom.vue")
             }
           ]
         },
-        // {
-        //   path: "room/:room_id",
-        //   component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/RealtimeSpace.vue")
-        // },
         // {
         //   // when /user/:id/posts is matched
         //   path: "new",
