@@ -28,7 +28,7 @@
             <!-- <BaseButton :on="on" icon="mdi-plus" block color="grey">
               New space
             </BaseButton> -->
-            <v-btn block text color="grey">
+            <v-btn v-if="isAdmin" block text color="grey">
               <v-icon left>mdi-plus</v-icon>
               New open space
             </v-btn>

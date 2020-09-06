@@ -18,11 +18,11 @@
 
     </v-navigation-drawer>
 
-    <v-content>
+    <v-main>
       <portal-target name="main-content">
 
       </portal-target>
-    </v-content>
+    </v-main>
 
     <!-- :key="...class_id" forces <router-view/> to re-render -->
     <!-- Many things from <router-view> will teleport to the portals above -->

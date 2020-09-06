@@ -213,7 +213,6 @@
         </v-card-title>
 
         <v-card-text>
-
           <!-- User mute/deafen/etc. buttons -->
           <portal-target name="destination2">
 
@@ -465,6 +464,7 @@ export default {
       }
       
       // Get all rooms of roomType
+
       const targetRooms = this.roomTypeToRooms[roomType];
       
       // Get all UIDs in rooms or roomType, no duplicates

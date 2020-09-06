@@ -32,7 +32,7 @@
       </template>
     </TheAppBar>
     
-    <v-content>
+    <v-main>
       <transition name="fade">
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
           <v-container>
@@ -137,7 +137,7 @@
           </v-row>
         </div>
       </v-container>           
-    </v-content>
+    </v-main>
   </div>
 </template>
 

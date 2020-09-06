@@ -45,6 +45,14 @@ export const SUPER_USER_EMAILS = [
   "sanjoy@mit.edu",
   "xueyingy@mit.edu",
 
+  // UTAs
+  "araminta@mit.edu", // Araminta Gwynne
+  "dmal@mit.edu",
+  "asantoss@mit.edu",
+  "mfedyk@mit.edu",
+  "stzh1555@mit.edu",
+  "xherbert@mit.edu",
+
   // ESG
   "pao@mit.edu", // Paula Rabusco
   "jorloff@mit.edu", // Jeremy Orloff
