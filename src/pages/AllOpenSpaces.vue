@@ -4,7 +4,9 @@
       <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
         append :to="(`section/${roomType.id}`)"
       >
-        <v-list-item-content>{{ roomType.name }}</v-list-item-content>
+        <v-list-item-content class="text-subtitle-2 text--secondary">
+          {{ roomType.name }}
+        </v-list-item-content>
 
         <v-list-item-action>
           <v-row>

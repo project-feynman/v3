@@ -6,6 +6,9 @@
 
         </portal-target>
       </SmallAppBar>
+
+      <v-divider/>
+      
       <portal-target name="side-drawer">
 
       </portal-target>

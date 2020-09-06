@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :height="toolbarHeight" :color="'#eee'" :elevation="1" class="blackboard-toolbar">
+  <v-app-bar :height="toolbarHeight" color="white" :elevation="1" class="blackboard-toolbar">
     <v-container fluid class="px-0 py-0">
       <v-row align="center" justify="space-between">
         <v-col class="py-0">

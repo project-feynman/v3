@@ -19,7 +19,7 @@
       <!-- Tabs for different blackboards -->
       <v-tabs v-if="user && room" 
         v-model="activeBoard" 
-        active-class="accent--text" slider-color="accent" background-color="#eee"
+        active-class="accent--text" slider-color="accent" background-color="white"
       >
         <template v-for="(board, i) in room.blackboards">
           <v-tab :href="'#' + board" :key="i">

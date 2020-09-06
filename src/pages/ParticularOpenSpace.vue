@@ -9,7 +9,7 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
 
-      <v-subheader class="black--text pl-2 font-weight-bold" style="font-size: 1.25em">
+      <v-subheader class="text-subtitle-2 text--secondary pl-2">
         {{ roomTypeDoc.name }}
       </v-subheader>
 
@@ -55,8 +55,7 @@
       </BaseButton>
     </v-row>
 
-    <v-divider class="mt-3"/>
-    <v-divider class="mb-3"/>
+    <v-divider class="my-2"/>
 
     <!-- COMMON ROOM-->
     <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
