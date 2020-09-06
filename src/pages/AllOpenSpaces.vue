@@ -25,9 +25,13 @@
           @action-do="({ name }) => createNewRoomType(name)"
         >
           <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-plus" block outlined color="grey">
+            <!-- <BaseButton :on="on" icon="mdi-plus" block color="grey">
               New space
-            </BaseButton>
+            </BaseButton> -->
+            <v-btn block text color="grey">
+              <v-icon left>mdi-plus</v-icon>
+              New open space
+            </v-btn>
           </template> 
         </BasePopupButton>
       </div>

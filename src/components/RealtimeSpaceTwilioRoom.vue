@@ -372,6 +372,7 @@ export default {
     async disconnectFromAudio () {
       if (this.hasSharedAudio) {
         this.micPublication.unpublish(); 
+        this.micPublication.track.stop();
 
         // update component state
         // doesn't matter if the user was muted or not, now his/her mic is off
