@@ -9,7 +9,7 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
 
-      <v-subheader class="accent--text pl-2" style="font-size: 1em">
+      <v-subheader class="black--text pl-2 font-weight-bold" style="font-size: 1.25em">
         {{ roomTypeDoc.name }}
       </v-subheader>
 
@@ -55,21 +55,20 @@
       </BaseButton>
     </v-row>
 
-    <v-divider/>
-    <v-divider/>
+    <v-divider class="mt-3"/>
+    <v-divider class="mb-3"/>
 
     <!-- COMMON ROOM-->
     <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
-      exact
       :to="`/class/${classID}/section/${sectionID}/`"
-      exact-active-class="active-blackboard accent--text"
+      exact exact-active-class="active-blackboard accent--text"
     >
-      <div class="font-weight-medium" style="font-size: 0.75em">
+      <div class="font-weight-medium" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.75em">
         COMMON ROOM
       </div>
     </v-list-item> 
 
-    <!-- LIST OF ROOMS -->
+    <!-- OTHER ROOMS -->
     <v-list-item v-for="(room, i) in nonCommonRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       active-class="active-blackboard accent--text"
@@ -77,7 +76,7 @@
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="py-5" style="width: 100%">
-          <div class="text-uppercase font-weight-medium" style="font-size: 1em">
+          <div class="text-uppercase font-weight-medium" style="font-size: 0.75em">
             Room {{ i + 1 }}
           </div>
 
@@ -507,6 +506,6 @@ export default {
 <style scoped>
 .active-blackboard {
   position: relative;
-  border-left: 1px solid var(--v-accent-base);
+  /* border-left: 1px solid var(--v-accent-base); */
 }
 </style>

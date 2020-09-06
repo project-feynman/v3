@@ -87,7 +87,7 @@
     <portal v-if="allClients" to="current-room-participants">
       <div v-for="client in allClients"
         :key="client.id" 
-        :class="['d-flex', 'black--text', 'mt-5', 'pl-5', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
+        :class="['d-flex', 'text--secondary', 'mt-5', 'pl-5', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
         style="font-size: 1em"
       >
         {{ client.firstName + " " + client.lastName }}
@@ -274,8 +274,7 @@ export default {
 
     // disable camera, mic, etc. to turn off the lights
     if (this.cameraTrack) this.cameraTrack.stop();
-
-    // if (this.micTrack) this.micTrack.stop();
+    if (this.micTrack) this.micTrack.stop();
     if (this.screenTrack) this.screenTrack.stop(); 
 
     if (this.twilioRoom) {
@@ -353,8 +352,7 @@ export default {
       else {
         this.screenTrack.stop(); // stop the "explain.mit.edu is sharing your screen"
         this.screenPublication.unpublish(); 
-        // stop local visual feedback 
-        this.unmountTrack(this.screenPublication.track);
+        this.unmountTrack(this.screenPublication.track); // stop local visual feedback 
       }
     },
     isDeafened (isDeafened) {
