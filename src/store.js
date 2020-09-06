@@ -45,7 +45,8 @@ export default new Vuex.Store({
     session: {},
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
-    dominantSpeakerUID: null
+    dominantSpeakerUID: null,
+    roomIDtoParticipants: null
   },
   getters: {
     isAdmin: state => {
@@ -68,6 +69,9 @@ export default new Vuex.Store({
     },
     SET_CANVAS_DIMENSIONS (state, dimensions) {
       state.canvasDimensions = dimensions;
+    },
+    SET_ROOM_ID_TO_PARTICIPANTS (state, roomIDtoParticipants) {
+      state.roomIDtoParticipants = roomIDtoParticipants;
     },
     /**
      * Saves an explanation to the global cache so it can be accessed and uploaded to Firestore in the app background

@@ -12,17 +12,10 @@
 
     </slot>
 
-    <!-- Library of saved explanations -->
+    <!-- Class Library -->
     <v-dialog v-model="showLibrary">
       <template v-slot:activator="{ on, attrs }">
-        <BaseButton 
-          :on="on"
-          icon="mdi-bookshelf"
-          v-bind="attrs"
-          small
-          filled
-          color="accent"
-        >
+        <BaseButton :on="on" icon="mdi-bookshelf" v-bind="attrs" small filled color="accent">
           Library
         </BaseButton>
       </template>

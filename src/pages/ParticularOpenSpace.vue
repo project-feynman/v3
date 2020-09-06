@@ -1,9 +1,7 @@
 <template>
   <portal v-if="roomTypeDoc" to="side-drawer">
     <portal to="app-bar">
-      <BaseButton v-if="isAdmin" @click="createNewRoom()" small icon="mdi-plus" color="black">
-        New room
-      </BaseButton>
+
     </portal>
 
     <v-row justify="center" align="center" class="px-5">
@@ -21,7 +19,7 @@
     <v-row v-if="isAdmin" justify="center">
       <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
         <template v-slot:activator-button="{ on }">
-          <BaseButton :on="on" icon="mdi-shuffle-variant" small color="purple">
+          <BaseButton :on="on" icon="mdi-shuffle-variant" small color="black">
             Shuffle people
           </BaseButton>
         </template>
@@ -44,15 +42,15 @@
         </template> 
       </BasePopupButton>
 
-      <BaseButton @click="showMakeAnnouncementPopup(roomTypeDoc.id)" small icon="mdi-bullhorn" color="purple">
+      <BaseButton @click="showMakeAnnouncementPopup(roomTypeDoc.id)" small icon="mdi-bullhorn" color="black">
         Announce
       </BaseButton>
       
-      <BaseButton @click="muteParticipantsInRooms(roomTypeDoc.id)" small icon="mdi-volume-mute" color="purple">
+      <BaseButton @click="muteParticipantsInRooms(roomTypeDoc.id)" small icon="mdi-volume-mute" color="black">
         Mute all
       </BaseButton>
 
-      <BaseButton @click="clearRoomStatuses(roomTypeDoc.id)" small icon="mdi-comment-remove" color="purple">
+      <BaseButton @click="clearRoomStatuses(roomTypeDoc.id)" small icon="mdi-comment-remove" color="black">
         Clear statuses
       </BaseButton>
     </v-row>
@@ -78,25 +76,26 @@
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
-        <div class="py-3" style="width: 100%">
-          <div class="text-uppercase font-weight-medium" style="font-size: 0.75em">
+        <div class="py-5" style="width: 100%">
+          <div class="text-uppercase font-weight-medium" style="font-size: 1em">
             Room {{ i + 1 }}
           </div>
 
           <div class="d-flex">
-            <v-chip v-if="room.status" color="secondary" class="mt-2" small>
+            <v-chip v-if="room.status" color="blue" class="mt-3" small outlined>
               {{ room.status }}
             </v-chip>
 
             <v-spacer/>
 
-            <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="secondary">
+            <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="blue" small>
               Update status
             </BaseButton>
           </div>
 
           <!-- list of participants -->
-          <portal-target name="destination3">
+          <!-- Get the current Twilio Participants -->
+          <portal-target name="current-room-participants">
 
           </portal-target>
         </div>
@@ -111,7 +110,7 @@
             </div>
             <v-spacer/>
 
-            <v-chip v-if="room.status" color="secondary" small>
+            <v-chip v-if="room.status" color="blue" outlined small>
             {{ room.status }}
             </v-chip>
           </div>
@@ -126,8 +125,14 @@
           </div>
         </div>
       </template>
-
     </v-list-item>  
+
+    <BaseButton v-if="isAdmin && rooms.length !== 0" 
+      @click="createNewRoom()" 
+      block outlined icon="mdi-plus" color="grey"
+    >
+      New room
+    </BaseButton>
 
     <!-- Twilio Room with Collaborative Blackboard -->
     <portal to="main-content">
@@ -268,18 +273,17 @@ export default {
     classID () {
       return this.$route.params.class_id; 
     },
+    sectionID () {
+      return this.$route.params.section_id;
+    },
     nonCommonRooms () {
       return this.rooms.filter(room => !room.isCommonRoom)
     },
-    // BEGIN properties that rely on isInRoom
     isInRoom () { 
       return "room_id" in this.$route.params; 
     },
     currentRoomID () {
       return this.$route.params.room_id;
-    },
-    sectionID () {
-      return this.$route.params.section_id;
     },
     commonRoomDoc () {
       for (const room of this.rooms) {
@@ -304,6 +308,12 @@ export default {
         out[room.id] = this.participants.filter(p => p.currentRoom === room.id); 
       }
       return out; 
+    }
+  },
+  watch: {
+    // Performance-wise, hopefully it's just a pointer 
+    roomIDToParticipants (newVal) {
+      this.$store.commit("SET_ROOM_ID_TO_PARTICIPANTS", newVal); 
     }
   },
   async created () {

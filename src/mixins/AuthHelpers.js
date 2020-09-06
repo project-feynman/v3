@@ -93,7 +93,9 @@ export default {
           this.$store.dispatch("fetchUser", user);
           this.$root.$emit("show-snackbar", this.welcomeMessage);
         })
-        .catch((error) => this.$root.$emit("show-snackbar", error.message));
+        .catch(error => {
+          this.$root.$emit("show-snackbar", error.message);
+        });
     },
     $_signOut () { 
       firebase.auth().signOut(); 

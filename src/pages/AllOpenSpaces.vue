@@ -1,25 +1,10 @@
 <template>
   <portal to="side-drawer">
-    <portal to="app-bar">
-      <BasePopupButton actionName="Create new open space"
-        :inputFields="['name']" 
-        @action-do="({ name }) => createNewRoomType(name)"
-      >
-        <template v-slot:activator-button="{ on }">
-          <BaseButton :on="on" icon="mdi-plus" small color="black">New space</BaseButton>
-        </template> 
-      </BasePopupButton>
-    </portal>
-
     <v-list>
-      <v-list-item v-for="roomType in roomTypes" 
-        :to="(`section/${roomType.id}`)"
-        append
-        :key="roomType.id"
+      <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
+        append :to="(`section/${roomType.id}`)"
       >
-        <v-list-item-content>
-          {{ roomType.name }}
-        </v-list-item-content>
+        <v-list-item-content>{{ roomType.name }}</v-list-item-content>
 
         <v-list-item-action>
           <v-row>
@@ -33,6 +18,19 @@
           </v-row>
         </v-list-item-action>
       </v-list-item>
+
+      <div v-if="roomTypes.length !== 0">
+        <BasePopupButton actionName="Create new open space"
+          :inputFields="['name']" 
+          @action-do="({ name }) => createNewRoomType(name)"
+        >
+          <template v-slot:activator-button="{ on }">
+            <BaseButton :on="on" icon="mdi-plus" block outlined color="grey">
+              New space
+            </BaseButton>
+          </template> 
+        </BasePopupButton>
+      </div>
     </v-list>
   </portal>
 </template>
