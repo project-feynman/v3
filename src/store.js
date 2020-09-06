@@ -30,8 +30,11 @@ function setDisconnectHook (user) {
 async function getDocFromDb (ref) {
   return new Promise(async (resolve, reject) => {
     const doc = await ref.get();
-    if (doc.exists) resolve({ id: doc.id, ...doc.data() });
-    else reject(); 
+    if (doc.exists) { 
+      resolve({ id: doc.id, ...doc.data() });
+    } else { 
+      reject(); 
+    }
   });
 }
 
@@ -43,6 +46,9 @@ export default new Vuex.Store({
     explCache: {},
     blackboardRoom: null,
     session: {},
+    isMicOn: false,
+    isCameraOn: false,
+    isDeafened: false,
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
     dominantSpeakerUID: null,
@@ -54,6 +60,15 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_IS_MIC_ON (state, newVal) {
+      state.isMicOn = newVal; 
+    },
+    SET_IS_CAMERA_ON (state, newVal) {
+      state.isCameraOn = newVal;
+    },
+    SET_IS_DEAFENED (state, newVal) {
+      state.isDeafened = newVal; 
+    },
     SET_USER (state, user) {
       state.user = user;
       state.isFetchingUser = false;

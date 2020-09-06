@@ -15,14 +15,17 @@
 
     <v-toolbar>
       <!-- Tabs for different blackboards -->
-      <v-tabs v-if="user && room" v-model="activeBoard" active-class="accent--text" slider-color="accent">
+      <v-tabs v-if="user && room" 
+        v-model="activeBoard" 
+        active-class="accent--text" slider-color="accent" background-color="#eee"
+      >
         <template v-for="(board, i) in room.blackboards">
           <v-tab :href="'#' + board" :key="i">
             {{ 'BOARD #' + (i+1) }}
           </v-tab>
         </template>
         <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
-          New blackboard
+          New board
         </BaseButton>
       </v-tabs>
     </v-toolbar>

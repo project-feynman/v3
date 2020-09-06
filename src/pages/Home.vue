@@ -1,8 +1,8 @@
 <template>
   <div id="home-page">
-    <MusicPlayer v-show="false"
+    <!-- <MusicPlayer v-show="false"
       :youtubeURL="randomMusicURL"
-    />
+    /> -->
     <TheAppBar>
       <template v-if="user">
         <!-- target="_blank" opens a new tab -->
