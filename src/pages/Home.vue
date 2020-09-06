@@ -48,7 +48,7 @@
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="!user">
-                <v-btn @click="$_logInWithTouchstone()" color="#79BA61" class="white--text">
+                <v-btn @click="$_logInWithTouchstone()" text class="green--text">
                   TOUCHSTONE LOGIN
                 </v-btn>
 
@@ -56,9 +56,11 @@
                 <BasePopupButton actionName="Sign up with email" 
                   :inputFields="['first name', 'last name', 'email', 'password']" 
                   @action-do="user => $_signUp(user)"
-                  class="white--text"
-                  color="secondary"
                 >
+                  <template v-slot:activator-button="{ on }">
+                    <v-btn v-on="on" text class="purple--text">EMAIL SIGNUP</v-btn>
+                  </template>
+
                   <template v-slot:message-to-user>
                     Email sign-up is a back-up option if you have trouble with MIT Touchstone. 
                     To prevent unexpected behavior, use a <u>non-MIT</u> email address to sign up. 
@@ -69,9 +71,10 @@
                 <BasePopupButton actionName="Log in with email" 
                   :inputFields="['email', 'password']" 
                   @action-do="user => $_logIn(user)"
-                  class="white--text"
-                  color="secondary"
                 >
+                  <template v-slot:activator-button="{ on }">
+                    <v-btn v-on="on" text class="purple--text">EMAIL LOGIN</v-btn>
+                  </template>
                 </BasePopupButton>
 
               </template>

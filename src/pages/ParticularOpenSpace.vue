@@ -465,17 +465,22 @@ export default {
       
       // Get all rooms of roomType
 
-      const targetRooms = this.roomTypeToRooms[roomType];
-      
+      // const targetRooms = this.roomTypeToRooms[roomType];
+      const targetRooms = this.rooms; 
+  
       // Get all UIDs in rooms or roomType, no duplicates
       const targetUIDSet = new Set();
-      for (const room of targetRooms) {
-        for (const participant of this.roomIDToParticipants[room.id]) {
-          targetUIDSet.add(participant.uid);
-        }
+      for (const participant of this.participants) {
+        targetUIDSet.add(participant.uid); 
       }
+       
+      // for (const room of targetRooms) {
+      //   for (const participant of this.roomIDToParticipants[room.id]) {
+      //     targetUIDSet.add(participant.uid);
+      //   }
+      // }
       const targetUIDs = Array.from(targetUIDSet);
-      console.log("Breaking out participants:", targetUIDs);
+      console.log("Shuffling participants", targetUIDs);
     
       // Initialize roomAssignments
       const roomAssignments = [];

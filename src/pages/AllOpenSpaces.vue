@@ -19,7 +19,7 @@
         </v-list-item-action>
       </v-list-item>
 
-      <div v-if="roomTypes.length !== 0">
+      <div v-if="roomTypes !== []">
         <BasePopupButton actionName="Create new open space"
           :inputFields="['name']" 
           @action-do="({ name }) => createNewRoomType(name)"
@@ -28,7 +28,7 @@
             <!-- <BaseButton :on="on" icon="mdi-plus" block color="grey">
               New space
             </BaseButton> -->
-            <v-btn v-if="isAdmin" block text color="grey">
+            <v-btn v-if="isAdmin" v-on="on" block text color="grey">
               <v-icon left>mdi-plus</v-icon>
               New open space
             </v-btn>
