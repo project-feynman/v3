@@ -63,8 +63,13 @@
       :to="`/class/${classID}/section/${sectionID}/`"
       exact exact-active-class="active-blackboard accent--text"
     >
-      <div class="font-weight-medium" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.75em">
-        COMMON ROOM
+      <div class="py-5" style="width: 100%">
+        <div class="font-weight-medium" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.75em">
+          COMMON ROOM
+        </div>
+        <portal-target v-if="!currentRoomID" name="current-room-participants">
+
+        </portal-target>
       </div>
     </v-list-item> 
 
@@ -135,7 +140,7 @@
 
     <!-- Twilio Room with Collaborative Blackboard -->
     <portal to="main-content">
-      <router-view :key="$route.params.room_id"/>
+      <router-view :key="$route.params.section_id + $route.params.room_id"/>
     </portal>
 
     <!-- Update status popup TODO: use base popupButton -->

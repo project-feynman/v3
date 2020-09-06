@@ -29,7 +29,12 @@ export default new Router({
             },
             {
               path: "room/:room_id",
-              component: () => import(/* webpackChunkName: "realtime-room" */ "./pages/RealtimeRoom.vue")
+              component: () => import(/* webpackChunkName: "realtime-room" */ "./pages/RealtimeRoom.vue"),
+              props: route => {
+                return {
+                  roomId: route.params.room_id
+                };
+              }
             }
           ]
         },

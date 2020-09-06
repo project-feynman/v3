@@ -151,10 +151,6 @@ export default {
     roomID: {
       type: String,
       required: true
-    },
-    willMuteByDefault: {
-      type: Boolean,
-      required: true
     }
   },
   mixins: [
@@ -228,7 +224,7 @@ export default {
     try {
       this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
         name: this.roomID,
-        audio: !this.willMuteByDefault, // should be able to just connect without anything
+        audio: false, // should be able to just connect without anything
         dominantSpeaker: true
         // video: { width: 640 }
       }); 

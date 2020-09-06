@@ -40,7 +40,7 @@ import { mapState } from "vuex";
 import SmallAppBar from "@/components/SmallAppBar.vue"; 
 
 export default {
-  name: "ClassOverview",
+  name: "ClassPageTemplate",
   mixins: [
     DatabaseHelpersMixin
   ],

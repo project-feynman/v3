@@ -1,10 +1,12 @@
 <template>
   <div>  
     <!-- This will handle everything to do with participants -->
-    <HandleUpdatingParticipants/>
+    <HandleUpdatingParticipants
+      :roomId="roomId"
+    />
 
     <RealtimeSpaceTwilioRoom 
-      :roomID="$route.params.room_id"
+      :roomID="roomId"
       :willMuteByDefault="true"
     />
 
@@ -64,6 +66,12 @@ import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.
 import { getRandomId } from "@/helpers.js";
 
 export default {
+  props: {
+    roomId: {
+      type: String,
+      required: true
+    }
+  },
   components: {
     HandleUpdatingParticipants,
     RealtimeBlackboard,
@@ -81,8 +89,6 @@ export default {
       blackboardRefs: [],
       snapshotListeners: [],
       roomRef: null,
-      classId: this.$route.params.class_id,
-      roomId: this.$route.params.room_id,
       activeBoard: 'tab-1',
       boards: []
     }
@@ -93,6 +99,12 @@ export default {
       "mitClass",
       "session",
     ]),
+    classId () {
+      return this.$route.params.class_id; 
+    },
+    // roomId () {
+    //   return this.$route.params.room_id;
+    // },
     sessionID () {
       return this.session.currentID;
     }

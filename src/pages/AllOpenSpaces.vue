@@ -83,19 +83,20 @@ export default {
   },
   methods: {
     /**
-     * Create a new roomType, and initialize it with a common room. 
+     * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
      */
     createNewRoomType (name) {
       const id = getRandomId(); 
-      this.classDocRef.collection("rooms").doc(id).set({
-        isCommonRoom: true,
-        roomTypeID: id
-      });
-
       this.classDocRef.collection("roomTypes").doc(id).set({
         id,
         name
       });
+      this.classDocRef.collection("rooms").doc(id).set({
+        isCommonRoom: true,
+        roomTypeID: id,
+        blackboards: [id]
+      });
+      this.classDocRef.collection("blackboards").doc(id).set({});
     },
     deleteRoomType (roomTypeID) {
       this.classDocRef.collection("roomTypes").doc(roomTypeID).delete();

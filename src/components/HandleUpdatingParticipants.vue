@@ -23,6 +23,12 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { mapState } from "vuex";
 
 export default {
+  props: {
+    roomId: {
+      type: String,
+      required: true
+    }
+  },
   computed: {
     ...mapState([
       "user",
@@ -55,10 +61,10 @@ export default {
     });
 
     // PART 2/2: now safely join the room
-    const { room_id, section_id } = this.$route.params; 
+    const { section_id } = this.$route.params; 
     this.participantsRef.doc(this.sessionID).set({
       sessionID: this.sessionID,
-      currentRoom: room_id,
+      currentRoom: this.roomId,
       roomTypeID: section_id,
       ...this.user
     });
