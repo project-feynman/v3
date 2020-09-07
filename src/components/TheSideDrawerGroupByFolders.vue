@@ -19,7 +19,7 @@
     <template v-slot:label="{ item }">
       <drop class="drop" @drop="handleDrop(item, ...arguments)">
         <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
-          <v-list-item v-if="!item.isFolder" :to="`/class/${mitClass.id}/${collection}/${item.id}`" dense>
+          <v-list-item v-if="!item.isFolder" @click="$emit('post-was-clicked', item.id)" dense>
             <v-list-item-subtitle v-text="item.name"/>
           </v-list-item>
           <v-list-item v-else dense>
