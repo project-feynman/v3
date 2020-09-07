@@ -84,12 +84,10 @@ Special thanks to:
   - Google for launching Firestore
   - MIT Sandbox for funding a scrappy project even when there was no clear evidence it would work
 
-- **Technologies:** Vue.js frontend, with Firebase for everything else
-
 ## Technology
 Our frontend is Vue.js, Firebase for almost everything else, and Twilio-Video for real-time communications. 
 
 Technical milestones: 
   - Feynman videos are 10-120x lighter than normal videos. 
  
-See[CONTRIBUTING.md](documentation/CONTRIBUTING.md) for more details. 
+See [CONTRIBUTING.md](documentation/CONTRIBUTING.md) for more details. 
