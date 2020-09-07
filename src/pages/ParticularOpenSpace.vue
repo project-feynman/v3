@@ -527,7 +527,7 @@ export default {
       
       const querySnapshot = await db
         .collection(`classes/${this.classID}/rooms`)
-        .where('roomType', '==', roomType)
+        .where("roomTypeID", '==', this.roomTypeDoc.id)
         .get();
       for (const docSnapshot of querySnapshot.docs) {
         docSnapshot.ref.update({
