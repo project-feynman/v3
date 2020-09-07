@@ -4,13 +4,8 @@
       <v-row align="center" justify="space-between">
         <v-col class="py-0">
           <v-row justify="start" align="center">
-            <v-col class="px-1 py-0" cols="auto">
-              <PenSwatch 
-                :colors="colors" 
-                :isPenActive="isPen"
-                @select-color="newColor => changePenColor(newColor)" 
-              />
-            </v-col>
+            <ColorPicker :value="color" @update:color="color = $event.hex"/> 
+    
             <BaseButton v-show="lastEraserNormal" :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
               Eraser
             </BaseButton>
@@ -38,6 +33,7 @@ import { BlackboardTools, toolbarHeight } from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
+import ColorPicker from "@/components/ColorPicker.vue";
 
 export default {
   props: {
@@ -48,15 +44,17 @@ export default {
     Swatches, 
     BasePopupButton,
     BaseButton,
-    PenSwatch
+    PenSwatch,
+    ColorPicker
   },
   data () {
     return {
       BlackboardTools,
       toolbarHeight,
-      color: "orange",
-      // colors: ["orange", "white", "black", "#0AF2F2", "#ec1bf7", "yellow"],
-      colors: ["orange", "white", "#ec1bf7", "#0AF2F2"],
+      // I don't know how to control the internal color 
+      // data is nested to conform with Vuetify's internal implementation 
+      // so the initial color gets displayed properly
+      color: "#FF00FF",
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
@@ -72,6 +70,18 @@ export default {
       return this.currentTool === BlackboardTools.PEN; 
     }
   },
+  watch: {
+    color: {
+      immediate: true,
+      handler (newVal) {
+        this.$emit("tool-select", {
+          type: BlackboardTools.PEN,
+          color: newVal,
+          lineWidth: 2.5
+        });
+      }
+    }
+  },
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
@@ -81,14 +91,6 @@ export default {
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
-    changePenColor (newColor) {
-      this.color = newColor;
-      this.$emit('tool-select', { 
-        type: BlackboardTools.PEN, 
-        color: newColor,
-        lineWidth: 2.5
-      });
-    },
     selectNormalEraser () {
       this.lastEraserNormal = true;
       this.colorPaletteExpanded = false;

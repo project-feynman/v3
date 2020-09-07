@@ -1,6 +1,5 @@
 <template>
   <div>  
-    <!-- This will handle everything to do with participants -->
     <HandleUpdatingParticipants
       :roomId="roomId"
     />
@@ -33,20 +32,20 @@
     </v-toolbar>
 
     <div id="room" class="room-wrapper">
-      <div v-if="user">
         <!-- The actual blackboards -->
-        <v-tabs-items v-model="activeBoard" touchless>
-          <template v-if="blackboardRefs.length !== 0 && room">
-            <template v-for="(board, i) in room.blackboards">
-              <v-tab-item :value="board" :key="i">
-                <RealtimeBlackboard 
-                  :blackboardRef="blackboardRefs[i]"
-                />
-              </v-tab-item>
-            </template>
-          </template>
+        <v-tabs-items v-if="blackboardRefs.length !== 0 && room" 
+          v-model="activeBoard" 
+          touchless
+        >
+        <!-- re-render the blackboard everytime someone switches -->
+          <v-tab-item v-for="(board, i) in room.blackboards" 
+            :value="board" :key="i"
+          >
+            <RealtimeBlackboard 
+              :blackboardRef="blackboardRefs[i]"
+            />
+          </v-tab-item>
         </v-tabs-items>
-      </div>
     </div>
   </div>
 </template>
@@ -111,7 +110,6 @@ export default {
   },
   // database => state 
   watch: {
-    immediate: true,
     room: {
       handler (newVal, oldVal) {
         this.$store.commit("SET_ROOM", this.room);

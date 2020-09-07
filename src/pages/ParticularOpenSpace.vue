@@ -29,8 +29,8 @@
             <v-col cols="12" sm="4">
               <v-overflow-btn 
                 label="3"
-                :items="[3]"
-                @change="groupSize => minRoomSizeOnShuffle = groupSize"
+                :items="[2, 3, 4, 5]"
+                @change="groupSize => groupSize = groupSize"
               />
             </v-col>
             <v-col>
@@ -53,6 +53,14 @@
       <BaseButton @click="clearRoomStatuses(roomTypeDoc.id)" small icon="mdi-comment-remove" color="black">
         Clear statuses
       </BaseButton>
+
+      <BaseButton small disabled icon="mdi-music" color="grey">
+        Play music
+      </BaseButton>
+        
+      <BaseButton small disabled icon="mdi-file-pdf" color="grey">
+        Set problem
+      </BaseButton>
     </v-row>
 
     <v-divider class="my-2"/>
@@ -69,6 +77,28 @@
         <portal-target v-if="!currentRoomID" name="current-room-participants">
 
         </portal-target>
+         
+
+        <!-- Quickfix  -->
+        <div v-else style="width: 100%;">
+          <div class="d-flex">
+
+            <v-spacer/>
+
+            <v-chip v-if="commonRoomDoc.status" color="blue" outlined small>
+            {{ commonRoomDoc.status }}
+            </v-chip>
+          </div>
+
+          <div class="pl-3">
+            <p v-for="p in roomIDToParticipants[commonRoomDoc.id]" :key="p.id"
+              style="font-weight: 400; font-size: 0.8em"
+              class="text--secondary mb-0"
+            >
+              {{ p.firstName + " " + p.lastName }}
+            </p>
+          </div>
+        </div>
       </div>
     </v-list-item> 
 
@@ -232,6 +262,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
 import SmallAppBar from "@/components/SmallAppBar.vue";
 import firebase from "firebase/app";
+import "firebase/firestore"; 
 
 export default {
   name: "ParticularOpenSpace",
@@ -261,19 +292,24 @@ export default {
         roomID: null,
         status: ""
       },
+      groupSize: 3,
       minRoomSizeOnShuffle: 2
     }
   },
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "session"
     ]),
     ...mapGetters([
       "isAdmin"
     ]),
     classID () {
       return this.$route.params.class_id; 
+    },
+    sessionID () {
+      return this.session.currentID;
     },
     sectionID () {
       return this.$route.params.section_id;
@@ -310,24 +346,44 @@ export default {
         out[room.id] = this.participants.filter(p => p.currentRoom === room.id); 
       }
       return out; 
+    },
+    roomTypeRef () {
+      return this.classDocRef.collection("roomTypes").doc(this.$route.params.section_id); 
     }
   },
   watch: {
+    "roomTypeDoc.roomAssignmentsCounter": function (newVal, oldVal) {
+      if (oldVal !== null && oldVal !== newVal) {
+        for (const roomAssignment of this.roomTypeDoc.roomAssignments) {
+          if (roomAssignment.assignees.includes(this.user.uid)) {
+            if (this.currentRoomID !== roomAssignment.roomID) {
+              this.$router.push(`/class/${this.classID}/section/${this.$route.params.section_id}/room/${roomAssignment.roomID}`);
+              this.$root.$emit("show-snackbar", "You have been put in random room with other people. Have fun :)"); 
+            }
+          }
+        }
+      }
+    },
+    "roomTypeDoc.muteAllCounter": function (newVal, oldVal) {
+      if (oldVal !== null && oldVal !== newVal) {
+        this.$store.commit("SET_IS_MIC_ON", false);
+        this.$root.$emit("show-snackbar", "An admin muted everyone"); 
+      }
+    },
     // Performance-wise, hopefully it's just a pointer 
     roomIDToParticipants (newVal) {
       this.$store.commit("SET_ROOM_ID_TO_PARTICIPANTS", newVal); 
     }
   },
   async created () {
-    this.roomTypeDoc = await this.$_getDoc(
-      this.classDocRef.collection("roomTypes").doc(this.$route.params.section_id)
-    ); 
+    this.$_listenToDoc(this.roomTypeRef, this, "roomTypeDoc")
+      .then(unsubFunc => this.unsubFuncs.push(unsubFunc));
 
     // listen to rooms 
     this.unsubFuncs.push(
       this.$_bindVarToDB({
         varName: "rooms",
-        dbRef: this.classDocRef.collection("rooms").where("roomTypeID", "==", this.roomTypeDoc.id),
+        dbRef: this.classDocRef.collection("rooms").where("roomTypeID", "==", this.$route.params.section_id),
         component: this
       })
     );
@@ -336,7 +392,7 @@ export default {
     this.unsubFuncs.push(
       this.$_bindVarToDB({
         varName: "participants",
-        dbRef: this.classDocRef.collection("participants").where("roomTypeID", "==", this.roomTypeDoc.id),
+        dbRef: this.classDocRef.collection("participants").where("roomTypeID", "==", this.$route.params.section_id),
         component: this
       })
     );
@@ -431,17 +487,9 @@ export default {
      *       roomType and participants all watch the roomType counter.
      * */
     async muteParticipantsInRooms(roomType) {
-      console.log("Muting all participants in roomType:", roomType);
-      const querySnapshot = await db
-        .collection(`classes/${this.classID}/rooms`)
-        .where('roomType', '==', roomType)
-        .get();
-      for (const docSnapshot of querySnapshot.docs) {
-        docSnapshot.ref.update(
-          "muteAllCounter",
-          firebase.firestore.FieldValue.increment(1)
-        );
-      }
+      this.roomTypeRef.update({
+        muteAllCounter: firebase.firestore.FieldValue.increment(1)
+      });
     },
      /**
      * Assigns all participants in rooms of roomType to a random room of
@@ -461,10 +509,7 @@ export default {
         }
         return a;
       }
-      
-      // Get all rooms of roomType
 
-      // const targetRooms = this.roomTypeToRooms[roomType];
       const targetRooms = this.rooms; 
   
       // Get all UIDs in rooms or roomType, no duplicates
@@ -473,37 +518,29 @@ export default {
         targetUIDSet.add(participant.uid); 
       }
        
-      // for (const room of targetRooms) {
-      //   for (const participant of this.roomIDToParticipants[room.id]) {
-      //     targetUIDSet.add(participant.uid);
-      //   }
-      // }
       const targetUIDs = Array.from(targetUIDSet);
-      console.log("Shuffling participants", targetUIDs);
+      shuffle(targetUIDs); 
     
-      // Initialize roomAssignments
+      // initialize roomAssignments
       const roomAssignments = [];
       for (const room of targetRooms) {
+        if (room.isCommonRoom) continue; 
         roomAssignments.push({
           roomID: room.id,
           assignees: []
         });
       }
       
-      const numRoomsToUse = Math.max(1, Math.min(
-        targetRooms.length,
-        Math.floor(targetUIDs.length / this.minRoomSizeOnShuffle)
-      ));
-      console.log(`Shuffling to ${numRoomsToUse} rooms...`);
-      
-      shuffle(targetUIDs);
-      for (const [idx, uid] of targetUIDs.entries()) {
-        roomAssignments[idx % numRoomsToUse].assignees.push(uid);
+      for (const room of roomAssignments) {
+        if (targetUIDs.length === 0) break; 
+        while (room.assignees.length < this.groupSize) {
+          if (targetUIDs.length === 0) break; 
+          else room.assignees.push(targetUIDs.pop()); 
+        }
       }
 
-      // update the class doc
       // each connected user will detect the change and be redirected.
-      await db.doc(`classes/${this.classID}`).update({
+      this.roomTypeRef.update({
         roomAssignments: roomAssignments,
         roomAssignmentsCounter: firebase.firestore.FieldValue.increment(1)
       });

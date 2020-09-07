@@ -1,9 +1,6 @@
 <template>
   <v-expansion-panels hover accordion v-model="openedWeeks" multiple class="group-by-date">
-    <v-expansion-panel
-      v-for="week in weeks"
-      :key="week.start.toISOString()"
-    >
+    <v-expansion-panel v-for="week in weeks" :key="week.start.toISOString()">
       <v-expansion-panel-header ripple color="#f8f8f8">{{ week.name }}</v-expansion-panel-header>
       <v-expansion-panel-content>
         <template v-if="week.isLoading">
@@ -112,7 +109,7 @@ export default {
     async groupPosts () {
       // This only (re)groups the posts, but doesn't rerender the UI.
       // To rerender UI, call groupPosts
-      if (this.weeks.length!==0) return;
+      if (this.weeks.length !== 0) return;
       const collectionRef = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`);
       // Get the first and last post posted in the class
       let firstDate, lastDate;
@@ -150,7 +147,8 @@ export default {
           collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
             if (!querySnapshot.empty) {
               // Because by the time query is run, the variables have already changed, we retrive them from the query itself
-              const {filters} = querySnapshot.Pm.query
+              console.log("querySnapshot =", querySnapshot);
+              const { filters } = querySnapshot.bd.query
               const start = new Date(filters.filter(x => x.op.name === '>=')[0].value.Ht);
               const end = new Date(filters.filter(x => x.op.name === '<')[0].value.Ht);
               this.weeks.push({

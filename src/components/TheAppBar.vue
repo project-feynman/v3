@@ -24,7 +24,7 @@
     
     <v-spacer/>
 
-    <BasePopupButton actionName="Help" 
+    <!-- <BasePopupButton actionName="Help" 
       :inputFields="['Describe your problem']"
       @action-do="(bugReport) => submitBug(bugReport)"
     >
@@ -42,7 +42,7 @@
         the project is <a href="https://github.com/feynman-project/explain-mit" target="_blank">open source</a> 
         and I'd love for more help.
       </template>
-    </BasePopupButton>  
+    </BasePopupButton>   -->
     <slot>
       
     </slot>

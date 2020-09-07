@@ -1,14 +1,78 @@
 <template>
   <div id="home-page">
-    <!-- <MusicPlayer v-show="false"
-      :youtubeURL="randomMusicURL"
-    /> -->
+
     <TheAppBar>
+
+    <MusicPlayer
+      :youtubeURL="randomMusicURL"
+      v-slot="{ play, pause, isPaused }"
+    >
+
+       <div class="text-center">
+    <v-bottom-sheet inset>
+      <template v-slot:activator="{ on, attrs }">
+        <BaseButton :on="on" icon="mdi-music-clef-treble" color="secondary">
+          Music
+        <!-- </v-btn> -->
+        </BaseButton>
+      </template>
+      
+      <v-card tile>
+        <v-progress-linear
+          :value="50"
+          class="my-0"
+          height="3"
+        ></v-progress-linear>
+
+        <v-list>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Raindrop Forest</v-list-item-title>
+              <v-list-item-subtitle>Maplestory OST</v-list-item-subtitle>
+            </v-list-item-content>
+
+            <v-spacer></v-spacer>
+
+            <v-list-item-icon>
+              <v-btn icon>
+                <v-icon>mdi-rewind</v-icon>
+              </v-btn>
+            </v-list-item-icon>
+
+            <v-list-item-icon :class="{ 'mx-5': $vuetify.breakpoint.mdAndUp }">
+
+              <v-btn v-if="isPaused" @click="play()" icon>
+                <v-icon>mdi-play</v-icon> 
+              </v-btn>
+
+              <v-btn v-else @click="pause()" icon>
+                <v-icon>mdi-pause</v-icon>
+              </v-btn> 
+            </v-list-item-icon>
+
+            <v-list-item-icon
+              class="ml-0"
+              :class="{ 'mr-3': $vuetify.breakpoint.mdAndUp }"
+            >
+              <v-btn icon>
+                <v-icon>mdi-fast-forward</v-icon>
+              </v-btn>
+            </v-list-item-icon>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-bottom-sheet>
+  </div>
+      </MusicPlayer>
+
       <template v-if="user">
         <!-- target="_blank" opens a new tab -->
         <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
           BLOG
         </v-btn> -->
+        
+     
+
 
         <!-- Create class -->
         <BasePopupButton actionName="Create class" 
@@ -34,10 +98,14 @@
     
     <v-main>
       <transition name="fade">
+
+
+
+        
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
           <v-container>
             <div class="central-title d-flex justify-center align-center mb-4">
-              <img src="/logo.png" class="hero-img"/>
+              <img src="/logo.png"/>
               <h1 class="text--primary ml-2">
                 explain.mit.edu
               </h1>
@@ -113,12 +181,12 @@
         <!-- Tutorial -->
         <template v-if="!user && !isFetchingUser">
           <v-row>
-            <v-col cols="12" md="6">
+            <v-col cols="12">
               <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
             </v-col>
-            <v-col cols="12" md="6">
+            <!-- <v-col cols="12" md="6">
               <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
-            </v-col>
+            </v-col> -->
           </v-row>
         </template>
 
@@ -181,9 +249,10 @@ export default {
   data () {
     return {
       favoriteMusicPieces: [
-        "https://www.youtube.com/watch?v=j1wQ8ZMZq60", // Holberg Suite
-        "https://www.youtube.com/watch?v=QAxz16D4BlE", // Schubert Impromptu No. 3
-        "https://www.youtube.com/watch?v=DhUdOO9UNwY" // Raindrop Forest
+        "https://www.youtube.com/watch?v=DhUdOO9UNwY", // raindrop forest
+        "https://www.youtube.com/watch?v=DmPMZGBBmxk" // sarabande Holberg Suite
+        // "https://www.youtube.com/watch?v=j1wQ8ZMZq60", // Holberg Suite
+        // "https://www.youtube.com/watch?v=QAxz16D4BlE", // Schubert Impromptu No. 3
       ],
       schoolClasses: [],
       demoVideo: null,
@@ -203,7 +272,7 @@ export default {
     ]),
     randomMusicURL () {  
       const n = this.favoriteMusicPieces.length; 
-      const randomNumber = Math.floor(Math.random() * n);
+      const randomNumber = Math.floor(Math.random() * (n + 1));
       return this.favoriteMusicPieces[randomNumber];
     },
     userRef () { 
@@ -222,16 +291,7 @@ export default {
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
     this.$_getDoc(demoVideoRef2).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },
-  mounted () { 
-    window.addEventListener("scroll", this.logoVisibility); 
-  },
-  destroyed () { 
-    window.removeEventListener("scroll", this.logoVisibility); 
-  },
   methods: {
-    signInAnonymouslyThenRedirectTo (targetRoute) {
-      this.$router.push(targetRoute);
-    },
     handleClassPassword () {
       if (["explainphysics", "physics"].includes(this.classPassword.toLowerCase())) {
         this.hasEnteredPassword = true;
@@ -311,14 +371,6 @@ export default {
         })
       });
       this.fetchClasses();
-    },
-    logoVisibility () {
-      const hero_pos = document.querySelector(".central-title").getBoundingClientRect().top;
-      if (hero_pos < 0) {
-        document.getElementById("home-page").classList.add("scrolled");
-      } else {
-        document.getElementById("home-page").classList.remove("scrolled");
-      }
     }
   }
 };
@@ -334,10 +386,6 @@ export default {
 }
 #home-page .app-banner {
   border-bottom: none !important;
-}
-.hero-img {
-  max-width: 20%;
-  width: 90px;
 }
 .central-title h1 {
   font-size: 3.4em;
