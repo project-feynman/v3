@@ -359,7 +359,7 @@ export default {
   },
   watch: {
     "roomTypeDoc.roomAssignmentsCounter": function (newVal, oldVal) {
-      if (oldVal !== null && oldVal !== newVal) {
+      if (oldVal && oldVal !== newVal) {
         for (const roomAssignment of this.roomTypeDoc.roomAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
             if (this.currentRoomID !== roomAssignment.roomID) {
@@ -371,7 +371,7 @@ export default {
       }
     },
     "roomTypeDoc.muteAllCounter": function (newVal, oldVal) {
-      if (oldVal !== null && oldVal !== newVal) {
+      if (oldVal && oldVal !== newVal) {
         this.$store.commit("SET_IS_MIC_ON", false);
         this.$root.$emit("show-snackbar", "An admin muted everyone"); 
       }
