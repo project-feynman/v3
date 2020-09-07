@@ -58,8 +58,14 @@
         Play music
       </BaseButton>
         
-      <BaseButton small disabled icon="mdi-file-pdf" color="grey">
-        Set problem
+      <BaseButton @click="$refs.fileInput.click()" icon="mdi-file-pdf" color="black">
+        <input 
+          @change="e => seedEachRoomWithProblem (e)" 
+          style="display: none" 
+          type="file" 
+          ref="fileInput"
+        >
+        Set Problem
       </BaseButton>
     </v-row>
 
@@ -403,6 +409,69 @@ export default {
     }
   },
   methods: {
+    async seedEachRoomWithProblem (e) {
+      const uploadedFile = e.target.files[0];
+      if (!uploadedFile) return;
+      let imageFile;  
+      if (uploadedFile.type.split("/")[0] === "image") {
+        imageFile = uploadedFile; 
+      } else if (uploadedFile.type.split("/")[1] === "pdf") {
+        imageFile = await this.convertPdfToImageFile(uploadedFile);
+      } else {
+        this.$root.$emit("show-snackbar", "Error: only image or pdf files are supported for now.");
+        return; 
+      }
+      // save it to storage 
+      const downloadURL = await this.$_saveToStorage(getRandomId(), imageFile);
+      
+      const promises = []; 
+      // now for each room, put it on the blackboard 
+      for (const room of this.rooms) {
+        const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[0]);
+        promises.push(
+          ref.update({
+            backgroundImageDownloadURL: downloadURL
+          })
+        );
+      }
+      await Promise.all(promises);
+      this.$root.$emit("show-snackbar", "Successfully planted the problem in each room :)")
+    },
+    async convertPdfToImageFile (src) {
+      // TODO: fix npm errors and use normal imports
+      const pdfjs = require("pdfjs-dist/build/pdf.js");
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
+      
+      const doc = await pdfjs.getDocument(URL.createObjectURL(src)).promise;
+      const page = await doc.getPage(1);
+      
+      // Render the page on a Node canvas with 100% scale.
+      const viewport = page.getViewport({ scale: 1.0 });
+      const dummyCanvas = document.createElement("canvas");
+      dummyCanvas.width = viewport.width;
+      dummyCanvas.height = viewport.height;
+      const ctx = dummyCanvas.getContext("2d");
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport
+      };
+      
+      await page.render(renderContext).promise
+      const dataURL = dummyCanvas.toDataURL("image/png");
+      const current_date = new Date();
+      const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
+      return file;
+    },
+    // https://stackoverflow.com/questions/16968945/convert-base64-png-data-to-javascript-file-objects/16972036
+    // function to convert dataURL from canvas to file object
+    dataURLtoFile (dataurl, filename) {
+      var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      while(n--){
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], filename, {type:mime});
+    },
     /**
      * Creates a new room and initalized with 1 blackboard
      * TODO: rename roomType to roomTypeID

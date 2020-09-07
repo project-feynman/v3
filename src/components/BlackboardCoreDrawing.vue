@@ -506,6 +506,7 @@ export default {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
+      if (!this.$refs.FrontCanvas) return; 
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },
