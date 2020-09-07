@@ -101,9 +101,6 @@ export default {
     classId () {
       return this.$route.params.class_id; 
     },
-    // roomId () {
-    //   return this.$route.params.room_id;
-    // },
     sessionID () {
       return this.session.currentID;
     }
