@@ -530,14 +530,13 @@ export default {
         .where("roomTypeID", '==', this.roomTypeDoc.id)
         .get();
       for (const docSnapshot of querySnapshot.docs) {
-        docSnapshot.ref.update({
-          announcement: {
-            message: message,
-            
             // TODO: Change this to just writing uid
             // To do this, we need to provide a global way to get information
             // about a user from their uid. This is needed because the author
             // could disconnect after sending an announcement.
+        docSnapshot.ref.update({
+          announcement: {
+            message: message,
             author: {
               firstName: this.user.firstName,
               lastName: this.user.lastName,
@@ -546,6 +545,7 @@ export default {
           announcementCounter: firebase.firestore.FieldValue.increment(1)
         });
       }
+      this.$root.$emit("show-snackbar", "Announcement sent.");
       this.makeAnnouncementPopup['show'] = false;
     },
     /**
