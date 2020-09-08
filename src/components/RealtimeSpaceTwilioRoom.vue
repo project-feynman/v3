@@ -19,7 +19,7 @@
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
       <template v-if="!twilioInitialized && !isTryingToConnect">
-        <p class="yellow--text">Not connected to audio</p>
+        <p class="yellow--text">Not connected</p>
 
         <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" fab color="green white--text">
           <v-icon>mdi-phone</v-icon>

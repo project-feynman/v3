@@ -404,6 +404,9 @@ export default {
   watch: {
     "roomTypeDoc.roomAssignmentsCounter": function (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {
+        // don't shuffle instructors
+        if (this.isAdmin) return; 
+
         for (const roomAssignment of this.roomTypeDoc.roomAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
             if (this.currentRoomID !== roomAssignment.roomID) {
