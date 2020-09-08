@@ -186,6 +186,7 @@ export default {
       return this.session.currentID; 
     },
     allClientAudioStatuses () {
+      if (!this.twilioRoom) return {}; 
       return {
         [this.sessionID]: this.isMicOn,
         ...this.participantAudioStatus
