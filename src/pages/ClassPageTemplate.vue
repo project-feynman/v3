@@ -1,13 +1,13 @@
 <template>
   <v-app>
-    <v-navigation-drawer app width="300" permanent>
-      <SmallAppBar>
+    <v-navigation-drawer app width="285" permanent>
+      <!-- <SmallAppBar>
         <portal-target name="app-bar">
 
         </portal-target>
-      </SmallAppBar>
+      </SmallAppBar> -->
 
-      <v-divider/>
+      <!-- <v-divider/> -->
       
       <portal-target name="side-drawer">
 

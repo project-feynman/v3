@@ -1,10 +1,45 @@
 <template>
   <portal to="side-drawer">
-    <v-list>
+    <v-list class="py-0">
+      <v-list-item two-line style="padding-left: 24px">
+        <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
+          <img src="/logo.png">
+        </v-list-item-avatar>
+
+        <v-list-item-content>
+          <v-list-item-title style="opacity: 80%; font-size: 1.3rem">{{ mitClass.name }}</v-list-item-title>
+        </v-list-item-content>
+
+        <v-list-item-action>
+          <v-dialog v-model="showLibrary" fullscreen>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn v-on="on" v-bind="attrs" tile style="padding: 0 8px">
+                <v-icon>mdi-bookshelf</v-icon>
+              </v-btn>
+            </template>
+
+            <v-toolbar dark>
+              <v-btn icon dark @click="showLibrary = false">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-toolbar>
+
+            <ClassLibrary/>
+          </v-dialog>
+        </v-list-item-action>
+      </v-list-item>
+      
+      <v-divider/>
+
+      <div style="padding-top: 40px; padding-left: 24px; padding-bottom: 12px; font-size: 1.25rem">
+        Open Spaces
+      </div>
+
       <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
         append :to="(`section/${roomType.id}`)"
+        style="padding-left: 24px; padding-right: 24px"
       >
-        <v-list-item-content style="font-size: 0.875rem; font-weight: 400; color: #424242; opacity: 80%;">
+        <v-list-item-content style="font-size: 0.88rem; font-weight: 400; color: #424242; opacity: 81%;">
           {{ roomType.name }}
         </v-list-item-content>
 
@@ -48,6 +83,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import SmallAppBar from "@/components/SmallAppBar.vue";
+import ClassLibrary from "@/pages/ClassLibrary.vue";
 import { mapState, mapGetters } from "vuex";
 
 export default {
@@ -56,6 +92,7 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
+    ClassLibrary,
     BasePopupButton,
     BaseButton,
     SmallAppBar
@@ -63,7 +100,8 @@ export default {
   data () {
     return {
       roomTypes: [],
-      unsubscribeRoomTypesListener: null
+      unsubscribeRoomTypesListener: null,
+      showLibrary: false
     };
   },
   computed: {

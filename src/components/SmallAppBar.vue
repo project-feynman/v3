@@ -1,28 +1,32 @@
 <template>
-  <v-app-bar height="75" flat color="white">
-    <img src="/logo.png" @click="$router.push('/')" height="40" class="pl-2" style="cursor: pointer;"/>
-    
-    <v-app-bar-title v-if="mitClass" :class="['headline', 'ml-3', 'black--text', 'text--secondary']">
-      {{ mitClass.name }}
-    </v-app-bar-title>
+  <div></div>
+  <!-- <v-list-item two-line style="padding-left: 24px">
+    <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
+      <img src="/logo.png">
+    </v-list-item-avatar>
 
-    <v-spacer/>
+    <v-list-item-content>
+      <v-list-item-title style="opacity: 80%; font-size: 1.3rem">{{ mitClass.name }}</v-list-item-title>
+    </v-list-item-content>
 
-    <slot>
+    <v-list-item-action>
+      <v-dialog v-model="showLibrary" fullscreen>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn v-on="on" v-bind="attrs" tile style="padding: 0 8px">
+            <v-icon>mdi-bookshelf</v-icon>
+          </v-btn>
+        </template>
 
-    </slot>
+        <v-toolbar dark>
+          <v-btn icon dark @click="showLibrary = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
 
-    <!-- Class Library -->
-    <v-dialog v-model="showLibrary">
-      <template v-slot:activator="{ on, attrs }">
-        <BaseButton :on="on" icon="mdi-bookshelf" v-bind="attrs" small filled color="accent">
-          Library
-        </BaseButton>
-      </template>
-
-      <ClassLibrary/>
-    </v-dialog>
-  </v-app-bar>
+        <ClassLibrary/>
+      </v-dialog>
+    </v-list-item-action>
+  </v-list-item> -->
 </template>
 
 <script>
