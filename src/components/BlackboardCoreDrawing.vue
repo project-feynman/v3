@@ -368,7 +368,7 @@ export default {
       this.$emit("board-reset");
     },
     wipeUI () {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.clearRect(0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
