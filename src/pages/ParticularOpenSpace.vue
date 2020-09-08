@@ -206,13 +206,13 @@
         </div>
       </template>
     </v-list-item>  
-<!-- 
+
     <BaseButton v-if="isAdmin && rooms.length !== 0" 
       @click="createNewRoom()" 
       block outlined icon="mdi-plus" color="grey"
     >
       New room
-    </BaseButton> -->
+    </BaseButton>
 
     <!-- Twilio Room with Collaborative Blackboard -->
     <portal to="main-content">
@@ -381,6 +381,7 @@ export default {
       }
     },
     currentRoomDoc () {
+      if (this.commonRoomDoc) return this.commonRoomDoc; 
       for (const room of this.rooms) {
         if (room.id === this.currentRoomID) {
           return room; 

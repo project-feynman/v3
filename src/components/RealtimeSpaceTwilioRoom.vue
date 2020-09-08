@@ -19,7 +19,7 @@
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
       <template v-if="!twilioInitialized && !isTryingToConnect">
-        <p class="yellow--text">Not connected</p>
+        <p class="yellow--text">Only connected to the blackboard</p>
 
         <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" fab color="green white--text">
           <v-icon>mdi-phone</v-icon>
@@ -31,7 +31,7 @@
       </p>
 
       <template v-else>
-        <p class="green--text mt-1">Connected</p>
+        <p class="green--text mt-1">Connected to audio and video</p>
 
         <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
