@@ -4,7 +4,15 @@
       <v-row align="center" justify="space-between">
         <v-col class="py-0">
           <v-row justify="start" align="center">
-            <ColorPicker :value="color" @update:color="color = $event.hex"/> 
+            <v-col class="px-1 py-0" cols="auto">
+              <PenSwatch 	
+                :colors="colors" 	
+                :isPenActive="isPen"	
+                @select-color="newColor => color = newColor" 	
+              />
+            </v-col>
+
+            <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
     
             <BaseButton v-show="lastEraserNormal" :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
               Eraser
@@ -54,7 +62,8 @@ export default {
       // I don't know how to control the internal color 
       // data is nested to conform with Vuetify's internal implementation 
       // so the initial color gets displayed properly
-      color: "#FF00FF",
+      color: "white",
+      colors: ["white", "orange", "cyan", "black"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
