@@ -7,9 +7,11 @@
     <RealtimeSpaceTwilioRoom 
       :roomID="roomId"
       :willMuteByDefault="true"
+      :key="incrementToDestroyComponent"
+      @disconnect="incrementToDestroyComponent += 1"
     />
 
-    <!-- Video sharing -->
+    <!-- Display videos -->
     <portal-target name="destination">
     
     </portal-target>
@@ -89,7 +91,8 @@ export default {
       snapshotListeners: [],
       roomRef: null,
       activeBoard: 'tab-1',
-      boards: []
+      boards: [],
+      incrementToDestroyComponent: -100000
     }
   },
   computed: {

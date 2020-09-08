@@ -46,9 +46,9 @@ export default new Vuex.Store({
     explCache: {},
     blackboardRoom: null,
     session: {},
+    canHearAudio: false,
     isMicOn: false,
     isCameraOn: false,
-    isDeafened: false,
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
     dominantSpeakerUID: null,
@@ -60,14 +60,14 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_CAN_HEAR_AUDIO (state, newVal) {
+      state.canHearAudio = newVal; 
+    },
     SET_IS_MIC_ON (state, newVal) {
       state.isMicOn = newVal; 
     },
     SET_IS_CAMERA_ON (state, newVal) {
       state.isCameraOn = newVal;
-    },
-    SET_IS_DEAFENED (state, newVal) {
-      state.isDeafened = newVal; 
     },
     SET_USER (state, user) {
       state.user = user;

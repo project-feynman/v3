@@ -18,68 +18,36 @@
 
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
-      <p v-if="!twilioInitialized" class="accent--text">
-        Joining room...
+      <template v-if="!twilioInitialized && !isTryingToConnect">
+        <p class="yellow--text">Not connected to audio</p>
+
+        <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" fab color="green white--text">
+          <v-icon>mdi-phone</v-icon>
+        </v-btn>
+      </template>
+
+      <p v-else-if="!twilioInitialized && isTryingToConnect" class="yellow--text">
+        Connecting...
       </p>
+
       <template v-else>
-        <p v-if="isDeafened" class="yellow--text mt-1">
-          Deafened
-        </p>
-        <p v-else class="green--text mt-1">
-          Connected
-        </p>
+        <p class="green--text mt-1">Connected</p>
 
         <v-row class="d-flex" justify="space-around">
-          <v-btn v-if="!hasSharedAudio" 
-            @click="shareAudioTrack()" 
-            :loading="isTryingToEnableMic" 
-            :class="['ma-2', 'filled', 'black--text']" tile color="white"
-          >
-            <v-icon left>mdi-microphone-off</v-icon> 
-            Mute
+          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
+            <v-icon large>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
           </v-btn>
 
-          <v-btn v-else @click="$store.commit('SET_IS_MIC_ON', !isMicOn)"
-            :class="isMicOn ? ['ma-2'] : ['ma-2', 'filled', 'black--text']"
-            :outlined="isMicOn" tile color="white"
-          >
-            <v-icon left>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
-            Mute
+          <v-btn @click.stop.prevent="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)" :loading="isTryingToEnableCamera" fab color="white" class="black--text" depressed>
+            <v-icon large>{{ isCameraOn ? 'mdi-video-wireless' : 'mdi-video'}}</v-icon>
           </v-btn>
 
-          <!-- Deafen button -->
-          <v-btn @click="$store.commit('SET_IS_DEAFENED', !isDeafened)" 
-            :class="isDeafened ? ['ma-2', 'filled', 'black--text'] : ['ma-2']" 
-            :outlined="!isDeafened" tile color="white"
-          >
-            <v-icon left>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
-            Deafen
+          <v-btn @click.stop.prevent="isSharingScreen = !isSharingScreen" :loading="isTryingToEnableScreen" fab color="white" class="black--text" depressed>
+            <v-icon large>{{ isSharingScreen ? 'mdi-monitor-star' : 'mdi-monitor' }}</v-icon>
           </v-btn>
-          <!-- Disconnect button -->
-          <!-- <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}/section/${$route.params.section_id}`)" fab color="red" class="white--text" depressed>
+
+          <v-btn @click.stop.prevent="disconnectWithoutLeaving()" fab color="red" class="white--text" depressed>
             <v-icon large>mdi-phone-hangup</v-icon>
-          </v-btn> -->
-        </v-row>
-
-        <v-row class="d-flex mt-2" justify="space-around">
-          <!-- Enable video -->
-          <v-btn @click="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)" 
-            :class="isCameraOn ? ['ma-2', 'filled', 'black--text'] : ['ma-2']" 
-            :outlined="!isCameraOn" tile color="white"
-            :loading="isTryingToEnableCamera"
-          >
-            <v-icon left>{{ isCameraOn ? 'mdi-video-wireless' : 'mdi-video'}}</v-icon> 
-            Video
-          </v-btn>
-
-          <!-- Turn on screenshare -->
-          <v-btn @click="isSharingScreen = !isSharingScreen" 
-            :loading="isTryingToEnableScreen"
-            :class="isSharingScreen ? ['ma-2', 'filled', 'black--text'] : ['ma-2']" 
-            :outlined="!isSharingScreen" tile color="white"
-          >
-            <v-icon left>{{ isSharingScreen ? 'mdi-monitor-star' : 'mdi-monitor' }} </v-icon> 
-            Screen
           </v-btn>
         </v-row>
       </template>
@@ -174,9 +142,9 @@ export default {
       howToFix: "",
       
       twilioRoom: null,
+      isTryingToConnect: false,
       twilioInitialized: false,
       
-      hasSharedAudio: false,
       isTryingToEnableMic: false,
       isTryingToEnableCamera: false,
       isTryingToEnableScreen: false,
@@ -206,7 +174,7 @@ export default {
       "session",
       "isMicOn",
       "isCameraOn",
-      "isDeafened"
+      "canHearAudio"
     ]),
     allClients () {
       if (!this.$store.state.roomIDtoParticipants) {
@@ -225,74 +193,30 @@ export default {
     }
   },
   async created () {
-    if (!this.isTwilioSupportedByBrowser()) {
-      return; 
+    if (this.canHearAudio && this.isTwilioSupportedByBrowser()) {
+      this.connectToTwilioRoom();
     }
-    try {
-      this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
-        name: this.roomID,
-        audio: false, // should be able to just connect without anything
-        dominantSpeaker: true
-        // video: { width: 640 }
-      }); 
-    } catch (error) {
-      this.tellUserHowToFixError(error);
-      return;
-    }
-    
-    // persist the camera/mic settings from the previous room 
-    if (this.isMicOn) this.shareAudioTrack(); 
-    if (this.isCameraOn) this.shareCameraTrack(); 
-    if (this.isDeafened) this.disconnectFromAudio();
-    
-    // others => me
-    this.twilioRoom.participants.forEach(
-      participant => this.handleHisOrHerTracks(participant)
-    );
-    
-    this.twilioRoom.on("participantConnected", 
-      participant => this.handleHisOrHerTracks(participant)
-    );
-
-    this.twilioRoom.on("participantDisconnected", participant => {
-      Vue.delete(this.participantAudioStatus, participant.identity);
-      this.removeHisOrHerSharedTracks(participant);
-    });
-
-    this.twilioRoom.on("dominantSpeakerChanged", participant => {
-      if (!participant) console.log("participant is null!"); 
-      this.dominantParticipantSessionID = participant ? participant.identity : null;
-    });
-
-    // me => others
-    window.addEventListener("beforeunload", this.twilioRoom.disconnect);
-    window.addEventListener("pagehide", this.twilioRoom.disconnect);
-    
-    // to detect the mute all TODO: refactor
-    this.$_listenToDoc(
-      db.doc(`classes/${this.$route.params.class_id}/rooms/${this.roomID}`),
-      this, 
-      "roomDoc"
-    ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
-
-    this.twilioInitialized = true;
   },
   beforeDestroy () {
-    // remove the "mute everyone" listener
     for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
       unsubscribe();
     }
 
-    // disable camera, mic, etc. to turn off the lights
-    if (this.cameraTrack) this.cameraTrack.stop();
-    if (this.micTrack) this.micTrack.stop();
-    if (this.screenTrack) this.screenTrack.stop(); 
-
     if (this.twilioRoom) {
-      // disable mic
-      this.twilioRoom.localParticipant.audioTracks.forEach(audioTrack => {
-        publication => publication.track.stop(); 
-      }); 
+      const { localParticipant } = this.twilioRoom; 
+      
+      // disable camera, mic, etc. to turn off the lights
+      // and unattach them from DOM
+      localParticipant.tracks.forEach(publication => {
+        publication.track.stop(); // turn off mic / webcam 
+        this.unmountTrack(publication.track); // no longer display video for myself / my own screen
+      });
+
+      // somehow the above code does not detect audio TODO: refactor
+      if (this.micPublication) {
+        this.micPublication.unpublish(); 
+        this.micPublication.track.stop();
+      }
 
       // stop displaying other people's tracks
       this.twilioRoom.participants.forEach(otherPerson => {
@@ -301,6 +225,7 @@ export default {
 
       // notify other people that I disconnected
       this.twilioRoom.disconnect();
+
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
     }
@@ -317,6 +242,7 @@ export default {
       }
     },
     isMicOn (newValue) {
+      if (!this.twilioRoom) return; 
       const { audioTracks } = this.twilioRoom.localParticipant; 
       if (newValue) {
         audioTracks.forEach(publication => publication.track.enable());
@@ -355,38 +281,88 @@ export default {
         this.screenPublication.unpublish(); 
         this.unmountTrack(this.screenPublication.track); // stop local visual feedback 
       }
-    },
-    isDeafened (newVal) {
-      if (newVal) {
-        this.disconnectFromAudio(); 
-      } else {
-        // unsilence other people 
-        this.twilioRoom.participants.forEach(person => {
-          person.audioTracks.forEach(publication => {
-            if (publication.isSubscribed) {
-              this.mountAudioTrack(publication.track);
-            }
-          });
-        }); 
-      }
     }
   },
   methods: {
-    async disconnectFromAudio () {
-      if (this.hasSharedAudio) {
-        this.micPublication.unpublish(); 
-        this.micPublication.track.stop();
-
-        // update component state
-        // doesn't matter if the user was muted or not, now his/her mic is off
-        this.$store.commit("SET_IS_MIC_ON", false); 
-        this.hasSharedAudio = false; 
+    async connectToTwilioRoom () {
+      try {
+        this.isTryingToConnect = true; 
+        this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
+          name: this.roomID,
+          audio: false, // should be able to just connect without anything
+          dominantSpeaker: true
+        }); 
+      } catch (error) {
+        this.tellUserHowToFixError(error);
+        return;
+      } finally {
+        this.isTryingToConnect = false; 
       }
+      this.$store.commit("SET_CAN_HEAR_AUDIO", true); 
 
-      // silence other people
-      this.twilioRoom.participants.forEach(person => {
-        person.audioTracks.forEach(publication => this.unmountTrack(publication.track));
-      }); 
+      // persist mute and video settings from the previous room 
+      await this.shareAudioTrack(); 
+
+      // if the user was already muted, then stay muted
+      if (!this.isMicOn) {
+        this.micPublication.track.disable();
+      }
+      if (this.isCameraOn) this.shareCameraTrack(); 
+      
+      // others => me
+      this.twilioRoom.participants.forEach(
+        participant => this.handleHisOrHerTracks(participant)
+      );
+      
+      this.twilioRoom.on("participantConnected", 
+        participant => this.handleHisOrHerTracks(participant)
+      );
+
+      this.twilioRoom.on("participantDisconnected", participant => {
+        Vue.delete(this.participantAudioStatus, participant.identity);
+        this.removeHisOrHerSharedTracks(participant);
+      });
+
+      this.twilioRoom.on("dominantSpeakerChanged", participant => {
+        if (!participant) console.log("participant is null!"); 
+        this.dominantParticipantSessionID = participant ? participant.identity : null;
+      });
+
+      // me => others
+      window.addEventListener("beforeunload", this.twilioRoom.disconnect);
+      window.addEventListener("pagehide", this.twilioRoom.disconnect);
+      
+      // to detect the mute all TODO: refactor
+      this.$_listenToDoc(
+        db.doc(`classes/${this.$route.params.class_id}/rooms/${this.roomID}`),
+        this, 
+        "roomDoc"
+      ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
+
+      this.twilioInitialized = true;
+    },
+    /**
+     * In ADDITION to trigger every line in `beforeDestroy`, it resets the state
+     * so the user is muted/no longer shares media by default
+     */
+    disconnectWithoutLeaving () {
+      // no longer automatically join different rooms
+      this.$store.commit("SET_CAN_HEAR_AUDIO", false); 
+
+      // no longer automatically unmute and turn on camera
+      this.$store.commit("SET_IS_MIC_ON", false);
+      this.$store.commit("SET_IS_CAMERA_ON", false);
+      this.$emit("disconnect"); // causes parent to destroy this component
+    },
+    shareAudioTrack () {
+      return new Promise(async resolve => {
+        this.isTryingToEnableMic = true; 
+        this.micTrack = await Twilio.createLocalAudioTrack();
+        this.micTrack.enable();
+        this.micPublication = await this.twilioRoom.localParticipant.publishTrack(this.micTrack);       
+        this.isTryingToEnableMic = false; 
+        resolve(); 
+      });
     },
     async shareCameraTrack () {
       this.isTryingToEnableCamera = true; 
@@ -400,19 +376,6 @@ export default {
       } finally {
         this.isTryingToEnableCamera = false; 
       }
-    },
-    async shareAudioTrack () {
-      // if the user connects to audio, also re-enable sound, otherwise the user
-      // could be talking without being aware that others can hear him
-      this.$store.commit("SET_IS_DEAFENED", false);
-    
-      this.isTryingToEnableMic = true; 
-      this.micTrack = await Twilio.createLocalAudioTrack();
-      this.micTrack.enable();
-      this.micPublication = await this.twilioRoom.localParticipant.publishTrack(this.micTrack);       
-      this.isTryingToEnableMic = false; 
-      this.$store.commit("SET_IS_MIC_ON", true);
-      this.hasSharedAudio = true;
     },
     handleHisOrHerTracks (participant) {
       // first initialize their status as muted
@@ -437,9 +400,6 @@ export default {
         this.unmountTrack(track); 
       });
       participant.on("trackUnpublished", track => {
-        // means this person disconnected from audio
-        // without disconnecting from the room
-        // i.e. he/she pressed "deafen"
         if (track.kind === "audio") {
           Vue.set(
             this.participantAudioStatus,
@@ -454,9 +414,7 @@ export default {
         this.mountVideoTrack(track);
       } 
       else if (track.kind === "audio") {
-        if (!this.isDeafened) {
-          this.mountAudioTrack(track);
-        }
+        this.mountAudioTrack(track);
         // update mic statuses for displaying on the UI
         const updateAudioStatuses = () => Vue.set(
           this.participantAudioStatus,
