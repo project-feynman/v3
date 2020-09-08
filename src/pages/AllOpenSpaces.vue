@@ -4,7 +4,7 @@
       <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
         append :to="(`section/${roomType.id}`)"
       >
-        <v-list-item-content class="text-subtitle-2 text--secondary">
+        <v-list-item-content style="font-size: 0.875rem; font-weight: 400; color: #424242; opacity: 80%;">
           {{ roomType.name }}
         </v-list-item-content>
 
@@ -21,22 +21,22 @@
         </v-list-item-action>
       </v-list-item>
 
-      <div v-if="roomTypes !== []">
+      <!-- <div v-if="roomTypes !== []">
         <BasePopupButton actionName="Create new open space"
           :inputFields="['name']" 
           @action-do="({ name }) => createNewRoomType(name)"
         >
-          <template v-slot:activator-button="{ on }">
+          <template v-slot:activator-button="{ on }"> -->
             <!-- <BaseButton :on="on" icon="mdi-plus" block color="grey">
               New space
             </BaseButton> -->
-            <v-btn v-if="isAdmin" v-on="on" block text color="grey">
+            <!-- <v-btn v-if="isAdmin" v-on="on" block text color="grey">
               <v-icon left>mdi-plus</v-icon>
               New open space
             </v-btn>
           </template> 
         </BasePopupButton>
-      </div>
+      </div> -->
     </v-list>
   </portal>
 </template>

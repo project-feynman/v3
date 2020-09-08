@@ -1,10 +1,10 @@
 <template>
-  <v-app-bar flat color="white">
+  <v-app-bar height="75" flat color="white">
     <img src="/logo.png" @click="$router.push('/')" height="40" class="pl-2" style="cursor: pointer;"/>
     
-    <v-toolbar-title v-if="mitClass" :class="['headline', 'ml-2']">
+    <v-app-bar-title v-if="mitClass" :class="['headline', 'ml-3', 'black--text', 'text--secondary']">
       {{ mitClass.name }}
-    </v-toolbar-title>
+    </v-app-bar-title>
 
     <v-spacer/>
 
