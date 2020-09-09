@@ -28,6 +28,9 @@
       @click="signOut()">
       Sign Out
     </v-btn>
+
+    <p>To report issues, visit <a href="https://github.com/feynman-project/explain-mit/issues" target="_blank">https://github.com/feynman-project/explain-mit/issues</a></p>
+
   </v-container>
 </template>
 
