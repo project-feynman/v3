@@ -31,26 +31,10 @@
           </v-dialog>
         </v-list-item-action>
       </v-list-item>
-      
-      <!-- <v-divider/> -->
 
     <portal to="app-bar">
 
     </portal>
-
-
-
-    <!-- <v-row justify="center" align="center" class="px-5">
-      <v-btn @click="$router.push(`/class/${classID}`)" icon>
-        <v-icon>mdi-arrow-left</v-icon>
-      </v-btn>
-
-      <v-subheader style="font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 81%;">
-        {{ roomTypeDoc.name }}
-      </v-subheader>
-
-      <v-spacer/>
-    </v-row> -->
 
     <v-row v-if="isAdmin" justify="center">
       <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
@@ -94,15 +78,42 @@
         Play music
       </BaseButton>
         
-      <BaseButton @click="$refs.fileInput.click()" icon="mdi-file-pdf" color="black">
-        <input 
-          @change="e => seedEachRoomWithProblem (e)" 
-          style="display: none" 
-          type="file" 
-          ref="fileInput"
-        >
-        Set problem
-      </BaseButton>
+      <BasePopupButton>
+        <template v-slot:activator-button="{ on }">
+          <BaseButton :on="on" icon="mdi-file-pdf" color="black">
+            Set problem
+          </BaseButton>
+        </template>
+
+        <template v-slot:message-to-user>
+          <v-row>
+            <v-col>
+              Set PDF problem in every room's board # 
+            </v-col>
+            <v-col cols="12" sm="4">
+              <v-overflow-btn 
+                label="1"
+                :items="[1, 2, 3, 4, 5]"
+                @change="newVal => targetBoardNum = (newVal - 1)"
+              />
+            </v-col>
+          </v-row>
+        </template>
+
+        <template v-slot:popup-content="{ closePopup }">
+          <v-btn @click="$refs.fileInput.click()">Select file</v-btn>
+          <input 
+            @change="e => { seedEachRoomWithProblem(e); closePopup() }" 
+            style="display: none" 
+            type="file" 
+            ref="fileInput"
+          >
+        </template>
+        <!-- QUICKFIX TO MAKE IT INVISIBLE -->
+        <template v-slot:popup-action-buttons>
+          <div></div>
+        </template>
+      </BasePopupButton>
     </v-row>
 
     <v-divider/>
@@ -110,7 +121,6 @@
     <div style="padding-top: 40px; padding-left: 16px; padding-bottom: 12px; font-size: 1.25rem">
       Rooms
     </div>
-
 
     <!-- COMMON ROOM-->
     <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
@@ -124,7 +134,6 @@
         <portal-target v-if="!currentRoomID" name="current-room-participants">
 
         </portal-target>
-         
 
         <!-- Quickfix  -->
         <div v-else style="width: 100%;">
@@ -332,6 +341,7 @@ export default {
       participants: [],
       updateParticipantsTimeout: null,
       unsubFuncs: [],
+      targetBoardNum: 0,
       makeAnnouncementPopup: {
         show: false,
         roomType: null,
@@ -475,7 +485,8 @@ export default {
       const promises = []; 
       // now for each room, put it on the blackboard 
       for (const room of this.rooms) {
-        const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[0]);
+        if (room.blackboards.length <= this.targetBoardNum) return; 
+        const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[this.targetBoardNum]);
         promises.push(
           ref.update({
             backgroundImageDownloadURL: downloadURL
