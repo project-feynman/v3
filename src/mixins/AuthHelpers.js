@@ -26,6 +26,7 @@ export default {
           const firstName = fullName.split(" ")[0];
           const lastName = fullName.split(" ")[1];
           const email = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.6"];
+          const kind = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"];
           const userObject = {
             firstName,
             lastName,
@@ -40,7 +41,8 @@ export default {
               firstName,
               lastName,
               email,
-              uid: result.user.uid
+              uid: result.user.uid,
+              kind
             });
             this.$store.dispatch("fetchUser", { uid: result.user.uid });
             this.$root.$emit("show-snackbar", "Successfully created account");
@@ -73,14 +75,15 @@ export default {
         this.$root.$emit("show-snackbar", error.message);
       }
     },
-    $_createAccount ({ uid, email, firstName, lastName }) {
+    $_createAccount ({ uid, email, firstName, lastName, kind }) {
       return new Promise(async resolve => {
         await db.collection("users").doc(uid).set({ 
           uid, 
           email, 
           firstName, 
           lastName, 
-          enrolledClasses: []
+          kind,
+          enrolledClasses: [],
         });
         resolve();
       });
