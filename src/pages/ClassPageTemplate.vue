@@ -69,7 +69,7 @@ export default {
       this.$store.dispatch("fetchClass", this.classID);  
     }
     db.doc(`users/${this.user.uid}`).update({
-      lastVisitedClassID: this.classID
+      mostRecentClassID: this.classID
     });
   },
   methods: {
