@@ -66,13 +66,7 @@
           </v-list-item-action>
         </v-list-item>
 
-
-
-              <!-- <BaseButton :on="on" icon="mdi-plus" block color="grey">
-                New space
-              </BaseButton> -->
-
-        <!-- <div v-if="roomTypes !== []">
+        <div v-if="roomTypes !== []">
           <BasePopupButton actionName="Create new open space"
             :inputFields="['name']" 
             @action-do="({ name }) => createNewRoomType(name)"
@@ -84,7 +78,7 @@
               </v-btn>
             </template> 
           </BasePopupButton>
-        </div> -->
+        </div>
       </v-list>
     </portal>
 
