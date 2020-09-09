@@ -1,7 +1,6 @@
 <template>
   <v-container fluid>
     <h1>Get Started</h1>
-
     <v-col cols="12" sm="6">
       <TheSearchBar 
         :items="mitClasses"
@@ -9,16 +8,22 @@
         color="accent"
       />
     </v-col>
-
-    <!-- Ability to create new classes -->
-    <h3>Classes enrolled in...</h3>
-    <p v-for="c in user.enrolledClasses" :key="c.id">
-      {{ c.name }}
-      {{ c.description }}
-      <v-btn @click="$router.push(`class/${c.id}`)">Go</v-btn>
-      <v-btn @click="remove({ mitClass: c })">Remove</v-btn> 
-    </p>
     
+    <h3>Currently enrolled in...</h3>
+    <v-container>
+      <!-- Ability to create new classes -->
+      <v-card v-for="c in user.enrolledClasses" :key="c.id" width="500">
+        <v-card-title>{{ c.name }}</v-card-title>
+        <v-card-subtitle>{{ c.description }}</v-card-subtitle>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="remove({ mitClass: c })" text>Remove</v-btn> 
+          <v-btn @click="$router.push(`class/${c.id}`)" text color="secondary">ENTER</v-btn>
+        </v-card-actions>
+      </v-card>
+      
+    </v-container>
+  
     <v-btn v-if="user.enrolledClasses.length > 0"
       @click="$router.push(`/`)">
       Home page

@@ -76,7 +76,7 @@
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
               <template v-if="user">
-                <v-btn @click="$router.push('/get-started')">Return</v-btn>
+                <v-btn @click="$router.push('/get-started')" color="secondary">GET STARTED</v-btn>
                 <!-- <v-btn v-if="user.mostRecentClassID" @click="$router.push(`class/${user.mostRecentClassID}`)">Return</v-btn> -->
               </template>
             
