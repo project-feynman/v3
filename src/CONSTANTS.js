@@ -56,6 +56,9 @@ export const SUPER_USER_EMAILS = [
   // ESG
   "pao@mit.edu", // Paula Rabusco
   "jorloff@mit.edu", // Jeremy Orloff
+
+  // 8.022
+  "harlow@mit.edu"
 ];
 
 export const DefaultEmailSettings = {
