@@ -2,6 +2,65 @@ const CORE_TEAM_ID = "mDbUrvjy4pe8Q5s5wyoD";
 const PHYSICS_ID = "oQV3TgY3OrvE93lAT7sx";
 const TUTORIAL_ID = "FVdgjuywaFgxvyylISt2";
 
+
+export const SUPER_USER_EMAILS = [
+  "eltonlin@mit.edu",
+  "eltonlin1998@gmail.com",
+  // 8.01 
+  // S1~2
+  "josephf@mit.edu",
+  "pbarral@mit.edu", 
+  
+  // S3~4
+  "rfletch@mit.edu",  // Richard Fletcher
+  "nromeo@mit.edu", // Nicolas Romeo
+
+  // S5~6
+  "icisse@mit.edu",
+  "oandrews@mit.edu", // Owen Andrews
+  
+  // S7-8
+  "hen@mit.edu", // Henderson
+  "bacanua@mit.edu", // Alexandru Bacanu
+
+  // S9/S10
+  "tegmark@mit.edu", // Max Tegmark 
+  "aktan@mit.edu", // Andrew Tan
+  
+  // S11 - 12
+  "padour@mit.edu", // Peter Dourmashkin
+  "rmurdock@mit.edu", // Richard Joshua Murdock
+
+  // S13 - 14
+  "mohamedr@mit.edu", // Mohamed Abdelhafez
+  "crabb@mit.edu", // Emily Crabb
+
+  // utility TAs
+  "sgh256@mit.edu", // Simon Grosse-Holz
+  "taweewat@mit.edu", // taweewat@mit.edu
+  "achatt@mit.edu", // Arkya Chatterjee
+
+  // 18.01
+  "larryg@mit.edu",
+  "sanjoy@mit.edu",
+  "xueyingy@mit.edu",
+
+  // UTAs
+  "araminta@mit.edu", // Araminta Gwynne
+  "dmal@mit.edu",
+  "asantoss@mit.edu",
+  "mfedyk@mit.edu",
+  "stzh1555@mit.edu",
+  "xherbert@mit.edu",
+
+  // ESG
+  "pao@mit.edu", // Paula Rabusco
+  "jorloff@mit.edu", // Jeremy Orloff
+
+  // 8.022
+  "harlow@mit.edu"
+];
+
 export const DefaultEmailSettings = {
   emailOnNewPost: false,
   emailOnNewReply: true,

@@ -1,10 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
-import 'firebase/database';
 import db from '@/database.js';
 import { getRandomId } from '@/helpers.js';
+import { SUPER_USER_EMAILS } from "@/CONSTANTS.js";
 
 Vue.use(Vuex);
 
@@ -32,8 +30,11 @@ function setDisconnectHook (user) {
 async function getDocFromDb (ref) {
   return new Promise(async (resolve, reject) => {
     const doc = await ref.get();
-    if (doc.exists) resolve({ id: doc.id, ...doc.data() });
-    else reject(); 
+    if (doc.exists) { 
+      resolve({ id: doc.id, ...doc.data() });
+    } else { 
+      reject(); 
+    }
   });
 }
 
@@ -45,11 +46,29 @@ export default new Vuex.Store({
     explCache: {},
     blackboardRoom: null,
     session: {},
+    canHearAudio: false,
+    isMicOn: false,
+    isCameraOn: false,
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
-    dominantSpeakerUID: null
+    dominantSpeakerUID: null,
+    roomIDtoParticipants: null
+  },
+  getters: {
+    isAdmin: state => {
+      return SUPER_USER_EMAILS.includes(state.user.email);
+    }
   },
   mutations: {
+    SET_CAN_HEAR_AUDIO (state, newVal) {
+      state.canHearAudio = newVal; 
+    },
+    SET_IS_MIC_ON (state, newVal) {
+      state.isMicOn = newVal; 
+    },
+    SET_IS_CAMERA_ON (state, newVal) {
+      state.isCameraOn = newVal;
+    },
     SET_USER (state, user) {
       state.user = user;
       state.isFetchingUser = false;
@@ -65,6 +84,9 @@ export default new Vuex.Store({
     },
     SET_CANVAS_DIMENSIONS (state, dimensions) {
       state.canvasDimensions = dimensions;
+    },
+    SET_ROOM_ID_TO_PARTICIPANTS (state, roomIDtoParticipants) {
+      state.roomIDtoParticipants = roomIDtoParticipants;
     },
     /**
      * Saves an explanation to the global cache so it can be accessed and uploaded to Firestore in the app background
@@ -102,11 +124,10 @@ export default new Vuex.Store({
           sessionObject.refreshToken = refreshToken.substring(refreshToken.length - 20) 
         }
         context.commit('SET_SESSION', sessionObject);
-        const mirrorUserRef = db.collection('users').doc(uid);
+
+        const mirrorUserRef = db.collection("users").doc(uid);
         mirrorUserRef.onSnapshot(userDoc => {
-          console.log("userDoc =", userDoc);
           if (!userDoc.exists) {
-            // throw new Error("User's Firestore record no longer exists");
             reject("Can't find user's Firestore doc with given UID");
             context.commit("SET_USER", null);
           } else {

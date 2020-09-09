@@ -1,35 +1,42 @@
 import Vue from "vue";
 import Router from "vue-router";
+import store from "@/store.js"; 
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: "history",
   base: process.env.BASE_URL,
   routes: [
     { 
+      name: "HomePage",
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
     {
       path: "/class/:class_id",
-      component: () => import(/* webpackChunkName: "class-page" */ "./pages/ClassPage.vue"),
+      component: () => import(/* webpackChunkName: "class-overview" */ "./pages/ClassPageTemplate.vue"),
       children: [
         {
           path: "",
-          component: () => import(/* webpackChunkName: "class-spaces" */ "./pages/ClassSections.vue") 
+          component: () => import(/* webpackChunkName: "all-open-spaces" */ "./pages/AllOpenSpaces.vue") 
         },
         {
           path: "section/:section_id",
-          component: () => import(/* webpackChunkName: "class-section" */ "./pages/ClassSection.vue"),
+          component: () => import(/* webpackChunkName: "particular-open-space" */ "./pages/ParticularOpenSpace.vue"),
           children: [
             {
               path: "",
-              component: () => import(/* webpackChunkName: "empty-tutorial" */ "./pages/ClassPageOverview.vue")
+              component: () => import(/* webpackChunkName: "common-room" */ "./pages/CommonRoom.vue")
             },
             {
               path: "room/:room_id",
-              component: () => import(/* webpackChunkName: "" */ "./pages/RealtimeSpace.vue")
+              component: () => import(/* webpackChunkName: "realtime-room" */ "./pages/RealtimeRoom.vue"),
+              props: route => {
+                return {
+                  roomId: route.params.room_id
+                };
+              }
             }
           ]
         },
@@ -61,4 +68,17 @@ export default new Router({
       ]
     }
   ]
-})
+});
+
+router.beforeEach((to, from, next) => {
+  const { user, isFetchingUser } = store.state; 
+  const isAuthenticated = !isFetchingUser && user;  
+  if (to.name !== "HomePage" && (!isAuthenticated)) {
+    next({ name: "HomePage" });
+  } else {
+    next(); 
+  }
+});
+
+export default router;
+

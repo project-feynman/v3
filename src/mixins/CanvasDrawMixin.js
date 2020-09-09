@@ -25,8 +25,8 @@ export default {
         }
         // Note: for the time being the scrollHeights and scrollWidths seem to be synced
         // TODO: find a way for CSS to naturally sync both canvas' scrollHeight and scrollWidth (this will currently be different)
-        this.bgCanvas.height = this.bgCanvas.scrollHeight * 2;
-        this.bgCanvas.width = this.bgCanvas.scrollWidth * 2;
+        this.bgCanvas.height = this.bgCanvas.scrollHeight;
+        this.bgCanvas.width = this.bgCanvas.scrollWidth;
 
         this.$_renderBackground(this.imageBlobUrl);
         return true
@@ -50,7 +50,7 @@ export default {
         image.crossOrigin="anonymous";
         
         image.onload = () => { 
-          this.bgCtx.drawImage(image, 0, 0, this.bgCanvas.width, this.bgCanvas.height);
+          this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
           resolve();
         };
       });

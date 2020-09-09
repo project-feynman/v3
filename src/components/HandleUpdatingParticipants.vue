@@ -6,10 +6,21 @@
 
 <script>
 /**
+<<<<<<< HEAD
  * There is only one way for the user to join. 
  * There are 2 ways for the user to disconnect:
  *   - Switching away 
  *   - Disconnecting
+=======
+ * CORRECTNESS ARGUMENT
+ * 
+ * Initial state: 
+ *   - If the user successfully connected
+ * 
+ * Transitional States:
+ *   - Switch to a different part of the app: destroyed () 
+ *   - Disconnection: disconnect hook
+>>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
  */
 import db from "@/database.js";
 import firebase from "firebase/app";
@@ -17,88 +28,61 @@ import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
+import "firebase/database";
 
 export default {
+  props: {
+    roomId: {
+      type: String,
+      required: true
+    }
+  },
   computed: {
     ...mapState([
       "user",
       "session"
     ]),
-    classID () {
-      return this.$route.params.class_id; 
-    },
-    roomID () {
-      return this.$route.params.room_id; 
-    }, 
     sessionID () {
       return this.session.currentID; 
     },
-    classParticipantsRef () {
-      return db.collection(`classes/${this.classID}/participants`);
+    participantsRef () {
+      const { class_id } = this.$route.params; 
+      return db.collection(`classes/${class_id}/participants`);
     },
-    firebaseRef () {
-      return firebase.database().ref(`/class/${this.classID}/participants/${this.sessionID}`);
+    myFirestoreRef () {
+      return this.participantsRef.doc(this.sessionID);
+    },
+    myFirebaseRef () {
+      const { class_id } = this.$route.params; 
+      return firebase.database().ref(`/class/${class_id}/participants/${this.sessionID}`); 
     }
   },
-  created () {
-    this.setParticipant(); 
-    this.setUserDisconnectHook(); 
-  },
-  beforeDestroy () {
-    // I switched to a different component and didn't disconnect, so clean up the info/connected listener
-    firebase.database().ref(".info/connected").off();
-    this.firebaseRef.onDisconnect().cancel();
-    
-    // now delete myself from Firestore
-    this.classParticipantsRef.doc(this.sessionID).delete()
-  },
-  methods: {
-    /**
-     * Push the user object onto the room's `participants` array, and ensures that 
-     * Firebase will remove the user object if he/she disconnects for whatever reason.
-     * 
-     * @see https://explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/2srLvmhGXPVtmgNyNeCH
-     * @see https://firebase.google.com/docs/firestore/solutions/presence
-     * @see https://firebase.google.com/docs/database/web/offline-capabilities
-     */
-    setUserDisconnectHook () {
-      // ".info/connected" is a special location on Firebase Realtime Database 
-      // that keeps track of whether the current client is conneceted or disconnected (see doc above)
-      firebase.database().ref(".info/connected").on("value", async snapshot => {
-        const isUserConnected = snapshot.val(); 
-        if (isUserConnected === false) {
-          return;
-        } 
-        // 1. User leaves, and his/her identity is saved to Firebase
-        // 2. Cloud Functions detects the new user in Firebase, and uses that information to `arrayRemove` the user from the room
-        await this.firebaseRef.onDisconnect().set({ uid: this.sessionID });
+  async created () {
+    // PART 1/2: set up the disconnect hook
+    const snapshot = await this.myFirebaseRef.child("disconnectCounter").once("value");
+    const disconnectCounter = snapshot.val() ? snapshot.val() : 0; 
 
-        //user hasn't always been fetched, but uid and email are set
-        
-        this.firebaseRef.set({ // Firebase will not detect change if it's set to an empty object
-          email: "", 
-          uid: "", 
-          firstName: "" 
-        });
-      });
-    },
-    async setParticipant () {
-      firebase.database().ref(".info/connected").on("value", async snapshot => {
-        const isUserConnected = snapshot.val(); 
-        if (isUserConnected === false) {
-          return;
-        }  
-        await this.classParticipantsRef.doc(this.sessionID).set({
-          sessionID: this.sessionID,
-          uid: this.user.uid,
-          currentRoom: this.$route.params.room_id,
-          roomTypeID: this.$route.params.section_id,
-          email: this.user.email,
-          firstName: this.user.firstName,
-          lastName: this.user.lastName
-        });
-      });
-    }
+    // await Firebase to successfully register the disconnect hook 
+    // Cloud Functions will detect the change and update Firestore accordingly
+    await this.myFirebaseRef.onDisconnect().set({ 
+      disconnectCounter: disconnectCounter + 1
+    });
+
+    // PART 2/2: now safely join the room
+    const { section_id } = this.$route.params; 
+    this.participantsRef.doc(this.sessionID).set({
+      sessionID: this.sessionID,
+      currentRoom: this.roomId,
+      roomTypeID: section_id,
+      ...this.user
+    });
+  },
+  // CASE 2.1: Transition by switching components
+  beforeDestroy () {
+    // disable the disconnect hook
+    this.myFirebaseRef.onDisconnect().cancel();
+    // now I can safely remove myself
+    this.myFirestoreRef.delete()
   }
 }
 </script>

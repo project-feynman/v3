@@ -1,6 +1,36 @@
 <template>
-  <!-- :key="...class_id" forces <router-view/> to re-render -->
-  <router-view v-if="mitClass" :key="$route.params.class_id"/>
+  <v-app>
+    <v-navigation-drawer app width="285" permanent>
+      <!-- <SmallAppBar>
+        <portal-target name="app-bar">
+
+        </portal-target>
+      </SmallAppBar> -->
+
+      <!-- <v-divider/> -->
+      
+      <portal-target name="side-drawer">
+
+      </portal-target>
+
+      <template v-slot:append>
+        <portal-target name="side-drawer-bottom-region">
+
+        </portal-target>
+      </template>
+
+    </v-navigation-drawer>
+
+    <v-main>
+      <portal-target name="main-content">
+        
+      </portal-target>
+    </v-main>
+
+    <!-- :key="...class_id" forces <router-view/> to re-render -->
+    <!-- Many things from <router-view> will teleport to the portals above -->
+    <router-view v-if="mitClass" :key="$route.params.class_id"/>
+  </v-app>
 </template>
 
 <script>
@@ -10,35 +40,37 @@ import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
+import SmallAppBar from "@/components/SmallAppBar.vue"; 
 
 export default {
+  name: "ClassPageTemplate",
   mixins: [
     DatabaseHelpersMixin
   ],
+  components: {
+    SmallAppBar
+  },
   data: () => ({
-    drawer: true,
     firebaseRef: null,
     classParticipantsRef: null,
   }),
   computed: {
     ...mapState([
       "user",
-      "mitClass",
-      "session"
+      "mitClass"
     ]),
-    sessionID () { 
-      return this.session.currentID; 
-    },
-    classID () { 
-      return this.$route.params.class_id; 
-    },
+    classID () {
+      return this.$route.params.class_id;
+    }
   },
   created () {
-    const { class_id } = this.$route.params; 
-    if (class_id) {
+    if (this.classID) {
       this.$store.commit("SET_CLASS", null); // otherwise the other class lingers for 1 second
-      this.$store.dispatch("fetchClass", class_id);  
+      this.$store.dispatch("fetchClass", this.classID);  
     }
+    db.doc(`users/${this.user.uid}`).update({
+      mostRecentClassID: this.classID
+    });
   },
   methods: {
     async submitBug ({ "Describe your problem": title }) {
@@ -67,7 +99,7 @@ export default {
         enrolledClasses: updatedEnroll,
         ...emailSettingsUpdate
       });
-      this.$router.push({path: '/'});
+      this.$router.push({ path: '/' });
       this.$root.$emit("show-snackbar", "Successfully dropped class.");
     }
   }
@@ -78,45 +110,5 @@ export default {
 /* Make the side-drawer vertically scrollable  */
 html {
   overflow-y: auto; 
-}
-.video-chat-container{
-  z-index: 100; 
-  position: fixed; 
-  right: 100px; 
-  bottom: 0px; 
-  text-align: right;
-}
-.button-container{
-  z-index: 100; 
-  position: fixed; 
-  right: 0px; 
-  bottom: 0px;
-  text-align: right;
-}
-.button-container .button-bar{
-  display: inline-block;
-  opacity: 0.7;
-}
-.video-chat-container .button-bar:hover{
-  opacity: 1
-}
-/* .video-chat-container .video-component{
-  position: absolute; 
-  margin-top: 50px;
-  top: 0px;
-  right: 0px;
-  bottom: 0px;
-  margin-bottom: 50px;
-}
-.minimize-video-btn{
-  position: absolute;
-  top:0%;
-  right:0%;
-} */
-</style>
-
-<style>
-.button-bar .v-btn {
-  background: #eee;
 }
 </style>

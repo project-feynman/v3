@@ -1,6 +1,4 @@
 <template>
-  <!-- Enter an announcement -->
-  
   <!-- Display announcement -->
   <v-dialog v-model="isDisplayingAnnouncement" max-width="500px">
     <v-card v-if="announcement">

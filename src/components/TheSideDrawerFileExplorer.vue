@@ -39,7 +39,10 @@
         :collection="type"
         @post-was-clicked="postID => $emit('post-was-clicked', postID)"
       />
-      <!-- <TheSideDrawerGroupByFolders v-else :collection="type"/> -->
+      <TheSideDrawerGroupByFolders v-else 
+        :collection="type"
+        @post-was-clicked="postID => $emit('post-was-clicked', postID)"
+      />
     </template>
     </div>
 </template>
@@ -86,7 +89,7 @@ export default {
   data: function () {
     return {
       search: null,
-      groupBy: 'date',
+      groupBy: "folders",
     }
   },
   methods: {

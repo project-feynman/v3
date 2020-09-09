@@ -1,6 +1,5 @@
 <template>
-  <v-btn 
-    v-if="stopPropagation"
+  <v-btn v-if="stopPropagation"
     @click.stop="$emit('click')"
     v-on="on"
     v-bind="$attrs"
@@ -19,8 +18,7 @@
       </span>
     </div>
   </v-btn>
-  <v-btn 
-    v-else
+  <v-btn v-else
     @click="$emit('click')"
     v-on="on"
     v-bind="$attrs"
