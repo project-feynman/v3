@@ -1,107 +1,67 @@
 <template>
   <div id="home-page">
-
     <TheAppBar>
+         <!-- <MusicPlayer
+        :youtubeURL="randomMusicURL"
+        v-slot="{ play, pause, isPaused }"
+      >
+        <div class="text-center">
+          <v-bottom-sheet inset>
+            <template v-slot:activator="{ on, attrs }">
+              <BaseButton :on="on" icon="mdi-music-clef-treble" color="secondary">
+                Music
+              </BaseButton>
+            </template>
+            
+            <v-card tile>
+              <v-progress-linear
+                :value="50"
+                class="my-0"
+                height="3"
+              />
+              <v-list>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Raindrop Forest</v-list-item-title>
+                    <v-list-item-subtitle>Maplestory OST</v-list-item-subtitle>
+                  </v-list-item-content>
 
-    <MusicPlayer
-      :youtubeURL="randomMusicURL"
-      v-slot="{ play, pause, isPaused }"
-    >
+                  <v-spacer></v-spacer>
 
-       <div class="text-center">
-    <v-bottom-sheet inset>
-      <template v-slot:activator="{ on, attrs }">
-        <BaseButton :on="on" icon="mdi-music-clef-treble" color="secondary">
-          Music
-        <!-- </v-btn> -->
-        </BaseButton>
-      </template>
-      
-      <v-card tile>
-        <v-progress-linear
-          :value="50"
-          class="my-0"
-          height="3"
-        ></v-progress-linear>
+                  <v-list-item-icon>
+                    <v-btn icon>
+                      <v-icon>mdi-rewind</v-icon>
+                    </v-btn>
+                  </v-list-item-icon>
 
-        <v-list>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Raindrop Forest</v-list-item-title>
-              <v-list-item-subtitle>Maplestory OST</v-list-item-subtitle>
-            </v-list-item-content>
+                  <v-list-item-icon :class="{ 'mx-5': $vuetify.breakpoint.mdAndUp }">
+                    <v-btn v-if="isPaused" @click="play()" icon>
+                      <v-icon>mdi-play</v-icon> 
+                    </v-btn>
 
-            <v-spacer></v-spacer>
+                    <v-btn v-else @click="pause()" icon>
+                      <v-icon>mdi-pause</v-icon>
+                    </v-btn> 
+                  </v-list-item-icon>
 
-            <v-list-item-icon>
-              <v-btn icon>
-                <v-icon>mdi-rewind</v-icon>
-              </v-btn>
-            </v-list-item-icon>
-
-            <v-list-item-icon :class="{ 'mx-5': $vuetify.breakpoint.mdAndUp }">
-
-              <v-btn v-if="isPaused" @click="play()" icon>
-                <v-icon>mdi-play</v-icon> 
-              </v-btn>
-
-              <v-btn v-else @click="pause()" icon>
-                <v-icon>mdi-pause</v-icon>
-              </v-btn> 
-            </v-list-item-icon>
-
-            <v-list-item-icon
-              class="ml-0"
-              :class="{ 'mr-3': $vuetify.breakpoint.mdAndUp }"
-            >
-              <v-btn icon>
-                <v-icon>mdi-fast-forward</v-icon>
-              </v-btn>
-            </v-list-item-icon>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-bottom-sheet>
-  </div>
-      </MusicPlayer>
-
-      <template v-if="user">
-        <!-- target="_blank" opens a new tab -->
-        <!-- <v-btn href="https://medium.com/@eltonlin1998/feynman-overview-338034dcb426" text color="accent" target="_blank">   
-          BLOG
-        </v-btn> -->
-        
-     
-
-
-        <!-- Create class -->
-        <BasePopupButton actionName="Create class" 
-          @action-do="(C) => createClass(C)"
-          :inputFields="['class name', 'class description']"
-        >
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-plus" color="secondary">Create Class</BaseButton>
-          </template>
-        </BasePopupButton>
-
-        <TheDropdownMenu @sign-out="$_signOut()" @settings-changed="S => updateSettings(S)">
-          <template v-slot:activator="{ on }">
-             <v-avatar v-if="user" v-on="on" color="grey" style="cursor: pointer;">
-              <span v-if="user.firstName && user.lastName" class="white--text headline">
-                {{ user.firstName[0] + user.lastName[0] }}
-              </span>
-            </v-avatar>
-          </template>
-        </TheDropdownMenu>
-      </template>
+                  <v-list-item-icon
+                    class="ml-0"
+                    :class="{ 'mr-3': $vuetify.breakpoint.mdAndUp }"
+                  >
+                    <v-btn icon>
+                      <v-icon>mdi-fast-forward</v-icon>
+                    </v-btn>
+                  </v-list-item-icon>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-bottom-sheet>
+        </div>
+      </MusicPlayer> -->
     </TheAppBar>
     
     <v-main>
       <transition name="fade">
-
-
-
-        
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
           <v-container>
             <div class="central-title d-flex justify-center align-center mb-4">
@@ -115,7 +75,12 @@
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5" justify="center">
-              <template v-if="!user">
+              <template v-if="user">
+                <v-btn @click="$router.push('/get-started')">Return</v-btn>
+                <!-- <v-btn v-if="user.mostRecentClassID" @click="$router.push(`class/${user.mostRecentClassID}`)">Return</v-btn> -->
+              </template>
+            
+              <template v-else>
                 <v-btn @click="$_logInWithTouchstone()" text class="green--text">
                   TOUCHSTONE LOGIN
                 </v-btn>
@@ -144,69 +109,18 @@
                     <v-btn v-on="on" text class="purple--text">EMAIL LOGIN</v-btn>
                   </template>
                 </BasePopupButton>
-
-              </template>
-
-              <!-- Search Bar -->
-              <template v-else>
-                <v-col cols="12" sm="6">
-                  <TheSearchBar 
-                    :items="schoolClasses"
-                    @submit="payload => enrollInClass(payload)" 
-                    color="accent"
-                  />
-                </v-col>
               </template>
             </v-row>
           </v-container>
         </v-card>
       </transition>
-
+      
       <v-container fluid>
-        <!-- Class security popup -->
-        <v-dialog v-model="classSecurityPopup" max-width="600px">
-          <v-card>
-            <v-card-title>Please enter the class password</v-card-title>
-            <v-card-text>
-              <v-text-field v-model="classPassword"/>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn @click="classSecurityPopup = false">CANCEL</v-btn>
-              <v-btn @click="handleClassPassword()">SUBMIT</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-
-        <!-- Tutorial -->
-        <template v-if="!user && !isFetchingUser">
-          <v-row>
-            <v-col cols="12">
-              <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
-            </v-col>
-            <!-- <v-col cols="12" md="6">
-              <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
-            </v-col> -->
-          </v-row>
-        </template>
-
-        <!-- Classes -->
-        <div v-else-if="user" key="class-list">
-          <v-row align="stretch" class="enrolled-classes">
-            <v-col v-for="C in user.enrolledClasses" cols="12" sm="4" md="3" :key="C.id">
-              <RenderlessAsync :dbRef="getMitClassRef(C.id)">
-                <template slot-scope="{ fetchedData: C }">
-                  <transition name="fade">
-                    <v-card v-if="C.name && C.description" :to="`class/${C.id}`" :data-qa="C.name">
-                      <v-card-title class="title">{{ C.name }}</v-card-title>
-                      <v-card-subtitle>{{ C.description }}</v-card-subtitle>
-                    </v-card>
-                  </transition>
-                </template>
-              </RenderlessAsync>
-            </v-col>
-          </v-row>
-        </div>
+        <v-row>
+          <v-col cols="12">
+            <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+          </v-col>
+        </v-row>
       </v-container>           
     </v-main>
   </div>
@@ -231,6 +145,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import MusicPlayer from "@/components/MusicPlayer.vue"; 
 
 export default {
+  name: "HomePage",
   components: {
     RenderlessAsync, 
     BasePopupButton,

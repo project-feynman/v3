@@ -30,13 +30,12 @@
         >
           <template v-slot:touch-slot>
             <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black">
-              {{ touchDisabled ? "Stylus mode" : "Any mode" }}
+
             </BaseButton>
           </template>
           
           <template v-slot:record-audio-slot>
             <template v-if="currentState === RecordState.PRE_RECORD">
-
               <!-- SET BACKGROUND IMAGE -->
               <slot name="set-background-button-slot">
                 <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black">

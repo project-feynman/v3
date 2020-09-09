@@ -1,15 +1,21 @@
 import Vue from "vue";
 import Router from "vue-router";
+import store from "@/store.js"; 
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: "history",
   base: process.env.BASE_URL,
   routes: [
     { 
+      name: "HomePage",
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
+    },
+    {
+      path: "/get-started",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/GetStarted.vue")
     },
     {
       path: "/class/:class_id",
@@ -62,4 +68,17 @@ export default new Router({
       ]
     }
   ]
-})
+});
+
+router.beforeEach((to, from, next) => {
+  const { user, isFetchingUser } = store.state; 
+  const isAuthenticated = !isFetchingUser && user;  
+  if (to.name !== "HomePage" && (!isAuthenticated)) {
+    next({ name: "HomePage" });
+  } else {
+    next(); 
+  }
+});
+
+export default router;
+

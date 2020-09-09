@@ -21,8 +21,6 @@ export default {
       const provider = new firebase.auth.SAMLAuthProvider("saml.mit-touchstone"); 
       firebase.auth().signInWithPopup(provider)
         .then(async result => {
-          console.log("result =", result);
-
           const userInfo = result.additionalUserInfo.profile; 
           const fullName = userInfo["urn:oid:2.16.840.1.113730.3.1.241"];
           const firstName = fullName.split(" ")[0];

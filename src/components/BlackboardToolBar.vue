@@ -8,14 +8,14 @@
               <PenSwatch 	
                 :colors="colors" 	
                 :isPenActive="isPen"	
-                @select-color="newColor => color = newColor" 	
+                @select-color="newColor => selectPen(newColor)" 	
               />
             </v-col>
 
             <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
     
-            <BaseButton v-show="lastEraserNormal" :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
-              Eraser
+            <BaseButton :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
+              <!-- Eraser -->
             </BaseButton>
             <slot name="touch-slot">
 
@@ -62,8 +62,8 @@ export default {
       // I don't know how to control the internal color 
       // data is nested to conform with Vuetify's internal implementation 
       // so the initial color gets displayed properly
-      color: "white",
-      colors: ["white", "orange", "cyan", "black"],
+      color: "orange",
+      colors: ["orange", "black", "cyan", "white"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
@@ -79,27 +79,23 @@ export default {
       return this.currentTool === BlackboardTools.PEN; 
     }
   },
-  watch: {
-    color: {
-      immediate: true,
-      handler (newVal) {
-        this.$emit("tool-select", {
-          type: BlackboardTools.PEN,
-          color: newVal,
-          lineWidth: 2.5
-        });
-      }
-    }
-  },
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
+    this.selectPen("orange");
   },
   destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
+    selectPen (newColor) {
+      this.$emit("tool-select", {
+        type: BlackboardTools.PEN,
+        color: newColor,
+        lineWidth: 2.5
+      });
+    },
     selectNormalEraser () {
       this.lastEraserNormal = true;
       this.colorPaletteExpanded = false;

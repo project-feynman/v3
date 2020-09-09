@@ -23,7 +23,7 @@
 
     <v-main>
       <portal-target name="main-content">
-
+        
       </portal-target>
     </v-main>
 
@@ -68,6 +68,9 @@ export default {
       this.$store.commit("SET_CLASS", null); // otherwise the other class lingers for 1 second
       this.$store.dispatch("fetchClass", this.classID);  
     }
+    db.doc(`users/${this.user.uid}`).update({
+      lastVisitedClassID: this.classID
+    });
   },
   methods: {
     async submitBug ({ "Describe your problem": title }) {

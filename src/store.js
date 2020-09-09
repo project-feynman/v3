@@ -124,10 +124,10 @@ export default new Vuex.Store({
           sessionObject.refreshToken = refreshToken.substring(refreshToken.length - 20) 
         }
         context.commit('SET_SESSION', sessionObject);
-        const mirrorUserRef = db.collection('users').doc(uid);
+
+        const mirrorUserRef = db.collection("users").doc(uid);
         mirrorUserRef.onSnapshot(userDoc => {
           if (!userDoc.exists) {
-            // throw new Error("User's Firestore record no longer exists");
             reject("Can't find user's Firestore doc with given UID");
             context.commit("SET_USER", null);
           } else {
