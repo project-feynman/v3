@@ -368,7 +368,7 @@ export default {
       this.$emit("board-reset");
     },
     wipeUI () {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.ctx.clearRect(0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
       this.bgCtx.clearRect(0, 0, this.bgCanvas.scrollWidth, this.bgCanvas.scrollHeight); // scroll width safer I think
     },
     resetVariables () {
@@ -506,6 +506,7 @@ export default {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(this.isPen ? "\uF64F": "\uF1FE", 12, 12);
+      if (!this.$refs.FrontCanvas) return; 
       const dataURL = dummyCanvas.toDataURL("image/png");
       this.$refs.FrontCanvas.style.cursor = "url(" + dataURL + ") 0 24, auto";
     },

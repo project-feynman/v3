@@ -4,9 +4,9 @@ import router from './router';
 import store from './store';
 import vuetify from './plugins/vuetify';
 import PortalVue from 'portal-vue';
+import VueYoutube from 'vue-youtube'
 
 Vue.config.productionTip = false;
-
 
 new Vue({ 
   router, 
@@ -15,4 +15,5 @@ new Vue({
   render: h => h(App) 
 }).$mount('#app');
 
-Vue.use(PortalVue)
+Vue.use(PortalVue);
+Vue.use(VueYoutube);

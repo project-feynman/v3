@@ -30,13 +30,12 @@
         >
           <template v-slot:touch-slot>
             <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black">
-              {{ touchDisabled ? "Stylus mode" : "Any mode" }}
+
             </BaseButton>
           </template>
           
           <template v-slot:record-audio-slot>
             <template v-if="currentState === RecordState.PRE_RECORD">
-
               <!-- SET BACKGROUND IMAGE -->
               <slot name="set-background-button-slot">
                 <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black">
@@ -73,15 +72,13 @@
             
               </slot> 
 
-              <!-- Record Button -->
-              <!-- <BaseButton @click="startRecording()" icon="mdi-adjust" filled>
-                Record Audio
-              </BaseButton> -->
+              <BaseButton v-if="isAdmin" @click="startRecording()" icon="mdi-adjust" color="secondary" class="white--text">
+                Record
+              </BaseButton>
             </template>
 
-            <!-- Finish Record Button -->
-            <BaseButton v-if="currentState === RecordState.MID_RECORD" @click="stopRecording()" icon="mdi-stop" filled>
-              Finish Recording
+            <BaseButton v-if="isAdmin && currentState === RecordState.MID_RECORD" @click="stopRecording()" color="secondary" class="white--text" icon="mdi-stop">
+              Finish
             </BaseButton>
           </template>
         </BlackboardToolBar>
@@ -111,7 +108,7 @@ import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import { RecordState } from "@/CONSTANTS.js";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 export default {
   props: {
@@ -151,8 +148,16 @@ export default {
     ...mapState([
       "user"
     ]),
+    ...mapGetters([
+      "isAdmin"
+    ]),
     isRecording () {
       return this.currentState === RecordState.MID_RECORD; 
+    }
+  },
+  watch: {
+    currentTime () {
+      this.$emit("update:currentTime", this.currentTime);
     }
   },
   methods: {
@@ -164,10 +169,7 @@ export default {
       this.audioRecorder.startRecording();
       this.currentTime = 0;
       this.timer = setInterval(
-        () => { 
-          this.currentTime += 0.1;
-          this.$emit("update:currentTime", this.currentTime);
-        }, 
+        () => this.currentTime += 0.1,
         100
       );   
       this.currentState = RecordState.MID_RECORD;

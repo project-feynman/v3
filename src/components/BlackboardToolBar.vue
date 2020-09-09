@@ -1,18 +1,21 @@
 <template>
-  <v-app-bar :height="toolbarHeight" :color="'#eee'" :elevation="1" class="blackboard-toolbar">
+  <v-app-bar :height="toolbarHeight" color="white" :elevation="1" class="blackboard-toolbar">
     <v-container fluid class="px-0 py-0">
       <v-row align="center" justify="space-between">
         <v-col class="py-0">
           <v-row justify="start" align="center">
             <v-col class="px-1 py-0" cols="auto">
-              <PenSwatch 
-                :colors="colors" 
-                :isPenActive="isPen"
-                @select-color="newColor => changePenColor(newColor)" 
+              <PenSwatch 	
+                :colors="colors" 	
+                :isPenActive="isPen"	
+                @select-color="newColor => selectPen(newColor)" 	
               />
             </v-col>
-            <BaseButton v-show="lastEraserNormal" :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
-              Eraser
+
+            <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
+    
+            <BaseButton :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
+              <!-- Eraser -->
             </BaseButton>
             <slot name="touch-slot">
 
@@ -38,6 +41,7 @@ import { BlackboardTools, toolbarHeight } from "@/CONSTANTS.js";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
+import ColorPicker from "@/components/ColorPicker.vue";
 
 export default {
   props: {
@@ -48,15 +52,18 @@ export default {
     Swatches, 
     BasePopupButton,
     BaseButton,
-    PenSwatch
+    PenSwatch,
+    ColorPicker
   },
   data () {
     return {
       BlackboardTools,
       toolbarHeight,
+      // I don't know how to control the internal color 
+      // data is nested to conform with Vuetify's internal implementation 
+      // so the initial color gets displayed properly
       color: "orange",
-      colors: ["orange", "white", "black", "#0AF2F2", "#ec1bf7", "yellow"],
-      // colors: ["orange", "white", "#ec1bf7", "#0AF2F2"],
+      colors: ["orange", "black", "cyan", "white"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
@@ -75,16 +82,16 @@ export default {
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
+    this.selectPen("orange");
   },
   destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
-    changePenColor (newColor) {
-      this.color = newColor;
-      this.$emit('tool-select', { 
-        type: BlackboardTools.PEN, 
+    selectPen (newColor) {
+      this.$emit("tool-select", {
+        type: BlackboardTools.PEN,
         color: newColor,
         lineWidth: 2.5
       });

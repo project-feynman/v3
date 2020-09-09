@@ -1,12 +1,10 @@
 <template>
   <v-app>
     <router-view v-if="!isFetchingUser"/>
-
+    
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>
-        CLOSE
-      </v-btn>
+      <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
   </v-app>
 </template>
@@ -23,26 +21,24 @@ export default {
   }),
   computed: {
     ...mapState([
+      "user",
       "isFetchingUser"
     ])
   },
   created () {
     firebase.auth().onAuthStateChanged(async user => {
-      if (user) {
-        try {
-          await this.$store.dispatch("fetchUser", { uid: user.uid }); 
-        } 
-        // If the user account exists in Firebase Auth but the mirror Firestore doc doesn't exist
-        catch (error) {
-          console.log("redirecting to home page, error =", error)
-          this.$router.push("/");
-        }
-      }   
-
-      // always redirect to home page if the user is not logged in
-      else { 
-        this.$router.push("/");
+      if (!user) {
         this.$store.commit('SET_USER', null);
+      } 
+      else {
+        // fetches or creates a user account
+        await this.$store.dispatch("fetchUser", { uid: user.uid }); 
+        const { mostRecentClassID } = this.user; 
+        if (!mostRecentClassID) {
+          this.$router.push("/get-started");
+        } else {
+          this.$router.push(`/class/${mostRecentClassID}`);
+        }
       }
     });
 

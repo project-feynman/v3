@@ -54,21 +54,12 @@ exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(a
   else { firestoreUserRef.update(eventStatus); }
 });
 
-exports.onWorkspaceParticipantsChanged2 = functions.database.ref("/room/{classId}/{roomId}/participants").onWrite((change,context) => {
-  const userWhoLeft = change.after.val();
-  if (!userWhoLeft.uid) return; // under what situations would `.uid` be undefined?
-  const { roomId, classId } = context.params;
-  const workspaceRef = firestore.doc(`/classes/${classId}/blackboards/${roomId}`);
-  workspaceRef.collection('participants').doc(userWhoLeft.uid).delete();
-})
-
-exports.onClassParticipantsChanged = functions.database.ref("/class/{classId}/participants/{sessionID}").onWrite((change,context) => {
-  const userWhoLeft = change.after.val();
-  // the user UID is actually the sessionID (look at frontend code)
-  // assert sessionID = userWhoLeft.uid
-  if (!userWhoLeft.uid) return;
-  const { classId, sessionID } = context.params;
-  firestore.doc(`/classes/${classId}/participants/${userWhoLeft.uid}`).delete();
+/**
+ * `.onWrite` is Triggered on any mutation event: when data is created, updated, or deleted in the Realtime Database.
+ * */
+exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/participants/{sessionID}").onWrite((change, context) => {
+  const { classID, sessionID } = context.params;
+  firestore.doc(`/classes/${classID}/participants/${sessionID}`).delete();
 })
 
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already

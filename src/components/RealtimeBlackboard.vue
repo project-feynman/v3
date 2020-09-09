@@ -39,7 +39,7 @@
             type="file" 
             ref="fileInput"
           >
-          Background
+          Annotate
         </BaseButton>
       </template>
 
@@ -76,14 +76,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Realtime Messaging -->
-    <RealtimeMessageChat
-      v-model="messagesOpen"
-      :roomParticipants="roomParticipants"
-      :roomId="this.roomId"
-      :classId="this.classId"
-    />
   </div>
 </template>
 
@@ -105,7 +97,6 @@
 import Blackboard from "@/components/Blackboard.vue"; 
 import BaseButton from "@/components/BaseButton.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import RealtimeMessageChat from "@/components/RealtimeMessageChat.vue";
 import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
@@ -118,10 +109,6 @@ export default {
     blackboardRef: {
       type: null,
       required: true
-    },
-    roomParticipants: {
-      type: null,
-      required: true
     }
   },
   mixins: [
@@ -132,7 +119,6 @@ export default {
     Blackboard,
     BaseButton,
     BasePopupButton,
-    RealtimeMessageChat
   },
   data () {
     return {
