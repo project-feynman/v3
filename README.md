@@ -2,7 +2,7 @@
 Our mission is to make MIT a vibrant place where everyone helps each other, so nobody has to stay up late studying alone. In doing so, we will accelerate the world's transition into open education. 
 
 ## Inspirations
-The project was inspired by [The Number Devil](https://booksjar.com/pdf-epub-the-number-devil-a-mathematical-adventure-download/) and [Surely You're Joking Mr Feynman](https://b-ok.global/book/1673299/ae9bd9?regionChanged=&redirect=20279758). 
+The project was inspired by many things. [The Number Devil](https://booksjar.com/pdf-epub-the-number-devil-a-mathematical-adventure-download/), [Surely You're Joking Mr Feynman](https://b-ok.global/book/1673299/ae9bd9?regionChanged=&redirect=20279758), Dr Hiluluk from One Piece, Discord, ExplainEverything, Piazza and Maplestory. 
 
 Everything starts with a question. "What is the intuition behind P = NP?". The Number Devil responds, and invites you to a classroom. The devil draws on the whiteboard, and soon the doodles come to life.
 
@@ -71,6 +71,7 @@ Special thanks to:
   - Prof. Peter Fischer
   - Prof. Gilbert Strang
   - Prof. Bill Aulet
+  - Stephanie Yuen
   - Kristen Surrao
   - Deborah Wen 
   - Anuj Apte
