@@ -41,6 +41,7 @@ async function getDocFromDb (ref) {
 export default new Vuex.Store({
   state: {
     user: null,
+    hasFetchedUserInfo: false,
     isFetchingUser: true,
     mitClass: null,
     explCache: {},
@@ -56,7 +57,7 @@ export default new Vuex.Store({
   },
   getters: {
     isAdmin: state => {
-      return SUPER_USER_EMAILS.includes(state.user.email);
+      return SUPER_USER_EMAILS.includes(state.user.email) || ["staff", "affiliate"].includes(state.user.kind); 
     }
   },
   mutations: {
@@ -68,6 +69,9 @@ export default new Vuex.Store({
     },
     SET_IS_CAMERA_ON (state, newVal) {
       state.isCameraOn = newVal;
+    },
+    SET_HAS_FETCHED_USER_INFO (state, newVal) {
+      state.hasFetchedUserInfo = newVal; 
     },
     SET_USER (state, user) {
       state.user = user;
@@ -100,7 +104,6 @@ export default new Vuex.Store({
     },
     SET_DOMINANT_SPEAKER_UID (state, dominantSpeakerUID) {
       state.dominantSpeakerUID = dominantSpeakerUID; 
-      console.log("state.dominantSpeakerUID =", state.dominantSpeakerUID);
     }
   },
   actions: {
@@ -108,13 +111,13 @@ export default new Vuex.Store({
       return new Promise(async resolve => {
         const ref = db.collection("classes").doc(classId);
         const classDoc = await getDocFromDb(ref);
-        // console.log(classDoc);
         context.commit("SET_CLASS", classDoc);
         // syncMitClassWithDb(ref, context);
         resolve();
       });
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
+    // TODO: rename to listenToFirestoreUser
     async fetchUser (context, { uid, refreshToken }) {
       return new Promise((resolve, reject) => {
         const sessionObject = {

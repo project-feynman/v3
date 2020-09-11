@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <router-view v-if="!isFetchingUser"/>
+    <router-view/>
     
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
@@ -10,38 +10,12 @@
 </template>
 
 <script>
-import firebase from "firebase/app";
-import "firebase/auth";
-import { mapState } from "vuex"; 
-
 export default {
   data: () => ({
     snackbar: false,
     snackbarMessage: ""
   }),
-  computed: {
-    ...mapState([
-      "user",
-      "isFetchingUser"
-    ])
-  },
   created () {
-    firebase.auth().onAuthStateChanged(async user => {
-      if (!user) {
-        this.$store.commit('SET_USER', null);
-      } 
-      else {
-        // fetches or creates a user account
-        await this.$store.dispatch("fetchUser", { uid: user.uid }); 
-        const { mostRecentClassID } = this.user; 
-        if (!mostRecentClassID) {
-          this.$router.push("/get-started");
-        } else {
-          this.$router.push(`/class/${mostRecentClassID}`);
-        }
-      }
-    });
-
     this.$root.$on("show-snackbar", message => {
       this.snackbar = true;
       this.snackbarMessage = message;

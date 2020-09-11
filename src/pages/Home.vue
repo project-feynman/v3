@@ -194,8 +194,21 @@ export default {
       return db.collection("users").doc(this.user.uid); 
     }
   },
+  watch: {
+    user: {
+      immediate: true,
+      handler (user) {
+        if (user) {
+          if (!user.mostRecentClassID) {
+            this.$router.push("/get-started");
+          } else {
+            this.$router.push(`/class/${user.mostRecentClassID}`);
+          }
+        }
+      } 
+    }
+  },
   async created () { 
-    this.fetchClasses(); 
 
     // vision of a vibrant place where people talk around blackboards
     const demoVideoRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/aHaV1yIyaDR4n88pmzDk`);

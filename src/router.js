@@ -1,6 +1,8 @@
 import Vue from "vue";
 import Router from "vue-router";
 import store from "@/store.js"; 
+import firebase from "firebase/app";
+import "firebase/auth";
 
 Vue.use(Router);
 
@@ -70,10 +72,39 @@ const router = new Router({
   ]
 });
 
-router.beforeEach((to, from, next) => {
-  const { user, isFetchingUser } = store.state; 
-  const isAuthenticated = !isFetchingUser && user;  
-  if (to.name !== "HomePage" && (!isAuthenticated)) {
+/**
+ * Checks from Firebase auth whether the user exists or not. 
+ * If user isn't logged in, sets `state.user` to null. 
+ * Otherwise, populates `state.user` with the full Firestore mirror doc. 
+ */
+async function fetchUserInfo () {
+  return new Promise(resolve => {
+    firebase.auth().onAuthStateChanged(async user => {
+      console.log("authStateChanged(), user =", user);
+      if (!user) {
+        // necessary to handle if the user logs out
+        store.commit("SET_USER", null);
+      } 
+      else {
+        try {
+          await store.dispatch("fetchUser", { uid: user.uid });
+        } catch (error) {
+          // TODO: still some unexplained behavior for authentication
+          console.log("Cannot find user's mirror doc on Firestore");
+          store.commit("SET_USER", null);
+        }
+      }
+      store.commit("SET_HAS_FETCHED_USER_INFO", true); 
+      resolve(); 
+    });
+  }); 
+}
+
+router.beforeEach(async (to, from, next) => {
+  if (!store.state.hasFetchedUserInfo) {
+    await fetchUserInfo(); 
+  }
+  if (to.name !== "HomePage" && !store.state.user) {
     next({ name: "HomePage" });
   } else {
     next(); 

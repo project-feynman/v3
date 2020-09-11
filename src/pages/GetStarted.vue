@@ -9,7 +9,6 @@
       />
     </v-col>
     
-    <h3>Currently enrolled in...</h3>
     <v-container>
       <!-- Ability to create new classes -->
       <v-card v-for="c in user.enrolledClasses" :key="c.id" width="500">
@@ -24,11 +23,6 @@
       
     </v-container>
   
-    <v-btn v-if="user.enrolledClasses.length > 0"
-      @click="$router.push(`/`)">
-      Home page
-    </v-btn>
-
     <v-btn v-if="user"
       @click="signOut()">
       Sign Out
@@ -83,9 +77,9 @@ export default {
         enrolledClasses: firebase.firestore.FieldValue.arrayRemove(mitClass)
       });
     },
-    signOut () {
+    async signOut () {
+      await firebase.auth().signOut(); // will trigger `onAuthStateChanged` in router.js
       this.$router.push("/");
-      firebase.auth().signOut(); 
     }
   }
 }

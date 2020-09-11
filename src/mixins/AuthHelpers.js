@@ -27,12 +27,14 @@ export default {
           const lastName = fullName.split(" ")[1];
           const email = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.6"];
           const kind = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"];
+          const year = userInfo["urn:oid:1.2.840.113554.1.4.1.1.15"];
+
           const userObject = {
             firstName,
             lastName,
             email,
-            year: userInfo["urn:oid:1.2.840.113554.1.4.1.1.15"],
-            kind: userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"] // "student", or "faculty"
+            year, // "1", "2", "3", "4", etc. 
+            kind // "student", "staff" or "affiliate"
           };
 
           const queryResult = await db.collection("users").where("email", "==", email).get();
@@ -43,7 +45,7 @@ export default {
               email,
               uid: result.user.uid,
               kind
-            });
+            });            
             this.$store.dispatch("fetchUser", { uid: result.user.uid });
             this.$root.$emit("show-snackbar", "Successfully created account");
           } else {
@@ -75,24 +77,28 @@ export default {
         this.$root.$emit("show-snackbar", error.message);
       }
     },
+    /**
+     * Must include uid, email, firstName, lastName 
+     * Optional attribute: `kind` 
+     */
     $_createAccount ({ uid, email, firstName, lastName, kind }) {
       return new Promise(async resolve => {
-        await db.collection("users").doc(uid).set({ 
-          uid, 
-          email, 
-          firstName, 
-          lastName, 
-          kind,
-          enrolledClasses: [],
+        await db.collection("users").doc(uid).set({
+          uid,
+          email,
+          firstName,
+          lastName,
+          kind: kind ? kind : null,
+          enrolledClasses: []
         });
         resolve();
       });
     },
     $_logIn ({ email, password }) {
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then((user) => {
-          this.$store.dispatch("fetchUser", user);
-          this.$root.$emit("show-snackbar", this.welcomeMessage);
+        .then(result => {
+          this.$store.dispatch("fetchUser", result.user); 
+          this.$root.$emit("show-snackbar", "Welcome back!");
         })
         .catch(error => {
           this.$root.$emit("show-snackbar", error.message);
