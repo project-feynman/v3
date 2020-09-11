@@ -28,6 +28,7 @@
       Sign Out
     </v-btn>
 
+    <p>For any issues big or small, email <u>eltonlin@mit.edu</u></p>
     <p>To report issues, visit <a href="https://github.com/feynman-project/explain-mit/issues" target="_blank">https://github.com/feynman-project/explain-mit/issues</a></p>
 
   </v-container>
