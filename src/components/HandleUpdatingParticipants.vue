@@ -6,12 +6,6 @@
 
 <script>
 /**
-<<<<<<< HEAD
- * There is only one way for the user to join. 
- * There are 2 ways for the user to disconnect:
- *   - Switching away 
- *   - Disconnecting
-=======
  * CORRECTNESS ARGUMENT
  * 
  * Initial state: 
@@ -20,15 +14,13 @@
  * Transitional States:
  *   - Switch to a different part of the app: destroyed () 
  *   - Disconnection: disconnect hook
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
  */
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import { DefaultEmailSettings } from "@/CONSTANTS.js";
-import { mapState } from "vuex";
 import "firebase/database";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import { mapState } from "vuex";
 
 export default {
   props: {

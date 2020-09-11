@@ -18,28 +18,6 @@
 
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
-<<<<<<< HEAD
-      <p v-if="!twilioInitialized" class="accent--text">
-        Connecting audio...
-      </p>
-      <template v-else>
-        <p class="green--text mt-1">
-          Connected 
-        </p>
-        <v-row class="d-flex" justify="space-around">
-          <!-- Mute button -->
-          <v-btn @click="isMicEnabled = !isMicEnabled" fab color="grey" class="white--text" depressed>
-            <v-icon large>{{ isMicEnabled ? 'mdi-microphone' : 'mdi-microphone-off'  }}</v-icon>
-          </v-btn>
-          
-          <!-- Deafen button -->
-          <v-btn @click="isDeafened = !isDeafened" fab color="grey" class="white--text" depressed>
-            <v-icon large>{{ isDeafened ? 'mdi-headset-off' : 'mdi-headset' }}</v-icon>
-          </v-btn>
-
-          <!-- Disconnect button -->
-          <v-btn @click.stop.prevent="$router.push(`/class/${$route.params.class_id}`)" fab color="red" class="white--text" depressed>
-=======
       <template v-if="!twilioInitialized && !isTryingToConnect">
         <p class="yellow--text">Only connected to the blackboard</p>
 
@@ -69,31 +47,12 @@
           </v-btn>
 
           <v-btn @click.stop.prevent="disconnectWithoutLeaving()" fab color="red" class="white--text" depressed>
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
             <v-icon large>mdi-phone-hangup</v-icon>
           </v-btn>
         </v-row>
       </template>
     </portal>
 
-<<<<<<< HEAD
-    <portal to="destination3">
-      <template v-if="allClients">
-        <div v-for="client in allClients"
-          :key="client.id" 
-          :class="['d-flex', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
-          style="font-size: 0.8em"
-        >
-          {{ client.firstName + " " + client.lastName }}
-
-          <v-spacer/>
-
-          <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small>
-            {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
-          </v-icon>
-        </div>
-      </template>
-=======
     <portal v-if="allClients" to="current-room-participants">
       <div v-for="client in allClients"
         :key="client.id" 
@@ -108,7 +67,6 @@
           {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
         </v-icon>
       </div>
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
     </portal>
 
     <!-- Helps user fix audio issues if an error shows up -->
@@ -175,16 +133,6 @@ export default {
   ],
   data () {
     return {
-<<<<<<< HEAD
-      allClients: null,
-
-      roomDoc: null,
-
-      firebaseUnsubscribeFuncs: [],
-      
-      // Begin firebase documents
-=======
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
       roomDoc: null,
 
       firebaseUnsubscribeFuncs: [],
@@ -197,28 +145,19 @@ export default {
       isTryingToConnect: false,
       twilioInitialized: false,
       
-<<<<<<< HEAD
-      isMicEnabled: true,
-      isVideoEnabled: false,
-      isDeafened: false,
-=======
       isTryingToEnableMic: false,
       isTryingToEnableCamera: false,
       isTryingToEnableScreen: false,
 
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
       isSharingScreen: false,
 
       cameraTrack: null,
       micTrack: null,
       screenTrack: null,
-<<<<<<< HEAD
-=======
 
       micPublication: null,
       cameraPublication: null,
       screenPublication: null,
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
       
       // Contains connected participants with a published audio stream
       // Maps sessionID to the remote participants isMicOn value
@@ -254,106 +193,16 @@ export default {
       };  
     }
   },
-  watch: {
-    allClients () {
-      console.log("allClients changed =", this.allClients); 
-    }
-  },
-  watch: {
-    allClients () {
-      console.log("allClients changed =", this.allClients); 
-    }
-  },
   async created () {
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-    await this.connectToTwilioRoom();
-    const roomDocRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-    this.$_listenToDoc(roomDocRef, this, "roomDoc")
-        .then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
-=======
-    // quickfix for the missing prop this.allClients
-    const participantsQuery = db.collection(`/class/${this.$route.params.class_id}/participants`)
-      .where("currentRoom", "==", this.$route.params.room_id);
-=======
-    // quickfix for the missing prop this.allClients
-    const participantsQuery = db.collection(`/class/${this.$route.params.class_id}/participants`)
-      .where("curentRoom", "==", this.$route.params.room_id);
->>>>>>> Stashed changes
-
-    // then the watch hook will do the trick
-    this.$_listenToCollection(participantsQuery, this, "allClients").then(unsubFunc => {
-      this.firebaseUnsubscribeFuncs.push(unsubFunc);
-    });
-
-    if (!this.isTwilioSupportedByBrowser()) {
-      return; 
-    }
-    try {
-      this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
-        name: this.roomID,
-        audio: true, // should be able to just connect without anything
-        dominantSpeaker: true
-        // video: { width: 640 }
-      }); 
-    } catch (error) {
-      this.tellUserHowToFixError(error);
-      return;
-    }
-    
-    // others => me
-    this.twilioRoom.participants.forEach(
-      participant => this.handleHisOrHerTracks(participant)
-    );
-    
-    this.twilioRoom.on("participantConnected", 
-      participant => this.handleHisOrHerTracks(participant)
-    );
-
-    this.twilioRoom.on("participantDisconnected", participant => {
-      Vue.delete(this.participantAudioStatus, participant.identity);
-      this.removeHisOrHerSharedTracks(participant);
-    });
-
-    this.twilioRoom.on("dominantSpeakerChanged", participant => {
-      if (!participant) console.log("participant is null!"); 
-      this.dominantParticipantSessionID = participant ? participant.identity : null;
-    });
-
-    // me => others
-    window.addEventListener("beforeunload", this.twilioRoom.disconnect);
-    window.addEventListener("pagehide", this.twilioRoom.disconnect);
-    
-    // to detect the mute all TODO: refactor
-    this.$_listenToDoc(
-      db.doc(`classes/${this.$route.params.class_id}/rooms/${this.roomID}`),
-      this, 
-      "roomDoc"
-    ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
-
-    this.twilioInitialized = true;
->>>>>>> Stashed changes
-=======
     if (this.canHearAudio && this.isTwilioSupportedByBrowser()) {
       this.connectToTwilioRoom();
     }
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
   },
   beforeDestroy () {
-    // remove the "mute everyone" listener
     for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
       unsubscribe();
     }
 
-<<<<<<< HEAD
-    // disable camera, mic, etc. to turn off the lights
-    if (this.cameraTrack) this.cameraTrack.stop();
-    if (this.micTrack) this.micTrack.stop();
-    if (this.screenTrack) this.screenTrack.stop(); 
-
-    if (this.twilioRoom) {
-=======
     if (this.twilioRoom) {
       const { localParticipant } = this.twilioRoom; 
       
@@ -370,7 +219,6 @@ export default {
         this.micPublication.track.stop();
       }
 
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
       // stop displaying other people's tracks
       this.twilioRoom.participants.forEach(otherPerson => {
         this.removeHisOrHerSharedTracks(otherPerson);
@@ -394,53 +242,6 @@ export default {
         }
       }
     },
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    async isVideoEnabled (isEnabled) {
-      if (isEnabled) {
-        const { createLocalVideoTrack } = require('twilio-video');
-        const videoTrack = await createLocalVideoTrack();
-        videoTrack.enable();
-
-        // Display the video preview.
-        const divContainer = document.getElementById('local-video');
-        const videoElement = videoTrack.attach();
-        videoElement.height = 100; 
-        videoElement.width = 200;
-        divContainer.appendChild(videoElement);
-            
-        // publish the video tracks to other people
-        this.twilioRoom.localParticipant.publishTrack(videoTrack);
-=======
-    async isCameraEnabled (newValue) {
-      if (newValue) {
-        this.cameraTrack = await Twilio.createLocalVideoTrack();
-        this.cameraTrack.enable();
-        this.shareMyVisualTrackWithEveryone(this.cameraTrack);
-      } 
-      else {
-        this.stopSharingMyVisualTracks();
-      }
-    },
-    async isSharingScreen (newValue) {
-      if (newValue) {
-        try {
-          // I think audio: false prevents MacOS Safari from throwing a"type error"
-          const myScreenStream = await navigator.mediaDevices.getDisplayMedia({ audio: false });
-          this.shareMyVisualTrackWithEveryone(
-            new Twilio.LocalVideoTrack(myScreenStream.getTracks()[0])
-          );
-        } catch (error) {
-          this.tellUserHowToFixError(error);
-        }
->>>>>>> Stashed changes
-      } 
-      else {
-        this.twilioRoom.localParticipant.videoTracks.forEach(publication => {
-          publication.track.disable(); // other people
-          this.unmountTrack(publication.track); // hide local preview
-        });
-=======
     isMicOn (newValue) {
       if (!this.twilioRoom) return; 
       const { audioTracks } = this.twilioRoom.localParticipant; 
@@ -448,7 +249,6 @@ export default {
         audioTracks.forEach(publication => publication.track.enable());
       } else {
         audioTracks.forEach(publication => publication.track.disable());
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
       }
     },
     async isCameraOn (newValue) {
@@ -578,39 +378,6 @@ export default {
         this.isTryingToEnableCamera = false; 
       }
     },
-<<<<<<< HEAD
-    /*
-     * A track is a stream of bytes that contain the data generated by a multimedia source such as a microphone or a camera.
-     * Each track is wrapped by a publication.
-     * For details on emitted events,
-     * @see https://www.twilio.com/docs/video/migrating-1x-2x#whats-changed
-     */
-    participantOnConnect (participant) {
-      console.log("Participant onConnect", participant.identity);
-      
-      const tryHandleAudioTrack = (track) => {
-        if (track.kind != "audio") return;
-        const audioTrack = track;
-        
-        const setStatus = () => Vue.set(
-          this.participantAudioStatus,
-          participant.identity,
-          audioTrack.isEnabled
-        );
-        setStatus();
-        audioTrack.on('disabled', setStatus);
-        audioTrack.on('enabled', setStatus);
-        
-        this.mountAudioTrack(audioTrack);
-      };
-
-<<<<<<< Updated upstream
-      const tryHandleVideoTrack = (track) => {
-        if (track.kind != "video") return;
-        const videoTrack = track;
-        
-        const setStatus = () => {
-=======
     handleHisOrHerTracks (participant) {
       // first initialize their status as muted
       // then if they shared tracks, then their audio status will be updated to true
@@ -635,56 +402,13 @@ export default {
       });
       participant.on("trackUnpublished", track => {
         if (track.kind === "audio") {
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
           Vue.set(
             this.participantAudioStatus,
             participant.identity,
             false
           );
         }
-<<<<<<< HEAD
-        setStatus();
-
-        videoTrack.on('disabled', setStatus);
-        videoTrack.on('enabled', setStatus);
-        
-        this.mountVideoTrack(videoTrack);
-      };
-      
-      const handleTrack = (track) => {
-        console.log("handleTrack track =", track);
-        tryHandleAudioTrack(track);
-        tryHandleVideoTrack(track); 
-      }
-      
-      const handlePublication = (publication) => {
-        if (publication.isSubscribed) {
-          handleTrack(publication.track);
-        }
-      }
-      
-      participant.tracks.forEach(handlePublication);
-
-      // whenever someone publishes a track i.e. audio/video/screen, we'll be informed (automatically subscribed)
-      participant.on("trackSubscribed", handleTrack);
-=======
-      // display local feedback 
-      const htmlVideoElement = visualTrack.attach();
-      htmlVideoElement.height = 150; 
-      htmlVideoElement.width = 210;
-      document.getElementById("local-video").appendChild(htmlVideoElement);
-    },
-    stopSharingMyVisualTracks () {
-      this.twilioRoom.localParticipant.videoTracks.forEach(publication => {
-        // publication.track.disable(); 
-        publication.unpublish();
->>>>>>> Stashed changes
-
-      // whenever someone else unpublishes a track, we'll remove it
-      participant.on("trackUnsubscribed", this.unmountTrack);
-=======
       });
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
     },
     handleNewlyReceivedTrack (track, participant) {
       if (track.kind === "video") {        

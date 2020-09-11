@@ -14,6 +14,10 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
     {
+      path: "/get-started",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/GetStarted.vue")
+    },
+    {
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-overview" */ "./pages/ClassPageTemplate.vue"),
       children: [
@@ -40,10 +44,6 @@ const router = new Router({
             }
           ]
         },
-        // {
-        //   path: "room/:room_id",
-        //   component: () => import(/* webpackChunkName: "class-page-live" */ "./pages/RealtimeSpace.vue")
-        // },
         // {
         //   // when /user/:id/posts is matched
         //   path: "new",

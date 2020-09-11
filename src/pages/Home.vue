@@ -26,19 +26,7 @@
                     <v-list-item-subtitle>Maplestory OST</v-list-item-subtitle>
                   </v-list-item-content>
 
-<<<<<<< HEAD
-        <!-- Create class -->
-        <!-- <BasePopupButton actionName="Create class" 
-          @action-do="(C) => createClass(C)"
-          :inputFields="['class name', 'class description']"
-        >
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-plus" color="secondary">Create Class</BaseButton>
-          </template>
-        </BasePopupButton> -->
-=======
                   <v-spacer></v-spacer>
->>>>>>> 56843779f815ddd72b11ab1c05e0ac6fdffea35e
 
                   <v-list-item-icon>
                     <v-btn icon>
