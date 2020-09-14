@@ -1,31 +1,13 @@
 <template>
   <portal v-if="roomTypeDoc" to="side-drawer">
-    <v-list-item two-line style="padding-left: 10x">
+    <v-list-item two-line style="padding-top: 4px; padding-left: 10x">
       <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
 
       <v-list-item-content>
-        <v-list-item-title style="opacity: 80%; font-size: 1.3rem">{{ roomTypeDoc.name }}</v-list-item-title>
+        <v-list-item-title style="font-size: 1.25rem">{{ roomTypeDoc.name }}</v-list-item-title>
       </v-list-item-content>
-
-      <v-list-item-action>
-        <v-dialog v-model="showLibrary" fullscreen>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn v-on="on" v-bind="attrs" tile style="padding: 0 8px">
-              <v-icon>mdi-bookshelf</v-icon>
-            </v-btn>
-          </template>
-
-          <v-toolbar dark>
-            <v-btn icon dark @click="showLibrary = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <ClassLibrary/>
-        </v-dialog>
-      </v-list-item-action>
     </v-list-item>
 
     <portal to="app-bar">
@@ -113,10 +95,6 @@
     </v-row>
 
     <v-divider/>
-
-    <div style="padding-top: 40px; padding-left: 16px; padding-bottom: 12px; font-size: 1.25rem">
-      Rooms
-    </div>
 
     <!-- COMMON ROOM-->
     <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
@@ -288,7 +266,7 @@
 
     <!-- CONTROL DASHBOARD -->
     <portal to="side-drawer-bottom-region">
-      <v-card color="black"  >
+      <v-card color="grey darken-1"  >
         <v-card-title class="mb-0 pb-0 white--text">
           {{ user.firstName + " " + user.lastName }}
         </v-card-title>

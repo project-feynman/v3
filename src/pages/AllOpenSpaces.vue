@@ -1,47 +1,8 @@
 <template>
   <div>
     <portal to="side-drawer">
-      <v-list class="py-0">
-        <v-list-item two-line style="padding-left: 24px">
-          <v-list-item-avatar @click="$router.push('/get-started')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
-            <img src="/logo.png">
-          </v-list-item-avatar>
 
-          <v-list-item-content>
-            <v-list-item-title style="opacity: 80%; font-size: 1.3rem">{{ mitClass.name }}</v-list-item-title>
-          </v-list-item-content>
-
-          <v-list-item-action>
-            <v-row class="d-flex mr-3">
-              <!-- TODO -->
-              <v-badge v-show="false" color="blue" content="2" overlap>
-                <v-btn tile style="padding: 0 8px">
-                  <v-icon>mdi-chat</v-icon>
-                </v-btn>
-              </v-badge>
-
-              <v-dialog v-model="showLibrary" fullscreen>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn v-on="on" v-bind="attrs" tile style="padding: 0 8px" class="ml-2">
-                    <v-icon>mdi-bookshelf</v-icon>
-                  </v-btn>
-                </template>
-
-                <v-toolbar dark>
-                  <v-btn icon dark @click="showLibrary = false">
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </v-toolbar>
-
-                <ClassLibrary/>
-              </v-dialog>
-            </v-row>
-          </v-list-item-action>
-        </v-list-item>
-        
-        <v-divider/>
-
-        <div style="padding-top: 40px; padding-left: 24px; padding-bottom: 12px; font-size: 1.25rem">
+        <div style="padding-top: 20px; padding-left: 24px; padding-bottom: 12px; font-size: 1.25rem">
           Open Spaces
         </div>
 

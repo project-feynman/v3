@@ -21,7 +21,7 @@ const router = new Router({
     },
     {
       path: "/class/:class_id",
-      component: () => import(/* webpackChunkName: "class-overview" */ "./pages/ClassPageTemplate.vue"),
+      component: () => import(/* webpackChunkName: "class-page-template" */ "./pages/ClassPageTemplate.vue"),
       children: [
         {
           path: "",

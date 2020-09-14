@@ -1,14 +1,39 @@
 <template>
   <v-app>
-    <v-navigation-drawer app width="285" permanent>
-      <!-- <SmallAppBar>
-        <portal-target name="app-bar">
-
-        </portal-target>
-      </SmallAppBar> -->
-
-      <!-- <v-divider/> -->
+    <v-app-bar app clipped-left flat color="black" :style="`padding-left: ${24-12}px`">
+      <v-list-item-avatar @click="$router.push('/get-started')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
+        <img src="/logo.png">
+      </v-list-item-avatar>
       
+        <v-list-item-title v-if="mitClass" style="opacity: 90%; font-size: 1.3rem; color: white">{{ mitClass.name }}</v-list-item-title>
+
+      <v-spacer/>
+
+      <!-- Expose an activator -->
+      <GroupChat v-if="mitClass" class="mr-3"/>
+
+      <!-- Library -->
+      <v-dialog v-model="showLibrary" fullscreen>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn v-on="on" v-bind="attrs" color="white">
+            <v-icon class="mr-2">mdi-bookshelf</v-icon>
+            Library
+          </v-btn>
+        </template>
+
+        <v-toolbar dark>
+          <v-btn icon dark @click="showLibrary = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <ClassLibrary/>
+      </v-dialog>
+    </v-app-bar>
+
+    <v-divider/>
+
+    <v-navigation-drawer app width="285" permanent clipped>      
       <portal-target name="side-drawer">
 
       </portal-target>
@@ -41,6 +66,8 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
 import SmallAppBar from "@/components/SmallAppBar.vue"; 
+import GroupChat from "@/components/GroupChat.vue"; 
+import ClassLibrary from "@/pages/ClassLibrary.vue";
 
 export default {
   name: "ClassPageTemplate",
@@ -48,11 +75,15 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    SmallAppBar
+    SmallAppBar,
+    GroupChat,
+    ClassLibrary
   },
   data: () => ({
     firebaseRef: null,
     classParticipantsRef: null,
+    isChatOpen: false,
+    showLibrary: false
   }),
   computed: {
     ...mapState([
