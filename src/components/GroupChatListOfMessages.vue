@@ -7,7 +7,8 @@
     <v-divider/>
 
     <v-list-item v-for="(message, i) in allMessages" :key="message.id" :ref="i === allMessages.length - 1 ? 'NewestMessage' : ''">
-      {{ message.author.firstName }} {{ message.timestamp.toDate() }}: {{ message.content }} 
+      {{ message.author.firstName }} ({{ message.timestamp.toDate().toLocaleString() }}):
+      {{ message.content }} 
     </v-list-item>
   </v-list>
 </template>
