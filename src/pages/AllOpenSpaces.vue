@@ -143,6 +143,9 @@ export default {
       component: this
     });
   },
+  destroyed () {
+    this.unsubscribeRoomTypesListener(); 
+  },
   methods: {
     /**
      * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
