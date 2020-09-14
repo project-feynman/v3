@@ -19,7 +19,7 @@
     <v-toolbar>
       <!-- Tabs for different blackboards -->
       <v-tabs v-if="user && room" 
-        v-model="activeBoard" 
+        v-model="activeBoardID" 
         active-class="accent--text" slider-color="accent" background-color="white"
       >
         <template v-for="(board, i) in room.blackboards">
@@ -36,14 +36,14 @@
     <div id="room" class="room-wrapper">
         <!-- The actual blackboards -->
         <v-tabs-items v-if="blackboardRefs.length !== 0 && room" 
-          v-model="activeBoard" 
+          v-model="activeBoardID" 
           touchless
         >
         <!-- re-render the blackboard everytime someone switches -->
-          <v-tab-item v-for="(board, i) in room.blackboards" 
-            :value="board" :key="i"
+          <v-tab-item v-for="(boardID, i) in room.blackboards" 
+            :value="boardID" :key="i"
           >
-            <RealtimeBlackboard 
+            <RealtimeBlackboard v-if="boardID === activeBoardID"
               :blackboardRef="blackboardRefs[i]"
             />
           </v-tab-item>
@@ -90,7 +90,7 @@ export default {
       blackboardRefs: [],
       snapshotListeners: [],
       roomRef: null,
-      activeBoard: 'tab-1',
+      activeBoardID: null,
       boards: [],
       incrementToDestroyComponent: -100000
     }
@@ -156,7 +156,7 @@ export default {
       );
       await Promise.all(promises);
       
-      this.activeBoard = newID;
+      this.activeBoardID = newID;
     },
   }
 };
