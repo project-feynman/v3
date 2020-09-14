@@ -19,11 +19,9 @@
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
       <template v-if="!twilioInitialized && !isTryingToConnect">
-        <p class="yellow--text">Only connected to the blackboard</p>
+        <p class="yellow--text">Connected to the blackboard</p>
 
-        <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" fab color="green white--text">
-          <v-icon>mdi-phone</v-icon>
-        </v-btn>
+        <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" block class="green white--text">Connect to audio</v-btn>
       </template>
 
       <p v-else-if="!twilioInitialized && isTryingToConnect" class="yellow--text">
@@ -293,54 +291,57 @@ export default {
           audio: false, // should be able to just connect without anything
           dominantSpeaker: true
         }); 
-      } catch (error) {
+
+        this.$store.commit("SET_CAN_HEAR_AUDIO", true); 
+        // persist mute and video settings from the previous room 
+        await this.shareAudioTrack(); 
+
+        // if the user was already muted, then stay muted
+        if (!this.isMicOn) {
+          this.micPublication.track.disable();
+        }
+        if (this.isCameraOn) this.shareCameraTrack(); 
+        
+        // others => me
+        this.twilioRoom.participants.forEach(
+          participant => this.handleHisOrHerTracks(participant)
+        );
+        
+        this.twilioRoom.on("participantConnected", 
+          participant => this.handleHisOrHerTracks(participant)
+        );
+
+        this.twilioRoom.on("participantDisconnected", participant => {
+          Vue.delete(this.participantAudioStatus, participant.identity);
+          this.removeHisOrHerSharedTracks(participant);
+        });
+
+        this.twilioRoom.on("dominantSpeakerChanged", participant => {
+          if (!participant) console.log("participant is null!"); 
+          this.dominantParticipantSessionID = participant ? participant.identity : null;
+        });
+
+        // me => others
+        window.addEventListener("beforeunload", this.twilioRoom.disconnect);
+        window.addEventListener("pagehide", this.twilioRoom.disconnect);
+        
+        // to detect the mute all TODO: refactor
+        this.$_listenToDoc(
+          db.doc(`classes/${this.$route.params.class_id}/rooms/${this.roomID}`),
+          this, 
+          "roomDoc"
+        ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
+
+        this.twilioInitialized = true; 
+      } 
+      
+      catch (error) {
         this.tellUserHowToFixError(error);
-        return;
-      } finally {
+      } 
+
+      finally {
         this.isTryingToConnect = false; 
       }
-      this.$store.commit("SET_CAN_HEAR_AUDIO", true); 
-
-      // persist mute and video settings from the previous room 
-      await this.shareAudioTrack(); 
-
-      // if the user was already muted, then stay muted
-      if (!this.isMicOn) {
-        this.micPublication.track.disable();
-      }
-      if (this.isCameraOn) this.shareCameraTrack(); 
-      
-      // others => me
-      this.twilioRoom.participants.forEach(
-        participant => this.handleHisOrHerTracks(participant)
-      );
-      
-      this.twilioRoom.on("participantConnected", 
-        participant => this.handleHisOrHerTracks(participant)
-      );
-
-      this.twilioRoom.on("participantDisconnected", participant => {
-        Vue.delete(this.participantAudioStatus, participant.identity);
-        this.removeHisOrHerSharedTracks(participant);
-      });
-
-      this.twilioRoom.on("dominantSpeakerChanged", participant => {
-        if (!participant) console.log("participant is null!"); 
-        this.dominantParticipantSessionID = participant ? participant.identity : null;
-      });
-
-      // me => others
-      window.addEventListener("beforeunload", this.twilioRoom.disconnect);
-      window.addEventListener("pagehide", this.twilioRoom.disconnect);
-      
-      // to detect the mute all TODO: refactor
-      this.$_listenToDoc(
-        db.doc(`classes/${this.$route.params.class_id}/rooms/${this.roomID}`),
-        this, 
-        "roomDoc"
-      ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
-
-      this.twilioInitialized = true;
     },
     /**
      * In ADDITION to trigger every line in `beforeDestroy`, it resets the state
@@ -356,13 +357,17 @@ export default {
       this.$emit("disconnect"); // causes parent to destroy this component
     },
     shareAudioTrack () {
-      return new Promise(async resolve => {
-        this.isTryingToEnableMic = true; 
-        this.micTrack = await Twilio.createLocalAudioTrack();
-        this.micTrack.enable();
-        this.micPublication = await this.twilioRoom.localParticipant.publishTrack(this.micTrack);       
-        this.isTryingToEnableMic = false; 
-        resolve(); 
+      return new Promise(async (resolve, reject) => {
+        try {
+          this.isTryingToEnableMic = true; 
+          this.micTrack = await Twilio.createLocalAudioTrack();
+          this.micTrack.enable();
+          this.micPublication = await this.twilioRoom.localParticipant.publishTrack(this.micTrack);       
+          this.isTryingToEnableMic = false; 
+          resolve(); 
+        } catch (error) {
+          reject(error);
+        }
       });
     },
     async shareCameraTrack () {
