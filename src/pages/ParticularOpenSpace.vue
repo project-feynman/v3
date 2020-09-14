@@ -5,32 +5,28 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
 
-        <!-- <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
-          <img src="/logo.png">
-        </v-list-item-avatar> -->
+      <v-list-item-content>
+        <v-list-item-title style="opacity: 80%; font-size: 1.3rem">{{ roomTypeDoc.name }}</v-list-item-title>
+      </v-list-item-content>
 
-        <v-list-item-content>
-          <v-list-item-title style="opacity: 80%; font-size: 1.3rem">{{ roomTypeDoc.name }}</v-list-item-title>
-        </v-list-item-content>
+      <v-list-item-action>
+        <v-dialog v-model="showLibrary" fullscreen>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn v-on="on" v-bind="attrs" tile style="padding: 0 8px">
+              <v-icon>mdi-bookshelf</v-icon>
+            </v-btn>
+          </template>
 
-        <v-list-item-action>
-          <v-dialog v-model="showLibrary" fullscreen>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-on="on" v-bind="attrs" tile style="padding: 0 8px">
-                <v-icon>mdi-bookshelf</v-icon>
-              </v-btn>
-            </template>
+          <v-toolbar dark>
+            <v-btn icon dark @click="showLibrary = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
 
-            <v-toolbar dark>
-              <v-btn icon dark @click="showLibrary = false">
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-            </v-toolbar>
-
-            <ClassLibrary/>
-          </v-dialog>
-        </v-list-item-action>
-      </v-list-item>
+          <ClassLibrary/>
+        </v-dialog>
+      </v-list-item-action>
+    </v-list-item>
 
     <portal to="app-bar">
 
@@ -413,7 +409,7 @@ export default {
     }
   },
   watch: {
-    "roomTypeDoc.roomAssignmentsCounter": function (newVal, oldVal) {
+    "roomTypeDoc.roomAssignmentsCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {
         // don't shuffle instructors
         if (this.isAdmin) return; 
@@ -428,7 +424,7 @@ export default {
         }
       }
     },
-    "roomTypeDoc.muteAllCounter": function (newVal, oldVal) {
+    "roomTypeDoc.muteAllCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {
         this.$store.commit("SET_IS_MIC_ON", false);
         this.$root.$emit("show-snackbar", "An admin muted everyone"); 
