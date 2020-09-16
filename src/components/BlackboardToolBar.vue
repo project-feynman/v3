@@ -63,7 +63,7 @@ export default {
       // data is nested to conform with Vuetify's internal implementation 
       // so the initial color gets displayed properly
       color: "orange",
-      colors: ["orange", "black", "cyan", "white"],
+      colors: ["orange", "#FF54F1", "cyan", "white"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
