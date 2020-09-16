@@ -2,9 +2,9 @@
   <div>
     <portal to="side-drawer">
       <v-list>
-        <div style="padding-top: 20px; padding-left: 24px; padding-bottom: 12px; font-size: 1.15rem">
+        <!-- <div style="padding-top: 12px; padding-left: 24px; padding-bottom: 8px; font-size: 1.15rem">
           Open Spaces
-        </div>
+        </div> -->
 
         <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
           append :to="(`section/${roomType.id}`)"
