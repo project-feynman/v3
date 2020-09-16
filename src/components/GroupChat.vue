@@ -18,7 +18,7 @@
                 v-on="on"
               >
                 <v-icon class="mr-2">mdi-chat</v-icon>
-                Group Chat
+                Chat
               </v-btn>
             </v-badge>
           </template>
