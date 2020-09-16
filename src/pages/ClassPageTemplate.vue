@@ -5,11 +5,12 @@
         <img src="/logo.png">
       </v-list-item-avatar>
       
-        <v-list-item-title v-if="mitClass" style="opacity: 100%; font-size: 1.45rem; color: white">{{ mitClass.name }}</v-list-item-title>
+      <v-list-item-title v-if="mitClass" style="opacity: 100%; font-size: 1.45rem; color: white">
+        {{ mitClass.name }}
+      </v-list-item-title>
 
       <v-spacer/>
-
-      <!-- Expose an activator -->
+      
       <GroupChat v-if="mitClass" class="mr-3"/>
 
       <!-- Library -->

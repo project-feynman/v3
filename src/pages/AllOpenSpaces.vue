@@ -1,8 +1,8 @@
 <template>
   <div>
     <portal to="side-drawer">
-
-        <div style="padding-top: 20px; padding-left: 24px; padding-bottom: 12px; font-size: 1.25rem">
+      <v-list>
+        <div style="padding-top: 20px; padding-left: 24px; padding-bottom: 12px; font-size: 1.15rem">
           Open Spaces
         </div>
 
