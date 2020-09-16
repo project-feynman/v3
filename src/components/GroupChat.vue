@@ -11,7 +11,7 @@
         >
           <!-- Activator Button -->
           <template v-slot:activator="{ on, attrs }">
-            <v-badge overlap :value="isShowingBadge">
+            <v-badge overlap :value="false">
               <v-btn
                 color="white"
                 v-bind="attrs"

@@ -1,11 +1,11 @@
 <template>
-  <v-app>
+  <div>
     <v-app-bar app clipped-left flat color="black" :style="`padding-left: ${24-12}px`">
       <v-list-item-avatar @click="$router.push('/get-started')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
         <img src="/logo.png">
       </v-list-item-avatar>
       
-        <v-list-item-title v-if="mitClass" style="opacity: 90%; font-size: 1.3rem; color: white">{{ mitClass.name }}</v-list-item-title>
+        <v-list-item-title v-if="mitClass" style="opacity: 100%; font-size: 1.45rem; color: white">{{ mitClass.name }}</v-list-item-title>
 
       <v-spacer/>
 
@@ -55,7 +55,7 @@
     <!-- :key="...class_id" forces <router-view/> to re-render -->
     <!-- Many things from <router-view> will teleport to the portals above -->
     <router-view v-if="mitClass" :key="$route.params.class_id"/>
-  </v-app>
+  </div>
 </template>
 
 <script>

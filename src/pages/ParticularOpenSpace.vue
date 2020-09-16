@@ -1,18 +1,14 @@
 <template>
   <portal v-if="roomTypeDoc" to="side-drawer">
-    <v-list-item two-line style="padding-top: 4px; padding-left: 10x">
+    <v-list-item two-line style="padding-top: 0; padding-left: 10x">
       <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
 
       <v-list-item-content>
-        <v-list-item-title style="font-size: 1.25rem">{{ roomTypeDoc.name }}</v-list-item-title>
+        <v-list-item-title style="font-size: 1.15rem">{{ roomTypeDoc.name }}</v-list-item-title>
       </v-list-item-content>
     </v-list-item>
-
-    <portal to="app-bar">
-
-    </portal>
 
     <v-row v-if="isAdmin" justify="center">
       <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
