@@ -20,6 +20,10 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/GetStarted.vue")
     },
     {
+      path: "/canvas-playground",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/CanvasPlayground.vue")
+    },
+    {
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-page-template" */ "./pages/ClassPageTemplate.vue"),
       children: [

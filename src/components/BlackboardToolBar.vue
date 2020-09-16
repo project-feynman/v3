@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :height="toolbarHeight" color="white" :elevation="1" class="blackboard-toolbar">
+  <v-app-bar width="700px" :height="toolbarHeight" flat color="white" class="blackboard-toolbar">
     <v-container fluid class="px-0 py-0">
       <v-row align="center" justify="space-between">
         <v-col class="py-0">
@@ -14,7 +14,7 @@
 
             <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
     
-            <BaseButton :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
+            <BaseButton :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
               <!-- Eraser -->
             </BaseButton>
             <slot name="touch-slot">
@@ -25,9 +25,9 @@
         <slot name="record-audio-slot">
 
         </slot>
-        <!-- Make the fullscreen stand out -->
-        <BaseButton @click="fullScreen()" filled :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
-          {{ isFullScreen ? 'Exit' : '' }} Fullscreen
+
+        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" filled small :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
+          Fullscreen
         </BaseButton>
       </v-row>
     </v-container>
@@ -69,6 +69,9 @@ export default {
     }
   },
   computed: {
+    isBoardFullscreen () {
+      return this.$store.state.isBoardFullscreen;
+    },
     isStrokeEraser () {
       return this.currentTool === BlackboardTools.STROKE_ERASER;
     },

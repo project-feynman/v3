@@ -16,7 +16,7 @@
     
     </portal-target>
 
-    <v-toolbar>
+    <v-toolbar v-if="!isBoardFullscreen">
       <!-- Tabs for different blackboards -->
       <v-tabs v-if="user && room" 
         v-model="activeBoardID" 
@@ -100,6 +100,7 @@ export default {
       "user",
       "mitClass",
       "session",
+      "isBoardFullscreen"
     ]),
     classId () {
       return this.$route.params.class_id; 

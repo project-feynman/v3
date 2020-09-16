@@ -1,11 +1,13 @@
 <template>
-  <div>
-    <v-app-bar app clipped-left flat color="black" :style="`padding-left: ${24-12}px`">
+  <v-app>
+    <v-app-bar :value="!isBoardFullscreen" app clipped-left color="white" outlined :style="`padding-left: ${24-12}px`">
+      <v-app-bar-nav-icon @click="isShowingDrawer = !isShowingDrawer"></v-app-bar-nav-icon>
+
       <v-list-item-avatar @click="$router.push('/get-started')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
         <img src="/logo.png">
       </v-list-item-avatar>
       
-      <v-list-item-title v-if="mitClass" style="opacity: 100%; font-size: 1.45rem; color: white">
+      <v-list-item-title v-if="mitClass" style="opacity: 100%; font-size: 1.45rem;">
         {{ mitClass.name }}
       </v-list-item-title>
 
@@ -34,7 +36,7 @@
 
     <v-divider/>
 
-    <v-navigation-drawer app width="285" permanent clipped touchless>      
+    <v-navigation-drawer :value="isShowingDrawer" app width="285" clipped touchless>      
       <portal-target name="side-drawer">
 
       </portal-target>
@@ -47,7 +49,7 @@
 
     </v-navigation-drawer>
 
-    <v-main>
+    <v-main style="overflow-x: auto;">
       <portal-target name="main-content">
         
       </portal-target>
@@ -56,7 +58,7 @@
     <!-- :key="...class_id" forces <router-view/> to re-render -->
     <!-- Many things from <router-view> will teleport to the portals above -->
     <router-view v-if="mitClass" :key="$route.params.class_id"/>
-  </div>
+  </v-app>
 </template>
 
 <script>
@@ -84,15 +86,27 @@ export default {
     firebaseRef: null,
     classParticipantsRef: null,
     isChatOpen: false,
+    isShowingDrawer: true,
     showLibrary: false
   }),
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "isBoardFullscreen"
     ]),
     classID () {
       return this.$route.params.class_id;
+    }
+  },
+  // TODO: refactor this quickfix
+  watch: {
+    isBoardFullscreen (newVal) {
+      if (newVal) {
+        this.isShowingDrawer = false; 
+      } else {
+        this.isShowingDrawer = true; 
+      }
     }
   },
   created () {

@@ -1,12 +1,12 @@
 <template>
-  <v-app>
+  <div>
     <router-view/>
     
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
       <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
-  </v-app>
+  </div>
 </template>
 
 <script>
@@ -25,6 +25,7 @@ export default {
 </script>
 <style>
 /* Global styles */
+/* What does this do? */
 a {
   text-decoration: none;
 }

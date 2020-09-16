@@ -1,6 +1,7 @@
 <template>
   <div>
     <BlackboardCoreDrawing
+      :isVertical="isVertical"
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
@@ -29,7 +30,7 @@
           @toggle-fullScreen="toggleFullScreen()"
         >
           <template v-slot:touch-slot>
-            <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black">
+            <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black" small>
 
             </BaseButton>
           </template>
@@ -38,7 +39,7 @@
             <template v-if="currentState === RecordState.PRE_RECORD">
               <!-- SET BACKGROUND IMAGE -->
               <slot name="set-background-button-slot">
-                <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black">
+                <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black" small>
                   <input 
                     @change="e => handleImageFile(e)" 
                     style="display: none" 
@@ -58,7 +59,7 @@
               <slot name="wipe-board-button-slot"> 
                 <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
                   <template v-slot:activator-button="{ on }">
-                    <BaseButton :on="on" icon="mdi-delete" data-qa="wipe-board">
+                    <BaseButton :on="on" icon="mdi-delete" small>
                       Wipe board
                     </BaseButton>
                   </template>
@@ -72,12 +73,12 @@
             
               </slot> 
 
-              <BaseButton v-if="isAdmin" @click="startRecording()" icon="mdi-adjust" color="secondary" class="white--text">
+              <BaseButton v-if="isAdmin" @click="startRecording()" icon="mdi-adjust" color="secondary" class="white--text" small>
                 Record
               </BaseButton>
             </template>
 
-            <BaseButton v-if="isAdmin && currentState === RecordState.MID_RECORD" @click="stopRecording()" color="secondary" class="white--text" icon="mdi-stop">
+            <BaseButton v-if="isAdmin && currentState === RecordState.MID_RECORD" @click="stopRecording()" color="secondary" class="white--text" icon="mdi-stop" small>
               Finish
             </BaseButton>
           </template>
@@ -124,6 +125,12 @@ export default {
       type: Boolean,
       required: true
     },
+    isVertical: {
+      type: Boolean,
+      default () {
+        return false; 
+      }
+    }
   },
   components: { 
     BlackboardToolBar,

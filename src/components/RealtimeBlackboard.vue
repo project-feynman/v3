@@ -1,10 +1,16 @@
 <template>
   <div>
-    <p v-if="!hasFetchedBlackboardData">Loading the real-time blackboard...</p>
+    <template v-if="!hasFetchedBlackboardData">
+      <h1>if somethingWrong: </h1>
+        <h1>&nbsp&nbsp reloadWebsite()</h1>
+      <h1>&nbsp&nbsp if stillNotWorking:</h1>
+        <h1>&nbsp&nbsp&nbsp&nbsp email("eltonlin@mit.edu")</h1>
+    </template>
 
     <!-- Blackboard -->
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <Blackboard v-else
+      :isVertical="isVertical"
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :backgroundImage="backgroundImage" 
       isRealtime
@@ -13,26 +19,9 @@
       @update:audioBlob="blob => blackboard.audioBlob = blob"
       @record-end="handleRecordEnd()"
     >
-      <template v-slot:blackboard-toolbar>
-        <slot name="blackboard-toolbar">
-
-        </slot> 
-
-        <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-content-save" color="black">
-              Save
-            </BaseButton>
-          </template>
-          <template v-slot:message-to-user>
-            <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
-          </template> 
-        </BasePopupButton>
-      </template> 
-
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot>
-        <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black">
+        <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black" small>
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
@@ -47,7 +36,7 @@
       <template v-slot:wipe-board-button-slot>
         <BasePopupButton actionName="Wipe board" @action-do="resetBlackboardOnFirestore()">
           <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-delete" color="black">
+            <BaseButton :on="on" icon="mdi-delete" color="black" small>
               Wipe
             </BaseButton>
           </template>
@@ -56,6 +45,27 @@
           </template> 
         </BasePopupButton>
       </template>
+
+      <template v-slot:blackboard-toolbar>
+        <slot name="blackboard-toolbar">
+
+        </slot> 
+
+        <BaseButton @click="rotateBlackboard()" icon="mdi-phone-rotate-landscape" color="black" small>
+          Rotate
+        </BaseButton>
+
+        <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
+          <template v-slot:activator-button="{ on }">
+            <BaseButton :on="on" icon="mdi-content-save" color="black" small>
+              Save
+            </BaseButton>
+          </template>
+          <template v-slot:message-to-user>
+            <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
+          </template> 
+        </BasePopupButton>
+      </template> 
     </Blackboard> 
     
     <!-- Popup for saving blackboard -->
@@ -124,6 +134,7 @@ export default {
     return {
       hasFetchedStrokesFromDb: false,
       hasFetchedBackgroundImage: false,
+      isVertical: false,
       strokesArray: [],
       backgroundImage: {
         downloadURL: null,
@@ -167,6 +178,14 @@ export default {
       if (!this.hasFetchedBackgroundImage) {
         this.hasFetchedBackgroundImage = true; 
       }
+
+      // now also handle is vertical 
+      this.isVertical = !!blackboardDoc.data().isVertical; 
+      if (this.isVertical) {
+        this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
+      } else {
+        this.$root.$emit("show-snackbar", "Board is set to landscape mode"); 
+      }
     });
     // console.log('created blackboard with id', this.blackboardRef.im.path.segments[3]);
   },
@@ -175,6 +194,11 @@ export default {
     this.removeBackgroundImageListener(); 
   },
   methods: {
+    rotateBlackboard () {
+      this.blackboardRef.update({ 
+        isVertical: !this.isVertical
+      });
+    },
     /** 
     Known issues:
       1. [CRUCIAL] Investigate why each new stroke triggers 2-3 snapshot callbacks 
@@ -251,8 +275,8 @@ export default {
       strokeObject.endTime = this.blackboard.currentTime; 
 
       if (!doc.data().isErasing) {
-        // artifically add a 1 second period to the stroke
-        strokeObject.endTime += 1;
+        // artifically add a 0.5 second period to the stroke
+        strokeObject.endTime += 0.5;
       } 
       return strokeObject;
     },

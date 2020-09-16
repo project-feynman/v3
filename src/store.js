@@ -53,7 +53,8 @@ export default new Vuex.Store({
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
     dominantSpeakerUID: null,
-    roomIDtoParticipants: null
+    roomIDtoParticipants: null,
+    isBoardFullscreen: false
   },
   getters: {
     isAdmin: state => {
@@ -61,6 +62,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_IS_BOARD_FULLSCREEN (state, newVal) {
+      state.isBoardFullscreen = newVal; 
+    },
     SET_CAN_HEAR_AUDIO (state, newVal) {
       state.canHearAudio = newVal; 
     },

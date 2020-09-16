@@ -1,5 +1,5 @@
 <template>
-  <div :class="['blackboard', isFullScreen ? 'blackboard-fullscreen' : '']" id="blackboard" elevation="1">
+  <div class="blackboard" elevation="1">
     <slot name="canvas-toolbar"
       :currentTool="currentTool"
       :isFullScreen="isFullScreen"
@@ -12,8 +12,13 @@
     >
 
     </slot>
-    <div ref="BlackboardWrapper" class="blackboard-wrapper">
-      <canvas ref="FrontCanvas" class="front-canvas" data-qa="front-canvas"
+
+    <div ref="BlackboardWrapper" class="blackboard-wrapper" style="position: relative;">
+      <!-- <v-btn @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" fab absolute right class="mt-5" color="accent" dark>
+        <v-icon>mdi-fullscreen</v-icon>
+      </v-btn> -->
+
+      <canvas ref="FrontCanvas" class="front-canvas"
         @touchstart="e => touchStart(e)"
         @touchmove="e => touchMove(e)"
         @touchend="e => handleLiftingContactFromBlackboard(e)"
@@ -21,7 +26,10 @@
         @mousemove="e => mouseMove(e)"
         @mouseup="e => mouseUp(e)"
       ></canvas>
-      <canvas ref="BackCanvas" class="back-canvas"></canvas>
+
+      <canvas ref="BackCanvas" class="back-canvas">
+      </canvas>
+
     </div>
   </div>
 </template>
@@ -86,6 +94,10 @@ export default {
     isRealtime: {
       type: Boolean,
       default: () => false 
+    },
+    isVertical: {
+      type: Boolean,
+      required: true
     }
   },
   mixins: [
@@ -125,7 +137,8 @@ export default {
   },
   computed: {
     ...mapState([
-      'canvasDimensions'
+      "canvasDimensions",
+      "isBoardFullscreen"
     ]),
     imageBlobUrl () {
       return this.imageBlob ? URL.createObjectURL(this.imageBlob) : "";
@@ -141,6 +154,9 @@ export default {
     }
   },
   watch: {
+    isVertical () {
+      this.resizeBlackboard()
+    },
     /**
      * Ensures `strokesArray => UI`, that is whenever the client mutates the `strokesArray` prop, we update <canvas/> accordingly`. 
      * 
@@ -187,7 +203,7 @@ export default {
   },
   mounted () {
     this.initializeCanvas();
-    document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
+    // document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
     window.addEventListener("resize", this.resizeBlackboard, false); 
     
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
@@ -206,7 +222,7 @@ export default {
      * Because every stroke is processed here, UI => strokesArray.
      */
     ...mapMutations([
-      'SET_CANVAS_DIMENSIONS',
+      "SET_CANVAS_DIMENSIONS",
     ]),
     handleEndOfStroke (newStroke) {
       newStroke.id = getRandomId(); 
@@ -414,13 +430,36 @@ export default {
         this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
     },
+    /**
+     * Correctly readjusts the external and internal dimensions of the canvas.
+     * Because the HTML canvas wipes everytime it's resized, 
+     * the function has to also re-render all the pens strokes and background image. 
+     */
     resizeBlackboard () {
-      const { BlackboardWrapper } = this.$refs;
-      BlackboardWrapper.style.height = "unset" // To reset the blackboard height when the user retries to make video after previewing
-      const fullScreenHeight = window.innerHeight - toolbarHeight;
-      const realtimeHeight = fullScreenHeight - navbarHeight;
-      const offlineHeight = Math.min(BlackboardWrapper.offsetWidth * aspectRatio, realtimeHeight);
-      this.canvas.style.height = this.isFullScreen ? `${fullScreenHeight}px` : (this.isRealtime ? `${realtimeHeight}px` : `${offlineHeight}px`);
+      // the aspect ratios and the dimensions of the fixed-size blackboards
+      const LANDSCAPE_WIDTH = 1200; 
+      const VERTICAL_MODE_WIDTH = 800; 
+      const PPT_SLIDE_RATIO = 3/4; 
+      const PDF_RATIO = 11/8.5; 
+      
+      const { BlackboardWrapper } = this.$refs; 
+      BlackboardWrapper.style.width = "100%"; 
+      BlackboardWrapper.style.height = "100%"; 
+
+      if (this.isVertical) {
+        this.canvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
+        this.canvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
+        this.bgCanvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
+        this.bgCanvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
+      } else {
+        this.canvas.style.width = `${LANDSCAPE_WIDTH}px`;
+        this.canvas.style.height = `${LANDSCAPE_WIDTH * PPT_SLIDE_RATIO}px`; 
+        this.bgCanvas.style.width = `${LANDSCAPE_WIDTH}px`;
+        this.bgCanvas.style.height = `${LANDSCAPE_WIDTH * PPT_SLIDE_RATIO}px`; 
+      }
+
+      // quickfix for indicating to user that they are only seeing part of the blackboard
+      this.canvas.style.border = '1px solid orange'
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
@@ -590,36 +629,19 @@ export default {
 </script>
 
 <style scoped>
-.blackboard {
-  position: relative;
-  z-index: 5;
-}
-.blackboard.blackboard-fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 10;
-}
-.blackboard-wrapper {
-  position: relative; 
-  z-index: -1;
-}
 .front-canvas {
-  width: 100%;
-  height: 1px;
   background-color: transparent;
   display: block;
+  z-index: 2;
+  /* Position relative is necessary for some reason */
+  position: relative; 
 }
 .back-canvas {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgb(62, 66, 66);
-  z-index: -1;
+  z-index: 0;
   display: block;
+  background-color: rgb(62, 66, 66);
 }
 </style>
