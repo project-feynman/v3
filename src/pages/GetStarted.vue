@@ -1,37 +1,39 @@
 <template>
-  <v-container fluid>
-    <h1>Get Started</h1>
-    <v-col cols="12" sm="6">
-      <TheSearchBar 
-        :items="mitClasses"
-        @submit="newVal => join({ mitClass: newVal })" 
-        color="accent"
-      />
-    </v-col>
-    
-    <v-container>
-      <!-- Ability to create new classes -->
-      <v-card v-for="c in user.enrolledClasses" :key="c.id" width="500">
-        <v-card-title>{{ c.name }}</v-card-title>
-        <v-card-subtitle>{{ c.description }}</v-card-subtitle>
-        <v-card-actions>
-          <v-spacer/>
-          <v-btn @click="remove({ mitClass: c })" text>Remove</v-btn> 
-          <v-btn @click="$router.push(`class/${c.id}`)" text color="secondary">ENTER</v-btn>
-        </v-card-actions>
-      </v-card>
+  <v-app>
+    <v-container fluid>
+      <h1>Get Started</h1>
+      <v-col cols="12" sm="6">
+        <TheSearchBar 
+          :items="mitClasses"
+          @submit="newVal => join({ mitClass: newVal })" 
+          color="accent"
+        />
+      </v-col>
       
+      <v-container>
+        <!-- Ability to create new classes -->
+        <v-card v-for="c in user.enrolledClasses" :key="c.id" width="500">
+          <v-card-title>{{ c.name }}</v-card-title>
+          <v-card-subtitle>{{ c.description }}</v-card-subtitle>
+          <v-card-actions>
+            <v-spacer/>
+            <v-btn @click="remove({ mitClass: c })" text>Remove</v-btn> 
+            <v-btn @click="$router.push(`class/${c.id}`)" text color="secondary">ENTER</v-btn>
+          </v-card-actions>
+        </v-card>
+        
+      </v-container>
+    
+      <v-btn v-if="user"
+        @click="signOut()">
+        Sign Out
+      </v-btn>
+
+      <p>For any issues big or small, email <u>eltonlin@mit.edu</u></p>
+      <p>To report issues, visit <a href="https://github.com/feynman-project/explain-mit/issues" target="_blank">https://github.com/feynman-project/explain-mit/issues</a></p>
+
     </v-container>
-  
-    <v-btn v-if="user"
-      @click="signOut()">
-      Sign Out
-    </v-btn>
-
-    <p>For any issues big or small, email <u>eltonlin@mit.edu</u></p>
-    <p>To report issues, visit <a href="https://github.com/feynman-project/explain-mit/issues" target="_blank">https://github.com/feynman-project/explain-mit/issues</a></p>
-
-  </v-container>
+  </v-app>
 </template>
 
 <script>

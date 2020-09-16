@@ -1,11 +1,11 @@
 <template>
   <div>
-    <template v-if="!hasFetchedBlackboardData">
-      <h1>if somethingWrong: </h1>
-        <h1>&nbsp&nbsp reloadWebsite()</h1>
-      <h1>&nbsp&nbsp if stillNotWorking:</h1>
-        <h1>&nbsp&nbsp&nbsp&nbsp email("eltonlin@mit.edu")</h1>
-    </template>
+    <v-container v-if="!hasFetchedBlackboardData">
+      <h5>if somethingWrong: </h5>
+        <h5>&nbsp&nbsp reloadWebsite()</h5>
+      <h5>&nbsp&nbsp if stillNotWorking:</h5>
+        <h5>&nbsp&nbsp&nbsp&nbsp email("eltonlin@mit.edu")</h5>
+    </v-container>
 
     <!-- Blackboard -->
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->

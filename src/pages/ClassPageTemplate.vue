@@ -36,7 +36,7 @@
 
     <v-divider/>
 
-    <v-navigation-drawer :value="isShowingDrawer" app width="285" clipped touchless>      
+    <v-navigation-drawer v-model="isShowingDrawer" app width="285" clipped touchless>      
       <portal-target name="side-drawer">
 
       </portal-target>
