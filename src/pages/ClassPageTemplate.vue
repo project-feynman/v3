@@ -10,7 +10,7 @@
       </v-list-item-title>
 
       <v-spacer/>
-      
+
       <GroupChat v-if="mitClass" class="mr-3"/>
 
       <!-- Library -->
@@ -34,7 +34,7 @@
 
     <v-divider/>
 
-    <v-navigation-drawer app width="285" permanent clipped>      
+    <v-navigation-drawer app width="285" permanent clipped touchless>      
       <portal-target name="side-drawer">
 
       </portal-target>
