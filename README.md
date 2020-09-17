@@ -1,6 +1,21 @@
 # Feynman
 Our mission is to make MIT a vibrant place where everyone helps each other, so nobody has to stay up late studying alone. In doing so, we will accelerate the world's transition into open education. 
 
+High-level plan: 
+1. Build a website with blackboards for people to explain things to each other
+2. Use the explanations made from the blackboards to build a visual library
+3. Use the visual library to draw more users to the platform, causing even more explanations to be made. 
+
+Low-level plan: 
+1. Build a website with open spaces, each equipped with real-time blackboards
+2. Give it to 8.01, 18.01 and ESG (TEAL and ESG format where students solve problems in small groups) 
+3. Build a messenger that automatically connects all the students and staff together
+4. Replace all pset activities and Office Hours for 8.01, 18.01 and ESG
+5. Develop the visual library and visual Q&A. 
+6. Messenger --> People bump into each other often --> Use open spaces more --> More explanations are made --> Library is visited more --> People bump into each other more...
+7. Meanwhile, expand in parallel to other classes
+8. In the end, we become the single, de facto platform that replaces Zoom, Messenger/Slack, Piazza, and Canvas.
+
 ## Inspirations
 The project was inspired by many things. [The Number Devil](https://booksjar.com/pdf-epub-the-number-devil-a-mathematical-adventure-download/), [Surely You're Joking Mr Feynman](https://b-ok.global/book/1673299/ae9bd9?regionChanged=&redirect=20279758), Dr Hiluluk from One Piece, Discord, ExplainEverything, Piazza and Maplestory. 
 
