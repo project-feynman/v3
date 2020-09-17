@@ -36,7 +36,7 @@
 
     <v-divider/>
 
-    <v-navigation-drawer v-model="isShowingDrawer" app width="285" clipped touchless>      
+    <v-navigation-drawer v-model="isShowingDrawer" app width="285" clipped touchless height="100%">      
       <portal-target name="side-drawer">
 
       </portal-target>
@@ -46,7 +46,6 @@
 
         </portal-target>
       </template>
-
     </v-navigation-drawer>
 
     <v-main style="overflow-x: auto;">
