@@ -24,8 +24,12 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/CanvasPlayground.vue")
     },
     {
+      path: "/library-playground",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/LibraryPlayground.vue")
+    },
+    {
       path: "/class/:class_id",
-      component: () => import(/* webpackChunkName: "class-page-template" */ "./pages/ClassPageTemplate.vue"),
+      component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout.vue"),
       children: [
         {
           path: "",
@@ -84,7 +88,6 @@ const router = new Router({
 async function fetchUserInfo () {
   return new Promise(resolve => {
     firebase.auth().onAuthStateChanged(async user => {
-      console.log("authStateChanged(), user =", user);
       if (!user) {
         // necessary to handle if the user logs out
         store.commit("SET_USER", null);

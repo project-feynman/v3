@@ -73,7 +73,17 @@
  */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
-import { BlackboardTools, RecordState, navbarHeight, toolbarHeight, aspectRatio } from "@/CONSTANTS.js";
+import { 
+  BlackboardTools, 
+  RecordState, 
+  navbarHeight, 
+  toolbarHeight, 
+  LANDSCAPE_WIDTH,
+  VERTICAL_MODE_WIDTH,
+  PPT_SLIDE_RATIO,
+  PDF_RATIO
+} from "@/CONSTANTS.js";
+
 import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState, mapMutations } from "vuex";
 
@@ -435,13 +445,7 @@ export default {
      * Because the HTML canvas wipes everytime it's resized, 
      * the function has to also re-render all the pens strokes and background image. 
      */
-    resizeBlackboard () {
-      // the aspect ratios and the dimensions of the fixed-size blackboards
-      const LANDSCAPE_WIDTH = 1200; 
-      const VERTICAL_MODE_WIDTH = 800; 
-      const PPT_SLIDE_RATIO = 3/4; 
-      const PDF_RATIO = 11/8.5; 
-      
+    resizeBlackboard () {      
       const { BlackboardWrapper } = this.$refs; 
       BlackboardWrapper.style.width = "100%"; 
       BlackboardWrapper.style.height = "100%"; 

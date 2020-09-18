@@ -14,7 +14,7 @@
       </template>
       
       <!-- Doodle Video -->
-      <RenderlessFetchStrokes v-if="expl.thumbnail"
+      <RenderlessFetchStrokes v-if="expl.hasStrokes"
         :strokesRef="strokesRef"
         :imageDownloadUrl="expl.imageUrl"
         v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
@@ -22,7 +22,7 @@
         <div style="position: relative;"> 
           <!-- Thumbnail preview -->
           <template v-if="strokesArray.length === 0 || isLoading">
-            <v-img :src="expl.thumbnail" :aspect-ratio="16/9" data-qa="expl-thumbnail"/>
+            <v-img :src="expl.thumbnail || 'https://miro.medium.com/max/4406/1*KjJ8jkkARDfxSsgD2AykwA.png'" :aspect-ratio="16/9" data-qa="expl-thumbnail"/>
             <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item" data-qa="play-btn">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
               <v-btn v-else large dark>
@@ -30,13 +30,14 @@
               </v-btn>
             </div>
           </template>
-          <!-- Loaded video -->
+
           <DoodleVideo v-else-if="expl.audioUrl"
             :strokesArray="strokesArray"
             :imageBlob="imageBlob" 
             :audioUrl="expl.audioUrl" 
             ref="Doodle"
           />
+
           <DoodleAnimation v-else
             :strokesArray="strokesArray"
             :backgroundUrl="expl.imageUrl"

@@ -105,6 +105,7 @@ export default {
             })
           );
         }
+        // save the explanation doc itself
         promises.push(ref.set(explDoc));
         await Promise.all(promises);
         delete this.$store.state.explCache[ref.id];

@@ -51,6 +51,12 @@
       <BaseButton small disabled icon="mdi-music-clef-treble" color="grey">
         Play music
       </BaseButton>
+
+      <v-btn @click="cloudFunctionsDelete()" :loading="isClearingAllBoards">Functions Delete</v-btn>
+
+      <v-btn @click="cloudFunctionsSave()">
+        Cloud Functions save
+      </v-btn>
         
       <BasePopupButton>
         <template v-slot:activator-button="{ on }">
@@ -289,6 +295,7 @@ import HandleAnnouncements from "@/components/HandleAnnouncements.vue";
 import SmallAppBar from "@/components/SmallAppBar.vue";
 import firebase from "firebase/app";
 import "firebase/firestore"; 
+import "firebase/functions";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 
 export default {
@@ -323,7 +330,8 @@ export default {
         status: ""
       },
       groupSize: 3,
-      minRoomSizeOnShuffle: 2
+      minRoomSizeOnShuffle: 2,
+      isClearingAllBoards: false
     }
   },
   computed: {
@@ -437,6 +445,85 @@ export default {
     }
   },
   methods: {
+    async cloudFunctionsSave () {
+      function saveBoardAsExpl({ boardDbPath, explDbPath, mitClass, user, strokesArray, title }) {
+        return new Promise(async (resolve, reject) => {
+          const saveFn = firebase.functions().httpsCallable("saveExpl"); 
+          try {
+            const result = await saveFn({ 
+              title,
+              boardDbPath,
+              explDbPath, 
+              mitClass,
+              user,
+              strokesArray
+            });
+            console.log("Finished the upload operation, result =", result);
+            resolve(); 
+          } 
+          catch (error) {
+            console.log("Cloud Functions failed, error =", error); 
+          }
+        });
+      }
+
+      // constants that'll be re-used in the for loop below
+      const { class_id } = this.$route.params; 
+      const mitClass = {
+        id: this.mitClass.id,
+        name: this.mitClass.name,
+        maxOrder: this.mitClass.maxOrder
+      };
+      const user = {
+        uid: this.user.uid,
+        firstName: this.user.firstName,
+        lastName: this.user.lastName,
+        email: this.user.email
+      }; 
+      
+      // save the first board as the post
+      const newPostID = getRandomId(); 
+      for (const [i, boardID] of this.commonRoomDoc.blackboards.entries()) {
+        saveBoardAsExpl({
+          title: i === 0 ? `Lecture Recording (${new Date().toLocaleTimeString()})` : "",
+          boardDbPath: `classes/${class_id}/blackboards/${boardID}`,
+          explDbPath: i === 0 ? `classes/${class_id}/posts/${newPostID}` : `classes/${class_id}/posts/${newPostID}/replies/${getRandomId()}`,
+          mitClass,
+          user
+        });
+      }
+    },
+    async cloudFunctionsDelete () {
+      function deleteAtPath(path) {
+        return new Promise((resolve, reject) => {
+          var deleteFn = firebase.functions().httpsCallable('recursiveDelete');
+          deleteFn({ path: path })
+            .then(function(result) {
+              console.log('Delete success: ' + JSON.stringify(result));
+              resolve(); 
+            })
+            .catch(function(err) {
+              console.log('Delete failed, see console,');
+              console.warn(err);
+              reject(); 
+            });
+        });
+      }
+
+      const promises = []; 
+      // now try just deleting each of the blackboards in the common room
+      this.$root.$emit("show-snackbar", "Wiping the boards (this might take a while)...");
+      this.isClearingAllBoards = true; 
+      for (const boardID of this.commonRoomDoc.blackboards) {
+        const { class_id } = this.$route.params; 
+        promises.push(
+          deleteAtPath(`/classes/${class_id}/blackboards/${boardID}/strokes`)
+        );
+      }
+      await Promise.all(promises); 
+      this.isClearingAllBoards = false; 
+      this.$root.$emit("show-snackbar", "Succesfullly wiped the boards.");
+    },
     async seedEachRoomWithProblem (e) {
       const uploadedFile = e.target.files[0];
       if (!uploadedFile) return;

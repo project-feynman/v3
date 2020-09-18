@@ -1,7 +1,10 @@
 <template>
   <v-expansion-panels hover accordion v-model="openedWeeks" multiple class="group-by-date">
     <v-expansion-panel v-for="week in weeks" :key="week.start.toISOString()">
-      <v-expansion-panel-header ripple color="#f8f8f8">{{ week.name }}</v-expansion-panel-header>
+      <v-expansion-panel-header ripple color="#f8f8f8">
+        {{ week.name }}
+      </v-expansion-panel-header>
+
       <v-expansion-panel-content>
         <template v-if="week.isLoading">
           <div class="text-center py-2">
@@ -11,20 +14,21 @@
         <v-list v-else shaped>
           <template v-for="post in week.children">
             <!-- :to="`/class/${classID}/room/${roomID}/posts/${post.id}`" -->
-            <v-list-item
-              @click="$emit('post-was-clicked', post.id)"
+            <v-list-item @click="$emit('post-was-clicked', post.id)"
               :class="(collection === 'questions') && !post.hasReplies ? 'unanswered' : 'answered'"
               two-line
               dense
               :key="post.id"
             >
               <v-list-item-icon>
-                <v-icon>{{ collection === 'questions' ? 'mdi-file-question-outline' : 'mdi-file-document-box-outline'}}</v-icon>
+                <v-icon>{{ collection === 'questions' ? 'mdi-file-question-outline' : 'mdi-file-document-box-outline' }}</v-icon>
               </v-list-item-icon>
+
               <v-list-item-content>
                 <v-list-item-title style="font-size:1em; color: #555; padding-bottom: 5px;">
                   {{ post.name }}
                 </v-list-item-title>
+
                 <v-list-item-subtitle class="post-metaData">
                   <span v-if="getFolder(post)">
                     <v-icon small>mdi-folder-open</v-icon>
@@ -54,12 +58,14 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import { mapState } from "vuex";
 import moment from "moment";
+import { NewKeyPage } from 'twilio/lib/rest/api/v2010/account/newKey';
+import { ExecutionStepInstance } from 'twilio/lib/rest/studio/v1/flow/execution/executionStep';
 
 export default {
   props: {
     collection: {
       type: String,
-      default: 'questions'
+      default: "posts"
     },
   },
   mixins: [
@@ -102,71 +108,65 @@ export default {
       detachListener();
     }
   },
-  created () {
-    this.groupPosts();
+  async created () {
+    // This only re-groups the posts, but doesn't rerender the UI.
+    // To rerender UI, call groupPosts
+
+    const { class_id } = this.$route.params; 
+    
+    // TODO: refactor the prop
+    const collectionRef = db.collection(`classes/${class_id}/${this.collection}`);
+
+    // Get the 1st and last post 
+    let firstDate, lastDate;
+    const getFirstDate =  collectionRef.orderBy("date", "asc").limit(1).get().then(querySnapshot => {
+      if (querySnapshot.empty) return; 
+      firstDate = new Date(querySnapshot.docs[0].data().date);
+    });
+    const getLastDate = collectionRef.orderBy("date", "desc").limit(1).get().then(querySnapshot => {
+      if (querySnapshot.empty) return; 
+      lastDate = moment(querySnapshot.docs[0].data().date); // TODO: don't use moment 
+    });
+
+    await Promise.all([getFirstDate, getLastDate]);
+
+    let startOfNextWeek = moment()
+        .isoWeekYear(lastDate.year())
+        .isoWeek(lastDate.week())
+        .startOf("week")
+        .add(1, "week")
+        .toDate();
+    
+    const weekPromises = [];
+    while (startOfNextWeek > firstDate) {
+      const endOfThisWeek = new Date(startOfNextWeek.getTime());
+      endOfThisWeek.setDate(endOfThisWeek.getDate() - 1);
+      const startOfThisWeek = new Date(startOfNextWeek.getTime());
+      startOfThisWeek.setDate(startOfNextWeek.getDate() - 7);
+
+      weekPromises.push(
+        collectionRef
+          .where("date", ">=", startOfThisWeek.toISOString())
+          .where("date", "<", startOfNextWeek.toISOString())
+          .limit(1)
+          .get()
+          .then(querySnapshot => {
+            if (querySnapshot.empty) return;
+            this.weeks.push({
+              name: "Week " + moment(startOfThisWeek).format("MMM D") + " - " + moment(endOfThisWeek).format("MMM D"),
+              start: startOfThisWeek,
+              end: endOfThisWeek,
+              isLoading: false,
+              children: []
+            });
+        })
+      );
+      startOfNextWeek = startOfThisWeek;
+    }
+    await Promise.all(weekPromises);
+    this.weeksMounted = true;
   },
   methods: {
-    async groupPosts () {
-      // This only (re)groups the posts, but doesn't rerender the UI.
-      // To rerender UI, call groupPosts
-      if (this.weeks.length !== 0) return;
-      const collectionRef = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`);
-      // Get the first and last post posted in the class
-      let firstDate, lastDate;
-      const getFirstDate =  collectionRef.orderBy('date', 'asc').limit(1).get().then(querySnapshot => {
-        if (querySnapshot.empty) return;
-        querySnapshot.forEach(doc => {
-          firstDate = new Date(doc.data().date);
-        });
-      });
-      const getLastDate = collectionRef.orderBy('date', 'desc').limit(1).get().then(querySnapshot => {
-        if (querySnapshot.empty) return;
-        querySnapshot.forEach(doc => {
-          lastDate = moment(doc.data().date);
-        });
-      });
-
-      await Promise.all([getFirstDate, getLastDate]);
-
-      let startOfNextWeek  = moment()
-          .isoWeekYear(lastDate.year())
-          .isoWeek(lastDate.week())
-          .startOf('week')
-          .add(1, 'week')
-          .toDate();
-      
-      const weekPromises = [];
-
-      while (startOfNextWeek > firstDate) {
-        const endOfThisWeek = new Date(startOfNextWeek.getTime());
-        endOfThisWeek.setDate(endOfThisWeek.getDate() - 1);
-        const startOfThisWeek = new Date(startOfNextWeek.getTime());
-        startOfThisWeek.setDate(startOfNextWeek.getDate() - 7);
-
-        weekPromises.push(
-          collectionRef.where("date", ">=", startOfThisWeek.toISOString()).where("date", "<", startOfNextWeek.toISOString()).limit(1).get().then(querySnapshot => {
-            if (!querySnapshot.empty) {
-              // Because by the time query is run, the variables have already changed, we retrive them from the query itself
-              console.log("querySnapshot =", querySnapshot);
-              const { filters } = querySnapshot.bd.query
-              const start = new Date(filters.filter(x => x.op.name === '>=')[0].value.Ht);
-              const end = new Date(filters.filter(x => x.op.name === '<')[0].value.Ht);
-              this.weeks.push({
-                name: 'Week ' + moment(startOfThisWeek).format('MMM D') + ' - ' + moment(endOfThisWeek).format('MMM D'),
-                start: start,
-                end: end,
-                isLoading: false,
-                children: []
-              });
-            }
-          })
-        );
-        startOfNextWeek = startOfThisWeek;
-      }
-      await Promise.all(weekPromises);
-
-      this.weeksMounted = true;
-    },
     async openThisWeek (week) {
       if (week.children.length!==0) return;
       week.isLoading = true
@@ -176,7 +176,10 @@ export default {
       // const endTime = endDate.toISOString();
       const startDate = week.start.toISOString();
       const endDate = week.end.toISOString();
-      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`).where("date", ">=", startDate).where("date", "<=", endDate).orderBy('date', 'desc');
+      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`)
+        .where("date", ">=", startDate)
+        .where("date", "<=", endDate)
+        .orderBy('date', 'desc');
       const posts = [];
       await new Promise(resolve => {
         const snapshotListener = postsQuery.onSnapshot(snapshot => {
