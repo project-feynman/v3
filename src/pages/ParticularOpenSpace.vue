@@ -67,7 +67,7 @@
             <v-col cols="12" sm="4">
               <v-overflow-btn 
                 label="1"
-                :items="[1, 2, 3, 4, 5]"
+                :items="[1, 2, 3, 4, 5, 6, 7, 8]"
                 @change="newVal => targetBoardNum = (newVal - 1)"
               />
             </v-col>
@@ -103,7 +103,7 @@
         </div>
 
         <template v-if="!currentRoomID">
-          <portal-target name="current-room-buttons">
+          <portal-target name="current-room-buttons" v-if="isAdmin">
             
           </portal-target>
           <portal-target  name="current-room-participants">
