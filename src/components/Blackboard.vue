@@ -5,7 +5,6 @@
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
-      :isRealtime="isRealtime"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
@@ -119,11 +118,6 @@ export default {
     },
     backgroundImage: {
       type: Object
-    },
-    // TODO: rename this variable
-    isRealtime: {
-      type: Boolean,
-      required: true
     },
     isVertical: {
       type: Boolean,

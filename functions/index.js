@@ -6,7 +6,7 @@ const adminCredentials = require("./adminCredentials.json");
 const { SENDGRID_API_KEY } = require("./sendgrid.json");
 const algoliasearch = require('algoliasearch')
 const { APP_SID, ADMIN_API_KEY } = require('./algoliaCreds.json')
-const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY)
+const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY);
 
 admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
@@ -238,10 +238,14 @@ exports.saveExpl = functions
   .https.onCall(async (data, context) => {
     const { boardDbPath, explDbPath, mitClass, user, title } = data; 
       
+    // THE BELOW IS USEFUL FOR TESTING CLOUD FUNCTIONS LOCALLY
     // type the following command
     // saveExpl({ "boardDbPath": "classes/mDbUrvjy4pe8Q5s5wyoD/blackboards/M1v0XzFtwP1RLKxsMR4K", "explDbPath": "classes/mDbUrvjy4pe8Q5s5wyoD/posts/abcdefghijklmnopqrstuvwxyz" });
     // "classes/mDbUrvjy4pe8Q5s5wyoD/blackboards/M1v0XzFtwP1RLKxsMR4K"
     // "classes/mDbUrvjy4pe8Q5s5wyoD/posts/"abcdefghijklmnopqrstuvwxyz"
+
+    // fetch the aspect ratio
+    const boardSnapshot = await firestore.doc(boardDbPath).get(); 
 
     // fetch the strokes from the blackboard
     const strokesRef = firestore.collection(`${boardDbPath}/strokes`);
@@ -268,7 +272,15 @@ exports.saveExpl = functions
       databaseRef: firestore.collection(`${explDbPath}/strokes`)
     });
 
-    const metadata = {
+    await Promise.all([collectionSnapshot, boardSnapshot]);
+    console.log("boardSnapshot.data() =", boardSnapshot.data());
+
+    const PPT_SLIDE_RATIO = 3/4; 
+    const PDF_RATIO = 11/8.5; 
+    
+    // save the explanation doc
+    // for now it doesn't contain properties such as imageURL, audioURL, and thumbnail
+    await firestore.doc(explDbPath).set({
       title,
       html: "",
       date: new Date().toISOString(),
@@ -282,15 +294,9 @@ exports.saveExpl = functions
       mitClass,
       tags: [],
       duration: 0,
-      hasStrokes: strokesArray.length > 0
-    };
-
-    // now create the document to the right path 
-    const explDoc = { ...metadata }; 
-    // for now it doesn't contain properties such as imageURL, audioURL, and thumbnail
-    
-    // save the explanationDocument  
-    await firestore.doc(explDbPath).set(explDoc);
+      hasStrokes: strokesArray.length > 0,
+      aspectRatio: boardSnapshot.data().isVertical ? PDF_RATIO : PPT_SLIDE_RATIO
+    });
     console.log("successfully saved the explanation into the database");
     return { message: "Successfully saved the explanation as an animation", explDbPath };
   });

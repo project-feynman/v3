@@ -101,10 +101,6 @@ export default {
       type: Object
       // don't set `required` to true yet to avoid minor crashes
     },
-    isRealtime: {
-      type: Boolean,
-      default: () => false 
-    },
     isVertical: {
       type: Boolean,
       required: true

@@ -20,6 +20,10 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/GetStarted.vue")
     },
     {
+      path: "/intersection-api-playground",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/IntersectionAPIPlayground.vue")
+    },
+    {
       path: "/canvas-playground",
       component: () => import(/* webpackChunkName: "home" */ "./pages/CanvasPlayground.vue")
     },

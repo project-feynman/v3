@@ -65,10 +65,10 @@ export default {
   props: {
     strokesArray: Array,
     backgroundUrl: String,
-    isVertical: {
-      type: Boolean,
+    aspectRatio: {
+      type: Number,
       default () {
-        return false; 
+        return PPT_SLIDE_RATIO; 
       }
     }
   },
@@ -99,10 +99,7 @@ export default {
         }
       }
       return allPoints;
-    },
-    aspectRatio () {
-      return this.isVertical ? PDF_RATIO : PPT_SLIDE_RATIO;
-    } 
+    }
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;

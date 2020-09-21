@@ -45,6 +45,31 @@
 
     <!-- TODO -->
     <portal to="main-content">
+      <h1>This week's upgrades</h1>
+
+      <ul>
+        <h3>Requested features</h3>
+        <li>You can now wipe all the boards in a room</li>
+        <li>You can now save all the boards in a room</li>
+      </ul>
+
+      <br>
+
+      <ul>
+        <h3>Library upgrades</h3>
+        <li>Erasers strokes now replay correctly</li>
+        <li>No longer display misleading thumbnails</li>
+        <li>Re-designed how posts are organized</li>
+      </ul>
+
+      <br>
+
+      <!-- <ul>
+        <h3>Group chat</h3>
+        <li>You can now create your own group chats within explain</li> 
+        <li>You can now send direct messages to anyone in the class</li>
+      </ul> -->
+
       <!-- <div style="font-size: 3.75rem; font-weight: 400">
         Overview
       </div>

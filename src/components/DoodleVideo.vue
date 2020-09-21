@@ -62,10 +62,10 @@ export default {
       required: true
     },
     imageBlob: Blob, // a File is also a Blob,
-    isVertical: {
-      type: Boolean,
+    aspectRatio: {
+      type: Number,
       default () {
-        return false; 
+        return PPT_SLIDE_RATIO; 
       }
     }
   },
@@ -104,9 +104,6 @@ export default {
         }
       }
       return allPoints.sort((p1, p2) => p1.startTime - p2.startTime);
-    },
-    aspectRatio () {
-      return this.isVertical ? PDF_RATIO : PPT_SLIDE_RATIO;
     }
   },
   async created () {
