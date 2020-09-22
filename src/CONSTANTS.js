@@ -2,6 +2,12 @@ const CORE_TEAM_ID = "mDbUrvjy4pe8Q5s5wyoD";
 const PHYSICS_ID = "oQV3TgY3OrvE93lAT7sx";
 const TUTORIAL_ID = "FVdgjuywaFgxvyylISt2";
 
+export const LANDSCAPE_WIDTH = 1200; 
+export const VERTICAL_MODE_WIDTH = 800; 
+export const PPT_SLIDE_RATIO = 3/4; 
+export const PDF_RATIO = 11/8.5; 
+
+export const ERASER_STROKE_WIDTH = 25;
 
 export const SUPER_USER_EMAILS = [
   "eltonlin@mit.edu",

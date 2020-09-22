@@ -6,7 +6,7 @@ const adminCredentials = require("./adminCredentials.json");
 const { SENDGRID_API_KEY } = require("./sendgrid.json");
 const algoliasearch = require('algoliasearch')
 const { APP_SID, ADMIN_API_KEY } = require('./algoliaCreds.json')
-const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY)
+const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY);
 
 admin.initializeApp({
 	credential: admin.credential.cert(adminCredentials),
@@ -42,6 +42,15 @@ function getDocFromDb (ref) {
       reject(); 
     }
   });
+}
+
+function getRandomId () {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let autoId = '';
+  for (let i = 0; i < 20; i++) {
+    autoId += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return autoId;
 }
 
 exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(async (change, context) => {
@@ -182,16 +191,149 @@ exports.emailWeeklySummary = functions.pubsub
   .timeZone("America/New_York")
   .onRun((context) => sendEmailToSubscribers(context, emailSummaryFrequencyEnum.WEEKLY));
 
-exports.recursiveDelete = functions.runWith({ timeoutSeconds: 540, memory: "2GB" }).https.onCall((data, context) => {
-  const { path } = data;
-  return firebase_tools.firestore
-    .delete(path, {
+
+/**
+ * Helper function for saving an explanation. It saves the strokesArray as the subcollection 
+ * of an expl doc. 
+ */
+
+function uploadStrokesToDatabase ({ strokesArray, databaseRef }) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const promises = [];
+      let currentBatch = firestore.batch();
+      let currentBatchSize = 0; 
+      const maxBatchSize = 500; 
+
+      for (const stroke of strokesArray) {
+        if (currentBatchSize >= maxBatchSize) {
+          promises.push(currentBatch.commit());
+          currentBatch = firestore.batch(); 
+          currentBatchSize = 0; 
+        } 
+        currentBatch.set(databaseRef.doc(getRandomId()), stroke);
+        currentBatchSize += 1;
+      }
+      promises.push(currentBatch.commit()); 
+      await Promise.all(promises);
+      console.log("successfully saved the strokes to the database"); 
+      resolve();
+    } catch (reason) {
+      console.log("failed, reason =", reason);
+      reject(reason);
+    }
+  });
+}
+
+/**
+ * Given a reference to the blackboard document, it saves it as an ANIMATION (for now)
+ *    - Fetches the strokes 
+ *    - Fetches the meta-data associated with the blackboard 
+ *    - Saves it as either a post or reply (obtain from the property `explKind`)
+ */
+exports.saveExpl = functions
+  .runWith({
+    timeoutSeconds: 60, memory: "1GB"
+  })
+  .https.onCall(async (data, context) => {
+    const { boardDbPath, explDbPath, mitClass, user, title } = data; 
+      
+    // THE BELOW IS USEFUL FOR TESTING CLOUD FUNCTIONS LOCALLY
+    // type the following command
+    // saveExpl({ "boardDbPath": "classes/mDbUrvjy4pe8Q5s5wyoD/blackboards/M1v0XzFtwP1RLKxsMR4K", "explDbPath": "classes/mDbUrvjy4pe8Q5s5wyoD/posts/abcdefghijklmnopqrstuvwxyz" });
+    // "classes/mDbUrvjy4pe8Q5s5wyoD/blackboards/M1v0XzFtwP1RLKxsMR4K"
+    // "classes/mDbUrvjy4pe8Q5s5wyoD/posts/"abcdefghijklmnopqrstuvwxyz"
+
+    // fetch the aspect ratio
+    const boardSnapshot = await firestore.doc(boardDbPath).get(); 
+
+    // fetch the strokes from the blackboard
+    const strokesRef = firestore.collection(`${boardDbPath}/strokes`);
+    const collectionSnapshot = await strokesRef.get(); 
+    console.log("collectionSnapshot =", collectionSnapshot); 
+    console.log("boardDbPath =", boardDbPath); 
+    const strokesArray = []; 
+    if (collectionSnapshot.docs.length === 0) {
+      return {
+        message: "The board is actually empty - terminating the save operation.",
+        boardDbPath
+      };
+    }
+    collectionSnapshot.docs.forEach(doc => {
+      strokesArray.push({
+        id: doc.id,
+        ref: doc.ref.path, // TODO: could cause a bug
+        ...doc.data()
+      });
+    })
+    console.log("trying to upload strokes to the database");
+    uploadStrokesToDatabase({ 
+      strokesArray, 
+      databaseRef: firestore.collection(`${explDbPath}/strokes`)
+    });
+
+    await Promise.all([collectionSnapshot, boardSnapshot]);
+    console.log("boardSnapshot.data() =", boardSnapshot.data());
+
+    const PPT_SLIDE_RATIO = 3/4; 
+    const PDF_RATIO = 11/8.5; 
+    
+    // save the explanation doc
+    // for now it doesn't contain properties such as imageURL, audioURL, and thumbnail
+    await firestore.doc(explDbPath).set({
+      title,
+      html: "",
+      date: new Date().toISOString(),
+      creator: {
+        email: user.email,
+        uid: user.uid,
+        firstName: user.firstName,
+        lastName: user.lastName
+      },
+      order: parseInt(mitClass.maxOrder + 1) || 1,
+      mitClass,
+      tags: [],
+      duration: 0,
+      hasStrokes: strokesArray.length > 0,
+      aspectRatio: boardSnapshot.data().isVertical ? PDF_RATIO : PPT_SLIDE_RATIO
+    });
+    console.log("successfully saved the explanation into the database");
+    return { message: "Successfully saved the explanation as an animation", explDbPath };
+  });
+
+/**
+ * Currently used to delete the strokes for the documents. 
+ */
+exports.recursiveDelete = functions
+  .runWith({ 
+    timeoutSeconds: 540, memory: "2GB" 
+  })
+  .https.onCall(async (data, context) => {
+    // Only allow admin users to execute this function.
+    // if (!(context.auth && context.auth.token && context.auth.token.admin)) {
+    //   throw new functions.https.HttpsError(
+    //     'permission-denied',
+    //     'Must be an administrative user to initiate delete.'
+    //   );
+    // }
+    const path = data.path;
+    console.log(`Requested to delete path ${path}`);
+    // return "success";
+    // recursiveDelete({ "path": "/classes/mDbUrvjy4pe8Q5s5wyoD/blackboards/M1v0XzFtwP1RLKxsMR4K/strokes" })
+
+    // Run a recursive delete on the given document or collection path.
+    // The 'token' must be set in the functions config, and can be generated
+    // at the command line by running 'firebase login:ci'.
+    return firebase_tools.firestore.delete(path, {
       project: process.env.GCLOUD_PROJECT,
       recursive: true,
       yes: true,
-      token: functions.config().fb.token // 'token' must be set in the functions config, and can be generated at the command line by running 'firebase login:ci'.
-    })
-    .then(() => ({ path }));
+      // token: functions.config().fb.token
+    });
+    // console.log("await complete - successfully deleted, returning now");
+    // return {
+    //   path: path 
+    // };
 });
 
 exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {

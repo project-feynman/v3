@@ -32,7 +32,7 @@ export default {
      * @params this contains the properties `postTitle`, `strokesArray`, etc. which defines the explanation 
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
-    async $_saveExplToCacheThenUpload ({ thumbnailBlob, audioBlob, backgroundImageBlob, html, title, tags, explRef }) {
+    async $_saveExplToCacheThenUpload ({ thumbnailBlob, audioBlob, backgroundImageBlob, html, title, tags, explRef, aspectRatio }) {
     
       const postOrder = parseInt(this.mitClass.maxOrder + 1) || 1
       this.$store.commit("ADD_EXPL_TO_CACHE", {
@@ -50,6 +50,7 @@ export default {
           tags,
           order: postOrder,
           duration: this.blackboard.currentTime, 
+          aspectRatio,
           hasStrokes: this.strokesArray.length > 0
         }
       });
@@ -105,6 +106,7 @@ export default {
             })
           );
         }
+        // save the explanation doc itself
         promises.push(ref.set(explDoc));
         await Promise.all(promises);
         delete this.$store.state.explCache[ref.id];

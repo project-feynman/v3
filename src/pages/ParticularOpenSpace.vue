@@ -51,7 +51,7 @@
       <BaseButton small disabled icon="mdi-music-clef-treble" color="grey">
         Play music
       </BaseButton>
-        
+
       <BasePopupButton>
         <template v-slot:activator-button="{ on }">
           <BaseButton :on="on" icon="mdi-file-pdf" color="black">
@@ -67,7 +67,7 @@
             <v-col cols="12" sm="4">
               <v-overflow-btn 
                 label="1"
-                :items="[1, 2, 3, 4, 5]"
+                :items="[1, 2, 3, 4, 5, 6, 7, 8]"
                 @change="newVal => targetBoardNum = (newVal - 1)"
               />
             </v-col>
@@ -101,9 +101,15 @@
         <div class="font-weight-medium" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.75em">
           COMMON ROOM
         </div>
-        <portal-target v-if="!currentRoomID" name="current-room-participants">
 
-        </portal-target>
+        <template v-if="!currentRoomID">
+          <portal-target name="current-room-buttons" v-if="isAdmin">
+            
+          </portal-target>
+          <portal-target  name="current-room-participants">
+
+          </portal-target>
+        </template>
 
         <!-- Quickfix  -->
         <div v-else style="width: 100%;">
@@ -146,14 +152,18 @@
             </v-chip>
 
             <v-spacer/>
+          </div>
 
+          <div class="d-flex">
             <BaseButton @click="setRoomStatusPopup(true, room.id)" icon="mdi-message-alert" color="blue" small>
               Update status
             </BaseButton>
+
+            <portal-target name="current-room-buttons">
+          
+            </portal-target>
           </div>
 
-          <!-- list of participants -->
-          <!-- Get the current Twilio Participants -->
           <portal-target name="current-room-participants">
 
           </portal-target>
@@ -289,6 +299,7 @@ import HandleAnnouncements from "@/components/HandleAnnouncements.vue";
 import SmallAppBar from "@/components/SmallAppBar.vue";
 import firebase from "firebase/app";
 import "firebase/firestore"; 
+import "firebase/functions";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 
 export default {
@@ -361,7 +372,13 @@ export default {
       }
     },
     currentRoomDoc () {
-      if (this.commonRoomDoc) return this.commonRoomDoc; 
+      // previous added because <HandleAnnouncements> requires 
+      // a :currentRoom prop, but that prop would be undefined 
+      // because `currentRoomID` is undefined when the user is in the common room. 
+    
+      if (!this.currentRoomID) return this.commonRoomDoc; 
+      // if (this.commonRoomDoc) return this.commonRoomDoc; 
+
       for (const room of this.rooms) {
         if (room.id === this.currentRoomID) {
           return room; 

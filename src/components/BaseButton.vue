@@ -8,6 +8,7 @@
     :color="color" 
     :text="!outlined && !filled"
     :class="small ? 'small-btn':''"
+    :loading="loading"
   >
     <div class="d-flex flex-column">
       <v-icon v-if="icon!=='none'">{{ icon }}</v-icon>
@@ -27,6 +28,7 @@
     :color="color" 
     :text="!outlined && !filled"
     :class="small ? 'small-btn':''"
+    :loading="loading"
   >
     <div class="d-flex flex-column">
       <v-icon v-if="icon!=='none'">{{ icon }}</v-icon>
@@ -48,6 +50,12 @@ export default {
       type: String,
       default () {
         return 'none'
+      }
+    },
+    loading: {
+      type: Boolean,
+      default () {
+        return false; 
       }
     },
     outlined: {

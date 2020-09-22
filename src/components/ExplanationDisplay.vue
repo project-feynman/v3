@@ -14,33 +14,49 @@
       </template>
       
       <!-- Doodle Video -->
-      <RenderlessFetchStrokes v-if="expl.thumbnail"
+      <RenderlessFetchStrokes v-if="expl.hasStrokes"
         :strokesRef="strokesRef"
         :imageDownloadUrl="expl.imageUrl"
         v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
-      >
-        <div style="position: relative;"> 
-          <!-- Thumbnail preview -->
+      > 
+        <!-- .
+          quiet : don't trigger when the directive is binded, only trigger for actual intersecting 
+          .once : unbind the directive once it has been triggered 
+          `threshold: 0.5` : trigger the event only if >50% of the element is visible
+              
+          More info: https://vuetifyjs.com/en/directives/intersect/#intersection-observer 
+        -->
+        <div style="position: relative;" v-intersect.once="{
+          handler (entries, observer, isIntersecting) {
+            if (isIntersecting) fetchStrokes(); 
+          },
+          options: {
+            threshold: 0.5 
+          }
+        }"> 
           <template v-if="strokesArray.length === 0 || isLoading">
-            <v-img :src="expl.thumbnail" :aspect-ratio="16/9" data-qa="expl-thumbnail"/>
-            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item" data-qa="play-btn">
+            <!-- PLACEHOLDER -->
+            <div style="width: 100%; height: 500px;">
+
+            </div>
+            <!-- <v-img :src="expl.thumbnail || 'https://miro.medium.com/max/4406/1*KjJ8jkkARDfxSsgD2AykwA.png'" :aspect-ratio="16/9" data-qa="expl-thumbnail"/>
+            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item">
               <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
               <v-btn v-else large dark>
                 <v-icon>mdi-play</v-icon>
               </v-btn>
-            </div>
+            </div> -->
           </template>
-          <!-- Loaded video -->
           <DoodleVideo v-else-if="expl.audioUrl"
             :strokesArray="strokesArray"
             :imageBlob="imageBlob" 
             :audioUrl="expl.audioUrl" 
-            ref="Doodle"
+            :aspectRatio="expl.aspectRatio"
           />
           <DoodleAnimation v-else
             :strokesArray="strokesArray"
             :backgroundUrl="expl.imageUrl"
-            ref="Doodle"
+            :aspectRatio="expl.aspectRatio"
           />
       </div>
       </RenderlessFetchStrokes>
@@ -62,7 +78,7 @@
         <v-layout align-center>
           <template v-if="hasDate">
             <p class="pt-3 pl-3 body-2 font-weight-light">
-              By {{ expl.creator.firstName }}, {{ displayDate(expl.date) }}
+              Saved by {{ expl.creator.firstName }}, {{ displayDate(expl.date) }}
             </p>      
             <p v-if="expl.thumbnail" class="pt-3 pl-2 body-2 font-weight-light">
               (video views: {{ expl.views ? expl.views : 0 }}) 
@@ -71,7 +87,6 @@
             
             <!-- email is unique for MIT Kerberos -->
             <template v-if="expl.creator.email === user.email">
-              <!-- <BaseButton @click="" -->
               <BaseButton @click="startEditing()" icon="mdi-pencil">Edit Text</BaseButton>
               <BaseButton @click="popup = true" icon="mdi-delete" data-qa="delete-post-btn">Delete</BaseButton>
             </template>

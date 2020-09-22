@@ -43,7 +43,13 @@
 import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import _ from "lodash";
-import { navbarHeight, audioPlayerHeight, aspectRatio } from "@/CONSTANTS.js";
+import { 
+  navbarHeight, 
+  audioPlayerHeight, 
+  PPT_SLIDE_RATIO,
+  PDF_RATIO,
+  ERASER_STROKE_WIDTH
+} from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -55,7 +61,13 @@ export default {
       type: String,
       required: true
     },
-    imageBlob: Blob // a File is also a Blob
+    imageBlob: Blob, // a File is also a Blob,
+    aspectRatio: {
+      type: Number,
+      default () {
+        return PPT_SLIDE_RATIO; 
+      }
+    }
   },
   mixins: [
     CanvasDrawMixin,
@@ -147,12 +159,12 @@ export default {
       let videoHeight; 
       let videoWidth; 
 
-      if (availableWidth * aspectRatio < availableHeight) {
+      if (availableWidth * this.aspectRatio < availableHeight) {
         videoWidth = availableWidth;
-        videoHeight = videoWidth * aspectRatio;
+        videoHeight = videoWidth * this.aspectRatio;
       } else {
         videoHeight = availableHeight;
-        videoWidth = videoHeight * (1/aspectRatio);
+        videoWidth = videoHeight * (1/this.aspectRatio);
       }
 
       CanvasWrapper.style.height = `${videoHeight}px`;
@@ -205,7 +217,7 @@ export default {
         stroke.isErasing, 
         this.ctx,
         stroke.color,
-        stroke.width
+        stroke.isErasing ? ERASER_STROKE_WIDTH : stroke.width
       );
     }
   }

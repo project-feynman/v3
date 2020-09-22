@@ -11,9 +11,8 @@
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <Blackboard v-else
       :isVertical="isVertical"
-      :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :backgroundImage="backgroundImage" 
-      isRealtime
+      :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
@@ -113,6 +112,7 @@ import firebase from "firebase/app";
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
+import { PPT_SLIDE_RATIO, PDF_RATIO } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -387,6 +387,7 @@ export default {
       await Promise.all(promises);
 
       this.$_saveExplToCacheThenUpload({
+        aspectRatio: this.isVertical ? PDF_RATIO : PPT_SLIDE_RATIO,
         thumbnailBlob,
         audioBlob: this.blackboard.audioBlob,
         backgroundImageBlob,
