@@ -47,22 +47,19 @@
     <portal to="main-content">
       <h1>This week's upgrades</h1>
 
-      <ul>
-        <h3>Requested features</h3>
-        <li>You can now wipe all the boards in a room</li>
-        <li>You can now save all the boards in a room</li>
-      </ul>
-
       <br>
 
       <ul>
-        <h3>Library upgrades</h3>
-        <li>Erasers strokes now replay correctly</li>
-        <li>No longer display misleading thumbnails</li>
-        <li>Re-designed how posts are organized</li>
+        <li>You can create public message channels and directly message any class member</li>
+        <li>Improved the library</li>
+        <li>You can save/wipe all the boards in any given room with 1 click</li>
+        <p>You can record a video with audio (press the purple record button)</p>
       </ul>
 
       <br>
+      <h1>Currently fixing</h1>
+      <p>Ghost participants</p>
+      <p>Audio issues</p>
 
       <!-- <ul>
         <h3>Group chat</h3>

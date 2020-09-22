@@ -1,11 +1,5 @@
 <template>
    <v-list style="max-height: 500px" class="overflow-y-auto">
-    <v-list-item style="font-size: 1.25rem;">
-      Group chat
-    </v-list-item>
-
-    <v-divider/>
-
     <v-list-item v-for="(message, i) in allMessages" :key="message.id" :ref="i === allMessages.length - 1 ? 'NewestMessage' : ''">
       {{ message.author.firstName }} ({{ message.timestamp.toDate().toLocaleString() }}):
       {{ message.content }} 
