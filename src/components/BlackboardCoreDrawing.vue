@@ -172,7 +172,7 @@ export default {
     strokesArray () {
       const n = this.strokesArray.length; 
       if (n === 0) {
-        this.wipeUI(); 
+        this.ctx.clearRect(0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
         this.localStrokesArray = [];
       } else if (n - this.localStrokesArray.length === 1) { 
         const newStroke = this.strokesArray[n-1];
@@ -477,7 +477,7 @@ export default {
         );
       }
     },
-    // HANDLE BAXKGROUND IMAGE
+    // HANDLE BACKGROUND IMAGE
     /**
      * By design, Handles the case if `imageFile` is empty.
      * 

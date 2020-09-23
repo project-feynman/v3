@@ -15,13 +15,13 @@
     <v-dialog v-model="isWipeBoardsPopupOpen">
       <v-card>
         <v-card-title>
-          Are you sure you want to wipe all boards? 
+          Are you sure you want to wipe the pen strokes of every blackboard in this room?
         </v-card-title>
         <v-card-actions>
           <v-spacer/>
           <v-btn @click="isWipeBoardsPopupOpen = false">CANCEL</v-btn>
           <v-btn @click="cloudFunctionsDelete(); isWipeBoardsPopupOpen = false;">
-            YES, I WANT TO WIPE EVERYTHING IN THIS ROOM
+            WIPE ALL STROKES
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -30,7 +30,9 @@
     <!-- For saving all the whiteboards -->
     <v-dialog v-model="isSaveBoardsPopupOpen">
       <v-card>
-        This will save your sequence of blackboard explanations into the library. 
+        <v-card-title>
+          This will save your sequence of blackboard explanations into the library. 
+        </v-card-title>
         <v-card-text>
           <v-text-field placeholder="Enter a title for the collection of explanations..." v-model="titleOfExplCollection"/>
         </v-card-text>
@@ -45,9 +47,30 @@
       </v-card>
     </v-dialog>
 
+    <!-- For wiping the PDFs -->
+     <v-dialog v-model="isClearPDFsPopupOpen">
+      <v-card>
+        <v-card-title>
+          This will remove the PDFs seeded on each blackboard, but will not wipe the pen strokes. 
+        </v-card-title>
+      
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="isClearPDFsPopupOpen = false">CANCEL</v-btn>
+          <v-btn @click="clearAllPDFs(); isClearPDFsPopupOpen = false;" color="accent">
+            Wipe all PDFs
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <portal to="current-room-buttons">
       <BaseButton @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards" icon="mdi-delete-alert" small>
-        Wipe boards
+        Wipe strokes
+      </BaseButton>
+
+      <BaseButton @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs" icon="mdi-file-remove-outline" small>
+        Wipe PDFs
       </BaseButton>
 
       <BaseButton @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards" icon="mdi-content-save-all" small>
@@ -138,8 +161,10 @@ export default {
       incrementToDestroyComponent: -100000,
       isSavingAllBoards: false,
       isClearingAllBoards: false,
+      isClearingAllPDFs: false,
       isWipeBoardsPopupOpen: false,
       isSaveBoardsPopupOpen: false,
+      isClearPDFsPopupOpen: false,
       titleOfExplCollection: ""
     }
   },
@@ -150,7 +175,7 @@ export default {
       "session",
       "isBoardFullscreen"
     ]),
-    classId () {
+    classID () {
       return this.$route.params.class_id; 
     },
     sessionID () {
@@ -166,7 +191,7 @@ export default {
           const newBlackboardRefs = []; 
           for (const blackboard of newVal.blackboards) {
             newBlackboardRefs.push(
-              db.doc(`classes/${this.classId}/blackboards/${blackboard}`)
+              db.doc(`classes/${this.classID}/blackboards/${blackboard}`)
             );
           }
           this.blackboardRefs = newBlackboardRefs; 
@@ -175,7 +200,7 @@ export default {
     }
   },
   async created () {
-    this.roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
+    this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
     this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
       this.snapshotListeners.push(unsubFunc);
     });
@@ -186,6 +211,21 @@ export default {
     }
   },
   methods: { 
+    async clearAllPDFs () {
+      this.isClearingAllPDFs = true;
+      const promises = []; 
+      for (const boardID of this.room.blackboards) {
+        const boardRef = db.doc(`/classes/${this.classID}/blackboards/${boardID}`);
+        promises.push(
+          boardRef.update({
+            backgroundImageDownloadURL: ""
+          })
+        );
+      }
+      await Promise.all(promises); 
+      this.isClearingAllPDFs = false;
+      this.$root.$emit("show-snackbar", "Succesfully cleared all PDF problems in this room");
+    },
     async cloudFunctionsDelete () {
       function deleteAtPath(path) {
         return new Promise((resolve, reject) => {
@@ -281,8 +321,8 @@ export default {
     },
     // state => database
     async createNewBoard () {
-      const roomRef = db.doc(`classes/${this.classId}/rooms/${this.roomId}`);
-      const blackboardsRef = db.collection(`classes/${this.classId}/blackboards`);
+      const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
+      const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       const newID = getRandomId();  
       const promises = []; 
 

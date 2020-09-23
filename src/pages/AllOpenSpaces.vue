@@ -45,28 +45,29 @@
 
     <!-- TODO -->
     <portal to="main-content">
-      <h1>This week's upgrades</h1>
-
-      <br>
-
+      <h1>New things to try</h1>
       <ul>
-        <li>You can create public message channels and directly message any class member</li>
-        <li>Improved the library</li>
+        <li>Directly message any class member</li>
+        <li>create public message channels</li>
         <li>You can save/wipe all the boards in any given room with 1 click</li>
-        <p>You can record a video with audio (press the purple record button)</p>
+        <li>Browse the newly improved library</li>
+        <li>Record audio with blackboards (press the purple record button)</li>
       </ul>
 
       <br>
+
       <h1>Currently fixing</h1>
-      <p>Ghost participants</p>
-      <p>Audio issues</p>
-
-      <!-- <ul>
-        <h3>Group chat</h3>
-        <li>You can now create your own group chats within explain</li> 
-        <li>You can now send direct messages to anyone in the class</li>
-      </ul> -->
-
+      <ul>
+        <li>Ghost participants</li>
+        <li>Audio issues</li> 
+        <li>Support arbitrary pen colors for blackboard</li>
+        <li>Fix scrolling on blackboard not always working</li>
+        <li>Ultra-large blackboard</li>
+        <li>Pinned blackboard toolbar</li>
+        <li>Cache blackboards you already opened to not have to wait for it to load</li>
+        <li>Don't display initials/middle names as last names</li>
+        <li>Merge multiple devices from same users into one user</li>
+      </ul>
       <!-- <div style="font-size: 3.75rem; font-weight: 400">
         Overview
       </div>

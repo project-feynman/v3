@@ -27,20 +27,20 @@
             type="file" 
             ref="fileInput"
           >
-          Annotate
+          Background
         </BaseButton>
       </template>
 
       <!-- Wipe Board (overrides the normal, offline wiping behavior) -->
       <template v-slot:wipe-board-button-slot>
-        <BasePopupButton actionName="Wipe board" @action-do="resetBlackboardOnFirestore()">
+        <BasePopupButton actionName="Wipe strokes" @action-do="deleteAllStrokesFromDb()">
           <template v-slot:activator-button="{ on }">
             <BaseButton :on="on" icon="mdi-delete" color="black" small>
-              Wipe
+              Wipe strokes
             </BaseButton>
           </template>
           <template v-slot:message-to-user>
-            Are you sure you want to wipe everything?
+            Are you sure you want wipe this blackboard's pen strokes?
           </template> 
         </BasePopupButton>
       </template>
@@ -49,6 +49,12 @@
         <slot name="blackboard-toolbar">
 
         </slot> 
+
+        <template v-if="backgroundImage">
+          <BaseButton v-if="backgroundImage.downloadURL" @click="resetBackgroundImage()" icon="mdi-file-remove" color="black" small>
+            Clear background
+          </BaseButton>
+        </template>
 
         <BaseButton @click="rotateBlackboard()" icon="mdi-phone-rotate-landscape" color="black" small>
           Rotate
@@ -194,6 +200,11 @@ export default {
     this.removeBackgroundImageListener(); 
   },
   methods: {
+    resetBackgroundImage () {
+      this.blackboardRef.update({
+        backgroundImageDownloadURL: ""
+      });
+    },
     rotateBlackboard () {
       this.blackboardRef.update({ 
         isVertical: !this.isVertical
@@ -399,10 +410,6 @@ export default {
       
       // reset variables
       this.explTitle = ""; 
-    },
-    async resetBlackboardOnFirestore () {
-      this.blackboardRef.update({ backgroundImageDownloadURL: "" });
-      this.deleteAllStrokesFromDb();
     },
     async deleteAllStrokesFromDb () {
       const promises = [];
