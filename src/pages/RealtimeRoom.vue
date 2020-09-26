@@ -48,7 +48,7 @@
     </v-dialog>
 
     <!-- For wiping the PDFs -->
-     <v-dialog v-model="isClearPDFsPopupOpen">
+    <v-dialog v-model="isClearPDFsPopupOpen">
       <v-card>
         <v-card-title>
           This will remove the PDFs seeded on each blackboard, but will not wipe the pen strokes. 
@@ -64,18 +64,47 @@
       </v-card>
     </v-dialog>
 
+    <!-- Update status -->
+    <v-dialog v-model="isRoomStatusPopupOpen">
+      <v-card>
+        <v-card-title>
+          Update status to communicate across different rooms
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field v-model="newRoomStatus" placeholder="(You can empty the status by entering nothing.)"/>
+        </v-card-text>
+      
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="isRoomStatusPopupOpen = false">CANCEL</v-btn>
+          <v-btn @click="updateRoomStatus(); isRoomStatusPopupOpen = false;" color="accent">
+            Update status
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <portal to="current-room-buttons">
-      <BaseButton @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards" icon="mdi-delete-alert" small>
-        Wipe strokes
-      </BaseButton>
-
-      <BaseButton @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs" icon="mdi-file-remove-outline" small>
-        Wipe PDFs
-      </BaseButton>
-
-      <BaseButton @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards" icon="mdi-content-save-all" small>
-        Save boards
-      </BaseButton>
+      <v-btn @click="isMenuOpen = true" icon> 
+        <v-icon>mdi-dots-vertical</v-icon>
+      </v-btn>
+      <v-menu v-model="isMenuOpen" offset-y bottom>
+        <v-list>
+          <v-list-item @click="isRoomStatusPopupOpen = true">
+            <v-icon left>mdi-message-alert</v-icon> Update status
+          </v-list-item>
+          <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
+            <v-icon left>mdi-delete-alert</v-icon> Wipe strokes
+          </v-list-item>
+          <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
+            <v-icon left>mdi-file-remove-outline</v-icon> Wipe PDFs
+          </v-list-item>
+          <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
+            <v-icon left>mdi-content-save-all</v-icon> Save boards
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </portal>
 
     <!-- Display videos -->
@@ -159,13 +188,16 @@ export default {
       activeBoardID: null,
       boards: [],
       incrementToDestroyComponent: -100000,
+      isMenuOpen: false,
       isSavingAllBoards: false,
       isClearingAllBoards: false,
       isClearingAllPDFs: false,
       isWipeBoardsPopupOpen: false,
       isSaveBoardsPopupOpen: false,
       isClearPDFsPopupOpen: false,
-      titleOfExplCollection: ""
+      isRoomStatusPopupOpen: false,
+      titleOfExplCollection: "",
+      newRoomStatus: ""
     }
   },
   computed: {
@@ -211,6 +243,12 @@ export default {
     }
   },
   methods: { 
+    updateRoomStatus () {
+      db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
+        status: this.newRoomStatus
+      });
+      this.newRoomStatus = ""; 
+    },
     async clearAllPDFs () {
       this.isClearingAllPDFs = true;
       const promises = []; 

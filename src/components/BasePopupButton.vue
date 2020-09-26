@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="isOpen" persistent max-width="600px" @keydown.enter="doAction()">
     <template v-slot:activator="{ on }">
-      <slot name="activator-button" :on="on"> 
+      <slot name="activator-button" :on="on" :openPopup="openPopup"> 
         <v-btn :color="color" :outlined="outlined" :disabled="disabled" v-on="on">
           {{ actionName }}
         </v-btn>
@@ -85,7 +85,16 @@ export default {
       this.inputValues[inputField] = "";
     }
   },
+  watch: {
+    isOpen () {
+      console.log("newvalue =", this.isOpen)
+    }
+  },
   methods: {
+    openPopup () {
+      console.log("openPopup()")
+      this.isOpen = true;
+    },
     doAction () {
       this.$emit("action-do", this.inputValues);
       this.isOpen = false;
