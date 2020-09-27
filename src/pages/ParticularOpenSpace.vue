@@ -11,16 +11,19 @@
         </v-list-item-title>
       </v-list-item-content>
 
-      <v-menu v-if="isAdmin" bottom nudge-left offset-y>
+      <!-- The triple dot dropdown menu with actions that affects the whole class -->
+      <v-menu v-if="isAdmin" v-model="isMenuOpen" bottom nudge-left offset-y>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn v-on="on" v-bind="attrs" icon> 
+          <v-btn @click="isMenuOpen = true" icon> 
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
+
         <v-list>
           <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
             <v-icon left>mdi-bullhorn</v-icon> Make announcement
           </v-list-item>
+
           <BasePopupButton>
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()">
@@ -28,6 +31,10 @@
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
+              <p>If you upload a multi-paged PDF, each page will be seeded in sequence in every room. 
+                For example, if you upload a PDF document with 5 problems, then every room's board #1 ~ #5 will be those problems. 
+              </p>
+
               <v-row>
                 <v-col>
                   Set PDF problem in every room's board # 
@@ -55,16 +62,15 @@
               <div></div>
             </template>
           </BasePopupButton>
+
           <v-list-item @click="muteParticipantsInRooms(roomTypeDoc.id)">
             <v-icon left>mdi-volume-mute</v-icon> Mute everyone
           </v-list-item>
-          <v-list-item @click="clearRoomStatuses(roomTypeDoc.id)">
-            <v-icon left>mdi-comment-remove</v-icon> Reset statuses
-          </v-list-item>
+
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()">
-                <v-icon>mdi-shuffle-variant</v-icon> Shuffle everyone
+                <v-icon left>mdi-shuffle-variant</v-icon> Shuffle everyone
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -84,9 +90,28 @@
               </v-row>
             </template> 
           </BasePopupButton>
-          <v-list-item>
+
+          <v-list-item @click="clearRoomStatuses(roomTypeDoc.id)">
+            <v-icon left>mdi-comment-remove</v-icon> Reset statuses
+          </v-list-item>
+
+
+          <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
+            <template v-slot:activator-button="{ on, openPopup }">
+              <v-list-item @click.stop="openPopup()">
+                <v-icon left>mdi-delete</v-icon> Reset everything
+              </v-list-item>
+            </template>
+            <template v-slot:message-to-user>
+              Are you sure you want to reset absolutely everything? 
+              This will reset the blackboards and status of every single room. 
+            </template> 
+          </BasePopupButton>
+
+          <v-list-item disabled>
             <v-icon left>mdi-music-clef-treble</v-icon> Set music
           </v-list-item>
+
           <v-list-item v-if="isAdmin && rooms.length !== 0" @click="createNewRoom()">
             <v-icon left>mdi-plus</v-icon> New room
           </v-list-item>
@@ -96,20 +121,23 @@
 
     <v-divider/>
 
-    <!-- COMMON ROOM-->
+    <!-- COMMON ROOM (lots of quickfix code here)-->
     <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
       :to="`/class/${classID}/section/${sectionID}/`"
       exact exact-active-class="active-blackboard accent--text"
     >
       <div class="py-5" style="width: 100%">
-        <div class="font-weight-medium" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.75em">
-          COMMON ROOM
-        </div>
+        <div class="d-flex">
+          <div class="font-weight-medium py-2" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.75em">
+            COMMON ROOM
+          </div>
+          <v-spacer/>
+          <portal-target v-if="!currentRoomID" name="current-room-buttons">
+        
+          </portal-target>
+        </div>      
 
         <template v-if="!currentRoomID">
-          <portal-target name="current-room-buttons" v-if="isAdmin">
-            
-          </portal-target>
           <portal-target  name="current-room-participants">
 
           </portal-target>
@@ -139,65 +167,62 @@
     </v-list-item> 
 
     <!-- OTHER ROOMS -->
-    <template v-for="(room, i) in nonCommonRooms">
-      <v-list-item :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
-        active-class="active-blackboard accent--text" :key="room.id" two-line
-      >
-        <!-- CASE 1: I'm in the room -->
-        <template v-if="room.id === currentRoomID">
-          <v-list-item-content>
-            <v-list-item-title>
-              <div class="text-uppercase font-weight-medium" style="font-size: 0.75em">
-                Room {{ i + 1 }}
-              </div>
-            </v-list-item-title>
-          </v-list-item-content>
-          <portal-target name="current-room-buttons">
-        
-          </portal-target>
-        </template>
-
-         <!-- CASE 2: I'm not in the room-->
-        <template v-else>
-          <div style="width: 100%;">
-            <div class="d-flex">
-              <div class="text-uppercase font-weight-medium text--secondary" style="font-size: 0.75em">
-                Room {{ i+1 }}
-              </div>
-              <v-spacer/>
-
-              <v-chip v-if="room.status" color="blue" outlined small>
-              {{ room.status }}
-              </v-chip>
+     <v-list-item v-for="(room, i) in nonCommonRooms" :key="room.id"
+      :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
+      active-class="active-blackboard accent--text"
+    >
+      <!-- CASE 1: I'm in the room -->
+      <template v-if="room.id === currentRoomID">
+        <div class="py-5" style="width: 100%">
+          <div class="d-flex">
+            <div class="text-uppercase font-weight-medium py-2" style="font-size: 0.75em">
+              Room {{ i + 1 }}
             </div>
-
-            <div class="pl-3">
-              <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-                style="font-weight: 400; font-size: 0.8em"
-                class="text--secondary mb-0"
-              >
-                {{ p.firstName + " " + p.lastName }}
-              </p>
-            </div>
-          </div>
-        </template>
-      </v-list-item>  
-      
-        <template v-if="room.id === currentRoomID">
-          <div class="py-5" style="width: 100%"> 
-            <div class="d-flex">
-              <v-chip v-if="room.status" color="blue" class="mt-3" small outlined>
-                {{ room.status }}
-              </v-chip>
-
-              <v-spacer/>
-            </div>
-            <portal-target name="current-room-participants">
-
+            <v-spacer/>
+            <portal-target name="current-room-buttons">
+          
             </portal-target>
-          </div> 
-        </template>
-    </template>
+          </div>
+
+          <div class="d-flex">
+            <v-chip v-if="room.status" color="blue" class="mt-3" small outlined>
+              {{ room.status }}
+            </v-chip>
+
+            <v-spacer/>
+          </div>
+
+          <portal-target name="current-room-participants">
+
+          </portal-target>
+        </div>
+      </template>
+
+      <!-- CASE 2: I'm not in the room-->
+      <template v-else>
+        <div style="width: 100%;">
+          <div class="d-flex">
+            <div class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.75em">
+              Room {{ i+1 }}
+            </div>
+            <v-spacer/>
+
+            <v-chip v-if="room.status" color="blue" outlined small>
+            {{ room.status }}
+            </v-chip>
+          </div>
+
+          <div class="pl-3">
+            <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+              style="font-weight: 400; font-size: 0.8em"
+              class="text--secondary mb-0"
+            >
+              {{ p.firstName + " " + p.lastName }}
+            </p>
+          </div>
+        </div>
+      </template>
+    </v-list-item>   
 
     <!-- Twilio Room with Collaborative Blackboard -->
     <portal to="main-content">
@@ -294,15 +319,11 @@ export default {
       updateParticipantsTimeout: null,
       unsubFuncs: [],
       targetBoardNum: 0,
+      isMenuOpen: false,
       makeAnnouncementPopup: {
         show: false,
         roomType: null,
         message: null
-      },
-      roomStatusPopup: {
-        show: false,
-        roomID: null,
-        status: ""
       },
       groupSize: 3,
       minRoomSizeOnShuffle: 2
@@ -425,62 +446,112 @@ export default {
     }
   },
   methods: {
+    async resetAbsolutelyEverything () {
+      function deleteAtPath(path) {
+        return new Promise((resolve, reject) => {
+          var deleteFn = firebase.functions().httpsCallable('recursiveDelete');
+          deleteFn({ path: path })
+            .then(function(result) {
+              console.log('Delete success: ' + JSON.stringify(result));
+              resolve(); 
+            })
+            .catch(function(err) {
+              console.log('Delete failed, see console,');
+              console.warn(err);
+              reject(); 
+            });
+        });
+      }
+
+      this.$root.$emit("show-snackbar", "Reseting absolutely everything (this might take a while)...");
+      const promises = []; 
+      for (const room of this.rooms) {
+        db.doc(`/classes/${this.classID}/rooms/${room.id}`).update({
+          status: ""
+        });
+        for (const boardID of room.blackboards) {
+          const boardDbPath = `/classes/${this.classID}/blackboards/${boardID}`;
+          promises.push(
+            db.doc(`${boardDbPath}`).update({ backgroundImageDownloadURL: "" })
+          );
+          promises.push(
+            deleteAtPath(`${boardDbPath}/strokes`)
+          );
+        }
+      }
+      await Promise.all(promises); 
+      this.$root.$emit("show-snackbar", "Succesfully reset everything.");  
+    },
+    /**
+     * Allows the teacher to upload PDF problems to all the rooms at once. 
+     * If the PDF is multi-paged, it will populate boards from index `targetBoardNum` till however many
+     * extra pages there are. 
+     */
     async seedEachRoomWithProblem (e) {
-      console.log("seedEachRoomWithProblem()");
       const uploadedFile = e.target.files[0];
       if (!uploadedFile) return;
-      let imageFile;  
+
+      let imageFiles = []; 
       if (uploadedFile.type.split("/")[0] === "image") {
-        imageFile = uploadedFile; 
+        imageFiles.push(uploadedFile); 
       } else if (uploadedFile.type.split("/")[1] === "pdf") {
-        imageFile = await this.convertPdfToImageFile(uploadedFile);
+        imageFiles = await this.convertPdfToImageFiles(uploadedFile);
       } else {
         this.$root.$emit("show-snackbar", "Error: only image or pdf files are supported for now.");
         return; 
       }
-      // save it to storage 
-      const downloadURL = await this.$_saveToStorage(getRandomId(), imageFile);
-      
+
       const promises = []; 
-      // now for each room, put it on the blackboard 
-      for (const room of this.rooms) {
-        if (room.blackboards.length <= this.targetBoardNum) return; 
-        const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[this.targetBoardNum]);
-        promises.push(
-          ref.update({
-            backgroundImageDownloadURL: downloadURL
-          })
-        );
+      for (const [i, imageFile] of imageFiles.entries()) {
+        const processOneImage = this.$_saveToStorage(getRandomId(), imageFile).then(downloadURL => {
+          const idx = this.targetBoardNum + i; 
+          for (const room of this.rooms) {
+            if (room.blackboards.length <= idx) {
+              return;
+            } 
+            const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
+            promises.push(
+              ref.update({
+                backgroundImageDownloadURL: downloadURL
+              })
+            );
+          }
+        }); 
+        promises.push(processOneImage);
       }
-      console.log("resolving promises");
       await Promise.all(promises);
       console.log("resolved");
       this.$root.$emit("show-snackbar", "Successfully planted the problem in each room :)")
     },
-    async convertPdfToImageFile (src) {
+    async convertPdfToImageFiles (src) {
       // TODO: fix npm errors and use normal imports
       const pdfjs = require("pdfjs-dist/build/pdf.js");
       pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
       
       const doc = await pdfjs.getDocument(URL.createObjectURL(src)).promise;
-      const page = await doc.getPage(1);
-      
-      // Render the page on a Node canvas with 100% scale.
-      const viewport = page.getViewport({ scale: 1.0 });
-      const dummyCanvas = document.createElement("canvas");
-      dummyCanvas.width = viewport.width;
-      dummyCanvas.height = viewport.height;
-      const ctx = dummyCanvas.getContext("2d");
-      const renderContext = {
-        canvasContext: ctx,
-        viewport: viewport
-      };
-      
-      await page.render(renderContext).promise
-      const dataURL = dummyCanvas.toDataURL("image/png");
-      const current_date = new Date();
-      const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
-      return file;
+      console.log("doc =", doc);
+      const files = []; 
+      for (let i = 1; i < doc.numPages + 1; i++) {
+        const page = await doc.getPage(i);     
+
+        // Render the page on a Node canvas with 100% scale.
+        const viewport = page.getViewport({ scale: 1.0 });
+        const dummyCanvas = document.createElement("canvas");
+        dummyCanvas.width = viewport.width;
+        dummyCanvas.height = viewport.height;
+        const ctx = dummyCanvas.getContext("2d");
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+        
+        await page.render(renderContext).promise
+        const dataURL = dummyCanvas.toDataURL("image/png");
+        const current_date = new Date();
+        const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
+        files.push(file); 
+      }
+      return files; 
     },
     // https://stackoverflow.com/questions/16968945/convert-base64-png-data-to-javascript-file-objects/16972036
     // function to convert dataURL from canvas to file object

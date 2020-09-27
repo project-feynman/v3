@@ -86,10 +86,14 @@
     </v-dialog>
 
     <portal to="current-room-buttons">
-      <v-btn @click="isMenuOpen = true" icon> 
-        <v-icon>mdi-dots-vertical</v-icon>
-      </v-btn>
       <v-menu v-model="isMenuOpen" offset-y bottom>
+        <!-- triple dots button -->
+        <template v-slot:activator>
+          <v-btn @click="isMenuOpen = true" icon> 
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+        
         <v-list>
           <v-list-item @click="isRoomStatusPopupOpen = true">
             <v-icon left>mdi-message-alert</v-icon> Update status
