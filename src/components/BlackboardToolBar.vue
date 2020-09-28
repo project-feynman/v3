@@ -22,13 +22,21 @@
             </slot>
           </v-row>
         </v-col>        
+
+        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
+          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+          color="black"
+        >
+          Fullscreen
+        </BaseButton>
+
         <slot name="record-audio-slot">
 
         </slot>
 
-        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" filled small :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'">
-          Fullscreen
-        </BaseButton>
+        <slot name="more-actions-slot">
+
+        </slot>
       </v-row>
     </v-container>
   </v-app-bar>

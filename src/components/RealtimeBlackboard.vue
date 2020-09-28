@@ -10,34 +10,53 @@
     <!-- Blackboard -->
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <Blackboard v-else
-      :isVertical="isVertical"
+      :sizeAndOrientationMode="sizeAndOrientationMode"
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
+      :key="incrementKeyToDestroyComponent"
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
       @record-end="handleRecordEnd()"
     >
+      <!-- TODO: don't let user wipe board / set background while recording -->
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot>
-        <BaseButton @click="$refs.fileInput.click()" icon="mdi-image" color="black" small>
+        <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
+          <template v-slot:activator-button="{ on, openPopup }">
+            <v-list-item @click.stop="openPopup()">
+              <v-icon left>mdi-content-save</v-icon>Save as animation
+            </v-list-item>
+          </template>
+          <template v-slot:message-to-user>
+            <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
+          </template> 
+        </BasePopupButton>
+
+        <v-list-item @click="$refs.fileInput.click()">
+          <v-icon left>mdi-image</v-icon>Upload background
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
             type="file" 
             ref="fileInput"
           >
-          Background
-        </BaseButton>
+        </v-list-item>
+
+        <template v-if="backgroundImage">
+          <v-list-item @click="resetBackgroundImage()">
+            <v-icon left>mdi-file-remove</v-icon> Remove background
+          </v-list-item>
+        </template>
       </template>
 
       <!-- Wipe Board (overrides the normal, offline wiping behavior) -->
       <template v-slot:wipe-board-button-slot>
         <BasePopupButton actionName="Wipe strokes" @action-do="deleteAllStrokesFromDb()">
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-delete" color="black" small>
-              Wipe strokes
-            </BaseButton>
+          <template v-slot:activator-button="{ on, openPopup }">
+            <v-list-item @click.stop="openPopup()">
+              <v-icon left>mdi-delete</v-icon> Wipe strokes
+            </v-list-item>
           </template>
           <template v-slot:message-to-user>
             Are you sure you want wipe this blackboard's pen strokes?
@@ -50,29 +69,32 @@
 
         </slot> 
 
-        <template v-if="backgroundImage">
-          <BaseButton v-if="backgroundImage.downloadURL" @click="resetBackgroundImage()" icon="mdi-file-remove" color="black" small>
-            Clear background
-          </BaseButton>
-        </template>
-
-        <BaseButton @click="rotateBlackboard()" icon="mdi-phone-rotate-landscape" color="black" small>
-          Rotate
-        </BaseButton>
-
-        <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
-          <template v-slot:activator-button="{ on }">
-            <BaseButton :on="on" icon="mdi-content-save" color="black" small>
-              Save
+        <!-- use a menu -->
+        <v-menu v-model="isMenuOpen">
+          <template v-slot:activator="{ on }">
+            <BaseButton @click="isMenuOpen = true" 
+              :icon="sizeAndOrientationMode === 'landscape' ? 'mdi-crop-landscape' : sizeAndOrientationMode === 'portrait' ? 'mdi-crop-portrait' : 'mdi-selection'"
+              color="black" small
+            >
+              {{ sizeAndOrientationMode }} mode
             </BaseButton>
           </template>
-          <template v-slot:message-to-user>
-            <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
-          </template> 
-        </BasePopupButton>
+
+          <v-list>
+            <v-list-item @click="updateSizeAndOrientationMode('landscape')">
+              <v-icon left>mdi-crop-landscape</v-icon> Landscape mode
+            </v-list-item>
+            <v-list-item @click="updateSizeAndOrientationMode('portrait')">
+              <v-icon left>mdi-crop-portrait</v-icon> Portrait mode
+            </v-list-item>
+            <v-list-item @click="updateSizeAndOrientationMode('massive')">
+              <v-icon left>mdi-selection</v-icon> Massive mode
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </template> 
     </Blackboard> 
-    
+  
     <!-- Popup for saving blackboard -->
     <v-dialog v-model="dialog" max-width="600">
       <v-card>
@@ -140,7 +162,7 @@ export default {
     return {
       hasFetchedStrokesFromDb: false,
       hasFetchedBackgroundImage: false,
-      isVertical: false,
+      sizeAndOrientationMode: "", // landscape, portrait, infinite
       strokesArray: [],
       backgroundImage: {
         downloadURL: null,
@@ -158,6 +180,10 @@ export default {
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
       messagesOpen: false,
+
+      // new code
+      incrementKeyToDestroyComponent: 0,
+      isMenuOpen: false
     };
   },
   computed: {
@@ -185,29 +211,34 @@ export default {
         this.hasFetchedBackgroundImage = true; 
       }
 
-      // now also handle is vertical 
-      this.isVertical = !!blackboardDoc.data().isVertical; 
-      if (this.isVertical) {
-        this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
-      } else {
+      this.sizeAndOrientationMode = blackboardDoc.data().sizeAndOrientationMode; 
+      if (!this.sizeAndOrientationMode) {
+        this.sizeAndOrientationMode = "landscape"; 
+      }
+      if (this.sizeAndOrientationMode === "landscape") {
         this.$root.$emit("show-snackbar", "Board is set to landscape mode"); 
+      } 
+      else if (this.sizeAndOrientationMode === "portrait") {
+        this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
+      }
+      else if (this.sizeAndOrientationMode === "massive") {
+        this.$root.$emit("show-snackbar", "Board is set to massive mode");
       }
     });
-    // console.log('created blackboard with id', this.blackboardRef.im.path.segments[3]);
   },
   destroyed () {
     this.removeBlackboardStrokesListener();
     this.removeBackgroundImageListener(); 
   },
   methods: {
+    updateSizeAndOrientationMode (newMode) {
+      this.blackboardRef.update({
+        sizeAndOrientationMode: newMode
+      });
+    },
     resetBackgroundImage () {
       this.blackboardRef.update({
         backgroundImageDownloadURL: ""
-      });
-    },
-    rotateBlackboard () {
-      this.blackboardRef.update({ 
-        isVertical: !this.isVertical
       });
     },
     /** 
@@ -397,8 +428,17 @@ export default {
 
       await Promise.all(promises);
 
+      let aspectRatio; 
+      if (this.sizeAndOrientationMode === "landscape") {
+        aspectRatio = PPT_SLIDE_RATIO; 
+      } else if (this.sizeAndOrientationMode === "portrait") {
+        aspectRatio = PDF_RATIO; 
+      } else if (this.sizeAndOrientationMode === "massive") {
+        aspectRatio = 1/2;
+      }
+
       this.$_saveExplToCacheThenUpload({
-        aspectRatio: this.isVertical ? PDF_RATIO : PPT_SLIDE_RATIO,
+        aspectRatio,
         thumbnailBlob,
         audioBlob: this.blackboard.audioBlob,
         backgroundImageBlob,
@@ -440,9 +480,12 @@ export default {
     saveVideo () {
       this.dialog = false; 
       this.uploadExplanation(); 
+      this.incrementKeyToDestroyComponent += 1; 
+
     },
     discardAudio () {
       this.dialog = false; 
+      this.incrementKeyToDestroyComponent += 1; 
     },
     toggleChat () {
       this.messagesOpen = !this.messagesOpen;
