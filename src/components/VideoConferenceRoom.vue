@@ -5,7 +5,6 @@
 </template>
 
 <script>
-import JistiMeetJS from "lib-jitsi-meet-dist";
 import { mapState } from "vuex"; 
 
 export default {
@@ -33,11 +32,10 @@ export default {
         parentNode: document.querySelector("#jisti-video-conference"),
         roomName: this.roomID,
         userInfo: {
-          display: `${this.user.firstName} ${this.user.lastName} `
+          displayName: `${this.user.firstName} ${this.user.lastName} `
         }
       }; 
       const api = new JitsiMeetExternalAPI(domain, options);
-      console.log("jisti initialized, api =", api);
     }
   }
 };

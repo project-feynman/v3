@@ -7,8 +7,6 @@
 </template>
 
 <script>
-import JistiMeetJS from "lib-jitsi-meet-dist";
-
 export default {
   mounted () {
     // this.connectToJisti2(); 
