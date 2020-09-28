@@ -45,13 +45,17 @@
 
     <!-- TODO -->
     <portal to="main-content">
-      <h1>New things to try</h1>
+      <h1>Major changes</h1>
       <ul>
-        <li>Directly message any class member</li>
-        <li>create public message channels</li>
-        <li>You can save/wipe all the boards in any given room with 1 click</li>
-        <li>Browse the newly improved library</li>
-        <li>Record audio with blackboards (press the purple record button)</li>
+        <li>
+          Upgraded the underlying video conference library to Jisti, which is open-source and feature-rich. 
+        </li>
+        <li>
+          Introduced more admin buttons e.g. wipe all rooms in section to save time from button clicks. 
+        </li>
+        <li>
+          Introduced <u>massive mode</u> for the blackboard, which simulates infinite scroll. 
+        </li>
       </ul>
 
       <br>

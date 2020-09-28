@@ -63,9 +63,9 @@
             </template>
           </BasePopupButton>
 
-          <v-list-item @click="muteParticipantsInRooms(roomTypeDoc.id)">
+          <!-- <v-list-item @click="muteParticipantsInRooms(roomTypeDoc.id)">
             <v-icon left>mdi-volume-mute</v-icon> Mute everyone
-          </v-list-item>
+          </v-list-item> -->
 
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
