@@ -1,9 +1,27 @@
 <template>
   <div>
-    <v-btn v-if="!isUsingJisti" @click="connectToJisti()">
-      Connect audio and video
+    <template v-if="!isUsingJisti">
+      <p class="ma-3">
+        To connect to video with iPad, <u>don't download any apps</u> and instead press "launch in web". This is an ongoing issue (https://github.com/jitsi/jitsi-meet/issues/7612), 
+        and I intend to resolve this ASAP. Before then, it's necessary to repeat the process everytime you join a room. 
+      </p>
+
+      <p class="ma-3">
+        The common room has full video conference features</u> whereas 
+        other room has minimal features.
+      </p>
+
+      <p class="ma-3">
+        <b>Tip:</b> Use laptop video and iPad blackboard for the best experience.
+      </p>
+    </template>
+
+    <v-btn v-if="!isUsingJisti" @click="connectToJisti()" block color="green" class="white--text">
+      Connect video
     </v-btn>
-    <div v-if="isUsingJisti" 
+
+
+    <div v-if="isUsingJisti"
       id="jisti-video-conference" 
       :style="`height: ${isCommonRoom ? '70vh' : '170px'}`"
     >
