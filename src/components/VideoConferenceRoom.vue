@@ -23,7 +23,7 @@
 
     <div v-if="isUsingJisti"
       id="jisti-video-conference" 
-      :style="`height: ${isCommonRoom ? '70vh' : '170px'}`"
+      :style="`height: ${isCommonRoom ? '70vh' : '300px'}`"
     >
 
     </div>
@@ -70,20 +70,21 @@ export default {
         parentNode: document.querySelector("#jisti-video-conference"),
         roomName: this.roomID,
         userInfo: {
-          displayName: `${this.user.firstName} ${this.user.lastName} `
+          displayName: `${this.user.firstName} ${this.user.lastName} `,
+          id: this.user.uid
         },
         configOverwrite: {
           enableWelcomePage: false,
           // lower the bandwidth
-          constraints: {
-            video: {
-              height: {
-                ideal: 480,
-                max: 720,
-                min: 240
-              }
-            }
-          }
+          // constraints: {
+          //   video: {
+          //     height: {
+          //       ideal: 480,
+          //       max: 720,
+          //       min: 240
+          //     }
+          //   }
+          // }
         },
         interfaceConfigOverwrite: {
           // hide misleading steps in connecting
@@ -96,19 +97,27 @@ export default {
           // APP_NAME: "Video Comms",
 
           // configure UI for displaying videos
-          VERTICAL_FILMSTRIP: this.isCommonRoom,
-          filmStripOnly: !this.isCommonRoom,
+          // VERTICAL_FILMSTRIP: false,
+          // VERTICAL_FILMSTRIP: this.isCommonRoom,
+          // filmStripOnly: !this.isCommonRoom,
           // TILE_VIEW_MAX_COLUMNS: 5,
 
           // simplify UI by removing unnecessary features
           HIDE_INVITE_MORE_HEADER: true,
           SETTINGS_SECTIONS: [ 'devices', 'moderator'],
-          TOOLBAR_BUTTONS: [
+          TOOLBAR_BUTTONS: this.isCommonRoom ? [
             'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
             'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
             'etherpad', 'settings', 'raisehand',
             'videoquality', 'filmstrip', 'feedback', 'stats',
             'tileview', 'download', 'mute-everyone', 
+          ] 
+          : 
+          [
+            'microphone', 'camera', 'desktop', 'fullscreen',
+            'fodeviceselection', 'hangup', 'chat',
+            'settings', 'videoquality', 'filmstrip', 'feedback',
+            'tileview', 'mute-everyone', 
           ],
         },
         // events here
@@ -121,7 +130,11 @@ export default {
       this.api.addEventListener("videoConferenceLeft", roomName => {
         this.isUsingJisti = false;
         this.$store.commit("SET_CAN_HEAR_AUDIO", false);
-      })
+      });
+      this.api.addEventListener("dominantSpeakerChanged", (dominantSpeaker) => {
+        console.log("dominantSpeaker =", dominantSpeaker);
+        this.$store.commit("SET_DOMINANT_SPEAKER_NAME", this.api.getDisplayName(dominantSpeaker.id));
+      });
     }
   }
 };
