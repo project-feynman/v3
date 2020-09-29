@@ -1,6 +1,7 @@
 <template>
   <RealtimeRoom
     :roomId="$route.params.section_id"
+    :isCommonRoom="true"
   />
 </template>
 

@@ -6,21 +6,11 @@
       
 
     </div>
-    <!-- <vue-jitsi-meet
-      ref="jitsiRef"
-      domain="meet.jit.si"
-      :options="jitsiOptions"
-    ></vue-jitsi-meet> -->
   </v-app>
 </template>
 
 <script>
-import { JitsiMeet } from '@mycure/vue-jitsi-meet';
-
 export default {
-  // components: {
-  //   VueJistiMeet: JistiMeet
-  // },
   data () {
     return {
       api: null

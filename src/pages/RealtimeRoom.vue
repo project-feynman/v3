@@ -12,6 +12,7 @@
     /> -->
     <VideoConferenceRoom
       :roomID="roomId"
+      :isCommonRoom="isCommonRoom"
       :key="incrementToDestroyComponent"
     />
 
@@ -176,6 +177,12 @@ export default {
     roomId: {
       type: String,
       required: true
+    },
+    isCommonRoom: {
+      type: Boolean,
+      default () {
+        return false;
+      }
     }
   },
   components: {

@@ -5,7 +5,7 @@
     </v-btn>
     <div v-if="isUsingJisti" 
       id="jisti-video-conference" 
-      style="height: 200px"
+      :style="`height: ${isCommonRoom ? '70vh' : '170px'}`"
     >
 
     </div>
@@ -19,6 +19,10 @@ export default {
   props: {
     roomID: {
       type: String,
+      required: true
+    },
+    isCommonRoom: {
+      type: Boolean,
       required: true
     }
   },
@@ -71,11 +75,11 @@ export default {
           // clean up other UI clutter related to promos and branding
           SHOW_JITSI_WATERMARK: false,
           SHOW_CHROME_EXTENSION_BANNER: false,
-          APP_NAME: "Video Comms",
+          // APP_NAME: "Video Comms",
 
           // configure UI for displaying videos
-          VERTICAL_FILMSTRIP: false,
-          filmStripOnly: true,
+          VERTICAL_FILMSTRIP: this.isCommonRoom,
+          filmStripOnly: !this.isCommonRoom,
           // TILE_VIEW_MAX_COLUMNS: 5,
 
           // simplify UI by removing unnecessary features
