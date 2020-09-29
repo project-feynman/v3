@@ -518,9 +518,11 @@ export default {
 
       const promises = []; 
       for (const [i, imageFile] of imageFiles.entries()) {
+        console.log("processing image number ", i);
         const processOneImage = this.$_saveToStorage(getRandomId(), imageFile).then(downloadURL => {
           const idx = this.targetBoardNum + i; 
           for (const room of this.rooms) {
+            console.log("placing image number ", i, "into a room");
             if (room.blackboards.length <= idx) {
               return;
             } 

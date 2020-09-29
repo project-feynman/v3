@@ -8,7 +8,7 @@
       </v-card>
     </v-dialog>
 
-    <v-card v-for="i in 20" height="300">
+    <v-card v-for="i in 20" height="300" :key="i">
       This is just padding for the intersection card
     </v-card>
     <v-card v-intersect.once="onIntersect">
