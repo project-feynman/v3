@@ -28,7 +28,10 @@
         -->
         <div style="position: relative;" v-intersect.once="{
           handler (entries, observer, isIntersecting) {
-            if (isIntersecting) fetchStrokes(); 
+            if (isIntersecting) {
+              fetchStrokes(); 
+              incrementNumOfViewsOnExpl()
+            } 
           },
           options: {
             threshold: 0.5 
@@ -154,6 +157,12 @@ export default {
     userHasUpvoted () {
       if (!this.expl.upvotersIds) return false;
       return this.expl.upvotersIds.includes(this.user.uid);
+    },
+    incrementNumOfViewsOnExpl () {
+      const ref = db.doc(`${this.expl.ref}`);
+      ref.update({
+        views: firebase.firestore.FieldValue.increment(1)
+      });
     },
     handlePlayClick (fetchStrokes) {
       if (this.isLoading) return;

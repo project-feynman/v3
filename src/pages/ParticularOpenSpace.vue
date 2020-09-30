@@ -143,7 +143,7 @@
           <div class="pl-3">
             <p v-for="p in roomIDToParticipants[commonRoomDoc.id]" :key="p.id"
               style="font-weight: 400; font-size: 0.8em"
-              class="text--secondary mb-0"
+              :class="`text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
             >
               {{ p.firstName + " " + p.lastName }}
             </p>
@@ -164,7 +164,7 @@
           <div class="pl-3">
             <p v-for="p in roomIDToParticipants[commonRoomDoc.id]" :key="p.id"
               style="font-weight: 400; font-size: 0.8em"
-              class="text--secondary mb-0"
+              :class="`text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
             >
               {{ p.firstName + " " + p.lastName }}
             </p>

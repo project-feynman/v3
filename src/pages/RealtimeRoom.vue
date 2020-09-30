@@ -3,13 +3,6 @@
     <HandleUpdatingParticipants
       :roomId="roomId"
     />
-
-    <!-- <RealtimeSpaceTwilioRoom 
-      :roomID="roomId"
-      :willMuteByDefault="true"
-      :key="incrementToDestroyComponent"
-      @disconnect="incrementToDestroyComponent += 1"
-    /> -->
     <VideoConferenceRoom
       :roomID="roomId"
       :isCommonRoom="isCommonRoom"
@@ -129,7 +122,7 @@
       >
         <template v-for="(board, i) in room.blackboards">
           <v-tab :href="'#' + board" :key="i">
-            {{ 'BOARD #' + (i+1) }}
+            {{ '#' + (i+1) }}
           </v-tab>
         </template>
         <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
@@ -167,7 +160,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import BaseIconButton from "@/components/BaseIconButton.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
-import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom";
 import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.vue";
 import { getRandomId } from "@/helpers.js";
 import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
@@ -188,7 +180,6 @@ export default {
   components: {
     HandleUpdatingParticipants,
     RealtimeBlackboard,
-    RealtimeSpaceTwilioRoom,
     BaseButton,
     BaseIconButton,
     VideoConferenceRoom

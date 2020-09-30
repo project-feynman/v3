@@ -40,13 +40,12 @@
             
               </slot> 
 
-              <BaseButton v-if="isAdmin" @click="startRecording()" icon="mdi-record" color="secondary">
+              <BaseButton @click="startRecording()" icon="mdi-record" color="secondary">
                 Record 
               </BaseButton>
             </template>
 
-
-            <BaseButton v-if="isAdmin && currentState === RecordState.MID_RECORD" 
+            <BaseButton v-if="currentState === RecordState.MID_RECORD" 
               @click="stopRecording()" 
               color="secondary" icon="mdi-stop"
             >

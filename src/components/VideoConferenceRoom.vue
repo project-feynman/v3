@@ -1,29 +1,30 @@
 <template>
   <div>
     <template v-if="!isUsingJisti">
-      <p class="ma-3">
-        To connect to video with iPad, <u>don't download any apps</u> and instead press "launch in web". This is an ongoing issue (https://github.com/jitsi/jitsi-meet/issues/7612), 
-        and I intend to resolve this ASAP. Before then, it's necessary to repeat the process everytime you join a room. 
-      </p>
+      <div class="ma-3">
+        <ul>To connect: 
+          <li>Ignore any prompts to download the Jisti apps: just press "Launch in web" </li>
+          <li>If Jisti repeatedly prompts you for audio/video permissions look for the "Don't show this again" option when you join.</li>
+        </ul>
 
-      <p class="ma-3">
-        The common room has full video conference features</u> whereas 
-        other room has minimal features.
-      </p>
+        <br>
+        
+        <ul>
+        If things aren't working: 
+           <li>Force quit the browser</li>
+           <li>Reset cookies and cache</li>
+        </ul>
+      </div>
 
-      <p class="ma-3">
-        <b>Tip:</b> Use laptop video and iPad blackboard for the best experience.
-      </p>
     </template>
 
     <v-btn v-if="!isUsingJisti" @click="connectToJisti()" block color="green" class="white--text">
-      Connect video
+      Connect audio/video
     </v-btn>
-
 
     <div v-if="isUsingJisti"
       id="jisti-video-conference" 
-      :style="`height: ${isCommonRoom ? '70vh' : '300px'}`"
+      :style="`height: ${isCommonRoom ? '70vh' : '350px'}`"
     >
 
     </div>
@@ -70,21 +71,10 @@ export default {
         parentNode: document.querySelector("#jisti-video-conference"),
         roomName: this.roomID,
         userInfo: {
-          displayName: `${this.user.firstName} ${this.user.lastName} `,
-          id: this.user.uid
+          displayName: `${this.user.firstName} ${this.user.lastName} `
         },
         configOverwrite: {
           enableWelcomePage: false,
-          // lower the bandwidth
-          // constraints: {
-          //   video: {
-          //     height: {
-          //       ideal: 480,
-          //       max: 720,
-          //       min: 240
-          //     }
-          //   }
-          // }
         },
         interfaceConfigOverwrite: {
           // hide misleading steps in connecting
@@ -94,10 +84,11 @@ export default {
           // clean up other UI clutter related to promos and branding
           SHOW_JITSI_WATERMARK: false,
           SHOW_CHROME_EXTENSION_BANNER: false,
+          GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
           // APP_NAME: "Video Comms",
 
           // configure UI for displaying videos
-          // VERTICAL_FILMSTRIP: false,
+          VERTICAL_FILMSTRIP: false,
           // VERTICAL_FILMSTRIP: this.isCommonRoom,
           // filmStripOnly: !this.isCommonRoom,
           // TILE_VIEW_MAX_COLUMNS: 5,

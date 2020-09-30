@@ -96,7 +96,7 @@
     </Blackboard> 
   
     <!-- Popup for saving blackboard -->
-    <v-dialog v-model="dialog" max-width="600">
+    <v-dialog v-model="dialog" persistent max-width="600">
       <v-card>
         <v-card-title class="headline">Save your recorded explanation?</v-card-title>
         <v-card-text>

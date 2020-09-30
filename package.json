@@ -23,8 +23,6 @@
     "portal-vue": "^2.1.7",
     "tiptap": "^1.29.6",
     "tiptap-extensions": "^1.32.7",
-    "twilio": "^3.49.1",
-    "twilio-video": "^2.7.2",
     "vue": "^2.6.12",
     "vue-carousel": "^0.18.0",
     "vue-drag-drop": "^1.1.4",
