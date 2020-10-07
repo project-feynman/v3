@@ -97,6 +97,7 @@
             <v-icon left color="red">mdi-comment-remove</v-icon> Reset statuses
           </v-list-item> -->
 
+
           <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()">
@@ -140,17 +141,9 @@
         </div>      
 
         <template v-if="!currentRoomID">
-          <!-- <portal-target  name="current-room-participants">
+          <portal-target  name="current-room-participants">
 
-          </portal-target> -->
-          <div class="pl-3">
-            <p v-for="p in roomIDToParticipants[commonRoomDoc.id]" :key="p.id"
-              style="font-weight: 400; font-size: 0.8em"
-              :class="`text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
-            >
-              {{ p.firstName + " " + p.lastName }}
-            </p>
-          </div>
+          </portal-target>
         </template>
 
         <!-- Quickfix  -->
@@ -207,18 +200,9 @@
             <v-spacer/>
           </div>
 
-          <div class="pl-3">
-            <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-              style="font-weight: 400; font-size: 0.8em"
-              :class="`text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
-            >
-              {{ p.firstName + " " + p.lastName }}
-            </p>
-          </div>
+          <portal-target name="current-room-participants">
 
-          <!-- <portal-target name="current-room-participants">
-
-          </portal-target> -->
+          </portal-target>
         </div>
       </template>
 
@@ -295,19 +279,20 @@
     />
 
     <!-- CONTROL DASHBOARD -->
-    <!-- <portal to="side-drawer-bottom-region">
+    <portal to="side-drawer-bottom-region">
       <v-card color="grey darken-1"  >
         <v-card-title class="mb-0 pb-0 white--text">
           {{ user.firstName + " " + user.lastName }}
         </v-card-title>
 
         <v-card-text>
+          <!-- User mute/deafen/etc. buttons -->
           <portal-target name="destination2">
 
           </portal-target>
         </v-card-text>
       </v-card>
-    </portal> -->
+    </portal>
   </portal>
 </template>
 

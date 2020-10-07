@@ -2,7 +2,7 @@
   <v-app>
     <v-btn @click="connectToJisti()">Connect to video call</v-btn>
     <v-btn @click="setVideoQuality()">Set video quality</v-btn>
-    <div id="jisti-video-conference" style="height: 300px">
+    <div id="jisti-video-conference" style="height: 300px"></div>
       
     <!-- <v-icon>mdi-dots-vertical</v-icon>
     <div id="jisti-video-conference" style="height: 100vh">
