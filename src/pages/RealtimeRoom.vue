@@ -188,6 +188,7 @@ import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.vue";
 import { getRandomId } from "@/helpers.js";
+import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom.vue";
 
 export default {
   props: {
@@ -205,6 +206,7 @@ export default {
   components: {
     HandleUpdatingParticipants,
     RealtimeBlackboard,
+    RealtimeSpaceTwilioRoom,
     BaseButton,
     BaseIconButton,
   },
