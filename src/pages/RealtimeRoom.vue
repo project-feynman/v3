@@ -83,27 +83,51 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="isRenameRoomPopupOpen">
+      <v-card>
+        <v-card-title>
+          Rename the room to designate it for another purpose
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field v-model="newRoomName" placeholder="e.g. Staff room"/>
+        </v-card-text>
+      
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="isRenameRoomPopupOpen = false">CANCEL</v-btn>
+          <v-btn @click="renameRoom(); isRenameRoomPopupOpen = false;" color="black" dark>
+            Rename room
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <portal to="current-room-buttons">
       <v-menu v-model="isMenuOpen" offset-y bottom>
-        <!-- triple dots button -->
+        <!-- Triple-dots button -->
         <template v-slot:activator>
-          <v-btn @click="isMenuOpen = true" icon> 
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
+          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+            Room actions
+          </BaseButton>
         </template>
         
         <v-list>
           <v-list-item @click="isRoomStatusPopupOpen = true">
-            <v-icon left>mdi-message-alert</v-icon> Update status
+            <v-icon left color="blue">mdi-message-alert</v-icon> Update status
           </v-list-item>
           <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
-            <v-icon left>mdi-delete-alert</v-icon> Wipe strokes
+            <v-icon left color="red">mdi-delete-alert</v-icon> Wipe strokes
           </v-list-item>
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
-            <v-icon left>mdi-file-remove-outline</v-icon> Wipe PDFs
+            <v-icon left color="red">mdi-file-remove-outline</v-icon> Wipe PDFs
           </v-list-item>
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
-            <v-icon left>mdi-content-save-all</v-icon> Save boards
+            <v-icon left color="purple">mdi-content-save-all</v-icon> Save boards
+          </v-list-item>
+          <!-- TODO:  -->
+          <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
+            <v-icon left color="black">mdi-pencil</v-icon> Rename room
           </v-list-item>
         </v-list>
       </v-menu>
@@ -204,8 +228,10 @@ export default {
       isSaveBoardsPopupOpen: false,
       isClearPDFsPopupOpen: false,
       isRoomStatusPopupOpen: false,
+      isRenameRoomPopupOpen: false,
       titleOfExplCollection: "",
-      newRoomStatus: ""
+      newRoomStatus: "",
+      newRoomName: ""
     }
   },
   computed: {
@@ -251,6 +277,12 @@ export default {
     }
   },
   methods: { 
+    renameRoom () {
+      db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
+        name: this.newRoomName
+      });
+      this.newRoomName = ""; 
+    },
     updateRoomStatus () {
       db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
         status: this.newRoomStatus

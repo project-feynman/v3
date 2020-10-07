@@ -25,7 +25,7 @@
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup()">
-              <v-icon left>mdi-content-save</v-icon>Save as animation
+              <v-icon left color="secondary">mdi-content-save</v-icon>Save as animation
             </v-list-item>
           </template>
           <template v-slot:message-to-user>
@@ -34,7 +34,7 @@
         </BasePopupButton>
 
         <v-list-item @click="$refs.fileInput.click()">
-          <v-icon left>mdi-image</v-icon>Upload background
+          <v-icon left color="black">mdi-image</v-icon>Upload background
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
@@ -45,7 +45,7 @@
 
         <template v-if="backgroundImage">
           <v-list-item @click="resetBackgroundImage()">
-            <v-icon left>mdi-file-remove</v-icon> Remove background
+            <v-icon left color="red">mdi-file-remove</v-icon> Remove background
           </v-list-item>
         </template>
       </template>
@@ -55,7 +55,7 @@
         <BasePopupButton actionName="Wipe strokes" @action-do="deleteAllStrokesFromDb()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup()">
-              <v-icon left>mdi-delete</v-icon> Wipe strokes
+              <v-icon left color="red">mdi-delete</v-icon> Wipe strokes
             </v-list-item>
           </template>
           <template v-slot:message-to-user>

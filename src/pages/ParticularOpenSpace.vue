@@ -1,12 +1,13 @@
 <template>
   <portal v-if="roomTypeDoc" to="side-drawer">
+    <v-card elevation="5">
     <v-list-item two-line style="padding-top: 0; padding-left: 10x">
       <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
 
       <v-list-item-content>
-        <v-list-item-title style="font-size: 1.15rem">
+        <v-list-item-title style="font-size: 1.15rem; opacity: 70%">
           {{ roomTypeDoc.name }}
         </v-list-item-title>
       </v-list-item-content>
@@ -14,20 +15,21 @@
       <!-- The triple dot dropdown menu with actions that affects the whole class -->
       <v-menu v-if="isAdmin" v-model="isMenuOpen" bottom nudge-left offset-y>
         <template v-slot:activator="{ on, attrs }">
-          <v-btn @click="isMenuOpen = true" icon> 
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
+
+        <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+          Space actions
+        </BaseButton>
         </template>
 
         <v-list>
           <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
-            <v-icon left>mdi-bullhorn</v-icon> Make announcement
+            <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
           </v-list-item>
 
           <BasePopupButton>
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()">
-                <v-icon left>mdi-file-pdf</v-icon> Set problem
+                <v-icon left color="black">mdi-file-pdf</v-icon> Set problem
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -70,7 +72,7 @@
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()">
-                <v-icon left>mdi-shuffle-variant</v-icon> Shuffle everyone
+                <v-icon left color="black">mdi-shuffle-variant</v-icon> Shuffle everyone
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -91,14 +93,14 @@
             </template> 
           </BasePopupButton>
 
-          <v-list-item @click="clearRoomStatuses(roomTypeDoc.id)">
-            <v-icon left>mdi-comment-remove</v-icon> Reset statuses
-          </v-list-item>
+          <!-- <v-list-item @click="clearRoomStatuses(roomTypeDoc.id)">
+            <v-icon left color="red">mdi-comment-remove</v-icon> Reset statuses
+          </v-list-item> -->
 
           <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()">
-                <v-icon left>mdi-delete</v-icon> Reset everything
+                <v-icon left color="red">mdi-delete</v-icon> Reset everything
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -107,9 +109,9 @@
             </template> 
           </BasePopupButton>
 
-          <v-list-item disabled>
+          <!-- <v-list-item disabled>
             <v-icon left>mdi-music-clef-treble</v-icon> Set music
-          </v-list-item>
+          </v-list-item> -->
 
           <v-list-item v-if="isAdmin && rooms.length !== 0" @click="createNewRoom()">
             <v-icon left>mdi-plus</v-icon> New room
@@ -117,6 +119,7 @@
         </v-list>
       </v-menu>
     </v-list-item>
+    </v-card>
 
     <v-divider/>
 
@@ -182,9 +185,14 @@
       <template v-if="room.id === currentRoomID">
         <div class="py-5" style="width: 100%">
           <div class="d-flex">
-            <div class="text-uppercase font-weight-medium py-2" style="font-size: 0.75em">
+            <div v-if="room.name" class="text-uppercase font-weight-medium py-2" style="font-size: 0.75em">
+              {{ room.name }}
+            </div>
+
+            <div v-else class="text-uppercase font-weight-medium py-2" style="font-size: 0.75em">
               Room {{ i + 1 }}
             </div>
+
             <v-spacer/>
             <portal-target name="current-room-buttons">
           
@@ -218,7 +226,11 @@
       <template v-else>
         <div style="width: 100%;">
           <div class="d-flex">
-            <div class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.75em">
+            <div v-if="room.name" class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.75em">
+              {{ room.name }}
+            </div>
+
+            <div v-else class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.75em">
               Room {{ i+1 }}
             </div>
             <v-spacer/>

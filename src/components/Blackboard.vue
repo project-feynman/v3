@@ -57,13 +57,13 @@
           <template v-slot:more-actions-slot>
             <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
               <template v-slot:activator="{ on }">
-                 <!-- Cannot let user wipe board / reupload background image while recording -->
-                <v-btn v-if="currentState !== RecordState.MID_RECORD" 
+                <!-- Cannot let user wipe board / reupload background image while recording -->
+                <BaseButton v-if="currentState !== RecordState.MID_RECORD" 
                   @click="isMenuOpen = true" 
-                  icon
+                  icon="mdi-dots-vertical" color="black" small
                 >
-                  <v-icon>mdi-dots-vertical</v-icon>
-                </v-btn>
+                  More actions
+                </BaseButton>
               </template>
               
               <v-list>
