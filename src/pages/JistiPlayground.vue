@@ -4,8 +4,10 @@
     <v-btn @click="setVideoQuality()">Set video quality</v-btn>
     <div id="jisti-video-conference" style="height: 300px">
       
+    <!-- <v-icon>mdi-dots-vertical</v-icon>
+    <div id="jisti-video-conference" style="height: 100vh">
 
-    </div>
+    </div> -->
   </v-app>
 </template>
 
