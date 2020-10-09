@@ -45,33 +45,40 @@
 
     <!-- TODO -->
     <portal to="main-content">
-      <h1>Major changes</h1>
+      <div class="ma-5">
+      <h2>Major changes</h2>
       <ul>
         <li>
-          Upgraded the underlying video conference library to Jisti, which is open-source and feature-rich. 
+          Released a stabilization update for ghost participants and audio interference between different rooms
         </li>
         <li>
-          Introduced more admin buttons e.g. wipe all rooms in section to save time from button clicks. 
-        </li>
-        <li>
-          Introduced <u>massive mode</u> for the blackboard, which simulates infinite scroll. 
+          Introduced "reset everything" button and "bring everyone to common room" button
         </li>
       </ul>
 
       <br>
 
-      <h1>Currently fixing</h1>
+      <h2>Tips</h2>
       <ul>
-        <li>Ghost participants</li>
-        <li>Audio issues</li> 
-        <li>Support arbitrary pen colors for blackboard</li>
-        <li>Fix scrolling on blackboard not always working</li>
-        <li>Ultra-large blackboard</li>
-        <li>Pinned blackboard toolbar</li>
-        <li>Cache blackboards you already opened to not have to wait for it to load</li>
-        <li>Don't display initials/middle names as last names</li>
-        <li>Merge multiple devices from same users into one user</li>
+        <li>If you have issues, <u>reloading the website</u> works every time, 90% of the time.</li>
+        <li>If issues persist, do a hard reset (force quit the browser, reset the cache).</li>
+        <li>Feel free to contact me (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
       </ul>
+
+      <br>
+
+      <h2>Roadmap</h2>
+      <ul>
+        <li>Audio/video upgrades</li>
+        <li>Blackboard upgrades</li>
+        <!-- <li>A visual Q&A forum</li> -->
+        <!-- <li>If you have ideas, I'd love to hear it out</li> -->
+        <!-- <li>Birds-eye view: for better vision of what's going on on all the boards</li>
+        <li>Blackboard enhancements</li>
+        <li>Zoom integration</li> -->
+      </ul>
+
+      </div>
       <!-- <div style="font-size: 3.75rem; font-weight: 400">
         Overview
       </div>

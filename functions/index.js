@@ -53,20 +53,21 @@ function getRandomId () {
   return autoId;
 }
 
-exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(async (change, context) => {
-  const eventStatus = change.after.val(); // data written to Firebase: console.log(eventStatus) --> { isOnline: false }
-  const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`); // get associated mirror document
-  // If the current timestamp for this data is newer than the data that triggered this event, we exit this function.
-  const statusSnapshot = await change.after.ref.once("value");
-  const status = statusSnapshot.val();
-  if (status.last_changed > eventStatus.last_changed) { return; }
-  else { firestoreUserRef.update(eventStatus); }
-});
+// exports.onUserStatusChanged = functions.database.ref("/status/{uid}").onUpdate(async (change, context) => {
+//   const eventStatus = change.after.val(); // data written to Firebase: console.log(eventStatus) --> { isOnline: false }
+//   const firestoreUserRef = firestore.doc(`/users/${context.params.uid}`); // get associated mirror document
+//   // If the current timestamp for this data is newer than the data that triggered this event, we exit this function.
+//   const statusSnapshot = await change.after.ref.once("value");
+//   const status = statusSnapshot.val();
+//   if (status.last_changed > eventStatus.last_changed) { return; }
+//   else { firestoreUserRef.update(eventStatus); }
+// });
 
 /**
  * `.onWrite` is Triggered on any mutation event: when data is created, updated, or deleted in the Realtime Database.
  * */
-exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/participants/{sessionID}").onWrite((change, context) => {
+exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/room/{roomID}/participants/{sessionID}").onWrite((change, context) => {
+  // it responds to a change in the incrementCounter data
   const { classID, sessionID } = context.params;
   firestore.doc(`/classes/${classID}/participants/${sessionID}`).delete();
 })
@@ -154,30 +155,30 @@ function getLastWeek () {
   return d.toISOString(); // .toISOString standardizes to UTC
 }
 
-async function createSummaryEmail (dailyOrWeekly) {
-  // const mostViewedExplQuery = db.collectionGroup("explanations").orderBy("views").limit(3);
-  // const repliesRef = firestore.collectionGroup("explanations").where("date", ">=", yesterday);
-  // const repliesDocs = await repliesRef.get();
-  // repliesDocs.forEach((replyDoc) => allExplanations.push({ id: replyDoc.id, ...replyDoc.data() }));
-  const allExplanations = [];
-  let postsRef; 
-  if (dailyOrWeekly === emailSummaryFrequencyEnum.DAILY) {
-    postsRef = firestore.collectionGroup("questions").where("date", ">", getYesterday());
-  } else if (dailyOrWeely === emailSummaryFrequencyEnum.WEEKLY) {
-    postsRef = firestore.collectionGroup("questions").where("date", ">", getLastWeek());
-  }
-  const postsDocs = await postsRef.get();
-  postsDocs.forEach((postDoc) => allExplanations.push({ id: postDoc.id, ...postDoc.data() }));
-  allExplanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
-  console.log("allExplanations =", allExplanations);
-  const topExpl = allExplanations[0];
-  return `
-    <h1>Most viewed post: ${topExpl.title}</h1> 
-    <p>${topExpl.description ? topExpl.description : ""}</p>
-    ${ topExpl.thumbnail ? `<img src="${topExpl.thumbnail}"></img>` : "" }
-    <a href="https://explain.mit.edu/class/${topExpl.mitClass.id}/questions/${topExpl.id}">Click here to view.</a>
-  `;
-}
+// async function createSummaryEmail (dailyOrWeekly) {
+//   // const mostViewedExplQuery = db.collectionGroup("explanations").orderBy("views").limit(3);
+//   // const repliesRef = firestore.collectionGroup("explanations").where("date", ">=", yesterday);
+//   // const repliesDocs = await repliesRef.get();
+//   // repliesDocs.forEach((replyDoc) => allExplanations.push({ id: replyDoc.id, ...replyDoc.data() }));
+//   const allExplanations = [];
+//   let postsRef; 
+//   if (dailyOrWeekly === emailSummaryFrequencyEnum.DAILY) {
+//     postsRef = firestore.collectionGroup("questions").where("date", ">", getYesterday());
+//   } else if (dailyOrWeely === emailSummaryFrequencyEnum.WEEKLY) {
+//     postsRef = firestore.collectionGroup("questions").where("date", ">", getLastWeek());
+//   }
+//   const postsDocs = await postsRef.get();
+//   postsDocs.forEach((postDoc) => allExplanations.push({ id: postDoc.id, ...postDoc.data() }));
+//   allExplanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
+//   console.log("allExplanations =", allExplanations);
+//   const topExpl = allExplanations[0];
+//   return `
+//     <h1>Most viewed post: ${topExpl.title}</h1> 
+//     <p>${topExpl.description ? topExpl.description : ""}</p>
+//     ${ topExpl.thumbnail ? `<img src="${topExpl.thumbnail}"></img>` : "" }
+//     <a href="https://explain.mit.edu/class/${topExpl.mitClass.id}/questions/${topExpl.id}">Click here to view.</a>
+//   `;
+// }
 
 // Daily Summary
 exports.emailDailySummary = functions.pubsub
@@ -351,27 +352,27 @@ exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
   }
 });
 
-exports.onNewPost = functions.firestore.document('/classes/{classId}/{postType}/{postId}').onCreate((snap, context) => {
-  const post = snap.data()
-  const { classId, postType, postId } = context.params;
-  const alogoliaObj = {
-    title: post.title,
-    html: post.html,
-    creator: post.creator,
-    date: post.date,
-    mitClass: post.mitClass,
-    postType: postType,
-    objectID: postId,
-  }
-  const index = algoliaClient.initIndex(classId)
-  index.saveObject(alogoliaObj)
-  return
-})
+// exports.onNewPost = functions.firestore.document('/classes/{classId}/{postType}/{postId}').onCreate((snap, context) => {
+//   const post = snap.data()
+//   const { classId, postType, postId } = context.params;
+//   const alogoliaObj = {
+//     title: post.title,
+//     html: post.html,
+//     creator: post.creator,
+//     date: post.date,
+//     mitClass: post.mitClass,
+//     postType: postType,
+//     objectID: postId,
+//   }
+//   const index = algoliaClient.initIndex(classId)
+//   index.saveObject(alogoliaObj)
+//   return
+// })
 
-exports.onDeletePost = functions.firestore.document('/classes/{classId}/{postType}/{postId}').onDelete((snap, context) => {
-  const { classId, postType, postId } = context.params;
-  const index = algoliaClient.initIndex(classId)
-  index.deleteObject(postId)
-  return
-})
+// exports.onDeletePost = functions.firestore.document('/classes/{classId}/{postType}/{postId}').onDelete((snap, context) => {
+//   const { classId, postType, postId } = context.params;
+//   const index = algoliaClient.initIndex(classId)
+//   index.deleteObject(postId)
+//   return
+// })
 

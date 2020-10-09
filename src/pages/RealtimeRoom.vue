@@ -177,6 +177,13 @@
 </template>
 
 <script>
+/**
+ * CORRECTNESS ARGUMENT
+ * 
+ * Because RealtimeRoom is rendered by a <router-view :key="$route..."/> component
+ * it will be properly destroyed, and so its children components don't require destroy keys.
+ */
+
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/functions";
