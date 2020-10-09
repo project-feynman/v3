@@ -85,14 +85,8 @@ export default {
       this.inputValues[inputField] = "";
     }
   },
-  watch: {
-    isOpen () {
-      console.log("newvalue =", this.isOpen)
-    }
-  },
   methods: {
     openPopup () {
-      console.log("openPopup()")
       this.isOpen = true;
     },
     doAction () {
