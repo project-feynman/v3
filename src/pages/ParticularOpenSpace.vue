@@ -53,10 +53,11 @@
             <template v-slot:popup-content="{ closePopup }">
               <v-btn @click="$refs.fileInput.click()">Select file</v-btn>
               <input 
-                @change="e => { seedEachRoomWithProblem(e); closePopup();  }" 
+                @change="e => { seedEachRoomWithProblem(e); closePopup(); incrementKeyToDestroy += 1; }" 
                 style="display: none" 
                 type="file" 
                 ref="fileInput"
+                :key="incrementKeyToDestroy"
               >
             </template>
             <!-- QUICKFIX TO MAKE IT INVISIBLE -->
@@ -338,7 +339,8 @@ export default {
         message: null
       },
       groupSize: 3,
-      minRoomSizeOnShuffle: 2
+      minRoomSizeOnShuffle: 2,
+      incrementKeyToDestroy: 0
     }
   },
   computed: {
@@ -522,7 +524,7 @@ export default {
           for (const room of this.rooms) {
             console.log("placing image number ", i, "into a room");
             if (room.blackboards.length <= idx) {
-              return;
+              break;
             } 
             const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
             promises.push(
@@ -566,6 +568,7 @@ export default {
         const file = this.dataURLtoFile(dataURL, current_date.getTime()+'.png');
         files.push(file); 
       }
+      console.log("files =", files);
       return files; 
     },
     // https://stackoverflow.com/questions/16968945/convert-base64-png-data-to-javascript-file-objects/16972036
