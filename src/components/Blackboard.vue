@@ -68,7 +68,7 @@
               
               <v-list>
                 <!-- SET BACKGROUND IMAGE -->
-                <slot name="set-background-button-slot">
+                <slot name="set-background-button-slot" :closeMenu="closeMenu">
                   <v-list-item @click="$refs.fileInput.click()">
                     <input 
                       @change="e => handleImageFile(e)" 
@@ -86,7 +86,7 @@
                   Instead of wiping immediately, it wait until Firestore resolves the deletion request
                   before setting `strokesArray = []` to wipe the UI. 
                 -->
-                <slot name="wipe-board-button-slot"> 
+                <slot name="wipe-board-button-slot" :closeMenu="closeMenu"> 
                   <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
                     <template v-slot:activator-button="{ on }">
                       <BaseButton :on="on" icon="mdi-delete" small>
@@ -183,6 +183,9 @@ export default {
     }
   },
   methods: {
+    closeMenu () {
+      this.isMenuOpen = false; 
+    },
     bindAudioRecorderMethods (startRecording, stopRecording) {
       this.audioRecorder.startRecording = startRecording;
       this.audioRecorder.stopRecording = stopRecording;

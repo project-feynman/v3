@@ -5,10 +5,29 @@
         <!-- <div style="padding-top: 12px; padding-left: 24px; padding-bottom: 8px; font-size: 1.15rem">
           Open Spaces
         </div> -->
+<!-- 
+              <v-dialog v-model="isEditPopupOpen" width="500px">
+                <v-card>
+                  <v-card-title>
+                    Rename this open space
+                  </v-card-title>
+                  <v-card-text>
+                    <v-text-field placeholder="Enter the new name..." v-model="newRoomTypeName"/>
+                  </v-card-text>
+                
+                  <v-card-actions>
+                    <v-spacer/>
+                    <v-btn @click="isEditPopupOpen = false">CANCEL</v-btn>
+                    <v-btn @click="editNameOfRoomType(); isEditPopupOpen = false;" color="accent">
+                      Save
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog> -->
 
         <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
           append :to="(`section/${roomType.id}`)"
-          style="padding-left: 24px; padding-right: 24px"
+          style="padding-left: 24px; padding-right: 24px" 
         >
           <v-list-item-content style="font-size: 0.88rem; font-weight: 400; color: #424242; opacity: 81%;">
             {{ roomType.name }}
@@ -16,7 +35,7 @@
 
           <v-list-item-action>
             <v-row>
-              <!-- <v-btn @click.submit.prevent="editNameOfRoomType()" icon>
+              <!-- <v-btn @click.stop.prevent="isEditPopupOpen = true; roomTypeID = roomType.id" icon>
                 <v-icon color="grey">mdi-pencil</v-icon>
               </v-btn> -->
 
@@ -69,13 +88,9 @@
 
       <h2>Roadmap</h2>
       <ul>
-        <li>Audio/video upgrades</li>
-        <li>Blackboard upgrades</li>
-        <!-- <li>A visual Q&A forum</li> -->
-        <!-- <li>If you have ideas, I'd love to hear it out</li> -->
-        <!-- <li>Birds-eye view: for better vision of what's going on on all the boards</li>
-        <li>Blackboard enhancements</li>
-        <li>Zoom integration</li> -->
+        <li>Audio/video upgrades: a Zoom integration is coming</li>
+        <li>Blackboard upgrades: arbitrary colors, backgrounds, undo/redo, etc.</li>
+        <li>Birds-eye view: for better vision of what's going on on all the boards</li>
       </ul>
 
       </div>
@@ -114,7 +129,10 @@ export default {
     return {
       roomTypes: [],
       unsubscribeRoomTypesListener: null,
-      showLibrary: false
+      showLibrary: false,
+      // isEditPopupOpen: false,
+      // newRoomTypeName: "",
+      // roomTypeID: ""
     };
   },
   computed: {
@@ -162,6 +180,11 @@ export default {
       this.classDocRef.collection("roomTypes").doc(roomTypeID).delete();
     },
     editNameOfRoomType (newName) {
+      this.classDocRef.collection("roomTypes").doc(this.roomTypeID).update({
+        name: this.newRoomTypeName
+      });
+      this.newRoomTypeName = ""; 
+      this.roomTypeID = ""; 
       console.log("editNameOfRoomType()");
     }
   }

@@ -21,10 +21,10 @@
     >
       <!-- TODO: don't let user wipe board / set background while recording -->
       <!-- Set Background (overrides the normal behavior) -->
-      <template v-slot:set-background-button-slot>
+      <template v-slot:set-background-button-slot="{ closeMenu }">
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
-            <v-list-item @click.stop="openPopup()">
+            <v-list-item @click.stop="openPopup(); closeMenu();">
               <v-icon left color="secondary">mdi-content-save</v-icon>Save as animation
             </v-list-item>
           </template>
@@ -51,10 +51,10 @@
       </template>
 
       <!-- Wipe Board (overrides the normal, offline wiping behavior) -->
-      <template v-slot:wipe-board-button-slot>
-        <BasePopupButton actionName="Wipe strokes" @action-do="deleteAllStrokesFromDb()">
+      <template v-slot:wipe-board-button-slot="{ closeMenu }">
+        <BasePopupButton actionName="Wipe strokes" @action-do="deleteAllStrokesFromDb();">
           <template v-slot:activator-button="{ on, openPopup }">
-            <v-list-item @click.stop="openPopup()">
+            <v-list-item @click.stop="openPopup(); closeMenu();">
               <v-icon left color="red">mdi-delete</v-icon> Wipe strokes
             </v-list-item>
           </template>
@@ -76,19 +76,19 @@
               :icon="sizeAndOrientationMode === 'landscape' ? 'mdi-crop-landscape' : sizeAndOrientationMode === 'portrait' ? 'mdi-crop-portrait' : 'mdi-selection'"
               color="black" small
             >
-              {{ sizeAndOrientationMode }} mode
+              {{ sizeAndOrientationMode === 'landscape' ? 'Horizontal' : sizeAndOrientationMode === 'portrait' ? 'Vertical' : 'Infinite' }} mode
             </BaseButton>
           </template>
 
           <v-list>
             <v-list-item @click="updateSizeAndOrientationMode('landscape')">
-              <v-icon left>mdi-crop-landscape</v-icon> Landscape mode
+              <v-icon left>mdi-crop-landscape</v-icon> Horizontal mode
             </v-list-item>
             <v-list-item @click="updateSizeAndOrientationMode('portrait')">
-              <v-icon left>mdi-crop-portrait</v-icon> Portrait mode
+              <v-icon left>mdi-crop-portrait</v-icon> Vertical mode
             </v-list-item>
             <v-list-item @click="updateSizeAndOrientationMode('massive')">
-              <v-icon left>mdi-selection</v-icon> Massive mode
+              <v-icon left>mdi-selection</v-icon> Infinite mode
             </v-list-item>
           </v-list>
         </v-menu>
@@ -108,7 +108,7 @@
             No, discard it. 
           </v-btn>
           <v-btn color="green darken-1" text @click="saveVideo()">
-            Yes, save it as a post. 
+            Yes, save it in the library.
           </v-btn>
         </v-card-actions>
       </v-card>
