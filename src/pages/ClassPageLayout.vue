@@ -13,7 +13,7 @@
 
       <v-spacer/>
 
-      <GroupChat v-if="mitClass" class="mr-3"/>
+      <!-- <GroupChat v-if="mitClass" class="mr-3"/> -->
 
       <!-- Library -->
       <v-dialog v-model="showLibrary" fullscreen>

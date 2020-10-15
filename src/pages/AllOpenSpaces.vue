@@ -5,25 +5,25 @@
         <!-- <div style="padding-top: 12px; padding-left: 24px; padding-bottom: 8px; font-size: 1.15rem">
           Open Spaces
         </div> -->
-<!-- 
-              <v-dialog v-model="isEditPopupOpen" width="500px">
-                <v-card>
-                  <v-card-title>
-                    Rename this open space
-                  </v-card-title>
-                  <v-card-text>
-                    <v-text-field placeholder="Enter the new name..." v-model="newRoomTypeName"/>
-                  </v-card-text>
-                
-                  <v-card-actions>
-                    <v-spacer/>
-                    <v-btn @click="isEditPopupOpen = false">CANCEL</v-btn>
-                    <v-btn @click="editNameOfRoomType(); isEditPopupOpen = false;" color="accent">
-                      Save
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog> -->
+        <!-- 
+        <v-dialog v-model="isEditPopupOpen" width="500px">
+          <v-card>
+            <v-card-title>
+              Rename this open space
+            </v-card-title>
+            <v-card-text>
+              <v-text-field placeholder="Enter the new name..." v-model="newRoomTypeName"/>
+            </v-card-text>
+          
+            <v-card-actiofns>
+              <v-spacer/>
+              <v-btn @click="isEditPopupOpen = false">CANCEL</v-btn>
+              <v-btn @click="editNameOfRoomType(); isEditPopupOpen = false;" color="accent">
+                Save
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog> -->
 
         <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
           append :to="(`section/${roomType.id}`)"
@@ -71,7 +71,7 @@
           Released a stabilization update for ghost participants and audio interference between different rooms
         </li>
         <li>
-          Introduced "reset everything" button and "bring everyone to common room" button
+          Introduced "reset everything" button
         </li>
       </ul>
 

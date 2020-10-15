@@ -1,6 +1,8 @@
 <template>
   <div>  
+    <!-- Can expose an update participant function -->
     <HandleUpdatingParticipants
+      :currentBoardNumber="currentBoardNumber"
       :roomId="roomId"
     />
 
@@ -127,7 +129,6 @@
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="purple">mdi-content-save-all</v-icon> Save boards
           </v-list-item>
-          <!-- TODO:  -->
           <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="black">mdi-pencil</v-icon> Rename room
           </v-list-item>
@@ -135,17 +136,14 @@
       </v-menu>
     </portal>
 
-    <!-- Display videos -->
+    <!-- Display Zoom videos -->
     <portal-target name="destination">
     
     </portal-target>
 
-    <v-toolbar v-if="!isBoardFullscreen">
-      <!-- Tabs for different blackboards -->
-      <v-tabs v-if="user && room" 
-        v-model="activeBoardID" 
-        active-class="accent--text" slider-color="accent" background-color="white"
-      >
+    <!-- Tabs for blackboards -->
+    <v-toolbar v-if="!isBoardFullscreen && room">
+      <v-tabs v-model="activeBoardID" active-class="accent--text" slider-color="accent" background-color="white">
         <template v-for="(board, i) in room.blackboards">
           <v-tab :href="'#' + board" :key="i">
             {{ '#' + (i+1) }}
@@ -157,21 +155,21 @@
       </v-tabs>
     </v-toolbar>
 
+    <!-- The actual blackboards -->
     <div id="room" class="room-wrapper">
-        <!-- The actual blackboards -->
-        <v-tabs-items v-if="blackboardRefs.length !== 0 && room" 
-          v-model="activeBoardID" 
-          touchless
+      <v-tabs-items v-if="blackboardRefs.length !== 0 && room" 
+        v-model="activeBoardID" 
+        touchless
+      >
+      <!-- re-render the blackboard everytime someone switches -->
+        <v-tab-item v-for="(boardID, i) in room.blackboards"
+          :value="boardID" :key="i"
         >
-        <!-- re-render the blackboard everytime someone switches -->
-          <v-tab-item v-for="(boardID, i) in room.blackboards" 
-            :value="boardID" :key="i"
-          >
-            <RealtimeBlackboard v-if="boardID === activeBoardID"
-              :blackboardRef="blackboardRefs[i]"
-            />
-          </v-tab-item>
-        </v-tabs-items>
+          <RealtimeBlackboard v-if="boardID === activeBoardID"
+            :blackboardRef="blackboardRefs[i]"
+          />
+        </v-tab-item>
+      </v-tabs-items>
     </div>
   </div>
 </template>
@@ -227,7 +225,6 @@ export default {
       snapshotListeners: [],
       roomRef: null,
       activeBoardID: null,
-      boards: [],
       incrementToDestroyComponent: -100000,
       isMenuOpen: false,
       isSavingAllBoards: false,
@@ -240,7 +237,8 @@ export default {
       isRenameRoomPopupOpen: false,
       titleOfExplCollection: "",
       newRoomStatus: "",
-      newRoomName: ""
+      newRoomName: "",
+      currentBoardNumber: 1
     }
   },
   computed: {
@@ -259,6 +257,17 @@ export default {
   },
   // database => state 
   watch: {
+    activeBoardID (newVal) {
+      // update `currentBoardNumber`
+      // assumes this.room.blackboards is hydrated
+      // correct because `activeBoardID` can only be changed via user interaction, `this.room.blackboards` is defined
+      const { blackboards } = this.room; 
+      for (let i = 0; i < blackboards.length; i++) {
+        if (blackboards[i] === newVal) {
+          this.currentBoardNumber = i + 1;
+        }
+      }
+    },
     room: {
       handler (newVal, oldVal) {
         this.$store.commit("SET_ROOM", this.room);

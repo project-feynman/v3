@@ -30,6 +30,7 @@
 
       <template v-else>
         <p class="green--text mt-1">Connected to audio and video</p>
+        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop)). Finally, check microphone settings in browser (usually an icon near "https://explain.mit.edu...")</p>
 
         <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
@@ -57,7 +58,10 @@
         :class="['d-flex', 'text--secondary', 'mt-5', 'pl-5', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
         style="font-size: 1em"
       >
-        {{ client.firstName + " " + client.lastName }}
+        {{ client.firstName + " " + client.lastName + " #" + client.currentBoardNumber }}  
+        <v-icon small class="ml-1">
+          {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
+        </v-icon>
 
         <v-spacer/>
 
