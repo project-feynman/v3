@@ -52,7 +52,10 @@ export default new Vuex.Store({
     isCameraOn: false,
     isConnectedToAudio: false,
     canvasDimensions: { 'height': 0, 'width': 0 },
-    dominantSpeakerUID: null,
+    dominantSpeaker: {
+      id: "",
+      name: ""
+    },
     roomIDtoParticipants: null,
     isBoardFullscreen: false
   },
@@ -62,6 +65,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_DOMINANT_SPEAKER_NAME (state, newVal) {
+      state.dominantSpeaker.name = newVal; 
+    },
     SET_IS_BOARD_FULLSCREEN (state, newVal) {
       state.isBoardFullscreen = newVal; 
     },

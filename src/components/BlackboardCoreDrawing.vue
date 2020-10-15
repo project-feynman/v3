@@ -81,7 +81,8 @@ import {
   LANDSCAPE_WIDTH,
   VERTICAL_MODE_WIDTH,
   PPT_SLIDE_RATIO,
-  PDF_RATIO
+  PDF_RATIO,
+  MASSIVE_MODE_DIMENSIONS
 } from "@/CONSTANTS.js";
 
 import { getRandomId, isIosSafari } from "@/helpers.js";
@@ -101,8 +102,8 @@ export default {
       type: Object
       // don't set `required` to true yet to avoid minor crashes
     },
-    isVertical: {
-      type: Boolean,
+    sizeAndOrientationMode: {
+      type: String,
       required: true
     }
   },
@@ -160,8 +161,8 @@ export default {
     }
   },
   watch: {
-    isVertical () {
-      this.resizeBlackboard()
+    sizeAndOrientationMode () {
+      this.resizeBlackboard(); 
     },
     /**
      * Ensures `strokesArray => UI`, that is whenever the client mutates the `strokesArray` prop, we update <canvas/> accordingly`. 
@@ -446,18 +447,24 @@ export default {
       BlackboardWrapper.style.width = "100%"; 
       BlackboardWrapper.style.height = "100%"; 
 
-      if (this.isVertical) {
-        this.canvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
-        this.canvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
-        this.bgCanvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
-        this.bgCanvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
-      } else {
+      if (this.sizeAndOrientationMode === "landscape") {
         this.canvas.style.width = `${LANDSCAPE_WIDTH}px`;
         this.canvas.style.height = `${LANDSCAPE_WIDTH * PPT_SLIDE_RATIO}px`; 
         this.bgCanvas.style.width = `${LANDSCAPE_WIDTH}px`;
         this.bgCanvas.style.height = `${LANDSCAPE_WIDTH * PPT_SLIDE_RATIO}px`; 
       }
-
+      else if (this.sizeAndOrientationMode === "portrait") {
+        this.canvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
+        this.canvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
+        this.bgCanvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
+        this.bgCanvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
+      }
+      else if (this.sizeAndOrientationMode === "massive") {
+         this.canvas.style.width = `${MASSIVE_MODE_DIMENSIONS.WIDTH}px`;
+        this.canvas.style.height = `${MASSIVE_MODE_DIMENSIONS.HEIGHT}px`; 
+        this.bgCanvas.style.width = `${MASSIVE_MODE_DIMENSIONS.WIDTH}px`;
+        this.bgCanvas.style.height = `${MASSIVE_MODE_DIMENSIONS.HEIGHT}px`; 
+      }
       // quickfix for indicating to user that they are only seeing part of the blackboard
       this.canvas.style.border = '1px solid orange'
 

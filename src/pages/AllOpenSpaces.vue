@@ -5,10 +5,29 @@
         <!-- <div style="padding-top: 12px; padding-left: 24px; padding-bottom: 8px; font-size: 1.15rem">
           Open Spaces
         </div> -->
+<!-- 
+              <v-dialog v-model="isEditPopupOpen" width="500px">
+                <v-card>
+                  <v-card-title>
+                    Rename this open space
+                  </v-card-title>
+                  <v-card-text>
+                    <v-text-field placeholder="Enter the new name..." v-model="newRoomTypeName"/>
+                  </v-card-text>
+                
+                  <v-card-actions>
+                    <v-spacer/>
+                    <v-btn @click="isEditPopupOpen = false">CANCEL</v-btn>
+                    <v-btn @click="editNameOfRoomType(); isEditPopupOpen = false;" color="accent">
+                      Save
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog> -->
 
         <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
           append :to="(`section/${roomType.id}`)"
-          style="padding-left: 24px; padding-right: 24px"
+          style="padding-left: 24px; padding-right: 24px" 
         >
           <v-list-item-content style="font-size: 0.88rem; font-weight: 400; color: #424242; opacity: 81%;">
             {{ roomType.name }}
@@ -16,7 +35,7 @@
 
           <v-list-item-action>
             <v-row>
-              <!-- <v-btn @click.submit.prevent="editNameOfRoomType()" icon>
+              <!-- <v-btn @click.stop.prevent="isEditPopupOpen = true; roomTypeID = roomType.id" icon>
                 <v-icon color="grey">mdi-pencil</v-icon>
               </v-btn> -->
 
@@ -45,29 +64,36 @@
 
     <!-- TODO -->
     <portal to="main-content">
-      <h1>New things to try</h1>
+      <div class="ma-5">
+      <h2>Major changes</h2>
       <ul>
-        <li>Directly message any class member</li>
-        <li>create public message channels</li>
-        <li>You can save/wipe all the boards in any given room with 1 click</li>
-        <li>Browse the newly improved library</li>
-        <li>Record audio with blackboards (press the purple record button)</li>
+        <li>
+          Released a stabilization update for ghost participants and audio interference between different rooms
+        </li>
+        <li>
+          Introduced "reset everything" button and "bring everyone to common room" button
+        </li>
       </ul>
 
       <br>
 
-      <h1>Currently fixing</h1>
+      <h2>Tips</h2>
       <ul>
-        <li>Ghost participants</li>
-        <li>Audio issues</li> 
-        <li>Support arbitrary pen colors for blackboard</li>
-        <li>Fix scrolling on blackboard not always working</li>
-        <li>Ultra-large blackboard</li>
-        <li>Pinned blackboard toolbar</li>
-        <li>Cache blackboards you already opened to not have to wait for it to load</li>
-        <li>Don't display initials/middle names as last names</li>
-        <li>Merge multiple devices from same users into one user</li>
+        <li>If you have issues, <u>reloading the website</u> works every time, 90% of the time.</li>
+        <li>If issues persist, do a hard reset (force quit the browser, reset the cache).</li>
+        <li>Feel free to contact me (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
       </ul>
+
+      <br>
+
+      <h2>Roadmap</h2>
+      <ul>
+        <li>Audio/video upgrades: a Zoom integration is coming</li>
+        <li>Blackboard upgrades: arbitrary colors, backgrounds, undo/redo, etc.</li>
+        <li>Birds-eye view: for better vision of what's going on on all the boards</li>
+      </ul>
+
+      </div>
       <!-- <div style="font-size: 3.75rem; font-weight: 400">
         Overview
       </div>
@@ -103,7 +129,10 @@ export default {
     return {
       roomTypes: [],
       unsubscribeRoomTypesListener: null,
-      showLibrary: false
+      showLibrary: false,
+      // isEditPopupOpen: false,
+      // newRoomTypeName: "",
+      // roomTypeID: ""
     };
   },
   computed: {
@@ -151,6 +180,11 @@ export default {
       this.classDocRef.collection("roomTypes").doc(roomTypeID).delete();
     },
     editNameOfRoomType (newName) {
+      this.classDocRef.collection("roomTypes").doc(this.roomTypeID).update({
+        name: this.newRoomTypeName
+      });
+      this.newRoomTypeName = ""; 
+      this.roomTypeID = ""; 
       console.log("editNameOfRoomType()");
     }
   }

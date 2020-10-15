@@ -7,6 +7,11 @@ export const VERTICAL_MODE_WIDTH = 800;
 export const PPT_SLIDE_RATIO = 3/4; 
 export const PDF_RATIO = 11/8.5; 
 
+export const MASSIVE_MODE_DIMENSIONS = {
+  HEIGHT: 3000,
+  WIDTH: 4000
+};
+
 export const ERASER_STROKE_WIDTH = 25;
 
 export const SUPER_USER_EMAILS = [

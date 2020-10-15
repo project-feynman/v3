@@ -32,6 +32,10 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/LibraryPlayground.vue")
     },
     {
+      path: "/jisti-playground",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/JistiPlayground.vue")
+    },
+    {
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout.vue"),
       children: [

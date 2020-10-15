@@ -48,7 +48,7 @@
     </v-dialog>
 
     <!-- For wiping the PDFs -->
-     <v-dialog v-model="isClearPDFsPopupOpen">
+    <v-dialog v-model="isClearPDFsPopupOpen">
       <v-card>
         <v-card-title>
           This will remove the PDFs seeded on each blackboard, but will not wipe the pen strokes. 
@@ -64,18 +64,75 @@
       </v-card>
     </v-dialog>
 
+    <!-- Update status -->
+    <v-dialog v-model="isRoomStatusPopupOpen">
+      <v-card>
+        <v-card-title>
+          Update status to communicate across different rooms
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field v-model="newRoomStatus" placeholder="(You can empty the status by entering nothing.)"/>
+        </v-card-text>
+      
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="isRoomStatusPopupOpen = false">CANCEL</v-btn>
+          <v-btn @click="updateRoomStatus(); isRoomStatusPopupOpen = false;" color="accent">
+            Update status
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="isRenameRoomPopupOpen">
+      <v-card>
+        <v-card-title>
+          Rename the room to designate it for another purpose
+        </v-card-title>
+
+        <v-card-text>
+          <v-text-field v-model="newRoomName" placeholder="e.g. Staff room"/>
+        </v-card-text>
+      
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="isRenameRoomPopupOpen = false">CANCEL</v-btn>
+          <v-btn @click="renameRoom(); isRenameRoomPopupOpen = false;" color="black" dark>
+            Rename room
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <portal to="current-room-buttons">
-      <BaseButton @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards" icon="mdi-delete-alert" small>
-        Wipe strokes
-      </BaseButton>
-
-      <BaseButton @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs" icon="mdi-file-remove-outline" small>
-        Wipe PDFs
-      </BaseButton>
-
-      <BaseButton @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards" icon="mdi-content-save-all" small>
-        Save boards
-      </BaseButton>
+      <v-menu v-model="isMenuOpen" offset-y bottom>
+        <!-- Triple-dots button -->
+        <template v-slot:activator>
+          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+            Room actions
+          </BaseButton>
+        </template>
+        
+        <v-list>
+          <v-list-item @click="isRoomStatusPopupOpen = true">
+            <v-icon left color="blue">mdi-message-alert</v-icon> Update status
+          </v-list-item>
+          <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
+            <v-icon left color="red">mdi-delete-alert</v-icon> Wipe strokes
+          </v-list-item>
+          <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
+            <v-icon left color="red">mdi-file-remove-outline</v-icon> Wipe PDFs
+          </v-list-item>
+          <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
+            <v-icon left color="purple">mdi-content-save-all</v-icon> Save boards
+          </v-list-item>
+          <!-- TODO:  -->
+          <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
+            <v-icon left color="black">mdi-pencil</v-icon> Rename room
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </portal>
 
     <!-- Display videos -->
@@ -91,7 +148,7 @@
       >
         <template v-for="(board, i) in room.blackboards">
           <v-tab :href="'#' + board" :key="i">
-            {{ 'BOARD #' + (i+1) }}
+            {{ '#' + (i+1) }}
           </v-tab>
         </template>
         <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
@@ -120,6 +177,13 @@
 </template>
 
 <script>
+/**
+ * CORRECTNESS ARGUMENT
+ * 
+ * Because RealtimeRoom is rendered by a <router-view :key="$route..."/> component
+ * it will be properly destroyed, and so its children components don't require destroy keys.
+ */
+
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/functions";
@@ -129,15 +193,21 @@ import BaseButton from "@/components/BaseButton.vue";
 import BaseIconButton from "@/components/BaseIconButton.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
-import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom";
 import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.vue";
 import { getRandomId } from "@/helpers.js";
+import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom.vue";
 
 export default {
   props: {
     roomId: {
       type: String,
       required: true
+    },
+    isCommonRoom: {
+      type: Boolean,
+      default () {
+        return false;
+      }
     }
   },
   components: {
@@ -159,13 +229,18 @@ export default {
       activeBoardID: null,
       boards: [],
       incrementToDestroyComponent: -100000,
+      isMenuOpen: false,
       isSavingAllBoards: false,
       isClearingAllBoards: false,
       isClearingAllPDFs: false,
       isWipeBoardsPopupOpen: false,
       isSaveBoardsPopupOpen: false,
       isClearPDFsPopupOpen: false,
-      titleOfExplCollection: ""
+      isRoomStatusPopupOpen: false,
+      isRenameRoomPopupOpen: false,
+      titleOfExplCollection: "",
+      newRoomStatus: "",
+      newRoomName: ""
     }
   },
   computed: {
@@ -211,6 +286,18 @@ export default {
     }
   },
   methods: { 
+    renameRoom () {
+      db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
+        name: this.newRoomName
+      });
+      this.newRoomName = ""; 
+    },
+    updateRoomStatus () {
+      db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
+        status: this.newRoomStatus
+      });
+      this.newRoomStatus = ""; 
+    },
     async clearAllPDFs () {
       this.isClearingAllPDFs = true;
       const promises = []; 
