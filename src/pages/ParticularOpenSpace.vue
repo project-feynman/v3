@@ -336,7 +336,6 @@ export default {
       roomTypeDoc: null,
       rooms: [],
       participants: [],
-      updateParticipantsTimeout: null,
       unsubFuncs: [],
       targetBoardNum: 0,
       isMenuOpen: false,
@@ -475,12 +474,14 @@ export default {
   },
   methods: {
     updateRoomIDToParticipants () {
-      console.log("I'm called (should be debounced)");
+      console.log("updateParticipants()")
       const out = {};
       for (const room of this.rooms) {
         const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 
-        peopleInRoom.sort((p1, p2) => p1.currentBoardNumber > p2.currentBoardNumber);
-        // TODO: sort them by staff, admin
+        peopleInRoom.sort((p1, p2) => {
+          // TODO: sort them by staff, admin
+          return p1.currentBoardNumber - p2.currentBoardNumber;
+        });
         out[room.id] = peopleInRoom; 
       }
       this.roomIDToParticipants = out;

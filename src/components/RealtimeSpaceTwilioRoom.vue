@@ -30,7 +30,7 @@
 
       <template v-else>
         <p class="green--text mt-1">Connected to audio and video</p>
-        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop)). Finally, check microphone settings in browser (usually an icon near "https://explain.mit.edu...")</p>
+        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
 
         <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
