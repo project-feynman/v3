@@ -1,10 +1,10 @@
 <template>
   <div>
     <v-container v-if="!hasFetchedBlackboardData">
-      <h5>if somethingWrong: </h5>
+      <!-- <h5>if somethingWrong: </h5>
         <h5>&nbsp&nbsp reloadWebsite()</h5>
       <h5>&nbsp&nbsp if stillNotWorking:</h5>
-        <h5>&nbsp&nbsp&nbsp&nbsp email("eltonlin@mit.edu")</h5>
+        <h5>&nbsp&nbsp&nbsp&nbsp email("eltonlin@mit.edu")</h5> -->
     </v-container>
 
     <!-- Blackboard -->

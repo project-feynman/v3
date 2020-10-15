@@ -20,13 +20,17 @@
     <portal to="destination2">
       <template v-if="!twilioInitialized && !isTryingToConnect">
         <p class="yellow--text">Connected to the blackboard</p>
+        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
 
         <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" block class="green white--text">Connect to audio</v-btn>
       </template>
 
-      <p v-else-if="!twilioInitialized && isTryingToConnect" class="yellow--text">
-        Connecting...
-      </p>
+      <template v-else-if="!twilioInitialized && isTryingToConnect">
+        <p class="yellow--text">
+          Connecting...
+        </p>
+        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
+      </template>
 
       <template v-else>
         <p class="green--text mt-1">Connected to audio and video</p>
