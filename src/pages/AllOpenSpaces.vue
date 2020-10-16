@@ -65,21 +65,16 @@
     <!-- TODO -->
     <portal to="main-content">
       <div class="ma-5">
-      <h2>Major changes</h2>
+      <h2>Major changes (please reload the website to receive the latest version)</h2>
       <ul>
-        <li>
-          Released a stabilization update for ghost participants and audio interference between different rooms
-        </li>
-        <li>
-          Introduced "reset everything" button
-        </li>
+        <li>On the left-side drawer, you can see which board each person is on and whether they're connected to audio</li>
       </ul>
 
       <br>
 
       <h2>Tips</h2>
       <ul>
-        <li>If you have issues, <u>reloading the website</u> works every time, 90% of the time.</li>
+        <li>If you have issues, <u>reload the website</u>.</li>
         <li>If issues persist, do a hard reset (force quit the browser, reset the cache).</li>
         <li>Feel free to contact me (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
       </ul>
