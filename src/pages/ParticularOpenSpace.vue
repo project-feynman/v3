@@ -160,10 +160,12 @@
           <div class="pl-3">
             <p v-for="p in roomIDToParticipants[commonRoomDoc.id]" :key="p.id"
               style="font-weight: 400; font-size: 0.8em"
-              :class="`text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
+              :class="`d-flex text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
             >
-              {{ p.firstName + " " + p.lastName + " #" + p.currentBoardNumber + " " }}
-              <v-icon small>
+              {{ p.firstName + " " + p.lastName }}
+              <v-spacer/>
+              {{ "#" + p.currentBoardNumber }} 
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
                 {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
               </v-icon>
             </p>
@@ -230,10 +232,12 @@
           <div class="pl-3">
             <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
               style="font-weight: 400; font-size: 0.8em"
-              class="text--secondary mb-0"
+              class="text--secondary mb-0 d-flex"
             >
-              {{ p.firstName + " " + p.lastName + " #" + p.currentBoardNumber + " " }} 
-              <v-icon small>
+              {{ p.firstName + " " + p.lastName }}
+              <v-spacer/>
+              {{ "#" + p.currentBoardNumber }} 
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
                 {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
               </v-icon>
             </p>
@@ -479,8 +483,11 @@ export default {
       for (const room of this.rooms) {
         const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 
         peopleInRoom.sort((p1, p2) => {
-          // TODO: sort them by staff, admin
-          return p1.currentBoardNumber - p2.currentBoardNumber;
+          if (p1.canHearAudio === p2.canHearAudio) {
+            return p2.currentBoardNumber - p1.currentBoardNumber;
+          } else {
+            return p2.canHearAudio - p1.canHearAudio; 
+          }
         });
         out[room.id] = peopleInRoom; 
       }

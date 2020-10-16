@@ -60,17 +60,19 @@
       <div v-for="client in allClients"
         :key="client.id" 
         :class="['d-flex', 'text--secondary', 'mt-5', 'pl-5', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
-        style="font-size: 1em"
+        style="font-size: 0.8em"
       >
-        {{ client.firstName + " " + client.lastName + " #" + client.currentBoardNumber }}  
-        <v-icon small class="ml-1">
-          {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
+        {{ client.firstName + " " + client.lastName }}  
+        
+        <v-spacer/>
+        {{ "#" + client.currentBoardNumber }} 
+  
+        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small class="mx-2">
+          {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
         </v-icon>
 
-        <v-spacer/>
-
-        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" class="mr-5">
-          {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
+        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'red'">
+          {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
         </v-icon>
       </div>
     </portal>
