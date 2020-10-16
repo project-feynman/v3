@@ -1,4 +1,5 @@
 # Feynman
+Updated plan: https://docs.google.com/document/d/15d4Ne4K5kRBuu-1EAcrBSDLQqzLtuVP3zg6iujNnEdE/edit#
 Our mission is to make MIT a vibrant place where everyone helps each other, so nobody has to stay up late studying alone. In doing so, we will accelerate the world's transition into open education. 
 
 High-level plan: 
