@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <v-app>
     <router-view/>
     
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
       <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
-  </div>
+  </v-app>
 </template>
 
 <script>

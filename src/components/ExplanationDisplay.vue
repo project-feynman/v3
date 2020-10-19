@@ -84,17 +84,21 @@
               Saved by {{ expl.creator.firstName }}, {{ displayDate(expl.date) }}
             </p>      
             <p v-if="expl.thumbnail" class="pt-3 pl-2 body-2 font-weight-light">
-              (video views: {{ expl.views ? expl.views : 0 }}) 
+              (views: {{ expl.views ? expl.views : 0 }}) 
             </p> 
-            <v-spacer></v-spacer>
-            
+            <!-- show the link -->
+            <p class="pt-3 pl-2 body-2 font-weight-light">
+              Share link: {{ explShareableLink }}
+            </p>
+            <v-spacer/>
+            <!-- <v-btn>Copy to clipboard</v-btn> -->
             <!-- email is unique for MIT Kerberos -->
             <template v-if="expl.creator.email === user.email">
               <BaseButton @click="startEditing()" icon="mdi-pencil">Edit Text</BaseButton>
               <BaseButton @click="popup = true" icon="mdi-delete" data-qa="delete-post-btn">Delete</BaseButton>
             </template>
-            <BaseButton @click="upvoteExpl()" :disabled="expl.creator.uid === user.uid">
-              Thanks! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
+            <BaseButton @click="upvoteExpl()" class="mr-5" :disabled="expl.creator.uid === user.uid">
+              I finally understand! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
             </BaseButton>
           </template>
         </v-layout>
@@ -135,6 +139,10 @@ export default {
     },
     user () { 
       return this.$store.state.user; 
+    },
+    explShareableLink () {
+      // return `http://localhost:8080/explanation/${this.expl.id}/class/${this.$route.params.class_id}`;
+      return `https://explain-latest.firebaseapp.com/explanation/${this.expl.id}/class/${this.$route.params.class_id}`;
     }
   },
   data: () => ({ 

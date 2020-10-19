@@ -1,5 +1,5 @@
 <template>
-  <v-app id="home-page">
+  <div>
     <TheAppBar>
          <!-- <MusicPlayer
         :youtubeURL="randomMusicURL"
@@ -123,7 +123,7 @@
         </v-row>
       </v-container>           
     </v-main>
-  </v-app>
+  </div>
 </template>
 
 <script>

@@ -156,7 +156,7 @@
     </v-toolbar>
 
     <!-- The actual blackboards -->
-    <div id="room" class="room-wrapper">
+    <div id="room" class="room-wrapper" style="height: 100%;">
       <v-tabs-items v-if="blackboardRefs.length !== 0 && room" 
         v-model="activeBoardID" 
         touchless

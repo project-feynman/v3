@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <div>
     <v-app-bar v-if="!isFullscreen" clipped-left app>
       
     </v-app-bar>
@@ -29,7 +29,7 @@
         </canvas>
       </div>
     </v-main>
-  </v-app>
+  </div>
 </template>
 
 <script>

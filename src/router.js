@@ -20,6 +20,15 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/GetStarted.vue")
     },
     {
+      path: "/explanation/:expl_id/class/:class_id",
+      component: () => import(/* webpackChunkName: "home" */ "./components/ClassPageSeePost.vue"),
+      props: route => {
+        return { 
+          postID: route.params.expl_id
+        };
+      }
+    },
+    {
       path: "/intersection-api-playground",
       component: () => import(/* webpackChunkName: "home" */ "./pages/IntersectionAPIPlayground.vue")
     },

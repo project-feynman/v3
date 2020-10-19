@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <div>
     <v-btn @click="connectToJisti()">Connect to video call</v-btn>
     <v-btn @click="setVideoQuality()">Set video quality</v-btn>
     <div id="jisti-video-conference" style="height: 300px"></div>
@@ -8,7 +8,7 @@
     <div id="jisti-video-conference" style="height: 100vh">
 
     </div> -->
-  </v-app>
+  </div>
 </template>
 
 <script>
