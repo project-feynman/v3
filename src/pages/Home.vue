@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TheAppBar>
+    <!-- <TheAppBar> -->
          <!-- <MusicPlayer
         :youtubeURL="randomMusicURL"
         v-slot="{ play, pause, isPaused }"
@@ -58,13 +58,13 @@
           </v-bottom-sheet>
         </div>
       </MusicPlayer> -->
-    </TheAppBar>
+    <!-- </TheAppBar> -->
     
     <v-main>
       <transition name="fade">
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
           <v-container>
-            <div class="central-title d-flex justify-center align-center mb-4">
+            <div class="central-title d-flex justify-center align-center my-4">
               <img src="/logo.png"/>
               <h1 class="text--primary ml-2">
                 explain.mit.edu

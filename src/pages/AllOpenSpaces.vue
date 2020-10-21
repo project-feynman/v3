@@ -2,9 +2,25 @@
   <div>
     <portal to="side-drawer">
       <v-list>
-        <!-- <div style="padding-top: 12px; padding-left: 24px; padding-bottom: 8px; font-size: 1.15rem">
-          Open Spaces
-        </div> -->
+        <div class="d-flex align-center pt-2 pb-0" style="padding-left: 18px;">
+          <p class="text-uppercase font-weight-bold mb-0" style="margin-top: 2px; opacity: 50%; font-size: 0.8rem;">
+            Open Spaces
+          </p>
+          <v-spacer/>
+          <div v-if="roomTypes !== []">
+            <BasePopupButton actionName="Create new open space"
+              :inputFields="['name']" 
+              @action-do="({ name }) => createNewRoomType(name)"
+            >
+              <template v-slot:activator-button="{ on }">
+                <v-btn class="mr-2" icon v-on="on">
+                  <v-icon color="secondary">mdi-plus</v-icon>
+                </v-btn>
+              </template> 
+            </BasePopupButton>
+          </div>
+        </div>
+        
         <!-- 
         <v-dialog v-model="isEditPopupOpen" width="500px">
           <v-card>
@@ -27,14 +43,15 @@
 
         <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
           append :to="(`section/${roomType.id}`)"
-          style="padding-left: 24px; padding-right: 24px" 
+          style="padding-left: 30px; padding-right: 24px" 
         >
-          <v-list-item-content style="font-size: 0.88rem; font-weight: 400; color: #424242; opacity: 81%;">
+          <v-list-item-content style="font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%;">
             {{ roomType.name }}
           </v-list-item-content>
 
           <v-list-item-action>
             <v-row>
+              <!-- TODO: create and update operations with a dropdown menu -->
               <!-- <v-btn @click.stop.prevent="isEditPopupOpen = true; roomTypeID = roomType.id" icon>
                 <v-icon color="grey">mdi-pencil</v-icon>
               </v-btn> -->
@@ -45,36 +62,22 @@
             </v-row>
           </v-list-item-action>
         </v-list-item>
-
-        <div v-if="roomTypes !== []">
-          <BasePopupButton actionName="Create new open space"
-            :inputFields="['name']" 
-            @action-do="({ name }) => createNewRoomType(name)"
-          >
-            <template v-slot:activator-button="{ on }">
-              <v-btn v-if="isAdmin" v-on="on" block text color="grey">
-                <v-icon left>mdi-plus</v-icon>
-                New open space
-              </v-btn>
-            </template> 
-          </BasePopupButton>
-        </div>
       </v-list>
     </portal>
 
-    <!-- TODO -->
     <portal to="main-content">
       <div class="ma-5">
-      <h2>Major changes (please reload the website to receive the latest version)</h2>
+      <h2>New changes</h2>
       <ul>
-        <li>On the left-side drawer, you can see which board each person is on and whether they're connected to audio</li>
+        <li>Everyone can now freely create and delete open spaces and rooms</li>
       </ul>
 
       <br>
 
-      <h2>Tips</h2>
+      <h2>Troubleshoot tips</h2>
       <ul>
-        <li>If you have issues, <u>reload the website</u>.</li>
+        <li>To fix most issues e.g. lag, simply <u>reload the website</u>.</li>
+        <li>Otherwise, quit the browser tab and open a fresh page of explain.mit.edu.</li>
         <li>If issues persist, do a hard reset (force quit the browser, reset the cache).</li>
         <li>Feel free to contact me (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
       </ul>
@@ -83,8 +86,8 @@
 
       <h2>Roadmap</h2>
       <ul>
-        <li>Audio/video upgrades: a Zoom integration is coming</li>
-        <li>Blackboard upgrades: arbitrary colors, backgrounds, undo/redo, etc.</li>
+        <!-- <li>Audio/video upgrades: a Zoom integration is coming</li> -->
+        <li>Blackboard upgrades: arbitrary colors, backgrounds, undo/redo, color persistence across boards etc.</li>
         <li>Birds-eye view: for better vision of what's going on on all the boards</li>
       </ul>
 

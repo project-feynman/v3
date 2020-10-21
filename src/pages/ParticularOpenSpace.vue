@@ -13,7 +13,7 @@
       </v-list-item-content>
 
       <!-- The triple dot dropdown menu with actions that affects the whole class -->
-      <v-menu v-if="isAdmin" v-model="isMenuOpen" bottom nudge-left offset-y>
+      <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
         <template v-slot:activator="{ on, attrs }">
 
         <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
@@ -28,7 +28,7 @@
 
           <BasePopupButton>
             <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item @click.stop="openPopup()">
+              <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
                 <v-icon left color="black">mdi-file-pdf</v-icon> Set problem
               </v-list-item>
             </template>
@@ -66,13 +66,13 @@
             </template>
           </BasePopupButton>
 
-          <v-list-item @click="muteParticipantsInRooms(roomTypeDoc.id)">
+          <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
             <v-icon left>mdi-volume-mute</v-icon> Mute everyone
           </v-list-item>
 
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item @click.stop="openPopup()">
+              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
                 <v-icon left color="black">mdi-shuffle-variant</v-icon> Shuffle everyone
               </v-list-item>
             </template>
@@ -100,7 +100,7 @@
 
           <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item @click.stop="openPopup()">
+              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
                 <v-icon left color="red">mdi-delete</v-icon> Reset everything
               </v-list-item>
             </template>
@@ -114,7 +114,7 @@
             <v-icon left>mdi-music-clef-treble</v-icon> Set music
           </v-list-item> -->
 
-          <v-list-item v-if="isAdmin && rooms.length !== 0" @click="createNewRoom()">
+          <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
             <v-icon left>mdi-plus</v-icon> New room
           </v-list-item>
         </v-list>

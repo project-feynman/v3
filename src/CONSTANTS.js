@@ -16,7 +16,7 @@ export const ERASER_STROKE_WIDTH = 25;
 
 export const SUPER_USER_EMAILS = [
   "eltonlin@mit.edu",
-  "eltonlin1998@gmail.com",
+  // "eltonlin1998@gmail.com", gmail is commented out so I can test the non-admin behavior
   // 8.01 
   // S1~2
   "josephf@mit.edu",
