@@ -238,14 +238,15 @@ export default {
     // vision of a vibrant place where people talk around blackboards
     const demoVideoRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/aHaV1yIyaDR4n88pmzDk`);
 
-    const demoVideoRef3 = db.doc("classes/mDbUrvjy4pe8Q5s5wyoD/posts/I1viW7kVl5UFkfeYZVZy");
+    // const demoVideoRef3 = db.doc("classes/mDbUrvjy4pe8Q5s5wyoD/posts/I1viW7kVl5UFkfeYZVZy");
+    const demoVideoRef4 = db.doc("classes/lvzQqyZIV1wjwYnRV9hn/posts/LOCgTA76qXcTaW6vgJAc");
     
     // visual comparison of normal videos vs doodle videos
-    const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/R0BgFgLe8BPvUfrfLmCq`);
+    // const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/R0BgFgLe8BPvUfrfLmCq`);
     
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
     // note this is videoRef3!
-    this.$_getDoc(demoVideoRef3).then(demoVideo2 => this.demoVideo2 = demoVideo2);
+    this.$_getDoc(demoVideoRef4).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },
   methods: {
     handleClassPassword () {
