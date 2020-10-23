@@ -1,15 +1,14 @@
 <template>
   <div style="height: 100%;">
     <v-app-bar :value="!isBoardFullscreen" app clipped-left color="white" outlined :style="`padding-left: ${24-12}px`">
-      <v-app-bar-nav-icon @click="isShowingDrawer = !isShowingDrawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon v-if="$route.params.section_id" @click="isShowingDrawer = !isShowingDrawer"/>
 
-      <v-list-item-avatar @click="$router.push('/get-started')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
+      <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
         <img src="/logo.png">
       </v-list-item-avatar>
       
-      <v-list-item-title v-if="mitClass" style="opacity: 100%; font-size: 1.45rem;">
-        {{ mitClass.name }}
-      </v-list-item-title>
+      <ClassSwitchDropdown/>
+      <ClassNewPopup/>
 
       <v-spacer/>
 
@@ -36,7 +35,7 @@
 
     <v-divider/>
 
-    <v-navigation-drawer v-model="isShowingDrawer" app width="285" mobile-breakpoint="500" clipped touchless height="100%">      
+    <v-navigation-drawer v-model="isShowingDrawer" :permanent="!$route.params.section_id" app width="285" mobile-breakpoint="500" clipped touchless height="100%">      
       <portal-target name="side-drawer">
 
       </portal-target>
@@ -67,9 +66,10 @@ import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
-import SmallAppBar from "@/components/SmallAppBar.vue"; 
 import GroupChat from "@/components/GroupChat.vue"; 
 import ClassLibrary from "@/pages/ClassLibrary.vue";
+import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
+import ClassNewPopup from "@/components/ClassNewPopup.vue";
 
 export default {
   name: "ClassPageTemplate",
@@ -77,9 +77,10 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    SmallAppBar,
     GroupChat,
-    ClassLibrary
+    ClassLibrary,
+    ClassSwitchDropdown,
+    ClassNewPopup
   },
   data: () => ({
     firebaseRef: null,

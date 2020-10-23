@@ -314,7 +314,6 @@ import { mapState, mapGetters } from "vuex";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
-import SmallAppBar from "@/components/SmallAppBar.vue";
 import firebase from "firebase/app";
 import "firebase/firestore"; 
 import "firebase/functions";
@@ -327,7 +326,6 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    SmallAppBar,
     BaseButton,
     BasePopupButton,
     HandleAnnouncements,

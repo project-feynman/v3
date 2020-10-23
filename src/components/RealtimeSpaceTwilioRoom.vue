@@ -20,23 +20,27 @@
     <portal to="destination2">
       <template v-if="!twilioInitialized && !isTryingToConnect">
         <p class="yellow--text">Connected to the blackboard</p>
-        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
 
-        <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" block class="green white--text">Connect to audio</v-btn>
+        <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" 
+          block class="mb-4 green white--text"
+        >
+          Connect to audio
+        </v-btn>
+
+        <RealtimeSpaceTwilioRoomTroubleshootPopup/>
       </template>
 
       <template v-else-if="!twilioInitialized && isTryingToConnect">
         <p class="yellow--text">
           Connecting...
         </p>
-        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
+        <RealtimeSpaceTwilioRoomTroubleshootPopup/>
       </template>
 
       <template v-else>
         <p class="green--text mt-1">Connected to audio and video</p>
-        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
-
-        <v-row class="d-flex" justify="space-around">
+      
+        <v-row class="d-flex mb-4" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
             <v-icon large>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
           </v-btn>
@@ -53,6 +57,7 @@
             <v-icon large>mdi-phone-hangup</v-icon>
           </v-btn>
         </v-row>
+        <RealtimeSpaceTwilioRoomTroubleshootPopup/>
       </template>
     </portal>
 
@@ -132,6 +137,8 @@ import Twilio from "twilio-video";
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
 import Vue from "vue";
+import RealtimeSpaceTwilioRoomTroubleshootPopup from "@/components/RealtimeSpaceTwilioRoomTroubleshootPopup.vue"
+
 export default {
   props: {
     roomID: {
@@ -142,6 +149,9 @@ export default {
   mixins: [
     DatabaseHelpersMixin
   ],
+  components: {
+    RealtimeSpaceTwilioRoomTroubleshootPopup
+  },
   data () {
     return {
       roomDoc: null,

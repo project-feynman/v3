@@ -63,26 +63,33 @@
     <v-main>
       <transition name="fade">
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
-          <v-container>
+          <v-container class="py-5">
             <div class="central-title d-flex justify-center align-center my-4">
               <img src="/logo.png"/>
               <h1 class="text--primary ml-2">
                 explain.mit.edu
               </h1>
             </div>
-            <h3 class="headline font-weight-light">
+              
+            <h3 class="headline font-weight-normal" style="opacity: 70%">
               A vibrant place where students, TAs and professors explain things to each other. 
             </h3>
             <!-- Log in / Sign up -->
-            <v-row class="my-5" justify="center">
+            <v-row class="my-5 py-5" justify="center">
               <template v-if="user">
-                <v-btn @click="$router.push('/get-started')" color="secondary">GET STARTED</v-btn>
-                <!-- <v-btn v-if="user.mostRecentClassID" @click="$router.push(`class/${user.mostRecentClassID}`)">Return</v-btn> -->
+                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+                  large class="mx-5 purple white--text"
+                >
+                  Enter spaces
+                </v-btn>
+                <v-btn large @click="$_signOut()" class="mx-5 grey white--text">
+                  SIGN OUT
+                </v-btn>
               </template>
             
               <template v-else>
-                <v-btn @click="$_logInWithTouchstone()" text class="green--text">
-                  TOUCHSTONE LOGIN
+                <v-btn @click="$_logInWithTouchstone()" large class="green white--text mx-5">
+                  GET STARTED
                 </v-btn>
 
                 <!-- Email Sign Up -->
@@ -91,7 +98,7 @@
                   @action-do="user => $_signUp(user)"
                 >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" text class="purple--text">EMAIL SIGNUP</v-btn>
+                    <v-btn v-on="on" large class="mx-5 grey white--text">EMAIL SIGNUP</v-btn>
                   </template>
 
                   <template v-slot:message-to-user>
@@ -106,7 +113,7 @@
                   @action-do="user => $_logIn(user)"
                 >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" text class="purple--text">EMAIL LOGIN</v-btn>
+                    <v-btn v-on="on" large class="mx-5 grey white--text">EMAIL LOGIN</v-btn>
                   </template>
                 </BasePopupButton>
               </template>
@@ -115,10 +122,41 @@
         </v-card>
       </transition>
       
-      <v-container fluid>
+      <v-container fluid class="pa-5">
+        <v-card>
+          <v-card-title>
+            <h3>Introduction</h3>
+          </v-card-title>
+
+          <v-card-text style="font-size: 1rem;">
+            <p>
+              Explain is a simple website with many permanent, collaborative rooms with blackboards.
+            <p>
+              Instructors from 8.01, 18.01 and ESG use it for problem-solving sessions and Office Hours, 
+              because they like the <u>smooth transitions</u> when moving between rooms and boards. 
+            </p>
+
+            <p>
+              Students don't have strong preferences between Zoom, Discord, ExplainEverything, Explain, etc. because 
+              most study session are scheduled rather than serendipitous, and coordinated via group chats; it makes no difference joining a Zoom Link, Discord Channel or ExplainEverything room. 
+              Eventually, we hope that pset collaboration, Office Hours and fun activities will be <u>unified</u> on explain.mit.edu,
+              thereby maximizing the chance of serendipitous interactions.
+            </p>
+
+            <p>
+              The fact that Explain is a fast-changing, <a href="https://github.com/feynman-project/explain" target="_blank">open-source</a> 
+              prototype is both its biggest weakness and strength. It's less reliable and feature-complete than established products, but it has the essential features, special features (e.g. lightweight videos),
+              and evolves rapidly because the student and staff developers work closely with the student and staff users.
+            </p>
+          </v-card-text>
+        </v-card>
+
         <v-row>
-          <v-col cols="12">
+          <v-col cols="12" lg="6">
             <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
           </v-col>
         </v-row>
       </v-container>           
@@ -130,6 +168,7 @@
 import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/auth";
 import db from "@/database.js";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
@@ -194,30 +233,19 @@ export default {
       return db.collection("users").doc(this.user.uid); 
     }
   },
-  watch: {
-    user: {
-      immediate: true,
-      handler (user) {
-        if (user) {
-          if (!user.mostRecentClassID) {
-            this.$router.push("/get-started");
-          } else {
-            this.$router.push(`/class/${user.mostRecentClassID}`);
-          }
-        }
-      } 
-    }
-  },
   async created () { 
 
     // vision of a vibrant place where people talk around blackboards
     const demoVideoRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/aHaV1yIyaDR4n88pmzDk`);
+
+    const demoVideoRef3 = db.doc("classes/mDbUrvjy4pe8Q5s5wyoD/posts/I1viW7kVl5UFkfeYZVZy");
     
     // visual comparison of normal videos vs doodle videos
     const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/R0BgFgLe8BPvUfrfLmCq`);
     
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
-    this.$_getDoc(demoVideoRef2).then(demoVideo2 => this.demoVideo2 = demoVideo2);
+    // note this is videoRef3!
+    this.$_getDoc(demoVideoRef3).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },
   methods: {
     handleClassPassword () {

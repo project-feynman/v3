@@ -67,19 +67,31 @@
 
     <portal to="main-content">
       <div class="ma-5">
-      <h2>New changes</h2>
-      <ul>
-        <li>Everyone can now freely create and delete open spaces and rooms</li>
-      </ul>
+        <h2>This week's updates</h2>
+        <ul>
+          <li>Everyone can now freely create new classes, open spaces and rooms</li>
+        </ul>
+        
+        <br>
 
-      <br>
+        <h2>
+          How to use
+        </h2>
+        <p>
+          If you're a new user, you will be in the "Example class". To add a real class, click the plus icon on the top left corner. 
+          To navigate to an open space and its corresponding rooms, simply click on it. 
+          To connect to audio, look at the bottom left. 
+          To visit the library, click on the top right. 
+          (By the way, a visual tutorial is coming...)
+        </p>
+        <br>
 
-      <h2>Troubleshoot tips</h2>
+      <h2>Not working?</h2>
       <ul>
-        <li>To fix most issues e.g. lag, simply <u>reload the website</u>.</li>
-        <li>Otherwise, quit the browser tab and open a fresh page of explain.mit.edu.</li>
+        <li>If the website lags, <u>reload</u>.</li>
+        <li>For more serious problems, quit the browser tab and open a fresh page of explain.mit.edu.</li>
         <li>If issues persist, do a hard reset (force quit the browser, reset the cache).</li>
-        <li>Feel free to contact me (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
+        <li>You can ask me for help via (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
       </ul>
 
       <br>
@@ -106,7 +118,6 @@ import { getRandomId } from "@/helpers.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
-import SmallAppBar from "@/components/SmallAppBar.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import { mapState, mapGetters } from "vuex";
 import ClassCalendar from "@/components/ClassCalendar.vue"; 
@@ -121,7 +132,6 @@ export default {
     ClassLibrary,
     BasePopupButton,
     BaseButton,
-    SmallAppBar
   },
   data () {
     return {
