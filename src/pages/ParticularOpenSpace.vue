@@ -553,15 +553,14 @@ export default {
           const idx = this.targetBoardNum + i; 
           for (const room of this.rooms) {
             console.log("placing image number ", i, "into a room");
-            if (room.blackboards.length <= idx) {
-              break;
+            if (room.blackboards.length > idx) {
+              const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
+              promises.push(
+                ref.update({
+                  backgroundImageDownloadURL: downloadURL
+                })
+              );
             } 
-            const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
-            promises.push(
-              ref.update({
-                backgroundImageDownloadURL: downloadURL
-              })
-            );
           }
         }); 
         promises.push(processOneImage);
