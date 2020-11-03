@@ -1,5 +1,5 @@
 # Explain
->The dream is to cure everyone who suffers from a disease of the heart, and the mission is to accelerate world education in order to help society's battle against poverty, corruption and climate change. 
+>Explain is an experimental web prototype that will enable everyone to help each other efficiently. It is part of Project Feynman, a plan to accelerate world education and end poverty, pollution and injustice.
 
 ![explain-open-space-gif](documentation/explain-github-gif.gif)
 
