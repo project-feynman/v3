@@ -37,6 +37,10 @@ export default {
     roomId: {
       type: String,
       required: true
+    },
+    currentBoardNumber: {
+      type: Number,
+      required: true
     }
   },
   data () {
@@ -47,7 +51,8 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "session"
+      "session",
+      "canHearAudio"
     ]),
     sessionID () {
       return this.session.currentID; 
@@ -64,10 +69,19 @@ export default {
       return firebase.database().ref(`/class/${class_id}/room/${room_id}/participants/${this.sessionID}`); 
     }
   },
+  watch: {
+    currentBoardNumber () {
+      this.updateParticipantDoc();
+    },
+    canHearAudio () {
+      this.updateParticipantDoc(); 
+    }
+  },
   async created () {
     // Step 1/2: set up the disconnect hook
     const snapshot = await this.myFirebaseRef.child("disconnectCounter").once("value");
     const disconnectCounter = snapshot.val() ? snapshot.val() : 0; 
+    // we increment a counter because the user can seemingly "disconnect" by turning off an iPad screen, but return with the same session ID
     await this.myFirebaseRef.onDisconnect().set({ 
       disconnectCounter: disconnectCounter + 1 // Cloud Functions will detect the change and update Firestore accordingly
     });
@@ -75,15 +89,7 @@ export default {
     // Step 2/2: set up a connection listener to handle the user turning on/off the iPad screen without moving/leaving the website
     firebase.database().ref(".info/connected").on("value", async connectionState => {
       if (connectionState.val() === true) {
-        this.myFirestoreRef.set({
-          sessionID: this.sessionID,
-          currentRoom: this.roomId,
-          roomTypeID: this.$route.params.section_id,
-          firstName: this.user.firstName,
-          lastName: this.user.lastName,
-          email: this.user.email,
-          uid: this.user.uid
-        });
+        this.updateParticipantDoc(); 
       } else {
         // do nothing because the disconnect hook will take care of the user turning off the iPad screen
       }
@@ -99,6 +105,19 @@ export default {
     this.cleanUpEverything(); 
   },
   methods: {
+    updateParticipantDoc () {
+      this.myFirestoreRef.set({
+        sessionID: this.sessionID,
+        currentRoom: this.roomId,
+        currentBoardNumber: this.currentBoardNumber,
+        roomTypeID: this.$route.params.section_id,
+        firstName: this.user.firstName,
+        lastName: this.user.lastName,
+        email: this.user.email,
+        uid: this.user.uid,
+        canHearAudio: this.canHearAudio
+      });
+    },
     // doesn't matter if it's called twice, because the ref is unique
     // not quite right
     cleanUpEverything () {

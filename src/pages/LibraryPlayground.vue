@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <div>
     <v-card width="1000" height="800" color="grey">
       <h1>Welcome to the library playground!</h1>
       <v-row>
@@ -26,7 +26,7 @@
         </v-col>
       </v-row>
     </v-card>
-  </v-app>
+  </div>
 </template>
 
 <script>

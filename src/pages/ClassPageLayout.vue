@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <div style="height: 100%;">
     <v-app-bar :value="!isBoardFullscreen" app clipped-left color="white" outlined :style="`padding-left: ${24-12}px`">
       <v-app-bar-nav-icon @click="isShowingDrawer = !isShowingDrawer"></v-app-bar-nav-icon>
 
@@ -13,7 +13,7 @@
 
       <v-spacer/>
 
-      <GroupChat v-if="mitClass" class="mr-3"/>
+      <!-- <GroupChat v-if="mitClass" class="mr-3"/> -->
 
       <!-- Library -->
       <v-dialog v-model="showLibrary" fullscreen>
@@ -49,7 +49,7 @@
     </v-navigation-drawer>
 
     <v-main style="overflow-x: auto;">
-      <portal-target name="main-content">
+      <portal-target name="main-content" style="height: 100%;">
         
       </portal-target>
     </v-main>
@@ -57,7 +57,7 @@
     <!-- :key="...class_id" forces <router-view/> to re-render -->
     <!-- Many things from <router-view> will teleport to the portals above -->
     <router-view v-if="mitClass" :key="$route.params.class_id"/>
-  </v-app>
+  </div>
 </template>
 
 <script>

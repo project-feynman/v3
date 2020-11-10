@@ -5,6 +5,7 @@
         <TheSideDrawerGroupByDate @post-was-clicked="postID => currentPostID = postID" type="posts"/>
       </v-col>
       
+      <!-- TODO: inject the expl_prop into here  -->
       <v-col cols="8" class="d-flex flex-column mb-6">
         <ClassPageSeePost v-if="currentPostID"
           :postID="currentPostID"

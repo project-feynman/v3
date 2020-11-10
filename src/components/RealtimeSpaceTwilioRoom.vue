@@ -20,16 +20,21 @@
     <portal to="destination2">
       <template v-if="!twilioInitialized && !isTryingToConnect">
         <p class="yellow--text">Connected to the blackboard</p>
+        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
 
         <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" block class="green white--text">Connect to audio</v-btn>
       </template>
 
-      <p v-else-if="!twilioInitialized && isTryingToConnect" class="yellow--text">
-        Connecting...
-      </p>
+      <template v-else-if="!twilioInitialized && isTryingToConnect">
+        <p class="yellow--text">
+          Connecting...
+        </p>
+        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
+      </template>
 
       <template v-else>
         <p class="green--text mt-1">Connected to audio and video</p>
+        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
 
         <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
@@ -55,14 +60,19 @@
       <div v-for="client in allClients"
         :key="client.id" 
         :class="['d-flex', 'text--secondary', 'mt-5', 'pl-5', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
-        style="font-size: 1em"
+        style="font-size: 0.8em"
       >
-        {{ client.firstName + " " + client.lastName }}
-
+        {{ client.firstName + " " + client.lastName }}  
+        
         <v-spacer/>
-
-        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" class="mr-5">
+        {{ "#" + client.currentBoardNumber }} 
+  
+        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small class="mx-2">
           {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
+        </v-icon>
+
+        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'red'">
+          {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
         </v-icon>
       </div>
     </portal>

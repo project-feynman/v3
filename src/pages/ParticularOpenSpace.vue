@@ -98,7 +98,6 @@
             <v-icon left color="red">mdi-comment-remove</v-icon> Reset statuses
           </v-list-item> -->
 
-
           <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()">
@@ -161,9 +160,14 @@
           <div class="pl-3">
             <p v-for="p in roomIDToParticipants[commonRoomDoc.id]" :key="p.id"
               style="font-weight: 400; font-size: 0.8em"
-              :class="`text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
+              :class="`d-flex text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
             >
               {{ p.firstName + " " + p.lastName }}
+              <v-spacer/>
+              {{ "#" + p.currentBoardNumber }} 
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
+                {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
+              </v-icon>
             </p>
           </div>
         </div>
@@ -228,9 +232,14 @@
           <div class="pl-3">
             <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
               style="font-weight: 400; font-size: 0.8em"
-              class="text--secondary mb-0"
+              class="text--secondary mb-0 d-flex"
             >
               {{ p.firstName + " " + p.lastName }}
+              <v-spacer/>
+              {{ "#" + p.currentBoardNumber }} 
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
+                {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
+              </v-icon>
             </p>
           </div>
         </div>
@@ -310,6 +319,7 @@ import firebase from "firebase/app";
 import "firebase/firestore"; 
 import "firebase/functions";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
+import _ from "lodash"; 
 
 export default {
   name: "ParticularOpenSpace",
@@ -325,11 +335,11 @@ export default {
   },
   data () {
     return {
+      roomIDToParticipants: {},
       showLibrary: false,
       roomTypeDoc: null,
       rooms: [],
       participants: [],
-      updateParticipantsTimeout: null,
       unsubFuncs: [],
       targetBoardNum: 0,
       isMenuOpen: false,
@@ -384,7 +394,6 @@ export default {
       // because `currentRoomID` is undefined when the user is in the common room. 
     
       if (!this.currentRoomID) return this.commonRoomDoc; 
-      // if (this.commonRoomDoc) return this.commonRoomDoc; 
 
       for (const room of this.rooms) {
         if (room.id === this.currentRoomID) {
@@ -395,18 +404,25 @@ export default {
     classDocRef () {
       return db.doc(`classes/${this.classID}`);
     },
-    roomIDToParticipants () {
-      const out = {}; 
-      for (const room of this.rooms) {
-        out[room.id] = this.participants.filter(p => p.currentRoom === room.id); 
-      }
-      return out; 
-    },
     roomTypeRef () {
       return this.classDocRef.collection("roomTypes").doc(this.$route.params.section_id); 
     }
   },
   watch: {
+    // whenever participants or rooms change (usually participants), we re-compute the entire
+    // `roomIDToParticipants` array, but debounce with Lodash so it does not cause lag issues
+    participants: {
+      immediate: true,
+      handler: _.debounce(function () {
+        this.updateRoomIDToParticipants();
+      }, 500)
+    },
+    rooms: {
+      immediate: true,
+      handler: _.debounce(function () {
+        this.updateRoomIDToParticipants();
+      }, 500)
+    },
     "roomTypeDoc.roomAssignmentsCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {
         // don't shuffle instructors
@@ -461,6 +477,22 @@ export default {
     }
   },
   methods: {
+    updateRoomIDToParticipants () {
+      console.log("updateParticipants()")
+      const out = {};
+      for (const room of this.rooms) {
+        const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 
+        peopleInRoom.sort((p1, p2) => {
+          if (p1.canHearAudio === p2.canHearAudio) {
+            return p2.currentBoardNumber - p1.currentBoardNumber;
+          } else {
+            return p2.canHearAudio - p1.canHearAudio; 
+          }
+        });
+        out[room.id] = peopleInRoom; 
+      }
+      this.roomIDToParticipants = out;
+    },
     async resetAbsolutelyEverything () {
       function deleteAtPath(path) {
         return new Promise((resolve, reject) => {
