@@ -10,7 +10,10 @@ database.rules.json
 firestore.rules
 storage.rules
 
-# local env files
+# Note: it's better to have redundancies in the .gitignore than to miss something
+# For example, VS code users don't need to hide .idea files, but Webstorm users do.
+
+# Local env files
 .env.local
 .env.*.local
 

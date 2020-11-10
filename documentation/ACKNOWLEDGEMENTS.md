@@ -4,7 +4,7 @@
  
 ### Prabhakar Kafle (UI/UX)
  
-<img src="documentation/Prabhakar.jpg" alt="member photo" height="170"/> 
+<img src="documentation/images/Prabhakar.jpg" alt="member photo" height="170"/> 
  
  <b>Contributions:</b>
  - When Prabhakar first joined, he redesigned the home page logo, the blackboard toolbar and the sidedrawer UI 
@@ -14,7 +14,7 @@
 
 ### Winston Fee (Audio/Visual)
  
-<img src="documentation/Winston.jpg" alt="member photo" height="170"/> 
+<img src="documentation/images/Winston.jpg" alt="member photo" height="170"/> 
 
 <b>Contributions:</b>
   - Winston introduced audio chat, video chat, screenshare, rich-text editor, and others. 
