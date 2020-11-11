@@ -6,5 +6,5 @@ module.exports = {
     sourceMap: true
   },
   // change these to output to different build targets
-  outputDir: path.resolve(__dirname, "dist/latest"),
+  outputDir: path.resolve(__dirname, "dist/latest")
 }

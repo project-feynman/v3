@@ -14,7 +14,7 @@
             >
               <template v-slot:activator-button="{ on }">
                 <v-btn class="mr-2" icon v-on="on">
-                  <v-icon color="secondary">mdi-plus</v-icon>
+                  <v-icon color="grey darken-2">mdi-plus</v-icon>
                 </v-btn>
               </template> 
             </BasePopupButton>

@@ -32,11 +32,8 @@
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.2.0",
-    "@vue/cli-plugin-unit-jest": "^3.12.1",
     "@vue/cli-service": "^3.2.0",
     "babel-core": "7.0.0-bridge.0",
-    "babel-eslint": "^10.0.3",
-    "babel-jest": "^23.6.0",
     "firebase-tools": "^7.16.2",
     "sass": "^1.26.10",
     "sass-loader": "^7.1.0",
@@ -46,12 +43,12 @@
     "vue-template-compiler": "^2.6.12",
     "vuetify-loader": "^1.6.0"
   },
-  "browserslist": [
-    "defaults"
-  ],
   "babel": {
     "presets": [
       "@vue/app"
     ]
-  }
+  },
+  "browserslist": [
+    "defaults"
+  ]
 }

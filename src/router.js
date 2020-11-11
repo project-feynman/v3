@@ -42,7 +42,7 @@ const router = new Router({
     },
     {
       path: "/class/:class_id",
-      component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout.vue"),
+      component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout2.vue"),
       children: [
         {
           path: "",
