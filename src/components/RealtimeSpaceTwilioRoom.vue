@@ -18,26 +18,22 @@
 
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
-      <template v-if="!twilioInitialized && !isTryingToConnect">
-        <p class="yellow--text">Connected to the blackboard</p>
+      <template v-if="!twilioInitialized">
+        <!-- <p class="yellow--text">Connected to the blackboard</p> -->
          <v-row class="d-flex" justify="space-around">
-          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" fab color="green" class="white--text" depressed>
+          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" 
+            :loading="isTryingToConnect" fab color="green" class="white--text" depressed
+          >
             <v-icon large>mdi-phone</v-icon>
           </v-btn>
           <RealtimeSpaceTwilioRoomTroubleshootPopup/>
+          <v-btn disabled fab class="white--text">
+            <v-icon>mdi-music-clef-treble</v-icon>
+          </v-btn>
         </v-row>
       </template>
 
-      <template v-else-if="!twilioInitialized && isTryingToConnect">
-        <p class="yellow--text">
-          Connecting...
-        </p>
-        <RealtimeSpaceTwilioRoomTroubleshootPopup/>
-      </template>
-
-      <template v-else>
-        <p class="green--text mt-1">Connected to audio</p>
-      
+      <template v-else-if="twilioInitialized">      
         <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
             <v-icon large>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
@@ -323,7 +319,9 @@ export default {
         
         // enable auto-join for the future
         this.$store.commit("SET_CAN_HEAR_AUDIO", true); 
-
+        
+        // TODO: this slows down the "fast transitions" that Explain provides
+        // if I'm not switching to Jitsi then I need to figure this one out
         await this.shareAudioTrack(); 
         
         // persist mute and video statuses from the previous room 

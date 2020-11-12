@@ -30,7 +30,7 @@
         >
           <template v-slot:touch-slot>
             <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black" small>
-
+              {{ touchDisabled ? 'Pencil mode' : 'Any mode' }}
             </BaseButton>
           </template>
     
@@ -40,7 +40,7 @@
             
               </slot> 
 
-              <BaseButton @click="startRecording()" icon="mdi-record" color="secondary">
+              <BaseButton @click="startRecording()" icon="mdi-record" color="secondary" small>
                 Record 
               </BaseButton>
             </template>

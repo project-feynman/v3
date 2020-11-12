@@ -1,33 +1,33 @@
 <template>
   <div style="height: 100%;">
-    <v-app-bar :value="!isBoardFullscreen" app width="285" height="60" extension-height="60" clipped-left color="white" elevation="10">
-      <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px; margin-top: 18px`">
+    <v-app-bar :value="!isBoardFullscreen" app width="285" height="70" extension-height="60" clipped-left color="white" elevation="10">
+      <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px; margin-top: 13px`">
         <img src="/logo.png">
       </v-list-item-avatar>
     
-      <ClassSwitchDropdown/>
+      <ClassSwitchDropdown>
+        <!-- FIXME: menu disappears because dropdown disappearing will cause new popup to disappear -->
+        <!-- <ClassNewPopup/> -->
+      </ClassSwitchDropdown>
+      
+      <v-spacer/>
 
-      <ClassNewPopup/>
+      <div>
+        <v-dialog v-model="showLibrary" persistent>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn v-on="on" v-bind="attrs" fab small>
+              <v-icon>mdi-bookshelf</v-icon>
+            </v-btn>
+          </template>
 
-      <template v-if="!isBoardFullscreen" v-slot:extension>
-        <div>
-          <v-dialog v-model="showLibrary" fullscreen>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn v-on="on" v-bind="attrs" color="white">
-                <v-icon class="mr-2">mdi-bookshelf</v-icon>
-                Library
-              </v-btn>
-            </template>
-
-            <v-toolbar dark>
-              <v-btn icon dark @click="showLibrary = false">
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-            </v-toolbar>
-            <ClassLibrary v-if="showLibrary"/>
-          </v-dialog>
-        </div>
-      </template>
+          <v-toolbar dark>
+            <v-btn icon dark @click="showLibrary = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-toolbar>
+          <ClassLibrary v-if="showLibrary"/>
+        </v-dialog>
+      </div>
     </v-app-bar>
   
     <v-navigation-drawer v-model="isShowingDrawer" class="elevation-5" :permanent="!$route.params.section_id" app width="285" mobile-breakpoint="500" clipped touchless height="100%">      

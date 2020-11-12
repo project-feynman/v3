@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 160px">
+  <div style="width: 130px">
     <v-select 
       :items="$store.state.user.enrolledClasses"
       :value="currentClass" 
@@ -7,14 +7,15 @@
       hide-details 
       return-object
       height="35"
-      style="font-size: 1.25rem; padding-top: 5px"
+      style="font-size: 1.25rem; padding-top: 2px"
       @change="mitClass => switchClass(mitClass)"
       color="accent"
     >
-      <!-- TODO: support deleting classes -->
-      <!-- <template v-slot:append>
-        append item
-      </template> -->
+      <template v-slot:append-item>
+        <slot>
+          
+        </slot>
+      </template>
     </v-select> 
   </div>
 </template>

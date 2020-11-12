@@ -1,12 +1,12 @@
 <template>
   <v-dialog v-model="isAddCommunityPopupOpen" max-width="800" persistent>
     <template v-slot:activator="{ on }">   
-      <!-- <v-list-item @click="isAddCommunityPopupOpen = true">
-          <v-icon left color="purple">mdi-plus</v-icon> Add class
-        </v-list-item> -->
-      <v-btn class="mt-2" icon v-on="on">
+      <v-list-item @click="isAddCommunityPopupOpen = true">
+        <v-icon left color="purple">mdi-plus</v-icon> Add class
+      </v-list-item>
+      <!-- <v-btn class="mt-2" icon v-on="on">
         <v-icon color="grey darken-2">mdi-plus</v-icon>
-      </v-btn>
+      </v-btn> -->
     </template>
     <v-card>
       <v-card-title class="headline">Classes</v-card-title>

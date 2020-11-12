@@ -1,10 +1,10 @@
 <template>
 	<v-container class="py-0">
     <v-row class="align-center">
-      <v-col cols="auto" class="px-0 py-1" v-for="color in colors" :key="color" :class="isColorActive(color) ? 'selected-color':''">
+      <v-col v-for="color in colors" :key="color" cols="auto" class="px-0 py-1" :class="isColorActive(color) ? 'selected-color':''">
         <BaseButton color="accent lighten-2" :filled="isColorActive(color)" @click="selectColor(color)" small :data-qa="color">
           <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-            width="20px" height="46px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
+            width="16px" height="35px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
             <g>
               <path d="M0,0v72.377c0,1.588,0.234,3.169,0.698,4.706l45.416,150.032C46.633,228.828,48.212,230,50,230s3.367-1.172,3.886-2.883
                 L99.31,77.079c0.457-1.525,0.69-3.108,0.69-4.702V0.002"/>
@@ -17,6 +17,9 @@
             </g>
           </svg>
         </BaseButton>
+      </v-col>
+      <v-col class="ma-0 pa-0">
+        <BaseButton @click="selectRandomColor()" small icon="mdi-dice-3" color="black">Random color</BaseButton>
       </v-col>
     </v-row>
   </v-container>
@@ -32,7 +35,7 @@ export default {
     colors: {
       type: Array,
       required: true
-    },
+    }
   },
   components: { 
     BaseButton,
@@ -47,7 +50,16 @@ export default {
       return this.isPenActive && this.selectedColor === color;
     },
     selectColor (color) {
-      this.$emit('select-color',color)
+      this.$emit("select-color", color);
+    },
+    selectRandomColor () {
+      console.log("selectRandomColor()");
+      let letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      this.selectColor(color); 
     }
   }
 }

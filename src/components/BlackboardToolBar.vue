@@ -1,10 +1,25 @@
 <template>
-  <v-app-bar width="560px" elevation="5" :height="toolbarHeight" flat color="grey lighten-2" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="640" min-width="640" elevation="5" :height="toolbarHeight" flat color="grey lighten-4" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
+        <slot name="record-audio-slot">
+
+        </slot>
+
+        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
+          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+          color="black" small
+        >
+          Fullscreen
+        </BaseButton>
+
+        <slot name="more-actions-slot">
+
+        </slot>
+
         <!-- <v-col class="py-0">
           <v-row justify="start" align="center"> -->
-            <v-col class="px-1 py-0" cols="auto">
+            <v-col class="ml-5 px-1 py-0" cols="auto">
               <PenSwatch 	
                 :colors="colors" 	
                 :isPenActive="isPen"	
@@ -13,30 +28,14 @@
             </v-col>
 
             <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
-    
             <BaseButton :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
-              <!-- Eraser -->
+              Eraser
             </BaseButton>
             <slot name="touch-slot">
 
             </slot>
           <!-- </v-row>
         </v-col>         -->
-
-        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-          color="black"
-        >
-          Fullscreen
-        </BaseButton>
-
-        <slot name="record-audio-slot">
-
-        </slot>
-
-        <slot name="more-actions-slot">
-
-        </slot>
       </v-row>
     </v-container>
   </v-app-bar>
@@ -67,10 +66,12 @@ export default {
     return {
       BlackboardTools,
       toolbarHeight,
-      // I don't know how to control the internal color 
-      // data is nested to conform with Vuetify's internal implementation 
-      // so the initial color gets displayed properly
-      colors: ["cyan", "white", "orange", "#FF54F1"],
+      colors: [
+        "cyan", 
+        "white", 
+        "orange", 
+        "#FF54F1"
+      ],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }

@@ -121,10 +121,10 @@
             <v-icon left color="blue">mdi-message-alert</v-icon> Update status
           </v-list-item>
           <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
-            <v-icon left color="red">mdi-delete-alert</v-icon> Wipe strokes
+            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe strokes
           </v-list-item>
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
-            <v-icon left color="red">mdi-file-remove-outline</v-icon> Wipe PDFs
+            <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe PDFs
           </v-list-item>
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="purple">mdi-content-save-all</v-icon> Save boards
@@ -156,24 +156,23 @@
           >
             <template v-slot:blackboard-toolbar>
               <!-- For switching between different blackboards -->
-              <div v-if="room" class="d-flex">
+              <div v-if="room" class="d-flex ml-2">
                 <div v-if="activeBoardID" style="width: 80px">
                   <v-select 
+                    dense
                     :value="activeBoardID"
                     :items="room.blackboards"
                     @change="(id) => activeBoardID = id"
-                    hide-details active-class="accent--text" color="accent" item-color="accent"
+                    hint="board number"
+                    persistent-hint
+                    active-class="accent--text" color="accent" item-color="accent"
                   >
-                    <template v-slot:prepend>
-                      <p class="pt-1 pl-2">#</p>
-                    </template>
-
                     <!-- Override default behavior: show the board number instead of the blackboardID -->
                     <template v-slot:selection="{ item }">
-                      <p class="mb-0">{{ getBoardNumberFromID(item) }}</p>
+                      <p class="mb-0">{{ "#" + getBoardNumberFromID(item) }}</p>
                     </template>
                     <template v-slot:item="{ item }">
-                      <p>{{ getBoardNumberFromID(item) }}</p>
+                      <p>{{ "#" + getBoardNumberFromID(item) }}</p>
                     </template>
                     <!-- Can create a new board here -->
                     <template v-slot:append-item>

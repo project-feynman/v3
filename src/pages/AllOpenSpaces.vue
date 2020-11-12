@@ -73,35 +73,24 @@
         </ul>
         
         <br>
-
         <h2>
-          How to use
+          Tips
         </h2>
-        <p>
-          If you're a new user, you will be in the "Example class". To add a real class, click the plus icon on the top left corner. 
-          To navigate to an open space and its corresponding rooms, simply click on it. 
-          To connect to audio, look at the bottom left. 
-          To visit the library, click on the top right. 
-          (By the way, a visual tutorial is coming...)
-        </p>
+          <ul>
+            <li>
+              Sometimes, swiping left / right on the screen triggers the Safari to go back a page. 
+              Although I cannot disable it from the website, you can disable that behavior. I'll soon link the 
+              internet guides, but you can try "Prevent swiping left to go back page Safari".
+            </li> 
+          </ul>
         <br>
 
-      <h2>Not working?</h2>
-      <ul>
-        <li>If the website lags, <u>reload</u>.</li>
-        <li>For more serious problems, quit the browser tab and open a fresh page of explain.mit.edu.</li>
-        <li>If issues persist, do a hard reset (force quit the browser, reset the cache).</li>
-        <li>You can ask me for help via (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
-      </ul>
-
-      <br>
-
-      <h2>Roadmap</h2>
-      <ul>
-        <!-- <li>Audio/video upgrades: a Zoom integration is coming</li> -->
-        <li>Blackboard upgrades: arbitrary colors, backgrounds, undo/redo, color persistence across boards etc.</li>
-        <li>Birds-eye view: for better vision of what's going on on all the boards</li>
-      </ul>
+        <h2>Roadmap</h2>
+        <ul>
+          <!-- <li>Audio/video upgrades: a Zoom integration is coming</li> -->
+          <li>Blackboard upgrades: arbitrary colors, backgrounds, undo/redo, color persistence across boards etc.</li>
+          <li>Birds-eye view: for better vision of what's going on on all the boards</li>
+        </ul>
 
       </div>
       <!-- <div style="font-size: 3.75rem; font-weight: 400">
