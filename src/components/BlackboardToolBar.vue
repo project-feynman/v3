@@ -1,5 +1,6 @@
 <template>
-  <v-app-bar width="605" min-width="605" elevation="5" :height="toolbarHeight" flat color="grey lighten-4" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
+  <v-app-bar width="605" min-width="605" elevation="5" :height="toolbarHeight" color="grey lighten-4" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
         <slot name="record-audio-slot">

@@ -30,7 +30,7 @@
         >
           <template v-slot:touch-slot>
             <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black" small>
-              {{ touchDisabled ? 'Pencil mode' : 'Any mode' }}
+              {{ touchDisabled ? 'Pen mode' : 'Any mode' }}
             </BaseButton>
           </template>
     
