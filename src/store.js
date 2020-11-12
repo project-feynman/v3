@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import db from '@/database.js';
 import { getRandomId } from '@/helpers.js';
-import { SUPER_USER_EMAILS } from "@/CONSTANTS.js";
+import { SUPER_USER_EMAILS, BlackboardTools } from "@/CONSTANTS.js";
 
 Vue.use(Vuex);
 
@@ -51,13 +51,20 @@ export default new Vuex.Store({
     isMicOn: false,
     isCameraOn: false,
     isConnectedToAudio: false,
-    canvasDimensions: { 'height': 0, 'width': 0 },
     dominantSpeaker: {
       id: "",
       name: ""
     },
     roomIDtoParticipants: null,
-    isBoardFullscreen: false
+
+    // blackboard related states
+    isBoardFullscreen: false,
+    currentTool: { 
+      type: BlackboardTools.PEN,
+      color: "cyan",
+      lineWidth: 2
+    },
+    onlyAllowApplePencil: true
   },
   getters: {
     isAdmin: state => {
@@ -65,6 +72,13 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    // so the user's pen color persists across different boards
+    SET_CURRENT_TOOL (state, newVal) {
+      state.currentTool = newVal; 
+    },
+    SET_ONLY_ALLOW_APPLE_PENCIL (state, newVal) {
+      state.onlyAllowApplePencil = newVal; 
+    },
     SET_DOMINANT_SPEAKER_NAME (state, newVal) {
       state.dominantSpeaker.name = newVal; 
     },

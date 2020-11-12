@@ -86,7 +86,7 @@ import {
 } from "@/CONSTANTS.js";
 
 import { getRandomId, isIosSafari } from "@/helpers.js";
-import { mapState, mapMutations } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   props: {
@@ -119,13 +119,7 @@ export default {
       ctx: null,
       bgCanvas: null,
       bgCtx: null,
-      currentTool: { 
-        type: BlackboardTools.PEN,
-        color: "cyan",
-        lineWidth: 2
-      },
       isHoldingLeftClick: false,
-      onlyAllowApplePencil: true, 
 
       // `[...strokesArray]` creates a fresh copy rather than an alias
       localStrokesArray: [...this.strokesArray], 
@@ -144,6 +138,8 @@ export default {
   },
   computed: {
     ...mapState([
+      "currentTool", 
+      "onlyAllowApplePencil",
       "canvasDimensions",
       "isBoardFullscreen"
     ]),
@@ -268,7 +264,7 @@ export default {
       }
       if (this.isDrawingWithApplePencil(e)) { 
         // disable touch drawing so the user doesn't accidentally draw with his/her palm 
-        this.onlyAllowApplePencil = true; 
+        this.$store.commit("SET_ONLY_ALLOW_APPLE_PENCIL", true); 
       }
       this.handleContactWithBlackboard(e, { isInitialContact: true });
     },
@@ -567,7 +563,7 @@ export default {
       window.scrollTo(0, document.body.scrollHeight) // to prevent being scrolled to the middle of page when Exiting the fullscreen
     },
     setTouchDisabled (newBoolean) {
-      this.onlyAllowApplePencil = newBoolean; 
+      this.$store.commit("SET_ONLY_ALLOW_APPLE_PENCIL", newBoolean); 
     },
     checkRepInvariant () {
       if (this.strokesArray.length !== this.localStrokesArray.length) {
@@ -598,9 +594,12 @@ export default {
      * Sets the current tool, which directly affects:
      *   1. The behavior of `setStrokeProperties()`
      *   2. The cursor icon (for laptop users)
+     * 
+     * Let the source of truth be Vuex
      */
     changeTool (tool) {
-      this.currentTool = tool;
+      // set tool
+      this.$store.commit("SET_CURRENT_TOOL", tool); 
       this.createCustomCusor();
     },
     /**

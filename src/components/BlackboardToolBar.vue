@@ -70,7 +70,6 @@ export default {
       // I don't know how to control the internal color 
       // data is nested to conform with Vuetify's internal implementation 
       // so the initial color gets displayed properly
-      color: "cyan",
       colors: ["cyan", "white", "orange", "#FF54F1"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
@@ -93,7 +92,7 @@ export default {
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
-    this.selectPen("cyan");
+    // this.selectPen("cyan");
   },
   destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
@@ -112,7 +111,7 @@ export default {
       this.colorPaletteExpanded = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.NORMAL_ERASER,
-        color: this.color,
+        color: "cyan", // this doesn't actually do anything
         lineWidth: ERASER_STROKE_WIDTH
       });
     },
@@ -120,7 +119,7 @@ export default {
       this.lastEraserNormal = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.STROKE_ERASER,
-        color: this.color,
+        color: "cyan", // doesn't do anything and is ignored
         lineWidth: 5
       });
     },

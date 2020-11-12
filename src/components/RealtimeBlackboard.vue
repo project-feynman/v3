@@ -2,9 +2,9 @@
   <div>
     <v-container v-if="!hasFetchedBlackboardData" style="height: 100%;">
       <!-- TODO: make it full width and height -->
-      <v-skeleton-loader :attrs="{ class: 'mb-6', boilerplate: true, elevation: 2 }" type="image" min-height="1200" width="1200">
+      <!-- <v-skeleton-loader :attrs="{ class: 'mb-6', boilerplate: true, elevation: 2 }" type="image" min-height="1200" width="1200">
       
-      </v-skeleton-loader>
+      </v-skeleton-loader> -->
     </v-container>
 
     <!-- Blackboard -->

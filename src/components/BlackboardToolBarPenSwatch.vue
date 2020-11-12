@@ -32,16 +32,16 @@ export default {
     colors: {
       type: Array,
       required: true
-    }
+    },
   },
   components: { 
     BaseButton,
   },
-	data () {
-		return {
-			selectedColor: this.colors[0],
-		}
-	},
+  computed: {
+    selectedColor () {
+      return this.$store.state.currentTool.color; 
+    }
+  },
   methods: {
     isColorActive (color) {
       return this.isPenActive && this.selectedColor===color;
