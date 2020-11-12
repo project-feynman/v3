@@ -1,6 +1,6 @@
 <template>
   <div style="height: 100%;">
-    <v-app-bar :value="!isBoardFullscreen" app width="285" height="70" extension-height="70" clipped-left color="white" elevation="15">
+    <v-app-bar :value="!isBoardFullscreen" app width="285" height="70" extension-height="70" clipped-left color="white" elevation="10">
       <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px; margin-top: 18px`">
         <img src="/logo.png">
       </v-list-item-avatar>
@@ -30,7 +30,7 @@
       </template>
     </v-app-bar>
   
-    <v-navigation-drawer v-model="isShowingDrawer" class="elevation-10" :permanent="!$route.params.section_id" app width="285" mobile-breakpoint="500" clipped touchless height="100%">      
+    <v-navigation-drawer v-model="isShowingDrawer" class="elevation-5" :permanent="!$route.params.section_id" app width="285" mobile-breakpoint="500" clipped touchless height="100%">      
       <portal-target name="side-drawer">
 
       </portal-target>
@@ -96,6 +96,11 @@ export default {
       deep: true,
       immediate: true,
       handler (newClassID) {
+        if (this.mitClass) {
+          if (newClassID === this.mitClass.id) {
+            return; 
+          }
+        }
         const { class_id } = this.$route.params; 
         console.log("class_id =", class_id);
         this.$store.commit("SET_CLASS", null);
