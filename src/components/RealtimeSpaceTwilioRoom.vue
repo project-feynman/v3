@@ -20,14 +20,12 @@
     <portal to="destination2">
       <template v-if="!twilioInitialized && !isTryingToConnect">
         <p class="yellow--text">Connected to the blackboard</p>
-
-        <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" 
-          block class="mb-4 green white--text"
-        >
-          Connect to audio
-        </v-btn>
-
-        <RealtimeSpaceTwilioRoomTroubleshootPopup/>
+         <v-row class="d-flex" justify="space-around">
+          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" fab color="green" class="white--text" depressed>
+            <v-icon large>mdi-phone</v-icon>
+          </v-btn>
+          <RealtimeSpaceTwilioRoomTroubleshootPopup/>
+        </v-row>
       </template>
 
       <template v-else-if="!twilioInitialized && isTryingToConnect">
@@ -38,9 +36,9 @@
       </template>
 
       <template v-else>
-        <p class="green--text mt-1">Connected to audio and video</p>
+        <p class="green--text mt-1">Connected to audio</p>
       
-        <v-row class="d-flex mb-4" justify="space-around">
+        <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
             <v-icon large>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
           </v-btn>
@@ -57,7 +55,7 @@
             <v-icon large>mdi-phone-hangup</v-icon>
           </v-btn>
         </v-row>
-        <RealtimeSpaceTwilioRoomTroubleshootPopup/>
+        <!-- <RealtimeSpaceTwilioRoomTroubleshootPopup/> -->
       </template>
     </portal>
 

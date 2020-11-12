@@ -291,9 +291,6 @@
     <!-- CONTROL DASHBOARD -->
     <portal to="side-drawer-bottom-region">
       <v-card color="grey darken-1"  >
-        <v-card-title class="mb-0 pb-0 white--text">
-          {{ user.firstName + " " + user.lastName }}
-        </v-card-title>
 
         <v-card-text>
           <!-- User mute/deafen/etc. buttons -->

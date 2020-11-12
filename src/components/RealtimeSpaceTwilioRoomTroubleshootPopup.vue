@@ -5,7 +5,10 @@
       width="500"
     >
       <template v-slot:activator="{ on, attrs }">
-        <v-btn
+          <v-btn @click.stop.prevent="dialog = true" fab color="grey" class="white--text" depressed>
+            <v-icon large>mdi-emoticon-sad</v-icon>
+          </v-btn>
+        <!-- <v-btn
           color="grey"
           dark
           block
@@ -13,12 +16,12 @@
           v-on="on"
         >
           (Not working?)
-        </v-btn>
+        </v-btn> -->
       </template>
 
       <v-card>
         <v-card-title class="headline">
-          How to fix 
+          How to fix audio
         </v-card-title>
 
         <v-card-text>
