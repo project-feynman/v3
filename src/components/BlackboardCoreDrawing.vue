@@ -121,8 +121,8 @@ export default {
       bgCtx: null,
       currentTool: { 
         type: BlackboardTools.PEN,
-        color: "orange",
-        lineWidth: 2.5
+        color: "cyan",
+        lineWidth: 2
       },
       isHoldingLeftClick: false,
       onlyAllowApplePencil: true, 
@@ -211,15 +211,11 @@ export default {
   mounted () {
     this.initializeCanvas();
     // document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
-    window.addEventListener("resize", this.resizeBlackboard, false); 
     
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
     });
-  },
-  destroyed () {
-    window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
     /** 
@@ -228,9 +224,6 @@ export default {
      * All tools (pen, normal eraser, stroke eraser) will generate strokes.  
      * Because every stroke is processed here, UI => strokesArray.
      */
-    ...mapMutations([
-      "SET_CANVAS_DIMENSIONS",
-    ]),
     handleEndOfStroke (newStroke) {
       newStroke.id = getRandomId(); 
       this.localStrokesArray.push(newStroke);
@@ -443,30 +436,42 @@ export default {
      * the function has to also re-render all the pens strokes and background image. 
      */
     resizeBlackboard () {      
+      const changeInternalAndExternalDimensionsOfBlackboard = ({ newWidth, newHeight }) => {
+        this.canvas.style.width = `${newWidth}px`; 
+        this.canvas.style.height = `${newHeight}px`;
+        this.canvas.style.scrollWidth = `${newWidth}px`;
+        this.canvas.style.scrollHeight = `${newHeight}px`;
+
+        this.bgCanvas.style.width = `${newWidth}px`; 
+        this.bgCanvas.style.height = `${newHeight}px`;
+        this.bgCanvas.style.scrollWidth = `${newWidth}px`;
+        this.bgCanvas.style.scrollHeight = `${newHeight}px`;
+      }
+
       const { BlackboardWrapper } = this.$refs; 
       BlackboardWrapper.style.width = "100%"; 
       BlackboardWrapper.style.height = "100%"; 
 
       if (this.sizeAndOrientationMode === "landscape") {
-        this.canvas.style.width = `${LANDSCAPE_WIDTH}px`;
-        this.canvas.style.height = `${LANDSCAPE_WIDTH * PPT_SLIDE_RATIO}px`; 
-        this.bgCanvas.style.width = `${LANDSCAPE_WIDTH}px`;
-        this.bgCanvas.style.height = `${LANDSCAPE_WIDTH * PPT_SLIDE_RATIO}px`; 
+        changeInternalAndExternalDimensionsOfBlackboard({
+          newWidth: LANDSCAPE_WIDTH,
+          newHeight: LANDSCAPE_WIDTH * PPT_SLIDE_RATIO
+        });
       }
       else if (this.sizeAndOrientationMode === "portrait") {
-        this.canvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
-        this.canvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
-        this.bgCanvas.style.width = `${VERTICAL_MODE_WIDTH}px`;
-        this.bgCanvas.style.height = `${VERTICAL_MODE_WIDTH * PDF_RATIO}px`; 
+        changeInternalAndExternalDimensionsOfBlackboard({
+          newWidth: VERTICAL_MODE_WIDTH,
+          newHeight: VERTICAL_MODE_WIDTH * PDF_RATIO
+        });
       }
       else if (this.sizeAndOrientationMode === "massive") {
-         this.canvas.style.width = `${MASSIVE_MODE_DIMENSIONS.WIDTH}px`;
-        this.canvas.style.height = `${MASSIVE_MODE_DIMENSIONS.HEIGHT}px`; 
-        this.bgCanvas.style.width = `${MASSIVE_MODE_DIMENSIONS.WIDTH}px`;
-        this.bgCanvas.style.height = `${MASSIVE_MODE_DIMENSIONS.HEIGHT}px`; 
+        changeInternalAndExternalDimensionsOfBlackboard({
+          newWidth: MASSIVE_MODE_DIMENSIONS.WIDTH,
+          newHeight: MASSIVE_MODE_DIMENSIONS.HEIGHT
+        });
       }
       // quickfix for indicating to user that they are only seeing part of the blackboard
-      this.canvas.style.border = '1px solid orange'
+      this.canvas.style.border = "4px solid orange";
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
@@ -504,7 +509,6 @@ export default {
         this.$root.$emit("show-snackbar", "Error: only image or pdf files are supported for now.");
         return; 
       }
-      console.log("imageFile =", imageFile);
       this.$_renderBackground(URL.createObjectURL(imageFile));
       this.$emit("update:background-image", { blob: imageFile });
     },

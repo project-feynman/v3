@@ -4,16 +4,16 @@
       <!-- <v-list-item @click="isAddCommunityPopupOpen = true">
           <v-icon left color="purple">mdi-plus</v-icon> Add class
         </v-list-item> -->
-      <v-btn class="mr-2" icon v-on="on">
-        <v-icon color="secondary">mdi-plus</v-icon>
+      <v-btn class="mt-2" icon v-on="on">
+        <v-icon color="grey darken-2">mdi-plus</v-icon>
       </v-btn>
     </template>
     <v-card>
-      <v-card-title class="headline">Communities</v-card-title>
+      <v-card-title class="headline">Classes</v-card-title>
       <v-card-text>
         <v-row>
           <v-col cols="3" class="pr-0">
-            <v-subheader class="px-0">Join an existing community</v-subheader>
+            <v-subheader class="px-0">Join an existing class</v-subheader>
           </v-col>
           <v-col cols="7" class="pa-0 d-flex align-center"> 
             <TheSearchBar 
@@ -29,7 +29,7 @@
         
         <v-row>
           <v-col cols="3" class="pr-0">
-            <v-subheader class="px-0">Or create a new community</v-subheader>
+            <v-subheader class="px-0">Or create a new class</v-subheader>
           </v-col>
           <v-col cols="7">
             <v-text-field v-model="nameOfNewCommunity" label="Name" placeholder="e.g. TSR^2, GIRs, 6.036"/>

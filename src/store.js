@@ -96,9 +96,6 @@ export default new Vuex.Store({
     SET_SESSION (state, session) {
       state.session = session;
     },
-    SET_CANVAS_DIMENSIONS (state, dimensions) {
-      state.canvasDimensions = dimensions;
-    },
     SET_ROOM_ID_TO_PARTICIPANTS (state, roomIDtoParticipants) {
       state.roomIDtoParticipants = roomIDtoParticipants;
     },

@@ -476,7 +476,6 @@ export default {
   },
   methods: {
     updateRoomIDToParticipants () {
-      console.log("updateParticipants()")
       const out = {};
       for (const room of this.rooms) {
         const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 

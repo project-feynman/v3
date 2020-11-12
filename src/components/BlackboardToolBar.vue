@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar width="700px" :height="toolbarHeight" flat color="white" class="blackboard-toolbar">
+  <v-app-bar width="700px" :height="toolbarHeight" flat color="grey lighten-2" fixed style="margin-left: auto; margin-right: 0;" rounded elevation="5">
     <v-container fluid class="px-0 py-0">
       <v-row align="center" justify="space-between">
         <v-col class="py-0">
@@ -70,8 +70,8 @@ export default {
       // I don't know how to control the internal color 
       // data is nested to conform with Vuetify's internal implementation 
       // so the initial color gets displayed properly
-      color: "orange",
-      colors: ["orange", "#FF54F1", "cyan", "white"],
+      color: "cyan",
+      colors: ["cyan", "white", "orange", "#FF54F1"],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
@@ -93,7 +93,7 @@ export default {
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
-    this.selectPen("orange");
+    this.selectPen("cyan");
   },
   destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
@@ -104,7 +104,7 @@ export default {
       this.$emit("tool-select", {
         type: BlackboardTools.PEN,
         color: newColor,
-      lineWidth: 2.5
+        lineWidth: 2
       });
     },
     selectNormalEraser () {

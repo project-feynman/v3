@@ -8,7 +8,7 @@
           </p>
           <v-spacer/>
           <div v-if="roomTypes !== []">
-            <BasePopupButton actionName="Create new open space"
+            <BasePopupButton actionName="Create new space"
               :inputFields="['name']" 
               @action-do="({ name }) => createNewRoomType(name)"
             >

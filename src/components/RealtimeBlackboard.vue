@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-container v-if="!hasFetchedBlackboardData">
-      <!-- <h5>if somethingWrong: </h5>
-        <h5>&nbsp&nbsp reloadWebsite()</h5>
-      <h5>&nbsp&nbsp if stillNotWorking:</h5>
-        <h5>&nbsp&nbsp&nbsp&nbsp email("eltonlin@mit.edu")</h5> -->
+    <v-container v-if="!hasFetchedBlackboardData" style="height: 100%;">
+      <!-- TODO: make it full width and height -->
+      <v-skeleton-loader :attrs="{ class: 'mb-6', boilerplate: true, elevation: 2 }" type="image" min-height="1200" width="1200">
+      
+      </v-skeleton-loader>
     </v-container>
 
     <!-- Blackboard -->
@@ -213,7 +213,7 @@ export default {
 
       this.sizeAndOrientationMode = blackboardDoc.data().sizeAndOrientationMode; 
       if (!this.sizeAndOrientationMode) {
-        this.sizeAndOrientationMode = "landscape"; 
+        this.sizeAndOrientationMode = "massive"; 
       }
       if (this.sizeAndOrientationMode === "landscape") {
         this.$root.$emit("show-snackbar", "Board is set to landscape mode"); 
@@ -222,7 +222,7 @@ export default {
         this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
       }
       else if (this.sizeAndOrientationMode === "massive") {
-        this.$root.$emit("show-snackbar", "Board is set to massive mode");
+        this.$root.$emit("show-snackbar", "Board is set to pseudo-infinite mode");
       }
     });
   },
