@@ -175,12 +175,16 @@
                     <template v-slot:item="{ item }">
                       <p>{{ getBoardNumberFromID(item) }}</p>
                     </template>
+                    <!-- Can create a new board here -->
+                    <template v-slot:append-item>
+                      <!-- IDEA: put into the room actions? -->
+                      <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
+                        New board
+                      </BaseButton>
+                    </template>
                   </v-select>
                 </div>
-                <!-- IDEA: put into the room actions? -->
-                <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
-                  New board
-                </BaseButton>
+           
               </div>
             </template>
           </RealtimeBlackboard>

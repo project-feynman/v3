@@ -1,9 +1,9 @@
 <template>
-  <v-app-bar width="700px" elevation="5" :height="toolbarHeight" flat color="grey lighten-2" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="560px" elevation="5" :height="toolbarHeight" flat color="grey lighten-2" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
-      <v-row align="center" justify="space-between">
-        <v-col class="py-0">
-          <v-row justify="start" align="center">
+      <v-row align="center">
+        <!-- <v-col class="py-0">
+          <v-row justify="start" align="center"> -->
             <v-col class="px-1 py-0" cols="auto">
               <PenSwatch 	
                 :colors="colors" 	
@@ -20,8 +20,8 @@
             <slot name="touch-slot">
 
             </slot>
-          </v-row>
-        </v-col>        
+          <!-- </v-row>
+        </v-col>         -->
 
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
           :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
