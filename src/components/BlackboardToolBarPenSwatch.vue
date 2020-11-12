@@ -2,7 +2,7 @@
 	<v-container class="py-0">
     <v-row class="align-center">
       <v-col v-for="color in colors" :key="color" cols="auto" class="px-0 py-1" :class="isColorActive(color) ? 'selected-color':''">
-        <BaseButton color="accent lighten-2" :filled="isColorActive(color)" @click="selectColor(color)" small :data-qa="color">
+        <BaseButton color="grey darken-2" :filled="isColorActive(color)" @click="selectColor(color)" small :data-qa="color">
           <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
             width="16px" height="35px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
             <g>
@@ -19,7 +19,7 @@
         </BaseButton>
       </v-col>
       <v-col class="ma-0 pa-0">
-        <BaseButton @click="selectRandomColor()" small icon="mdi-dice-3" color="black">Random color</BaseButton>
+        <BaseButton @click="selectRandomColor()" small icon="mdi-dice-3" color="black">New color</BaseButton>
       </v-col>
     </v-row>
   </v-container>
@@ -53,7 +53,6 @@ export default {
       this.$emit("select-color", color);
     },
     selectRandomColor () {
-      console.log("selectRandomColor()");
       let letters = "0123456789ABCDEF";
       let color = "#";
       for (let i = 0; i < 6; i++) {

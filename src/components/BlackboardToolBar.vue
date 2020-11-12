@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar width="640" min-width="640" elevation="5" :height="toolbarHeight" flat color="grey lighten-4" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="605" min-width="605" elevation="5" :height="toolbarHeight" flat color="grey lighten-4" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
         <slot name="record-audio-slot">
@@ -7,8 +7,8 @@
         </slot>
 
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-          color="black" small
+          icon="mdi-fullscreen"
+          small
         >
           Fullscreen
         </BaseButton>

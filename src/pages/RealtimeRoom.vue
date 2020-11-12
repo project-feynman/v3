@@ -157,13 +157,13 @@
             <template v-slot:blackboard-toolbar>
               <!-- For switching between different blackboards -->
               <div v-if="room" class="d-flex ml-2">
-                <div v-if="activeBoardID" style="width: 80px">
+                <div v-if="activeBoardID" style="width: 60px">
                   <v-select 
                     dense
                     :value="activeBoardID"
                     :items="room.blackboards"
                     @change="(id) => activeBoardID = id"
-                    hint="board number"
+                    hint="board #"
                     persistent-hint
                     active-class="accent--text" color="accent" item-color="accent"
                   >
