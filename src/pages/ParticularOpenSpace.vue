@@ -556,6 +556,7 @@ export default {
               const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
               promises.push(
                 ref.update({
+                  sizeAndOrientationMode: "portrait", // TODO: use landscape if it's a powerpoint slide
                   backgroundImageDownloadURL: downloadURL
                 })
               );

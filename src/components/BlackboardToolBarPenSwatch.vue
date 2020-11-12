@@ -44,10 +44,9 @@ export default {
   },
   methods: {
     isColorActive (color) {
-      return this.isPenActive && this.selectedColor===color;
+      return this.isPenActive && this.selectedColor === color;
     },
     selectColor (color) {
-      this.selectedColor = color;
       this.$emit('select-color',color)
     }
   }
