@@ -1,45 +1,39 @@
 <template>
   <div style="height: 100%;">
-    <v-app-bar :value="!isBoardFullscreen" app clipped-left color="white" outlined :style="`padding-left: ${24-12}px`">
-      <v-app-bar-nav-icon v-if="$route.params.section_id" @click="isShowingDrawer = !isShowingDrawer"/>
-
-      <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
+    <v-app-bar :value="!isBoardFullscreen" app width="285" height="70" extension-height="70" clipped-left color="white" elevation="15">
+      <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px; margin-top: 18px`">
         <img src="/logo.png">
       </v-list-item-avatar>
-      
+    
       <ClassSwitchDropdown/>
+
       <ClassNewPopup/>
 
-      <v-spacer/>
+      <template v-if="!isBoardFullscreen" v-slot:extension>
+        <div>
+          <v-dialog v-model="showLibrary" fullscreen>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn v-on="on" v-bind="attrs" color="white">
+                <v-icon class="mr-2">mdi-bookshelf</v-icon>
+                Library
+              </v-btn>
+            </template>
 
-      <!-- <GroupChat v-if="mitClass" class="mr-3"/> -->
-
-      <!-- Library -->
-      <v-dialog v-model="showLibrary" fullscreen>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn v-on="on" v-bind="attrs" color="white">
-            <v-icon class="mr-2">mdi-bookshelf</v-icon>
-            Library
-          </v-btn>
-        </template>
-
-        <v-toolbar dark>
-          <v-btn icon dark @click="showLibrary = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-toolbar>
-
-        <ClassLibrary/>
-      </v-dialog>
+            <v-toolbar dark>
+              <v-btn icon dark @click="showLibrary = false">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-toolbar>
+            <ClassLibrary v-if="showLibrary"/>
+          </v-dialog>
+        </div>
+      </template>
     </v-app-bar>
-
-    <v-divider/>
-
-    <v-navigation-drawer v-model="isShowingDrawer" :permanent="!$route.params.section_id" app width="285" mobile-breakpoint="500" clipped touchless height="100%">      
+  
+    <v-navigation-drawer v-model="isShowingDrawer" class="elevation-10" :permanent="!$route.params.section_id" app width="285" mobile-breakpoint="500" clipped touchless height="100%">      
       <portal-target name="side-drawer">
 
       </portal-target>
-
       <template v-slot:append>
         <portal-target name="side-drawer-bottom-region">
 
@@ -47,7 +41,7 @@
       </template>
     </v-navigation-drawer>
 
-    <v-main style="overflow-x: auto;">
+    <v-main style="overflow-x: auto; padding-top: 0">
       <portal-target name="main-content" style="height: 100%;">
         
       </portal-target>
@@ -94,29 +88,27 @@ export default {
       "user",
       "mitClass",
       "isBoardFullscreen"
-    ]),
-    classID () {
-      return this.$route.params.class_id;
-    }
+    ])
   },
   // TODO: refactor this quickfix
   watch: {
-    isBoardFullscreen (newVal) {
-      if (newVal) {
-        this.isShowingDrawer = false; 
-      } else {
-        this.isShowingDrawer = true; 
+    "$route.params.class_id": {
+      deep: true,
+      immediate: true,
+      handler (newClassID) {
+        const { class_id } = this.$route.params; 
+        console.log("class_id =", class_id);
+        this.$store.commit("SET_CLASS", null);
+        this.$store.dispatch("fetchClass", class_id); 
+        db.doc(`users/${this.user.uid}`).update({
+          mostRecentClassID: class_id
+        });
       }
+    },
+    isBoardFullscreen (newVal) {
+      if (newVal) this.isShowingDrawer = false; 
+      else this.isShowingDrawer = true; 
     }
-  },
-  created () {
-    if (this.classID) {
-      this.$store.commit("SET_CLASS", null); // otherwise the other class lingers for 1 second
-      this.$store.dispatch("fetchClass", this.classID);  
-    }
-    db.doc(`users/${this.user.uid}`).update({
-      mostRecentClassID: this.classID
-    });
   },
   methods: {
     async submitBug ({ "Describe your problem": title }) {

@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar width="700px" :height="toolbarHeight" flat color="grey lighten-2" fixed style="margin-left: auto; margin-right: 0;" rounded elevation="5">
+  <v-app-bar width="700px" elevation="5" :height="toolbarHeight" flat color="grey lighten-2" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center" justify="space-between">
         <v-col class="py-0">
