@@ -36,13 +36,13 @@
          <!-- switch between different blackboard sizes -->
         <v-menu v-model="isMenuOpen">
           <template v-slot:activator="{ on }">
-            <BaseButton @click="updateSizeAndOrientationMode('massive')" icon="mdi-selection" small>
+            <BaseButton @click="updateSizeAndOrientationMode('massive')" icon="mdi-selection" small color="orange">
               Large mode
             </BaseButton>
-            <BaseButton @click="updateSizeAndOrientationMode('landscape')" icon="mdi-crop-landscape" small>
+            <BaseButton @click="updateSizeAndOrientationMode('landscape')" icon="mdi-crop-landscape" small color="orange">
               PPT slide mode
             </BaseButton> 
-            <BaseButton @click="updateSizeAndOrientationMode('portrait')" icon="mdi-crop-portrait" small>
+            <BaseButton @click="updateSizeAndOrientationMode('portrait')" icon="mdi-crop-portrait" small color="orange">
               PDF mode
             </BaseButton>
           </template>

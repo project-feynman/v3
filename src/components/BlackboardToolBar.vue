@@ -7,8 +7,7 @@
         </slot>
 
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          icon="mdi-fullscreen"
-          small
+          icon="mdi-fullscreen" small color="orange"
         >
           Fullscreen
         </BaseButton>
