@@ -70,7 +70,7 @@
           {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
         </v-icon>
 
-        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'red'">
+        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'grey'">
           {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
         </v-icon>
       </div>
@@ -305,10 +305,10 @@ export default {
       
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
-      console.log("disconnected", this.roomID);
+      // console.log("disconnected", this.roomID);
     },
     async connectToTwilioRoom () {
-      console.log("setting up =", this.roomID);
+      // console.log("setting up =", this.roomID);
       try {
         this.isTryingToConnect = true; 
         this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
@@ -358,7 +358,7 @@ export default {
         ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
         this.twilioInitialized = true; 
 
-        console.log("set up =", this.roomID);
+        // console.log("set up =", this.roomID);
       } 
       
       catch (error) {
@@ -367,7 +367,7 @@ export default {
 
       finally {
         this.isTryingToConnect = false; 
-        console.log("this.isDestroyed =", this.isDestroyed);
+        // console.log("this.isDestroyed =", this.isDestroyed);
         // FIX FOR ROOM AUDIO INTERFERENCE: ensure cleanup is proper by terminating the asynchronous operation
         // causes an harmless uncaught error https://github.com/twilio/twilio-video.js/issues/532
         if (this.isDestroyed) {

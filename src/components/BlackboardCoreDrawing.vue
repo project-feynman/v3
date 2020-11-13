@@ -467,7 +467,7 @@ export default {
         });
       }
       // quickfix for indicating to user that they are only seeing part of the blackboard
-      this.canvas.style.border = "4px solid orange";
+      this.canvas.style.border = "2px solid orange";
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn

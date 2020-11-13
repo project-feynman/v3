@@ -26,7 +26,7 @@
             <li>For beyond 10+ participants, use Zoom for AV and Explain for blackboard.</li>
             <li>If there are echoes, make sure you have only <u>one unmuted device</u> at any given time.</li>
             <li>If you have low bandwidth, turn off video and hang up whenever you're not using it.</li>
-            <li>We can fix it together if you email me at eltonlin@mit.edu or Facetime me at +503 250 3868</li>
+            <li>If problems persist, you can email me eltonlin@mit.edu or Facetime me at +503 250 3868 and we can solve it together.</li>
           </ul>
         </v-card-text>
         <v-card-actions>

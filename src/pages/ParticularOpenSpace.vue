@@ -1,6 +1,6 @@
 <template>
   <portal v-if="roomTypeDoc" to="side-drawer">
-    <v-card elevation="5">
+    <v-card elevation="0">
       <v-list-item two-line style="padding-top: 0; padding-left: 10x">
         <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
           <v-icon>mdi-arrow-left</v-icon>
@@ -165,7 +165,7 @@
               {{ p.firstName + " " + p.lastName }}
               <v-spacer/>
               {{ "#" + p.currentBoardNumber }} 
-              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'grey'">
                 {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
               </v-icon>
             </p>
@@ -237,7 +237,7 @@
               {{ p.firstName + " " + p.lastName }}
               <v-spacer/>
               {{ "#" + p.currentBoardNumber }} 
-              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'grey'">
                 {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
               </v-icon>
             </p>
