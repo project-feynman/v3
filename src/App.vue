@@ -1,5 +1,7 @@
 <template>
   <v-app>
+    <!-- <MusicPlayer/> -->
+
     <router-view/>
     
     <v-snackbar v-model="snackbar">
@@ -10,7 +12,12 @@
 </template>
 
 <script>
+import MusicPlayer from "@/components/MusicPlayer.vue"; 
+
 export default {
+  components: {
+    MusicPlayer
+  },
   data: () => ({
     snackbar: false,
     snackbarMessage: ""

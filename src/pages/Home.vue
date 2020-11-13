@@ -1,65 +1,5 @@
 <template>
   <div>
-    <!-- <TheAppBar> -->
-         <!-- <MusicPlayer
-        :youtubeURL="randomMusicURL"
-        v-slot="{ play, pause, isPaused }"
-      >
-        <div class="text-center">
-          <v-bottom-sheet inset>
-            <template v-slot:activator="{ on, attrs }">
-              <BaseButton :on="on" icon="mdi-music-clef-treble" color="secondary">
-                Music
-              </BaseButton>
-            </template>
-            
-            <v-card tile>
-              <v-progress-linear
-                :value="50"
-                class="my-0"
-                height="3"
-              />
-              <v-list>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>Raindrop Forest</v-list-item-title>
-                    <v-list-item-subtitle>Maplestory OST</v-list-item-subtitle>
-                  </v-list-item-content>
-
-                  <v-spacer></v-spacer>
-
-                  <v-list-item-icon>
-                    <v-btn icon>
-                      <v-icon>mdi-rewind</v-icon>
-                    </v-btn>
-                  </v-list-item-icon>
-
-                  <v-list-item-icon :class="{ 'mx-5': $vuetify.breakpoint.mdAndUp }">
-                    <v-btn v-if="isPaused" @click="play()" icon>
-                      <v-icon>mdi-play</v-icon> 
-                    </v-btn>
-
-                    <v-btn v-else @click="pause()" icon>
-                      <v-icon>mdi-pause</v-icon>
-                    </v-btn> 
-                  </v-list-item-icon>
-
-                  <v-list-item-icon
-                    class="ml-0"
-                    :class="{ 'mr-3': $vuetify.breakpoint.mdAndUp }"
-                  >
-                    <v-btn icon>
-                      <v-icon>mdi-fast-forward</v-icon>
-                    </v-btn>
-                  </v-list-item-icon>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-bottom-sheet>
-        </div>
-      </MusicPlayer> -->
-    <!-- </TheAppBar> -->
-    
     <v-main>
       <transition name="fade">
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
@@ -80,16 +20,25 @@
                 <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
                   large class="mx-5 purple white--text"
                 >
-                  Enter spaces
+                  ENTER CLASS
                 </v-btn>
+
+                <v-btn large class="grey white--text mx-5">
+                  <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
+                </v-btn>
+
                 <v-btn large @click="$_signOut()" class="mx-5 grey white--text">
                   SIGN OUT
-                </v-btn>
+                </v-btn>          
               </template>
             
               <template v-else>
-                <v-btn @click="$_logInWithTouchstone()" large class="green white--text mx-5">
+                <v-btn @click="$_logInWithTouchstone()" large class="secondary white--text mx-5">
                   GET STARTED
+                </v-btn>
+
+                <v-btn large class="grey white--text mx-5">
+                  <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
                 </v-btn>
 
                 <!-- Email Sign Up -->
@@ -130,24 +79,13 @@
 
           <v-card-text style="font-size: 1rem;">
             <p>
-              Explain is a simple website with many permanent, collaborative rooms with blackboards.
-            <p>
-              Instructors from 8.01, 18.01 and ESG use it for problem-solving sessions and Office Hours, 
-              because they like the <u>smooth transitions</u> when moving between rooms and boards. 
+              Explain is an experimental web app with many blackboard rooms. 
             </p>
-
-            <p>
-              Students don't have strong preferences between Zoom, Discord, ExplainEverything, Explain, etc. because 
-              most study session are scheduled rather than serendipitous, and coordinated via group chats; it makes no difference joining a Zoom Link, Discord Channel or ExplainEverything room. 
-              Eventually, we hope that pset collaboration, Office Hours and fun activities will be <u>unified</u> on explain.mit.edu,
-              thereby maximizing the chance of serendipitous interactions.
-            </p>
-
-            <p>
-              The fact that Explain is a fast-changing, <a href="https://github.com/feynman-project/explain" target="_blank">open-source</a> 
-              prototype is both its biggest weakness and strength. It's less reliable and feature-complete than established products, but it has the essential features, special features (e.g. lightweight videos),
-              and evolves rapidly because the student and staff developers work closely with the student and staff users.
-            </p>
+            <ul>
+              <li><b>Phase I (2020):</b> Create a vibrant, electrifying place where people can help each other and have fun</li>
+              <li><b>Phase II (2021):</b> Build infrastructure to enable the new era of lightweight visual explanations</li>
+              <li><b>Phase III (2022):</b> Scale the platform to accelerate the world's transition into open learning</li>
+            </ul>
           </v-card-text>
         </v-card>
 
@@ -181,7 +119,6 @@ import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
 import BaseButton from "@/components/BaseButton.vue";
-import MusicPlayer from "@/components/MusicPlayer.vue"; 
 
 export default {
   name: "HomePage",
@@ -193,8 +130,7 @@ export default {
     TheAppBar,
     TheDropdownMenu,
     TheSearchBar,
-    BaseButton,
-    MusicPlayer
+    BaseButton
   },
   mixins: [
     AuthHelpers,
@@ -202,12 +138,6 @@ export default {
   ],
   data () {
     return {
-      favoriteMusicPieces: [
-        "https://www.youtube.com/watch?v=DhUdOO9UNwY", // raindrop forest
-        "https://www.youtube.com/watch?v=DmPMZGBBmxk" // sarabande Holberg Suite
-        // "https://www.youtube.com/watch?v=j1wQ8ZMZq60", // Holberg Suite
-        // "https://www.youtube.com/watch?v=QAxz16D4BlE", // Schubert Impromptu No. 3
-      ],
       schoolClasses: [],
       demoVideo: null,
       demoVideo2: null,
@@ -224,11 +154,6 @@ export default {
       "user", 
       "isFetchingUser"
     ]),
-    randomMusicURL () {  
-      const n = this.favoriteMusicPieces.length; 
-      const randomNumber = Math.floor(Math.random() * (n + 1));
-      return this.favoriteMusicPieces[randomNumber];
-    },
     userRef () { 
       return db.collection("users").doc(this.user.uid); 
     }
