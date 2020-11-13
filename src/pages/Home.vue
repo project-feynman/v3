@@ -34,7 +34,7 @@
             
               <template v-else>
                 <v-btn @click="$_logInWithTouchstone()" large class="secondary white--text mx-5">
-                  GET STARTED
+                  TOUCHSTONE LOGIN
                 </v-btn>
 
                 <v-btn large class="grey white--text mx-5">
