@@ -16,8 +16,7 @@
 
           <ClassSwitchDropdown/>
           <!-- FIXME: menu disappears because dropdown disappearing will cause new popup to disappear -->
-          <!-- <ClassNewPopup/> -->
-          
+          <ClassNewPopup/>
         </div>
 
         <v-dialog v-model="showLibrary" fullscreen>

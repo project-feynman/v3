@@ -513,7 +513,10 @@ export default {
         for (const boardID of room.blackboards) {
           const boardDbPath = `/classes/${this.classID}/blackboards/${boardID}`;
           promises.push(
-            db.doc(`${boardDbPath}`).update({ backgroundImageDownloadURL: "" })
+            db.doc(boardDbPath).update({ 
+              backgroundImageDownloadURL: "",
+              sizeAndOrientationMode: "massive" // PDF and horizontal mode are more special cases
+            })
           );
           promises.push(
             deleteAtPath(`${boardDbPath}/strokes`)

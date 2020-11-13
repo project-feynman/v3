@@ -15,6 +15,10 @@ const router = new Router({
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
+    { 
+      path: "/get-started",
+      component: () => import(/* webpackChunkName: "home" */ "./pages/IntersectionAPIPlayground.vue")
+    },
     {
       path: "/explanation/:expl_id/class/:class_id",
       component: () => import(/* webpackChunkName: "home" */ "./components/ClassPageSeePost.vue"),
@@ -23,10 +27,6 @@ const router = new Router({
           postID: route.params.expl_id
         };
       }
-    },
-    {
-      path: "/intersection-api-playground",
-      component: () => import(/* webpackChunkName: "home" */ "./pages/IntersectionAPIPlayground.vue")
     },
     {
       path: "/canvas-playground",
