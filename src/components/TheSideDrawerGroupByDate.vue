@@ -95,7 +95,7 @@ export default {
       }
     },
     weeksMounted: function (newVal) {
-      if ( newVal === true ) {
+      if (newVal === true) {
         this.openedWeeks.push(0);
         this.openThisWeek(this.weeks[0]); // This should have been handled by the watch hook on openedWeeks, but strangely doesn't
       }
@@ -174,7 +174,7 @@ export default {
       // const endTime = endDate.toISOString();
       const startDate = week.start.toISOString();
       const endDate = week.end.toISOString();
-      const postsQuery = db.collection(`classes/${this.mitClass.id}/${this.collection}`)
+      const postsQuery = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`)
         .where("date", ">=", startDate)
         .where("date", "<=", endDate)
         .orderBy('date', 'desc');
@@ -203,9 +203,11 @@ export default {
       });
     },
     getFolder (post) {
-      const folderIndex = this.mitClass.tags.findIndex(tag => tag.id === post.tag);
-      if (folderIndex === -1) return false;
-      return this.mitClass.tags[folderIndex].name;
+      return false; 
+      // if (!this.mitClass.tags) return false; 
+      // const folderIndex = this.mitClass.tags.findIndex(tag => tag.id === post.tag);
+      // if (folderIndex === -1) return false;
+      // return this.mitClass.tags[folderIndex].name;
     },
     getDate (post) {
       const theDate = moment(post.date);

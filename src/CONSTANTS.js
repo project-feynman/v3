@@ -8,15 +8,15 @@ export const PPT_SLIDE_RATIO = 3/4;
 export const PDF_RATIO = 11/8.5; 
 
 export const MASSIVE_MODE_DIMENSIONS = {
-  HEIGHT: 3000,
-  WIDTH: 4000
+  HEIGHT: 2500,
+  WIDTH: 2500
 };
 
 export const ERASER_STROKE_WIDTH = 25;
 
 export const SUPER_USER_EMAILS = [
   "eltonlin@mit.edu",
-  "eltonlin1998@gmail.com",
+  // "eltonlin1998@gmail.com", gmail is commented out so I can test the non-admin behavior
   // 8.01 
   // S1~2
   "josephf@mit.edu",
@@ -109,7 +109,7 @@ export const BlackboardTools = {
 }
 
 export const navbarHeight = 64; 
-export const toolbarHeight = 64;
+export const toolbarHeight = 52;
 export const aspectRatio = 9/16;
 export const epsilon = 20;
 export const audioPlayerHeight = 52;

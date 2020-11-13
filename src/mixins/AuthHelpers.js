@@ -83,13 +83,14 @@ export default {
      */
     $_createAccount ({ uid, email, firstName, lastName, kind }) {
       return new Promise(async resolve => {
+        const exampleClassID = "lvzQqyZIV1wjwYnRV9hn"; 
         await db.collection("users").doc(uid).set({
           uid,
           email,
           firstName,
           lastName,
           kind: kind ? kind : null,
-          enrolledClasses: []
+          enrolledClasses: [{ id: exampleClassID, name: "Example class", description: "For new users to explore" }]
         });
         resolve();
       });

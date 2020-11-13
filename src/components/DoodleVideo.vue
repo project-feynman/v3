@@ -123,6 +123,9 @@ export default {
     const { AudioPlayer } = this.$refs;
     AudioPlayer.src = "";
     window.removeEventListener("resize", this.handleResize);
+
+    // clean up the recursive syncing
+    clearTimeout(this.recursiveSyncer);
   },
   methods: {
     changePlaybackSpeed (speed) {
@@ -211,13 +214,15 @@ export default {
     },
     renderFrame ({ strokeIndex, pointIndex }) {
       const stroke = this.strokesArray[strokeIndex];
+      const lineWidth = stroke.isErasing ? ERASER_STROKE_WIDTH : stroke.lineWidth; 
+      const normalizedLineWidth = lineWidth * (this.canvas.scrollWidth / 1000);
       this.$_connectTwoPoints(
         stroke.points, 
         pointIndex, 
         stroke.isErasing, 
         this.ctx,
         stroke.color,
-        stroke.isErasing ? ERASER_STROKE_WIDTH : stroke.width
+        normalizedLineWidth
       );
     }
   }

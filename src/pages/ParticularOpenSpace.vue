@@ -1,125 +1,125 @@
 <template>
   <portal v-if="roomTypeDoc" to="side-drawer">
-    <v-card elevation="5">
-    <v-list-item two-line style="padding-top: 0; padding-left: 10x">
-      <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
-        <v-icon>mdi-arrow-left</v-icon>
-      </v-btn>
+    <v-card elevation="0">
+      <v-list-item two-line style="padding-top: 0; padding-left: 10x">
+        <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
+          <v-icon>mdi-arrow-left</v-icon>
+        </v-btn>
 
-      <v-list-item-content>
-        <v-list-item-title style="font-size: 1.15rem; opacity: 70%">
-          {{ roomTypeDoc.name }}
-        </v-list-item-title>
-      </v-list-item-content>
+        <v-list-item-content>
+          <v-list-item-title style="font-size: 1.15rem; opacity: 70%">
+            {{ roomTypeDoc.name }}
+          </v-list-item-title>
+        </v-list-item-content>
 
-      <!-- The triple dot dropdown menu with actions that affects the whole class -->
-      <v-menu v-if="isAdmin" v-model="isMenuOpen" bottom nudge-left offset-y>
-        <template v-slot:activator="{ on, attrs }">
+        <!-- The triple dot dropdown menu with actions that affects the whole class -->
+        <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
+          <template v-slot:activator="{ on, attrs }">
 
-        <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
-          Space actions
-        </BaseButton>
-        </template>
+          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+            Space actions
+          </BaseButton>
+          </template>
 
-        <v-list>
-          <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
-            <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
-          </v-list-item>
+          <v-list>
+            <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
+              <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
+            </v-list-item>
 
-          <BasePopupButton>
-            <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item @click.stop="openPopup()">
-                <v-icon left color="black">mdi-file-pdf</v-icon> Set problem
-              </v-list-item>
-            </template>
-            <template v-slot:message-to-user>
-              <p>If you upload a multi-paged PDF, each page will be seeded in sequence in every room. 
-                For example, if you upload a PDF document with 5 problems, then every room's board #1 ~ #5 will be those problems. 
-              </p>
+            <BasePopupButton>
+              <template v-slot:activator-button="{ on, openPopup }">
+                <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
+                  <v-icon left color="black">mdi-file-pdf</v-icon> Set problem
+                </v-list-item>
+              </template>
+              <template v-slot:message-to-user>
+                <p>If you upload a multi-paged PDF, each page will be seeded in sequence in every room. 
+                  For example, if you upload a PDF document with 5 problems, then every room's board #1 ~ #5 will be those problems. 
+                </p>
 
-              <v-row>
-                <v-col>
-                  Set PDF problem in every room's board # 
-                </v-col>
-                <v-col cols="12" sm="4">
-                  <v-overflow-btn 
-                    label="1"
-                    :items="[1, 2, 3, 4, 5, 6, 7, 8]"
-                    @change="newVal => targetBoardNum = (newVal - 1)"
-                  />
-                </v-col>
-              </v-row>
-            </template>
-            <template v-slot:popup-content="{ closePopup }">
-              <v-btn @click="$refs.fileInput.click()">Select file</v-btn>
-              <input 
-                @change="e => { seedEachRoomWithProblem(e); closePopup(); incrementKeyToDestroy += 1; }" 
-                style="display: none" 
-                type="file" 
-                ref="fileInput"
-                :key="incrementKeyToDestroy"
-              >
-            </template>
-            <!-- QUICKFIX TO MAKE IT INVISIBLE -->
-            <template v-slot:popup-action-buttons>
-              <div></div>
-            </template>
-          </BasePopupButton>
+                <v-row>
+                  <v-col>
+                    Set PDF problem in every room's board # 
+                  </v-col>
+                  <v-col cols="12" sm="4">
+                    <v-overflow-btn 
+                      label="1"
+                      :items="[1, 2, 3, 4, 5, 6, 7, 8]"
+                      @change="newVal => targetBoardNum = (newVal - 1)"
+                    />
+                  </v-col>
+                </v-row>
+              </template>
+              <template v-slot:popup-content="{ closePopup }">
+                <v-btn @click="$refs.fileInput.click()">Select file</v-btn>
+                <input 
+                  @change="e => { seedEachRoomWithProblem(e); closePopup(); incrementKeyToDestroy += 1; }" 
+                  style="display: none" 
+                  type="file" 
+                  ref="fileInput"
+                  :key="incrementKeyToDestroy"
+                >
+              </template>
+              <!-- QUICKFIX TO MAKE IT INVISIBLE -->
+              <template v-slot:popup-action-buttons>
+                <div></div>
+              </template>
+            </BasePopupButton>
 
-          <v-list-item @click="muteParticipantsInRooms(roomTypeDoc.id)">
-            <v-icon left>mdi-volume-mute</v-icon> Mute everyone
-          </v-list-item>
+            <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
+              <v-icon left>mdi-volume-mute</v-icon> Mute everyone
+            </v-list-item>
 
-          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
-            <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item @click.stop="openPopup()">
-                <v-icon left color="black">mdi-shuffle-variant</v-icon> Shuffle everyone
-              </v-list-item>
-            </template>
-            <template v-slot:message-to-user>
-              <v-row>
-                <v-col cols="12" sm="4">
-                  <v-overflow-btn 
-                    label="3"
-                    :items="[2, 3, 4, 5]"
-                    @change="groupSize => groupSize = groupSize"
-                  />
-                </v-col>
-                <v-col>
-                  <h3 class="mt-5">
-                    people per group
-                  </h3>
-                </v-col>
-              </v-row>
-            </template> 
-          </BasePopupButton>
+            <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+              <template v-slot:activator-button="{ on, openPopup }">
+                <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                  <v-icon left color="black">mdi-shuffle-variant</v-icon> Shuffle everyone
+                </v-list-item>
+              </template>
+              <template v-slot:message-to-user>
+                <v-row>
+                  <v-col cols="12" sm="4">
+                    <v-overflow-btn 
+                      label="3"
+                      :items="[2, 3, 4, 5]"
+                      @change="groupSize => groupSize = groupSize"
+                    />
+                  </v-col>
+                  <v-col>
+                    <h3 class="mt-5">
+                      people per group
+                    </h3>
+                  </v-col>
+                </v-row>
+              </template> 
+            </BasePopupButton>
 
-          <!-- <v-list-item @click="clearRoomStatuses(roomTypeDoc.id)">
-            <v-icon left color="red">mdi-comment-remove</v-icon> Reset statuses
-          </v-list-item> -->
+            <!-- <v-list-item @click="clearRoomStatuses(roomTypeDoc.id)">
+              <v-icon left color="red">mdi-comment-remove</v-icon> Reset statuses
+            </v-list-item> -->
 
-          <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
-            <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item @click.stop="openPopup()">
-                <v-icon left color="red">mdi-delete</v-icon> Reset everything
-              </v-list-item>
-            </template>
-            <template v-slot:message-to-user>
-              Are you sure you want to reset absolutely everything? 
-              This will reset the blackboards and status of every single room. 
-            </template> 
-          </BasePopupButton>
+            <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
+              <template v-slot:activator-button="{ on, openPopup }">
+                <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                  <v-icon left color="red">mdi-delete</v-icon> Reset everything
+                </v-list-item>
+              </template>
+              <template v-slot:message-to-user>
+                Are you sure you want to reset absolutely everything? 
+                This will reset the blackboards and status of every single room. 
+              </template> 
+            </BasePopupButton>
 
-          <!-- <v-list-item disabled>
-            <v-icon left>mdi-music-clef-treble</v-icon> Set music
-          </v-list-item> -->
+            <!-- <v-list-item disabled>
+              <v-icon left>mdi-music-clef-treble</v-icon> Set music
+            </v-list-item> -->
 
-          <v-list-item v-if="isAdmin && rooms.length !== 0" @click="createNewRoom()">
-            <v-icon left>mdi-plus</v-icon> New room
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-list-item>
+            <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
+              <v-icon left>mdi-plus</v-icon> New room
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-list-item>
     </v-card>
 
     <v-divider/>
@@ -165,7 +165,7 @@
               {{ p.firstName + " " + p.lastName }}
               <v-spacer/>
               {{ "#" + p.currentBoardNumber }} 
-              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'grey'">
                 {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
               </v-icon>
             </p>
@@ -237,7 +237,7 @@
               {{ p.firstName + " " + p.lastName }}
               <v-spacer/>
               {{ "#" + p.currentBoardNumber }} 
-              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'red'">
+              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'grey'">
                 {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
               </v-icon>
             </p>
@@ -291,9 +291,6 @@
     <!-- CONTROL DASHBOARD -->
     <portal to="side-drawer-bottom-region">
       <v-card color="grey darken-1"  >
-        <v-card-title class="mb-0 pb-0 white--text">
-          {{ user.firstName + " " + user.lastName }}
-        </v-card-title>
 
         <v-card-text>
           <!-- User mute/deafen/etc. buttons -->
@@ -314,7 +311,6 @@ import { mapState, mapGetters } from "vuex";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
-import SmallAppBar from "@/components/SmallAppBar.vue";
 import firebase from "firebase/app";
 import "firebase/firestore"; 
 import "firebase/functions";
@@ -327,7 +323,6 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    SmallAppBar,
     BaseButton,
     BasePopupButton,
     HandleAnnouncements,
@@ -478,7 +473,6 @@ export default {
   },
   methods: {
     updateRoomIDToParticipants () {
-      console.log("updateParticipants()")
       const out = {};
       for (const room of this.rooms) {
         const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 
@@ -555,15 +549,15 @@ export default {
           const idx = this.targetBoardNum + i; 
           for (const room of this.rooms) {
             console.log("placing image number ", i, "into a room");
-            if (room.blackboards.length <= idx) {
-              break;
+            if (room.blackboards.length > idx) {
+              const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
+              promises.push(
+                ref.update({
+                  sizeAndOrientationMode: "portrait", // TODO: use landscape if it's a powerpoint slide
+                  backgroundImageDownloadURL: downloadURL
+                })
+              );
             } 
-            const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
-            promises.push(
-              ref.update({
-                backgroundImageDownloadURL: downloadURL
-              })
-            );
           }
         }); 
         promises.push(processOneImage);

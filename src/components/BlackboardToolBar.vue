@@ -1,10 +1,25 @@
 <template>
-  <v-app-bar width="700px" :height="toolbarHeight" flat color="white" class="blackboard-toolbar">
+  <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
+  <v-app-bar width="605" min-width="605" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
-      <v-row align="center" justify="space-between">
-        <v-col class="py-0">
-          <v-row justify="start" align="center">
-            <v-col class="px-1 py-0" cols="auto">
+      <v-row align="center">
+        <slot name="record-audio-slot">
+
+        </slot>
+
+        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
+          icon="mdi-fullscreen" small color="orange"
+        >
+          Fullscreen
+        </BaseButton>
+
+        <slot name="more-actions-slot">
+
+        </slot>
+
+        <!-- <v-col class="py-0">
+          <v-row justify="start" align="center"> -->
+            <v-col class="ml-5 px-1 py-0" cols="auto">
               <PenSwatch 	
                 :colors="colors" 	
                 :isPenActive="isPen"	
@@ -13,30 +28,14 @@
             </v-col>
 
             <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
-    
             <BaseButton :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
-              <!-- Eraser -->
+              Eraser
             </BaseButton>
             <slot name="touch-slot">
 
             </slot>
-          </v-row>
-        </v-col>        
-
-        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-          color="black"
-        >
-          Fullscreen
-        </BaseButton>
-
-        <slot name="record-audio-slot">
-
-        </slot>
-
-        <slot name="more-actions-slot">
-
-        </slot>
+          <!-- </v-row>
+        </v-col>         -->
       </v-row>
     </v-container>
   </v-app-bar>
@@ -67,11 +66,12 @@ export default {
     return {
       BlackboardTools,
       toolbarHeight,
-      // I don't know how to control the internal color 
-      // data is nested to conform with Vuetify's internal implementation 
-      // so the initial color gets displayed properly
-      color: "orange",
-      colors: ["orange", "#FF54F1", "cyan", "white"],
+      colors: [
+        "cyan", 
+        "white", 
+        "orange", 
+        "#FF54F1"
+      ],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
@@ -93,7 +93,7 @@ export default {
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
-    this.selectPen("orange");
+    // this.selectPen("cyan");
   },
   destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
@@ -104,7 +104,7 @@ export default {
       this.$emit("tool-select", {
         type: BlackboardTools.PEN,
         color: newColor,
-      lineWidth: 2.5
+        lineWidth: 2
       });
     },
     selectNormalEraser () {
@@ -112,7 +112,7 @@ export default {
       this.colorPaletteExpanded = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.NORMAL_ERASER,
-        color: this.color,
+        color: "cyan", // this doesn't actually do anything
         lineWidth: ERASER_STROKE_WIDTH
       });
     },
@@ -120,7 +120,7 @@ export default {
       this.lastEraserNormal = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.STROKE_ERASER,
-        color: this.color,
+        color: "cyan", // doesn't do anything and is ignored
         lineWidth: 5
       });
     },

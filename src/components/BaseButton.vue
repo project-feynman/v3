@@ -11,14 +11,15 @@
     :loading="loading"
   >
     <div class="d-flex flex-column">
-      <v-icon v-if="icon!=='none'">{{ icon }}</v-icon>
-      <span :class="icon!=='none' ? 'd-none d-sm-block':''">
+      <v-icon v-if="icon !== 'none'">{{ icon }}</v-icon>
+      <span :class="icon !== 'none' ? 'd-none d-sm-block' : ''">
         <slot>
 
         </slot>
       </span>
     </div>
   </v-btn>
+
   <v-btn v-else
     @click="$emit('click')"
     v-on="on"
@@ -31,8 +32,8 @@
     :loading="loading"
   >
     <div class="d-flex flex-column">
-      <v-icon v-if="icon!=='none'">{{ icon }}</v-icon>
-      <span :class="icon!=='none' ? 'd-none d-sm-block':''">
+      <v-icon v-if="icon !=='none'">{{ icon }}</v-icon>
+      <span :class="icon !=='none' ? 'd-none d-sm-block':''">
         <slot>
 
         </slot>

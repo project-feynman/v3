@@ -121,10 +121,10 @@
             <v-icon left color="blue">mdi-message-alert</v-icon> Update status
           </v-list-item>
           <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
-            <v-icon left color="red">mdi-delete-alert</v-icon> Wipe strokes
+            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe strokes
           </v-list-item>
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
-            <v-icon left color="red">mdi-file-remove-outline</v-icon> Wipe PDFs
+            <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe PDFs
           </v-list-item>
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="purple">mdi-content-save-all</v-icon> Save boards
@@ -141,23 +141,9 @@
     
     </portal-target>
 
-    <!-- Tabs for blackboards -->
-    <v-toolbar v-if="!isBoardFullscreen && room">
-      <v-tabs v-model="activeBoardID" active-class="accent--text" slider-color="accent" background-color="white">
-        <template v-for="(board, i) in room.blackboards">
-          <v-tab :href="'#' + board" :key="i">
-            {{ '#' + (i+1) }}
-          </v-tab>
-        </template>
-        <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
-          New board
-        </BaseButton>
-      </v-tabs>
-    </v-toolbar>
-
     <!-- The actual blackboards -->
     <div id="room" class="room-wrapper" style="height: 100%;">
-      <v-tabs-items v-if="blackboardRefs.length !== 0 && room" 
+      <v-tabs-items v-if="blackboardRefs.length !== 0 && room && activeBoardID" 
         v-model="activeBoardID" 
         touchless
       >
@@ -167,7 +153,40 @@
         >
           <RealtimeBlackboard v-if="boardID === activeBoardID"
             :blackboardRef="blackboardRefs[i]"
-          />
+          >
+            <template v-slot:blackboard-toolbar>
+              <!-- For switching between different blackboards -->
+              <div v-if="room" class="d-flex ml-2">
+                <div v-if="activeBoardID" style="width: 60px">
+                  <v-select 
+                    dense
+                    :value="activeBoardID"
+                    :items="room.blackboards"
+                    @change="(id) => activeBoardID = id"
+                    hint="board #"
+                    persistent-hint
+                    active-class="accent--text" color="accent" item-color="accent"
+                  >
+                    <!-- Override default behavior: show the board number instead of the blackboardID -->
+                    <template v-slot:selection="{ item }">
+                      <p class="mb-0">{{ "#" + getBoardNumberFromID(item) }}</p>
+                    </template>
+                    <template v-slot:item="{ item }">
+                      <p>{{ "#" + getBoardNumberFromID(item) }}</p>
+                    </template>
+                    <!-- Can create a new board here -->
+                    <template v-slot:append-item>
+                      <!-- IDEA: put into the room actions? -->
+                      <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
+                        New board
+                      </BaseButton>
+                    </template>
+                  </v-select>
+                </div>
+           
+              </div>
+            </template>
+          </RealtimeBlackboard>
         </v-tab-item>
       </v-tabs-items>
     </div>
@@ -213,7 +232,7 @@ export default {
     RealtimeBlackboard,
     RealtimeSpaceTwilioRoom,
     BaseButton,
-    BaseIconButton,
+    BaseIconButton
   },
   mixins: [
     DatabaseHelpersMixin,
@@ -258,15 +277,9 @@ export default {
   // database => state 
   watch: {
     activeBoardID (newVal) {
-      // update `currentBoardNumber`
-      // assumes this.room.blackboards is hydrated
+      // updates `currentBoardNumber`, assumes `this.room.blackboards` is hydrated
       // correct because `activeBoardID` can only be changed via user interaction, `this.room.blackboards` is defined
-      const { blackboards } = this.room; 
-      for (let i = 0; i < blackboards.length; i++) {
-        if (blackboards[i] === newVal) {
-          this.currentBoardNumber = i + 1;
-        }
-      }
+      this.currentBoardNumber = this.getBoardNumberFromID(newVal);
     },
     room: {
       handler (newVal, oldVal) {
@@ -286,6 +299,7 @@ export default {
   async created () {
     this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
     this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
+      this.activeBoardID = this.room.blackboards[0]; // TODO: perhaps it's not necessary and can be "naturally handled"
       this.snapshotListeners.push(unsubFunc);
     });
   },
@@ -295,6 +309,13 @@ export default {
     }
   },
   methods: { 
+    getBoardNumberFromID (id) {
+      for (const [i, boardID] of this.room.blackboards.entries()) {
+        if (boardID === id) {
+          return i + 1; 
+        }
+      }
+    },
     renameRoom () {
       db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
         name: this.newRoomName
@@ -313,9 +334,7 @@ export default {
       for (const boardID of this.room.blackboards) {
         const boardRef = db.doc(`/classes/${this.classID}/blackboards/${boardID}`);
         promises.push(
-          boardRef.update({
-            backgroundImageDownloadURL: ""
-          })
+          boardRef.update({ backgroundImageDownloadURL: "" })
         );
       }
       await Promise.all(promises); 
@@ -344,9 +363,8 @@ export default {
       this.$root.$emit("show-snackbar", "Wiping the boards (this might take a while)...");
       this.isClearingAllBoards = true; 
       for (const boardID of this.room.blackboards) {
-        const { class_id } = this.$route.params; 
         promises.push(
-          deleteAtPath(`/classes/${class_id}/blackboards/${boardID}/strokes`)
+          deleteAtPath(`/classes/${this.$route.params.class_id}/blackboards/${boardID}/strokes`)
         );
       }
       await Promise.all(promises); 
@@ -415,34 +433,22 @@ export default {
         this.isSavingAllBoards = false; 
       }
     },
-    // state => database
     async createNewBoard () {
       const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       const newID = getRandomId();  
-      const promises = []; 
-
-      promises.push(
+      await Promise.all([
         blackboardsRef.doc(newID).set({
           roomType: '',
-        })
-      );
-      promises.push(
+        }),
         roomRef.update({
           blackboards: firebase.firestore.FieldValue.arrayUnion(newID)
         })
-      );
-      await Promise.all(promises);
-      
-      this.activeBoardID = newID;
-    },
+      ]);   
+      // await this.$nextTick(); // give time to re-compute boardsArray 
+      // this.activeBoardID = newID;
+    }
   }
 };
 </script>
-
-<style scoped>
-.room-wrapper{
-  height: 100px;
-}
-</style>
 

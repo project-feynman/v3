@@ -217,13 +217,15 @@ export default {
     },
     async renderFrame ({ strokeIndex, pointIndex }, instantly = false) {
       const stroke = this.strokesArray[strokeIndex];
+      const lineWidth = stroke.isErasing ? ERASER_STROKE_WIDTH : stroke.lineWidth; 
+      const normalizedLineWidth = lineWidth * (this.canvas.scrollWidth / 1000);
       this.$_connectTwoPoints(
         stroke.points, 
         pointIndex, 
         stroke.isErasing, 
         this.ctx,
         stroke.color,
-        stroke.isErasing ? ERASER_STROKE_WIDTH : stroke.width 
+        normalizedLineWidth
       );
       if (!instantly) {
         await new Promise(resolve => setTimeout(resolve, 10/this.playbackSpeed)); // Here the second parameter 10/this.playbackSpeed determines the number of frames rendered per second

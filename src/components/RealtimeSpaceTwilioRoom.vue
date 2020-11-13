@@ -18,24 +18,22 @@
 
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
-      <template v-if="!twilioInitialized && !isTryingToConnect">
-        <p class="yellow--text">Connected to the blackboard</p>
-        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
-
-        <v-btn @click="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" block class="green white--text">Connect to audio</v-btn>
+      <template v-if="!twilioInitialized">
+        <!-- <p class="yellow--text">Connected to the blackboard</p> -->
+         <v-row class="d-flex" justify="space-around">
+          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" 
+            :loading="isTryingToConnect" fab color="green" class="white--text" depressed
+          >
+            <v-icon large>mdi-phone</v-icon>
+          </v-btn>
+          <RealtimeSpaceTwilioRoomTroubleshootPopup/>
+          <v-btn disabled fab class="white--text">
+            <v-icon>mdi-music-clef-treble</v-icon>
+          </v-btn>
+        </v-row>
       </template>
 
-      <template v-else-if="!twilioInitialized && isTryingToConnect">
-        <p class="yellow--text">
-          Connecting...
-        </p>
-        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
-      </template>
-
-      <template v-else>
-        <p class="green--text mt-1">Connected to audio and video</p>
-        <p class="white--text">(No audio? Reload page. If still not working, force quit Safari (iPad) or clear browser cache (laptop). Finally, check microphone settings in browser (usually an icon near "https://expl...")</p>
-
+      <template v-else-if="twilioInitialized">      
         <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
             <v-icon large>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
@@ -53,6 +51,7 @@
             <v-icon large>mdi-phone-hangup</v-icon>
           </v-btn>
         </v-row>
+        <!-- <RealtimeSpaceTwilioRoomTroubleshootPopup/> -->
       </template>
     </portal>
 
@@ -71,7 +70,7 @@
           {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
         </v-icon>
 
-        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'red'">
+        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'grey'">
           {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
         </v-icon>
       </div>
@@ -132,6 +131,8 @@ import Twilio from "twilio-video";
 import { twilioCreds } from "@/twiliocreds.js";
 import { mapState } from "vuex";
 import Vue from "vue";
+import RealtimeSpaceTwilioRoomTroubleshootPopup from "@/components/RealtimeSpaceTwilioRoomTroubleshootPopup.vue"
+
 export default {
   props: {
     roomID: {
@@ -142,6 +143,9 @@ export default {
   mixins: [
     DatabaseHelpersMixin
   ],
+  components: {
+    RealtimeSpaceTwilioRoomTroubleshootPopup
+  },
   data () {
     return {
       roomDoc: null,
@@ -301,10 +305,10 @@ export default {
       
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
-      console.log("disconnected", this.roomID);
+      // console.log("disconnected", this.roomID);
     },
     async connectToTwilioRoom () {
-      console.log("setting up =", this.roomID);
+      // console.log("setting up =", this.roomID);
       try {
         this.isTryingToConnect = true; 
         this.twilioRoom = await Twilio.connect(this.getAccessToken(), { 
@@ -315,7 +319,9 @@ export default {
         
         // enable auto-join for the future
         this.$store.commit("SET_CAN_HEAR_AUDIO", true); 
-
+        
+        // TODO: this slows down the "fast transitions" that Explain provides
+        // if I'm not switching to Jitsi then I need to figure this one out
         await this.shareAudioTrack(); 
         
         // persist mute and video statuses from the previous room 
@@ -352,7 +358,7 @@ export default {
         ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
         this.twilioInitialized = true; 
 
-        console.log("set up =", this.roomID);
+        // console.log("set up =", this.roomID);
       } 
       
       catch (error) {
@@ -361,7 +367,7 @@ export default {
 
       finally {
         this.isTryingToConnect = false; 
-        console.log("this.isDestroyed =", this.isDestroyed);
+        // console.log("this.isDestroyed =", this.isDestroyed);
         // FIX FOR ROOM AUDIO INTERFERENCE: ensure cleanup is proper by terminating the asynchronous operation
         // causes an harmless uncaught error https://github.com/twilio/twilio-video.js/issues/532
         if (this.isDestroyed) {

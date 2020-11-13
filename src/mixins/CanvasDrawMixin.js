@@ -1,37 +1,38 @@
-import { startCase } from "lodash";
+import _ from "lodash"; 
 
 export default {
   methods: {
     /**
      * Adjust the internal dimensions of the canvas to match its external display dimensions 
-     * Assumes there is a back canvas, and will redraw the background but not the strokes
+     * 
+     * Assumes there is a back canvas, and will redraw the background but not the strokes. 
+     * 
+     * Returns true if the canvas actually had to adjust its internal dimensions, which is useful for re-rendering the strokes with the correct stroke width.
+     * 
+     * Otherwise it returns false. Most of the time this is because rescaleCanvas is used as a quick-fix to prevent the pencil offset bug:
+     * every time the user makes a new stroke, rescaleCanvas is called O(1) if check and would return false most of the time. 
+     *
+     * TODO: debounce?
+     * 
     */
     $_rescaleCanvas () {
       const { width, scrollWidth, height, scrollHeight } = this.canvas; 
       if (Math.round(width) !== Math.round(scrollWidth) || Math.round(height) !== Math.round(scrollHeight)) {
-        // This is a bit sketchy solution, but just here for the time being
-        if (this.isRealtime && (this.canvas.scrollWidth === 0) && this.canvasDimensions.hasOwnProperty('width')) {
-          this.canvas.width = this.canvasDimensions.width; // width = internal coordinate system 1:1, scrollWidth = external dimension
-          this.canvas.height = this.canvasDimensions.height;
-        } else {
-          this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
-          this.canvas.height = this.canvas.scrollHeight;
-          if (this.isRealtime) {
-            this.SET_CANVAS_DIMENSIONS({ 
-              height: this.canvas.height, 
-              width: this.canvas.width
-            });
-          }
-        }
+        this.canvas.width = this.canvas.scrollWidth; // width = internal coordinate system 1:1, scrollWidth = external dimension
+        this.canvas.height = this.canvas.scrollHeight;
         // Note: for the time being the scrollHeights and scrollWidths seem to be synced
         // TODO: find a way for CSS to naturally sync both canvas' scrollHeight and scrollWidth (this will currently be different)
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
 
         this.$_renderBackground(this.imageBlobUrl);
-        return true
+        return true;
       }
-      return false
+      return false;
+    },
+    // I copied and pasted $_rescaleCanvas to this function, so I can debounce it without breaking existing API
+    $_$rescaleCanvas () {
+
     },
     /** 
      * Renders a background if one exists
@@ -74,9 +75,8 @@ export default {
     },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null, ctx = this.ctx) {
       return new Promise(async resolve => {
-        const normalizedWidth = lineWidth * (this.canvas.width / 1000); // scale line width to canvas width
         for (let i = 1; i < points.length; i++) {
-          this.$_connectTwoPoints(points, i, isErasing, ctx, color, normalizedWidth);
+          this.$_connectTwoPoints(points, i, isErasing, ctx, color, lineWidth);
           if (pointPeriod !== null) { // delay for a duration of pointPeriod
             await new Promise(resolve => setTimeout(resolve, pointPeriod));
           }

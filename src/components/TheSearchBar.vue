@@ -7,12 +7,14 @@
     @change="(newClass) => handleChange(newClass)"
     return-object 
     prepend-inner-icon="mdi-magnify"
-    placeholder="Search for a class to join e.g. 8.02"
+    placeholder="e.g. 8.01, 18.01, ESG"
     color="accent" 
     outlined 
     clearable 
     elevate="2"
     ref="VAutocomplete"
+    hide-details
+    dense
   />
 </template>
 

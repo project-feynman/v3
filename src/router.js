@@ -16,10 +16,6 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
     {
-      path: "/get-started",
-      component: () => import(/* webpackChunkName: "home" */ "./pages/GetStarted.vue")
-    },
-    {
       path: "/explanation/:expl_id/class/:class_id",
       component: () => import(/* webpackChunkName: "home" */ "./components/ClassPageSeePost.vue"),
       props: route => {

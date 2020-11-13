@@ -1,88 +1,44 @@
 <template>
   <div>
-    <TheAppBar>
-         <!-- <MusicPlayer
-        :youtubeURL="randomMusicURL"
-        v-slot="{ play, pause, isPaused }"
-      >
-        <div class="text-center">
-          <v-bottom-sheet inset>
-            <template v-slot:activator="{ on, attrs }">
-              <BaseButton :on="on" icon="mdi-music-clef-treble" color="secondary">
-                Music
-              </BaseButton>
-            </template>
-            
-            <v-card tile>
-              <v-progress-linear
-                :value="50"
-                class="my-0"
-                height="3"
-              />
-              <v-list>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>Raindrop Forest</v-list-item-title>
-                    <v-list-item-subtitle>Maplestory OST</v-list-item-subtitle>
-                  </v-list-item-content>
-
-                  <v-spacer></v-spacer>
-
-                  <v-list-item-icon>
-                    <v-btn icon>
-                      <v-icon>mdi-rewind</v-icon>
-                    </v-btn>
-                  </v-list-item-icon>
-
-                  <v-list-item-icon :class="{ 'mx-5': $vuetify.breakpoint.mdAndUp }">
-                    <v-btn v-if="isPaused" @click="play()" icon>
-                      <v-icon>mdi-play</v-icon> 
-                    </v-btn>
-
-                    <v-btn v-else @click="pause()" icon>
-                      <v-icon>mdi-pause</v-icon>
-                    </v-btn> 
-                  </v-list-item-icon>
-
-                  <v-list-item-icon
-                    class="ml-0"
-                    :class="{ 'mr-3': $vuetify.breakpoint.mdAndUp }"
-                  >
-                    <v-btn icon>
-                      <v-icon>mdi-fast-forward</v-icon>
-                    </v-btn>
-                  </v-list-item-icon>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-bottom-sheet>
-        </div>
-      </MusicPlayer> -->
-    </TheAppBar>
-    
     <v-main>
       <transition name="fade">
         <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
-          <v-container>
-            <div class="central-title d-flex justify-center align-center mb-4">
+          <v-container class="py-5">
+            <div class="central-title d-flex justify-center align-center my-4">
               <img src="/logo.png"/>
               <h1 class="text--primary ml-2">
                 explain.mit.edu
               </h1>
             </div>
-            <h3 class="headline font-weight-light">
+              
+            <h3 class="headline font-weight-normal" style="opacity: 70%">
               A vibrant place where students, TAs and professors explain things to each other. 
             </h3>
             <!-- Log in / Sign up -->
-            <v-row class="my-5" justify="center">
+            <v-row class="my-5 py-5" justify="center">
               <template v-if="user">
-                <v-btn @click="$router.push('/get-started')" color="secondary">GET STARTED</v-btn>
-                <!-- <v-btn v-if="user.mostRecentClassID" @click="$router.push(`class/${user.mostRecentClassID}`)">Return</v-btn> -->
+                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+                  large class="mx-5 purple white--text"
+                >
+                  ENTER CLASS
+                </v-btn>
+
+                <v-btn large class="grey white--text mx-5">
+                  <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
+                </v-btn>
+
+                <v-btn large @click="$_signOut()" class="mx-5 grey white--text">
+                  SIGN OUT
+                </v-btn>          
               </template>
             
               <template v-else>
-                <v-btn @click="$_logInWithTouchstone()" text class="green--text">
-                  TOUCHSTONE LOGIN
+                <v-btn @click="$_logInWithTouchstone()" large class="secondary white--text mx-5">
+                  GET STARTED
+                </v-btn>
+
+                <v-btn large class="grey white--text mx-5">
+                  <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
                 </v-btn>
 
                 <!-- Email Sign Up -->
@@ -91,7 +47,7 @@
                   @action-do="user => $_signUp(user)"
                 >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" text class="purple--text">EMAIL SIGNUP</v-btn>
+                    <v-btn v-on="on" large class="mx-5 grey white--text">EMAIL SIGNUP</v-btn>
                   </template>
 
                   <template v-slot:message-to-user>
@@ -106,7 +62,7 @@
                   @action-do="user => $_logIn(user)"
                 >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" text class="purple--text">EMAIL LOGIN</v-btn>
+                    <v-btn v-on="on" large class="mx-5 grey white--text">EMAIL LOGIN</v-btn>
                   </template>
                 </BasePopupButton>
               </template>
@@ -115,10 +71,30 @@
         </v-card>
       </transition>
       
-      <v-container fluid>
+      <v-container fluid class="pa-5">
+        <v-card>
+          <v-card-title>
+            <h3>Introduction</h3>
+          </v-card-title>
+
+          <v-card-text style="font-size: 1rem;">
+            <p>
+              Explain is an experimental web app with many blackboard rooms. 
+            </p>
+            <ul>
+              <li><b>Phase I (2020):</b> Create a vibrant, electrifying place where people can help each other and have fun</li>
+              <li><b>Phase II (2021):</b> Build infrastructure to enable the new era of lightweight visual explanations</li>
+              <li><b>Phase III (2022):</b> Scale the platform to accelerate the world's transition into open learning</li>
+            </ul>
+          </v-card-text>
+        </v-card>
+
         <v-row>
-          <v-col cols="12">
+          <v-col cols="12" lg="6">
             <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
           </v-col>
         </v-row>
       </v-container>           
@@ -130,6 +106,7 @@
 import { mapState } from "vuex";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/auth";
 import db from "@/database.js";
 import TheAppBar from "@/components/TheAppBar.vue";
 import TheDropdownMenu from "@/components/TheDropdownMenu.vue";
@@ -142,7 +119,6 @@ import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
 import BaseButton from "@/components/BaseButton.vue";
-import MusicPlayer from "@/components/MusicPlayer.vue"; 
 
 export default {
   name: "HomePage",
@@ -154,8 +130,7 @@ export default {
     TheAppBar,
     TheDropdownMenu,
     TheSearchBar,
-    BaseButton,
-    MusicPlayer
+    BaseButton
   },
   mixins: [
     AuthHelpers,
@@ -163,12 +138,6 @@ export default {
   ],
   data () {
     return {
-      favoriteMusicPieces: [
-        "https://www.youtube.com/watch?v=DhUdOO9UNwY", // raindrop forest
-        "https://www.youtube.com/watch?v=DmPMZGBBmxk" // sarabande Holberg Suite
-        // "https://www.youtube.com/watch?v=j1wQ8ZMZq60", // Holberg Suite
-        // "https://www.youtube.com/watch?v=QAxz16D4BlE", // Schubert Impromptu No. 3
-      ],
       schoolClasses: [],
       demoVideo: null,
       demoVideo2: null,
@@ -185,39 +154,24 @@ export default {
       "user", 
       "isFetchingUser"
     ]),
-    randomMusicURL () {  
-      const n = this.favoriteMusicPieces.length; 
-      const randomNumber = Math.floor(Math.random() * (n + 1));
-      return this.favoriteMusicPieces[randomNumber];
-    },
     userRef () { 
       return db.collection("users").doc(this.user.uid); 
-    }
-  },
-  watch: {
-    user: {
-      immediate: true,
-      handler (user) {
-        if (user) {
-          if (!user.mostRecentClassID) {
-            this.$router.push("/get-started");
-          } else {
-            this.$router.push(`/class/${user.mostRecentClassID}`);
-          }
-        }
-      } 
     }
   },
   async created () { 
 
     // vision of a vibrant place where people talk around blackboards
     const demoVideoRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/aHaV1yIyaDR4n88pmzDk`);
+
+    // const demoVideoRef3 = db.doc("classes/mDbUrvjy4pe8Q5s5wyoD/posts/I1viW7kVl5UFkfeYZVZy");
+    const demoVideoRef4 = db.doc("classes/lvzQqyZIV1wjwYnRV9hn/posts/LOCgTA76qXcTaW6vgJAc");
     
     // visual comparison of normal videos vs doodle videos
-    const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/R0BgFgLe8BPvUfrfLmCq`);
+    // const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/R0BgFgLe8BPvUfrfLmCq`);
     
     this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
-    this.$_getDoc(demoVideoRef2).then(demoVideo2 => this.demoVideo2 = demoVideo2);
+    // note this is videoRef3!
+    this.$_getDoc(demoVideoRef4).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },
   methods: {
     handleClassPassword () {

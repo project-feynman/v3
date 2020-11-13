@@ -2,9 +2,25 @@
   <div>
     <portal to="side-drawer">
       <v-list>
-        <!-- <div style="padding-top: 12px; padding-left: 24px; padding-bottom: 8px; font-size: 1.15rem">
-          Open Spaces
-        </div> -->
+        <div class="d-flex align-center pt-2 pb-0" style="padding-left: 18px;">
+          <p class="text-uppercase font-weight-bold mb-0" style="margin-top: 2px; opacity: 50%; font-size: 0.8rem;">
+            Open Spaces
+          </p>
+          <v-spacer/>
+          <div v-if="roomTypes !== []">
+            <BasePopupButton actionName="Create new space"
+              :inputFields="['name']" 
+              @action-do="({ name }) => createNewRoomType(name)"
+            >
+              <template v-slot:activator-button="{ on }">
+                <v-btn class="mr-2" icon v-on="on">
+                  <v-icon color="grey darken-2">mdi-plus</v-icon>
+                </v-btn>
+              </template> 
+            </BasePopupButton>
+          </div>
+        </div>
+        
         <!-- 
         <v-dialog v-model="isEditPopupOpen" width="500px">
           <v-card>
@@ -27,14 +43,15 @@
 
         <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
           append :to="(`section/${roomType.id}`)"
-          style="padding-left: 24px; padding-right: 24px" 
+          style="padding-left: 30px; padding-right: 24px" 
         >
-          <v-list-item-content style="font-size: 0.88rem; font-weight: 400; color: #424242; opacity: 81%;">
+          <v-list-item-content style="font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%;">
             {{ roomType.name }}
           </v-list-item-content>
 
           <v-list-item-action>
             <v-row>
+              <!-- TODO: create and update operations with a dropdown menu -->
               <!-- <v-btn @click.stop.prevent="isEditPopupOpen = true; roomTypeID = roomType.id" icon>
                 <v-icon color="grey">mdi-pencil</v-icon>
               </v-btn> -->
@@ -45,48 +62,52 @@
             </v-row>
           </v-list-item-action>
         </v-list-item>
-
-        <div v-if="roomTypes !== []">
-          <BasePopupButton actionName="Create new open space"
-            :inputFields="['name']" 
-            @action-do="({ name }) => createNewRoomType(name)"
-          >
-            <template v-slot:activator-button="{ on }">
-              <v-btn v-if="isAdmin" v-on="on" block text color="grey">
-                <v-icon left>mdi-plus</v-icon>
-                New open space
-              </v-btn>
-            </template> 
-          </BasePopupButton>
-        </div>
       </v-list>
     </portal>
 
-    <!-- TODO -->
     <portal to="main-content">
       <div class="ma-5">
-      <h2>Major changes (please reload the website to receive the latest version)</h2>
-      <ul>
-        <li>On the left-side drawer, you can see which board each person is on and whether they're connected to audio</li>
-      </ul>
+        <h2>New improvements</h2>
+        <ul>
+          <li>
+            The blackboard is easier to use now, with a larger effective space, and is scrollable by default. 
+            Switching between different blackboards will no longer reset your pen settings, and the pen strokes are finer to make it easier to write subscripts.
+          </li>
+          <li>
+            The left-drawer has more effective space, so you can see more rooms and participants at once without having to scroll. 
+          </li>
+        </ul>
+        
+        <br>
 
-      <br>
+        <h2>Tips</h2>
+          <ul>
+            <li>
+              Sometimes, swiping left / right on the screen triggers the Safari to go back a page. 
+              It's possible to disable the behavior, try "Prevent swiping left to go back page Safari".
+            </li> 
+          </ul>
+        <br>
 
-      <h2>Tips</h2>
-      <ul>
-        <li>If you have issues, <u>reload the website</u>.</li>
-        <li>If issues persist, do a hard reset (force quit the browser, reset the cache).</li>
-        <li>Feel free to contact me (email: eltonlin@mit.edu) or (Facetime audio: +886 965 602 567)</li>
-      </ul>
+        <!-- <h2>Other news</h2>
 
-      <br>
-
-      <h2>Roadmap</h2>
-      <ul>
-        <li>Audio/video upgrades: a Zoom integration is coming</li>
-        <li>Blackboard upgrades: arbitrary colors, backgrounds, undo/redo, etc.</li>
-        <li>Birds-eye view: for better vision of what's going on on all the boards</li>
-      </ul>
+        <ul>
+          <li>
+            For the life of me I cannot figure out why the ghost participants problem still remains, and I'm hoping 
+            to get second pair of eyes to take a look at my correctness argument.
+          </li>
+          <li>
+            Explain currently bleeds around $1k per month because of Twilio's video conferencing API it uses. 
+            By switching to Jitsi, an open-source alternative, the cost would become $30/month, a 3000% reduction. 
+            Previously, the switch to lib-jitsi-meet, to ensure the longevity, a major update will come and I'm working on
+            lib-jitsi-vue and testing it. 
+          </li>
+          <li>
+            I'm also going to be teaching web dev for 2021 IAP, which will be based off of lightweight fullstack (see SIPB 2020).
+            The class will take place on Explain itself, and you will work on your own projects. 
+          </li>
+        </ul>
+        <br> -->
 
       </div>
       <!-- <div style="font-size: 3.75rem; font-weight: 400">
@@ -103,7 +124,6 @@ import { getRandomId } from "@/helpers.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
-import SmallAppBar from "@/components/SmallAppBar.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import { mapState, mapGetters } from "vuex";
 import ClassCalendar from "@/components/ClassCalendar.vue"; 
@@ -118,7 +138,6 @@ export default {
     ClassLibrary,
     BasePopupButton,
     BaseButton,
-    SmallAppBar
   },
   data () {
     return {

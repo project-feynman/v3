@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-container v-if="!hasFetchedBlackboardData">
-      <!-- <h5>if somethingWrong: </h5>
-        <h5>&nbsp&nbsp reloadWebsite()</h5>
-      <h5>&nbsp&nbsp if stillNotWorking:</h5>
-        <h5>&nbsp&nbsp&nbsp&nbsp email("eltonlin@mit.edu")</h5> -->
+    <v-container v-if="!hasFetchedBlackboardData" style="height: 100%;">
+      <!-- TODO: make it full width and height -->
+      <!-- <v-skeleton-loader :attrs="{ class: 'mb-6', boilerplate: true, elevation: 2 }" type="image" min-height="1200" width="1200">
+      
+      </v-skeleton-loader> -->
     </v-container>
 
     <!-- Blackboard -->
@@ -32,6 +32,33 @@
             <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
           </template> 
         </BasePopupButton>
+
+         <!-- switch between different blackboard sizes -->
+        <v-menu v-model="isMenuOpen">
+          <template v-slot:activator="{ on }">
+            <BaseButton @click="updateSizeAndOrientationMode('massive')" icon="mdi-selection" small color="orange">
+              Large mode
+            </BaseButton>
+            <BaseButton @click="updateSizeAndOrientationMode('landscape')" icon="mdi-crop-landscape" small color="orange">
+              PPT slide mode
+            </BaseButton> 
+            <BaseButton @click="updateSizeAndOrientationMode('portrait')" icon="mdi-crop-portrait" small color="orange">
+              PDF mode
+            </BaseButton>
+          </template>
+
+          <v-list>
+            <v-list-item @click="updateSizeAndOrientationMode('landscape')">
+              <v-icon left>mdi-crop-landscape</v-icon> Horizontal mode
+            </v-list-item>
+            <v-list-item @click="updateSizeAndOrientationMode('portrait')">
+              <v-icon left>mdi-crop-portrait</v-icon> Vertical mode
+            </v-list-item>
+            <v-list-item @click="updateSizeAndOrientationMode('massive')">
+              <v-icon left>mdi-selection</v-icon> Infinite mode
+            </v-list-item>
+          </v-list>
+        </v-menu>
 
         <v-list-item @click="$refs.fileInput.click()">
           <v-icon left color="black">mdi-image</v-icon>Upload background
@@ -69,29 +96,7 @@
 
         </slot> 
 
-        <!-- use a menu -->
-        <v-menu v-model="isMenuOpen">
-          <template v-slot:activator="{ on }">
-            <BaseButton @click="isMenuOpen = true" 
-              :icon="sizeAndOrientationMode === 'landscape' ? 'mdi-crop-landscape' : sizeAndOrientationMode === 'portrait' ? 'mdi-crop-portrait' : 'mdi-selection'"
-              color="black" small
-            >
-              {{ sizeAndOrientationMode === 'landscape' ? 'Horizontal' : sizeAndOrientationMode === 'portrait' ? 'Vertical' : 'Infinite' }} mode
-            </BaseButton>
-          </template>
-
-          <v-list>
-            <v-list-item @click="updateSizeAndOrientationMode('landscape')">
-              <v-icon left>mdi-crop-landscape</v-icon> Horizontal mode
-            </v-list-item>
-            <v-list-item @click="updateSizeAndOrientationMode('portrait')">
-              <v-icon left>mdi-crop-portrait</v-icon> Vertical mode
-            </v-list-item>
-            <v-list-item @click="updateSizeAndOrientationMode('massive')">
-              <v-icon left>mdi-selection</v-icon> Infinite mode
-            </v-list-item>
-          </v-list>
-        </v-menu>
+       
       </template> 
     </Blackboard> 
   
@@ -213,7 +218,7 @@ export default {
 
       this.sizeAndOrientationMode = blackboardDoc.data().sizeAndOrientationMode; 
       if (!this.sizeAndOrientationMode) {
-        this.sizeAndOrientationMode = "landscape"; 
+        this.sizeAndOrientationMode = "massive"; 
       }
       if (this.sizeAndOrientationMode === "landscape") {
         this.$root.$emit("show-snackbar", "Board is set to landscape mode"); 
@@ -222,7 +227,7 @@ export default {
         this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
       }
       else if (this.sizeAndOrientationMode === "massive") {
-        this.$root.$emit("show-snackbar", "Board is set to massive mode");
+        this.$root.$emit("show-snackbar", "Board is set to pseudo-infinite mode");
       }
     });
   },
