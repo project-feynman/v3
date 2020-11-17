@@ -1,13 +1,9 @@
 <template>
-  <v-dialog v-model="isAddCommunityPopupOpen" max-width="800" persistent>
-    <template v-slot:activator="{ on }">   
-      <!-- <v-list-item @click="isAddCommunityPopupOpen = true">
-        <v-icon left color="purple">mdi-plus</v-icon> Add class
-      </v-list-item> -->
-      <v-btn class="mt-2" icon v-on="on">
-        <v-icon color="grey darken-2">mdi-plus</v-icon>
-      </v-btn>
-    </template>
+  <v-dialog 
+    :value="isAddClassPopupOpen" 
+    @input="(newVal) => $emit('change', newVal)"
+    max-width="800"
+  >
     <v-card>
       <v-card-title class="headline">Classes</v-card-title>
       <v-card-text>
@@ -23,7 +19,7 @@
             />
           </v-col>
           <v-col cols="2">
-            <v-btn @click="isAddCommunityPopupOpen = false" color="secondary" text>DONE</v-btn>
+            <v-btn @click="$emit('change', false)" color="secondary" text>DONE</v-btn>
           </v-col>
         </v-row>
         
@@ -51,6 +47,12 @@ import db from "@/database.js";
 import firebase from "firebase/app";
 
 export default {
+  props: {
+    isAddClassPopupOpen: {
+      type: Boolean,
+      required: true
+    }
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -60,7 +62,6 @@ export default {
   data () {
     return {
       mitClasses: [],
-      isAddCommunityPopupOpen: false,
       nameOfNewCommunity: "",
       descriptionOfNewCommunity: ""
     }

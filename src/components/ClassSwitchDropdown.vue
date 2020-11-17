@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 130px">
+  <div style="width: 190px">
     <v-select 
       :items="$store.state.user.enrolledClasses"
       :value="currentClass" 

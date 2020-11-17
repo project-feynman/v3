@@ -75,6 +75,10 @@
           </li>
           <li>
             The left-drawer has more effective space, so you can see more rooms and participants at once without having to scroll. 
+          </li>   
+          <li>
+            Minor improvements and fixes will be deployed incrementally, but non-minor updates will be deployed with advanced notice. 
+            The next update is scheduled for <u>December 1st</u>. 
           </li>
         </ul>
         

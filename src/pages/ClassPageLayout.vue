@@ -14,9 +14,16 @@
             <img src="/logo.png">
           </v-list-item-avatar>
 
-          <ClassSwitchDropdown/>
-          <!-- FIXME: menu disappears because dropdown disappearing will cause new popup to disappear -->
-          <ClassNewPopup/>
+          <ClassSwitchDropdown>
+            <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
+              <v-icon left class="mr-2">mdi-plus</v-icon> Add class
+            </v-list-item>
+          </ClassSwitchDropdown>
+
+          <ClassNewPopup 
+            :isAddClassPopupOpen="isAddClassPopupOpen"
+            @change="(newVal) => isAddClassPopupOpen = newVal"
+          />
         </div>
 
         <v-dialog v-model="showLibrary" fullscreen>
@@ -86,7 +93,8 @@ export default {
     classParticipantsRef: null,
     isChatOpen: false,
     isShowingDrawer: true,
-    showLibrary: false
+    showLibrary: false,
+    isAddClassPopupOpen: false
   }),
   computed: {
     ...mapState([
