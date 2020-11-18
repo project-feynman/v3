@@ -12,7 +12,7 @@
             </div>
               
             <h3 class="headline font-weight-normal" style="opacity: 70%">
-              A vibrant place where students, TAs and professors explain things to each other. 
+              A vibrant, electrifying place where people do things together
             </h3>
             <!-- Log in / Sign up -->
             <v-row class="my-5 py-5" justify="center">
@@ -67,6 +67,54 @@
                 </BasePopupButton>
               </template>
             </v-row>
+
+            <!-- Time to put in all the dashboard cards here as well as the update news  -->
+            <v-row>
+              <HomeUserGrowthGraph/>
+              <HomeFinanceCostGraph/>
+              <!-- Update -->
+              <v-card max-width="280">
+                <v-card-title>Next update (<HomeNextUpdateCountdownTimer/>)</v-card-title>
+                <!-- FIXME: find a way to not center align the bullet points -->
+                <v-card-text>
+                  <v-list>
+                    <v-list-item>
+                      <ul>
+                      <li>Fix ghost participants</li>
+                      <li>Explain becomes place-centric: everybody must be in <u>some room</u></li>
+                      <li>Simplify the UI</li>
+                      <li>Music</li>
+                      </ul>
+                    </v-list-item>
+        
+                  </v-list>
+                  <!-- <ul>
+                    <li>IAP web dev course: lightweight fullstack</li>
+                    <li>Maximize the screen space for the blackboard</li>
+                    <li>Next update: December 1st</li>
+                  </ul> -->
+                </v-card-text>
+              </v-card>
+
+              <v-card max-width="280">
+                <v-card-title>Other news</v-card-title>
+                <v-card-text>
+                  <v-list>
+                    <v-list-item>
+                      If you'd like to learn web dev, sign up for Explain Engineering's lightweight fullstack for IAP
+                    </v-list-item>
+                    <v-list-item>
+                    </v-list-item>
+                    <v-list-item>Explain is interviewing with YC on Dec. 5th for standard</v-list-item>
+                  </v-list>
+                  <!-- <ul>
+                    <li>IAP web dev course: lightweight fullstack</li>
+                    <li>Maximize the screen space for the blackboard</li>
+                    <li>Next update: December 1st</li>
+                  </ul> -->
+                </v-card-text>
+              </v-card>
+            </v-row>
           </v-container>
         </v-card>
       </transition>
@@ -119,6 +167,9 @@ import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
 import BaseButton from "@/components/BaseButton.vue";
+import HomeUserGrowthGraph from "@/components/HomeUserGrowthGraph.vue";
+import HomeFinanceCostGraph from "@/components/HomeFinanceCostGraph.vue";
+import HomeNextUpdateCountdownTimer from "@/components/HomeNextUpdateCountdownTimer.vue"; 
 
 export default {
   name: "HomePage",
@@ -130,7 +181,10 @@ export default {
     TheAppBar,
     TheDropdownMenu,
     TheSearchBar,
-    BaseButton
+    BaseButton,
+    HomeUserGrowthGraph,
+    HomeFinanceCostGraph,
+    HomeNextUpdateCountdownTimer
   },
   mixins: [
     AuthHelpers,
