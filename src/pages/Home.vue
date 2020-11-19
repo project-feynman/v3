@@ -2,59 +2,70 @@
   <div>
     <v-main>
       <transition name="fade">
-        <v-card v-if="!isFetchingUser" fluid class="mx-auto text-center">
+        <v-card v-if="!isFetchingUser" fluid class="mx-auto">
           <v-container class="py-5">
             <div class="central-title d-flex justify-center align-center my-4">
-              <img src="/logo.png"/>
-              <h1 class="text--primary ml-2">
-                explain.mit.edu
-              </h1>
+              <img src="/logo.png" class="mt-5">
+              <div>
+                <h1 class="text--primary ml-5">
+                  Explain
+                </h1>
+                <h3 class="headline font-weight-normal ml-5" style="opacity: 70%">
+                  A vibrant, electrifying place where people solve problems together
+                </h3>
+              </div>
             </div>
               
-            <h3 class="headline font-weight-normal" style="opacity: 70%">
-              A vibrant, electrifying place where people do things together
-            </h3>
+     
             <!-- Log in / Sign up -->
-            <v-row class="my-5 py-5" justify="center">
+            <v-row class="my-5 pt-2" justify="center">
               <template v-if="user">
                 <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
-                  large class="mx-5 purple white--text"
+                  large class="mr-5 purple white--text"
                 >
-                  ENTER CLASS
+                  <v-icon class="mr-2">mdi-account-group</v-icon>
+                  ENTER OPEN SPACES
                 </v-btn>
 
-                <v-btn large class="grey white--text mx-5">
+                <v-btn large class="black white--text mx-5">
+                  <v-icon class="mr-2">mdi-gitlab</v-icon>
                   <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
                 </v-btn>
 
                 <v-btn large @click="$_signOut()" class="mx-5 grey white--text">
+                  <v-icon class="mr-2">mdi-logout</v-icon>
                   SIGN OUT
                 </v-btn>          
               </template>
             
               <template v-else>
-                <v-btn @click="$_logInWithTouchstone()" large class="secondary white--text mx-5">
-                  TOUCHSTONE LOGIN
+                <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text mx-5">
+                  <v-icon class="mr-2">mdi-school</v-icon>
+                  LOG IN WITH TOUCHSTONE
                 </v-btn>
 
-                <v-btn large class="grey white--text mx-5">
+                <v-btn large class="black white--text mx-5">
+                  <v-icon class="mr-2">mdi-gitlab</v-icon>
                   <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
                 </v-btn>
 
                 <!-- Email Sign Up -->
-                <BasePopupButton actionName="Sign up with email" 
+                <!-- <BasePopupButton actionName="Sign up with email" 
                   :inputFields="['first name', 'last name', 'email', 'password']" 
                   @action-do="user => $_signUp(user)"
                 >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" large class="mx-5 grey white--text">EMAIL SIGNUP</v-btn>
+                    <v-btn v-on="on" large class="mx-5 grey white--text">
+                      <v-icon class="mr-2">mdi-email</v-icon>
+                      EMAIL SIGNUP
+                    </v-btn>
                   </template>
 
                   <template v-slot:message-to-user>
                     Email sign-up is a back-up option if you have trouble with MIT Touchstone. 
                     To prevent unexpected behavior, use a <u>non-MIT</u> email address to sign up. 
                   </template>
-                </BasePopupButton>
+                </BasePopupButton> -->
 
                 <!-- Email Log In -->
                 <BasePopupButton actionName="Log in with email" 
@@ -62,64 +73,39 @@
                   @action-do="user => $_logIn(user)"
                 >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" large class="mx-5 grey white--text">EMAIL LOGIN</v-btn>
+                    <v-btn v-on="on" large class="mx-5 grey white--text">
+                      <v-icon class="mr-2">mdi-email</v-icon>
+                      EMAIL LOGIN
+                    </v-btn>
                   </template>
                 </BasePopupButton>
               </template>
-            </v-row>
-
-            <!-- Time to put in all the dashboard cards here as well as the update news  -->
-            <v-row>
-              <HomeUserGrowthGraph/>
-              <HomeFinanceCostGraph/>
-              <!-- Update -->
-              <v-card max-width="280">
-                <v-card-title>Next update (<HomeNextUpdateCountdownTimer/>)</v-card-title>
-                <!-- FIXME: find a way to not center align the bullet points -->
-                <v-card-text>
-                  <v-list>
-                    <v-list-item>
-                      <ul>
-                      <li>Fix ghost participants</li>
-                      <li>Explain becomes place-centric: everybody must be in <u>some room</u></li>
-                      <li>Simplify the UI</li>
-                      <li>Music</li>
-                      </ul>
-                    </v-list-item>
-        
-                  </v-list>
-                  <!-- <ul>
-                    <li>IAP web dev course: lightweight fullstack</li>
-                    <li>Maximize the screen space for the blackboard</li>
-                    <li>Next update: December 1st</li>
-                  </ul> -->
-                </v-card-text>
-              </v-card>
-
-              <v-card max-width="280">
-                <v-card-title>Other news</v-card-title>
-                <v-card-text>
-                  <v-list>
-                    <v-list-item>
-                      If you'd like to learn web dev, sign up for Explain Engineering's lightweight fullstack for IAP
-                    </v-list-item>
-                    <v-list-item>
-                    </v-list-item>
-                    <v-list-item>Explain is interviewing with YC on Dec. 5th for standard</v-list-item>
-                  </v-list>
-                  <!-- <ul>
-                    <li>IAP web dev course: lightweight fullstack</li>
-                    <li>Maximize the screen space for the blackboard</li>
-                    <li>Next update: December 1st</li>
-                  </ul> -->
-                </v-card-text>
-              </v-card>
             </v-row>
           </v-container>
         </v-card>
       </transition>
       
-      <v-container fluid class="pa-5">
+      <v-container fluid justify="center" class="pa-5">
+           <!-- Time to put in all the dashboard cards here as well as the update news  -->
+            <v-row>
+              <!-- <HomeUserGrowthGraph/>
+              <HomeFinanceCostGraph/> -->
+              <HomeUserGrowthMoneyBurnGraph/>
+              <!-- Update -->
+              <v-card max-width="550">
+                <v-card-title>News</v-card-title>
+                <!-- FIXME: find a way to not center align the bullet points -->
+                <v-card-text>
+                  <ul>
+                    <li>The "Ghost User" update is coming in: <HomeNextUpdateCountdownTimer/></li>
+                    <li>Explain is interviewing with Y-Combinator on December 5th.</li>
+                    <li>Explain is offering a web dev class over IAP called "Lightweight Fullstack", more details soon...</li>
+                  </ul>
+                </v-card-text>
+              </v-card>
+            </v-row>
+     
+
         <v-card>
           <v-card-title>
             <h3>Introduction</h3>
@@ -170,6 +156,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import HomeUserGrowthGraph from "@/components/HomeUserGrowthGraph.vue";
 import HomeFinanceCostGraph from "@/components/HomeFinanceCostGraph.vue";
 import HomeNextUpdateCountdownTimer from "@/components/HomeNextUpdateCountdownTimer.vue"; 
+import HomeUserGrowthMoneyBurnGraph from "@/components/HomeUserGrowthMoneyBurnGraph.vue";
 
 export default {
   name: "HomePage",
@@ -184,7 +171,8 @@ export default {
     BaseButton,
     HomeUserGrowthGraph,
     HomeFinanceCostGraph,
-    HomeNextUpdateCountdownTimer
+    HomeNextUpdateCountdownTimer,
+    HomeUserGrowthMoneyBurnGraph
   },
   mixins: [
     AuthHelpers,
