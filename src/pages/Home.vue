@@ -150,7 +150,6 @@ import AuthHelpers from "@/mixins/AuthHelpers.js";
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
-import BaseButton from "@/components/BaseButton.vue";
 import HomeNextUpdateCountdownTimer from "@/components/HomeNextUpdateCountdownTimer.vue"; 
 import HomeUserGrowthMoneyBurnGraph from "@/components/HomeUserGrowthMoneyBurnGraph.vue";
 
@@ -164,7 +163,6 @@ export default {
     TheAppBar,
     TheDropdownMenu,
     TheSearchBar,
-    BaseButton,
     HomeNextUpdateCountdownTimer,
     HomeUserGrowthMoneyBurnGraph
   },
