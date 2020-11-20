@@ -8,10 +8,10 @@
               <img src="/logo.png" class="mt-5">
               <div>
                 <h1 class="text--primary ml-5">
-                  Explain
+                  explain.mit.edu
                 </h1>
                 <h3 class="headline font-weight-normal ml-5" style="opacity: 70%">
-                  A vibrant, electrifying place where people solve problems together
+                  A warm, electrifying place where everybody helps each other
                 </h3>
               </div>
             </div>
@@ -86,42 +86,40 @@
       </transition>
       
       <v-container fluid justify="center" class="pa-5">
-           <!-- Time to put in all the dashboard cards here as well as the update news  -->
-            <v-row>
-              <!-- <HomeUserGrowthGraph/>
-              <HomeFinanceCostGraph/> -->
-              <HomeUserGrowthMoneyBurnGraph/>
-              <!-- Update -->
-              <v-card max-width="550">
-                <v-card-title>News</v-card-title>
-                <!-- FIXME: find a way to not center align the bullet points -->
-                <v-card-text>
-                  <ul>
-                    <li>The "Ghost User" update is coming in: <HomeNextUpdateCountdownTimer/></li>
-                    <li>Explain is interviewing with Y-Combinator on December 5th.</li>
-                    <li>Explain is offering a web dev class over IAP called "Lightweight Fullstack", more details soon...</li>
-                  </ul>
-                </v-card-text>
-              </v-card>
-            </v-row>
-     
-
-        <v-card>
-          <v-card-title>
-            <h3>Introduction</h3>
-          </v-card-title>
-
-          <v-card-text style="font-size: 1rem;">
-            <p>
-              Explain is an experimental web app with many blackboard rooms. 
-            </p>
-            <ul>
-              <li><b>Phase I (2020):</b> Create a vibrant, electrifying place where people can help each other and have fun</li>
-              <li><b>Phase II (2021):</b> Build infrastructure to enable the new era of lightweight visual explanations</li>
-              <li><b>Phase III (2022):</b> Scale the platform to accelerate the world's transition into open learning</li>
-            </ul>
-          </v-card-text>
-        </v-card>
+        <v-row>
+          <v-col cols="12" lg="6">
+            <v-card>
+              <v-card-title>News</v-card-title>
+              <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
+              <v-card-text style="font-size: 0.95rem;">
+                <ul>
+                  <li><b>Update</b>: The next major update is scheduled for December 1st</li>
+                  <li><b>Internship</b>: If you want to change education together, email eltonlin@mit.edu</li>
+                  <li><b>Users</b>: Explain now has ~800 weekly active users in 8.01, ESG classes and 18.01</li>
+                  <li><b>Startup</b>: Explain has advanced to the interview round with Y-Combinator</li>
+                  <li><b>IAP 2021</b>: I'm holding a web dev course called: "Lightweight Fullstack".
+                    The goal is to teach fundamental concepts and modern frameworks with simple and visual explanations (more details coming soon).
+                  </li>
+                </ul>
+              </v-card-text>
+            </v-card>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <v-card>
+              <v-card-title>Introduction</v-card-title>
+              <v-card-text style="font-size: 0.95rem;">
+                <p>
+                  Explain is an experimental, blackboard-oriented web app handcrafted for MIT classes:
+                </p>
+                <ul>
+                  <li><b>Phase I (2020):</b> Create a place where students can study together serendipitously</li>
+                  <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared and organized</li>
+                  <li><b>Phase III (2022):</b> Accelerate the world's transition into open learning</li>
+                </ul>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
 
         <v-row>
           <v-col cols="12" lg="6">

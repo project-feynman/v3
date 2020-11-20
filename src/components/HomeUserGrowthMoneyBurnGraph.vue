@@ -141,7 +141,7 @@ export default {
               {
                 "scaleLabel": {
                   "display": true,
-                  "labelString": "Purchase amount (USD)"
+                  "labelString": "Weekly (USD)"
                 },
                 "id": "left",
                 "stacked": false,
