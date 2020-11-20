@@ -95,7 +95,7 @@
                 <ul>
                   <li><b>Update</b>: The next major update is scheduled for December 1st</li>
                   <li><b>Internship</b>: If you want to change education together, email eltonlin@mit.edu</li>
-                  <li><b>Users</b>: Explain now has ~800 weekly active users in 8.01, ESG classes and 18.01</li>
+                  <li><b>Users</b>: Explain currently serves ~800 weekly active users in 8.01, ESG classes and 18.01</li>
                   <li><b>Startup</b>: Explain has advanced to the interview round with Y-Combinator</li>
                   <li><b>IAP 2021</b>: I'm holding a web dev course called: "Lightweight Fullstack".
                     The goal is to teach fundamental concepts and modern frameworks with simple and visual explanations (more details coming soon).
@@ -151,8 +151,6 @@ import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
 import BaseButton from "@/components/BaseButton.vue";
-import HomeUserGrowthGraph from "@/components/HomeUserGrowthGraph.vue";
-import HomeFinanceCostGraph from "@/components/HomeFinanceCostGraph.vue";
 import HomeNextUpdateCountdownTimer from "@/components/HomeNextUpdateCountdownTimer.vue"; 
 import HomeUserGrowthMoneyBurnGraph from "@/components/HomeUserGrowthMoneyBurnGraph.vue";
 
@@ -167,8 +165,6 @@ export default {
     TheDropdownMenu,
     TheSearchBar,
     BaseButton,
-    HomeUserGrowthGraph,
-    HomeFinanceCostGraph,
     HomeNextUpdateCountdownTimer,
     HomeUserGrowthMoneyBurnGraph
   },
