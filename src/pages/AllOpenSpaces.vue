@@ -2,7 +2,7 @@
   <div>
     <portal to="side-drawer">
       <v-list>
-        <div class="d-flex align-center pt-2 pb-0" style="padding-left: 18px;">
+        <!-- <div class="d-flex align-center pt-2 pb-0" style="padding-left: 18px;">
           <p class="text-uppercase font-weight-bold mb-0" style="margin-top: 2px; opacity: 50%; font-size: 0.8rem;">
             Open Spaces
           </p>
@@ -19,7 +19,7 @@
               </template> 
             </BasePopupButton>
           </div>
-        </div>
+        </div> -->
         
         <!-- 
         <v-dialog v-model="isEditPopupOpen" width="500px">
@@ -41,27 +41,47 @@
           </v-card>
         </v-dialog> -->
 
-        <v-list-item v-for="roomType in roomTypes" :key="roomType.id"
-          append :to="(`section/${roomType.id}`)"
-          style="padding-left: 30px; padding-right: 24px" 
-        >
-          <v-list-item-content style="font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%;">
-            {{ roomType.name }}
-          </v-list-item-content>
+        <template v-for="roomType in roomTypes">
+          <v-list-item :key="roomType.id"
+            :to="(`/class/${classID}/section/${roomType.id}`)"
+            style="padding-left: 15px; padding-right: 28px" 
+          >
+            <!-- font-size: 1.15rem; opacity: 70% -->
+            <!-- font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%; -->
+            <v-list-item-content :style="`
+              font-size: 1.05rem; font-weight: 400; color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' }; 
+              opacity: ${ $route.params.section_id === roomType.id ? '100%' : '70%' };
+            `">
+              {{ roomType.name }}
+            </v-list-item-content>
 
-          <v-list-item-action>
-            <v-row>
-              <!-- TODO: create and update operations with a dropdown menu -->
-              <!-- <v-btn @click.stop.prevent="isEditPopupOpen = true; roomTypeID = roomType.id" icon>
-                <v-icon color="grey">mdi-pencil</v-icon>
-              </v-btn> -->
+            <v-list-item-action>
+              <v-row>
+                <portal-target v-if="$route.params.section_id === roomType.id"
+                  name="current-open-space-actions"
+                  :key="roomType.id + 'actions-portal'"
+                >
+                  
+                </portal-target>
+                <!-- TODO: create and update operations with a dropdown menu -->
+                <!-- <v-btn @click.stop.prevent="isEditPopupOpen = true; roomTypeID = roomType.id" icon>
+                  <v-icon color="grey">mdi-pencil</v-icon>
+                </v-btn> -->
 
-              <!-- <v-btn v-if="isAdmin" @click.submit.prevent="deleteRoomType(roomType.id)" icon>
-                <v-icon color="red">mdi-close</v-icon>
-              </v-btn> -->
-            </v-row>
-          </v-list-item-action>
-        </v-list-item>
+                <!-- <v-btn v-if="isAdmin" @click.submit.prevent="deleteRoomType(roomType.id)" icon>
+                  <v-icon color="red">mdi-close</v-icon>
+                </v-btn> -->
+              </v-row>
+            </v-list-item-action>
+          </v-list-item>
+
+          <portal-target v-if="$route.params.section_id === roomType.id" 
+            name="currently-active-open-space" 
+            :key="roomType.id + 'rooms-portal'"
+          >
+
+          </portal-target>
+        </template>
       </v-list>
     </portal>
 
@@ -123,6 +143,13 @@
 </template>
 
 <script>
+/**
+ * Experiment: whenever the user switches an open space, recount the number of participants in each open space. 
+ * For operations that are rare, don't take up too much area. Optimize for high frequency operations 
+ * 
+ * 
+ */
+
 import db from "@/database.js"; 
 import { getRandomId } from "@/helpers.js"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
@@ -183,10 +210,7 @@ export default {
      */
     createNewRoomType (name) {
       const id = getRandomId(); 
-      this.classDocRef.collection("roomTypes").doc(id).set({
-        id,
-        name
-      });
+      this.classDocRef.collection("roomTypes").doc(id).set({ id, name });
       this.classDocRef.collection("rooms").doc(id).set({
         isCommonRoom: true,
         roomTypeID: id,
@@ -194,6 +218,7 @@ export default {
       });
       this.classDocRef.collection("blackboards").doc(id).set({});
     },
+    /** TODO: make this a proper deletion */
     deleteRoomType (roomTypeID) {
       this.classDocRef.collection("roomTypes").doc(roomTypeID).delete();
     },

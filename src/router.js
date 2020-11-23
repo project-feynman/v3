@@ -44,10 +44,11 @@ const router = new Router({
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout.vue"),
       children: [
-        {
-          path: "",
-          component: () => import(/* webpackChunkName: "all-open-spaces" */ "./pages/AllOpenSpaces.vue") 
-        },
+        // TODO: deprecate this destination
+        // {
+        //   path: "",
+        //   component: () => import(/* webpackChunkName: "all-open-spaces" */ "./pages/AllOpenSpaces.vue") 
+        // },
         {
           path: "section/:section_id",
           component: () => import(/* webpackChunkName: "particular-open-space" */ "./pages/ParticularOpenSpace.vue"),

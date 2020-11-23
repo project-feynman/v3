@@ -1,22 +1,25 @@
 <template>
-  <portal v-if="roomTypeDoc" to="side-drawer">
-    <v-card elevation="0">
-      <v-list-item two-line style="padding-top: 0; padding-left: 10x">
-        <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
-          <v-icon>mdi-arrow-left</v-icon>
-        </v-btn>
+  <portal v-if="roomTypeDoc" to="currently-active-open-space">
 
-        <v-list-item-content>
+    <portal to="current-open-space-actions">
+
+    <!-- <v-card elevation="0"> -->
+      <!-- <v-list-item two-line style="padding-top: 0; padding-left: 10x"> -->
+        <!-- <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
+          <v-icon>mdi-arrow-left</v-icon>
+        </v-btn> -->
+
+        <!-- <v-list-item-content>
           <v-list-item-title style="font-size: 1.15rem; opacity: 70%">
             {{ roomTypeDoc.name }}
           </v-list-item-title>
-        </v-list-item-content>
+        </v-list-item-content> -->
 
         <!-- The triple dot dropdown menu with actions that affects the whole class -->
         <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
           <template v-slot:activator="{ on, attrs }">
 
-          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+          <BaseButton @click.stop="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
             Space actions
           </BaseButton>
           </template>
@@ -119,8 +122,10 @@
             </v-list-item>
           </v-list>
         </v-menu>
-      </v-list-item>
-    </v-card>
+      <!-- </v-list-item> -->
+    <!-- </v-card> -->
+    
+    </portal>
 
     <v-divider/>
 

@@ -1,6 +1,22 @@
 <template>
-  <div style="width: 190px">
-    <v-select 
+    <v-menu v-model="isMenuOpen" fixed>
+      <template v-slot:activator="{ on }">
+          <v-btn v-on="on" text tile large class="pa-2" style="padding-top: 0; font-size: 1.25rem text-truncate">
+            {{ currentClass.name }}
+            <v-icon>mdi-menu-down</v-icon>
+          </v-btn>
+      </template>
+
+      <v-list>
+        <v-list-item v-for="mitClass in $store.state.user.enrolledClasses" :key="mitClass.id"
+          @click="switchClass(mitClass)"
+        >
+          {{ mitClass.name }}
+        </v-list-item>
+      </v-list>
+    </v-menu>
+
+    <!-- <v-select 
       :items="$store.state.user.enrolledClasses"
       :value="currentClass" 
       item-text="name" 
@@ -16,14 +32,18 @@
           
         </slot>
       </template>
-    </v-select> 
-  </div>
+    </v-select>  -->
 </template>
 
 <script>
 import db from "@/database.js";
 
 export default {
+  data () {
+    return {
+      isMenuOpen: false
+    };
+  },
   computed: {
     user () {
       return this.$store.state.user; 
@@ -42,7 +62,7 @@ export default {
       userRef.update({
         mostRecentClassID: mitClass.id
       });
-      this.$router.push(`/class/${mitClass.id}`);
+      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}`);
     }
   }
 }

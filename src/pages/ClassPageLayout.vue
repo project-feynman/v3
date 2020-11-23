@@ -6,11 +6,15 @@
       :permanent="!$route.params.section_id" 
       touchless 
       height="100%"
-      app class="elevation-5" width="285" mobile-breakpoint="500" clipped 
+      app 
+      class="elevation-5" 
+      width="285" 
+      mobile-breakpoint="500" 
+      clipped 
     >      
-      <v-sheet class="elevation-5 pa-4">    
+      <v-sheet class="elevation-5 py-2 pl-3">    
         <div class="d-flex">
-          <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: ${16-3}px`">
+          <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: 8px`" class="ma-0">
             <img src="/logo.png">
           </v-list-item-avatar>
 
@@ -28,7 +32,7 @@
 
         <v-dialog v-model="showLibrary" fullscreen>
           <template v-slot:activator="{ on, attrs }">
-            <v-btn v-on="on" v-bind="attrs" color="white" class="mt-1">
+            <v-btn v-on="on" v-bind="attrs" small color="white" class="mt-1">
               <v-icon class="mr-2">mdi-bookshelf</v-icon>
               Library
             </v-btn>
@@ -59,9 +63,12 @@
       </portal-target>
     </v-main>
 
-    <!-- :key="...class_id" forces <router-view/> to re-render -->
-    <!-- Many things from <router-view> will teleport to the portals above -->
-    <router-view v-if="mitClass" :key="$route.params.class_id"/>
+    <div v-if="mitClass" :key="$route.params.class_id">
+      <!-- :key="...class_id" forces <router-view/> to re-render -->
+      <!-- Many things from <router-view> will teleport to the portals above -->
+      <AllOpenSpaces/>  
+      <router-view :key="$route.params.section_id"/>
+    </div>
   </div>
 </template>
 
@@ -76,6 +83,7 @@ import GroupChat from "@/components/GroupChat.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
+import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
 
 export default {
   name: "ClassPageTemplate",
@@ -86,7 +94,8 @@ export default {
     GroupChat,
     ClassLibrary,
     ClassSwitchDropdown,
-    ClassNewPopup
+    ClassNewPopup,
+    AllOpenSpaces
   },
   data: () => ({
     firebaseRef: null,
