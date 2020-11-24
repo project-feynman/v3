@@ -2,7 +2,7 @@
   <div class="text-center">
     <v-dialog v-model="dialog" width="500">
       <template v-slot:activator="{ on, attrs }">
-        <v-btn @click.stop.prevent="dialog = true" fab color="grey" class="white--text" depressed>
+        <v-btn @click.stop.prevent="dialog = true" fab color="grey darken-1" class="white--text" depressed>
           <!-- mdi-hammer-wrench -->
           <v-icon large>mdi-help</v-icon>
         </v-btn>

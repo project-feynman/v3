@@ -19,7 +19,7 @@
         <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
           <template v-slot:activator="{ on, attrs }">
 
-          <BaseButton @click.stop="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
             Space actions
           </BaseButton>
           </template>
@@ -126,8 +126,6 @@
     <!-- </v-card> -->
     
     </portal>
-
-    <v-divider/>
 
     <!-- COMMON ROOM (lots of quickfix code here)-->
     <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
@@ -295,9 +293,8 @@
 
     <!-- CONTROL DASHBOARD -->
     <portal to="side-drawer-bottom-region">
-      <v-card color="grey darken-1"  >
-
-        <v-card-text>
+      <v-card color="grey"  >
+        <v-card-text class="py-2">
           <!-- User mute/deafen/etc. buttons -->
           <portal-target name="destination2">
 

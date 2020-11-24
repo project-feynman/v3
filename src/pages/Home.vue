@@ -20,19 +20,19 @@
             <!-- Log in / Sign up -->
             <v-row class="my-5 pt-2" justify="center">
               <template v-if="user">
-                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
                   large class="mr-5 purple white--text"
                 >
-                  <v-icon class="mr-2">mdi-account-group</v-icon>
-                  ENTER OPEN SPACES
+                  <v-icon large class="mr-2">mdi-emoticon-wink-outline</v-icon>
+                  EXPLORE
                 </v-btn>
 
-                <v-btn large class="black white--text mx-5">
+                <v-btn large class="grey darken-1 white--text mx-5">
                   <v-icon class="mr-2">mdi-gitlab</v-icon>
                   <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
                 </v-btn>
 
-                <v-btn large @click="$_signOut()" class="mx-5 grey white--text">
+                <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
                   <v-icon class="mr-2">mdi-logout</v-icon>
                   SIGN OUT
                 </v-btn>          
@@ -44,7 +44,7 @@
                   LOG IN WITH TOUCHSTONE
                 </v-btn>
 
-                <v-btn large class="black white--text mx-5">
+                <v-btn large class="grey darken-1 white--text mx-5">
                   <v-icon class="mr-2">mdi-gitlab</v-icon>
                   <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
                 </v-btn>
@@ -73,7 +73,7 @@
                   @action-do="user => $_logIn(user)"
                 >
                   <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" large class="mx-5 grey white--text">
+                    <v-btn v-on="on" large class="grey darken-1 white--text mx-5">
                       <v-icon class="mr-2">mdi-email</v-icon>
                       EMAIL LOGIN
                     </v-btn>
@@ -85,50 +85,83 @@
         </v-card>
       </transition>
       
-      <v-container fluid justify="center" class="pa-5">
-        <v-row>
-          <v-col cols="12" lg="6">
-            <v-card>
-              <v-card-title>News</v-card-title>
-              <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
-              <v-card-text style="font-size: 0.95rem;">
-                <ul>
-                  <li><b>Update</b>: The next major update is scheduled for December 1st</li>
-                  <li><b>Internship</b>: If you want to change education together, email eltonlin@mit.edu</li>
-                  <li><b>Users</b>: Explain currently serves ~800 weekly active users in 8.01, ESG classes and 18.01</li>
-                  <li><b>Startup</b>: Explain has advanced to the interview round with Y-Combinator</li>
-                  <li><b>IAP 2021</b>: I'm holding a web dev course called: "Lightweight Fullstack".
-                    The goal is to teach fundamental concepts and modern frameworks with simple and visual explanations (more details coming soon).
-                  </li>
-                </ul>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          <v-col cols="12" lg="6">
-            <v-card>
-              <v-card-title>Introduction</v-card-title>
-              <v-card-text style="font-size: 0.95rem;">
-                <p>
-                  Explain is an experimental, blackboard-oriented web app handcrafted for MIT classes:
-                </p>
-                <ul>
-                  <li><b>Phase I (2020):</b> Create a place where students can study together serendipitously</li>
-                  <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared and organized</li>
-                  <li><b>Phase III (2022):</b> Accelerate the world's transition into open learning</li>
-                </ul>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
+                    <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
+      <v-container fluid class="pa-5">
+        <v-card>
+          <!-- color="accent" makes the slider indicator orange -->
+          <v-tabs vertical touchless color="accent">
+            <!-- active-class="accent--text" makes the current tab's title go orange -->
+            <v-tab class="text-xs-left" active-class="accent--text">
+              Vision
+            </v-tab>
+            <v-tab>
+              Introduction
+            </v-tab>
+            <v-tab>
+              How to use
+            </v-tab>
+            <v-tab>
+              Update Notes
+            </v-tab>
+            <v-tab>
+              News
+            </v-tab>
+            <v-tab>
+              Recruitment
+            </v-tab>
 
-        <v-row>
-          <v-col cols="12" lg="6">
-            <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
-          </v-col>
-          <v-col cols="12" lg="6">
-            <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
-          </v-col>
-        </v-row>
+            <v-tab-item>
+              <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+            </v-tab-item>
+            <v-tab-item>
+              <v-card height="600">
+                <v-card-title>Introduction</v-card-title>
+                <v-card-text style="font-size: 0.95rem;">
+                  <p>
+                    Explain is an experimental, blackboard-oriented web app handcrafted for MIT classes:
+                  </p>
+                  <ul>
+                    <li><b>Phase I (2020):</b> Create a place where students can study together serendipitously</li>
+                    <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared and organized</li>
+                    <li><b>Phase III (2022):</b> Accelerate the world's transition into open learning</li>
+                  </ul>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+            <v-tab-item>
+              <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
+            </v-tab-item>
+            <v-tab-item>
+              <v-card height="600">
+                <v-card-title>News</v-card-title>
+                <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
+                <v-card-text style="font-size: 0.95rem;">
+                  <ul>
+                    <li><b>Update</b>: The next major update is scheduled for December 1st</li>
+                    <li><b>Internship</b>: If you want to change education together, email eltonlin@mit.edu</li>
+                    <li><b>Users</b>: Explain currently serves ~800 weekly active users in 8.01, ESG classes and 18.01</li>
+                    <li><b>Startup</b>: Explain has advanced to the interview round with Y-Combinator</li>
+                    <li><b>IAP 2021</b>: I'm holding a web dev course called: "Lightweight Fullstack".
+                      The goal is to teach fundamental concepts and modern frameworks with simple and visual explanations (more details coming soon).
+                    </li>
+                  </ul>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+            <v-tab-item>
+              For the life of me I cannot figure out why the ghost participants problem still remains, and I'm hoping 
+              to get second pair of eyes to take a look at my correctness argument.
+
+              Explain currently bleeds around $1k per month because of Twilio's video conferencing API it uses. 
+              By switching to Jitsi, an open-source alternative, the cost would become $30/month, a 3000% reduction. 
+              Previously, the switch to lib-jitsi-meet, to ensure the longevity, a major update will come and I'm working on
+              lib-jitsi-vue and testing it. 
+
+              Sometimes, swiping left / right on the screen triggers the Safari to go back a page. 
+              It's possible to disable the behavior, try "Prevent swiping left to go back page Safari".
+            </v-tab-item>
+          </v-tabs>
+        </v-card>
       </v-container>           
     </v-main>
   </div>
@@ -172,6 +205,8 @@ export default {
   ],
   data () {
     return {
+      model: "",
+      
       schoolClasses: [],
       demoVideo: null,
       demoVideo2: null,

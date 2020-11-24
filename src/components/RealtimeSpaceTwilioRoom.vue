@@ -19,7 +19,37 @@
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
       <template v-if="!twilioInitialized">
-        <!-- <p class="yellow--text">Connected to the blackboard</p> -->
+        <!-- TODO: replace the toggle mic, toggle camera and toggle screen buttons -->
+        <!-- <v-row class="d-flex" justify="space-around">
+          <v-switch
+            v-model="switch1"
+            color="purple lighten-1"
+            prepend-icon="mdi-microphone"
+            :loading="isTryingToConnect"
+            hide-details
+          ></v-switch>
+
+          <v-switch
+            v-model="switch2"
+            color="purple lighten-1"
+            prepend-icon="mdi-video"
+            hide-details
+          ></v-switch>
+
+          <v-switch
+            v-model="switch3"
+            color="purple lighten-1"
+            prepend-icon="mdi-monitor"
+            hide-details
+          ></v-switch>
+          
+          <v-switch
+            v-model="switch3"
+            color="purple lighten-1"
+            prepend-icon="mdi-music-clef-treble"
+          />
+        </v-row> -->
+
          <v-row class="d-flex" justify="space-around">
           <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" 
             :loading="isTryingToConnect" fab color="green" class="white--text" depressed
@@ -148,6 +178,10 @@ export default {
   },
   data () {
     return {
+      switch1: true,
+      switch2: false,
+      switch3: false,
+
       roomDoc: null,
       firebaseUnsubscribeFuncs: [],
       

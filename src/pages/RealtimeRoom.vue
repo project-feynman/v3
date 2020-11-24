@@ -156,6 +156,9 @@
           >
             <template v-slot:blackboard-toolbar>
               <!-- For switching between different blackboards -->
+              <!-- item-color:  -->
+              <!-- active-class:  -->
+              <!-- hide-details: eliminates unnecessary bottom padding -->
               <div v-if="room" class="d-flex ml-2">
                 <div v-if="activeBoardID" style="width: 60px">
                   <v-select 
@@ -163,9 +166,9 @@
                     :value="activeBoardID"
                     :items="room.blackboards"
                     @change="(id) => activeBoardID = id"
-                    hint="board #"
-                    persistent-hint
-                    active-class="accent--text" color="accent" item-color="accent"
+                    hide-details
+                    active-class="accent--text" 
+                    item-color="accent"
                   >
                     <!-- Override default behavior: show the board number instead of the blackboardID -->
                     <template v-slot:selection="{ item }">
@@ -174,9 +177,7 @@
                     <template v-slot:item="{ item }">
                       <p>{{ "#" + getBoardNumberFromID(item) }}</p>
                     </template>
-                    <!-- Can create a new board here -->
                     <template v-slot:append-item>
-                      <!-- IDEA: put into the room actions? -->
                       <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
                         New board
                       </BaseButton>

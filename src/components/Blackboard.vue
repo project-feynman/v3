@@ -47,7 +47,7 @@
 
             <BaseButton v-if="currentState === RecordState.MID_RECORD" 
               @click="stopRecording()" 
-              color="secondary" icon="mdi-stop"
+              color="white" icon="mdi-stop"
             >
               Finish
             </BaseButton>

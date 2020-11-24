@@ -8,9 +8,9 @@
         </slot>
 
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          icon="mdi-fullscreen" small color="white"
+          :icon="isBoardFullscreen ? 'mdi-arrow-expand-right' : 'mdi-arrow-collapse-left'" small color="white"
         >
-          Fullscreen
+          {{ isBoardFullscreen ? 'Show' : 'Hide' }} drawer
         </BaseButton>
 
         <slot name="more-actions-slot">
