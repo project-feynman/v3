@@ -8,7 +8,7 @@
         </slot>
 
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          icon="mdi-fullscreen" small color="orange"
+          icon="mdi-fullscreen" small color="white"
         >
           Fullscreen
         </BaseButton>
@@ -28,7 +28,7 @@
             </v-col>
 
             <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
-            <BaseButton :color="isNormalEraser ? 'grey' : 'black'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
+            <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
               Eraser
             </BaseButton>
             <slot name="touch-slot">

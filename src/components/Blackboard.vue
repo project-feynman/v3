@@ -29,7 +29,7 @@
           @toggle-fullScreen="toggleFullScreen()"
         >
           <template v-slot:touch-slot>
-            <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="black" small>
+            <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="white" small>
               {{ touchDisabled ? 'Pen mode' : 'Any mode' }}
             </BaseButton>
           </template>
@@ -40,7 +40,7 @@
             
               </slot> 
 
-              <BaseButton @click="startRecording()" icon="mdi-record" color="secondary" small>
+              <BaseButton @click="startRecording()" icon="mdi-record" color="white" small>
                 Record 
               </BaseButton>
             </template>
@@ -60,7 +60,7 @@
                 <!-- Cannot let user wipe board / reupload background image while recording -->
                 <BaseButton v-if="currentState !== RecordState.MID_RECORD" 
                   @click="isMenuOpen = true" 
-                  icon="mdi-dots-vertical" color="black" small
+                  icon="mdi-dots-vertical" color="white" small
                 >
                   More actions
                 </BaseButton>

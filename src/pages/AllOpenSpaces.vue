@@ -2,8 +2,8 @@
   <div>
     <portal to="side-drawer">
       <v-list>
-        <!-- <div class="d-flex align-center pt-2 pb-0" style="padding-left: 18px;">
-          <p class="text-uppercase font-weight-bold mb-0" style="margin-top: 2px; opacity: 50%; font-size: 0.8rem;">
+        <div class="d-flex align-center pb-0" style="padding-left: 12px;">
+          <p class="text-uppercase font-weight-bold mb-0" style="opacity: 50%; font-size: 0.7rem;">
             Open Spaces
           </p>
           <v-spacer/>
@@ -14,12 +14,12 @@
             >
               <template v-slot:activator-button="{ on }">
                 <v-btn class="mr-2" icon v-on="on">
-                  <v-icon color="grey darken-2">mdi-plus</v-icon>
+                  <v-icon color="grey darken-2" small>mdi-plus</v-icon>
                 </v-btn>
               </template> 
             </BasePopupButton>
           </div>
-        </div> -->
+        </div>
         
         <!-- 
         <v-dialog v-model="isEditPopupOpen" width="500px">
@@ -44,7 +44,7 @@
         <template v-for="roomType in roomTypes">
           <v-list-item :key="roomType.id"
             :to="(`/class/${classID}/section/${roomType.id}`)"
-            style="padding-left: 15px; padding-right: 28px" 
+            style="padding-left: 18px; padding-right: 28px" 
           >
             <!-- font-size: 1.15rem; opacity: 70% -->
             <!-- font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%; -->
