@@ -3,7 +3,7 @@
     <portal to="side-drawer">
       <v-list>
         <div class="d-flex align-center pb-0" style="padding-left: 12px;">
-          <p class="text-uppercase font-weight-bold mb-0" style="opacity: 40%; font-size: 0.7rem;">
+          <p class="text-uppercase font-weight-bold mb-0" style="opacity: 35%; font-size: 0.65rem;">
             Open Spaces
           </p>
           <v-spacer/>
@@ -51,7 +51,7 @@
             <!-- font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%; -->
             <v-list-item-content 
               :style="`
-                font-size: 1rem; font-weight: 400; color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' }; 
+                font-size: 0.9rem; font-weight: 400; color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' }; 
                 opacity: ${ $route.params.section_id === roomType.id ? '100%' : '70%' };
               `"
               class="py-1"

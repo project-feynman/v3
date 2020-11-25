@@ -172,7 +172,7 @@
                   >
                     <!-- Override default behavior: show the board number instead of the blackboardID -->
                     <template v-slot:selection="{ item }">
-                      <p class="mb-0 orange--text">{{ "#" + getBoardNumberFromID(item) }}</p>
+                      <p class="mb-0 accent--text">{{ "#" + getBoardNumberFromID(item) }}</p>
                     </template>
                     <template v-slot:item="{ item }">
                       <p>{{ "#" + getBoardNumberFromID(item) }}</p>

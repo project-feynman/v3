@@ -1,8 +1,7 @@
 <template>
   <div>
     <v-main>
-      <transition name="fade">
-        <v-card v-if="!isFetchingUser" fluid class="mx-auto">
+        <v-card v-if="!isFetchingUser" fluid class="mx-auto" elevation="0" tile>
           <v-container class="py-5">
             <div class="central-title d-flex justify-center align-center my-4">
               <img src="/logo.png" class="mt-5">
@@ -23,7 +22,7 @@
                 <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
                   large class="mr-5 purple white--text"
                 >
-                  <v-icon large class="mr-2">mdi-emoticon-wink-outline</v-icon>
+                  <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
                   EXPLORE
                 </v-btn>
 
@@ -83,15 +82,13 @@
             </v-row>
           </v-container>
         </v-card>
-      </transition>
       
-                    <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
-      <v-container fluid class="pa-5">
-        <v-card>
+      <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
+        <v-card elevation="5">
           <!-- color="accent" makes the slider indicator orange -->
-          <v-tabs vertical touchless color="accent">
+          <v-tabs vertical touchless color="accent" class="ml-1">
             <!-- active-class="accent--text" makes the current tab's title go orange -->
-            <v-tab class="text-xs-left" active-class="accent--text">
+            <v-tab active-class="accent--text">
               Vision
             </v-tab>
             <v-tab>
@@ -105,6 +102,9 @@
             </v-tab>
             <v-tab>
               News
+            </v-tab>
+            <v-tab>
+              Art of the day
             </v-tab>
             <v-tab>
               Recruitment
@@ -162,7 +162,6 @@
             </v-tab-item>
           </v-tabs>
         </v-card>
-      </v-container>           
     </v-main>
   </div>
 </template>

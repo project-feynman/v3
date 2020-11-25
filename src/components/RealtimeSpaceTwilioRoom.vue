@@ -18,71 +18,57 @@
 
     <!-- Display current user's connection state and options -->
     <portal to="destination2">
-      <template v-if="!twilioInitialized">
-        <!-- TODO: replace the toggle mic, toggle camera and toggle screen buttons -->
-        <!-- <v-row class="d-flex" justify="space-around">
-          <v-switch
-            v-model="switch1"
-            color="purple lighten-1"
-            prepend-icon="mdi-microphone"
-            :loading="isTryingToConnect"
-            hide-details
-          ></v-switch>
+      <v-row class="d-flex" justify="center" align="center">
+        <v-switch 
+          :value="twilioInitialized"
+          :loading="isTryingToConnect"
+          @change="toggleConnectionToTwilio()"
+          color="green"
+          :prepend-icon="twilioInitialized ? 'mdi-phone' : 'mdi-phone-off'"
+          hide-details
+          class="mt-0"
+        />
 
-          <v-switch
-            v-model="switch2"
-            color="purple lighten-1"
-            prepend-icon="mdi-video"
-            hide-details
-          ></v-switch>
+        <v-switch 
+          :input-value="$store.state.isMusicPlaying"
+          @change="toggleUserMusicSetting()"
+          color="purple lighten-1"
+          prepend-icon="mdi-music-clef-treble"
+          hide-details
+          class="mt-0"
+        />
+      </v-row>
 
-          <v-switch
-            v-model="switch3"
-            color="purple lighten-1"
-            prepend-icon="mdi-monitor"
-            hide-details
-          ></v-switch>
-          
-          <v-switch
-            v-model="switch3"
-            color="purple lighten-1"
-            prepend-icon="mdi-music-clef-treble"
-          />
-        </v-row> -->
+      <v-row v-if="twilioInitialized" class="d-flex" justify="space-around" align="center">
+        <v-switch
+          :input-value="isMicOn"
+          @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
+          color="purple lighten-1"
+          :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+          :loading="isTryingToConnect"
+          hide-details
+        />
 
-         <v-row class="d-flex" justify="space-around">
-          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" 
-            :loading="isTryingToConnect" fab color="green" class="white--text" depressed
-          >
-            <v-icon large>mdi-phone</v-icon>
-          </v-btn>
-          <RealtimeSpaceTwilioRoomTroubleshootPopup/>
-          <v-btn disabled fab class="white--text">
-            <v-icon>mdi-music-clef-treble</v-icon>
-          </v-btn>
-        </v-row>
-      </template>
+        <v-switch
+          :input-value="isCameraOn"
+          @change="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)"
+          :loading="isTryingToEnableCamera"
+          color="purple lighten-1"
+          :prepend-icon="isCameraOn ? 'mdi-video-wireless' : 'mdi-video'"
+          hide-details
+        />
 
-      <template v-else-if="twilioInitialized">      
-        <v-row class="d-flex" justify="space-around">
-          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
-            <v-icon large>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
-          </v-btn>
+        <v-switch
+          :input-value="isSharingScreen"
+          @change="isSharingScreen = !isSharingScreen"
+          :loading="isTryingToEnableScreen"
+          color="purple lighten-1"
+          prepend-icon="mdi-monitor"
+          hide-details
+        />
+      </v-row>
 
-          <v-btn @click.stop.prevent="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)" :loading="isTryingToEnableCamera" fab color="white" class="black--text" depressed>
-            <v-icon large>{{ isCameraOn ? 'mdi-video-wireless' : 'mdi-video'}}</v-icon>
-          </v-btn>
-
-          <v-btn @click.stop.prevent="isSharingScreen = !isSharingScreen" :loading="isTryingToEnableScreen" fab color="white" class="black--text" depressed>
-            <v-icon large>{{ isSharingScreen ? 'mdi-monitor-star' : 'mdi-monitor' }}</v-icon>
-          </v-btn>
-
-          <v-btn @click.stop.prevent="disconnectWithoutLeaving()" fab color="red" class="white--text" depressed>
-            <v-icon large>mdi-phone-hangup</v-icon>
-          </v-btn>
-        </v-row>
-        <!-- <RealtimeSpaceTwilioRoomTroubleshootPopup/> -->
-      </template>
+      <RealtimeSpaceTwilioRoomTroubleshootPopup class="mt-3"/>
     </portal>
 
     <portal v-if="allClients" to="current-room-participants">
@@ -178,10 +164,6 @@ export default {
   },
   data () {
     return {
-      switch1: true,
-      switch2: false,
-      switch3: false,
-
       roomDoc: null,
       firebaseUnsubscribeFuncs: [],
       
@@ -247,7 +229,7 @@ export default {
     }
   },
   beforeDestroy () {
-    console.log("destroyed hook for =", this.roomID);
+    // console.log("destroyed hook for =", this.roomID);
     this.isDestroyed = true; 
     // quickfix
     if (this.micTrack) this.micTrack.stop(); 
@@ -310,8 +292,28 @@ export default {
     }
   },
   methods: {
+    toggleConnectionToTwilio () {
+      if (! this.twilioInitialized) {
+        this.$store.commit('SET_IS_MIC_ON', true);         // TODO: rename: this is just for enabling persistence
+        this.connectToTwilioRoom();
+      } else {
+        this.disconnectWithoutLeaving(); 
+      }
+    },
+    // TODO: decouple the music logic from Twilio, although it's good in that
+    // it's easy to automatically stop playing music when the user is connected to teh audio chat
+    toggleUserMusicSetting () {
+      const { isMusicPlaying, musicAudioElement } = this.$store.state; 
+      if (isMusicPlaying) {
+        musicAudioElement.pause(); 
+        this.$store.commit("SET_IS_MUSIC_PLAYING", false); 
+      } else {
+        musicAudioElement.play(); 
+        this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
+      } 
+    },
     cleanUpTwilioRoom () {
-      console.log("disconnecting ", this.roomID)
+      // console.log("disconnecting ", this.roomID)
       for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
         unsubscribe();
       }

@@ -1,32 +1,48 @@
 <template>
   <v-app>
-    <!-- <MusicPlayer/> -->
-
     <router-view/>
     
     <v-snackbar v-model="snackbar">
       {{ snackbarMessage }}
       <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
     </v-snackbar>
+
+    <v-snackbar v-model="musicSnackbar" timeout="10000">
+      Play music from Maplestory's soundtrack? 
+      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" color="pink" text>YES </v-btn>
+      <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
+    </v-snackbar>
   </v-app>
 </template>
 
 <script>
-import MusicPlayer from "@/components/MusicPlayer.vue"; 
-
 export default {
-  components: {
-    MusicPlayer
-  },
   data: () => ({
     snackbar: false,
-    snackbarMessage: ""
+    snackbarMessage: "",
+
+    musicSnackbar: true,
+    musicAudioElement: null
   }),
+  computed: {
+    user () { return this.$store.state.user; }
+  },
   created () {
-    this.$root.$on("show-snackbar", message => {
+    // TODO: add 1 more soundtrack
+    // Lith Harbor
+    this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio("/music.mp3"));
+
+    this.$root.$on("show-snackbar", (message) => {
       this.snackbar = true;
       this.snackbarMessage = message;
     });
+  },
+  methods: {
+    playBackgroundMusic () {
+      console.log("musicAudioElement =", this.$store.state.musicAudioElement);
+      this.$store.state.musicAudioElement.play(); 
+      this.$store.commit("SET_IS_MUSIC_PLAYING", true);
+    }
   }
 }
 </script>

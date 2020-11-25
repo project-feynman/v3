@@ -15,10 +15,6 @@ const router = new Router({
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
-    { 
-      path: "/get-started",
-      component: () => import(/* webpackChunkName: "home" */ "./pages/IntersectionAPIPlayground.vue")
-    },
     {
       path: "/explanation/:expl_id/class/:class_id",
       component: () => import(/* webpackChunkName: "home" */ "./components/ClassPageSeePost.vue"),
@@ -29,16 +25,16 @@ const router = new Router({
       }
     },
     {
+      path: "/music-playground",
+      component: () => import(/* webpackChunkName: "music-playground" */ "./components/MusicPlayer.vue")
+    },
+    {
       path: "/canvas-playground",
-      component: () => import(/* webpackChunkName: "home" */ "./pages/CanvasPlayground.vue")
+      component: () => import(/* webpackChunkName: "canvas-playground" */ "./pages/CanvasPlayground.vue")
     },
     {
       path: "/library-playground",
-      component: () => import(/* webpackChunkName: "home" */ "./pages/LibraryPlayground.vue")
-    },
-    {
-      path: "/jisti-playground",
-      component: () => import(/* webpackChunkName: "home" */ "./pages/JistiPlayground.vue")
+      component: () => import(/* webpackChunkName: "library-playground" */ "./pages/LibraryPlayground.vue")
     },
     {
       path: "/class/:class_id",

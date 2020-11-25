@@ -113,10 +113,6 @@
               </template> 
             </BasePopupButton>
 
-            <!-- <v-list-item disabled>
-              <v-icon left>mdi-music-clef-treble</v-icon> Set music
-            </v-list-item> -->
-
             <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
               <v-icon left>mdi-plus</v-icon> New room
             </v-list-item>
@@ -134,7 +130,7 @@
     >
       <div class="py-5" style="width: 100%">
         <div class="d-flex">
-          <div class="font-weight-medium py-2" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.75em">
+          <div class="font-weight-medium py-2" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.7em">
             COMMON ROOM
           </div>
           <v-spacer/>
@@ -186,11 +182,11 @@
       <template v-if="room.id === currentRoomID">
         <div class="py-5" style="width: 100%">
           <div class="d-flex">
-            <div v-if="room.name" class="text-uppercase font-weight-medium py-2" style="font-size: 0.75em">
+            <div v-if="room.name" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
               {{ room.name }}
             </div>
 
-            <div v-else class="text-uppercase font-weight-medium py-2" style="font-size: 0.75em">
+            <div v-else class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
               Room {{ i + 1 }}
             </div>
 
@@ -218,11 +214,11 @@
       <template v-else>
         <div style="width: 100%;">
           <div class="d-flex">
-            <div v-if="room.name" class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.75em">
+            <div v-if="room.name" class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.7em">
               {{ room.name }}
             </div>
 
-            <div v-else class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.75em">
+            <div v-else class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.7em">
               Room {{ i+1 }}
             </div>
             <v-spacer/>
@@ -293,7 +289,7 @@
 
     <!-- CONTROL DASHBOARD -->
     <portal to="side-drawer-bottom-region">
-      <v-card color="grey"  >
+      <v-card color="grey lighten-2"  >
         <v-card-text class="py-2">
           <!-- User mute/deafen/etc. buttons -->
           <portal-target name="destination2">

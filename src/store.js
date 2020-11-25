@@ -64,7 +64,10 @@ export default new Vuex.Store({
       color: "cyan",
       lineWidth: 2
     },
-    onlyAllowApplePencil: true
+    onlyAllowApplePencil: true,
+
+    musicAudioElement: null,
+    isMusicPlaying: false
   },
   getters: {
     isAdmin: state => {
@@ -72,6 +75,12 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_MUSIC_AUDIO_ELEMENT (state, newVal) {
+      state.musicAudioElement = newVal; 
+    },
+    SET_IS_MUSIC_PLAYING (state, newVal) {
+      state.isMusicPlaying = newVal; 
+    },
     // so the user's pen color persists across different boards
     SET_CURRENT_TOOL (state, newVal) {
       state.currentTool = newVal; 

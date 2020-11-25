@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="expl">
+  <v-card v-if="expl" tile>
     <v-container fluid>
       <!-- Text -->
       <template v-if="!isEditing"> 
