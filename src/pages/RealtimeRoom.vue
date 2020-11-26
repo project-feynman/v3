@@ -111,7 +111,7 @@
       <v-menu v-model="isMenuOpen" offset-y bottom>
         <!-- Triple-dots button -->
         <template v-slot:activator>
-          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+          <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
             Room actions
           </BaseButton>
         </template>

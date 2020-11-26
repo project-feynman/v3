@@ -4,11 +4,10 @@
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal to="current-open-space-actions">
       <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
-        <template v-slot:activator="{ on, attrs }">
-
-        <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
-          Space actions
-        </BaseButton>
+        <template v-slot:activator>
+          <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
+            Space actions
+          </BaseButton>
         </template>
 
         <v-list>
@@ -109,11 +108,14 @@
       or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
     -->
 
+    <!-- Selectable *should* allow v-chip to be copied and pasted, but it's currently not doing anything -->
+
     <!-- ROOMS -->
      <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       active-class="active-blackboard accent--text"
       dense
+      selectable
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">

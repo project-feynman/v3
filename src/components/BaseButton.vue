@@ -1,6 +1,6 @@
 <template>
   <v-btn v-if="stopPropagation"
-    @click.stop="$emit('click')"
+    @click.prevent.stop="$emit('click')"
     v-on="on"
     v-bind="$attrs"
     class="button-custom" 

@@ -14,12 +14,12 @@
                 </h3>
               </div>
             </div>
-              
-     
+            
             <!-- Log in / Sign up -->
             <v-row class="my-5 pt-2" justify="center">
               <template v-if="user">
-                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+                <!-- Do NOT split the URL to multiple lines, it will be interpreted as %20%20%20...etc -->
+                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/room/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
                   large class="mr-5 purple white--text"
                 >
                   <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
@@ -88,6 +88,9 @@
           <!-- color="accent" makes the slider indicator orange -->
           <v-tabs vertical touchless color="accent" class="ml-1">
             <!-- active-class="accent--text" makes the current tab's title go orange -->
+            <v-tab>
+              News and Updates
+            </v-tab>
             <v-tab active-class="accent--text">
               Vision
             </v-tab>
@@ -98,9 +101,6 @@
               How to use
             </v-tab>
             <v-tab>
-              Update Notes
-            </v-tab>
-            <v-tab>
               News
             </v-tab>
             <v-tab>
@@ -109,6 +109,50 @@
             <v-tab>
               Recruitment
             </v-tab>
+
+            <!-- items here -->
+            <v-tab-item>
+              <v-card>
+                <v-card-title>
+                  Thanksgiving Update
+                </v-card-title>
+                <v-card-text>
+                  For the past semester, I've focused Explain and making it good for problem-solving sessions. 
+                  While it has stabilized (with exception to the ghost participants issue), I forgot the original mission of Explain,
+                  to create a place where people can find study partners serendipitously. 
+
+                  <br><br>
+
+                  Now, finals is coming up, and I realize there are no more psets, so I came to this realization too late. Nevertheless,
+                  the Thanksgiving Update is about enjoying school. I no longer have to do finals as a class of 2020, so that will be you guys' problems, and not mine : )
+                  But I think it's important to be optimistic and know that there are always extremely serious things to have to worry about, but the best course of action is to 
+                  not remain in a stressed response (which is like using over-drive as your normal default behavior). You truly want to go into over-drive only for sparringly. 
+
+                  <br><br>
+
+                  "If you enjoyed wasting your time, then it wasn't a waste of time." I added some music, to relax things up again. It's from my absolute favorite game soundtracks called Maplestory. 
+
+                  <br><br>
+
+                  Why does this update make it easier for everyone to hang out? Because now, there isn't voids. Explain is now place-centric, a fancy way of saying, you can't not be somewhere. You're always in a room (with exception to when you're in the home page).
+                  Therefore, the chances of colliding wit other people in the same room becomes way more likely. I have also opened up the spaces, so they no longer feel private and closed offs. I saw a research where, apparently, 
+                  the mere presence of other people or crowds on the streets positively improves our psychological state. And that's really a big influence behind the design of Explain - you have awareness of each other in different rooms, such that 
+                  even if you are not interacting, you know of the mere presence of each other. 
+
+                  <br><br>
+
+                  If you're in a room, unlike in Discord, you don't have to have the pressure to talk in a voice channel. You can just be aware of each other but work independently, simulate a message chat by writing on the blackboard or drawing. 
+                  Now, there is a problem with rooms, which is, it's very hard to get started. If there is nobody in a room, then people will leave. So there could be 100 people going into the same room, but all at different times, but they will never interact or meet. 
+                  The way to circumvent that is to introduce reasons to stay in the room even if you are solo. First, if you work on the blackboards in the rooms, other people can easily see what you have done. While that's not great for plagiarism, it's useful in certain situations. 
+                  Moreover, you can visit the library and watch videos, so many people can stay in the room and watch videos independently, and stay in the room. You can also listen to music, and eventually there will be a visual forum. 
+
+                  <br><br>
+
+                  In other words, I'm introducing as many reasons for people to stay in the rooms, and the longer they stay, the more chances for collision, which means more interactions, more content outpt, and the library and forum becomes even richer. This leads to a positive spiral and 
+                  Explain becomes a truly vibrant place. That's the vision. Happy studying.
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
 
             <v-tab-item>
               <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
