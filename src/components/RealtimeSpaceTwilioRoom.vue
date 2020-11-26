@@ -17,65 +17,71 @@
     </div>
 
     <!-- Display current user's connection state and options -->
-    <portal to="destination2">
-      <v-row class="d-flex" justify="center" align="center">
-        <v-switch 
-          :value="twilioInitialized"
-          :loading="isTryingToConnect"
-          @change="toggleConnectionToTwilio()"
-          color="green"
-          :prepend-icon="twilioInitialized ? 'mdi-phone' : 'mdi-phone-off'"
-          hide-details
-          class="mt-0"
-        />
+    <portal to="side-drawer-bottom-region">
+      <v-card color="grey lighten-2">
+        <v-card-text class="py-2">
+          <v-row class="d-flex" justify="center" align="center">
+            <v-switch 
+              :value="twilioInitialized"
+              :loading="isTryingToConnect"
+              @change="toggleConnectionToTwilio()"
+              color="green"
+              :prepend-icon="twilioInitialized ? 'mdi-phone' : 'mdi-phone-off'"
+              hide-details
+              class="mt-0"
+            />
 
-        <v-switch 
-          :input-value="$store.state.isMusicPlaying"
-          @change="toggleUserMusicSetting()"
-          color="purple lighten-1"
-          prepend-icon="mdi-music-clef-treble"
-          hide-details
-          class="mt-0"
-        />
-      </v-row>
+            <v-switch 
+              :input-value="$store.state.isMusicPlaying"
+              @change="toggleUserMusicSetting()"
+              color="purple lighten-1"
+              prepend-icon="mdi-music-clef-treble"
+              hide-details
+              class="mt-0"
+            />
+          </v-row>
 
-      <v-row v-if="twilioInitialized" class="d-flex" justify="space-around" align="center">
-        <v-switch
-          :input-value="isMicOn"
-          @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
-          color="purple lighten-1"
-          :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-          :loading="isTryingToConnect"
-          hide-details
-        />
+          <v-row v-if="twilioInitialized" class="d-flex" justify="space-around" align="center">
+            <v-switch
+              :input-value="isMicOn"
+              @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
+              color="purple lighten-1"
+              :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+              :loading="isTryingToConnect"
+              hide-details
+            />
 
-        <v-switch
-          :input-value="isCameraOn"
-          @change="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)"
-          :loading="isTryingToEnableCamera"
-          color="purple lighten-1"
-          :prepend-icon="isCameraOn ? 'mdi-video-wireless' : 'mdi-video'"
-          hide-details
-        />
+            <v-switch
+              :input-value="isCameraOn"
+              @change="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)"
+              :loading="isTryingToEnableCamera"
+              color="purple lighten-1"
+              :prepend-icon="isCameraOn ? 'mdi-video-wireless' : 'mdi-video'"
+              hide-details
+            />
 
-        <v-switch
-          :input-value="isSharingScreen"
-          @change="isSharingScreen = !isSharingScreen"
-          :loading="isTryingToEnableScreen"
-          color="purple lighten-1"
-          prepend-icon="mdi-monitor"
-          hide-details
-        />
-      </v-row>
+            <v-switch
+              :input-value="isSharingScreen"
+              @change="isSharingScreen = !isSharingScreen"
+              :loading="isTryingToEnableScreen"
+              color="purple lighten-1"
+              prepend-icon="mdi-monitor"
+              hide-details
+            />
+          </v-row>
 
-      <RealtimeSpaceTwilioRoomTroubleshootPopup class="mt-3"/>
+          <RealtimeSpaceTwilioRoomTroubleshootPopup class="mt-3"/>
+
+        </v-card-text>
+      </v-card>
     </portal>
 
     <portal v-if="allClients" to="current-room-participants">
-      <div v-for="client in allClients"
+      <v-row v-for="client in allClients"
         :key="client.id" 
-        :class="['d-flex', 'text--secondary', 'mt-5', 'pl-5', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
+        :class="['d-flex', 'text--secondary', 'mt-1', 'pl-5', 'pr-2', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
         style="font-size: 0.8em"
+        align="center"
       >
         {{ client.firstName + " " + client.lastName }}  
         
@@ -89,7 +95,7 @@
         <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'grey'">
           {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
         </v-icon>
-      </div>
+      </v-row>
     </portal>
 
     <!-- Helps user fix audio issues if an error shows up -->

@@ -40,19 +40,10 @@ const router = new Router({
       path: "/class/:class_id",
       component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout.vue"),
       children: [
-        // TODO: deprecate this destination
-        // {
-        //   path: "",
-        //   component: () => import(/* webpackChunkName: "all-open-spaces" */ "./pages/AllOpenSpaces.vue") 
-        // },
         {
           path: "section/:section_id",
           component: () => import(/* webpackChunkName: "particular-open-space" */ "./pages/ParticularOpenSpace.vue"),
           children: [
-            {
-              path: "",
-              component: () => import(/* webpackChunkName: "common-room" */ "./pages/CommonRoom.vue")
-            },
             {
               path: "room/:room_id",
               component: () => import(/* webpackChunkName: "realtime-room" */ "./pages/RealtimeRoom.vue"),

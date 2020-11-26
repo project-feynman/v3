@@ -1,196 +1,138 @@
 <template>
   <portal v-if="roomTypeDoc" to="currently-active-open-space">
-
+    <!-- START OF "SPACE ACTIONS" dropdown menu -->
+    <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal to="current-open-space-actions">
+      <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
+        <template v-slot:activator="{ on, attrs }">
 
-    <!-- <v-card elevation="0"> -->
-      <!-- <v-list-item two-line style="padding-top: 0; padding-left: 10x"> -->
-        <!-- <v-btn @click="$router.push(`/class/${classID}`)" icon class="mr-2">
-          <v-icon>mdi-arrow-left</v-icon>
-        </v-btn> -->
-
-        <!-- <v-list-item-content>
-          <v-list-item-title style="font-size: 1.15rem; opacity: 70%">
-            {{ roomTypeDoc.name }}
-          </v-list-item-title>
-        </v-list-item-content> -->
-
-        <!-- The triple dot dropdown menu with actions that affects the whole class -->
-        <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
-          <template v-slot:activator="{ on, attrs }">
-
-          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
-            Space actions
-          </BaseButton>
-          </template>
-
-          <v-list>
-            <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
-              <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
-            </v-list-item>
-
-            <BasePopupButton>
-              <template v-slot:activator-button="{ on, openPopup }">
-                <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
-                  <v-icon left color="black">mdi-file-pdf</v-icon> Set problem
-                </v-list-item>
-              </template>
-              <template v-slot:message-to-user>
-                <p>If you upload a multi-paged PDF, each page will be seeded in sequence in every room. 
-                  For example, if you upload a PDF document with 5 problems, then every room's board #1 ~ #5 will be those problems. 
-                </p>
-
-                <v-row>
-                  <v-col>
-                    Set PDF problem in every room's board # 
-                  </v-col>
-                  <v-col cols="12" sm="4">
-                    <v-overflow-btn 
-                      label="1"
-                      :items="[1, 2, 3, 4, 5, 6, 7, 8]"
-                      @change="newVal => targetBoardNum = (newVal - 1)"
-                    />
-                  </v-col>
-                </v-row>
-              </template>
-              <template v-slot:popup-content="{ closePopup }">
-                <v-btn @click="$refs.fileInput.click()">Select file</v-btn>
-                <input 
-                  @change="e => { seedEachRoomWithProblem(e); closePopup(); incrementKeyToDestroy += 1; }" 
-                  style="display: none" 
-                  type="file" 
-                  ref="fileInput"
-                  :key="incrementKeyToDestroy"
-                >
-              </template>
-              <!-- QUICKFIX TO MAKE IT INVISIBLE -->
-              <template v-slot:popup-action-buttons>
-                <div></div>
-              </template>
-            </BasePopupButton>
-
-            <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
-              <v-icon left>mdi-volume-mute</v-icon> Mute everyone
-            </v-list-item>
-
-            <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
-              <template v-slot:activator-button="{ on, openPopup }">
-                <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                  <v-icon left color="black">mdi-shuffle-variant</v-icon> Shuffle everyone
-                </v-list-item>
-              </template>
-              <template v-slot:message-to-user>
-                <v-row>
-                  <v-col cols="12" sm="4">
-                    <v-overflow-btn 
-                      label="3"
-                      :items="[2, 3, 4, 5]"
-                      @change="groupSize => groupSize = groupSize"
-                    />
-                  </v-col>
-                  <v-col>
-                    <h3 class="mt-5">
-                      people per group
-                    </h3>
-                  </v-col>
-                </v-row>
-              </template> 
-            </BasePopupButton>
-
-            <!-- <v-list-item @click="clearRoomStatuses(roomTypeDoc.id)">
-              <v-icon left color="red">mdi-comment-remove</v-icon> Reset statuses
-            </v-list-item> -->
-
-            <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
-              <template v-slot:activator-button="{ on, openPopup }">
-                <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                  <v-icon left color="red">mdi-delete</v-icon> Reset everything
-                </v-list-item>
-              </template>
-              <template v-slot:message-to-user>
-                Are you sure you want to reset absolutely everything? 
-                This will reset the blackboards and status of every single room. 
-              </template> 
-            </BasePopupButton>
-
-            <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
-              <v-icon left>mdi-plus</v-icon> New room
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      <!-- </v-list-item> -->
-    <!-- </v-card> -->
-    
-    </portal>
-
-    <!-- COMMON ROOM (lots of quickfix code here)-->
-    <v-list-item v-if="commonRoomDoc" :key="commonRoomDoc.id"
-      :to="`/class/${classID}/section/${sectionID}/`"
-      exact exact-active-class="active-blackboard accent--text"
-    >
-      <div class="py-5" style="width: 100%">
-        <div class="d-flex">
-          <div class="font-weight-medium py-2" :class="$route.params.room_id ? 'text--secondary' : ''" style="font-size: 0.7em">
-            COMMON ROOM
-          </div>
-          <v-spacer/>
-          <portal-target v-if="!currentRoomID" name="current-room-buttons">
-        
-          </portal-target>
-        </div>      
-
-        <template v-if="!currentRoomID">
-          <portal-target  name="current-room-participants">
-
-          </portal-target>
+        <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
+          Space actions
+        </BaseButton>
         </template>
 
-        <!-- Quickfix  -->
-        <div v-else style="width: 100%;">
-          <div class="d-flex">
+        <v-list>
+          <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
+            <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
+          </v-list-item>
 
-            <v-spacer/>
+          <BasePopupButton>
+            <template v-slot:activator-button="{ on, openPopup }">
+              <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
+                <v-icon left color="black">mdi-file-pdf</v-icon> Set problem
+              </v-list-item>
+            </template>
+            <template v-slot:message-to-user>
+              <p>If you upload a multi-paged PDF, each page will be seeded in sequence in every room. 
+                For example, if you upload a PDF document with 5 problems, then every room's board #1 ~ #5 will be those problems. 
+              </p>
 
-            <v-chip v-if="commonRoomDoc.status" color="blue" outlined small>
-            {{ commonRoomDoc.status }}
-            </v-chip>
-          </div>
+              <v-row>
+                <v-col>
+                  Set PDF problem in every room's board # 
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-overflow-btn 
+                    label="1"
+                    :items="[1, 2, 3, 4, 5, 6, 7, 8]"
+                    @change="newVal => targetBoardNum = (newVal - 1)"
+                  />
+                </v-col>
+              </v-row>
+            </template>
+            <template v-slot:popup-content="{ closePopup }">
+              <v-btn @click="$refs.fileInput.click()">Select file</v-btn>
+              <input 
+                @change="e => { seedEachRoomWithProblem(e); closePopup(); incrementKeyToDestroy += 1; }" 
+                style="display: none" 
+                type="file" 
+                ref="fileInput"
+                :key="incrementKeyToDestroy"
+              >
+            </template>
+            <!-- QUICKFIX TO MAKE IT INVISIBLE -->
+            <template v-slot:popup-action-buttons>
+              <div></div>
+            </template>
+          </BasePopupButton>
 
-          <div class="pl-3">
-            <p v-for="p in roomIDToParticipants[commonRoomDoc.id]" :key="p.id"
-              style="font-weight: 400; font-size: 0.8em"
-              :class="`d-flex text--secondary mb-0 ${ `${p.firstName} ${p.lastName}` === dominantSpeaker.name ? 'font-weight-black' : ''}`"
-            >
-              {{ p.firstName + " " + p.lastName }}
-              <v-spacer/>
-              {{ "#" + p.currentBoardNumber }} 
-              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'grey'">
-                {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
-              </v-icon>
-            </p>
-          </div>
-        </div>
-      </div>
-    </v-list-item> 
+          <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
+            <v-icon left>mdi-volume-mute</v-icon> Mute everyone
+          </v-list-item>
 
-    <!-- OTHER ROOMS -->
-     <v-list-item v-for="(room, i) in nonCommonRooms" :key="room.id"
+          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+            <template v-slot:activator-button="{ on, openPopup }">
+              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                <v-icon left color="black">mdi-shuffle-variant</v-icon> Shuffle everyone
+              </v-list-item>
+            </template>
+            <template v-slot:message-to-user>
+              <v-row>
+                <v-col cols="12" sm="4">
+                  <v-overflow-btn 
+                    label="3"
+                    :items="[2, 3, 4, 5]"
+                    @change="groupSize => groupSize = groupSize"
+                  />
+                </v-col>
+                <v-col>
+                  <h3 class="mt-5">
+                    people per group
+                  </h3>
+                </v-col>
+              </v-row>
+            </template> 
+          </BasePopupButton>
+
+          <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
+            <template v-slot:activator-button="{ on, openPopup }">
+              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                <v-icon left color="red">mdi-delete</v-icon> Reset everything
+              </v-list-item>
+            </template>
+            <template v-slot:message-to-user>
+              Are you sure you want to reset absolutely everything? 
+              This will reset the blackboards and status of every single room. 
+            </template> 
+          </BasePopupButton>
+
+          <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
+            <v-icon left>mdi-plus</v-icon> New room
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </portal>
+    <!-- END OF "SPACE ACTIONS" dropdown menu -->
+
+    <!-- should just v-for="room in rooms" 
+      When you are feeling down, either you have to suddenly do something courageous,
+      or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
+    -->
+
+    <!-- ROOMS -->
+     <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       active-class="active-blackboard accent--text"
+      dense
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
-        <div class="py-5" style="width: 100%">
+        <div class="pt-4 pb-2" style="width: 100%">
           <div class="d-flex">
-            <div v-if="room.name" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
+            <div v-if="room.isCommonRoom" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
+              COMMON ROOM
+            </div>
+            
+            <div v-else-if="room.name" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
               {{ room.name }}
             </div>
 
             <div v-else class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
-              Room {{ i + 1 }}
+              Room {{ i - 1 }}
             </div>
 
             <v-spacer/>
+
             <portal-target name="current-room-buttons">
           
             </portal-target>
@@ -214,13 +156,18 @@
       <template v-else>
         <div style="width: 100%;">
           <div class="d-flex">
-            <div v-if="room.name" class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.7em">
+            <div v-if="room.isCommonRoom" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
+              COMMON ROOM
+            </div>
+
+            <div v-else-if="room.name" class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.7em">
               {{ room.name }}
             </div>
 
             <div v-else class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.7em">
-              Room {{ i+1 }}
+              Room {{ i - 1 }}
             </div>
+
             <v-spacer/>
 
             <v-chip v-if="room.status" color="blue" outlined small>
@@ -228,29 +175,31 @@
             </v-chip>
           </div>
 
-          <div class="pl-3">
-            <p v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+          <div class="pl-5 pr-2 pb-1">
+            <v-row v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+              align="center"
               style="font-weight: 400; font-size: 0.8em"
               class="text--secondary mb-0 d-flex"
             >
               {{ p.firstName + " " + p.lastName }}
+
               <v-spacer/>
+
               {{ "#" + p.currentBoardNumber }} 
+
               <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'grey'">
                 {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
               </v-icon>
-            </p>
+            </v-row>
           </div>
         </div>
       </template>
     </v-list-item>   
 
-    <!-- Twilio Room with Collaborative Blackboard -->
     <portal to="main-content">
       <router-view :key="$route.params.section_id + $route.params.room_id"/>
     </portal>
     
-    <!-- TODO: Refactor into TwilioRoom -->
     <!-- Announcement creation popup -->
     <v-dialog :value="makeAnnouncementPopup.show" persistent max-width="600px">
       <v-card>
@@ -286,18 +235,6 @@
       :roomDoc="currentRoomDoc" 
       :key="currentRoomID + '1'"
     />
-
-    <!-- CONTROL DASHBOARD -->
-    <portal to="side-drawer-bottom-region">
-      <v-card color="grey lighten-2"  >
-        <v-card-text class="py-2">
-          <!-- User mute/deafen/etc. buttons -->
-          <portal-target name="destination2">
-
-          </portal-target>
-        </v-card-text>
-      </v-card>
-    </portal>
   </portal>
 </template>
 
@@ -365,34 +302,20 @@ export default {
     sectionID () {
       return this.$route.params.section_id;
     },
-    nonCommonRooms () {
-      return this.rooms.filter(room => !room.isCommonRoom)
-    },
     isInRoom () { 
       return "room_id" in this.$route.params; 
     },
     currentRoomID () {
       return this.$route.params.room_id;
     },
-    commonRoomDoc () {
-      for (const room of this.rooms) {
-        if (room.isCommonRoom) {
-          return room; 
-        }
-      }
+    sortedRooms () {
+      return [
+        ...this.rooms.filter(room => room.isCommonRoom), 
+        ...this.rooms.filter(room => ! room.isCommonRoom)
+      ];
     },
     currentRoomDoc () {
-      // previous added because <HandleAnnouncements> requires 
-      // a :currentRoom prop, but that prop would be undefined 
-      // because `currentRoomID` is undefined when the user is in the common room. 
-    
-      if (!this.currentRoomID) return this.commonRoomDoc; 
-
-      for (const room of this.rooms) {
-        if (room.id === this.currentRoomID) {
-          return room; 
-        }
-      }
+      return this.rooms.filter(room => room.id === this.$route.params.room_id)[0];
     },
     classDocRef () {
       return db.doc(`classes/${this.classID}`);
@@ -545,11 +468,11 @@ export default {
 
       const promises = []; 
       for (const [i, imageFile] of imageFiles.entries()) {
-        console.log("processing image number ", i);
+        // console.log("processing image number ", i);
         const processOneImage = this.$_saveToStorage(getRandomId(), imageFile).then(downloadURL => {
           const idx = this.targetBoardNum + i; 
           for (const room of this.rooms) {
-            console.log("placing image number ", i, "into a room");
+            // console.log("placing image number ", i, "into a room");
             if (room.blackboards.length > idx) {
               const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
               promises.push(

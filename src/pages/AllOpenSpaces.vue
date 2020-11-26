@@ -41,18 +41,19 @@
           </v-card>
         </v-dialog> -->
 
-        <template v-for="roomType in roomTypes">
+        <template v-for="roomType in sortedRoomTypes">
+          <!-- Fix not getting orange highlight (or perhaps it's a feature and not a bug : )) -->
           <v-list-item :key="roomType.id"
-            :to="(`/class/${classID}/section/${roomType.id}`)"
+            :to="(`/class/${classID}/section/${roomType.id}/room/${roomType.id}`)"
             active-class="accent--text"
             class="px-2" 
             dense
           >
-            <!-- font-size: 1.15rem; opacity: 70% -->
-            <!-- font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%; -->
             <v-list-item-content 
               :style="`
-                font-size: 0.8rem; font-weight: 400; color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' }; 
+                font-size: 0.8rem; 
+                font-weight: 400; 
+                color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' }; 
                 opacity: ${ $route.params.section_id === roomType.id ? '100%' : '70%' };
               `"
               class="py-1"
@@ -61,8 +62,8 @@
                 <div class="ml-2">{{ roomType.name }}</div>
                 <v-spacer/>
                 <portal-target v-if="$route.params.section_id === roomType.id"
-                  class="mt-1"
                   name="current-open-space-actions"
+                  class="mt-1"
                   :key="roomType.id + 'actions-portal'"
                 >
                   
@@ -99,9 +100,7 @@
 <script>
 /**
  * Experiment: whenever the user switches an open space, recount the number of participants in each open space. 
- * For operations that are rare, don't take up too much area. Optimize for high frequency operations 
- * 
- * 
+ * For operations that are rare, don't take up too much area. Optimize for high frequency operations.
  */
 
 import db from "@/database.js"; 
@@ -146,6 +145,12 @@ export default {
     },
     classDocRef () {
       return db.doc(`classes/${this.classID}`); 
+    },
+    sortedRoomTypes () {
+      return [
+        ...this.roomTypes.filter(roomType => roomType.id === this.$route.params.class_id),
+        ...this.roomTypes.filter(roomType => roomType.id !== this.$route.params.class_id)
+      ];
     }
   },
   created () {

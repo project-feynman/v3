@@ -18,7 +18,7 @@
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
-      @record-start="sizeAndOrientationMode = 'landscape'"
+      @record-start="updateSizeAndOrientationMode('landscape')"
       @record-end="handleRecordEnd()"
     >
       <!-- TODO: don't let user wipe board / set background while recording -->
