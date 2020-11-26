@@ -45,13 +45,14 @@
           <v-list-item :key="roomType.id"
             :to="(`/class/${classID}/section/${roomType.id}`)"
             active-class="accent--text"
-            class="px-2"
+            class="px-2" 
+            dense
           >
             <!-- font-size: 1.15rem; opacity: 70% -->
             <!-- font-size: 0.9rem; font-weight: 400; color: #424242; opacity: 70%; -->
             <v-list-item-content 
               :style="`
-                font-size: 0.9rem; font-weight: 400; color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' }; 
+                font-size: 0.8rem; font-weight: 400; color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' }; 
                 opacity: ${ $route.params.section_id === roomType.id ? '100%' : '70%' };
               `"
               class="py-1"

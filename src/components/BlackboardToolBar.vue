@@ -1,41 +1,39 @@
 <template>
   <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
-  <v-app-bar width="605" min-width="605" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="590" min-width="590" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
-        <slot name="record-audio-slot">
-
-        </slot>
-
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
           :icon="isBoardFullscreen ? 'mdi-arrow-expand-right' : 'mdi-arrow-collapse-left'" small color="white"
         >
           {{ isBoardFullscreen ? 'Show' : 'Hide' }} drawer
         </BaseButton>
+        
+        <slot name="record-audio-slot">
+
+        </slot>
+
+        <v-col class="py-0 px-0" cols="auto">
+          <PenSwatch 	
+            :colors="colors" 	
+            :isPenActive="isPen"	
+            @select-color="newColor => selectPen(newColor)" 	
+          />
+        </v-col>
+
+        <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
+          Eraser
+        </BaseButton>
+
+        <slot name="touch-slot">
+
+        </slot>
+
+        <v-spacer/>
 
         <slot name="more-actions-slot">
 
         </slot>
-
-        <!-- <v-col class="py-0">
-          <v-row justify="start" align="center"> -->
-            <v-col class="ml-5 px-1 py-0" cols="auto">
-              <PenSwatch 	
-                :colors="colors" 	
-                :isPenActive="isPen"	
-                @select-color="newColor => selectPen(newColor)" 	
-              />
-            </v-col>
-
-            <!-- <ColorPicker :value="color" @update:color="color = $event.hex"/>  -->
-            <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
-              Eraser
-            </BaseButton>
-            <slot name="touch-slot">
-
-            </slot>
-          <!-- </v-row>
-        </v-col>         -->
       </v-row>
     </v-container>
   </v-app-bar>

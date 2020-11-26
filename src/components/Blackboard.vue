@@ -29,9 +29,17 @@
           @toggle-fullScreen="toggleFullScreen()"
         >
           <template v-slot:touch-slot>
-            <BaseButton @click="setTouchDisabled(!touchDisabled)" :icon=" touchDisabled ? 'mdi-pencil-lock' : 'mdi-gesture-tap'" color="white" small>
-              {{ touchDisabled ? 'Pen mode' : 'Any mode' }}
-            </BaseButton>
+            <v-switch 
+              :input-value="! touchDisabled"
+              @change="setTouchDisabled(!touchDisabled)"
+              color="yellow"
+              class="mt-0 ml-2"
+              hide-details
+            >
+              <template v-slot:label>
+                <div style="font-size: 0.5rem" :class="touchDisabled ? 'white--text' : 'yellow--text'">Touch draw</div>
+              </template>
+            </v-switch>
           </template>
     
           <template v-slot:record-audio-slot>
@@ -62,7 +70,7 @@
                   @click="isMenuOpen = true" 
                   icon="mdi-dots-vertical" color="white" small
                 >
-                  More actions
+                  Board actions
                 </BaseButton>
               </template>
               

@@ -578,9 +578,6 @@ export default {
         return true;
       } 
       if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) {
-        this.$root.$emit(
-          "show-snackbar", 
-          `Switch off "Pencil mode" to draw with your finger or non-Apple stylus`);
         return true; 
       }
     },
