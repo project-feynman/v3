@@ -83,7 +83,7 @@
             <!-- Library -->
             <!-- Cannot use v-on because it doesn't stop event propagation to the list item, see https://github.com/vuetifyjs/vuetify/issues/3333 -->
             <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
-              <template v-slot:activator="{ on, attrs }">
+              <template v-slot:activator>
                 <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-2 mr-1">
                   <v-icon>mdi-bookshelf</v-icon>
                 </v-btn>
@@ -112,11 +112,16 @@
       </portal-target>
     </v-main>
 
-    <div v-if="mitClass" :key="$route.params.class_id">
+    <div v-if="mitClass" :key="$route.params.class_id + $route.params.section_id">
       <!-- :key="...class_id" forces <router-view/> to re-render -->
       <!-- Many things from <router-view> will teleport to the portals above -->
+      <!-- 
+          For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
+          it's okay to fetch 10 documents everytime someone switches a section. 
+          It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
+       -->
       <AllOpenSpaces/>  
-      <router-view :key="$route.params.section_id"/>
+      <router-view/>
     </div>
   </div>
 </template>
@@ -236,8 +241,9 @@ export default {
      * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
      */
     async createNewRoomType (name) {
+      const { class_id } = this.$route.params; 
       const id = getRandomId(); 
-      const ref = db.doc(`classes/${this.$route.params.class_id}`);
+      const ref = db.doc(`classes/${class_id}`);
       await Promise.all([
         ref.collection("roomTypes").doc(id).set({ id, name }),
         ref.collection("rooms").doc(id).set({
@@ -248,6 +254,7 @@ export default {
         ref.collection("blackboards").doc(id).set({})
       ]);
       this.$root.$emit("show-snackbar", "Successfully created new open space.")
+      this.$router.push(`/class/${class_id}/section/${id}`);
     },
     // async submitBug ({ "Describe your problem": title }) {
     //   if (!title) {

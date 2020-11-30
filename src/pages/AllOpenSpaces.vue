@@ -9,7 +9,7 @@
             active-class="accent--text"
             class="px-0" 
           >
-            <!--  color: ${ $route.params.section_id === roomType.id ? '#ff5b24' : '#424242' };  -->
+            <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
             <v-list-item-content class="py-0">
               <v-row class="d-flex px-3 py-2" align="center">
                 <div 
@@ -17,21 +17,26 @@
                   :style="`
                     font-size: 1rem; 
                     font-weight: 400; 
-                    color: ${ $route.params.section_id === roomType.id ? '#424242' : '#424242' }; 
-                    opacity: ${ $route.params.section_id === roomType.id ? '70%' : '50%' };
+                    color: ${ sectionID === roomType.id ? '#424242' : '#424242' }; 
+                    opacity: ${ sectionID === roomType.id ? '70%' : '50%' };
                   `"
                 >
-                  {{ roomType.name }}
+                  <div v-if="roomType.id !== sectionID">
+                    {{ roomType.name }}
+                  </div>
+                  <portal-target v-else name="room-type-name">
+
+                  </portal-target>
                 </div>
                 <v-spacer/>
-                <portal-target v-if="$route.params.section_id === roomType.id"
+                <portal-target v-if="sectionID === roomType.id"
                   name="current-open-space-actions"
                   :key="roomType.id + 'actions-portal'"
                 >
                   
                 </portal-target>
               </v-row>
-              <portal-target v-if="$route.params.section_id === roomType.id" 
+              <portal-target v-if="sectionID === roomType.id" 
                 name="currently-active-open-space" 
                 :key="roomType.id + 'rooms-portal'"
               >
@@ -72,22 +77,14 @@ export default {
   data () {
     return {
       roomTypes: [],
-      unsubscribeRoomTypesListener: null
     };
   },
   computed: {
-    ...mapState([
-      "mitClass"
-    ]),
-    ...mapGetters([
-      "isAdmin"
-    ]),
-    classID () {
-      return this.$route.params.class_id;
-    },
-    classDocRef () {
-      return db.doc(`classes/${this.classID}`); 
-    },
+    ...mapState([ "mitClass" ]),
+    ...mapGetters([ "isAdmin" ]),
+    classID () { return this.$route.params.class_id; },
+    sectionID () { return this.$route.params.section_id; },
+    classDocRef () { return db.doc(`classes/${this.classID}`); },
     sortedRoomTypes () {
       return [
         ...this.roomTypes.filter(roomType => roomType.id === this.$route.params.class_id),
@@ -95,15 +92,9 @@ export default {
       ];
     }
   },
-  created () {
-    this.unsubscribeRoomTypesListener = this.$_bindVarToDB({
-      varName: "roomTypes",
-      dbRef: this.classDocRef.collection("roomTypes"),
-      component: this
-    });
-  },
-  destroyed () {
-    this.unsubscribeRoomTypesListener(); 
+  async created () {
+    // fetch once for light bandwidth usage
+    this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes")); 
   }
 }
 </script>

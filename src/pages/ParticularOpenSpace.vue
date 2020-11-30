@@ -1,5 +1,17 @@
 <template>
   <portal v-if="roomTypeDoc" to="currently-active-open-space">
+    <!-- REPLACE THE TITLE IN ALL OPEN SPACES (BECAUSE WE LISTEN TO THE ROOMTYPE DOC HERE) -->
+    <portal to="room-type-name">
+      <div style="
+        font-size: 1rem; 
+        font-weight: 400; 
+        color: '#424242' }; 
+        opacity: 70% };
+      ">
+        {{ roomTypeDoc.name }}
+      </div>
+    </portal>
+
     <!-- START OF "SPACE ACTIONS" dropdown menu -->
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal to="current-open-space-actions">
@@ -106,7 +118,8 @@
           </v-list-item>
 
           <!-- Delete open space -->
-          <v-list-item :disabled="!isAdmin" @click="isDeletePopupOpen = true">
+          <!-- Don't let anyone delete the lobby section -->
+          <v-list-item :disabled="!isAdmin || (roomTypeDoc.id === classID)" @click="isDeletePopupOpen = true">
             <v-icon class="mr-2" color="red">mdi-delete</v-icon> Delete open space
           </v-list-item>
         </v-list>
@@ -191,26 +204,22 @@
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex ml-2 mt-2" style="opacity: 50%">
-            <div v-if="room.isCommonRoom" class="font-weight-medium text--secondary py-1" style="font-size: 0.9em">
+          <div class="d-flex ml-2 mt-2 font-weight-medium text--secondary py-1" style="font-size: 0.9em; opacity: 50%">
+            <div v-if="room.isCommonRoom">
               common room
             </div>
 
-            <div v-else-if="room.name" class="font-weight-medium text--secondary py-1" style="font-size: 0.9em">
+            <div v-else-if="room.name">
               {{ room.name }}
             </div>
 
-            <div v-else class="font-weight-medium text--secondary py-1" style="font-size: 0.9em">
+            <div v-else>
               room {{ i - 1 }}
             </div>
-
-            <v-spacer/>
-
-            <!-- TODO: use a separate line -->
-            <v-chip v-if="room.status" class="mr-2" color="blue" outlined small>
-              {{ room.status }}
-            </v-chip>
           </div>
+          <v-chip v-if="room.status" class="ml-2" color="blue" outlined small>
+            {{ room.status }}
+          </v-chip>
 
           <div class="pl-5 pr-2 pb-1 pt-1">
             <v-row v-for="p in roomIDToParticipants[room.id]" :key="p.id"

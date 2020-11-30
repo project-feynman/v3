@@ -21,14 +21,12 @@
 import TheSideDrawerFileExplorer from "@/components/TheSideDrawerFileExplorer.vue";
 import TheSideDrawerGroupByDate from "@/components/TheSideDrawerGroupByDate.vue";
 import ClassPageSeePost from "@/components/ClassPageSeePost.vue";
-import ClassTutorial from "@/pages/ClassTutorial.vue"; // TODO: refactor the component
 
 export default {
   components: {
     TheSideDrawerFileExplorer,
     TheSideDrawerGroupByDate,
-    ClassPageSeePost,
-    ClassTutorial
+    ClassPageSeePost
   },
   data () {
     return {
