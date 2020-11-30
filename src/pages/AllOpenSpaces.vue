@@ -2,27 +2,6 @@
   <div>
     <portal to="side-drawer">
       <v-list nav class="pa-2">
-        
-        <!-- 
-        <v-dialog v-model="isEditPopupOpen" width="500px">
-          <v-card>
-            <v-card-title>
-              Rename this open space
-            </v-card-title>
-            <v-card-text>
-              <v-text-field placeholder="Enter the new name..." v-model="newRoomTypeName"/>
-            </v-card-text>
-          
-            <v-card-actiofns>
-              <v-spacer/>
-              <v-btn @click="isEditPopupOpen = false">CANCEL</v-btn>
-              <v-btn @click="editNameOfRoomType(); isEditPopupOpen = false;" color="accent">
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog> -->
-
         <template v-for="roomType in sortedRoomTypes">
           <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
           <v-list-item :key="roomType.id"
@@ -59,20 +38,6 @@
 
               </portal-target>
             </v-list-item-content>
-            <!-- <v-list-item-action>
-              <v-row> -->
-
-                <!-- TODO: create and update operations with a dropdown menu -->
-                <!-- <v-btn @click.stop.prevent="isEditPopupOpen = true; roomTypeID = roomType.id" icon>
-                  <v-icon color="grey">mdi-pencil</v-icon>
-                </v-btn> -->
-
-                <!-- <v-btn v-if="isAdmin" @click.submit.prevent="deleteRoomType(roomType.id)" icon>
-                  <v-icon color="red">mdi-close</v-icon>
-                </v-btn> -->
-
-              <!-- </v-row>
-            </v-list-item-action> -->
           </v-list-item>
         </template>
       </v-list>
@@ -107,11 +72,7 @@ export default {
   data () {
     return {
       roomTypes: [],
-      unsubscribeRoomTypesListener: null,
-      showLibrary: false,
-      // isEditPopupOpen: false,
-      // newRoomTypeName: "",
-      // roomTypeID: ""
+      unsubscribeRoomTypesListener: null
     };
   },
   computed: {
@@ -143,20 +104,6 @@ export default {
   },
   destroyed () {
     this.unsubscribeRoomTypesListener(); 
-  },
-  methods: {
-    /** TODO: make this a proper deletion */
-    deleteRoomType (roomTypeID) {
-      this.classDocRef.collection("roomTypes").doc(roomTypeID).delete();
-    },
-    editNameOfRoomType (newName) {
-      this.classDocRef.collection("roomTypes").doc(this.roomTypeID).update({
-        name: this.newRoomTypeName
-      });
-      this.newRoomTypeName = ""; 
-      this.roomTypeID = ""; 
-      console.log("editNameOfRoomType()");
-    }
   }
 }
 </script>

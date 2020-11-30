@@ -38,14 +38,13 @@ export default {
       "[MapleStory BGM] Singapore Boat Quay Town.mp3",
       "[MapleStory BGM] Ereve Raindrop Flower.mp3"
     ];
-    const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length) + 1);
+    const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
     const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
     const url = await pathReference.getDownloadURL(); 
     this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
   },
   methods: {
     playBackgroundMusic () {
-      console.log("musicAudioElement =", this.$store.state.musicAudioElement);
       this.$store.state.musicAudioElement.play(); 
       this.$store.commit("SET_IS_MUSIC_PLAYING", true);
     }

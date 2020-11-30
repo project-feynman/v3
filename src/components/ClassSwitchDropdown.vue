@@ -1,11 +1,10 @@
 <template>
   <v-menu v-model="isMenuOpen" fixed offset-y bottom>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" text tile large class="pa-2 text-truncate" style="padding-top: 0; font-size: 1.2rem; font-weight: 400">
-        <!-- text--truncate doesn't do anything -->
-        <div class="text--truncate" v-if="mitClass">
+      <v-btn v-on="on" text tile large class="pa-2" style="padding-top: 0; font-size: 1.2rem; font-weight: 400" max-width="180">
+        <span v-if="mitClass" class="d-inline-block text-truncate" style="max-width: 110px;">
           {{ mitClass.name }}
-        </div>
+        </span>
         <v-spacer/>
         <v-icon>mdi-menu-down</v-icon>
       </v-btn>

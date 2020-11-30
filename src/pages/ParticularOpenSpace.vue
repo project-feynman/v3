@@ -86,21 +86,45 @@
           <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="red">mdi-delete</v-icon> Reset everything
+                <v-icon left color="red">mdi-delete</v-icon> Wipe all boards
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
-              Are you sure you want to reset absolutely everything? 
+              Are you sure you?
               This will reset the blackboards and status of every single room. 
             </template> 
           </BasePopupButton>
 
           <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
-            <v-icon left>mdi-plus</v-icon> New room
+            <v-icon left color="purple">mdi-plus</v-icon> New room
+          </v-list-item>
+
+          <!-- TODO: enable the creators to change their own open spaces -->
+          <!-- Rename the open space -->
+          <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
+            <v-icon class="mr-2">mdi-pencil</v-icon> Rename open space
+          </v-list-item>
+
+          <!-- Delete open space -->
+          <v-list-item :disabled="!isAdmin" @click="isDeletePopupOpen = true">
+            <v-icon class="mr-2" color="red">mdi-delete</v-icon> Delete open space
           </v-list-item>
         </v-list>
       </v-menu>
     </portal>
+
+    <!-- The popup has to be OUTSIDE the menu, otherwise when the menu closes the popup cannot persist -->
+    <!-- Alternatively, use click.stop() -->
+    <ParticularOpenSpaceRenamePopup 
+      :isRenamePopupOpen="isRenamePopupOpen"
+      @change="(newVal) => isRenamePopupOpen = newVal"
+    />
+
+    <ParticularOpenSpaceDeletePopup
+      :isDeletePopupOpen="isDeletePopupOpen"
+      @change="(newVal) => isDeletePopupOpen = newVal"
+    />
+
     <!-- END OF "SPACE ACTIONS" dropdown menu -->
 
     <!-- should just v-for="room in rooms" 
@@ -269,6 +293,8 @@ import { mapState, mapGetters } from "vuex";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
+import ParticularOpenSpaceRenamePopup from "@/components/ParticularOpenSpaceRenamePopup.vue";
+import ParticularOpenSpaceDeletePopup from "@/components/ParticularOpenSpaceDeletePopup.vue";
 import firebase from "firebase/app";
 import "firebase/firestore"; 
 import "firebase/functions";
@@ -284,7 +310,9 @@ export default {
     BaseButton,
     BasePopupButton,
     HandleAnnouncements,
-    ClassLibrary
+    ClassLibrary,
+    ParticularOpenSpaceRenamePopup,
+    ParticularOpenSpaceDeletePopup
   },
   data () {
     return {
@@ -303,7 +331,9 @@ export default {
       },
       groupSize: 3,
       minRoomSizeOnShuffle: 2,
-      incrementKeyToDestroy: 0
+      incrementKeyToDestroy: 0,
+      isRenamePopupOpen: false,
+      isDeletePopupOpen: false
     }
   },
   computed: {

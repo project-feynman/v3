@@ -43,23 +43,21 @@
             
             <!-- Create new spaces -->
             <v-list>
-              <v-list-item>
-                <BasePopupButton actionName="Create new space"
-                  :inputFields="['name']" 
-                  @action-do="({ name }) => createNewRoomType(name)"
-                >
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn class="mr-2" v-on="on">
-                      <v-icon color="grey darken-1" small>mdi-plus</v-icon>
-                      New space 
-                    </v-btn>
-                  </template> 
-                </BasePopupButton>
-              </v-list-item>
+              <BasePopupButton actionName="Create new space"
+                :inputFields="['name']" 
+                @action-do="({ name }) => createNewRoomType(name)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-list-item v-on="on">
+                    <v-icon color="grey darken-1" class="mr-2">mdi-plus</v-icon>
+                    New space 
+                  </v-list-item>
+                </template> 
+              </BasePopupButton>
             
               <!-- Leave class -->
               <v-list-item v-if="user.enrolledClasses.length >= 2" @click="leaveClass()">
-                Leave class
+                <v-icon>mdi-exit</v-icon>Leave class
               </v-list-item>
             </v-list>
             
@@ -124,13 +122,16 @@
 </template>
 
 <script>
-import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/storage";
+import { mapState } from "vuex";
+
+import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
-import { mapState } from "vuex";
+import { getRandomId } from "@/helpers.js"; 
+
 import GroupChat from "@/components/GroupChat.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
@@ -234,15 +235,19 @@ export default {
     /**
      * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
      */
-    createNewRoomType (name) {
+    async createNewRoomType (name) {
       const id = getRandomId(); 
-      this.classDocRef.collection("roomTypes").doc(id).set({ id, name });
-      this.classDocRef.collection("rooms").doc(id).set({
-        isCommonRoom: true,
-        roomTypeID: id,
-        blackboards: [id]
-      });
-      this.classDocRef.collection("blackboards").doc(id).set({});
+      const ref = db.doc(`classes/${this.$route.params.class_id}`);
+      await Promise.all([
+        ref.collection("roomTypes").doc(id).set({ id, name }),
+        ref.collection("rooms").doc(id).set({
+          isCommonRoom: true,
+          roomTypeID: id,
+          blackboards: [id]
+        }),
+        ref.collection("blackboards").doc(id).set({})
+      ]);
+      this.$root.$emit("show-snackbar", "Successfully created new open space.")
     },
     // async submitBug ({ "Describe your problem": title }) {
     //   if (!title) {
