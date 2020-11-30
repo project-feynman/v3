@@ -16,6 +16,9 @@
 </template>
 
 <script>
+import firebase from "firebase/app"; 
+import "firebase/storage"; 
+
 export default {
   data: () => ({
     snackbar: false,
@@ -24,18 +27,21 @@ export default {
     musicSnackbar: true,
     musicAudioElement: null
   }),
-  computed: {
-    user () { return this.$store.state.user; }
-  },
-  created () {
-    // TODO: add 1 more soundtrack
-    // Lith Harbor
-    this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio("/music.mp3"));
-
+  async created () {
     this.$root.$on("show-snackbar", (message) => {
       this.snackbar = true;
       this.snackbarMessage = message;
     });
+
+    const maplestorySoundtrack = [
+      "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
+      "[MapleStory BGM] Singapore Boat Quay Town.mp3",
+      "[MapleStory BGM] Ereve Raindrop Flower.mp3"
+    ];
+    const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length) + 1);
+    const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
+    const url = await pathReference.getDownloadURL(); 
+    this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
   },
   methods: {
     playBackgroundMusic () {

@@ -52,7 +52,9 @@ export default {
     ...mapState([
       "user",
       "session",
-      "canHearAudio"
+      "canHearAudio",
+      "isMusicPlaying",
+      "isViewingLibrary"
     ]),
     sessionID () {
       return this.session.currentID; 
@@ -74,6 +76,12 @@ export default {
       this.updateParticipantDoc();
     },
     canHearAudio () {
+      this.updateParticipantDoc(); 
+    },
+    isMusicPlaying () {
+      this.updateParticipantDoc(); 
+    },
+    isViewingLibrary () {
       this.updateParticipantDoc(); 
     }
   },
@@ -115,7 +123,9 @@ export default {
         lastName: this.user.lastName,
         email: this.user.email,
         uid: this.user.uid,
-        canHearAudio: this.canHearAudio
+        canHearAudio: this.canHearAudio,
+        isMusicPlaying: this.isMusicPlaying,
+        isViewingLibrary: this.isViewingLibrary
       });
     },
     // doesn't matter if it's called twice, because the ref is unique

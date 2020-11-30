@@ -95,7 +95,7 @@ export default {
 
 <style scoped>
 .button-custom:not(.v-btn--round) {
-  font-size: 0.5em;
+  font-size: 0.65em;
   letter-spacing: unset;
   text-transform: unset;
   height: unset !important;

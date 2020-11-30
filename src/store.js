@@ -67,7 +67,9 @@ export default new Vuex.Store({
     onlyAllowApplePencil: true,
 
     musicAudioElement: null,
-    isMusicPlaying: false
+    isMusicPlaying: false,
+
+    isViewingLibrary: false
   },
   getters: {
     isAdmin: state => {
@@ -75,6 +77,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_IS_VIEWING_LIBRARY (state, newVal) {
+      state.isViewingLibrary = newVal; 
+    },
     SET_MUSIC_AUDIO_ELEMENT (state, newVal) {
       state.musicAudioElement = newVal; 
     },

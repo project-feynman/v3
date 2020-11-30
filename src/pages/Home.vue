@@ -19,7 +19,7 @@
             <v-row class="my-5 pt-2" justify="center">
               <template v-if="user">
                 <!-- Do NOT split the URL to multiple lines, it will be interpreted as %20%20%20...etc -->
-                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/room/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
                   large class="mr-5 purple white--text"
                 >
                   <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
@@ -89,7 +89,7 @@
           <v-tabs vertical touchless color="accent" class="ml-1">
             <!-- active-class="accent--text" makes the current tab's title go orange -->
             <v-tab>
-              News and Updates
+              Updates
             </v-tab>
             <v-tab active-class="accent--text">
               Vision

@@ -3,16 +3,15 @@
   <div style="height: 100%">
     <!-- `height: 100%` fixes the bottom-region being hidden on Safari -->
     <v-navigation-drawer v-model="isShowingDrawer" 
-      :permanent="!$route.params.section_id" 
       touchless 
       height="100%"
       app 
       class="elevation-5" 
-      width="285" 
+      width="300" 
       mobile-breakpoint="500" 
       clipped 
     >      
-      <v-sheet class="elevation-5 py-2 pl-3">    
+      <v-sheet class="pt-3 pl-4">    
         <div class="d-flex">
           <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: 8px`" class="ma-0">
             <img src="/logo.png">
@@ -28,33 +27,85 @@
             :isAddClassPopupOpen="isAddClassPopupOpen"
             @change="(newVal) => isAddClassPopupOpen = newVal"
           />
+
+          <v-spacer/>
+
+          <!-- Class actions includes: 
+            1. Create open space
+            2. Leave class
+           -->
+          <v-menu v-model="isClassActionsMenuOpen" offset-y bottom>
+            <template v-slot:activator>
+              <BaseButton @click="isClassActionsMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
+                Class actions
+              </BaseButton>
+            </template>
+            
+            <!-- Create new spaces -->
+            <v-list>
+              <v-list-item>
+                <BasePopupButton actionName="Create new space"
+                  :inputFields="['name']" 
+                  @action-do="({ name }) => createNewRoomType(name)"
+                >
+                  <template v-slot:activator-button="{ on }">
+                    <v-btn class="mr-2" v-on="on">
+                      <v-icon color="grey darken-1" small>mdi-plus</v-icon>
+                      New space 
+                    </v-btn>
+                  </template> 
+                </BasePopupButton>
+              </v-list-item>
+            
+              <!-- Leave class -->
+              <v-list-item v-if="user.enrolledClasses.length >= 2" @click="leaveClass()">
+                Leave class
+              </v-list-item>
+            </v-list>
+            
+          </v-menu>
         </div>
 
-        <v-dialog v-model="showLibrary" fullscreen>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn v-on="on" v-bind="attrs" small color="white" class="mt-1">
-              <v-icon class="mr-2">mdi-bookshelf</v-icon>
-              Library
-            </v-btn>
-          </template>
+        <portal to="my-control-buttons">
+          <v-row align="center" justify="space-around" class="d-flex px-4 pt-3 pb-4">
+            <portal-target name="connect-to-twilio-button">
 
-          <v-toolbar dark>
-            <v-btn icon dark @click="showLibrary = false">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-toolbar>
-          <ClassLibrary :key="$route.params.class_id"/>
-        </v-dialog>
+            </portal-target>
+
+            <!-- Music -->
+            <v-switch 
+              :input-value="$store.state.isMusicPlaying"
+              @change="toggleMaplestoryMusic()"
+              color="cyan"
+              prepend-icon="mdi-music-clef-treble"
+              hide-details
+              class="mt-0 grey--text"
+            />
+
+            <!-- Library -->
+            <!-- Cannot use v-on because it doesn't stop event propagation to the list item, see https://github.com/vuetifyjs/vuetify/issues/3333 -->
+            <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-2 mr-1">
+                  <v-icon>mdi-bookshelf</v-icon>
+                </v-btn>
+              </template>
+
+              <v-toolbar dark>
+                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-toolbar>
+
+              <ClassLibrary :key="$route.params.class_id"/>
+            </v-dialog>
+          </v-row>
+        </portal>
       </v-sheet>
       
       <portal-target name="side-drawer">
 
       </portal-target>
-      <template v-slot:append>
-        <portal-target name="side-drawer-bottom-region">
-
-        </portal-target>
-      </template>
     </v-navigation-drawer>
 
     <v-main style="overflow-x: auto;">
@@ -76,21 +127,26 @@
 import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/storage";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { mapState } from "vuex";
 import GroupChat from "@/components/GroupChat.vue"; 
+import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
 import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
+import BaseButton from "@/components/BaseButton.vue";
 
 export default {
-  name: "ClassPageTemplate",
+  name: "ClassPageLayout",
   mixins: [
     DatabaseHelpersMixin
   ],
   components: {
+    BaseButton,
+    BasePopupButton,
     GroupChat,
     ClassLibrary,
     ClassSwitchDropdown,
@@ -102,14 +158,15 @@ export default {
     classParticipantsRef: null,
     isChatOpen: false,
     isShowingDrawer: true,
-    showLibrary: false,
-    isAddClassPopupOpen: false
+    isAddClassPopupOpen: false,
+    isClassActionsMenuOpen: false
   }),
   computed: {
     ...mapState([
       "user",
       "mitClass",
-      "isBoardFullscreen"
+      "isBoardFullscreen",
+      "isViewingLibrary"
     ])
   },
   // TODO: refactor this quickfix
@@ -137,35 +194,85 @@ export default {
     }
   },
   methods: {
-    async submitBug ({ "Describe your problem": title }) {
-      if (!title) {
-        this.$root.$emit("show-snackbar", "Error: don't forget to write something")
-        return;
-      }
-      const sendEmailToTeam = firebase.functions().httpsCallable("sendEmailToCoreTeam");
-      sendEmailToTeam({ 
-        userEmail: this.user ? this.user.email : "anonymous@mit.edu",
-        userFeedback: title  
-      });
-      await db.collection("bugs").add({ 
-        title,
-        email: this.user ? this.user.email : "anonymous@mit.edu"
-      }); 
-      this.$root.$emit("show-snackbar", "Successfully sent feedback.");
-    },
     async leaveClass () {
-      const emailSettingsUpdate = {};
-      for (let emailOption of Object.keys(DefaultEmailSettings)) {
-        emailSettingsUpdate[emailOption] = firebase.firestore.FieldValue.arrayRemove(this.mitClass.id);
+      let classToRemove = null; 
+      for (const enrolledClass of this.user.enrolledClasses) {
+        if (enrolledClass.id === this.$route.params.class_id) {
+          classToRemove = enrolledClass;
+          break; 
+        }
       }
-      const updatedEnroll = this.user.enrolledClasses.filter((course) => course.id !== this.$route.params.class_id);
       await db.collection("users").doc(this.user.uid).update({
-        enrolledClasses: updatedEnroll,
-        ...emailSettingsUpdate
+        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
+        mostRecentClassID: this.user.enrolledClasses[0].id
       });
-      this.$router.push({ path: '/' });
-      this.$root.$emit("show-snackbar", "Successfully dropped class.");
-    }
+      this.$router.push("/");
+    },
+    async toggleMaplestoryMusic () {
+      const { isMusicPlaying, musicAudioElement } = this.$store.state; 
+      
+      if (musicAudioElement.ended) {        
+        const maplestorySoundtrack = [
+          "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
+          "[MapleStory BGM] Singapore Boat Quay Town.mp3",
+          "[MapleStory BGM] Ereve Raindrop Flower.mp3"
+        ];
+        const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length) + 1);
+        const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
+        const url = await pathReference.getDownloadURL(); 
+        this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url));
+      }
+
+      if (isMusicPlaying) {
+        musicAudioElement.pause(); 
+        this.$store.commit("SET_IS_MUSIC_PLAYING", false); 
+      } else {
+        musicAudioElement.play(); 
+        this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
+      } 
+    },    
+    /**
+     * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
+     */
+    createNewRoomType (name) {
+      const id = getRandomId(); 
+      this.classDocRef.collection("roomTypes").doc(id).set({ id, name });
+      this.classDocRef.collection("rooms").doc(id).set({
+        isCommonRoom: true,
+        roomTypeID: id,
+        blackboards: [id]
+      });
+      this.classDocRef.collection("blackboards").doc(id).set({});
+    },
+    // async submitBug ({ "Describe your problem": title }) {
+    //   if (!title) {
+    //     this.$root.$emit("show-snackbar", "Error: don't forget to write something")
+    //     return;
+    //   }
+    //   const sendEmailToTeam = firebase.functions().httpsCallable("sendEmailToCoreTeam");
+    //   sendEmailToTeam({ 
+    //     userEmail: this.user ? this.user.email : "anonymous@mit.edu",
+    //     userFeedback: title  
+    //   });
+    //   await db.collection("bugs").add({ 
+    //     title,
+    //     email: this.user ? this.user.email : "anonymous@mit.edu"
+    //   }); 
+    //   this.$root.$emit("show-snackbar", "Successfully sent feedback.");
+    // },
+    // async leaveClass () {
+    //   const emailSettingsUpdate = {};
+    //   for (let emailOption of Object.keys(DefaultEmailSettings)) {
+    //     emailSettingsUpdate[emailOption] = firebase.firestore.FieldValue.arrayRemove(this.mitClass.id);
+    //   }
+    //   const updatedEnroll = this.user.enrolledClasses.filter((course) => course.id !== this.$route.params.class_id);
+    //   await db.collection("users").doc(this.user.uid).update({
+    //     enrolledClasses: updatedEnroll,
+    //     ...emailSettingsUpdate
+    //   });
+    //   this.$router.push({ path: '/' });
+    //   this.$root.$emit("show-snackbar", "Successfully dropped class.");
+    // }
   }
 }
 </script>

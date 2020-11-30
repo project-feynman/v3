@@ -17,84 +17,101 @@
     </div>
 
     <!-- Display current user's connection state and options -->
-    <portal to="side-drawer-bottom-region">
-      <v-card color="grey lighten-2">
-        <v-card-text class="py-2">
-          <v-row class="d-flex" justify="center" align="center">
-            <v-switch 
-              :value="twilioInitialized"
-              :loading="isTryingToConnect"
-              @change="toggleConnectionToTwilio()"
-              color="green"
-              :prepend-icon="twilioInitialized ? 'mdi-phone' : 'mdi-phone-off'"
-              hide-details
-              class="mt-0"
-            />
-
-            <v-switch 
-              :input-value="$store.state.isMusicPlaying"
-              @change="toggleUserMusicSetting()"
-              color="purple lighten-1"
-              prepend-icon="mdi-music-clef-treble"
-              hide-details
-              class="mt-0"
-            />
-          </v-row>
-
-          <v-row v-if="twilioInitialized" class="d-flex" justify="space-around" align="center">
-            <v-switch
-              :input-value="isMicOn"
-              @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
-              color="purple lighten-1"
-              :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-              :loading="isTryingToConnect"
-              hide-details
-            />
-
-            <v-switch
-              :input-value="isCameraOn"
-              @change="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)"
-              :loading="isTryingToEnableCamera"
-              color="purple lighten-1"
-              :prepend-icon="isCameraOn ? 'mdi-video-wireless' : 'mdi-video'"
-              hide-details
-            />
-
-            <v-switch
-              :input-value="isSharingScreen"
-              @change="isSharingScreen = !isSharingScreen"
-              :loading="isTryingToEnableScreen"
-              color="purple lighten-1"
-              prepend-icon="mdi-monitor"
-              hide-details
-            />
-          </v-row>
-
-          <RealtimeSpaceTwilioRoomTroubleshootPopup class="mt-3"/>
-
-        </v-card-text>
-      </v-card>
-    </portal>
-
-    <portal v-if="allClients" to="current-room-participants">
+     <portal v-if="allClients" to="current-room-participants">
+       <!-- :color="client.sessionID === $store.state.session.currentID ? 'grey' : 'accent'" -->
       <v-row v-for="client in allClients"
         :key="client.id" 
-        :class="['d-flex', 'text--secondary', 'mt-1', 'pl-5', 'pr-2', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
-        style="font-size: 0.8em"
+        :class="['d-flex', 'mt-1', 'pl-5', 'pr-2', 'mr-1']"
         align="center"
       >
-        {{ client.firstName + " " + client.lastName }}  
+
+        <!-- text--secondary: changes the opacity-->
+        <div 
+          style="font-size: 0.9em"
+          :class="[
+            'ml-2',
+            'caption',
+            `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : 'text--secondary' }`,
+            `${ client.sessionID === $store.state.session.currentID ? 'black--text' : 'black--text' }`
+          ]"
+        >
+          {{ client.firstName + " " + client.lastName }}
+        </div>
         
         <v-spacer/>
-        {{ "#" + client.currentBoardNumber }} 
+
+        <!-- TODO: refactor all these portal shenanigans -->
+        <portal v-if="client.sessionID === $store.state.session.currentID" to="connect-to-twilio-button">
+          <v-switch 
+            :value="twilioInitialized"
+            :loading="isTryingToConnect"
+            :disabled="isTryingToConnect"
+            @change="toggleConnectionToTwilio()"
+            color="green"
+            prepend-icon="mdi-phone"
+            hide-details
+            class="mt-0 grey--text"
+          />
+        </portal>
+
+        <!-- If this user is me, show the switches for connecting to the call, muting, etc. -->
+        <portal v-if="client.sessionID === $store.state.session.currentID" to="my-video-conference-buttons">
+          <v-row v-if="twilioInitialized" class="d-flex px-4 pb-4" justify="space-around" align="center">
+            <template v-if="twilioInitialized">
+              <v-switch
+                :input-value="isMicOn"
+                @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
+                color="black"
+                :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+                :loading="isTryingToConnect"
+                hide-details
+                class="mt-0 grey--text"
+              />
+
+              <v-switch
+                :input-value="isCameraOn"
+                @change="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)"
+                :loading="isTryingToEnableCamera"
+                color="black"
+                prepend-icon="mdi-video"
+                hide-details
+                class="mt-0 grey--text"
+              />
+
+              <v-switch
+                :input-value="isSharingScreen"
+                @change="isSharingScreen = !isSharingScreen"
+                :loading="isTryingToEnableScreen"
+                color="black"
+                prepend-icon="mdi-monitor"
+                hide-details
+                class="mt-0 grey--text"
+              />
+            </template>
+          </v-row>
+          <!-- <RealtimeSpaceTwilioRoomTroubleshootPopup class="mt-3"/> -->
+        </portal>
   
-        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small class="mx-2">
+        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" style="font-size: 1.2rem">
           {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
         </v-icon>
 
-        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'grey'">
-          {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
+        <!-- Even if I'm not connected to the audio, I'd like to know if others are connected before I decide -->
+        <v-icon v-else-if="client.canHearAudio" color="green" style="font-size: 1.2rem">
+          mdi-phone-check
         </v-icon>
+
+        <v-icon v-if="client.isMusicPlaying" color="cyan" style="font-size: 1.2rem">
+          mdi-music-clef-treble
+        </v-icon>
+
+        <v-icon v-if="client.isViewingLibrary" color="purple" style="font-size: 1.2rem">
+          mdi-bookshelf
+        </v-icon>
+
+        <div :class="['caption', client.sessionID === $store.state.session.currentID ? 'text--secondary' : 'text--secondary']" style="font-size: 0.9em">
+          {{ "#" + client.currentBoardNumber }}
+        </div>
       </v-row>
     </portal>
 
@@ -305,18 +322,6 @@ export default {
       } else {
         this.disconnectWithoutLeaving(); 
       }
-    },
-    // TODO: decouple the music logic from Twilio, although it's good in that
-    // it's easy to automatically stop playing music when the user is connected to teh audio chat
-    toggleUserMusicSetting () {
-      const { isMusicPlaying, musicAudioElement } = this.$store.state; 
-      if (isMusicPlaying) {
-        musicAudioElement.pause(); 
-        this.$store.commit("SET_IS_MUSIC_PLAYING", false); 
-      } else {
-        musicAudioElement.play(); 
-        this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
-      } 
     },
     cleanUpTwilioRoom () {
       // console.log("disconnecting ", this.roomID)

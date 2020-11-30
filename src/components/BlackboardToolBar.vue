@@ -1,6 +1,6 @@
 <template>
   <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
-  <v-app-bar width="590" min-width="590" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="670" min-width="670" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 

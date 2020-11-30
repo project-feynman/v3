@@ -109,44 +109,54 @@
     -->
 
     <!-- Selectable *should* allow v-chip to be copied and pasted, but it's currently not doing anything -->
-
+  
     <!-- ROOMS -->
      <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       active-class="active-blackboard accent--text"
       dense
       selectable
+      class="pl-1 pr-0 mx-2 mb-2"
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
-        <div class="pt-4 pb-2" style="width: 100%">
-          <div class="d-flex">
-            <div v-if="room.isCommonRoom" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
-              COMMON ROOM
+        <div class="pt-3 pb-4" style="width: 100%">
+          <v-row class="d-flex pl-5 pr-4" align="center">
+            <div v-if="room.isCommonRoom" class="font-weight-medium py-2" style="font-size: 0.9em">
+              common room
             </div>
             
-            <div v-else-if="room.name" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
+            <div v-else-if="room.name" class="font-weight-medium py-2" style="font-size: 0.9em">
               {{ room.name }}
             </div>
 
-            <div v-else class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
-              Room {{ i - 1 }}
+            <div v-else class="font-weight-medium py-2" style="font-size: 0.9em">
+              room {{ i - 1 }}
             </div>
 
             <v-spacer/>
 
-            <portal-target name="current-room-buttons">
+            <!-- TODO: rename to "room-action-buttons" -->
+            <portal-target name="current-room-buttons" class="">
           
             </portal-target>
-          </div>
+          </v-row>
 
-          <div class="d-flex">
+          <div class="d-flex pl-2">
             <v-chip v-if="room.status" color="blue" class="mt-3" small outlined>
               {{ room.status }}
             </v-chip>
 
             <v-spacer/>
           </div>
+
+          <portal-target name="my-control-buttons">
+
+          </portal-target>
+
+          <portal-target name="my-video-conference-buttons">
+
+          </portal-target>
 
           <portal-target name="current-room-participants">
 
@@ -157,41 +167,52 @@
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex">
-            <div v-if="room.isCommonRoom" class="text-uppercase font-weight-medium py-2" style="font-size: 0.7em">
-              COMMON ROOM
+          <div class="d-flex ml-2 mt-2" style="opacity: 50%">
+            <div v-if="room.isCommonRoom" class="font-weight-medium text--secondary py-1" style="font-size: 0.9em">
+              common room
             </div>
 
-            <div v-else-if="room.name" class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.7em">
+            <div v-else-if="room.name" class="font-weight-medium text--secondary py-1" style="font-size: 0.9em">
               {{ room.name }}
             </div>
 
-            <div v-else class="text-uppercase font-weight-medium text--secondary py-1" style="font-size: 0.7em">
-              Room {{ i - 1 }}
+            <div v-else class="font-weight-medium text--secondary py-1" style="font-size: 0.9em">
+              room {{ i - 1 }}
             </div>
 
             <v-spacer/>
 
-            <v-chip v-if="room.status" color="blue" outlined small>
-            {{ room.status }}
+            <!-- TODO: use a separate line -->
+            <v-chip v-if="room.status" class="mr-2" color="blue" outlined small>
+              {{ room.status }}
             </v-chip>
           </div>
 
-          <div class="pl-5 pr-2 pb-1">
+          <div class="pl-5 pr-2 pb-1 pt-1">
             <v-row v-for="p in roomIDToParticipants[room.id]" :key="p.id"
               align="center"
-              style="font-weight: 400; font-size: 0.8em"
-              class="text--secondary mb-0 d-flex"
+              style="font-weight: 400; font-size: 0.9em; opacity: 70%"
+              class="text--secondary mb-1 d-flex caption"
             >
-              {{ p.firstName + " " + p.lastName }}
+              <div class="ml-2">{{ p.firstName + " " + p.lastName }}</div>
 
               <v-spacer/>
+              
+              <div class="ml-2 mr-4">
+                <v-icon v-if="p.canHearAudio" small color="green">
+                  mdi-phone-check
+                </v-icon>
 
-              {{ "#" + p.currentBoardNumber }} 
+                <v-icon v-if="p.isMusicPlaying" small color="cyan">
+                  mdi-music-clef-treble
+                </v-icon>
 
-              <v-icon small class="mx-2" :color="p.canHearAudio ? 'green' : 'grey'">
-                {{ p.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
-              </v-icon>
+                <v-icon v-if="p.isViewingLibrary" small color="purple">
+                  mdi-bookshelf
+                </v-icon>
+
+                {{ "#" + p.currentBoardNumber }} 
+              </div>
             </v-row>
           </div>
         </div>
@@ -368,6 +389,12 @@ export default {
     }
   },
   async created () {
+    // navigate to the common room, which will have the same ID as the section category itself
+    const { class_id, section_id, room_id } = this.$route.params; 
+    if (! room_id) { // if statement handles reloading on the spot
+      this.$router.replace(`${section_id}/room/${section_id}`);
+      //this.$router.replace(`class/${class_id}/section/${section_id}room/${section_id}`);
+    }
     this.$_listenToDoc(this.roomTypeRef, this, "roomTypeDoc")
       .then(unsubFunc => this.unsubFuncs.push(unsubFunc));
 
@@ -400,10 +427,17 @@ export default {
       for (const room of this.rooms) {
         const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 
         peopleInRoom.sort((p1, p2) => {
-          if (p1.canHearAudio === p2.canHearAudio) {
-            return p2.currentBoardNumber - p1.currentBoardNumber;
-          } else {
+          // pin myself to the top
+          if ([p1.sessionID, p2.sessionID].includes(this.sessionID)) {
+            return (p2.sessionID === this.sessionID) - (p1.sessionID === this.sessionID);
+          } 
+          // sort primarily by who is connected to audio 
+          else if (p1.canHearAudio !== p2.canHearAudio) {
             return p2.canHearAudio - p1.canHearAudio; 
+          } 
+          // sort secondarily by the highest board number
+          else {
+            return p2.currentBoardNumber - p1.currentBoardNumber;
           }
         });
         out[room.id] = peopleInRoom; 

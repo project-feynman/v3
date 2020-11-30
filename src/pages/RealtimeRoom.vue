@@ -108,6 +108,8 @@
     </v-dialog>
 
     <portal to="current-room-buttons">
+      <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
+      <!-- It sadly doesn't work here -->
       <v-menu v-model="isMenuOpen" offset-y bottom>
         <!-- Triple-dots button -->
         <template v-slot:activator>
@@ -167,12 +169,11 @@
                     :items="room.blackboards"
                     @change="(id) => activeBoardID = id"
                     hide-details
-                    active-class="accent--text" 
                     item-color="accent"
                   >
                     <!-- Override default behavior: show the board number instead of the blackboardID -->
                     <template v-slot:selection="{ item }">
-                      <p class="mb-0 accent--text">{{ "#" + getBoardNumberFromID(item) }}</p>
+                      <p class="mb-0 white--text">{{ "#" + getBoardNumberFromID(item) }}</p>
                     </template>
                     <template v-slot:item="{ item }">
                       <p>{{ "#" + getBoardNumberFromID(item) }}</p>

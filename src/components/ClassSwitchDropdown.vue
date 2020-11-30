@@ -1,42 +1,34 @@
 <template>
-    <v-menu v-model="isMenuOpen" fixed>
-      <template v-slot:activator="{ on }">
-          <v-btn v-on="on" text tile large class="pa-2" style="padding-top: 0; font-size: 1.25rem text-truncate">
-            {{ currentClass.name }}
-            <v-icon>mdi-menu-down</v-icon>
-          </v-btn>
-      </template>
-
-      <v-list>
-        <v-list-item v-for="mitClass in $store.state.user.enrolledClasses" :key="mitClass.id"
-          @click="switchClass(mitClass)"
-        >
+  <v-menu v-model="isMenuOpen" fixed offset-y bottom>
+    <template v-slot:activator="{ on }">
+      <v-btn v-on="on" text tile large class="pa-2 text-truncate" style="padding-top: 0; font-size: 1.2rem; font-weight: 400">
+        <!-- text--truncate doesn't do anything -->
+        <div class="text--truncate" v-if="mitClass">
           {{ mitClass.name }}
-        </v-list-item>
-      </v-list>
-    </v-menu>
+        </div>
+        <v-spacer/>
+        <v-icon>mdi-menu-down</v-icon>
+      </v-btn>
+    </template>
 
-    <!-- <v-select 
-      :items="$store.state.user.enrolledClasses"
-      :value="currentClass" 
-      item-text="name" 
-      hide-details 
-      return-object
-      height="35"
-      style="font-size: 1.25rem; padding-top: 2px"
-      @change="mitClass => switchClass(mitClass)"
-      color="accent"
-    >
-      <template v-slot:append-item>
-        <slot>
-          
-        </slot>
-      </template>
-    </v-select>  -->
+    <v-list>
+      <v-list-item v-for="mitClass in $store.state.user.enrolledClasses" :key="mitClass.id"
+        @click="switchClass(mitClass)"
+      >
+        {{ mitClass.name }}
+      </v-list-item>
+      
+      <!-- For adding new classes -->
+      <slot>
+
+      </slot>
+    </v-list>
+  </v-menu>
 </template>
 
 <script>
 import db from "@/database.js";
+import { mapState } from "vuex"; 
 
 export default {
   data () {
@@ -45,16 +37,10 @@ export default {
     };
   },
   computed: {
-    user () {
-      return this.$store.state.user; 
-    },
-    currentClass () {
-      for (const mitClass of this.user.enrolledClasses) {
-        if (mitClass.id === this.$route.params.class_id) {
-          return mitClass; 
-        }
-      }
-    }
+    ...mapState([
+      "user",
+      "mitClass"
+    ])
   },
   methods: {
     switchClass (mitClass) {
@@ -62,7 +48,7 @@ export default {
       userRef.update({
         mostRecentClassID: mitClass.id
       });
-      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}/room/${mitClass.id}`);
+      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}`);
     }
   }
 }

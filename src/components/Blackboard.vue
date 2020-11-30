@@ -37,7 +37,9 @@
               hide-details
             >
               <template v-slot:label>
-                <div style="font-size: 0.5rem" :class="touchDisabled ? 'white--text' : 'yellow--text'">Touch draw</div>
+                <div style="font-size: 0.7rem" :class="touchDisabled ? 'white--text' : 'yellow--text'">
+                  Touch draw
+                </div>
               </template>
             </v-switch>
           </template>
