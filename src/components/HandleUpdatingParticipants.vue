@@ -134,6 +134,11 @@ export default {
       // Step 1: clean up listeners first
       //   (note that .off() will destroy ALL listeners, which can result in side-effects across the application
       //   it can be better to only remove our particular listener here)
+
+
+      // this looks very suspicious indeed here
+      // reason about it, and move fast
+
       firebase.database().ref(".info/connected").off(); 
       this.myFirebaseRef.onDisconnect().cancel();
     

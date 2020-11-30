@@ -1,213 +1,208 @@
 <template>
-  <div>
-    <v-main>
-        <v-card v-if="!isFetchingUser" fluid class="mx-auto" elevation="0" tile>
-          <v-container class="py-5">
-            <div class="central-title d-flex justify-center align-center my-4">
-              <img src="/logo.png" class="mt-5">
-              <div>
-                <h1 class="text--primary ml-5">
-                  explain.mit.edu
-                </h1>
-                <h3 class="headline font-weight-normal ml-5" style="opacity: 70%">
-                  A warm, electrifying place where everybody helps each other
-                </h3>
-              </div>
+  <v-main>
+      <v-card v-if="!isFetchingUser" fluid class="mx-auto" elevation="0" tile>
+        <v-container class="py-5">
+          <div class="central-title d-flex justify-center align-center my-4">
+            <img src="/logo.png" class="mt-5">
+            <div>
+              <h1 class="text--primary ml-5">
+                explain.mit.edu
+              </h1>
+              <h3 class="headline font-weight-normal ml-5" style="opacity: 70%">
+                A warm, electrifying place where everybody helps each other
+              </h3>
             </div>
-            
-            <!-- Log in / Sign up -->
-            <v-row class="my-5 pt-2" justify="center">
-              <template v-if="user">
-                <!-- Do NOT split the URL to multiple lines, it will be interpreted as %20%20%20...etc -->
-                <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
-                  large class="mr-5 purple white--text"
-                >
-                  <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
-                  EXPLORE
-                </v-btn>
+          </div>
+          
+          <!-- Log in / Sign up -->
+          <v-row class="my-5 pt-2" justify="center">
+            <template v-if="user">
+              <!-- Do NOT split the URL to multiple lines, it will be interpreted as %20%20%20...etc -->
+              <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+                large class="mr-5 green darken-1 white--text"
+              >
+                <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
+                EXPLORE
+              </v-btn>
 
-                <v-btn large class="grey darken-1 white--text mx-5">
-                  <v-icon class="mr-2">mdi-gitlab</v-icon>
-                  <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
-                </v-btn>
+              <v-btn large class="grey darken-1 white--text mx-5">
+                <v-icon class="mr-2">mdi-gitlab</v-icon>
+                <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
+              </v-btn>
 
-                <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
-                  <v-icon class="mr-2">mdi-logout</v-icon>
-                  SIGN OUT
-                </v-btn>          
-              </template>
-            
-              <template v-else>
-                <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text mx-5">
-                  <v-icon class="mr-2">mdi-school</v-icon>
-                  LOG IN WITH TOUCHSTONE
-                </v-btn>
+              <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
+                <v-icon class="mr-2">mdi-logout</v-icon>
+                SIGN OUT
+              </v-btn>          
+            </template>
+          
+            <template v-else>
+              <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text mx-5">
+                <v-icon class="mr-2">mdi-school</v-icon>
+                LOG IN WITH TOUCHSTONE
+              </v-btn>
 
-                <v-btn large class="grey darken-1 white--text mx-5">
-                  <v-icon class="mr-2">mdi-gitlab</v-icon>
-                  <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
-                </v-btn>
+              <v-btn large class="grey darken-1 white--text mx-5">
+                <v-icon class="mr-2">mdi-gitlab</v-icon>
+                <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
+              </v-btn>
 
-                <!-- Email Sign Up -->
-                <!-- <BasePopupButton actionName="Sign up with email" 
-                  :inputFields="['first name', 'last name', 'email', 'password']" 
-                  @action-do="user => $_signUp(user)"
-                >
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" large class="mx-5 grey white--text">
-                      <v-icon class="mr-2">mdi-email</v-icon>
-                      EMAIL SIGNUP
-                    </v-btn>
-                  </template>
+              <!-- Email Sign Up -->
+              <BasePopupButton actionName="Sign up with email" 
+                :inputFields="['first name', 'last name', 'email', 'password']" 
+                @action-do="user => $_signUp(user)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" large class="ml-5 mr-2 grey darken-1 white--text">
+                    <v-icon class="mr-2">mdi-email</v-icon>
+                    EMAIL SIGNUP
+                  </v-btn>
+                </template>
 
-                  <template v-slot:message-to-user>
-                    Email sign-up is a back-up option if you have trouble with MIT Touchstone. 
-                    To prevent unexpected behavior, use a <u>non-MIT</u> email address to sign up. 
-                  </template>
-                </BasePopupButton> -->
+                <template v-slot:message-to-user>
+                  Email sign-up is a back-up option if you have trouble with MIT Touchstone. 
+                  To prevent unexpected behavior, use a <u>non-MIT</u> email address to sign up. 
+                </template>
+              </BasePopupButton>
 
-                <!-- Email Log In -->
-                <BasePopupButton actionName="Log in with email" 
-                  :inputFields="['email', 'password']" 
-                  @action-do="user => $_logIn(user)"
-                >
-                  <template v-slot:activator-button="{ on }">
-                    <v-btn v-on="on" large class="grey darken-1 white--text mx-5">
-                      <v-icon class="mr-2">mdi-email</v-icon>
-                      EMAIL LOGIN
-                    </v-btn>
-                  </template>
-                </BasePopupButton>
-              </template>
-            </v-row>
-          </v-container>
-        </v-card>
-      
-      <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
-        <v-card elevation="5">
-          <!-- color="accent" makes the slider indicator orange -->
-          <v-tabs vertical touchless color="accent" class="ml-1">
-            <!-- active-class="accent--text" makes the current tab's title go orange -->
-            <v-tab>
-              Updates
-            </v-tab>
-            <v-tab active-class="accent--text">
-              Vision
-            </v-tab>
-            <v-tab>
-              Introduction
-            </v-tab>
-            <v-tab>
-              How to use
-            </v-tab>
-            <v-tab>
-              News
-            </v-tab>
-            <v-tab>
-              Art of the day
-            </v-tab>
-            <v-tab>
-              Recruitment
-            </v-tab>
+              <!-- Email Log In -->
+              <BasePopupButton actionName="Log in with email" 
+                :inputFields="['email', 'password']" 
+                @action-do="user => $_logIn(user)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" large class="grey darken-1 white--text">
+                    <v-icon class="mr-2">mdi-email</v-icon>
+                    EMAIL LOGIN
+                  </v-btn>
+                </template>
+              </BasePopupButton>
+            </template>
+          </v-row>
+        </v-container>
+      </v-card>
+    
+    <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
+      <v-card elevation="5">
+        <!-- color="accent" makes the slider indicator orange -->
+        <v-tabs vertical touchless color="accent" class="ml-1">
+          <!-- active-class="accent--text" makes the current tab's title go orange -->
+          <v-tab>
+            Updates
+          </v-tab>
+          <v-tab active-class="accent--text">
+            Mission
+          </v-tab>
+          <v-tab>
+            <!-- Introduces how to use -->
+            How to use
+          </v-tab>
+          <!-- <v-tab>
+            News
+          </v-tab> -->
+          <v-tab>
+            Art of the day
+          </v-tab>
 
-            <!-- items here -->
-            <v-tab-item>
-              <v-card>
-                <v-card-title>
-                  Thanksgiving Update
-                </v-card-title>
-                <v-card-text>
-                  For the past semester, I've focused Explain and making it good for problem-solving sessions. 
-                  While it has stabilized (with exception to the ghost participants issue), I forgot the original mission of Explain,
-                  to create a place where people can find study partners serendipitously. 
+          <!-- items here -->
+          <v-tab-item>
+            <v-card>
+              <v-card-title>
+                Thanksgiving Update
+              </v-card-title>
+              <v-card-text>
+                For the past semester, I've focused Explain and making it good for problem-solving sessions. 
+                While it has stabilized (with exception to the ghost participants issue), I forgot the original mission of Explain,
+                to create a place where people can find study partners serendipitously. 
 
-                  <br><br>
+                <br><br>
 
-                  Now, finals is coming up, and I realize there are no more psets, so I came to this realization too late. Nevertheless,
-                  the Thanksgiving Update is about enjoying school. I no longer have to do finals as a class of 2020, so that will be you guys' problems, and not mine : )
-                  But I think it's important to be optimistic and know that there are always extremely serious things to have to worry about, but the best course of action is to 
-                  not remain in a stressed response (which is like using over-drive as your normal default behavior). You truly want to go into over-drive only for sparringly. 
+                Now, finals is coming up, and I realize there are no more psets, so I came to this realization too late. Nevertheless,
+                the Thanksgiving Update is about enjoying school. I no longer have to do finals as a class of 2020, so that will be you guys' problems, and not mine : )
+                But I think it's important to be optimistic and know that there are always extremely serious things to have to worry about, but the best course of action is to 
+                not remain in a stressed response (which is like using over-drive as your normal default behavior). You truly want to go into over-drive only for sparringly. 
 
-                  <br><br>
+                <br><br>
 
-                  "If you enjoyed wasting your time, then it wasn't a waste of time." I added some music, to relax things up again. It's from my absolute favorite game soundtracks called Maplestory. 
+                "If you enjoyed wasting your time, then it wasn't a waste of time." I added some music, to relax things up again. It's from my absolute favorite game soundtracks called Maplestory. 
 
-                  <br><br>
+                <br><br>
 
-                  Why does this update make it easier for everyone to hang out? Because now, there isn't voids. Explain is now place-centric, a fancy way of saying, you can't not be somewhere. You're always in a room (with exception to when you're in the home page).
-                  Therefore, the chances of colliding wit other people in the same room becomes way more likely. I have also opened up the spaces, so they no longer feel private and closed offs. I saw a research where, apparently, 
-                  the mere presence of other people or crowds on the streets positively improves our psychological state. And that's really a big influence behind the design of Explain - you have awareness of each other in different rooms, such that 
-                  even if you are not interacting, you know of the mere presence of each other. 
+                Why does this update make it easier for everyone to hang out? Because now, there isn't voids. Explain is now place-centric, a fancy way of saying, you can't not be somewhere. You're always in a room (with exception to when you're in the home page).
+                Therefore, the chances of colliding wit other people in the same room becomes way more likely. I have also opened up the spaces, so they no longer feel private and closed offs. I saw a research where, apparently, 
+                the mere presence of other people or crowds on the streets positively improves our psychological state. And that's really a big influence behind the design of Explain - you have awareness of each other in different rooms, such that 
+                even if you are not interacting, you know of the mere presence of each other. 
 
-                  <br><br>
+                <br><br>
 
-                  If you're in a room, unlike in Discord, you don't have to have the pressure to talk in a voice channel. You can just be aware of each other but work independently, simulate a message chat by writing on the blackboard or drawing. 
-                  Now, there is a problem with rooms, which is, it's very hard to get started. If there is nobody in a room, then people will leave. So there could be 100 people going into the same room, but all at different times, but they will never interact or meet. 
-                  The way to circumvent that is to introduce reasons to stay in the room even if you are solo. First, if you work on the blackboards in the rooms, other people can easily see what you have done. While that's not great for plagiarism, it's useful in certain situations. 
-                  Moreover, you can visit the library and watch videos, so many people can stay in the room and watch videos independently, and stay in the room. You can also listen to music, and eventually there will be a visual forum. 
+                If you're in a room, unlike in Discord, you don't have to have the pressure to talk in a voice channel. You can just be aware of each other but work independently, simulate a message chat by writing on the blackboard or drawing. 
+                Now, there is a problem with rooms, which is, it's very hard to get started. If there is nobody in a room, then people will leave. So there could be 100 people going into the same room, but all at different times, but they will never interact or meet. 
+                The way to circumvent that is to introduce reasons to stay in the room even if you are solo. First, if you work on the blackboards in the rooms, other people can easily see what you have done. While that's not great for plagiarism, it's useful in certain situations. 
+                Moreover, you can visit the library and watch videos, so many people can stay in the room and watch videos independently, and stay in the room. You can also listen to music, and eventually there will be a visual forum. 
 
-                  <br><br>
+                <br><br>
 
-                  In other words, I'm introducing as many reasons for people to stay in the rooms, and the longer they stay, the more chances for collision, which means more interactions, more content outpt, and the library and forum becomes even richer. This leads to a positive spiral and 
-                  Explain becomes a truly vibrant place. That's the vision. Happy studying.
-                </v-card-text>
-              </v-card>
-            </v-tab-item>
+                In other words, I'm introducing as many reasons for people to stay in the rooms, and the longer they stay, the more chances for collision, which means more interactions, more content outpt, and the library and forum becomes even richer. This leads to a positive spiral and 
+                Explain becomes a truly vibrant place. That's the vision. Happy studying.
+              </v-card-text>
+            </v-card>
+          </v-tab-item>
 
-            <v-tab-item>
-              <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
-            </v-tab-item>
-            <v-tab-item>
-              <v-card height="600">
-                <v-card-title>Introduction</v-card-title>
-                <v-card-text style="font-size: 0.95rem;">
-                  <p>
-                    Explain is an experimental, blackboard-oriented web app handcrafted for MIT classes:
-                  </p>
-                  <ul>
-                    <li><b>Phase I (2020):</b> Create a place where students can study together serendipitously</li>
-                    <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared and organized</li>
-                    <li><b>Phase III (2022):</b> Accelerate the world's transition into open learning</li>
-                  </ul>
-                </v-card-text>
-              </v-card>
-            </v-tab-item>
-            <v-tab-item>
-              <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
-            </v-tab-item>
-            <v-tab-item>
-              <v-card height="600">
-                <v-card-title>News</v-card-title>
-                <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
-                <v-card-text style="font-size: 0.95rem;">
-                  <ul>
-                    <li><b>Update</b>: The next major update is scheduled for December 1st</li>
-                    <li><b>Internship</b>: If you want to change education together, email eltonlin@mit.edu</li>
-                    <li><b>Users</b>: Explain currently serves ~800 weekly active users in 8.01, ESG classes and 18.01</li>
-                    <li><b>Startup</b>: Explain has advanced to the interview round with Y-Combinator</li>
-                    <li><b>IAP 2021</b>: I'm holding a web dev course called: "Lightweight Fullstack".
-                      The goal is to teach fundamental concepts and modern frameworks with simple and visual explanations (more details coming soon).
-                    </li>
-                  </ul>
-                </v-card-text>
-              </v-card>
-            </v-tab-item>
-            <v-tab-item>
-              For the life of me I cannot figure out why the ghost participants problem still remains, and I'm hoping 
-              to get second pair of eyes to take a look at my correctness argument.
+          <v-tab-item>
+            <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+          </v-tab-item>
+          <v-tab-item>
+            <v-card height="600">
+              <v-card-title>Introduction</v-card-title>
+              <v-card-text style="font-size: 0.95rem;">
+                <p>
+                  Explain is an experimental, blackboard-oriented web app handcrafted for MIT classes:
+                </p>
+                <ul>
+                  <li><b>Phase I (2020):</b> Create a place where students can study together serendipitously</li>
+                  <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared and organized</li>
+                  <li><b>Phase III (2022):</b> Accelerate the world's transition into open learning</li>
+                </ul>
+              </v-card-text>
+            </v-card>
+          </v-tab-item>
+          <v-tab-item>
+            <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
+          </v-tab-item>
 
-              Explain currently bleeds around $1k per month because of Twilio's video conferencing API it uses. 
-              By switching to Jitsi, an open-source alternative, the cost would become $30/month, a 3000% reduction. 
-              Previously, the switch to lib-jitsi-meet, to ensure the longevity, a major update will come and I'm working on
-              lib-jitsi-vue and testing it. 
 
-              Sometimes, swiping left / right on the screen triggers the Safari to go back a page. 
-              It's possible to disable the behavior, try "Prevent swiping left to go back page Safari".
-            </v-tab-item>
-          </v-tabs>
-        </v-card>
-    </v-main>
-  </div>
+                        <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
+          <!-- <v-tab-item>
+            <v-card height="600">
+              <v-card-title>News</v-card-title>
+              <v-card-text style="font-size: 0.95rem;">
+                <ul>
+                  <li><b>Update</b>: The next major update is scheduled for December 1st</li>
+                  <li><b>Internship</b>: If you want to change education together, email eltonlin@mit.edu</li>
+                  <li><b>Users</b>: Explain currently serves ~800 weekly active users in 8.01, ESG classes and 18.01</li>
+                  <li><b>Startup</b>: Explain has advanced to the interview round with Y-Combinator</li>
+                  <li><b>IAP 2021</b>: I'm holding a web dev course called: "Lightweight Fullstack".
+                    The goal is to teach fundamental concepts and modern frameworks with simple and visual explanations (more details coming soon).
+                  </li>
+                </ul>
+              </v-card-text>
+            </v-card>
+          </v-tab-item> -->
+          <v-tab-item>
+            For the life of me I cannot figure out why the ghost participants problem still remains, and I'm hoping 
+            to get second pair of eyes to take a look at my correctness argument.
+
+            Explain currently bleeds around $1k per month because of Twilio's video conferencing API it uses. 
+            By switching to Jitsi, an open-source alternative, the cost would become $30/month, a 3000% reduction. 
+            Previously, the switch to lib-jitsi-meet, to ensure the longevity, a major update will come and I'm working on
+            lib-jitsi-vue and testing it. 
+
+            Sometimes, swiping left / right on the screen triggers the Safari to go back a page. 
+            It's possible to disable the behavior, try "Prevent swiping left to go back page Safari".
+          </v-tab-item>
+        </v-tabs>
+      </v-card>
+  </v-main>
 </template>
 
 <script>

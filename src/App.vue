@@ -35,8 +35,8 @@ export default {
 
     const maplestorySoundtrack = [
       "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
-      "[MapleStory BGM] Singapore Boat Quay Town.mp3",
-      "[MapleStory BGM] Ereve Raindrop Flower.mp3"
+      "[MapleStory BGM] Ereve Raindrop Flower.mp3",
+      // "[MapleStory BGM] Singapore Boat Quay Town.mp3",
     ];
     const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
     const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
@@ -52,6 +52,10 @@ export default {
 }
 </script>
 <style>
+/* Fixes snackbar not visible on iOS Safari, see https://github.com/vuetifyjs/vuetify/issues/11781#issuecomment-655689025 */
+div.v-snack:not(.v-snack--absolute) {
+  height: 100%;
+}
 /* Global styles */
 /* What does this do? */
 a {

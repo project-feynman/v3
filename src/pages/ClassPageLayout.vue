@@ -1,7 +1,7 @@
 <template>
   <!-- There is sometimes unpredictable behavior between different browsers -->
   <div style="height: 100%">
-    <!-- `height: 100%` fixes the bottom-region being hidden on Safari -->
+    <!-- `height: 100%` for v-navigation-drawer fixes the bottom-region being hidden on Safari, see reported issue on GitHub -->
     <v-navigation-drawer v-model="isShowingDrawer" 
       touchless 
       height="100%"
