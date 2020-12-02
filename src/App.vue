@@ -56,6 +56,15 @@ export default {
 div.v-snack:not(.v-snack--absolute) {
   height: 100%;
 }
+
+/* .v-input__prepend-outer {
+  margin-right: 1px !important;
+} */
+
+.v-application--is-ltr .v-input__prepend-outer {
+  margin-right: 3px !important;
+}
+
 /* Global styles */
 /* What does this do? */
 a {

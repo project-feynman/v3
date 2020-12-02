@@ -153,21 +153,21 @@
       active-class="active-blackboard accent--text"
       dense
       selectable
-      class="pl-1 pr-0 mx-2 mb-0"
+      class="pl-0 pr-0 mx-2 mb-0"
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
           <v-row class="d-flex pl-5 pr-3" align="center">
-            <div v-if="room.isCommonRoom" class="font-weight-normal py-2" style="font-size: 0.95em">
+            <div v-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               common room
             </div>
             
-            <div v-else-if="room.name" class="font-weight-normal py-2" style="font-size: 0.95em">
+            <div v-else-if="room.name" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               {{ room.name }}
             </div>
 
-            <div v-else class="font-weight-normal py-2" style="font-size: 0.95em">
+            <div v-else class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               room {{ i - 1 }}
             </div>
 
@@ -187,24 +187,20 @@
             <v-spacer/>
           </div>
 
-          <portal-target name="my-control-buttons">
+          <portal-target name="my-control-buttons"/>
 
-          </portal-target>
+          <portal-target name="my-video-conference-buttons"/>
 
-          <portal-target name="my-video-conference-buttons">
+          <portal-target name="library-popup-button"/>
 
-          </portal-target>
-
-          <portal-target name="current-room-participants">
-
-          </portal-target>
+          <portal-target name="current-room-participants"/>
         </div>
       </template>
 
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex ml-2 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 50%">
+          <div class="d-flex ml-3 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 50%">
             <div v-if="room.isCommonRoom">
               common room
             </div>
@@ -393,13 +389,13 @@ export default {
       immediate: true,
       handler: _.debounce(function () {
         this.updateRoomIDToParticipants();
-      }, 200)
+      }, 450)
     },
     rooms: {
       immediate: true,
       handler: _.debounce(function () {
         this.updateRoomIDToParticipants();
-      }, 200)
+      }, 450)
     },
     "roomTypeDoc.roomAssignmentsCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {

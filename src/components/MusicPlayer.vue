@@ -6,7 +6,7 @@
     />
     <div class="text-center">
       <v-bottom-sheet inset hide-overlay persistent>
-        <template v-slot:activator="{ on, attrs }">
+        <template v-slot:activator="{ on }">
           <BaseButton :on="on" icon="mdi-music-clef-treble" color="secondary">
             Music
           </BaseButton>

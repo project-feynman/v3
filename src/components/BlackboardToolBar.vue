@@ -1,10 +1,10 @@
 <template>
   <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
-  <v-app-bar width="600" min-width="600" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="570" min-width="570" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-arrow-expand-right' : 'mdi-arrow-collapse-left'" color="white"
+          :icon="isBoardFullscreen ? 'mdi-arrow-expand-right' : 'mdi-arrow-collapse-left'" color="white" small
         >
           {{ isBoardFullscreen ? 'Show' : 'Hide' }} drawer
         </BaseButton>

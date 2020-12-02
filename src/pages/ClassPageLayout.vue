@@ -7,7 +7,7 @@
       height="100%"
       app 
       class="elevation-5" 
-      width="300" 
+      width="240" 
       mobile-breakpoint="500" 
       clipped 
     >      
@@ -60,13 +60,13 @@
                 <v-icon>mdi-exit</v-icon>Leave class
               </v-list-item>
             </v-list>
-            
           </v-menu>
         </div>
 
         <!-- TODO: ahahahhaa this teleport is so ridiculously unintuitive -->
         <portal to="my-control-buttons">
-          <v-row align="center" justify="space-around" class="d-flex px-4 pt-1 pb-4">
+          <v-row align="center" justify="space-around" class="d-flex px-2 mt-1">
+            <!-- This is literally just a single button -->
             <portal-target name="connect-to-twilio-button">
 
             </portal-target>
@@ -80,12 +80,17 @@
               hide-details
               class="mt-0 grey--text"
             />
+          </v-row>
+        </portal>
 
-            <!-- Library -->
-            <!-- Cannot use v-on because it doesn't stop event propagation to the list item, see https://github.com/vuetifyjs/vuetify/issues/3333 -->
+          <!-- Library -->
+
+          <!-- Cannot use v-on because it doesn't stop event propagation to the list item, see https://github.com/vuetifyjs/vuetify/issues/3333 -->
+        <portal to="library-popup-button">
+          <v-row class="mx-2 mt-3 mb-2 pb-4" justify="space-around">
             <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
               <template v-slot:activator>
-                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-2 mr-1">
+                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small>
                   <v-icon>mdi-bookshelf</v-icon>
                 </v-btn>
               </template>
@@ -98,6 +103,48 @@
 
               <ClassLibrary :key="$route.params.class_id"/>
             </v-dialog>
+
+            <v-col class="pl-2 pr-0 py-0">
+            <div style="font-size: 0.55rem;" class="black--text">
+              No audio? Open a new Explain page; force-quit Safari; clear browser cache.
+            </div>
+            </v-col>
+             
+            <!-- <v-btn small @click.prevent.stop="isHelpPopupOpen = true">
+              Help guide
+            </v-btn> -->
+
+            <!-- <v-dialog v-model="isHelpPopupOpen">
+              <template v-slot:activator>
+              
+              </template>
+
+              <v-card>
+                <v-card-title>
+                  No audio? 
+                </v-card-title>
+
+                <v-card-text>
+                  <p>Ways to fix:</p>
+                  <ol>
+                    <p>Ways to fix</p>
+                    <li>Reload the page [~50% success rate]</li>
+                    <li>Close the page, then open a fresh page [~90% success rate]</li>
+                    <li>Clear the browser cache (laptop) or force quit Safari (iPad) [~99% success rate]</li>
+                    <li>
+                      If there's still no audio, use your laptop for audio instead.
+                    </li>
+                  </ol>
+
+                  <p>Other tips</p>
+                    <ul>
+                      <li>If there are echoes, make sure you have only <u>one unmuted device</u> at any given time.</li>
+                      <li>If problems persist, you can email me eltonlin@mit.edu or Facetime me at +503 250 3868 and we can solve it together.</li>
+                    </ul>
+                </v-card-text>
+              </v-card>
+            </v-dialog> -->
+
           </v-row>
         </portal>
       </v-sheet>
@@ -166,7 +213,8 @@ export default {
     isChatOpen: false,
     isShowingDrawer: true,
     isAddClassPopupOpen: false,
-    isClassActionsMenuOpen: false
+    isClassActionsMenuOpen: false,
+    // isHelpPopupOpen: false
   }),
   computed: {
     ...mapState([

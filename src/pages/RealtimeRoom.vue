@@ -162,7 +162,7 @@
               <!-- item-color:  -->
               <!-- active-class:  -->
               <!-- hide-details: eliminates unnecessary bottom padding -->
-              <div v-if="room" class="d-flex mr-2">
+              <div v-if="room" class="d-flex mx-2">
                 <div v-if="activeBoardID" style="width: 60px">
                   <v-select 
                     dense

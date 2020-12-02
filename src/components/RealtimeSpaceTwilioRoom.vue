@@ -1,5 +1,10 @@
 <template>
   <div>
+    <RealtimeSpaceTwilioRoomTroubleshootPopup 
+      :value="isTroubleshootPopupOpen"
+      @input="(newVal) => isTroubleshootPopupOpen = newVal"
+    />
+
     <!-- Display videos above the shared blackboard -->
     <portal to="destination">
       <div class="d-flex">
@@ -43,9 +48,9 @@
         <!-- TODO: refactor all these portal shenanigans -->
         <portal v-if="client.sessionID === $store.state.session.currentID" to="connect-to-twilio-button">
           <v-switch 
-            :value="twilioInitialized"
-            :loading="isTryingToConnect"
+            :input-value="twilioInitialized"
             :disabled="isTryingToConnect"
+            :loading="isTryingToConnect"
             @change="toggleConnectionToTwilio()"
             color="green"
             prepend-icon="mdi-phone"
@@ -56,12 +61,12 @@
 
         <!-- If this user is me, show the switches for connecting to the call, muting, etc. -->
         <portal v-if="client.sessionID === $store.state.session.currentID" to="my-video-conference-buttons">
-          <v-row v-if="twilioInitialized" class="d-flex px-4 pb-4" justify="space-around" align="center">
+          <v-row v-if="twilioInitialized" class="d-flex px-2" justify="space-around" align="center">
             <template v-if="twilioInitialized">
               <v-switch
                 :input-value="isMicOn"
                 @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
-                color="black"
+                color="grey darken-3"
                 :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
                 :loading="isTryingToConnect"
                 hide-details
@@ -78,7 +83,7 @@
                 class="mt-0 grey--text"
               />
 
-              <v-switch
+              <!-- <v-switch
                 :input-value="isSharingScreen"
                 @change="isSharingScreen = !isSharingScreen"
                 :loading="isTryingToEnableScreen"
@@ -86,13 +91,12 @@
                 prepend-icon="mdi-monitor"
                 hide-details
                 class="mt-0 grey--text"
-              />
+              /> -->
             </template>
           </v-row>
-          <!-- <RealtimeSpaceTwilioRoomTroubleshootPopup class="mt-3"/> -->
         </portal>
   
-        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" style="font-size: 1.2rem">
+        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" style="font-size: 1.2rem" color="grey darken-3">
           {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
         </v-icon>
 
@@ -218,7 +222,9 @@ export default {
       dominantParticipantSessionID: null,
 
       // for terminating the asynchronous operation to prevent the multiple room leakage
-      isDestroyed: false
+      isDestroyed: false,
+
+      isTroubleshootPopupOpen: false
     };
   },
   computed: {
@@ -257,9 +263,7 @@ export default {
     // quickfix
     if (this.micTrack) this.micTrack.stop(); 
     if (this.cameraTrack) this.cameraTrack.stop(); 
-    if (this.twilioRoom) {
-      this.cleanUpTwilioRoom();
-    }
+    if (this.twilioRoom) this.cleanUpTwilioRoom();
   },
   watch: {
     // Detect mute all
@@ -317,13 +321,14 @@ export default {
   methods: {
     toggleConnectionToTwilio () {
       if (! this.twilioInitialized) {
-        this.$store.commit('SET_IS_MIC_ON', true);         // TODO: rename: this is just for enabling persistence
+        this.$store.commit('SET_IS_MIC_ON', true); // TODO: rename: this is just for enabling persistence
         this.connectToTwilioRoom();
       } else {
         this.disconnectWithoutLeaving(); 
       }
     },
     cleanUpTwilioRoom () {
+      // console.log("cleanUpTwilioRoom()");
       // console.log("disconnecting ", this.roomID)
       for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
         unsubscribe();
@@ -352,6 +357,8 @@ export default {
       
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
+
+      this.twilioRoom = null; // doesn't matter if the component is destroyed, but matters if it's just a connection failure
       // console.log("disconnected", this.roomID);
     },
     async connectToTwilioRoom () {
@@ -403,18 +410,33 @@ export default {
           this, 
           "roomDoc"
         ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
+        
         this.twilioInitialized = true; 
 
         // console.log("set up =", this.roomID);
       } 
       
       catch (error) {
-        this.tellUserHowToFixError(error);
+        // undo all the states that were changed
+        this.isTroubleshootPopupOpen = true; 
+        // setTimeout(async () => {
+        //   this.$store.commit("SET_IS_MIC_ON", false); 
+        //   this.$store.commit("SET_CAN_HEAR_AUDIO", false); 
+        //   await this.$nextTick(); 
+        //   this.twilioInitialized = false; 
+
+        //   // leave the conference completely (so you're not joined with a broken mic)
+        //   this.cleanUpTwilioRoom(); 
+        //   console.log("this.twilioInitialized = ", this.twilioInitialized); 
+        // // easy fix: close Explain, then open a fresh Explain. 
+        // // then detailed troubleshoot 
+        // }, 2000)
       } 
 
       finally {
         this.isTryingToConnect = false; 
         // console.log("this.isDestroyed =", this.isDestroyed);
+
         // FIX FOR ROOM AUDIO INTERFERENCE: ensure cleanup is proper by terminating the asynchronous operation
         // causes an harmless uncaught error https://github.com/twilio/twilio-video.js/issues/532
         if (this.isDestroyed) {
