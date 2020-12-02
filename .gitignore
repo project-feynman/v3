@@ -1,3 +1,6 @@
+# Note: it's better to have redundancies in the .gitignore than to miss something
+# For example, VS code users don't need to hide .idea files, but Webstorm users do.
+
 node_modules
 
 # Production related files
@@ -10,8 +13,8 @@ database.rules.json
 firestore.rules
 storage.rules
 
-# Note: it's better to have redundancies in the .gitignore than to miss something
-# For example, VS code users don't need to hide .idea files, but Webstorm users do.
+# one-time configurations
+cors.json
 
 # Local env files
 .env.local
