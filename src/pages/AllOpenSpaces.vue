@@ -19,7 +19,7 @@
                     font-size: 1rem; 
                     font-weight: 400; 
                     color: ${ sectionID === roomType.id ? '#424242' : '#424242' }; 
-                    opacity: ${ sectionID === roomType.id ? '70%' : '30%' };
+                    opacity: ${ sectionID === roomType.id ? '70%' : '35%' };
                   `"
                 >
                   <div v-if="roomType.id !== sectionID">

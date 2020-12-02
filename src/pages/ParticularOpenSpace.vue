@@ -159,15 +159,15 @@
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
           <v-row class="d-flex pl-5 pr-3 " align="center">
-            <div v-if="room.isCommonRoom" class="font-weight-medium py-2" style="font-size: 0.9em">
+            <div v-if="room.isCommonRoom" class="font-weight-medium py-2" style="font-size: 0.95em">
               common room
             </div>
             
-            <div v-else-if="room.name" class="font-weight-medium py-2" style="font-size: 0.9em">
+            <div v-else-if="room.name" class="font-weight-medium py-2" style="font-size: 0.95em">
               {{ room.name }}
             </div>
 
-            <div v-else class="font-weight-medium py-2" style="font-size: 0.9em">
+            <div v-else class="font-weight-medium py-2" style="font-size: 0.95em">
               room {{ i - 1 }}
             </div>
 
@@ -204,7 +204,7 @@
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex ml-2 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.9em; opacity: 40%">
+          <div class="d-flex ml-2 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 35%">
             <div v-if="room.isCommonRoom">
               common room
             </div>
