@@ -37,7 +37,7 @@
           <v-menu v-model="isClassActionsMenuOpen" offset-y bottom>
             <template v-slot:activator>
               <BaseButton @click="isClassActionsMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
-                Class actions
+                <!-- Class actions -->
               </BaseButton>
             </template>
             

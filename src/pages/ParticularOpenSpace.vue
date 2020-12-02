@@ -18,7 +18,7 @@
       <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
         <template v-slot:activator>
           <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
-            Space actions
+            <!-- Space actions -->
           </BaseButton>
         </template>
 
@@ -153,7 +153,7 @@
       active-class="active-blackboard accent--text"
       dense
       selectable
-      class="pl-1 pr-0 mx-2 mb-2"
+      class="pl-1 pr-0 mx-2 mb-0"
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
@@ -204,7 +204,7 @@
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex ml-2 mt-2 font-weight-medium text--secondary py-1" style="font-size: 0.9em; opacity: 50%">
+          <div class="d-flex ml-2 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.9em; opacity: 40%">
             <div v-if="room.isCommonRoom">
               common room
             </div>

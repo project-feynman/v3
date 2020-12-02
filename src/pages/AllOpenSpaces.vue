@@ -4,13 +4,14 @@
       <v-list nav class="pa-2">
         <template v-for="roomType in sortedRoomTypes">
           <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
+          <!-- :disabled prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
           <v-list-item :key="roomType.id"
             :to="(`/class/${classID}/section/${roomType.id}`)"
             active-class="accent--text"
             class="px-0" 
           >
             <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
-            <v-list-item-content class="py-0">
+            <v-list-item-content class="pt-0 pb-2">
               <v-row class="d-flex px-3 py-2" align="center">
                 <div 
                   class="ml-3"
@@ -18,7 +19,7 @@
                     font-size: 1rem; 
                     font-weight: 400; 
                     color: ${ sectionID === roomType.id ? '#424242' : '#424242' }; 
-                    opacity: ${ sectionID === roomType.id ? '70%' : '50%' };
+                    opacity: ${ sectionID === roomType.id ? '70%' : '30%' };
                   `"
                 >
                   <div v-if="roomType.id !== sectionID">
@@ -28,7 +29,9 @@
 
                   </portal-target>
                 </div>
+
                 <v-spacer/>
+
                 <portal-target v-if="sectionID === roomType.id"
                   name="current-open-space-actions"
                   :key="roomType.id + 'actions-portal'"
@@ -36,6 +39,7 @@
                   
                 </portal-target>
               </v-row>
+      
               <portal-target v-if="sectionID === roomType.id" 
                 name="currently-active-open-space" 
                 :key="roomType.id + 'rooms-portal'"
