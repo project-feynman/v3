@@ -45,38 +45,35 @@
           </template>
     
           <template v-slot:record-audio-slot>
-            <template v-if="currentState === RecordState.PRE_RECORD">
-              <slot name="blackboard-toolbar">
-            
-              </slot> 
+            <slot name="blackboard-toolbar">
 
-              <BaseButton @click="startRecording()" icon="mdi-record" color="white" small>
-                Record 
-              </BaseButton>
-            </template>
-
-            <BaseButton v-if="currentState === RecordState.MID_RECORD" 
-              @click="stopRecording()" 
-              color="white" icon="mdi-stop"
-            >
-              Finish
-            </BaseButton>
+            </slot>
           </template>
 
+       
           <!-- More actions slot -->
           <template v-slot:more-actions-slot>
             <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
               <template v-slot:activator="{ on }">
                 <!-- Cannot let user wipe board / reupload background image while recording -->
                 <BaseButton v-if="currentState !== RecordState.MID_RECORD" 
-                  @click="isMenuOpen = true" 
-                  icon="mdi-dots-vertical" color="white" small
+                  @click="isMenuOpen = true" icon="mdi-dots-vertical" color="white"
                 >
-                  Board actions
+                </BaseButton>
+
+                <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="purple">
+                  Finish
                 </BaseButton>
               </template>
               
               <v-list>
+                <template v-if="currentState === RecordState.PRE_RECORD">
+                  <v-list-item @click="startRecording()">
+                    <v-icon class="mr-2" color="purple">mdi-record</v-icon>
+                    Record
+                  </v-list-item>
+                </template>
+
                 <!-- SET BACKGROUND IMAGE -->
                 <slot name="set-background-button-slot" :closeMenu="closeMenu">
                   <v-list-item @click="$refs.fileInput.click()">
