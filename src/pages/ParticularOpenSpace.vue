@@ -157,8 +157,8 @@
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
-        <div class="pt-3 pb-4" style="width: 100%">
-          <v-row class="d-flex pl-5 pr-3" align="center">
+        <div class="pt-2 pb-3" style="width: 100%">
+          <v-row class="d-flex pl-5 pr-3 " align="center">
             <div v-if="room.isCommonRoom" class="font-weight-medium py-2" style="font-size: 0.9em">
               common room
             </div>
@@ -180,7 +180,7 @@
           </v-row>
 
           <div class="d-flex pl-2">
-            <v-chip v-if="room.status" color="blue" class="mt-3" small outlined>
+            <v-chip v-if="room.status" color="blue" class="mt-1" small outlined>
               {{ room.status }}
             </v-chip>
 

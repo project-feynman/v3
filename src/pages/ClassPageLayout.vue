@@ -64,8 +64,9 @@
           </v-menu>
         </div>
 
+        <!-- TODO: ahahahhaa this teleport is so ridiculously unintuitive -->
         <portal to="my-control-buttons">
-          <v-row align="center" justify="space-around" class="d-flex px-4 pt-3 pb-4">
+          <v-row align="center" justify="space-around" class="d-flex px-4 pt-1 pb-4">
             <portal-target name="connect-to-twilio-button">
 
             </portal-target>
