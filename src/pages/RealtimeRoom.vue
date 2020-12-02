@@ -3,7 +3,8 @@
     <!-- Can expose an update participant function -->
     <HandleUpdatingParticipants
       :currentBoardNumber="currentBoardNumber"
-      :roomId="roomId"
+      :roomID="roomId"
+      :classID="classID"
     />
 
     <RealtimeSpaceTwilioRoom 
@@ -161,7 +162,7 @@
               <!-- item-color:  -->
               <!-- active-class:  -->
               <!-- hide-details: eliminates unnecessary bottom padding -->
-              <div v-if="room" class="d-flex ml-2">
+              <div v-if="room" class="d-flex mr-2">
                 <div v-if="activeBoardID" style="width: 60px">
                   <v-select 
                     dense
