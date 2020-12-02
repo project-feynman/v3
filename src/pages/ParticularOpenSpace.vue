@@ -158,7 +158,7 @@
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="pt-3 pb-4" style="width: 100%">
-          <v-row class="d-flex pl-5 pr-4" align="center">
+          <v-row class="d-flex pl-5 pr-3" align="center">
             <div v-if="room.isCommonRoom" class="font-weight-medium py-2" style="font-size: 0.9em">
               common room
             </div>
