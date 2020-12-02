@@ -11,9 +11,9 @@
       mobile-breakpoint="500" 
       clipped 
     >      
-      <v-sheet class="pt-3 pl-4">    
+      <v-sheet class="pt-2 pl-2">    
         <div class="d-flex">
-          <v-list-item-avatar @click="$router.push('/')" tile :width="`${40+3}px`" style="cursor: pointer;" :style="`margin-right: 8px`" class="ma-0">
+          <v-list-item-avatar @click="$router.push('/')" tile width="44" height="40" style="cursor: pointer;" class="ma-0">
             <img src="/logo.png">
           </v-list-item-avatar>
 
