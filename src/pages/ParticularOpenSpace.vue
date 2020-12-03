@@ -179,7 +179,7 @@
             </portal-target>
           </v-row>
 
-          <div class="d-flex pl-2">
+          <div class="d-flex pl-2" style="max-width: 175px;">
             <v-chip v-if="room.status" color="blue" class="mt-1" small outlined>
               {{ room.status }}
             </v-chip>
@@ -213,7 +213,7 @@
               room {{ i - 1 }}
             </div>
           </div>
-          <v-chip v-if="room.status" class="ml-2" color="blue" outlined small>
+          <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
             {{ room.status }}
           </v-chip>
 
