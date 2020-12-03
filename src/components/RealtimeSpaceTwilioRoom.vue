@@ -47,7 +47,7 @@
         <!-- Myself -->
         <template v-if="client.sessionID === sessionID">
           <template v-if="! twilioInitialized">
-            <v-btn @click="toggleConnectionToTwilio()" :loading="isTryingToConnect" small dark fab color="success" class="mx-2">
+            <v-btn @click.prevent.stop="toggleConnectionToTwilio()" :loading="isTryingToConnect" small dark fab color="success" class="mx-2">
               <v-icon>mdi-phone</v-icon>
             </v-btn>
           </template>
@@ -89,7 +89,7 @@
                 class="mt-0 pt-0 grey--text"
               />
 
-              <v-btn @click="toggleConnectionToTwilio()" class="ml-2" x-small dark fab color="red">
+              <v-btn @click.prevent.stop="toggleConnectionToTwilio()" class="ml-2" x-small dark fab color="red">
                 <v-icon small>mdi-phone-hangup</v-icon>
               </v-btn>
             </v-row>

@@ -4,11 +4,14 @@
       <v-list nav class="pa-2">
         <template v-for="roomType in sortedRoomTypes">
           <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
-          <!-- :disabled prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
+          <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
+          <!-- id is used for scrollToView() -->
           <v-list-item :key="roomType.id"
             :to="(`/class/${classID}/section/${roomType.id}`)"
             active-class="accent--text"
             class="px-0" 
+            :inactive="sectionID === roomType.id"
+            :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
           >
             <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
             <v-list-item-content class="pt-0 pb-2">
@@ -19,7 +22,7 @@
                     font-size: 1rem; 
                     font-weight: 400; 
                     color: ${ sectionID === roomType.id ? '#424242' : '#424242' }; 
-                    opacity: ${ sectionID === roomType.id ? '70%' : '35%' };
+                    opacity: ${ sectionID === roomType.id ? '100%' : '40%' };
                   `"
                 >
                   <div v-if="roomType.id !== sectionID">
@@ -55,15 +58,9 @@
 </template>
 
 <script>
-/**
- * Experiment: whenever the user switches an open space, recount the number of participants in each open space. 
- * For operations that are rare, don't take up too much area. Optimize for high frequency operations.
- */
-
 import db from "@/database.js"; 
 import { getRandomId } from "@/helpers.js"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import { mapState, mapGetters } from "vuex";
@@ -75,8 +72,7 @@ export default {
   ],
   components: {
     ClassLibrary,
-    BasePopupButton,
-    BaseButton,
+    BaseButton
   },
   data () {
     return {
@@ -99,6 +95,11 @@ export default {
   async created () {
     // fetch once for light bandwidth usage
     this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes")); 
+    await this.$nextTick(); 
+    document.getElementById("space-title").scrollIntoView({ 
+      behavior: "smooth", block: "start" 
+    });
+
   }
 }
 </script>

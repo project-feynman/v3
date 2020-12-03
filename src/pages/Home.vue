@@ -112,13 +112,15 @@
               </v-card-title>
 
               <v-card-subtitle class="subtitle-1 font-weight-medium">
-                The purpose of this update is to enable everyone to study for finals together in the Open Area.
+                For finals, everybody can study together in the <i>Open Area</i> for morale and to help explain things to each other
               </v-card-subtitle>
 
               <v-card-text>
                 Explain is now place-centric, which means you're always <u>somewhere</u>, even if you're just studying solo, relaxing to music or viewing the library. 
-                Every class also now has an open area, a centralized place for everybody to study and have fun. I was inspired by some unknown research that, apparently, the mere presence of other people positively improves our psychological state. 
-                Lastly, every room's URL can be directly copied and pasted as a "meeting URL" for scheduled events. 
+                Every class also now has an open area, a centralized place for everybody to study and have fun. I was inspired by some unknown research that, apparently, the <u>mere presence</u> of other people positively improves our psychological state. 
+                This update also addresses the ghost participants. Lastly, every room's URL can be directly copied and pasted as a "meeting URL" for scheduled events.
+                <br><br>
+                <b>[Quick reminder] if there's no audio, either reload the page, or close the browser tab completely and come back.</b>
               </v-card-text>
 
               <!-- <v-card-text>
@@ -164,7 +166,7 @@
               <v-card-title>Introduction</v-card-title>
               <v-card-text style="font-size: 0.95rem;">
                 <p>
-                  Explain is an experimental, blackboard-oriented web app handcrafted for MIT classes:
+                  Explain is an experimental website with blackboard rooms handcrafted for MIT classes:
                 </p>
                 <ul>
                   <li><b>Phase I (2020):</b> Create a place where students can study together serendipitously</li>

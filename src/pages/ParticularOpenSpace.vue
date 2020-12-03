@@ -200,7 +200,7 @@
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex ml-3 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 50%">
+          <div class="d-flex ml-3 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 90%">
             <div v-if="room.isCommonRoom">
               common room
             </div>
