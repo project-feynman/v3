@@ -95,14 +95,14 @@
           </v-tab>
           <v-tab>
             <!-- Introduces how to use -->
-            How to use
+            Phase I
           </v-tab>
           <!-- <v-tab>
             News
           </v-tab> -->
-          <v-tab>
+          <!-- <v-tab>
             Art of the day
-          </v-tab>
+          </v-tab> -->
 
           <!-- items here -->
           <v-tab-item>
@@ -110,7 +110,18 @@
               <v-card-title>
                 Thanksgiving Update
               </v-card-title>
+
+              <v-card-subtitle class="subtitle-1 font-weight-medium">
+                The purpose of this update is to enable everyone to study for finals together in the Open Area.
+              </v-card-subtitle>
+
               <v-card-text>
+                Explain is now place-centric, which means you're always <u>somewhere</u>, even if you're just studying solo, relaxing to music or viewing the library. 
+                Every class also now has an open area, a centralized place for everybody to study and have fun. I was inspired by some unknown research that, apparently, the mere presence of other people positively improves our psychological state. 
+                Lastly, every room's URL can be directly copied and pasted as a "meeting URL" for scheduled events. 
+              </v-card-text>
+
+              <!-- <v-card-text>
                 For the past semester, I've focused Explain and making it good for problem-solving sessions. 
                 While it has stabilized (with exception to the ghost participants issue), I forgot the original mission of Explain,
                 to create a place where people can find study partners serendipitously. 
@@ -144,15 +155,12 @@
 
                 In other words, I'm introducing as many reasons for people to stay in the rooms, and the longer they stay, the more chances for collision, which means more interactions, more content outpt, and the library and forum becomes even richer. This leads to a positive spiral and 
                 Explain becomes a truly vibrant place. That's the vision. Happy studying.
-              </v-card-text>
+              </v-card-text> -->
             </v-card>
           </v-tab-item>
 
           <v-tab-item>
-            <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
-          </v-tab-item>
-          <v-tab-item>
-            <v-card height="600">
+            <v-card>
               <v-card-title>Introduction</v-card-title>
               <v-card-text style="font-size: 0.95rem;">
                 <p>
@@ -165,13 +173,15 @@
                 </ul>
               </v-card-text>
             </v-card>
-          </v-tab-item>
-          <v-tab-item>
             <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
           </v-tab-item>
 
-
-                        <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
+          <v-tab-item>
+            <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+          </v-tab-item>
+   
+    
+          <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
           <!-- <v-tab-item>
             <v-card height="600">
               <v-card-title>News</v-card-title>
@@ -266,7 +276,6 @@ export default {
     }
   },
   async created () { 
-
     // vision of a vibrant place where people talk around blackboards
     const demoVideoRef = db.doc(`classes/FVdgjuywaFgxvyylISt2/posts/aHaV1yIyaDR4n88pmzDk`);
 
