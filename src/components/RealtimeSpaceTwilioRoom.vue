@@ -426,18 +426,17 @@ export default {
       catch (error) {
         // undo all the states that were changed
         this.isTroubleshootPopupOpen = true; 
-        // setTimeout(async () => {
-        //   this.$store.commit("SET_IS_MIC_ON", false); 
-        //   this.$store.commit("SET_CAN_HEAR_AUDIO", false); 
-        //   await this.$nextTick(); 
-        //   this.twilioInitialized = false; 
+        setTimeout(async () => {
+          this.$store.commit("SET_IS_MIC_ON", false); 
+          this.$store.commit("SET_CAN_HEAR_AUDIO", false); 
+          await this.$nextTick(); 
+          this.twilioInitialized = false; 
 
-        //   // leave the conference completely (so you're not joined with a broken mic)
-        //   this.cleanUpTwilioRoom(); 
-        //   console.log("this.twilioInitialized = ", this.twilioInitialized); 
-        // // easy fix: close Explain, then open a fresh Explain. 
-        // // then detailed troubleshoot 
-        // }, 2000)
+          // leave the conference completely (so you're not joined with a broken mic)
+          this.cleanUpTwilioRoom(); 
+        // easy fix: close Explain, then open a fresh Explain. 
+        // then detailed troubleshoot 
+        }, 2000)
       } 
 
       finally {
