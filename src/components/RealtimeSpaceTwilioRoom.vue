@@ -1,5 +1,10 @@
 <template>
   <div>
+    <RealtimeSpaceTwilioRoomTroubleshootPopup 
+      :value="isTroubleshootPopupOpen"
+      @input="(newVal) => isTroubleshootPopupOpen = newVal"
+    />
+
     <!-- Display videos above the shared blackboard -->
     <portal to="destination">
       <div class="d-flex">
@@ -17,63 +22,103 @@
     </div>
 
     <!-- Display current user's connection state and options -->
-    <portal to="destination2">
-      <template v-if="!twilioInitialized">
-        <!-- <p class="yellow--text">Connected to the blackboard</p> -->
-         <v-row class="d-flex" justify="space-around">
-          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', true); connectToTwilioRoom()" 
-            :loading="isTryingToConnect" fab color="green" class="white--text" depressed
-          >
-            <v-icon large>mdi-phone</v-icon>
-          </v-btn>
-          <RealtimeSpaceTwilioRoomTroubleshootPopup/>
-          <v-btn disabled fab class="white--text">
-            <v-icon>mdi-music-clef-treble</v-icon>
-          </v-btn>
-        </v-row>
-      </template>
-
-      <template v-else-if="twilioInitialized">      
-        <v-row class="d-flex" justify="space-around">
-          <v-btn @click.stop.prevent="$store.commit('SET_IS_MIC_ON', !isMicOn)" fab color="white" class="black--text" depressed>
-            <v-icon large>{{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}</v-icon>
-          </v-btn>
-
-          <v-btn @click.stop.prevent="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)" :loading="isTryingToEnableCamera" fab color="white" class="black--text" depressed>
-            <v-icon large>{{ isCameraOn ? 'mdi-video-wireless' : 'mdi-video'}}</v-icon>
-          </v-btn>
-
-          <v-btn @click.stop.prevent="isSharingScreen = !isSharingScreen" :loading="isTryingToEnableScreen" fab color="white" class="black--text" depressed>
-            <v-icon large>{{ isSharingScreen ? 'mdi-monitor-star' : 'mdi-monitor' }}</v-icon>
-          </v-btn>
-
-          <v-btn @click.stop.prevent="disconnectWithoutLeaving()" fab color="red" class="white--text" depressed>
-            <v-icon large>mdi-phone-hangup</v-icon>
-          </v-btn>
-        </v-row>
-        <!-- <RealtimeSpaceTwilioRoomTroubleshootPopup/> -->
-      </template>
-    </portal>
-
-    <portal v-if="allClients" to="current-room-participants">
-      <div v-for="client in allClients"
+     <portal v-if="allClients" to="current-room-participants">
+       <!-- :color="client.sessionID === $store.state.session.currentID ? 'grey' : 'accent'" -->
+      <v-row v-for="client in allClients"
         :key="client.id" 
-        :class="['d-flex', 'text--secondary', 'mt-5', 'pl-5', `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : '' }`]"
-        style="font-size: 0.8em"
+        :class="['d-flex', `${client.sessionID === sessionID ? 'mt-3' : 'mt-1'}`, 'pl-5', 'pr-2', 'mr-0']"
+        align="center"
       >
-        {{ client.firstName + " " + client.lastName }}  
-        
-        <v-spacer/>
-        {{ "#" + client.currentBoardNumber }} 
-  
-        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" small class="mx-2">
-          {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
-        </v-icon>
 
-        <v-icon v-else small class="mx-2" :color="client.canHearAudio ? 'green' : 'grey'">
-          {{ client.canHearAudio ? "mdi-phone-check" : "mdi-phone-off" }}
-        </v-icon>
-      </div>
+        <!-- text--secondary: changes the opacity-->
+        <div 
+          style="font-size: 0.9em;"
+          :class="[
+            'ml-1',
+            'caption',
+            `${dominantParticipantSessionID === client.sessionID ? 'font-weight-bold grey--text text--darken-3' : 'text--secondary' }`,
+          ]"
+        >
+          {{ client.firstName + " " + client.lastName }} 
+        </div>
+    
+        <v-spacer/>
+
+        <!-- Myself -->
+        <template v-if="client.sessionID === sessionID">
+          <template v-if="! twilioInitialized">
+            <v-btn @click="toggleConnectionToTwilio()" :loading="isTryingToConnect" small dark fab color="success" class="mx-2">
+              <v-icon>mdi-phone</v-icon>
+            </v-btn>
+          </template>
+
+          <template v-else>
+             <v-switch v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)"
+              :input-value="isMicOn"
+              @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
+              color="grey darken-3"
+              :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+              :loading="isTryingToConnect"
+              hide-details
+              dense
+              inset
+              class="mt-0 pt-0 grey--text"
+            />
+          </template>
+
+          <div :class="['caption', 'black--text']" style="font-size: 1.05em">
+            {{ "#" + client.currentBoardNumber }}
+          </div>
+          
+          <portal to="video-screenshare-hangup-buttons">
+            <v-row v-if="twilioInitialized" class="d-flex pl-3 pr-1 mt-2" align="center">
+              <v-switch v-if="twilioInitialized"
+                class="ml-1 mt-0 pt-0 grey--text"
+                :input-value="isCameraOn"
+                @change="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)"
+                :loading="isTryingToEnableCamera"
+                color="black" prepend-icon="mdi-video" hide-details inset dense
+              />
+
+              <v-switch
+                :input-value="isSharingScreen"
+                @change="isSharingScreen = !isSharingScreen"
+                :loading="isTryingToEnableScreen"
+                color="black" inset dense hide-details
+                prepend-icon="mdi-monitor"
+                class="mt-0 pt-0 grey--text"
+              />
+
+              <v-btn @click="toggleConnectionToTwilio()" class="ml-2" x-small dark fab color="red">
+                <v-icon small>mdi-phone-hangup</v-icon>
+              </v-btn>
+            </v-row>
+          </portal>
+        </template>
+
+        <template v-else>
+          <v-spacer/>
+
+          <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" style="font-size: 0.9rem" color="grey darken-3">
+            {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
+          </v-icon>
+          <v-icon v-else-if="client.canHearAudio" color="green" style="font-size: 0.9rem">
+            mdi-phone-check
+          </v-icon>
+
+          <v-icon v-if="client.isMusicPlaying" color="cyan" style="font-size: 0.9rem">
+            mdi-music-clef-treble
+          </v-icon>
+
+          <v-icon v-if="client.isViewingLibrary" color="purple" style="font-size: 0.9rem">
+            mdi-bookshelf
+          </v-icon>
+
+          <div :class="['caption', 'black--text']" style="font-size: 1em">
+            {{ "#" + client.currentBoardNumber }}
+          </div>
+        </template>
+      </v-row>
     </portal>
 
     <!-- Helps user fix audio issues if an error shows up -->
@@ -179,7 +224,9 @@ export default {
       dominantParticipantSessionID: null,
 
       // for terminating the asynchronous operation to prevent the multiple room leakage
-      isDestroyed: false
+      isDestroyed: false,
+
+      isTroubleshootPopupOpen: false
     };
   },
   computed: {
@@ -213,14 +260,12 @@ export default {
     }
   },
   beforeDestroy () {
-    console.log("destroyed hook for =", this.roomID);
+    // console.log("destroyed hook for =", this.roomID);
     this.isDestroyed = true; 
     // quickfix
     if (this.micTrack) this.micTrack.stop(); 
     if (this.cameraTrack) this.cameraTrack.stop(); 
-    if (this.twilioRoom) {
-      this.cleanUpTwilioRoom();
-    }
+    if (this.twilioRoom) this.cleanUpTwilioRoom();
   },
   watch: {
     // Detect mute all
@@ -276,8 +321,22 @@ export default {
     }
   },
   methods: {
+    toggleConnectionToTwilio () {
+      if (! this.twilioInitialized) {
+        // QUICKFIX: turn off music
+        const { musicAudioElement } = this.$store.state; 
+        musicAudioElement.pause(); 
+        this.$store.commit("SET_IS_MUSIC_PLAYING", false);
+
+        this.$store.commit('SET_IS_MIC_ON', true); // TODO: rename: this is just for enabling persistence
+        this.connectToTwilioRoom();
+      } else {
+        this.disconnectWithoutLeaving(); 
+      }
+    },
     cleanUpTwilioRoom () {
-      console.log("disconnecting ", this.roomID)
+      // console.log("cleanUpTwilioRoom()");
+      // console.log("disconnecting ", this.roomID)
       for (const unsubscribe of this.firebaseUnsubscribeFuncs) {
         unsubscribe();
       }
@@ -305,6 +364,8 @@ export default {
       
       window.removeEventListener("beforeunload", this.twilioRoom.disconnect);
       window.removeEventListener("pagehide", this.twilioRoom.disconnect);
+
+      this.twilioRoom = null; // doesn't matter if the component is destroyed, but matters if it's just a connection failure
       // console.log("disconnected", this.roomID);
     },
     async connectToTwilioRoom () {
@@ -356,18 +417,32 @@ export default {
           this, 
           "roomDoc"
         ).then(unsubscribe => this.firebaseUnsubscribeFuncs.push(unsubscribe));
+        
         this.twilioInitialized = true; 
 
         // console.log("set up =", this.roomID);
       } 
       
       catch (error) {
-        this.tellUserHowToFixError(error);
+        // undo all the states that were changed
+        this.isTroubleshootPopupOpen = true; 
+        setTimeout(async () => {
+          this.$store.commit("SET_IS_MIC_ON", false); 
+          this.$store.commit("SET_CAN_HEAR_AUDIO", false); 
+          await this.$nextTick(); 
+          this.twilioInitialized = false; 
+
+          // leave the conference completely (so you're not joined with a broken mic)
+          this.cleanUpTwilioRoom(); 
+        // easy fix: close Explain, then open a fresh Explain. 
+        // then detailed troubleshoot 
+        }, 2000)
       } 
 
       finally {
         this.isTryingToConnect = false; 
         // console.log("this.isDestroyed =", this.isDestroyed);
+
         // FIX FOR ROOM AUDIO INTERFERENCE: ensure cleanup is proper by terminating the asynchronous operation
         // causes an harmless uncaught error https://github.com/twilio/twilio-video.js/issues/532
         if (this.isDestroyed) {

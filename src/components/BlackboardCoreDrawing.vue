@@ -466,8 +466,6 @@ export default {
           newHeight: MASSIVE_MODE_DIMENSIONS.HEIGHT
         });
       }
-      // quickfix for indicating to user that they are only seeing part of the blackboard
-      this.canvas.style.border = "2px solid orange";
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
@@ -578,9 +576,6 @@ export default {
         return true;
       } 
       if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) {
-        this.$root.$emit(
-          "show-snackbar", 
-          `Switch off "Pencil mode" to draw with your finger or non-Apple stylus`);
         return true; 
       }
     },

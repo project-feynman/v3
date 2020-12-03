@@ -19,7 +19,7 @@
         </BaseButton>
       </v-col>
       <v-col class="ma-0 pa-0">
-        <BaseButton @click="selectRandomColor()" small icon="mdi-dice-3" color="black">New color</BaseButton>
+        <BaseButton @click="selectRandomColor()" small icon="mdi-dice-3" color="white">New color</BaseButton>
       </v-col>
     </v-row>
   </v-container>

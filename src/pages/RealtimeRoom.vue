@@ -3,7 +3,8 @@
     <!-- Can expose an update participant function -->
     <HandleUpdatingParticipants
       :currentBoardNumber="currentBoardNumber"
-      :roomId="roomId"
+      :roomID="roomId"
+      :classID="classID"
     />
 
     <RealtimeSpaceTwilioRoom 
@@ -108,11 +109,13 @@
     </v-dialog>
 
     <portal to="current-room-buttons">
+      <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
+      <!-- It sadly doesn't work here -->
       <v-menu v-model="isMenuOpen" offset-y bottom>
         <!-- Triple-dots button -->
         <template v-slot:activator>
-          <BaseButton @click="isMenuOpen = true" icon="mdi-dots-vertical" color="black" small>
-            Room actions
+          <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
+            <!-- Room actions -->
           </BaseButton>
         </template>
         
@@ -156,27 +159,27 @@
           >
             <template v-slot:blackboard-toolbar>
               <!-- For switching between different blackboards -->
-              <div v-if="room" class="d-flex ml-2">
+              <!-- item-color:  -->
+              <!-- active-class:  -->
+              <!-- hide-details: eliminates unnecessary bottom padding -->
+              <div v-if="room" class="d-flex mx-2">
                 <div v-if="activeBoardID" style="width: 60px">
                   <v-select 
                     dense
                     :value="activeBoardID"
                     :items="room.blackboards"
                     @change="(id) => activeBoardID = id"
-                    hint="board #"
-                    persistent-hint
-                    active-class="accent--text" color="accent" item-color="accent"
+                    hide-details
+                    item-color="accent"
                   >
                     <!-- Override default behavior: show the board number instead of the blackboardID -->
                     <template v-slot:selection="{ item }">
-                      <p class="mb-0 orange--text">{{ "#" + getBoardNumberFromID(item) }}</p>
+                      <p class="mb-0 white--text">{{ "#" + getBoardNumberFromID(item) }}</p>
                     </template>
                     <template v-slot:item="{ item }">
                       <p>{{ "#" + getBoardNumberFromID(item) }}</p>
                     </template>
-                    <!-- Can create a new board here -->
                     <template v-slot:append-item>
-                      <!-- IDEA: put into the room actions? -->
                       <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
                         New board
                       </BaseButton>

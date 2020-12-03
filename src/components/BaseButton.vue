@@ -1,6 +1,6 @@
 <template>
   <v-btn v-if="stopPropagation"
-    @click.stop="$emit('click')"
+    @click.prevent.stop="$emit('click')"
     v-on="on"
     v-bind="$attrs"
     class="button-custom" 
@@ -95,7 +95,7 @@ export default {
 
 <style scoped>
 .button-custom:not(.v-btn--round) {
-  font-size: 0.6em;
+  font-size: 0.55em;
   letter-spacing: unset;
   text-transform: unset;
   height: unset !important;

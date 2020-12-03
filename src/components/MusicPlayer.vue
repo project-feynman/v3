@@ -5,19 +5,14 @@
       ref="youtube"
     />
     <div class="text-center">
-      <v-bottom-sheet inset hide-overlay>
-        <template v-slot:activator="{ on, attrs }">
+      <v-bottom-sheet inset hide-overlay persistent>
+        <template v-slot:activator="{ on }">
           <BaseButton :on="on" icon="mdi-music-clef-treble" color="secondary">
             Music
           </BaseButton>
         </template>
         
         <v-card tile>
-          <v-progress-linear
-            :value="50"
-            class="my-0"
-            height="3"
-          />
           <v-list>
             <v-list-item>
               <v-list-item-content>
@@ -25,13 +20,7 @@
                 <v-list-item-subtitle>Maplestory OST</v-list-item-subtitle>
               </v-list-item-content>
 
-              <v-spacer></v-spacer>
-
-              <v-list-item-icon>
-                <v-btn icon>
-                  <v-icon>mdi-rewind</v-icon>
-                </v-btn>
-              </v-list-item-icon>
+              <v-spacer/>
 
               <v-list-item-icon :class="{ 'mx-5': $vuetify.breakpoint.mdAndUp }">
                 <v-btn v-if="isPaused" @click="play()" icon>
@@ -41,15 +30,6 @@
                 <v-btn v-else @click="pause()" icon>
                   <v-icon>mdi-pause</v-icon>
                 </v-btn> 
-              </v-list-item-icon>
-
-              <v-list-item-icon
-                class="ml-0"
-                :class="{ 'mr-3': $vuetify.breakpoint.mdAndUp }"
-              >
-                <v-btn icon>
-                  <v-icon>mdi-fast-forward</v-icon>
-                </v-btn>
               </v-list-item-icon>
             </v-list-item>
           </v-list>
@@ -71,13 +51,19 @@ export default {
   },
   data () {
     return {
+      // "https://www.youtube.com/watch?v=j1wQ8ZMZq60", // Holberg Suite
+      // "https://www.youtube.com/watch?v=QAxz16D4BlE", // Schubert Impromptu No. 3
       isPaused: false,
-      favoriteMusicPieces: [
-        "https://www.youtube.com/watch?v=DhUdOO9UNwY", // raindrop forest
-        "https://www.youtube.com/watch?v=DmPMZGBBmxk" // sarabande Holberg Suite
-        // "https://www.youtube.com/watch?v=j1wQ8ZMZq60", // Holberg Suite
-        // "https://www.youtube.com/watch?v=QAxz16D4BlE", // Schubert Impromptu No. 3
-      ],
+      favoriteMusicPieces: [{
+        title: "Raindrop Forest",
+        subtitle: "Maplestory OST",
+        youtubeURL: "https://www.youtube.com/watch?v=DhUdOO9UNwY"
+      },
+      {
+        title: "Sarabande, Holberg Suite",
+        subtitle: "Edvard Grieg",
+        youtubeURL: "https://www.youtube.com/watch?v=DmPMZGBBmxk"
+      }]
     };
   },
   computed: {
@@ -87,7 +73,7 @@ export default {
     randomMusicURL () {
       const n = this.favoriteMusicPieces.length; 
       const randomNumber = Math.floor(Math.random() * (n + 1));
-      return this.favoriteMusicPieces[randomNumber];
+      return this.favoriteMusicPieces[randomNumber].youtubeURL;
     }
   },
   mounted () {

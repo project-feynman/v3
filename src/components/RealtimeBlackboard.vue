@@ -9,6 +9,7 @@
 
     <!-- Blackboard -->
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
+    <!-- QUICKFIX: record-start will change blackboard from infinite to horizontal mode -->
     <Blackboard v-else
       :sizeAndOrientationMode="sizeAndOrientationMode"
       :backgroundImage="backgroundImage" 
@@ -17,6 +18,7 @@
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
+      @record-start="updateSizeAndOrientationMode('landscape')"
       @record-end="handleRecordEnd()"
     >
       <!-- TODO: don't let user wipe board / set background while recording -->
@@ -220,15 +222,16 @@ export default {
       if (!this.sizeAndOrientationMode) {
         this.sizeAndOrientationMode = "massive"; 
       }
-      if (this.sizeAndOrientationMode === "landscape") {
-        this.$root.$emit("show-snackbar", "Board is set to landscape mode"); 
-      } 
-      else if (this.sizeAndOrientationMode === "portrait") {
-        this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
-      }
-      else if (this.sizeAndOrientationMode === "massive") {
-        this.$root.$emit("show-snackbar", "Board is set to pseudo-infinite mode");
-      }
+
+      // if (this.sizeAndOrientationMode === "landscape") {
+      //   this.$root.$emit("show-snackbar", "Board is set to landscape mode"); 
+      // } 
+      // else if (this.sizeAndOrientationMode === "portrait") {
+      //   this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
+      // }
+      // else if (this.sizeAndOrientationMode === "massive") {
+      //   this.$root.$emit("show-snackbar", "Board is set to pseudo-infinite mode");
+      // }
     });
   },
   destroyed () {
