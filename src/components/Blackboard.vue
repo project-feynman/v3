@@ -59,7 +59,7 @@
               <template v-slot:activator="{ on }">
                 <!-- Cannot let user wipe board / reupload background image while recording -->
                 <BaseButton v-if="currentState !== RecordState.MID_RECORD" 
-                  @click="isMenuOpen = true" icon="mdi-dots-vertical" color="white" small
+                  @click="isMenuOpen = true" icon="mdi-dots-vertical" color="white" small hasLargeIcon
                 >
                 </BaseButton>
 

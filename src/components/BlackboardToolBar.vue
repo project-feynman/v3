@@ -1,7 +1,7 @@
 <template>
   <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
   <!-- Note that 'Show drawer' takes up more mspace than 'Hide drawer' -->
-  <v-app-bar width="465" min-width="465" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="490" min-width="490" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
         
@@ -26,7 +26,7 @@
         </slot>
 
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" color="white" small
+          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" color="white" small hasLargeIcon
         >
 
         </BaseButton>

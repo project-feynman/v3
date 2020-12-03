@@ -32,7 +32,7 @@
     :loading="loading"
   >
     <div class="d-flex flex-column">
-      <v-icon v-if="icon !=='none'">{{ icon }}</v-icon>
+      <v-icon v-if="icon !=='none'" :large="hasLargeIcon">{{ icon }}</v-icon>
       <span :class="icon !=='none' ? 'd-none d-sm-block':''">
         <slot>
 
@@ -47,6 +47,12 @@ export default {
   inheritAttrs: false,
   props: {
     on: Object,
+    hasLargeIcon: {
+      type: Boolean,
+      default () {
+        return false; 
+      }
+    },
     icon: {
       type: String,
       default () {
