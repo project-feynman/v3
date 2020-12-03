@@ -7,7 +7,8 @@
         <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
           :icon="isBoardFullscreen ? 'mdi-arrow-expand-right' : 'mdi-arrow-collapse-left'" color="white" small
         >
-          {{ isBoardFullscreen ? 'Show' : 'Hide' }} drawer
+          Fullscreen
+          <!-- {{ isBoardFullscreen ? 'Show' : 'Hide' }} drawer -->
         </BaseButton>
         
         <slot name="record-audio-slot">
