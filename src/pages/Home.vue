@@ -112,7 +112,7 @@
               </v-card-title>
 
               <v-card-subtitle class="subtitle-1 font-weight-medium">
-                For finals, everybody can study together in the <i>Open Area</i> for morale and to help explain things to each other
+                For finals, everybody can study together at random times in the <i>Open Area</i>
               </v-card-subtitle>
 
               <v-card-text>

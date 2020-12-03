@@ -1,15 +1,9 @@
 <template>
   <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
   <!-- Note that 'Show drawer' takes up more mspace than 'Hide drawer' -->
-  <v-app-bar width="495" min-width="495" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
+  <v-app-bar width="465" min-width="465" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
     <v-container fluid class="px-0 py-0">
       <v-row align="center">
-        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-arrow-expand-right' : 'mdi-arrow-collapse-left'" color="white" small
-        >
-          Fullscreen
-          <!-- {{ isBoardFullscreen ? 'Show' : 'Hide' }} drawer -->
-        </BaseButton>
         
         <slot name="record-audio-slot">
 
@@ -31,7 +25,11 @@
 
         </slot>
 
-        <v-spacer/>
+        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
+          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" color="white" small
+        >
+
+        </BaseButton>
 
         <slot name="more-actions-slot">
 

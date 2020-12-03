@@ -105,24 +105,25 @@ export default {
   async created () {
     this.infoConnectedListener = firebase.database().ref(".info/connected").on("value", async (connectionState) => {
       if (connectionState.val() === true) {
-        this.updateParticipantDoc(); 
-        
-        // set disconnect hook triggered by a counter the operation because the user can turn on/off the iPad repeatedly.
-        this.myFirebaseRef.child("disconnectCounter").once("value").then(snapshot => {
-          const disconnectCounter = snapshot.val() ? snapshot.val() : 0; 
-          this.myFirebaseRef.onDisconnect().set({ 
-            disconnectCounter: disconnectCounter + 1 // Cloud Functions will detect this change and update Firestore accordingly
-          });
-        });
+        await Promise.all([
+          this.updateParticipantDoc(), 
+          this.myFirebaseRef.child("disconnectCounter").once("value").then(async (snapshot) => {
+            const disconnectCounter = snapshot.val() ? snapshot.val() : 0; 
+            await this.myFirebaseRef.onDisconnect().set({ 
+              // Set disconnect hook is triggered by a counter the operation because the user can turn on/off the iPad repeatedly.
+              // Cloud Functions will detect this change and update Firestore accordingly
+              disconnectCounter: disconnectCounter + 1 
+            });
+          })
+        ]);
+    
+        // [CONCURRENCY] sometimes, the user leaves the room before created () has finished resolving all its promises, 
+        // therefore beforeDestroy() was called already but didn't do anything. 
+        if (this.wasDestroyedHookCalledAlready) {
+          this.cleanUpEverything(); 
+        }
       } 
     });
-
-    // [CONCURRENCY] sometimes, the user leaves the room before created () has finished resolving all its promises, 
-    // therefore beforeDestroy() was called already but didn't do anything. 
-    // That's why we use a boolean flag "wasDestroyedHookCalledAlready"
-    if (this.wasDestroyedHookCalledAlready) {
-      this.cleanUpEverything(); 
-    }
   },
   beforeDestroy () {
     this.wasDestroyedHookCalledAlready = true; 
@@ -130,18 +131,21 @@ export default {
   },
   methods: {
     updateParticipantDoc () {
-      this.myFirestoreRef.set({
-        sessionID: this.sessionID,
-        currentRoom: this.roomID,
-        currentBoardNumber: this.currentBoardNumber,
-        roomTypeID: this.$route.params.section_id,
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-        email: this.user.email,
-        uid: this.user.uid,
-        canHearAudio: this.canHearAudio,
-        isMusicPlaying: this.isMusicPlaying,
-        isViewingLibrary: this.isViewingLibrary
+      return new Promise(async (resolve) => {
+        await this.myFirestoreRef.set({
+          sessionID: this.sessionID,
+          currentRoom: this.roomID,
+          currentBoardNumber: this.currentBoardNumber,
+          roomTypeID: this.$route.params.section_id,
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+          email: this.user.email,
+          uid: this.user.uid,
+          canHearAudio: this.canHearAudio,
+          isMusicPlaying: this.isMusicPlaying,
+          isViewingLibrary: this.isViewingLibrary
+        });
+        resolve();
       });
     },
     cleanUpEverything () {
