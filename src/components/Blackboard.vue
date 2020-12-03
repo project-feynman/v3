@@ -29,17 +29,19 @@
           @toggle-fullScreen="toggleFullScreen()"
         >
           <template v-slot:touch-slot>
+            <!-- :messages needs to be populated for the v-slot:message to exist -->
             <v-switch 
               :input-value="! touchDisabled"
               @change="setTouchDisabled(!touchDisabled)"
               color="yellow"
               class="mt-0 ml-2"
-              hide-details
+              persistent-hint
+              inset
+              dense
+              :messages="['first message', 'second message']"
             >
-              <template v-slot:label>
-                <div style="font-size: 0.7rem" :class="touchDisabled ? 'white--text' : 'yellow--text'">
-                  Touch draw
-                </div>
+              <template v-slot:message>
+                <div class="font-size: 0.5rem">Touch draw</div>
               </template>
             </v-switch>
           </template>
@@ -61,7 +63,7 @@
                 >
                 </BaseButton>
 
-                <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="purple">
+                <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
                   Finish
                 </BaseButton>
               </template>

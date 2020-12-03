@@ -22,7 +22,7 @@
                 large class="mr-5 green darken-1 white--text"
               >
                 <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
-                EXPLORE
+                GO TO CLASS
               </v-btn>
 
               <v-btn large class="grey darken-1 white--text mx-5">

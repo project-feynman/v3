@@ -8,6 +8,7 @@
       app 
       class="elevation-5" 
       width="240" 
+      min-width="240"
       mobile-breakpoint="500" 
       clipped 
     >      
@@ -65,12 +66,7 @@
 
         <!-- TODO: ahahahhaa this teleport is so ridiculously unintuitive -->
         <portal to="my-control-buttons">
-          <v-row align="center" justify="space-around" class="d-flex px-2 mt-1">
-            <!-- This is literally just a single button -->
-            <portal-target name="connect-to-twilio-button">
-
-            </portal-target>
-
+          <v-row align="center" class="d-flex px-1 mt-1">
             <!-- Music -->
             <v-switch 
               :input-value="$store.state.isMusicPlaying"
@@ -78,15 +74,45 @@
               color="cyan"
               prepend-icon="mdi-music-clef-treble"
               hide-details
-              class="mt-0 grey--text"
+              class="mt-0 ml-3 grey--text"
+              inset
+              dense
             />
+
+            <v-spacer/>
+
+            <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
+              <template v-slot:activator>
+                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small class="px-2 mr-4">
+                  <v-icon small>mdi-bookshelf</v-icon>
+                  <div style="font-size: 0.7rem">library</div>
+                </v-btn>
+              </template>
+
+              <v-toolbar dark>
+                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-toolbar>
+
+              <ClassLibrary :key="$route.params.class_id"/>
+            </v-dialog>
+            <!-- <v-col class="py-0 pr-0">
+              <div style="font-size: 0.4rem;" class="grey--text">
+                No audio? Reload / Open a new Explain page / Force-quit Safari / Clear browser cache.
+              </div>
+            </v-col> -->
           </v-row>
+
+          <portal-target name="video-screenshare-hangup-buttons">
+      
+          </portal-target>  
         </portal>
 
           <!-- Library -->
 
           <!-- Cannot use v-on because it doesn't stop event propagation to the list item, see https://github.com/vuetifyjs/vuetify/issues/3333 -->
-        <portal to="library-popup-button">
+        <!-- <portal to="library-popup-button">
           <v-row class="mx-2 mt-3 mb-2 pb-4" justify="space-around">
             <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
               <template v-slot:activator>
@@ -105,10 +131,10 @@
             </v-dialog>
 
             <v-col class="pl-2 pr-0 py-0">
-            <div style="font-size: 0.55rem;" class="black--text">
-              No audio? Open a new Explain page; force-quit Safari; clear browser cache.
-            </div>
-            </v-col>
+              <div style="font-size: 0.55rem;" class="grey--text">
+                No audio? Reload; Open a new Explain page; Force-quit Safari; Clear browser cache.
+              </div>
+            </v-col> -->
              
             <!-- <v-btn small @click.prevent.stop="isHelpPopupOpen = true">
               Help guide
@@ -145,8 +171,8 @@
               </v-card>
             </v-dialog> -->
 
-          </v-row>
-        </portal>
+          <!-- </v-row>
+        </portal> -->
       </v-sheet>
       
       <portal-target name="side-drawer">

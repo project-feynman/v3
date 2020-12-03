@@ -8,7 +8,7 @@
     </v-snackbar>
 
     <v-snackbar v-model="musicSnackbar" timeout="10000">
-      Play music from Maplestory's soundtrack? 
+      Enable background music from Maplestory?
       <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" color="pink" text>YES </v-btn>
       <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
     </v-snackbar>
@@ -61,8 +61,24 @@ div.v-snack:not(.v-snack--absolute) {
   margin-right: 1px !important;
 } */
 
+/* Override v-switch CSS to make them more compact */
 .v-application--is-ltr .v-input__prepend-outer {
-  margin-right: 3px !important;
+  margin-right: 1px !important;
+}
+
+.v-application--is-ltr .v-input--selection-controls__input {
+  margin-right: 0px !important;
+}
+
+.v-input__append-outer .v-icon, .v-input__prepend-outer .v-icon {
+  font-size: 18px !important;
+}
+
+/* For the hint text under touch draw */
+
+.v-input__control .v-messages {
+  font-size: 8px !important; 
+  color: white !important;
 }
 
 /* Global styles */

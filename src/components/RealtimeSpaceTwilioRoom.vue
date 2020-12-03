@@ -26,96 +26,98 @@
        <!-- :color="client.sessionID === $store.state.session.currentID ? 'grey' : 'accent'" -->
       <v-row v-for="client in allClients"
         :key="client.id" 
-        :class="['d-flex', 'mt-1', 'pl-5', 'pr-2', 'mr-1']"
+        :class="['d-flex', `${client.sessionID === sessionID ? 'mt-3' : 'mt-1'}`, 'pl-5', 'pr-2', 'mr-0']"
         align="center"
       >
 
         <!-- text--secondary: changes the opacity-->
         <div 
-          style="font-size: 0.9em"
+          style="font-size: 0.9em;"
           :class="[
-            'ml-2',
+            'ml-1',
             'caption',
-            `${dominantParticipantSessionID === client.sessionID ? 'font-weight-black' : 'text--secondary' }`,
-            `${ client.sessionID === $store.state.session.currentID ? 'black--text' : 'black--text' }`
+            `${dominantParticipantSessionID === client.sessionID ? 'font-weight-bold grey--text text--darken-3' : 'text--secondary' }`,
           ]"
         >
-          {{ client.firstName + " " + client.lastName }}
+          {{ client.firstName + " " + client.lastName }} 
         </div>
-        
+    
         <v-spacer/>
 
-        <!-- TODO: refactor all these portal shenanigans -->
-        <portal v-if="client.sessionID === $store.state.session.currentID" to="connect-to-twilio-button">
-          <v-switch 
-            :input-value="twilioInitialized"
-            :disabled="isTryingToConnect"
-            :loading="isTryingToConnect"
-            @change="toggleConnectionToTwilio()"
-            color="green"
-            prepend-icon="mdi-phone"
-            hide-details
-            class="mt-0 grey--text"
-          />
-        </portal>
+        <!-- Myself -->
+        <template v-if="client.sessionID === sessionID">
+          <template v-if="! twilioInitialized">
+            <v-btn @click="toggleConnectionToTwilio()" :loading="isTryingToConnect" small dark fab color="success" class="mx-2">
+              <v-icon>mdi-phone</v-icon>
+            </v-btn>
+          </template>
 
-        <!-- If this user is me, show the switches for connecting to the call, muting, etc. -->
-        <portal v-if="client.sessionID === $store.state.session.currentID" to="my-video-conference-buttons">
-          <v-row v-if="twilioInitialized" class="d-flex px-2" justify="space-around" align="center">
-            <template v-if="twilioInitialized">
-              <v-switch
-                :input-value="isMicOn"
-                @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
-                color="grey darken-3"
-                :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                :loading="isTryingToConnect"
-                hide-details
-                class="mt-0 grey--text"
-              />
+          <template v-else>
+             <v-switch v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)"
+              :input-value="isMicOn"
+              @change="$store.commit('SET_IS_MIC_ON', !isMicOn)"
+              color="grey darken-3"
+              :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+              :loading="isTryingToConnect"
+              hide-details
+              dense
+              inset
+              class="mt-0 pt-0 grey--text"
+            />
+          </template>
 
-              <v-switch
+          <div :class="['caption', 'black--text']" style="font-size: 1.05em">
+            {{ "#" + client.currentBoardNumber }}
+          </div>
+          
+          <portal to="video-screenshare-hangup-buttons">
+            <v-row v-if="twilioInitialized" class="d-flex pl-3 pr-1 mt-2" align="center">
+              <v-switch v-if="twilioInitialized"
+                class="ml-1 mt-0 pt-0 grey--text"
                 :input-value="isCameraOn"
                 @change="$store.commit('SET_IS_CAMERA_ON', !isCameraOn)"
                 :loading="isTryingToEnableCamera"
-                color="black"
-                prepend-icon="mdi-video"
-                hide-details
-                class="mt-0 grey--text"
+                color="black" prepend-icon="mdi-video" hide-details inset dense
               />
 
-              <!-- <v-switch
+              <v-switch
                 :input-value="isSharingScreen"
                 @change="isSharingScreen = !isSharingScreen"
                 :loading="isTryingToEnableScreen"
-                color="black"
+                color="black" inset dense hide-details
                 prepend-icon="mdi-monitor"
-                hide-details
-                class="mt-0 grey--text"
-              /> -->
-            </template>
-          </v-row>
-        </portal>
-  
-        <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" style="font-size: 1.2rem" color="grey darken-3">
-          {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
-        </v-icon>
+                class="mt-0 pt-0 grey--text"
+              />
 
-        <!-- Even if I'm not connected to the audio, I'd like to know if others are connected before I decide -->
-        <v-icon v-else-if="client.canHearAudio" color="green" style="font-size: 1.2rem">
-          mdi-phone-check
-        </v-icon>
+              <v-btn @click="toggleConnectionToTwilio()" class="ml-2" x-small dark fab color="red">
+                <v-icon small>mdi-phone-hangup</v-icon>
+              </v-btn>
+            </v-row>
+          </portal>
+        </template>
 
-        <v-icon v-if="client.isMusicPlaying" color="cyan" style="font-size: 1.2rem">
-          mdi-music-clef-treble
-        </v-icon>
+        <template v-else>
+          <v-spacer/>
 
-        <v-icon v-if="client.isViewingLibrary" color="purple" style="font-size: 1.2rem">
-          mdi-bookshelf
-        </v-icon>
+          <v-icon v-if="allClientAudioStatuses.hasOwnProperty(client.sessionID)" style="font-size: 0.9rem" color="grey darken-3">
+            {{ allClientAudioStatuses[client.sessionID] ? 'mdi-microphone' : 'mdi-microphone-off' }}
+          </v-icon>
+          <v-icon v-else-if="client.canHearAudio" color="green" style="font-size: 0.9rem">
+            mdi-phone-check
+          </v-icon>
 
-        <div :class="['caption', client.sessionID === $store.state.session.currentID ? 'text--secondary' : 'text--secondary']" style="font-size: 0.9em">
-          {{ "#" + client.currentBoardNumber }}
-        </div>
+          <v-icon v-if="client.isMusicPlaying" color="cyan" style="font-size: 0.9rem">
+            mdi-music-clef-treble
+          </v-icon>
+
+          <v-icon v-if="client.isViewingLibrary" color="purple" style="font-size: 0.9rem">
+            mdi-bookshelf
+          </v-icon>
+
+          <div :class="['caption', 'black--text']" style="font-size: 1em">
+            {{ "#" + client.currentBoardNumber }}
+          </div>
+        </template>
       </v-row>
     </portal>
 
@@ -321,6 +323,11 @@ export default {
   methods: {
     toggleConnectionToTwilio () {
       if (! this.twilioInitialized) {
+        // QUICKFIX: turn off music
+        const { musicAudioElement } = this.$store.state; 
+        musicAudioElement.pause(); 
+        this.$store.commit("SET_IS_MUSIC_PLAYING", false);
+
         this.$store.commit('SET_IS_MIC_ON', true); // TODO: rename: this is just for enabling persistence
         this.connectToTwilioRoom();
       } else {
