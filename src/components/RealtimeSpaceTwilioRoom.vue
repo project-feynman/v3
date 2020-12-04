@@ -323,11 +323,6 @@ export default {
   methods: {
     toggleConnectionToTwilio () {
       if (! this.twilioInitialized) {
-        // QUICKFIX: turn off music
-        const { musicAudioElement } = this.$store.state; 
-        musicAudioElement.pause(); 
-        this.$store.commit("SET_IS_MUSIC_PLAYING", false);
-
         this.$store.commit('SET_IS_MIC_ON', true); // TODO: rename: this is just for enabling persistence
         this.connectToTwilioRoom();
       } else {

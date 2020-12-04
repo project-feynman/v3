@@ -99,7 +99,6 @@ export default {
     document.getElementById("space-title").scrollIntoView({ 
       behavior: "smooth", block: "start" 
     });
-
   }
 }
 </script>

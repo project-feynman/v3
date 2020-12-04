@@ -81,6 +81,7 @@ export default {
         mostRecentClassID: mitClass.id
       });
       this.$root.$emit("show-snackbar", `Successfully joined ${mitClass.name}.`);
+      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}`);
     },
     async remove ({ mitClass }) {
       this.userRef.update({
@@ -108,17 +109,31 @@ export default {
       // TODO: parallelize with Promise.all() or use getRandomId(); 
       const classDoc = await db.collection("classes").add({
         name: this.nameOfNewCommunity,
-        description: this.descriptionOfNewCommunity,
-        roomTypes: ["Blackboard Rooms"]
+        description: this.descriptionOfNewCommunity
       });
 
-      await this.userRef.update({
-        enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
-          id: classDoc.id,
-          name: this.nameOfNewCommunity,
-          description: this.descriptionOfNewCommunity
+      const ref = db.doc(`classes/${classDoc.id}`);
+      await Promise.all([
+        this.userRef.update({
+          enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
+            id: classDoc.id,
+            name: this.nameOfNewCommunity,
+            description: this.descriptionOfNewCommunity
+          })
+        }),
+        // TODO: not DRY, was copied and pasted from ClassPageLayout
+        ref.collection("roomTypes").doc(classDoc.id).set({ 
+          id: classDoc.id, name: "Open area" 
+        }),
+        ref.collection("rooms").doc(classDoc.id).set({
+          isCommonRoom: true,
+          roomTypeID: classDoc.id,
+          blackboards: [classDoc.id]
+        }),
+        ref.collection("blackboards").doc(classDoc.id).set({
+
         })
-      });
+      ]);
 
       // now update again
       this.mitClasses = await this.$_getCollection(db.collection("classes")); 
@@ -126,6 +141,9 @@ export default {
       this.$root.$emit("show-snackbar", `${this.nameOfNewCommunity} has been created.`)
       this.nameOfNewCommunity = "";
       this.descriptionOfNewCommunity = ""; 
+
+      // automatic redirect
+      this.$router.push(`/class/${classDoc.id}/section/${classDoc.id}`);
     }
   }
 };

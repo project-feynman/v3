@@ -33,10 +33,11 @@ export default {
       this.snackbarMessage = message;
     });
 
+    // TODO: continuously randomize the music
+    // "[MapleStory BGM] Singapore Boat Quay Town.mp3"
     const maplestorySoundtrack = [
       "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
       "[MapleStory BGM] Ereve Raindrop Flower.mp3",
-      // "[MapleStory BGM] Singapore Boat Quay Town.mp3",
     ];
     const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
     const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
