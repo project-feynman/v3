@@ -123,7 +123,7 @@ export default {
         }),
         // TODO: not DRY, was copied and pasted from ClassPageLayout
         ref.collection("roomTypes").doc(classDoc.id).set({ 
-          id: classDoc.id, name: "Open area" 
+          id: classDoc.id, name: "Common Area" 
         }),
         ref.collection("rooms").doc(classDoc.id).set({
           isCommonRoom: true,

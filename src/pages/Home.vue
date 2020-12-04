@@ -93,10 +93,10 @@
           <v-tab active-class="accent--text">
             Mission
           </v-tab>
-          <v-tab>
+          <!-- <v-tab> -->
             <!-- Introduces how to use -->
-            Phase I
-          </v-tab>
+            <!-- Phase I
+          </v-tab> -->
           <!-- <v-tab>
             News
           </v-tab> -->
@@ -106,20 +106,30 @@
 
           <!-- items here -->
           <v-tab-item>
-            <v-card>
+            <v-card width="625">
               <v-card-title>
                 Thanksgiving Update
               </v-card-title>
 
-              <v-card-subtitle class="subtitle-1 font-weight-medium">
-                <b>For finals, everybody can study together at random times in the <i>Open Area</i></b>
-                <div>[Quick reminder] if there's no audio, either reload the page, or close the browser tab completely and come back.</div>
+              <v-card-subtitle>
+                <b class="subtitle-1 font-weight-medium">Each class now has a Common Area for everyone to study together</b>
               </v-card-subtitle>
 
-              <v-card-text>
-                Explain is now place-centric, which means you're always <u>somewhere</u>, even if you're just studying solo, relaxing to music or viewing the library. 
-                Every class also now has an open area, a centralized place for everybody to study and have fun. I was inspired by some unknown research that, apparently, the <u>mere presence</u> of other people positively improves our psychological state. 
-                (which was yet another reason to fix the ghost participants issue. Lastly, every room's URL can be directly copied and pasted as a "meeting URL" for scheduled events.                
+              <v-card-text class="grey--text text--darken-3">
+                If nobody is in the Common Area initially, you can: 
+                <ul>
+                  <li>
+                    Work in the common room by yourself or with friends - see if other people show up.
+                  </li>
+                  <li>
+                    Hold Office Hours in the Common Area and allow people to work in surrounding rooms.
+                  </li>
+                  <li>
+                    As more and more people join, it becomes easier to find study partners and have fun.
+                  </li>
+                </ul>
+                <br>
+                <div class="text--secondary">Tip: If voice chat isn't working, <u>close your browser tab</u> then come back.</div>
               </v-card-text>
 
               <!-- <v-card-text>
@@ -158,6 +168,8 @@
                 Explain becomes a truly vibrant place. That's the vision. Happy studying.
               </v-card-text> -->
             </v-card>
+            
+             <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
           </v-tab-item>
 
           <v-tab-item>
@@ -165,11 +177,11 @@
               <v-card-title>Introduction</v-card-title>
               <v-card-text style="font-size: 0.95rem;">
                 <p>
-                  Explain is an experimental website with blackboard rooms handcrafted for MIT classes:
+                  Explain is an experimental website with many blackboard rooms:
                 </p>
                 <ul>
-                  <li><b>Phase I (2020):</b> Create a place where students can study together serendipitously</li>
-                  <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared and organized</li>
+                  <li><b>Phase I (2020):</b> Create a place where MIT students can study together serendipitously</li>
+                  <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared, and organized</li>
                   <li><b>Phase III (2022):</b> Accelerate the world's transition into open learning</li>
                 </ul>
               </v-card-text>
@@ -177,9 +189,9 @@
             <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
           </v-tab-item>
 
-          <v-tab-item>
+          <!-- <v-tab-item>
             <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
-          </v-tab-item>
+          </v-tab-item> -->
    
     
           <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
