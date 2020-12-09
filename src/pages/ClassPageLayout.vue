@@ -66,26 +66,40 @@
 
         <!-- TODO: ahahahhaa this teleport is so ridiculously unintuitive -->
         <portal to="my-control-buttons">
-          <v-row align="center" class="d-flex px-1 mt-1">
-            <!-- Music -->
-            <v-switch 
-              :input-value="$store.state.isMusicPlaying"
-              @change="toggleMaplestoryMusic()"
-              color="cyan"
-              prepend-icon="mdi-music-clef-treble"
-              hide-details
-              class="mt-0 ml-3 grey--text"
-              inset
-              dense
-            />
+          <div style="display: flex; justify-content: space-around" class="mt-1">
+            <v-dialog 
+              :value="isViewingForum" 
+              @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
+              persistent
+              fullscreen
+            >
+              <template v-slot:activator>
+                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" small class="px-2">
+                  <v-icon small>mdi-forum</v-icon>
+                  <div style="font-size: 0.7rem">FORUM</div>
+                </v-btn>
+              </template>
 
-            <v-spacer/>
+              <v-card>
+                <v-toolbar dark>
+                  <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </v-toolbar>
+
+                <!--
+                  Without isViewingForum, the VisualForum does not get destroyed 
+                  even if the popup closes
+                -->
+                <VisualForum v-if="isViewingForum" :key="$route.params.class_id"/>
+              </v-card>
+            </v-dialog>
 
             <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
               <template v-slot:activator>
-                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small class="px-2 mr-4">
+                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small class="px-2">
                   <v-icon small>mdi-bookshelf</v-icon>
-                  <div style="font-size: 0.7rem">library</div>
+                  <div style="font-size: 0.7rem">LIBRARY</div>
                 </v-btn>
               </template>
 
@@ -97,11 +111,20 @@
 
               <ClassLibrary :key="$route.params.class_id"/>
             </v-dialog>
-            <!-- <v-col class="py-0 pr-0">
-              <div style="font-size: 0.4rem;" class="grey--text">
-                No audio? Reload / Open a new Explain page / Force-quit Safari / Clear browser cache.
-              </div>
-            </v-col> -->
+          </div>  
+
+          <v-row align="center" class="d-flex px-1 mt-3">
+            <!-- Music -->
+            <v-switch 
+              :input-value="$store.state.isMusicPlaying"
+              @change="toggleMaplestoryMusic()"
+              color="cyan"
+              prepend-icon="mdi-music-clef-treble"
+              hide-details
+              class="mt-0 ml-3 grey--text"
+              inset
+              dense
+            />
           </v-row>
 
           <portal-target name="video-screenshare-hangup-buttons">
@@ -218,6 +241,7 @@ import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
 import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
+import VisualForum from "@/components/VisualForum.vue";
 
 export default {
   name: "ClassPageLayout",
@@ -231,7 +255,8 @@ export default {
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
-    AllOpenSpaces
+    AllOpenSpaces,
+    VisualForum
   },
   data: () => ({
     firebaseRef: null,
@@ -239,7 +264,7 @@ export default {
     isChatOpen: false,
     isShowingDrawer: true,
     isAddClassPopupOpen: false,
-    isClassActionsMenuOpen: false,
+    isClassActionsMenuOpen: false
     // isHelpPopupOpen: false
   }),
   computed: {
@@ -247,7 +272,8 @@ export default {
       "user",
       "mitClass",
       "isBoardFullscreen",
-      "isViewingLibrary"
+      "isViewingLibrary",
+      "isViewingForum"
     ])
   },
   // TODO: refactor this quickfix

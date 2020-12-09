@@ -8,9 +8,9 @@
       :expl="expl" 
       :key="expl.id"
     />
-    <!-- <ExplanationCreate v-if="user" 
+    <ExplanationCreate v-if="isViewingForum" 
       explType="reply"
-    /> -->
+    />
   </div>
 </template>
 
@@ -44,7 +44,9 @@ export default {
   }),
   computed: {
     ...mapState([
-      "user"
+      "user",
+      "isViewingForum",
+      "isViewingLibrary"
     ]),
     sortedExplanations () {
       return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
@@ -52,7 +54,14 @@ export default {
   },
   async created () {
     // const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
-    const type = "posts";
+    
+    // quickfix
+    let type; 
+    if (this.isViewingForum) {
+      type = "questions";
+    } else if (this.isViewingLibrary) {
+      type = "posts";
+    }
     const { class_id } = this.$route.params;
     this.postRef = db.doc(`classes/${class_id}/${type}/${this.postID}`);
     this.explanationsRef = this.postRef.collection("replies");

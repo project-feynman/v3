@@ -7,15 +7,11 @@
         <!-- But if it's a medium / larger screen, we can afford fewer columns for the side-drawer -->
         <v-col cols="6" md="3">
           <!-- Within the SideDrawer itself, it's a vertical flex -->
-          <div class="d-flex flex-column mb-6">
-            <v-card v-for="n in 3" :key="n"
-              class="pa-2"
-              outlined
-              tile
-            >
-              Post {{ n }}
-            </v-card>
-          </div>
+          <v-list style="max-height: 80vh" class="overflow-y-auto">
+            <v-list-item v-for="n in 200" :key="n">
+              Question {{ n }} 
+            </v-list-item>
+          </v-list>
         </v-col>
 
         <v-col cols="6" md="7">
@@ -30,6 +26,8 @@
 </template>
 
 <script>
+// here you can import things
+
 export default {
   data () {
     return {

@@ -55,20 +55,22 @@
       >
         Uploading...
       </v-progress-linear>
-
-      <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
-      <Blackboard v-show="!isPreviewing"
-        :key="changeKeyToForceReset"
-        :isRealtime="false"
-        :strokesArray="strokesArray" @stroke-drawn="stroke => strokesArray.push(stroke)"
-        :backgroundImage="blackboard.backgroundImage" @update:background-image="newImage => blackboard.backgroundImage = newImage"
-        @board-reset="strokesArray = []"
-        @mounted="blackboardMethods => bindBlackboardMethods(blackboardMethods)"
-        @update:audioBlob="audioBlob => blackboard.audioBlob = audioBlob"
-        @update:currentTime="currentTime => blackboard.currentTime = currentTime"
-        @record-start="isRecordingVideo = true"
-        @record-end="showPreview()"
-      />
+      <!-- Put a position: relative div so the toolbar doesn't go all the way to the top of the page but just on top right corner of the blackboard -->
+      <div style="position: relative;"> 
+        <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
+        <Blackboard v-show="!isPreviewing"
+          :sizeAndOrientationMode="sizeAndOrientationMode"
+          :strokesArray="strokesArray" @stroke-drawn="stroke => strokesArray.push(stroke)"
+          :backgroundImage="blackboard.backgroundImage" @update:background-image="newImage => blackboard.backgroundImage = newImage"
+          :key="changeKeyToForceReset"
+          @board-reset="strokesArray = []"
+          @mounted="blackboardMethods => bindBlackboardMethods(blackboardMethods)"
+          @update:currentTime="currentTime => blackboard.currentTime = currentTime"
+          @update:audioBlob="audioBlob => blackboard.audioBlob = audioBlob"
+          @record-start="isRecordingVideo = true"
+          @record-end="showPreview()"
+        />
+      </div>
 
       <!-- Preview the video after recording -->
       <template v-if="isPreviewing">
@@ -106,7 +108,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
-import { RecordState } from "@/CONSTANTS.js";
+import { RecordState, PPT_SLIDE_RATIO } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js";
 import { mapState } from "vuex";
 
@@ -137,6 +139,7 @@ export default {
       backgroundImage: null,
       currentTime: 0
     },
+    sizeAndOrientationMode: "landscape",
     strokesArray: [],
     uploadProgress: 0,
     isRecordingVideo: false,
@@ -208,13 +211,19 @@ export default {
         );
       } else if (this.explType === "reply") {
         const { question_id, post_id } = this.$route.params;
-        if (question_id) {
+
+        if (this.$store.state.isViewingForum) {
           this.newPostRef = db.doc(`${classPath}/questions/${question_id}`);
-        } else if (post_id) {
-          this.newPostRef = db.doc(`${classPath}/posts/${post_id}`);
         } else {
-          throw new Error("The reply is not to a question nor a post.")
+          this.newPostRef = db.doc(`${classPath}/posts/${post_id}`);
         }
+        // if (question_id) {
+        //   this.newPostRef = db.doc(`${classPath}/questions/${question_id}`);
+        // } else if (post_id) {
+        //   this.newPostRef = db.doc(`${classPath}/posts/${post_id}`);
+        // } else {
+        //   throw new Error("The reply is not to a question nor a post.")
+        // }
         this.newReplyRef = this.newPostRef.collection("explanations").doc(getRandomId());
       }
     },
@@ -275,6 +284,17 @@ export default {
       // console.log("backgroundImage =", this.blackboard.backgroundImage)
       // console.log("this.blackboard =", this.blackboard);
 
+
+      // quick-fix code
+      let aspectRatio; 
+      if (this.sizeAndOrientationMode === "landscape") {
+        aspectRatio = PPT_SLIDE_RATIO; 
+      } else if (this.sizeAndOrientationMode === "portrait") {
+        aspectRatio = PDF_RATIO; 
+      } else if (this.sizeAndOrientationMode === "massive") {
+        aspectRatio = 1/2;
+      }
+
       const { backgroundImage } = this.blackboard; 
       this.$_saveExplToCacheThenUpload({
         thumbnailBlob,
@@ -283,7 +303,8 @@ export default {
         html: this.html,
         title: this.postTitle,
         tags: this.folder === "" ? [] : [this.folder],
-        explRef: this.explType === "post" ? this.newPostRef : this.newReplyRef
+        explRef: this.explType === "post" ? this.newPostRef : this.newReplyRef,
+        aspectRatio
       });
   
       this.hardResetChildrenComponents(); 
