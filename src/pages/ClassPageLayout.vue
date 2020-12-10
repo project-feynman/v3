@@ -1,6 +1,8 @@
 <template>
   <!-- There is sometimes unpredictable behavior between different browsers -->
-  <div style="height: 100%">
+  <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
+    horizontal and vertical scrolling), which is what we want -->
+  <div style="height: 100vh">
     <!-- `height: 100%` for v-navigation-drawer fixes the bottom-region being hidden on Safari, see reported issue on GitHub -->
     <v-navigation-drawer v-model="isShowingDrawer" 
       touchless 
@@ -95,7 +97,12 @@
               </v-card>
             </v-dialog>
 
-            <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
+            <v-dialog 
+              :value="isViewingLibrary" 
+              @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
+              persistent
+              fullscreen
+            >
               <template v-slot:activator>
                 <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small class="px-2">
                   <v-icon small>mdi-bookshelf</v-icon>
@@ -103,13 +110,15 @@
                 </v-btn>
               </template>
 
-              <v-toolbar dark>
-                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </v-toolbar>
+              <v-card>
+                <v-toolbar dark>
+                  <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
+                </v-toolbar>
 
-              <ClassLibrary :key="$route.params.class_id"/>
+                <ClassLibrary v-if="isViewingLibrary" :key="$route.params.class_id"/>
+              </v-card>
             </v-dialog>
           </div>  
 
@@ -202,9 +211,10 @@
 
       </portal-target>
     </v-navigation-drawer>
-
-    <v-main style="overflow-x: auto;">
-      <portal-target name="main-content" style="height: 100%;">
+    
+    <!-- Here is the main content -->
+    <v-main>
+      <portal-target name="main-content">
         
       </portal-target>
     </v-main>
@@ -389,10 +399,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Make the side-drawer vertically scrollable  */
-html {
-  overflow-y: auto; 
-}
-</style>

@@ -96,11 +96,11 @@
                   before setting `strokesArray = []` to wipe the UI. 
                 -->
                 <slot name="wipe-board-button-slot" :closeMenu="closeMenu"> 
-                  <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
+                  <BasePopupButton actionName="Wipe board" @action-do="resetBoard(); closeMenu()">
                     <template v-slot:activator-button="{ on }">
-                      <BaseButton :on="on" icon="mdi-delete" small>
-                        Wipe board
-                      </BaseButton>
+                      <v-list-item v-on="on">
+                        <v-icon left>mdi-delete</v-icon> Wipe board
+                      </v-list-item>
                     </template>
                     <template v-slot:message-to-user>
                       Are you sure you want to wipe everything?

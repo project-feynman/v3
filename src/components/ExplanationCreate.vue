@@ -115,8 +115,14 @@ import { mapState } from "vuex";
 export default {
   props: {
     explType: {
-      typ: String,
+      type: String,
       required: true
+    },
+    questionID: {
+      type: String,
+      default () {
+        return ""; // "" means no questionID, but is of type String
+      }
     }
   },
   mixins: [
@@ -205,15 +211,18 @@ export default {
       if (!this.mitClass) return; 
       const classRef = db.doc(`classes/${this.mitClass.id}`);
       const classPath = `classes/${this.mitClass.id}`;
+
       if (this.explType === "post") {
         this.newPostRef = db.doc(
           `${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${getRandomId()}`
         );
-      } else if (this.explType === "reply") {
-        const { question_id, post_id } = this.$route.params;
+      } 
 
+      else if (this.explType === "reply") {
+        const { post_id } = this.$route.params;
         if (this.$store.state.isViewingForum) {
-          this.newPostRef = db.doc(`${classPath}/questions/${question_id}`);
+          console.log("questionID =", this.questionID);
+          this.newPostRef = db.doc(`${classPath}/questions/${this.questionID}`);
         } else {
           this.newPostRef = db.doc(`${classPath}/posts/${post_id}`);
         }
@@ -295,6 +304,7 @@ export default {
         aspectRatio = 1/2;
       }
 
+      // TODO: not DRY, unify with RealtimeBlackboard's uploadExplanation () method
       const { backgroundImage } = this.blackboard; 
       this.$_saveExplToCacheThenUpload({
         thumbnailBlob,

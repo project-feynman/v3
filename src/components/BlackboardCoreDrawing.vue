@@ -205,8 +205,6 @@ export default {
     }
   },
   mounted () {
-    console.log("mounted BlackboardCoreDrawing");
-
     this.initializeCanvas();
     // document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
     

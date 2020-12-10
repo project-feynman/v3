@@ -97,7 +97,7 @@ export default {
     this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes")); 
     await this.$nextTick(); 
     document.getElementById("space-title").scrollIntoView({ 
-      behavior: "smooth", block: "start" 
+      behavior: "smooth", block: "nearest" 
     });
   }
 }

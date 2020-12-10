@@ -17,7 +17,7 @@
         
         <template v-if="questions">
           <v-list-item v-for="question in questions" :key="question.id"
-            @click="currentlySelectedQuestionID = question.id"
+            @click="currentlySelectedQuestionID = question.id; isCreatingNewQuestion = false;"
             :class="question.hasReplies ? '' : ['red']"
           >
             <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
@@ -49,14 +49,11 @@
             :postID="currentlySelectedQuestionID"
             :key="currentlySelectedQuestionID"
           /> 
-          I will be a component where, upon "created ()", will fetch the original question
-          and all the replies. 
-
-          However, while the database fetch is separate, I'll err on the side of keeping whatever structure we use to have. 
-          We used to have a working product, so we can just keep that. 
-
-          This component will refresh depending on the local state, so the currentQuestionID prop. Again, not ideal, but we're shipping 
-          the minimum viable visual forum. Remember that. 
+          <!-- Won't work yet because this component is coupled with the $route variables -->
+          <!-- <ClassPageSeeQuestion
+            :postID="currentlySelectedQuestionID"
+            :key="currentlySelectedQuestionID"
+          /> -->
         </div>
       </template>
     </v-col>
@@ -70,6 +67,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import ExplanationCreate from "@/components/ExplanationCreate.vue"; 
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue"; 
 import ClassPageSeePost from "@/components/ClassPageSeePost.vue"; 
+import ClassPageSeeQuestion from "@/pages/ClassPageSeeQuestion.vue"; 
 import moment from "moment"
 
 export default {
@@ -78,6 +76,7 @@ export default {
   ],
   components: {
     ClassPageSeePost,
+    ClassPageSeeQuestion,
     ExplanationCreate,
     ExplanationDisplay
   },
@@ -85,18 +84,32 @@ export default {
     return {
       isCreatingNewQuestion: false,
       currentlySelectedQuestionID: "", // AF("") means no question selected as it cannot be an empty string
-      questions: null // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
+      questions: null, // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
+      unsubscribeQuestionsListener: null
     };
   },
   async created () {
-    // fetch all the questions, sorted by time
+    // it's better if the forum is semi-realtime, but ensure that you do destroy the listener 
+
+
     const classRef = db.doc(`classes/${this.$route.params.class_id}`); 
     const questionsRef = classRef.collection("questions").orderBy("date", "desc"); 
-    this.questions = await this.$_getCollection(questionsRef); 
-    console.log("questions =", this.questions);
+
+    // this.questionsListener = await this.$_bindVarToDB({
+
+    // });
+
+    this.unsubscribeQuestionsListener = this.$_bindVarToDB({
+      varName: "questions",
+      dbRef: questionsRef,
+      component: this
+    });
+    // eventually incorporate the previous code for only fetching questions by week, but there are only two weeks remaining...
   },
   destroyed () {
     this.isCreatingNewQuestion = false;
+    this.unsubscribeQuestionsListener(); 
+    console.log("succesfully unsubscribed the questions listener");
   },
   methods: {
     getDate (date) {

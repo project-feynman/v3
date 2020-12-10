@@ -3,15 +3,18 @@
   <!-- Note that 'Show drawer' takes up more mspace than 'Hide drawer' -->
 
   <!-- The absolute positioning will look for the nearest parent with position "relative" -->
-  <v-app-bar width="490" min-width="490" elevation="5" :height="toolbarHeight" color="grey darken-1" absolute style="margin-left: auto; margin-right: 0;" rounded>
-    <v-container fluid class="px-0 py-0">
+  <!-- min-width="490" -->
+  <!-- width="490"  -->
+  <v-app-bar 
+    elevation="5" 
+    :height="toolbarHeight" 
+    color="grey darken-1" 
+    absolute 
+    style="left: auto; right: 0; margin-left: auto; margin-right: 0; z-index: 3" rounded
+  >
+    <!-- <v-container fluid class="px-0 py-0"> -->
       <v-row align="center">
-        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" color="white" small hasLargeIcon
-        >
-
-        </BaseButton>
-        
+        <!-- TODO: rename to blackboard leftmost slot-->
         <slot name="record-audio-slot">
 
         </slot>
@@ -36,7 +39,7 @@
 
         </slot>
       </v-row>
-    </v-container>
+    <!-- </v-container> -->
   </v-app-bar>
 </template>
 
@@ -76,18 +79,10 @@ export default {
     }
   },
   computed: {
-    isBoardFullscreen () {
-      return this.$store.state.isBoardFullscreen;
-    },
-    isStrokeEraser () {
-      return this.currentTool === BlackboardTools.STROKE_ERASER;
-    },
-    isNormalEraser () {
-      return this.currentTool === BlackboardTools.NORMAL_ERASER; 
-    },
-    isPen () {
-      return this.currentTool === BlackboardTools.PEN; 
-    }
+    isBoardFullscreen () { return this.$store.state.isBoardFullscreen; },
+    isStrokeEraser () { return this.currentTool === BlackboardTools.STROKE_ERASER; },
+    isNormalEraser () { return this.currentTool === BlackboardTools.NORMAL_ERASER; },
+    isPen () { return this.currentTool === BlackboardTools.PEN; }
   },
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
