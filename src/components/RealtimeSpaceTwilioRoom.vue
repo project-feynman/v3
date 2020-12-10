@@ -113,6 +113,9 @@
           <v-icon v-if="client.isViewingLibrary" color="purple" style="font-size: 0.9rem">
             mdi-bookshelf
           </v-icon>
+          <v-icon v-else-if="client.isViewingForum" color="yellow darken-3" style="font-size: 0.9rem">
+            mdi-forum
+          </v-icon>
 
           <div :class="['caption', 'black--text']" style="font-size: 1em">
             {{ "#" + client.currentBoardNumber }}
