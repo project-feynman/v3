@@ -56,10 +56,12 @@ Recent interviews!
   - Isabel Salinas (student)
   - Paige Dote (student)
   - Matthew Leonard (grader)
-  - Pierre Barral (TA)
-  - Nicolas Romeo (TA)
+  - Pierre Barral (Graduate TA)
+  - Nicolas Romeo (Graduate TA)
   - Nicole Shigiltchoff (student)
   - Hung Huynh (student)
+  - Emily Crabb (Graduate TA)
+  - Julia Xia (student)
   
 Organizations: 
   - Sandbox: for repeatedly funding someone like me with no clear plans and track record
