@@ -10,11 +10,12 @@
     />
     <!-- TODO: rename, question, reply, posts -->
     <!-- Note the props are specifically for :questionID -->
-    <ExplanationCreate v-if="isViewingForum" 
-      :questionID="postID"
-      explType="reply"
-      class="mt-5"
-    />
+    <div style="margin-top: 50px;">
+      <ExplanationCreate v-if="isViewingForum" 
+        :questionID="postID"
+        explType="reply"
+      />
+    </div>
   </div>
 </template>
 

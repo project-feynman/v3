@@ -1,5 +1,5 @@
 <template>
-  <v-card data-qa="create-expl">
+  <v-card elevation="5">
     <v-container fluid>
       <!-- Title -->
       <v-col cols="12" md="6" class="pa-0">
@@ -22,7 +22,7 @@
         <v-row align="center" justify="space-between">
           <v-col cols="auto">
             <v-switch v-model="isAnonymous" label="Toggle Anonymous" color="accent"/>
-            <v-select v-if="explType === 'post'" :items="tagSelect" v-model="folder" dense outlined label="Add to Folder" color="accent"></v-select>
+            <!-- <v-select v-if="explType === 'post'" :items="tagSelect" v-model="folder" dense outlined label="Add to Folder" color="accent"></v-select> -->
           </v-col>
 
           <v-col cols="auto">
