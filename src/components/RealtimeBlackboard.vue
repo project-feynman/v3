@@ -1,5 +1,12 @@
 <template>
-  <div>
+  <!-- 100vh so the div remains at the same height even if the blackboard is very tall
+    meaning the toolbar can succesfully pin to the top
+   -->
+   <!-- overflow-x: auto; -->
+  <div style="
+    height: 100vh;
+    overflow: auto;
+  ">
     <v-container v-if="!hasFetchedBlackboardData" style="height: 100%;">
       <!-- TODO: make it full width and height -->
       <!-- <v-skeleton-loader :attrs="{ class: 'mb-6', boilerplate: true, elevation: 2 }" type="image" min-height="1200" width="1200">
@@ -424,7 +431,7 @@ export default {
       promises.push(
         this.blackboard.getThumbnailBlob().then(blob => thumbnailBlob = blob)
       );
-      
+  
       // need to upload an independent copy of the background image
       // as the current blackboard's background image can be wiped and changed at any time on Firebase storage
       const { downloadURL } = this.backgroundImage; 
@@ -489,7 +496,6 @@ export default {
       this.dialog = false; 
       this.uploadExplanation(); 
       this.incrementKeyToDestroyComponent += 1; 
-
     },
     discardAudio () {
       this.dialog = false; 

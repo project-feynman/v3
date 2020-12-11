@@ -73,7 +73,8 @@ export default {
       "session",
       "canHearAudio",
       "isMusicPlaying",
-      "isViewingLibrary"
+      "isViewingLibrary",
+      "isViewingForum"
     ]),
     sessionID () {
       return this.session.currentID; 
@@ -99,6 +100,9 @@ export default {
       this.updateParticipantDoc(); 
     },
     isViewingLibrary () {
+      this.updateParticipantDoc(); 
+    },
+    isViewingForum () {
       this.updateParticipantDoc(); 
     }
   },
@@ -143,7 +147,8 @@ export default {
           uid: this.user.uid,
           canHearAudio: this.canHearAudio,
           isMusicPlaying: this.isMusicPlaying,
-          isViewingLibrary: this.isViewingLibrary
+          isViewingLibrary: this.isViewingLibrary,
+          isViewingForum: this.isViewingForum
         });
         resolve();
       });

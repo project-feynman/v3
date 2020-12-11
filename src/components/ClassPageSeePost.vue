@@ -8,9 +8,13 @@
       :expl="expl" 
       :key="expl.id"
     />
-    <!-- <ExplanationCreate v-if="user" 
+    <!-- TODO: rename, question, reply, posts -->
+    <!-- Note the props are specifically for :questionID -->
+    <ExplanationCreate v-if="isViewingForum" 
+      :questionID="postID"
       explType="reply"
-    /> -->
+      class="mt-5"
+    />
   </div>
 </template>
 
@@ -44,19 +48,26 @@ export default {
   }),
   computed: {
     ...mapState([
-      "user"
+      "user",
+      "isViewingForum",
+      "isViewingLibrary"
     ]),
     sortedExplanations () {
       return this.explanations.sort((a, b) => (a.date < b.date) ? -1 : ((a.date > b.date) ? 1 : 0));
     }
   },
   async created () {
-    // const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
-    const type = "posts";
+    // Decouple the component from the route: const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
+    // TODO: unify, the naming is super inconsistent "replies" for posts vs "explanations" for questions
     const { class_id } = this.$route.params;
-    this.postRef = db.doc(`classes/${class_id}/${type}/${this.postID}`);
-    this.explanationsRef = this.postRef.collection("replies");
-
+    if (this.isViewingForum) {
+      this.postRef = db.doc(`classes/${class_id}/questions/${this.postID}`);
+      this.explanationsRef = this.postRef.collection("explanations");
+    } 
+    else if (this.isViewingLibrary) {
+      this.postRef = db.doc(`classes/${class_id}/posts/${this.postID}`);
+      this.explanationsRef = this.postRef.collection("replies");
+    }
     this.$_listenToDoc(this.postRef, this, "originalPost").then(listener => {
       this.databaseListeners.push(listener);
     });

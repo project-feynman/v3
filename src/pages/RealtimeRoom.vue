@@ -145,7 +145,7 @@
     </portal-target>
 
     <!-- The actual blackboards -->
-    <div id="room" class="room-wrapper" style="height: 100%;">
+    <div id="room" class="room-wrapper">
       <v-tabs-items v-if="blackboardRefs.length !== 0 && room && activeBoardID" 
         v-model="activeBoardID" 
         touchless
@@ -158,6 +158,11 @@
             :blackboardRef="blackboardRefs[i]"
           >
             <template v-slot:blackboard-toolbar>
+              <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
+                :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
+                color="white" small hasLargeIcon
+              />
+
               <!-- For switching between different blackboards -->
               <!-- item-color:  -->
               <!-- active-class:  -->

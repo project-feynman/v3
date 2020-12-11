@@ -87,9 +87,9 @@
               (views: {{ expl.views ? expl.views : 0 }}) 
             </p> 
             <!-- show the link -->
-            <p class="pt-3 pl-2 body-2 font-weight-light">
+            <!-- <p class="pt-3 pl-2 body-2 font-weight-light">
               Share link: {{ explShareableLink }}
-            </p>
+            </p> -->
             <v-spacer/>
             <!-- <v-btn>Copy to clipboard</v-btn> -->
             <!-- email is unique for MIT Kerberos -->

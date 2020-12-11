@@ -1,15 +1,15 @@
 <template>
   <v-app>
+    <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
     <router-view/>
     
     <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
+      {{ snackbarMessage }} <v-btn @click="snackbar = false" text>CLOSE</v-btn>
     </v-snackbar>
 
-    <v-snackbar v-model="musicSnackbar" timeout="10000">
+    <v-snackbar v-model="musicSnackbar" timeout="8000">
       Enable background music from Maplestory?
-      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" color="pink" text>YES </v-btn>
+      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text>YES </v-btn>
       <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
     </v-snackbar>
   </v-app>
@@ -52,6 +52,7 @@ export default {
   }
 }
 </script>
+
 <style>
 /* Fixes snackbar not visible on iOS Safari, see https://github.com/vuetifyjs/vuetify/issues/11781#issuecomment-655689025 */
 div.v-snack:not(.v-snack--absolute) {

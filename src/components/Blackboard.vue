@@ -1,5 +1,11 @@
 <template>
   <div>
+    <BlackboardAudioRecorder
+      @created="({ startRecording, stopRecording }) => bindAudioRecorderMethods(startRecording, stopRecording)"
+      @update:audioBlob="blob => $emit('update:audioBlob', blob)"
+      @audio-recorded="audioObj => handleNewRecording(audioObj)"
+    />
+
     <BlackboardCoreDrawing
       :sizeAndOrientationMode="sizeAndOrientationMode"
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
@@ -96,11 +102,11 @@
                   before setting `strokesArray = []` to wipe the UI. 
                 -->
                 <slot name="wipe-board-button-slot" :closeMenu="closeMenu"> 
-                  <BasePopupButton actionName="Wipe board" @action-do="resetBoard()">
+                  <BasePopupButton actionName="Wipe board" @action-do="resetBoard(); closeMenu()">
                     <template v-slot:activator-button="{ on }">
-                      <BaseButton :on="on" icon="mdi-delete" small>
-                        Wipe board
-                      </BaseButton>
+                      <v-list-item v-on="on">
+                        <v-icon left>mdi-delete</v-icon> Wipe board
+                      </v-list-item>
                     </template>
                     <template v-slot:message-to-user>
                       Are you sure you want to wipe everything?
@@ -113,12 +119,6 @@
         </BlackboardToolBar>
       </template>
     </BlackboardCoreDrawing>
-
-    <BlackboardAudioRecorder
-      @created="({ startRecording, stopRecording }) => bindAudioRecorderMethods(startRecording, stopRecording)"
-      @update:audioBlob="blob => $emit('update:audioBlob', blob)"
-      @audio-recorded="audioObj => handleNewRecording(audioObj)"
-    />
   </div>
 </template>
 

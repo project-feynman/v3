@@ -14,10 +14,6 @@
     </slot>
 
     <div ref="BlackboardWrapper" class="blackboard-wrapper" style="position: relative;">
-      <!-- <v-btn @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" fab absolute right class="mt-5" color="accent" dark>
-        <v-icon>mdi-fullscreen</v-icon>
-      </v-btn> -->
-
       <canvas ref="FrontCanvas" class="front-canvas"
         @touchstart="e => touchStart(e)"
         @touchmove="e => touchMove(e)"
@@ -28,8 +24,8 @@
       ></canvas>
 
       <canvas ref="BackCanvas" class="back-canvas">
-      </canvas>
 
+      </canvas>
     </div>
   </div>
 </template>

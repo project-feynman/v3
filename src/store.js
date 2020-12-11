@@ -69,7 +69,8 @@ export default new Vuex.Store({
     musicAudioElement: null,
     isMusicPlaying: false,
 
-    isViewingLibrary: false
+    isViewingLibrary: false,
+    isViewingForum: false
   },
   getters: {
     isAdmin: state => {
@@ -77,6 +78,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_IS_VIEWING_FORUM (state, newVal) {
+      state.isViewingForum = newVal; 
+    },
     SET_IS_VIEWING_LIBRARY (state, newVal) {
       state.isViewingLibrary = newVal; 
     },

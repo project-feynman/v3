@@ -239,6 +239,9 @@
                 <v-icon v-if="p.isViewingLibrary" small color="purple">
                   mdi-bookshelf
                 </v-icon>
+                <v-icon v-else-if="p.isViewingForum" small color="yellow darken-3">
+                  mdi-forum
+                </v-icon>
 
                 {{ "#" + p.currentBoardNumber }} 
               </div>

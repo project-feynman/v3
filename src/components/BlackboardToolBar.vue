@@ -1,41 +1,43 @@
 <template>
-  <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
-  <!-- Note that 'Show drawer' takes up more mspace than 'Hide drawer' -->
-  <v-app-bar width="490" min-width="490" elevation="5" :height="toolbarHeight" color="grey darken-1" fixed style="margin-left: auto; margin-right: 0;" rounded>
-    <v-container fluid class="px-0 py-0">
-      <v-row align="center">
-        
-        <slot name="record-audio-slot">
+  <!-- The absolute positioning will look for the nearest POSITIONED parent i.e. position attribute is NOT static -->
+  <!-- bottom: auto; left: auto; -->
+  <!-- Note: the fixed/absolute props is a quick-fix -->
+  <v-app-bar 
+    :fixed="!$store.state.isViewingForum"
+    :absolute="$store.state.isViewingForum"
+    elevation="5" 
+    :height="toolbarHeight" 
+    color="grey darken-1" 
+    style="right: 0; top: 0; bottom: auto; left: auto; z-index: 3" 
+    rounded
+  >
+    <!-- v-row enables you to ignore the padding of <v-app-bar> -->
+    <v-row align="center">
+      <!-- TODO: rename the slot -->
+      <slot name="record-audio-slot">
 
-        </slot>
+      </slot>
 
-        <v-col class="py-0 px-0" cols="auto">
-          <PenSwatch 	
-            :colors="colors" 	
-            :isPenActive="isPen"	
-            @select-color="newColor => selectPen(newColor)" 	
-          />
-        </v-col>
+      <v-col class="py-0 px-0" cols="auto">
+        <PenSwatch 	
+          :colors="colors" 	
+          :isPenActive="isPen"	
+          @select-color="newColor => selectPen(newColor)" 	
+        />
+      </v-col>
 
-        <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
-          Eraser
-        </BaseButton>
+      <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
+        Eraser
+      </BaseButton>
 
-        <slot name="touch-slot">
+      <slot name="touch-slot">
 
-        </slot>
+      </slot>
 
-        <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-          :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" color="white" small hasLargeIcon
-        >
+      <slot name="more-actions-slot">
 
-        </BaseButton>
-
-        <slot name="more-actions-slot">
-
-        </slot>
-      </v-row>
-    </v-container>
+      </slot>
+    </v-row>
   </v-app-bar>
 </template>
 
@@ -75,23 +77,14 @@ export default {
     }
   },
   computed: {
-    isBoardFullscreen () {
-      return this.$store.state.isBoardFullscreen;
-    },
-    isStrokeEraser () {
-      return this.currentTool === BlackboardTools.STROKE_ERASER;
-    },
-    isNormalEraser () {
-      return this.currentTool === BlackboardTools.NORMAL_ERASER; 
-    },
-    isPen () {
-      return this.currentTool === BlackboardTools.PEN; 
-    }
+    isBoardFullscreen () { return this.$store.state.isBoardFullscreen; },
+    isStrokeEraser () { return this.currentTool === BlackboardTools.STROKE_ERASER; },
+    isNormalEraser () { return this.currentTool === BlackboardTools.NORMAL_ERASER; },
+    isPen () { return this.currentTool === BlackboardTools.PEN; }
   },
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
-    // this.selectPen("cyan");
   },
   destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));
