@@ -1,18 +1,15 @@
 <template>
-  <!-- There is sometimes unpredictable behavior between different browsers -->
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
-  <div style="height: 100vh">
-    <!-- `height: 100%` for v-navigation-drawer fixes the bottom-region being hidden on Safari, see reported issue on GitHub -->
+  <div style="height: 100%">
+    <!-- mobile-breakpoint="500": prevents the side-drawer from going into mobile mode where it's temporary -->
+    <!-- Elevation ranges from 0 to 24 -->
     <v-navigation-drawer v-model="isShowingDrawer" 
-      touchless 
-      height="100%"
       app 
-      class="elevation-5" 
+      class="elevation-24" 
       width="240" 
-      min-width="240"
-      mobile-breakpoint="500" 
-      clipped 
+      mobile-breakpoint="500"
+      touchless 
     >      
       <v-sheet class="pt-2 pl-2">    
         <div class="d-flex">
@@ -39,9 +36,10 @@
            -->
           <v-menu v-model="isClassActionsMenuOpen" offset-y bottom>
             <template v-slot:activator>
-              <BaseButton @click="isClassActionsMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
-                <!-- Class actions -->
-              </BaseButton>
+              <BaseButton @click="isClassActionsMenuOpen = true" 
+                stopPropagation 
+                icon="mdi-dots-vertical" color="black" small
+              />
             </template>
             
             <!-- Create new spaces -->
@@ -53,7 +51,7 @@
                 <template v-slot:activator-button="{ on }">
                   <v-list-item v-on="on">
                     <v-icon color="grey darken-1" class="mr-2">mdi-plus</v-icon>
-                    New space 
+                    New area
                   </v-list-item>
                 </template> 
               </BasePopupButton>
@@ -66,7 +64,7 @@
           </v-menu>
         </div>
 
-        <!-- TODO: ahahahhaa this teleport is so ridiculously unintuitive -->
+        <!-- TODO: re-write these bizarre teleports -->
         <portal to="my-control-buttons">
           <div style="display: flex; justify-content: space-around" class="mt-1">
             <v-dialog 
@@ -93,7 +91,9 @@
                   Without isViewingForum, the VisualForum does not get destroyed 
                   even if the popup closes
                 -->
-                <VisualForum v-if="isViewingForum" :key="$route.params.class_id"/>
+                <VisualForum v-if="isViewingForum" 
+                  :key="$route.params.class_id"
+                />
               </v-card>
             </v-dialog>
 
@@ -117,10 +117,13 @@
                   </v-btn>
                 </v-toolbar>
 
-                <ClassLibrary v-if="isViewingLibrary" :key="$route.params.class_id"/>
+                <ClassLibrary v-if="isViewingLibrary" 
+                  :key="$route.params.class_id"
+                />
               </v-card>
             </v-dialog>
           </div>  
+
 
           <v-row align="center" class="d-flex px-1 mt-3">
             <!-- Music -->
@@ -136,82 +139,18 @@
             />
           </v-row>
 
+          <!-- Red Hangup Button -->
           <portal-target name="video-screenshare-hangup-buttons">
       
           </portal-target>  
         </portal>
-
-          <!-- Library -->
-
-          <!-- Cannot use v-on because it doesn't stop event propagation to the list item, see https://github.com/vuetifyjs/vuetify/issues/3333 -->
-        <!-- <portal to="library-popup-button">
-          <v-row class="mx-2 mt-3 mb-2 pb-4" justify="space-around">
-            <v-dialog :value="isViewingLibrary" @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)">
-              <template v-slot:activator>
-                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small>
-                  <v-icon>mdi-bookshelf</v-icon>
-                </v-btn>
-              </template>
-
-              <v-toolbar dark>
-                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </v-toolbar>
-
-              <ClassLibrary :key="$route.params.class_id"/>
-            </v-dialog>
-
-            <v-col class="pl-2 pr-0 py-0">
-              <div style="font-size: 0.55rem;" class="grey--text">
-                No audio? Reload; Open a new Explain page; Force-quit Safari; Clear browser cache.
-              </div>
-            </v-col> -->
-             
-            <!-- <v-btn small @click.prevent.stop="isHelpPopupOpen = true">
-              Help guide
-            </v-btn> -->
-
-            <!-- <v-dialog v-model="isHelpPopupOpen">
-              <template v-slot:activator>
-              
-              </template>
-
-              <v-card>
-                <v-card-title>
-                  No audio? 
-                </v-card-title>
-
-                <v-card-text>
-                  <p>Ways to fix:</p>
-                  <ol>
-                    <p>Ways to fix</p>
-                    <li>Reload the page [~50% success rate]</li>
-                    <li>Close the page, then open a fresh page [~90% success rate]</li>
-                    <li>Clear the browser cache (laptop) or force quit Safari (iPad) [~99% success rate]</li>
-                    <li>
-                      If there's still no audio, use your laptop for audio instead.
-                    </li>
-                  </ol>
-
-                  <p>Other tips</p>
-                    <ul>
-                      <li>If there are echoes, make sure you have only <u>one unmuted device</u> at any given time.</li>
-                      <li>If problems persist, you can email me eltonlin@mit.edu or Facetime me at +503 250 3868 and we can solve it together.</li>
-                    </ul>
-                </v-card-text>
-              </v-card>
-            </v-dialog> -->
-
-          <!-- </v-row>
-        </portal> -->
       </v-sheet>
       
       <portal-target name="side-drawer">
 
       </portal-target>
     </v-navigation-drawer>
-    
+
     <!-- Here is the main content -->
     <v-main>
       <portal-target name="main-content">

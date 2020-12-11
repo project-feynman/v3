@@ -1,45 +1,43 @@
 <template>
-  <!-- 605 works for the iPhone, which for some reason requires a higher min-width -->
-  <!-- Note that 'Show drawer' takes up more mspace than 'Hide drawer' -->
-
-  <!-- The absolute positioning will look for the nearest parent with position "relative" -->
-  <!-- min-width="490" -->
-  <!-- width="490"  -->
+  <!-- The absolute positioning will look for the nearest POSITIONED parent i.e. position attribute is NOT static -->
+  <!-- bottom: auto; left: auto; -->
+  <!-- Note: the fixed/absolute props is a quick-fix -->
   <v-app-bar 
+    :fixed="!$store.state.isViewingForum"
+    :absolute="$store.state.isViewingForum"
     elevation="5" 
     :height="toolbarHeight" 
     color="grey darken-1" 
-    absolute 
-    style="left: auto; right: 0; margin-left: auto; margin-right: 0; z-index: 3" rounded
+    style="right: 0; top: 0; bottom: auto; left: auto; z-index: 3" 
+    rounded
   >
-    <!-- <v-container fluid class="px-0 py-0"> -->
-      <v-row align="center">
-        <!-- TODO: rename to blackboard leftmost slot-->
-        <slot name="record-audio-slot">
+    <!-- v-row enables you to ignore the padding of <v-app-bar> -->
+    <v-row align="center">
+      <!-- TODO: rename the slot -->
+      <slot name="record-audio-slot">
 
-        </slot>
+      </slot>
 
-        <v-col class="py-0 px-0" cols="auto">
-          <PenSwatch 	
-            :colors="colors" 	
-            :isPenActive="isPen"	
-            @select-color="newColor => selectPen(newColor)" 	
-          />
-        </v-col>
+      <v-col class="py-0 px-0" cols="auto">
+        <PenSwatch 	
+          :colors="colors" 	
+          :isPenActive="isPen"	
+          @select-color="newColor => selectPen(newColor)" 	
+        />
+      </v-col>
 
-        <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
-          Eraser
-        </BaseButton>
+      <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
+        Eraser
+      </BaseButton>
 
-        <slot name="touch-slot">
+      <slot name="touch-slot">
 
-        </slot>
+      </slot>
 
-        <slot name="more-actions-slot">
+      <slot name="more-actions-slot">
 
-        </slot>
-      </v-row>
-    <!-- </v-container> -->
+      </slot>
+    </v-row>
   </v-app-bar>
 </template>
 
@@ -87,7 +85,6 @@ export default {
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
     window.addEventListener("touchstart", e => this.palleteClose(e));
-    // this.selectPen("cyan");
   },
   destroyed () {
     window.removeEventListener("click", e => this.palleteClose(e));

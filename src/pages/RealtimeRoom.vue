@@ -161,9 +161,7 @@
               <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
                 :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
                 color="white" small hasLargeIcon
-              >
-
-              </BaseButton>
+              />
 
               <!-- For switching between different blackboards -->
               <!-- item-color:  -->

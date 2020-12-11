@@ -1,16 +1,15 @@
 <template>
   <v-app>
-    <!-- Where different pages will be injected -->
+    <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
     <router-view/>
     
     <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }}
-      <v-btn @click="snackbar = false" color="pink" text>CLOSE</v-btn>
+      {{ snackbarMessage }} <v-btn @click="snackbar = false" text>CLOSE</v-btn>
     </v-snackbar>
 
     <v-snackbar v-model="musicSnackbar" timeout="8000">
       Enable background music from Maplestory?
-      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" color="pink" text>YES </v-btn>
+      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text>YES </v-btn>
       <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
     </v-snackbar>
   </v-app>

@@ -1,5 +1,11 @@
 <template>
   <div>
+    <BlackboardAudioRecorder
+      @created="({ startRecording, stopRecording }) => bindAudioRecorderMethods(startRecording, stopRecording)"
+      @update:audioBlob="blob => $emit('update:audioBlob', blob)"
+      @audio-recorded="audioObj => handleNewRecording(audioObj)"
+    />
+
     <BlackboardCoreDrawing
       :sizeAndOrientationMode="sizeAndOrientationMode"
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
@@ -113,12 +119,6 @@
         </BlackboardToolBar>
       </template>
     </BlackboardCoreDrawing>
-
-    <BlackboardAudioRecorder
-      @created="({ startRecording, stopRecording }) => bindAudioRecorderMethods(startRecording, stopRecording)"
-      @update:audioBlob="blob => $emit('update:audioBlob', blob)"
-      @audio-recorded="audioObj => handleNewRecording(audioObj)"
-    />
   </div>
 </template>
 

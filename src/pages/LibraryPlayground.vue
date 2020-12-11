@@ -26,8 +26,6 @@
 </template>
 
 <script>
-// here you can import things
-
 export default {
   data () {
     return {

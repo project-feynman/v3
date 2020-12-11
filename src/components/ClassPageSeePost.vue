@@ -58,9 +58,7 @@ export default {
   },
   async created () {
     // Decouple the component from the route: const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
-    // quickfix
     // TODO: unify, the naming is super inconsistent "replies" for posts vs "explanations" for questions
-    // this.explanationsRef = this.postRef.collection("replies");
     const { class_id } = this.$route.params;
     if (this.isViewingForum) {
       this.postRef = db.doc(`classes/${class_id}/questions/${this.postID}`);
