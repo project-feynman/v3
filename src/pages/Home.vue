@@ -367,7 +367,7 @@ export default {
   font-size: 3.4em;
   font-weight: 600;
   font-family: "Raleway", sans-serif;
-  text-decoration: underline;
+  /* text-decoration: underline; */
   text-decoration-color: #eee;
 }
 @media (max-width: 400px) {
