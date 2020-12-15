@@ -160,7 +160,7 @@
         <div class="pt-2 pb-3" style="width: 100%">
           <v-row class="d-flex pl-5 pr-3" align="center">
             <div v-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              common room
+              common table
             </div>
             
             <div v-else-if="room.name" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
@@ -168,7 +168,7 @@
             </div>
 
             <div v-else class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              room {{ i - 1 }}
+              table {{ i - 1 }}
             </div>
 
             <v-spacer/>
@@ -202,7 +202,7 @@
         <div style="width: 100%;">
           <div class="d-flex ml-3 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 90%">
             <div v-if="room.isCommonRoom">
-              common room
+              common table
             </div>
 
             <div v-else-if="room.name">
@@ -210,7 +210,7 @@
             </div>
 
             <div v-else>
-              room {{ i - 1 }}
+              table {{ i - 1 }}
             </div>
           </div>
           <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
