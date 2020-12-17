@@ -90,21 +90,18 @@
           <v-tab>
             Updates
           </v-tab>
-          <v-tab active-class="accent--text">
-            Mission
+          <v-tab>
+            Problem
           </v-tab>
-          <!-- <v-tab> -->
-            <!-- Introduces how to use -->
-            <!-- Phase I
+          <v-tab>
+            Solution
+          </v-tab>
+          <v-tab>
+            Insight
+          </v-tab>
+          <!-- <v-tab active-class="accent--text">
+            Mission
           </v-tab> -->
-          <!-- <v-tab>
-            News
-          </v-tab> -->
-          <!-- <v-tab>
-            Art of the day
-          </v-tab> -->
-
-          <!-- items here -->
           <v-tab-item>
             <v-card width="625">
               <v-card-title>
@@ -137,12 +134,47 @@
             <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
           </v-tab-item>
 
+          <!-- items here -->
+          <v-tab-item>
+            <v-card>
+              <v-card-text>
+                <div class="subtitle-1 font-weight-medium">It's hard for MIT students to collaborate:</div>
+                <ul>
+                  <li>Lounges have a limited pool of people</li>
+                  <li>No easy way to talk to classmates after class </li>
+                  <li>Friction: have to schedule a meeting, have to walk to a different place</li>
+                  <li>have overlapping schedule / compatible progress and workstyle</li>
+                  <li>No easy way to talk to classmates after class</li>
+                </ul>
+                
+                <br>
+
+                <div class="subtitle-1 font-weight-medium">Existing solutions fail:</div>
+                <ul>
+                  <li>No community / private / scattered: Zoom, Hangouts, Messenger, Texting friends</li>
+                  <li>Text-based: Discord, Piazza</li>
+                  <li>Not always available: Office Hour times and long queues</li>
+                </ul>
+
+                <br>
+
+                <div class="subtitle-1 font-weight-medium">
+                  The problem results in counterproductive unhappiness for students
+                </div>
+                <ul>
+                  <li>It's hard to catch up once you fall behind, vicious cycle between social life and academic life and sleep.</li>
+                </ul> 
+              </v-card-text>
+            </v-card>
+          </v-tab-item>
+
           <v-tab-item>
             <v-card>
               <v-card-title>Introduction</v-card-title>
               <v-card-text style="font-size: 0.95rem;">
                 <p>
-                  Explain is an experimental website with many blackboard rooms:
+                  Explain is an experimental website with many blackboard rooms. It unifies all the different, separate study locations 
+                  into a centralized lounge area for each class, so students can collaborate easily and without coordination. 
                 </p>
                 <ul>
                   <li><b>Phase I (2020):</b> Create a place where MIT students can study together serendipitously</li>
@@ -153,6 +185,25 @@
             </v-card>
             <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
           </v-tab-item>
+
+          <v-tab-item>
+            <v-card>
+              <v-card-title>Insights</v-card-title>
+              <v-card-subtitle>Why didn't anyone do this?</v-card-subtitle>
+              <v-card-text>
+                Because Explain sounds like something that already exists. Smart critics will mention a list of collaborative whiteboard apps [ExplainEverything, ConceptBoard, Microsoft Whiteboard],
+                community apps [Gather, Comingle, Sococo]. 
+
+                The reason it's easy to underestimate Explain is because it's a platform built fundamentally for blackboard videos.
+                <ul>
+                  <li>Text Editors already exists. But when laptops became widespread, StackOverflow grew exponentially.</li>
+                  <li>Camera apps already exist. But when smartphones became widespread, Instagram grew exponentially. </li>
+                  <li>Collaborative Whiteboards already exist. But when stylus-tablets became widespread, Feynman will grow exponentially. </li>
+                </ul>
+              </v-card-text>
+            </v-card>
+          </v-tab-item>
+
 
           <!-- <v-tab-item>
             <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
@@ -176,7 +227,7 @@
               </v-card-text>
             </v-card>
           </v-tab-item> -->
-          <v-tab-item>
+          <!-- <v-tab-item>
             For the life of me I cannot figure out why the ghost participants problem still remains, and I'm hoping 
             to get second pair of eyes to take a look at my correctness argument.
 
@@ -187,7 +238,7 @@
 
             Sometimes, swiping left / right on the screen triggers the Safari to go back a page. 
             It's possible to disable the behavior, try "Prevent swiping left to go back page Safari".
-          </v-tab-item>
+          </v-tab-item> -->
         </v-tabs>
       </v-card>
   </v-main>
