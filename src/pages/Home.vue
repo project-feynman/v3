@@ -87,107 +87,196 @@
         <!-- color="accent" makes the slider indicator orange -->
         <v-tabs vertical touchless color="accent" class="ml-1">
           <!-- active-class="accent--text" makes the current tab's title go orange -->
-          <v-tab>
-            Updates
-          </v-tab>
-          <v-tab>
-            Problem
-          </v-tab>
-          <v-tab>
-            Solution
-          </v-tab>
-          <v-tab>
-            Insight
-          </v-tab>
-          <!-- <v-tab active-class="accent--text">
-            Mission
-          </v-tab> -->
+          <v-tab>Overview</v-tab>
+          <v-tab>Problem</v-tab>
+          <v-tab>Visual Forum</v-tab>
+          <v-tab>Lounge Area</v-tab>
           <v-tab-item>
-            <v-card width="625">
-              <v-card-title>
-                Thanksgiving Update
-              </v-card-title>
+            <v-row no-gutters>
+              <v-col md="6">
+                <v-card>
+                  <v-card-title>Goal</v-card-title>
+                  <v-card-subtitle>
+                    <b class="subtitle-1 font-weight-medium">
+                      The goal of explain.mit.edu is to enable radical open collaboration at MIT, then transition the world towards open education. 
+                    </b>
+                  </v-card-subtitle>
+                  <v-card-text class="grey--text text--darken-3">
+                    explain.mit.edu is a website with many collaborative blackboards structured in a way that is good for Q&A, pset collaboration, synchronous 
+                    problem solving sessions, etc. It's major features are the Lounge Area and the Visual Forum. 
+                    <br>
+                    <br>
+                    The web app is open source and in active development by MIT students and alumni, and served around 800 users 
+                    from 8.01, 18.01 and ESG in Fall 2020.
+                    <br>
+                    <br>
+                    The fact that it's an experimental prototype is both its strength and weaknesss: it's not as feature-complete and reliable as established enterprise products,
+                    but it's simple, minimalistic and highly evolving. In Fall 2020, people used it for synchronous problem-solving sessions
+                    and Office Hours, and it's now evolving towards the <u>Visual Forum</u> and <u>Lounge Area</u>.
+                    
+                    <br>
+                    <br>
+                    <div class="text--secondary">Tip: If voice chat isn't working, <u>close your browser tab</u> then come back.</div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
 
-              <v-card-subtitle>
-                <b class="subtitle-1 font-weight-medium">Each class now has a Common Area for everyone to study together</b>
-              </v-card-subtitle>
-
-              <v-card-text class="grey--text text--darken-3">
-                If nobody is in the Common Area initially, you can: 
-                <ul>
-                  <li>
-                    Work in the common room by yourself or with friends - see if other people show up.
-                  </li>
-                  <li>
-                    Hold Office Hours in the Common Area and allow people to work in surrounding rooms.
-                  </li>
-                  <li>
-                    As more and more people join, it becomes easier to find study partners and have fun.
-                  </li>
-                </ul>
-                <br>
-                <div class="text--secondary">Tip: If voice chat isn't working, <u>close your browser tab</u> then come back.</div>
-              </v-card-text>
-            </v-card>
-            
               <!-- VISION FOR THE PLATFORM -->
-            <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+              <v-col md="6">
+                <ExplanationDisplay v-if="demoVideo2" 
+                  :expl="demoVideo2" 
+                  :hasDate="false"
+                />
+              </v-col>
+            </v-row>
           </v-tab-item>
 
-          <!-- items here -->
+          <!-- Problem -->
           <v-tab-item>
-            <v-card>
-              <v-card-text>
-                <div class="subtitle-1 font-weight-medium">It's hard for MIT students to collaborate:</div>
-                <ul>
-                  <li>Lounges have a limited pool of people</li>
-                  <li>No easy way to talk to classmates after class </li>
-                  <li>Friction: have to schedule a meeting, have to walk to a different place</li>
-                  <li>have overlapping schedule / compatible progress and workstyle</li>
-                  <li>No easy way to talk to classmates after class</li>
-                </ul>
+            <v-row no-gutters>
+              <v-col md="6">
+                <v-card>
+                  <v-card-title>Problem</v-card-title>
+                  <v-card-subtitle>
+                    <b class="subtitle-1 font-weight-medium">
+                      The problem is that it's hard for struggling students to break out of vicious cycles
+                    </b>
+                  </v-card-subtitle>
+                  <v-card-text class="grey--text text--darken-3">
+                    <div class="subtitle-1 font-weight-medium">Consequences of the problem (according to 2018 undergraduate survey):</div>
+                    <ul>
+                      <li>30% of students "often stayed up all night to finish an academic assignment or prepare for an exam"</li>
+                      <li>32% of students "often felt very sad"</li>
+                      <li>18% of students "often felt so depressed it was difficult to function"</li>
+                    </ul>
+
+                    <br>
+
+                    <div class="subtitle-1 font-weight-medium">Existing solutions fail: the more behind you are, the less useful they become.</div>
+                    <ul>
+                      <li>Office Hours: 
+                          The more dysfunctional your schedule is, the less likely you can successfully attend. 
+                          The harder the class, the more overcrowded it is, and the less time with TA you get. 
+                      </li>
+                      <li>
+                        Forums: 
+                          The less you understand about the fundamental concepts, the less useful the text answers.
+                          The more last-minute you are doing the pset, the less you can afford the delay in response time. 
+                      </li>
+                      <li>
+                        Friends: 
+                          The more sleep-deprived and dysfunctional you are because you fell behind, the harder it is to make friends. 
+                      </li>
+                    </ul>
+
+                    <br>
+
+                  <div class="subtitle-1 font-weight-medium">Key observations</div>
+                    <ol>
+                      <li>
+                        Proper <u>blackboard explanations</u> are what truly matters in helping students break out of the vicious cycle, but no existing solutions provide that reliably and efficiently.
+                        Forum explanations are reusable but limited in value. Office Hour explanations have high value but are not reusable. 
+                      </li>
+                      <li>
+                        Friendship and collaboration is a key part to happiness, but no existing solutions 
+                        provide an easy way for classmates who don't already know each other to collaborate efficiently <u>without scheduling</u>. 
+                      </li>
+                    </ol>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <v-col md="6">
+                <v-img src="https://i.imgur.com/uyuipkK.jpg">
+                </v-img>
+              </v-col>
+            </v-row>
+          </v-tab-item>
+
+          <!-- Visual Forum -->
+          <v-tab-item>
+            <v-row no-gutters>
+              <v-col md="6">
+                <v-card >
+                  <v-card-title>Visual Forum</v-card-title>
+                  <v-card-subtitle>
+                    <b class="subtitle-1 font-weight-medium">
+                      The visual forum enables people to share <u>blackboard explanations</u> efficiently.
+                    </b>
+                  </v-card-subtitle>
+
+                  <v-card-text>
+                    <div class="subtitle-1 font-weight-medium">How to use</div>
+                    <ol>
+                      <li>Read the question.</li>
+                      <li>Record a video.</li>
+                      <li>Press "SUBMIT".</li>
+                      <li>Done. No file transfers, no compression, no upload times, no embeddings.</li>
+                    </ol>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <v-col md="6">
+                <iframe id="player" type="text/html" width="640" height="390"
+                  src="https://www.youtube.com/embed/863cDSgoVEw"
+                  frameborder="0">
+                </iframe>
+              </v-col>
+            </v-row>
+          </v-tab-item>
+
+          <!-- Lounge Area -->
+          <v-tab-item>
+            <v-row no-gutters>
+              <v-col md="6">
+                <v-card>
+                  <v-card-title>Lounge Area</v-card-title>
+                  <v-card-text style="font-size: 0.95rem;">
+                    <p>
+                      The lounge area unifies all the different, separate study locations 
+                      into a centralized place, so even students who don't know each other can collaborate easily <u>without formal coordination</u>. 
+                    </p>
+
+                    <div class="subtitle-1 font-weight-medium">Existing solutions fail:</div>
+                    <ul>
+                      <li>Lounges have a limited pool of people</li>
+                      <li>No easy way to talk to classmates after class </li>
+                      <li>Physical distance: have to walk to a different place</li>
+                      <li>Hard to schedule: commpatible schedule / pset progress is rare</li>
+                      <li>Reduces to friendship problem</li>
+                    </ul>
+
+                    <br>
+                    
+                    How to use if nobody is in the Lounge Area:
+                    <ul>
+                      <li>
+                        Work in the common room by yourself or with friends - see if other people show up.
+                      </li>
+                      <li>
+                        Hold Office Hours in the Common Area and allow people to work in surrounding rooms.
+                      </li>
+                      <li>
+                        As more and more people join, it becomes easier to find study partners and have fun.
+                      </li>
+                      <li>
+                        Alternatively, wait until the visual forum naturally brings a critical threshold of people to explain.mit.edu.
+                      </li>
+                    </ul>
+                    <br>
+                  </v-card-text>
+                </v-card>
+              </v-col>
                 
-                <br>
-
-                <div class="subtitle-1 font-weight-medium">Existing solutions fail:</div>
-                <ul>
-                  <li>No community / private / scattered: Zoom, Hangouts, Messenger, Texting friends</li>
-                  <li>Text-based: Discord, Piazza</li>
-                  <li>Not always available: Office Hour times and long queues</li>
-                </ul>
-
-                <br>
-
-                <div class="subtitle-1 font-weight-medium">
-                  The problem results in counterproductive unhappiness for students
-                </div>
-                <ul>
-                  <li>It's hard to catch up once you fall behind, vicious cycle between social life and academic life and sleep.</li>
-                </ul> 
-              </v-card-text>
-            </v-card>
+              <v-col md="6">
+                <ExplanationDisplay v-if="demoVideo" :expl="demoVideo" :hasDate="false"/>
+              </v-col>
+            </v-row>
           </v-tab-item>
 
           <v-tab-item>
-            <v-card>
-              <v-card-title>Introduction</v-card-title>
-              <v-card-text style="font-size: 0.95rem;">
-                <p>
-                  Explain is an experimental website with many blackboard rooms. It unifies all the different, separate study locations 
-                  into a centralized lounge area for each class, so students can collaborate easily and without coordination. 
-                </p>
-                <ul>
-                  <li><b>Phase I (2020):</b> Create a place where MIT students can study together serendipitously</li>
-                  <li><b>Phase II (2021):</b> Enable video explanations to be easily created, shared, and organized</li>
-                  <li><b>Phase III (2022):</b> Accelerate the world's transition into open learning</li>
-                </ul>
-              </v-card-text>
-            </v-card>
-            <ExplanationDisplay v-if="demoVideo2" :expl="demoVideo2" :hasDate="false"/>
-          </v-tab-item>
-
-          <v-tab-item>
-            <v-card>
+            <!-- <v-card>
               <v-card-title>Insights</v-card-title>
               <v-card-subtitle>Why didn't anyone do this?</v-card-subtitle>
               <v-card-text>
@@ -201,7 +290,7 @@
                   <li>Collaborative Whiteboards already exist. But when stylus-tablets became widespread, Feynman will grow exponentially. </li>
                 </ul>
               </v-card-text>
-            </v-card>
+            </v-card> -->
           </v-tab-item>
 
 
