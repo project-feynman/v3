@@ -89,44 +89,306 @@
           <!-- active-class="accent--text" makes the current tab's title go orange -->
           <v-tab>Overview</v-tab>
           <v-tab>Problem</v-tab>
-          <v-tab>Visual Forum</v-tab>
-          <v-tab>Lounge Area</v-tab>
+          <v-tab>Solution</v-tab>
+
+          <!-- Overview -->
           <v-tab-item>
             <v-row no-gutters>
-              <v-col md="6">
+              <v-col md="7">
                 <v-card>
-                  <v-card-title>Goal</v-card-title>
+                  <v-card-title>Overview</v-card-title>
                   <v-card-subtitle>
                     <b class="subtitle-1 font-weight-medium">
-                      The goal of explain.mit.edu is to enable radical open collaboration at MIT, then transition the world towards open education. 
+                      <!-- explain.mit.edu is designed like a lounge area with blackboards for students and instructors explain things.  -->
+                    
+                      <!-- My goal is to: 
+                        1. Recruit instructors to use the Visual Forum and Lounge Area for Spring 2021
+                        2. Recruit co-founder(s) by end of 2021 
+                        2. License explain.mit.edu schoolwide to achieve financial sustainability -->
+
+                      <!-- The forum the more people pass by each other
+                        - Pset collaboration: every class has one centralized lounge area for students
+                        - Forum discussions: instead of text, the forum is re-designed for blackboard explanations
+                        - Synchronous problem-solving: students can split into groups and staff can move freely -->
                     </b>
                   </v-card-subtitle>
                   <v-card-text class="grey--text text--darken-3">
-                    explain.mit.edu is a website with many collaborative blackboards structured in a way that is good for Q&A, pset collaboration, synchronous 
-                    problem solving sessions, etc. It's major features are the Lounge Area and the Visual Forum. 
-                    <br>
-                    <br>
-                    The web app is open source and in active development by MIT students and alumni, and served around 800 users 
-                    from 8.01, 18.01 and ESG in Fall 2020.
-                    <br>
-                    <br>
-                    The fact that it's an experimental prototype is both its strength and weaknesss: it's not as feature-complete and reliable as established enterprise products,
-                    but it's simple, minimalistic and highly evolving. In Fall 2020, people used it for synchronous problem-solving sessions
-                    and Office Hours, and it's now evolving towards the <u>Visual Forum</u> and <u>Lounge Area</u>.
-                    
-                    <br>
-                    <br>
-                    <div class="text--secondary">Tip: If voice chat isn't working, <u>close your browser tab</u> then come back.</div>
+                    <b>Goal:</b> Enable radical open collaboration within MIT, then transition the world towards open education<br>
+                    <b>Product:</b> A web app that lets you collaborate on blackboards and share video explanations efficiently<br>
+                    <b>Users:</b> 800 students/instructors from 8.01, 18.01 and ESG in Fall 2020<br>
+                    <b>Use-cases:</b> Forum Q&A, pset collaboration, synchronous problem-solving<br>
+                    <b>Disadvantages:</b> Experimental, needs more testing<br>
+                    <b>Advantages:</b> MIT-centric design, 10-100x lighter videos<br>
+                    <b>Developer:</b> Elton Lin (6-14, 2020, eltonlin@mit.edu)<br>
                   </v-card-text>
                 </v-card>
               </v-col>
 
+              <v-col md="5">
+                <v-card class="mx-auto"
+                >
+                  <v-card-text>
+                    <v-timeline dense>
+                      <v-timeline-item color="teal lighten-3" small>
+                        <v-row class="mt-5">
+                          <v-col cols="4">
+                            <strong>Spring 2020</strong>
+                          </v-col>
+                          <v-col>
+                            <strong>8.02 Pilot</strong>
+                            <div class="caption">
+                              Dr Peter Dourmashkin
+                            </div>
+                          </v-col>
+                        </v-row>
+                      </v-timeline-item>
+
+                      <v-timeline-item color="orange" small>
+                        <v-row class="pt-5 mt-5">
+                          <v-col cols="4">
+                            <strong>Summer 2020</strong>
+                          </v-col>
+                          <v-col>
+                            <strong>
+                              Receives official support
+                            </strong>
+                            <div class="caption">
+                              Winston Fee, Prabhakar Kafle, Tony Wang, Krishna Rajagopal, Mark Silis
+                            </div>
+                          </v-col>
+                        </v-row>
+                      </v-timeline-item>
+
+                      <v-timeline-item color="purple" small>
+                        <v-row class="pt-5">
+                          <v-col cols="4">
+                            <strong>Fall 2020</strong>
+                          </v-col>
+                          <v-col>
+                            <strong>8.01, 18.01, ESG pilot</strong>
+                            <div class="caption">
+                              800 weekly active users
+                            </div>
+                          </v-col>
+                        </v-row>
+                      </v-timeline-item>
+
+                      <v-timeline-item color="cyan" small>
+                        <v-row class="pt-1">
+                          <v-col cols="4">
+                            <strong>Spring 2021</strong>
+                          </v-col>
+                          <v-col>
+                            <strong>Expand schoolwide</strong>
+                            <div class="caption">
+                              
+                            </div>
+                          </v-col>
+                        </v-row>
+                      </v-timeline-item>
+                    </v-timeline>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <!-- TIMELINE HERE -->
               <!-- VISION FOR THE PLATFORM -->
-              <v-col md="6">
+              <!-- <v-col md="6">
                 <ExplanationDisplay v-if="demoVideo2" 
                   :expl="demoVideo2" 
                   :hasDate="false"
                 />
+              </v-col> -->
+            </v-row>
+          </v-tab-item>
+
+
+
+          <!-- Problem -->
+          <v-tab-item>
+            <v-row no-gutters>
+              <v-col md="5">
+                <v-card>
+                  <v-card-title>Problem</v-card-title>
+                  <v-card-text class="grey--text text--darken-3">
+                    <div class="subtitle-1 font-weight-medium">
+                      If you don't understand fundamental concepts, it's hard to recover
+                    </div>
+                    <ul>
+                      <li>
+                        Office Hours can have long queues, so the TA can't explain concepts thoroughly just to you
+                      </li>
+                      <li>
+                        Forums are not useful if you don't understand the fundamentals
+                      </li>
+                    </ul>
+
+                    <br>
+
+                    <div class="subtitle-1 font-weight-medium">
+                      It's hard to find people to study with
+                    </div>
+        
+                    <ul>
+                      <li>
+                        It's hard to coordinate with people
+                      </li>
+                      <li>
+                        It's hard to know people in the first place
+                      </li>
+                    </ul>
+
+                    <br>
+
+                    <div class="subtitle-1 font-weight-medium">
+                      If you face both problems, you enter a negative spiral
+                    </div>
+                    
+                    <ul>
+                      <li>Your happiness and physical health decreases</li>
+                      <li>It becomes even harder to learn and make friends</li>
+                    </ul>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <v-col md="6">
+                <v-img src="https://i.imgur.com/Z60ZcYK.jpg">
+                </v-img>
+              </v-col>
+            </v-row>
+          </v-tab-item>
+
+          <v-tab-item>
+            <v-row no-gutters>
+              <v-col md="6">
+                <v-card>
+                  <v-card-title>Solution</v-card-title>
+                  <!-- Detailed Walkthrough -->
+                  <div class="mx-auto">
+                    <iframe id="player" type="text/html"
+                      src="https://www.youtube.com/embed/k-3VRsXXzCY"
+                      frameborder="0"
+                      allowfullscreen="true"
+                      style="display: block; margin: auto;"
+                    >
+                    </iframe>
+                  </div>
+
+                  <v-card-text class="grey--text text--darken-3">
+                    <div class="subtitle-1 font-weight-medium">Visual Forum for fundamental concepts</div>
+                    <ul>
+                      <li>Students request concept explanations asynchronously</li>
+                      <li>Instructors explain concepts efficiently by drawing and talking</li>
+                      <!-- <li>Blackboard videos are 10-100x lighter than normal videos</li> -->
+                    </ul>
+
+                    <br>
+
+                    <div class="subtitle-1 font-weight-medium">
+                      Lounge Area for unplanned collaboration
+                    </div>
+                    <ul>
+                      <li>
+                        The more students use the forum, the more likely they encounter each other in the lounge
+                      </li>
+                      <li>
+                        Any students can collaborate with each other without having to coordinate
+                      </li>
+                      <div class="text--secondary">Tip: If voice chat isn't working, <u>close your browser tab</u> then come back.</div>
+                    </ul>
+
+                    <!-- <br> -->
+
+                    <!-- <div class="subtitle-1 font-weight-medium">
+                      Open Library
+                    </div>
+                    <ul>
+                      <li>
+                        Any great explanation made in the lounge is saved to the library
+                      </li>
+                      <li>
+                        Explanations are organized and benefit everyone
+                      </li>
+                    </ul> -->
+                    <br>
+                  </v-card-text>
+                </v-card>
+                
+              </v-col>
+
+              <v-col md="6">
+                <ExplanationDisplay v-if="highLevelIdeaOfExplain" :expl="highLevelIdeaOfExplain" :hasDate="false"/>
+              </v-col>
+            </v-row>
+
+          </v-tab-item>
+
+          
+          <!-- <v-tab-item>
+            <v-row no-gutters>
+              <v-col md="6">
+                <v-card>
+                  <v-card-text>
+                    <div class="subtitle-1 font-weight-medium">This website saves instructors' time / helps students collaborate</div>
+                    <ol>
+                      <li><b>Visual Forum:</b> It's time-consuming to answer questions over text. It's faster to draw and talk.</li>
+                      <li><b>Lounge Area:</b> It's hard to coordinate schedules. It's easier to join classmates who are psetting already.</li>
+                    </ol>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-tab-item> -->
+
+          <!-- Problem I -->
+          <v-tab-item>
+            <v-row no-gutters>
+              <v-col md="6">
+                <v-card>
+                  <v-card-text class="grey--text text--darken-3">
+                    <div class="subtitle-1 font-weight-medium">MIT is hard:</div>
+                    <ul>
+                      <li>30% of students "often stayed up all night"</li>
+                      <li>32% of students "often felt very sad"</li>
+                      <li>18% of students "often felt so depressed it was difficult to function"</li>
+                    </ul>
+
+                    <br>
+
+                    <div class="subtitle-1 font-weight-medium">
+                      Existing solutions fail:
+                    </div>
+                    <ul>
+                      <li>
+                        <b>Office Hours:</b> The more students need it, the more overcrowded it gets.
+                      </li>
+                      <li>
+                        <b>Forums:</b> The more concepts you don't understand, the less helpful it is.
+                      </li>
+                    </ul>
+
+                    <br>
+                    
+                    <div class="subtitle-1 font-weight-medium">
+                      Insights:
+                    </div>
+                    <ul>
+                      <li>
+                        <b>Explanations don't scale:</b> Staff members have limited impact and time 
+                      </li>
+                      <li>
+                        <b>Short explanations are ineffective:</b> Students who are truly behind need hours of help
+                      </li>
+                    </ul>
+                    <br>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+
+              <v-col md="6">
+                <v-img src="https://i.imgur.com/uyuipkK.jpg">
+                </v-img>
               </v-col>
             </v-row>
           </v-tab-item>
@@ -174,7 +436,12 @@
                   <div class="subtitle-1 font-weight-medium">Key observations</div>
                     <ol>
                       <li>
-                        Proper <u>blackboard explanations</u> are what truly matters in helping students break out of the vicious cycle, but no existing solutions provide that reliably and efficiently.
+                        The best way to break out of the vicious cycle is to receive a clear, thorough explanation that fills your knowledge gap,
+
+                        
+                        Clear, thorough explanations are what truly matters helping students break out of the vicious cycle
+                        
+                        but no existing solutions provide that reliably and efficiently.
                         Forum explanations are reusable but limited in value. Office Hour explanations have high value but are not reusable. 
                       </li>
                       <li>
@@ -235,7 +502,7 @@
                   <v-card-text style="font-size: 0.95rem;">
                     <p>
                       The lounge area unifies all the different, separate study locations 
-                      into a centralized place, so even students who don't know each other can collaborate easily <u>without formal coordination</u>. 
+                      into a centralized place, so even students who don't know each other can collaborate easily <u>without scheduling</u>. 
                     </p>
 
                     <div class="subtitle-1 font-weight-medium">Existing solutions fail:</div>
@@ -316,18 +583,6 @@
               </v-card-text>
             </v-card>
           </v-tab-item> -->
-          <!-- <v-tab-item>
-            For the life of me I cannot figure out why the ghost participants problem still remains, and I'm hoping 
-            to get second pair of eyes to take a look at my correctness argument.
-
-            Explain currently bleeds around $1k per month because of Twilio's video conferencing API it uses. 
-            By switching to Jitsi, an open-source alternative, the cost would become $30/month, a 3000% reduction. 
-            Previously, the switch to lib-jitsi-meet, to ensure the longevity, a major update will come and I'm working on
-            lib-jitsi-vue and testing it. 
-
-            Sometimes, swiping left / right on the screen triggers the Safari to go back a page. 
-            It's possible to disable the behavior, try "Prevent swiping left to go back page Safari".
-          </v-tab-item> -->
         </v-tabs>
       </v-card>
   </v-main>
@@ -376,6 +631,8 @@ export default {
       schoolClasses: [],
       demoVideo: null,
       demoVideo2: null,
+      highLevelIdeaOfExplain: null,
+
       welcomeMessage: "Welcome to ExplainMIT!",
       classSecurityPopup: false,
       classPassword: "",
@@ -403,9 +660,12 @@ export default {
     // visual comparison of normal videos vs doodle videos
     // const demoVideoRef2 = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/R0BgFgLe8BPvUfrfLmCq`);
     
-    this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
-    // note this is videoRef3!
-    this.$_getDoc(demoVideoRef4).then(demoVideo2 => this.demoVideo2 = demoVideo2);
+    const visualForumWithinLoungeArea = db.doc(`classes/mDbUrvjy4pe8Q5s5wyoD/posts/V9BkHVZnJpYKN0RYLUbp`); 
+    this.$_getDoc(visualForumWithinLoungeArea).then(video => this.highLevelIdeaOfExplain = video);
+
+    // this.$_getDoc(demoVideoRef).then(demoVideo => this.demoVideo = demoVideo);
+    // // note this is videoRef3!
+    // this.$_getDoc(demoVideoRef4).then(demoVideo2 => this.demoVideo2 = demoVideo2);
   },
   methods: {
     handleClassPassword () {

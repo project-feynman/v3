@@ -74,7 +74,7 @@ export default {
     DoodleFullscreenMixin
   ],
   data: () => ({
-    playbackSpeed: 1,
+    playbackSpeed: 2,
     speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'3x', value: 3}],
     canvas: null,
     ctx: null,
@@ -117,6 +117,10 @@ export default {
     await this.handleResize();
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
+
+    // quickfix
+    await this.$nextTick(); 
+    this.changePlaybackSpeed(this.playbackSpeed);
   },
   beforeDestroy () {
     // quickfix for the previous recordings playing bug on iOS

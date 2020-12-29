@@ -10,7 +10,6 @@
         :postID="currentPostID"
         :key="currentPostID"
       />
-      <ClassTutorial v-else/>
     </v-col>
   </v-row>
 </template>
