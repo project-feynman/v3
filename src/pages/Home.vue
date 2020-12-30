@@ -221,20 +221,23 @@
                       <li>
                         Forums are not useful if you don't understand the fundamentals
                       </li>
+                      <li>
+                        Friends have limited time and capability to re-teach concepts to you
+                      </li>
                     </ul>
 
                     <br>
 
                     <div class="subtitle-1 font-weight-medium">
-                      It's hard to find people to study with
+                      It's hard to have pset friends
                     </div>
         
                     <ul>
                       <li>
-                        It's hard to coordinate with people
+                        It's hard to coordinate schedules
                       </li>
                       <li>
-                        It's hard to know people in the first place
+                        It's hard to know pset friends in the first place
                       </li>
                     </ul>
 
@@ -276,17 +279,17 @@
                   </div>
 
                   <v-card-text class="grey--text text--darken-3">
-                    <div class="subtitle-1 font-weight-medium">Visual Forum for fundamental concepts</div>
-                    <ul>
-                      <li>Students request concept explanations asynchronously</li>
-                      <li>Instructors explain concepts efficiently by drawing and talking</li>
-                      <!-- <li>Blackboard videos are 10-100x lighter than normal videos</li> -->
-                    </ul>
+                    <div class="subtitle-1 font-weight-medium">A visual forum for students to review fundamental concepts</div>
+                    <ol>
+                      <li>Student asks question</li>
+                      <li>Instructor answers by drawing and talking on a blackboard</li>
+                      <li>Any student can view the resultant video explanation at any time</li>
+                    </ol>
 
                     <br>
 
                     <div class="subtitle-1 font-weight-medium">
-                      Lounge Area for unplanned collaboration
+                      A lounge area for unplanned collaboration between any classmates
                     </div>
                     <ul>
                       <li>

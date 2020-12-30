@@ -108,19 +108,19 @@
           </BasePopupButton>
 
           <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
-            <v-icon left color="purple">mdi-plus</v-icon> New room
+            <v-icon left color="purple">mdi-plus</v-icon> New table
           </v-list-item>
 
           <!-- TODO: enable the creators to change their own open spaces -->
           <!-- Rename the open space -->
           <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
-            <v-icon class="mr-2">mdi-pencil</v-icon> Rename open space
+            <v-icon class="mr-2">mdi-pencil</v-icon> Rename area
           </v-list-item>
 
           <!-- Delete open space -->
           <!-- Don't let anyone delete the lobby section -->
           <v-list-item :disabled="!isAdmin || (roomTypeDoc.id === classID)" @click="isDeletePopupOpen = true">
-            <v-icon class="mr-2" color="red">mdi-delete</v-icon> Delete open space
+            <v-icon class="mr-2" color="red">mdi-delete</v-icon> Delete area
           </v-list-item>
         </v-list>
       </v-menu>
