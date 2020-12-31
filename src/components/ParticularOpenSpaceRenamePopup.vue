@@ -2,7 +2,7 @@
   <v-dialog v-model="isRenamePopupOpen" width="500px">
     <v-card>
       <v-card-title>
-        Rename this open space
+        Rename this area
       </v-card-title>
       <v-card-text>
         <v-text-field placeholder="Enter the new name..." v-model="newRoomTypeName"/>
