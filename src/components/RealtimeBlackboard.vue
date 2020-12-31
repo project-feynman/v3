@@ -18,14 +18,13 @@
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <!-- QUICKFIX: record-start will change blackboard from infinite to horizontal mode -->
     <Blackboard v-else
-      :sizeAndOrientationMode="sizeAndOrientationMode"
+      sizeAndOrientationMode="massive"
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :key="incrementKeyToDestroyComponent"
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
-      @record-start="updateSizeAndOrientationMode('landscape')"
       @record-end="handleRecordEnd()"
     >
       <!-- TODO: don't let user wipe board / set background while recording -->
@@ -41,33 +40,6 @@
             <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
           </template> 
         </BasePopupButton>
-
-         <!-- switch between different blackboard sizes -->
-        <v-menu v-model="isMenuOpen">
-          <template v-slot:activator="{ on }">
-            <BaseButton @click="updateSizeAndOrientationMode('massive')" icon="mdi-selection" small color="orange">
-              Large mode
-            </BaseButton>
-            <BaseButton @click="updateSizeAndOrientationMode('landscape')" icon="mdi-crop-landscape" small color="orange">
-              PPT slide mode
-            </BaseButton> 
-            <BaseButton @click="updateSizeAndOrientationMode('portrait')" icon="mdi-crop-portrait" small color="orange">
-              PDF mode
-            </BaseButton>
-          </template>
-
-          <v-list>
-            <v-list-item @click="updateSizeAndOrientationMode('landscape')">
-              <v-icon left>mdi-crop-landscape</v-icon> Horizontal mode
-            </v-list-item>
-            <v-list-item @click="updateSizeAndOrientationMode('portrait')">
-              <v-icon left>mdi-crop-portrait</v-icon> Vertical mode
-            </v-list-item>
-            <v-list-item @click="updateSizeAndOrientationMode('massive')">
-              <v-icon left>mdi-selection</v-icon> Infinite mode
-            </v-list-item>
-          </v-list>
-        </v-menu>
 
         <v-list-item @click="$refs.fileInput.click()">
           <v-icon left color="black">mdi-image</v-icon>Upload background
@@ -154,7 +126,7 @@ import firebase from "firebase/app";
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
-import { PPT_SLIDE_RATIO, PDF_RATIO } from "@/CONSTANTS.js";
+import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 
 export default {
   props: {
@@ -176,7 +148,6 @@ export default {
     return {
       hasFetchedStrokesFromDb: false,
       hasFetchedBackgroundImage: false,
-      sizeAndOrientationMode: "", // landscape, portrait, infinite
       strokesArray: [],
       backgroundImage: {
         downloadURL: null,
@@ -224,21 +195,6 @@ export default {
       if (!this.hasFetchedBackgroundImage) {
         this.hasFetchedBackgroundImage = true; 
       }
-
-      this.sizeAndOrientationMode = blackboardDoc.data().sizeAndOrientationMode; 
-      if (!this.sizeAndOrientationMode) {
-        this.sizeAndOrientationMode = "massive"; 
-      }
-
-      // if (this.sizeAndOrientationMode === "landscape") {
-      //   this.$root.$emit("show-snackbar", "Board is set to landscape mode"); 
-      // } 
-      // else if (this.sizeAndOrientationMode === "portrait") {
-      //   this.$root.$emit("show-snackbar", "Board is set to portrait mode"); 
-      // }
-      // else if (this.sizeAndOrientationMode === "massive") {
-      //   this.$root.$emit("show-snackbar", "Board is set to pseudo-infinite mode");
-      // }
     });
   },
   destroyed () {
@@ -246,11 +202,6 @@ export default {
     this.removeBackgroundImageListener(); 
   },
   methods: {
-    updateSizeAndOrientationMode (newMode) {
-      this.blackboardRef.update({
-        sizeAndOrientationMode: newMode
-      });
-    },
     resetBackgroundImage () {
       this.blackboardRef.update({
         backgroundImageDownloadURL: ""
@@ -443,17 +394,8 @@ export default {
 
       await Promise.all(promises);
 
-      let aspectRatio; 
-      if (this.sizeAndOrientationMode === "landscape") {
-        aspectRatio = PPT_SLIDE_RATIO; 
-      } else if (this.sizeAndOrientationMode === "portrait") {
-        aspectRatio = PDF_RATIO; 
-      } else if (this.sizeAndOrientationMode === "massive") {
-        aspectRatio = 1/2;
-      }
-
       this.$_saveExplToCacheThenUpload({
-        aspectRatio,
+        aspectRatio: MASSIVE_MODE_DIMENSIONS.WIDTH / MASSIVE_MODE_DIMENSIONS.HEIGHT,
         thumbnailBlob,
         audioBlob: this.blackboard.audioBlob,
         backgroundImageBlob,

@@ -244,7 +244,7 @@
                     <br>
 
                     <div class="subtitle-1 font-weight-medium">
-                      If you face both problems, you enter a negative spiral
+                      If you face both problems, you enter a negative spiral of compounding inefficiencies
                     </div>
                     
                     <ul>
