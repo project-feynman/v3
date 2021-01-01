@@ -94,7 +94,7 @@
           <!-- Overview -->
           <v-tab-item>
             <v-row no-gutters>
-              <v-col md="7">
+              <v-col md="6">
                 <v-card>
                   <v-card-title>Overview</v-card-title>
                   <v-card-subtitle>
@@ -113,75 +113,77 @@
                     </b>
                   </v-card-subtitle>
                   <v-card-text class="grey--text text--darken-3">
-                    <b>Goal:</b> Enable radical open collaboration within MIT, then transition the world towards open education<br>
-                    <b>Product:</b> A web app that lets you collaborate on blackboards and share video explanations efficiently<br>
-                    <b>Users:</b> 800 students/instructors from 8.01, 18.01 and ESG in Fall 2020<br>
-                    <b>Use-cases:</b> Forum Q&A, pset collaboration, synchronous problem-solving<br>
-                    <b>Disadvantages:</b> Experimental, needs more testing<br>
-                    <b>Advantages:</b> MIT-centric design, 10-100x lighter videos<br>
-                    <b>Developer:</b> Elton Lin (6-14, 2020, eltonlin@mit.edu)<br>
+                    <b>Goals:</b> 
+                      <ol>
+                        <li>Enable radical open collaboration within MIT</li>
+                        <li>Transition the world towards open education</li>
+                      </ol>
+                    <br>
+                    <b>Features:</b> 
+                    <ol>
+                      <li>Visual Forum: answer questions clearly and quickly by drawing</li> 
+                      <li>Lounge Area: collaborate with new peers without coordinating </li> 
+                      <li>Virtual Classroom: run group problem-solving sessions naturally</li>
+                    </ol>
+                    <br>
+                    <b>Disadvantages:</b> Currently at the experimental, beta-testing phase<br><br>
+                    <b>Advantages:</b> Designed for MIT, blackboard videos are 10-100x lighter<br><br>
+                    <b>Developer:</b> Elton Lin (6-14, '20, eltonlin@mit.edu)<br><br>
                   </v-card-text>
                 </v-card>
               </v-col>
 
-              <v-col md="5">
-                <v-card class="mx-auto"
-                >
+              <v-col md="6">
+                <v-card>
+                  <v-card-title>Timeline</v-card-title>
                   <v-card-text>
                     <v-timeline dense>
                       <v-timeline-item color="teal lighten-3" small>
-                        <v-row class="mt-5">
-                          <v-col cols="4">
-                            <strong>Spring 2020</strong>
+                        <v-row style="margin-top: 80px;">
+                          <v-col cols="2">
+                            <strong>2018-2019</strong>
                           </v-col>
                           <v-col>
-                            <strong>8.02 Pilot</strong>
+                            <strong>Small Experiments (~10 users)</strong>
                             <div class="caption">
-                              Dr Peter Dourmashkin
-                            </div>
-                          </v-col>
-                        </v-row>
-                      </v-timeline-item>
-
-                      <v-timeline-item color="orange" small>
-                        <v-row class="pt-5 mt-5">
-                          <v-col cols="4">
-                            <strong>Summer 2020</strong>
-                          </v-col>
-                          <v-col>
-                            <strong>
-                              Receives official support
-                            </strong>
-                            <div class="caption">
-                              Winston Fee, Prabhakar Kafle, Tony Wang, Krishna Rajagopal, Mark Silis
+                              8.01: Kristen Surrao, Anuj Apte, Deborah Wen<br>
+                              6.006: Jason Ku<br>
+                              18.065: Gilbert Strang, Stephanie Yuen<br>
+                              8.02: Peter Dourmashkin<br>
                             </div>
                           </v-col>
                         </v-row>
                       </v-timeline-item>
 
                       <v-timeline-item color="purple" small>
-                        <v-row class="pt-5">
-                          <v-col cols="4">
-                            <strong>Fall 2020</strong>
+                        <v-row style="margin-top: 100px;">
+                          <v-col cols="2">
+                            <strong>2020</strong>
                           </v-col>
                           <v-col>
-                            <strong>8.01, 18.01, ESG pilot</strong>
+                            <strong>Official Pilots (~1000 users)</strong>
                             <div class="caption">
-                              800 weekly active users
+                              Contributors: Winston Fee, Prabhakar Kafle, Tony Wang<br>
+                              Supporters: Krishna Rajagopal, Mark Silis<br>
+                              8.01: Peter Dourmashkin, Joseph Formaggio<br>
+                              18.01: Larry Guth, Sanjoy Mahajan, Xueying Yu<br>
+                              ESG: Jeremy Orloff, Mohamed Abdelhafez, Paola Rebusco, Analia Barrantes<br>
                             </div>
                           </v-col>
                         </v-row>
                       </v-timeline-item>
 
                       <v-timeline-item color="cyan" small>
-                        <v-row class="pt-1">
-                          <v-col cols="4">
-                            <strong>Spring 2021</strong>
+                        <v-row style="margin-top: 60px;">
+                          <v-col cols="2">
+                            <strong>2021</strong>
                           </v-col>
                           <v-col>
-                            <strong>Expand schoolwide</strong>
+                            <strong>Schoolwide Expansion</strong>
                             <div class="caption">
-                              
+                              Visual Forum<br>
+                              Virtual classroom: 8.02, 18.01, ESG<br>
+                              Lounge Area<br>
                             </div>
                           </v-col>
                         </v-row>
