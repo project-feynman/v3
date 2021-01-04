@@ -6,13 +6,15 @@
       :roomID="roomId"
       :classID="classID"
     />
-
+    <!-- 
     <RealtimeSpaceTwilioRoom 
       :roomID="roomId"
       :willMuteByDefault="true"
       :key="incrementToDestroyComponent"
       @disconnect="incrementToDestroyComponent += 1"
-    />
+    /> -->
+
+    <DailyVideoConferenceRoom/>
 
     <!-- For wiping all the blackboards -->
     <v-dialog v-model="isWipeBoardsPopupOpen">
@@ -221,6 +223,9 @@ import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.
 import { getRandomId } from "@/helpers.js";
 import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom.vue";
 
+// new experiments
+import DailyVideoConferenceRoom from "@/components/DailyVideoConferenceRoom.vue";
+
 export default {
   props: {
     roomId: {
@@ -239,10 +244,12 @@ export default {
     RealtimeBlackboard,
     RealtimeSpaceTwilioRoom,
     BaseButton,
-    BaseIconButton
+    BaseIconButton,
+
+    DailyVideoConferenceRoom
   },
   mixins: [
-    DatabaseHelpersMixin,
+    DatabaseHelpersMixin
   ],
   data () {
     return {
