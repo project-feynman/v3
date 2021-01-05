@@ -194,6 +194,9 @@
           <portal-target name="library-popup-button"/>
 
           <portal-target name="current-room-participants"/>
+
+          <portal-target name="left-side-panel-current-room"/>
+
         </div>
       </template>
 

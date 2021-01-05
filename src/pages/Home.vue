@@ -147,6 +147,7 @@
                             <strong>Small Experiments (~10 users)</strong>
                             <div class="caption">
                               8.01: Kristen Surrao, Anuj Apte, Deborah Wen<br>
+                              18.03: William Moses<br>
                               6.006: Jason Ku<br>
                               18.065: Gilbert Strang, Stephanie Yuen<br>
                               8.02: Peter Dourmashkin<br>
