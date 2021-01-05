@@ -16,11 +16,14 @@
 
     <portal to="current-room-participants">
       <template v-if="connectionState !== 'CONNECTED'">
-        <v-btn @click.prevent.stop="joinConferenceRoom()" :loading="connectionState === 'CONNECTING'"
-          small dark fab color="success" class="mx-2"
-        >
-          <v-icon>mdi-phone</v-icon>
-        </v-btn>
+        <div class="d-flex">
+          <p>{{ user.firstName + " " + user.lastName }}</p>
+          <v-btn @click.prevent.stop="joinConferenceRoom()" :loading="connectionState === 'CONNECTING'"
+            small dark fab color="success" class="mx-2"
+          >
+            <v-icon>mdi-phone</v-icon>
+          </v-btn>
+        </div>
       </template>
 
       <template v-else>
@@ -43,14 +46,9 @@
         <v-btn @click.prevent.stop="leaveConferenceRoom()" class="ml-2" x-small dark fab color="red">
           <v-icon small>mdi-phone-hangup</v-icon>
         </v-btn>
-
-        <p>isMicOn: {{ isMicOn }}</p>
-        <p>isCamOn: {{ isCamOn }}</p>
         <ol>
           <li v-for="(p, i) in participants" :key="i">
-            username: {{ p.user_name }}
-            audio: {{ p.audio }}
-            video: {{ p.video }}
+            {{ p.user_name }} micONn: {{ p.audio }}
           </li>
         </ol>
       </template>
@@ -71,6 +69,20 @@ import DailyIframe from '@daily-co/daily-js';
  *   - UI ninja work - how to properly clean-up everything 
  *   - Testing
  * 
+ * TODO: 
+ *   1. Mute your own audio track
+ *   2. Display participant names and each of their mute statuses
+ *   3. Fix errors caused by toggling the mic / camera
+ *   4. Create the room at the URL if it doesn't already exist
+ *   5. Ensure cleanups are proper and safe for concurrency
+ *   6. Handle user leaving 
+ *   7. Fix ghost participants (don't trade-off correctness for performance)
+ * 
+ * After reliable testing: 
+ *   - UI improvement
+ *   - Selecting input/output devices 
+ *   - Better warnings (e.g. browser) and troubleshoot warnings
+ * 
  * @see API guide https://docs.daily.co/reference#%EF%B8%8F-createcallobject
  * @see Github demo code https://github.com/daily-demos/call-object-react/blob/main/src/components/Call/Call.js
  */
@@ -90,23 +102,19 @@ export default {
   },
   created () {
     this.CallObject = DailyIframe.createCallObject(); 
+    
+    // STATE: ensure `participants` object is always up to date
+    const participantEvents = ["participant-joined", "participant-updated", "participant-left"]; 
+    for (const participantEvent of participantEvents) {
+      this.CallObject.on(participantEvent, (payload) => {
+        console.log("event fired =", participantEvent); 
+        console.log("payload =", payload); 
+        this.participants = {...this.CallObject.participants()};
+      }); 
+    }
 
-    this.CallObject.on("joined-meeting", ({ participants }) => {
-      this.updateParticipants(); 
-    });
-
-    this.CallObject.on("participant-joined", (participant) => {      
-      this.updateParticipants(); 
-    });
-
-    this.CallObject.on("participant-updated", (participant) => {
-      console.log("participant-updated");
-      this.updateParticipants(); 
-    });
-
+    // UI: handle mounting/unmounting of audio/video streams
     this.CallObject.on("track-started", async ({ track, participant }) => {
-      this.updateParticipants(); 
-
       switch (track.kind) {
         case "video": 
           const videoElement = document.createElement("video"); 
@@ -122,50 +130,51 @@ export default {
           break; 
 
         case "audio": 
-          const audioElement = document.createElement("audio"); 
-          audioElement.srcObject = new MediaStream([track]); 
-          audioElement.id = "audio" + participant.user_id; 
-          audioElement.playsinline = true; 
-          audioElement.autoplay = true;
-          document.getElementById("container-for-audio-elements").appendChild(audioElement);
-          break; 
+          // ignore myself to prevent echoes
+          if (participant.local) {
+            console.log("this is my own audio track"); 
+            return;
+          } else {
+            const audioElement = document.createElement("audio"); 
+            audioElement.srcObject = new MediaStream([track]); 
+            audioElement.id = "audio" + participant.user_id; 
+            audioElement.playsinline = true; 
+            audioElement.autoplay = true;
+            document.getElementById("container-for-audio-elements").appendChild(audioElement);
+            break; 
+          }
       }
     });
 
     this.CallObject.on("track-stopped", async ({ track, participant }) => {
       switch (track.kind) {
         case "video": 
+          console.log("user_id =", participant.user_id); 
           document.getElementById("video" + participant.user_id).remove();
           break;
         case "audio": 
+          console.log("user_id =", participant.user_id); 
           // document.getElementById("audio" + participant.user_id).remove(); 
           document.getElementById("audio" + participant.user_id).srcObject = null;
           break;
       }
-      this.updateParticipants(); 
-    });
-
-    this.CallObject.on("participant-left", (payload) => {
-      console.log("participant left, payload =", payload);
-      // TODO: unmount all his tracks
-      this.updateParticipants(); 
     });
   },
-  destroyed () {
-    // TODO: clean up code
+ async destroyed () {
+    // destroy the call object
+    await this.CallObject.leave(); 
+    await this.CallObject.destroy(); 
+    this.connectionState = "NOT_CONNECTED";
   },
   methods: {
     async joinConferenceRoom () {
       this.connectionState = "CONNECTING";
-      // join a room (create it if it doesn't exist);
+      // TODO: create a room if the URL does not exist
       await this.CallObject.join({
         url: `https://feynman.daily.co/${'Ly77BmJeKWudV1FJISnD'}`,
         userName: `${this.user.firstName} ${this.user.lastName}`
       }); 
       this.connectionState = "CONNECTED"; 
-      this.updateParticipants();
-    },
-    updateParticipants () {
       this.participants = {...this.CallObject.participants()};
     },
     toggleMic () {
@@ -175,7 +184,17 @@ export default {
       this.CallObject.setLocalVideo(!this.isCamOn); 
     },
     async leaveConferenceRoom () {
-      // TODO: unmount my local camera stream
+      // unmount all mic and camera streams
+      const videoContainer = document.getElementById("container-for-video-elements"); 
+      while (videoContainer.firstChild) {
+        videoContainer.removeChild(videoContainer.firstChild);
+      }
+      const audioContainer = document.getElementById("container-for-audio-elements"); 
+      while (audioContainer.firstChild) {
+        audioContainer.removeChild(audioContainer.firstChild);
+      }
+      
+      // destroy the call object
       await this.CallObject.leave(); 
       await this.CallObject.destroy(); 
       this.connectionState = "NOT_CONNECTED";
