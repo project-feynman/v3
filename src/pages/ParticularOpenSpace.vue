@@ -3,10 +3,11 @@
     <!-- REPLACE THE TITLE IN ALL OPEN SPACES (BECAUSE WE LISTEN TO THE ROOMTYPE DOC HERE) -->
     <portal to="room-type-name">
       <div style="
-        font-size: 1rem; 
-        font-weight: 400; 
-        color: '#424242' }; 
-        opacity: 70% };
+        font-size: 0.95rem; 
+        font-weight: 500; 
+        color: '#424242'; 
+        opacity: 70%;
+        text-transform: uppercase
       ">
         {{ roomTypeDoc.name }}
       </div>
@@ -252,7 +253,10 @@
           </div>
         </div>
       </template>
-    </v-list-item>   
+    </v-list-item> 
+
+    <!--  to create a gap between the last room and the bottom boundary of the area -->
+    <div class="mb-2"></div>  
 
     <portal to="main-content">
       <router-view :key="$route.params.section_id + $route.params.room_id"/>

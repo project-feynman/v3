@@ -109,17 +109,15 @@ export default {
   async created () {
     this.infoConnectedListener = firebase.database().ref(".info/connected").on("value", async (connectionState) => {
       if (connectionState.val() === true) {
-        await Promise.all([
-          this.updateParticipantDoc(), 
-          this.myFirebaseRef.child("disconnectCounter").once("value").then(async (snapshot) => {
-            const disconnectCounter = snapshot.val() ? snapshot.val() : 0; 
-            await this.myFirebaseRef.onDisconnect().set({ 
-              // Set disconnect hook is triggered by a counter the operation because the user can turn on/off the iPad repeatedly.
-              // Cloud Functions will detect this change and update Firestore accordingly
-              disconnectCounter: disconnectCounter + 1 
-            });
-          })
-        ]);
+        const snapshot = await this.myFirebaseRef.child("disconnectCounter").once("value"); 
+        
+        // Cloud Functions will detect this change and update Firestore accordingly
+        await this.myFirebaseRef.onDisconnect().set({ 
+          // Set disconnect hook is triggered by a counter the operation because the user can turn on/off the iPad repeatedly.
+          disconnectCounter: (snapshot.val() ? snapshot.val() : 0) + 1 
+        });
+
+        await this.updateParticipantDoc(); 
     
         // [CONCURRENCY] sometimes, the user leaves the room before created () has finished resolving all its promises, 
         // therefore beforeDestroy() was called already but didn't do anything. 

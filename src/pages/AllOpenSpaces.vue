@@ -14,18 +14,17 @@
             :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
           >
             <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
-            <v-list-item-content class="pt-0 pb-2">
+            <v-list-item-content class="py-0">
               <v-row class="d-flex px-3 py-2" align="center">
-                <div 
-                  class="ml-3"
-                  :style="`
-                    font-size: 1rem; 
-                    font-weight: 400; 
-                    color: ${ sectionID === roomType.id ? '#424242' : '#424242' }; 
-                    opacity: ${ sectionID === roomType.id ? '100%' : '40%' };
-                  `"
-                >
-                  <div v-if="roomType.id !== sectionID">
+                <div class="ml-3">
+                  <div v-if="roomType.id !== sectionID" 
+                    style="
+                      font-size: 0.95rem; 
+                      font-weight: 500; 
+                      color: '#424242'; 
+                      opacity: 35%;
+                      text-transform: uppercase;
+                  ">
                     {{ roomType.name }}
                   </div>
                   <portal-target v-else name="room-type-name">
