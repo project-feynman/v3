@@ -22,10 +22,10 @@
               large class="mr-5 green darken-1 white--text"
             >
               <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
-              GO TO CLASS
+              GO TO LOUNGE AREA
             </v-btn>
 
-            <v-btn large class="grey darken-1 white--text mx-5">
+            <v-btn large class="grey darken-3 white--text mx-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>
               <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
             </v-btn>
@@ -83,7 +83,7 @@
     </v-card>
     
     <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
-      <v-card elevation="5">
+      <v-card elevation="5" class="mt-5">
         <!-- color="accent" makes the slider indicator orange -->
         <v-tabs vertical touchless color="accent" class="ml-1">
           <!-- active-class="accent--text" makes the current tab's title go orange -->
