@@ -2,13 +2,14 @@
   <!-- The absolute positioning will look for the nearest POSITIONED parent i.e. position attribute is NOT static -->
   <!-- bottom: auto; left: auto; -->
   <!-- Note: the fixed/absolute props is a quick-fix -->
+  <!-- z-index: 100 is a quickfix -->
   <v-app-bar 
     :fixed="!$store.state.isViewingForum"
     :absolute="$store.state.isViewingForum"
     elevation="5" 
     :height="toolbarHeight" 
     color="grey darken-1" 
-    style="right: 0; top: 0; bottom: auto; left: auto; z-index: 3" 
+    style="right: 0; top: 0; bottom: auto; left: auto; z-index: 100" 
     rounded
   >
     <!-- v-row enables you to ignore the padding of <v-app-bar> -->

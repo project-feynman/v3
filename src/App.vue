@@ -9,7 +9,7 @@
 
     <v-snackbar v-model="musicSnackbar" timeout="8000">
       Enable background music from Maplestory?
-      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text>YES </v-btn>
+      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
       <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
     </v-snackbar>
   </v-app>

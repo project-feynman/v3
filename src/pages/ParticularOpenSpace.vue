@@ -233,7 +233,7 @@
               
               <div class="ml-2 mr-4">
                 <v-icon v-if="p.canHearAudio" small color="green">
-                  mdi-phone-check
+                  mdi-video
                 </v-icon>
 
                 <v-icon v-if="p.isMusicPlaying" small color="cyan">

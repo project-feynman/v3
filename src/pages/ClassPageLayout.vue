@@ -4,11 +4,13 @@
   <div style="height: 100%">
     <!-- mobile-breakpoint="500": prevents the side-drawer from going into mobile mode where it's temporary -->
     <!-- Elevation ranges from 0 to 24 -->
+    <!-- Sets the designated mobile breakpoint for the component. This will apply alternate styles for mobile devices such as the temporary prop, or activate the bottom prop when the breakpoint value is met. Setting the value to 0 will disable this functionality. -->
     <v-navigation-drawer v-model="isShowingDrawer" 
       app 
       class="elevation-24" 
       width="240" 
-      mobile-breakpoint="500"
+      disable-resize-watcher
+      mobile-breakpoint="0"
       touchless 
     >      
       <v-sheet class="pt-2 pl-2">    
