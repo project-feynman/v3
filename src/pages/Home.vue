@@ -39,12 +39,7 @@
           <template v-else>
             <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text mx-5">
               <v-icon class="mr-2">mdi-school</v-icon>
-              LOG IN WITH TOUCHSTONE
-            </v-btn>
-
-            <v-btn large class="grey darken-1 white--text mx-5">
-              <v-icon class="mr-2">mdi-gitlab</v-icon>
-              <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
+              MIT KERBEROS LOGIN
             </v-btn>
 
             <!-- Email Sign Up -->
@@ -71,12 +66,17 @@
               @action-do="user => $_logIn(user)"
             >
               <template v-slot:activator-button="{ on }">
-                <v-btn v-on="on" large class="grey darken-1 white--text">
+                <v-btn v-on="on" large class="grey darken-1 white--text mr-5">
                   <v-icon class="mr-2">mdi-email</v-icon>
                   EMAIL LOGIN
                 </v-btn>
               </template>
             </BasePopupButton>
+
+            <v-btn large class="grey darken-3 white--text ml-5">
+              <v-icon class="mr-2">mdi-gitlab</v-icon>
+              <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
+            </v-btn>
           </template>
         </v-row>
       </v-container>
@@ -126,9 +126,21 @@
                       <li>Virtual Classroom: run group problem-solving sessions naturally</li>
                     </ol>
                     <br>
-                    <b>Disadvantages:</b> Currently at the experimental, beta-testing phase<br><br>
-                    <b>Advantages:</b> Designed for MIT, blackboard videos are 10-100x lighter<br><br>
-                    <b>Developer:</b> Elton Lin (6-14, '20, eltonlin@mit.edu)<br><br>
+
+                    <b>Disadvantages:</b> Not as reliable and feature-rich as established enterprise products
+                    <br><br>
+
+                    <b>Advantages:</b> 
+                    <ol>
+                      <li>Designed specifically for MIT by student and staff developers</li>
+                      <li>Improves rapidly according to the needs of students and instructors</li>
+                      <li>Direct communication with developers</li>
+                      <li>Blackboard videos are 10-100x more lightweight</li>
+                      <li>Simple, minimalistic, easy to use</li>
+                    </ol>
+                    <br>
+
+                    <b>Team:</b> Elton Lin (6-14, '20, eltonlin@mit.edu)<br><br>
                   </v-card-text>
                 </v-card>
               </v-col>
@@ -139,7 +151,7 @@
                   <v-card-text>
                     <v-timeline dense>
                       <v-timeline-item color="teal lighten-3" small>
-                        <v-row style="margin-top: 80px;">
+                        <v-row style="margin-top: 100px;">
                           <v-col cols="2">
                             <strong>2018-2019</strong>
                           </v-col>

@@ -69,7 +69,7 @@
           <!-- END OF MY OWN UI -->
 
           <template v-else>
-            <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" style="font-size: 0.9rem" color="grey darken-3">
+            <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" style="font-size: 1rem" color="grey darken-3">
               {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
             </v-icon>
             <v-icon v-else-if="client.canHearAudio" color="green" style="font-size: 0.9rem">
