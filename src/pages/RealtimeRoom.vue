@@ -125,17 +125,17 @@
           <v-list-item @click="isRoomStatusPopupOpen = true">
             <v-icon left color="blue">mdi-message-alert</v-icon> Update status
           </v-list-item>
-          <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
-            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe strokes
-          </v-list-item>
-          <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
-            <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe PDFs
+          <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
+            <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
           </v-list-item>
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
-            <v-icon left color="purple">mdi-content-save-all</v-icon> Save boards
+            <v-icon left color="purple">mdi-content-save-all</v-icon> Save sequence of boards
           </v-list-item>
-          <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
-            <v-icon left color="black">mdi-pencil</v-icon> Rename room
+          <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
+            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe all pen strokes
+          </v-list-item>
+          <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
+            <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
           </v-list-item>
         </v-list>
       </v-menu>
@@ -145,6 +145,39 @@
     <portal-target name="destination">
     
     </portal-target>
+
+
+      <portal to="right-side-of-my-participant-name">
+        <!-- For switching between different blackboards -->
+        <!-- item-color:  -->
+        <!-- active-class:  -->
+        <!-- hide-details: eliminates unnecessary bottom padding -->
+        <div v-if="room" class="d-flex ml-2">
+          <div v-if="activeBoardID" style="width: 50px">
+            <v-select 
+              dense
+              :value="activeBoardID"
+              :items="room.blackboards"
+              @change="(id) => activeBoardID = id"
+              hide-details
+              item-color="accent"
+            >
+              <!-- Override default behavior: show the board number instead of the blackboardID -->
+              <template v-slot:selection="{ item }">
+                <div class="mb-0 black--text">{{ getBoardNumberFromID(item) }}</div>
+              </template>
+              <template v-slot:item="{ item }">
+                <div class="mb-0">{{ getBoardNumberFromID(item) }}</div>
+              </template>
+              <template v-slot:append-item>
+                <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
+                  New board
+                </BaseButton>
+              </template>
+            </v-select>
+          </div>
+        </div>
+      </portal>
 
     <!-- The actual blackboards -->
     <div id="room" class="room-wrapper">
@@ -164,36 +197,6 @@
                 :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
                 color="white" small hasLargeIcon
               />
-
-              <!-- For switching between different blackboards -->
-              <!-- item-color:  -->
-              <!-- active-class:  -->
-              <!-- hide-details: eliminates unnecessary bottom padding -->
-              <div v-if="room" class="d-flex mx-2">
-                <div v-if="activeBoardID" style="width: 60px">
-                  <v-select 
-                    dense
-                    :value="activeBoardID"
-                    :items="room.blackboards"
-                    @change="(id) => activeBoardID = id"
-                    hide-details
-                    item-color="accent"
-                  >
-                    <!-- Override default behavior: show the board number instead of the blackboardID -->
-                    <template v-slot:selection="{ item }">
-                      <p class="mb-0 white--text">{{ "#" + getBoardNumberFromID(item) }}</p>
-                    </template>
-                    <template v-slot:item="{ item }">
-                      <p>{{ "#" + getBoardNumberFromID(item) }}</p>
-                    </template>
-                    <template v-slot:append-item>
-                      <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
-                        New board
-                      </BaseButton>
-                    </template>
-                  </v-select>
-                </div>
-              </div>
             </template>
           </RealtimeBlackboard>
         </v-tab-item>

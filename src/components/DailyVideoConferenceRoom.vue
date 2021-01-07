@@ -18,11 +18,11 @@
         >
           <div 
             style="font-size: 0.9em;"
-            :class="['ml-1', 'caption',
+            :class="['ml-2', 'caption',
               `${dominantParticipantSessionID === client.sessionID ? 'font-weight-bold grey--text text--darken-3' : 'text--secondary' }`,
             ]"
           >
-            {{ client.firstName + " " + client.lastName }} 
+            {{ client.firstName }}
           </div>
       
           <v-spacer/>
@@ -62,9 +62,10 @@
               </portal>
             </template>
 
-            <div :class="['caption', 'black--text']" style="font-size: 1.05em">
-              {{ "#" + client.currentBoardNumber }}
-            </div>
+
+            <portal-target name="right-side-of-my-participant-name">
+
+            </portal-target>
           </template>
           <!-- END OF MY OWN UI -->
 
@@ -88,7 +89,7 @@
             </v-icon>
 
             <div :class="['caption', 'black--text']" style="font-size: 1em">
-              {{ "#" + client.currentBoardNumber }}
+              {{ client.currentBoardNumber }}
             </div>
           </template>
         </v-row>

@@ -13,7 +13,7 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="pt-2 pl-2">    
+      <v-sheet class="pt-3 pl-3">    
         <div class="d-flex">
           <v-list-item-avatar @click="$router.push('/')" tile width="40" height="36" style="cursor: pointer;" class="ma-0">
             <img src="/logo.png">
@@ -29,131 +29,90 @@
             :isAddClassPopupOpen="isAddClassPopupOpen"
             @change="(newVal) => isAddClassPopupOpen = newVal"
           />
-
-          <v-spacer/>
-
-          <!-- Class actions includes: 
-            1. Create open space
-            2. Leave class
-           -->
-          <v-menu v-model="isClassActionsMenuOpen" offset-y bottom>
-            <template v-slot:activator>
-              <BaseButton @click="isClassActionsMenuOpen = true" 
-                stopPropagation 
-                icon="mdi-dots-vertical" color="black" small
-              />
-            </template>
-            
-            <!-- Create new spaces -->
-            <v-list>
-              <BasePopupButton actionName="Create new space"
-                :inputFields="['name']" 
-                @action-do="({ name }) => createNewRoomType(name)"
-              >
-                <template v-slot:activator-button="{ on }">
-                  <v-list-item v-on="on">
-                    <v-icon color="grey darken-1" class="mr-2">mdi-plus</v-icon>
-                    New area
-                  </v-list-item>
-                </template> 
-              </BasePopupButton>
-            
-              <!-- Leave class -->
-              <v-list-item v-if="user.enrolledClasses.length >= 2" @click="leaveClass()">
-                <v-icon>mdi-exit</v-icon>Leave class
-              </v-list-item>
-            </v-list>
-          </v-menu>
         </div>
 
-        <!-- TODO: re-write these bizarre teleports -->
-        <portal to="my-control-buttons">
-          <div style="display: flex; justify-content: space-around" class="mt-1">
-            <v-dialog 
-              :value="isViewingForum" 
-              @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
-              persistent
-              fullscreen
-            >
-              <template v-slot:activator>
-                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" small class="px-2">
-                  <v-icon small>mdi-forum</v-icon>
-                  <div style="font-size: 0.7rem">FORUM</div>
+        <v-row justify="space-around" class="d-flex mt-3">
+          <v-dialog 
+            :value="isViewingForum" 
+            @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
+            persistent
+          >
+            <template v-slot:activator>
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="px-2" small>
+                <v-icon small class="mr-1 orange--text">mdi-forum</v-icon>
+                <div style="font-size: 0.8rem">FORUM</div>
+              </v-btn>
+            </template>
+
+            <v-card>
+              <v-toolbar dark>
+                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
+                  <v-icon>mdi-close</v-icon>
                 </v-btn>
-              </template>
+              </v-toolbar>
 
-              <v-card>
-                <v-toolbar dark>
-                  <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </v-toolbar>
+              <!--
+                Without isViewingForum, the VisualForum does not get destroyed 
+                even if the popup closes
+              -->
+              <VisualForum v-if="isViewingForum" 
+                :key="$route.params.class_id"
+              />
+            </v-card>
+          </v-dialog>
 
-                <!--
-                  Without isViewingForum, the VisualForum does not get destroyed 
-                  even if the popup closes
-                -->
-                <VisualForum v-if="isViewingForum" 
-                  :key="$route.params.class_id"
-                />
-              </v-card>
-            </v-dialog>
+          <v-dialog 
+            :value="isViewingLibrary" 
+            @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
+            persistent
+          >
+            <template v-slot:activator>
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small class="mr-3">
+                <v-icon small class="mr-1 purple--text">mdi-bookshelf</v-icon>
+                <div style="font-size: 0.8rem">LIBRARY</div>
+              </v-btn>
+            </template>
 
-            <v-dialog 
-              :value="isViewingLibrary" 
-              @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
-              persistent
-              fullscreen
-            >
-              <template v-slot:activator>
-                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small class="px-2">
-                  <v-icon small>mdi-bookshelf</v-icon>
-                  <div style="font-size: 0.7rem">LIBRARY</div>
+            <v-card>
+              <v-toolbar dark>
+                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
+                  <v-icon>mdi-close</v-icon>
                 </v-btn>
-              </template>
+              </v-toolbar>
 
-              <v-card>
-                <v-toolbar dark>
-                  <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </v-toolbar>
-
-                <ClassLibrary v-if="isViewingLibrary" 
-                  :key="$route.params.class_id"
-                />
-              </v-card>
-            </v-dialog>
-          </div>  
-
-
-          <v-row align="center" class="d-flex px-1 mt-3">
-            <!-- Music -->
-            <v-switch 
-              :input-value="$store.state.isMusicPlaying"
-              @change="toggleMaplestoryMusic()"
-              color="cyan"
-              prepend-icon="mdi-music-clef-treble"
-              hide-details
-              class="mt-0 ml-3 grey--text"
-              inset
-              dense
-            />
-          </v-row>
-
-          <!-- Red Hangup Button -->
-          <portal-target name="video-screenshare-hangup-buttons">
-      
-          </portal-target>  
-        </portal>
+              <ClassLibrary v-if="isViewingLibrary" 
+                :key="$route.params.class_id"
+              />
+            </v-card>
+          </v-dialog>
+        </v-row>  
       </v-sheet>
+
+      <v-divider class="my-5"/>
+          
+      <!-- <v-row align="center" class="d-flex px-1 mt-3">
+        <v-switch @change="toggleMaplestoryMusic()"
+          :input-value="$store.state.isMusicPlaying"
+          color="cyan"
+          prepend-icon="mdi-music-clef-treble"
+          hide-details
+          class="mt-0 ml-3 grey--text"
+          inset
+          dense
+        />
+      </v-row> -->
+
+      <!-- Red Hangup Button -->
+      <portal-target name="video-screenshare-hangup-buttons">
+  
+      </portal-target>  
       
-      <portal-target name="side-drawer">
+      <portal-target name="side-drawer" style="margin-top: 12px;">
 
       </portal-target>
     </v-navigation-drawer>
 
-    <!-- Here is the main content -->
+    <!-- MAIN CONTENT / AREA (where the collaborative blackboard resides) -->
     <v-main>
       <portal-target name="main-content">
         
@@ -288,26 +247,7 @@ export default {
         musicAudioElement.play(); 
         this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
       } 
-    },    
-    /**
-     * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
-     */
-    async createNewRoomType (name) {
-      const { class_id } = this.$route.params; 
-      const id = getRandomId(); 
-      const ref = db.doc(`classes/${class_id}`);
-      await Promise.all([
-        ref.collection("roomTypes").doc(id).set({ id, name }),
-        ref.collection("rooms").doc(id).set({
-          isCommonRoom: true,
-          roomTypeID: id,
-          blackboards: [id]
-        }),
-        ref.collection("blackboards").doc(id).set({})
-      ]);
-      this.$root.$emit("show-snackbar", "Successfully created new open space.")
-      this.$router.push(`/class/${class_id}/section/${id}`);
-    },
+    },   
     // async submitBug ({ "Describe your problem": title }) {
     //   if (!title) {
     //     this.$root.$emit("show-snackbar", "Error: don't forget to write something")
