@@ -3,7 +3,7 @@
     <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
     <router-view/>
     
-    <v-snackbar v-model="snackbar" timeout="2000">
+    <v-snackbar v-model="snackbar" timeout="1500">
       {{ snackbarMessage }}
       <template v-slot:action>
         <v-btn @click="snackbar = false" text>CLOSE</v-btn>
