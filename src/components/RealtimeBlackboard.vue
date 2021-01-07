@@ -33,16 +33,17 @@
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="secondary">mdi-content-save</v-icon>Save as animation
+              <v-icon left color="secondary">mdi-content-save</v-icon>Convert to silent animation and save to library
             </v-list-item>
           </template>
+          
           <template v-slot:message-to-user>
             <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
           </template> 
         </BasePopupButton>
 
         <v-list-item @click="$refs.fileInput.click()">
-          <v-icon left color="black">mdi-image</v-icon>Upload background
+          <v-icon left color="blue">mdi-image</v-icon>Upload background
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
@@ -262,6 +263,7 @@ export default {
         }
         if (!this.hasFetchedStrokesFromDb) { 
           this.hasFetchedStrokesFromDb = true;
+          this.$root.$emit("show-snackbar", `Fetched ${this.strokesArray.length} strokes.`)
         }
       });
     },

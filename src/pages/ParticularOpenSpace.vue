@@ -243,7 +243,7 @@
                   mdi-forum
                 </v-icon>
 
-                {{ "#" + p.currentBoardNumber }} 
+                {{ p.currentBoardNumber }} 
               </div>
             </v-row>
           </div>

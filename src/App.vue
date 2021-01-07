@@ -3,11 +3,14 @@
     <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
     <router-view/>
     
-    <v-snackbar v-model="snackbar">
-      {{ snackbarMessage }} <v-btn @click="snackbar = false" text>CLOSE</v-btn>
+    <v-snackbar v-model="snackbar" timeout="2000">
+      {{ snackbarMessage }}
+      <template v-slot:action>
+        <v-btn @click="snackbar = false" text>CLOSE</v-btn>
+      </template>
     </v-snackbar>
 
-    <v-snackbar v-model="musicSnackbar" timeout="8000">
+    <v-snackbar v-model="musicSnackbar" timeout="5000">
       Enable background music from Maplestory?
       <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
       <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
