@@ -397,7 +397,7 @@ export default {
       await Promise.all(promises);
 
       this.$_saveExplToCacheThenUpload({
-        aspectRatio: MASSIVE_MODE_DIMENSIONS.WIDTH / MASSIVE_MODE_DIMENSIONS.HEIGHT,
+        aspectRatio: MASSIVE_MODE_DIMENSIONS.HEIGHT / MASSIVE_MODE_DIMENSIONS.WIDTH,
         thumbnailBlob,
         audioBlob: this.blackboard.audioBlob,
         backgroundImageBlob,
