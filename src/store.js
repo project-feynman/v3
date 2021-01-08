@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import db from '@/database.js';
 import { getRandomId } from '@/helpers.js';
 import { SUPER_USER_EMAILS, BlackboardTools } from "@/CONSTANTS.js";
+import DailyIframe from '@daily-co/daily-js';
 
 Vue.use(Vuex);
 
@@ -47,15 +48,20 @@ export default new Vuex.Store({
     explCache: {},
     blackboardRoom: null,
     session: {},
+
+
+    // video conference related states
+    participants: {},
     canHearAudio: false,
     isMicOn: false,
     isCameraOn: false,
     isConnectedToAudio: false,
-    dominantSpeaker: {
-      id: "",
-      name: ""
-    },
+    activeSpeakerDailyID: "",
     roomIDtoParticipants: null,
+
+    CallObject: DailyIframe.createCallObject(),
+    connectionStatus: "DISCONNECTED", // DISCONNECTED, CONNECTED, DISCONNECTING, CONNECTING
+    firestoreIDToDailyID: {},
 
     // blackboard related states
     isBoardFullscreen: false,
@@ -70,7 +76,7 @@ export default new Vuex.Store({
     isMusicPlaying: false,
 
     isViewingLibrary: false,
-    isViewingForum: false
+    isViewingForum: false,
   },
   getters: {
     isAdmin: state => {
@@ -78,6 +84,20 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_PARTICIPANTS (state, newValue) {
+      state.participants = newValue; 
+    },
+    SET_FIRESTORE_ID_TO_DAILY_ID (state, newValue) {
+      state.firestoreIDToDailyID = newValue; 
+    },  
+    SET_ACTIVE_SPEAKER_DAILY_ID (state, newValue) {
+      state.activeSpeakerDailyID = newValue;
+      console.log("active ID =", state.activeSpeakerDailyID); 
+    },
+    // video conference 
+    SET_CONNECTION_STATUS (state, newValue) {
+      state.connectionStatus = newValue; 
+    },
     SET_IS_VIEWING_FORUM (state, newVal) {
       state.isViewingForum = newVal; 
     },

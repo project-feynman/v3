@@ -184,6 +184,10 @@
             <v-spacer/>
           </div>
 
+          <portal-target name="video-screenshare-hangup-buttons">
+
+          </portal-target>  
+
           <portal-target name="my-control-buttons"/>
 
           <portal-target name="my-video-conference-buttons"/>
@@ -361,21 +365,11 @@ export default {
     ...mapGetters([
       "isAdmin"
     ]),
-    classID () {
-      return this.$route.params.class_id; 
-    },
-    sessionID () {
-      return this.session.currentID;
-    },
-    sectionID () {
-      return this.$route.params.section_id;
-    },
-    isInRoom () { 
-      return "room_id" in this.$route.params; 
-    },
-    currentRoomID () {
-      return this.$route.params.room_id;
-    },
+    classID () { return this.$route.params.class_id; },
+    sessionID () { return this.session.currentID; },
+    sectionID () { return this.$route.params.section_id; },
+    isInRoom () { return "room_id" in this.$route.params; },
+    currentRoomID () { return this.$route.params.room_id; },
     sortedRooms () {
       return [
         ...this.rooms.filter(room => room.isCommonRoom), 
@@ -399,13 +393,13 @@ export default {
       immediate: true,
       handler: _.debounce(function () {
         this.updateRoomIDToParticipants();
-      }, 450)
+      }, 1000)
     },
     rooms: {
       immediate: true,
       handler: _.debounce(function () {
         this.updateRoomIDToParticipants();
-      }, 450)
+      }, 1000)
     },
     "roomTypeDoc.roomAssignmentsCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {

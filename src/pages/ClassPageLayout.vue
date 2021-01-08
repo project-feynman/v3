@@ -1,9 +1,11 @@
 <template>
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
+   
   <div style="height: 100%">
     <!-- mobile-breakpoint="500": prevents the side-drawer from going into mobile mode where it's temporary -->
     <!-- Elevation ranges from 0 to 24 -->
+    <!-- width 240; anything below, if the scrollbar appears (for laptops), then the right margin gets squished and invaded -->
     <!-- Sets the designated mobile breakpoint for the component. This will apply alternate styles for mobile devices such as the temporary prop, or activate the bottom prop when the breakpoint value is met. Setting the value to 0 will disable this functionality. -->
     <v-navigation-drawer v-model="isShowingDrawer" 
       app 
@@ -100,13 +102,7 @@
           inset
           dense
         />
-      </v-row> -->
-
-      <!-- Red Hangup Button -->
-      <portal-target name="video-screenshare-hangup-buttons">
-  
-      </portal-target>  
-      
+      </v-row> -->  
       <portal-target name="side-drawer" style="margin-top: 12px;">
 
       </portal-target>
