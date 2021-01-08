@@ -12,7 +12,7 @@
       <template v-for="client in allClients">
         <!-- TODO: rename "id" -->
         <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="py-0">
-          <div style="display: flex; align-items: center; min-height: 35px;" class="px-4"
+          <div style="display: flex; align-items: center; height: 30px;" class="px-4"
             :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
                       (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
                       ||
@@ -47,13 +47,19 @@
                 <v-switch @change="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)"
                   :input-value="isMicOn"
                   :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                  class="pt-0 mt-0 grey--text" 
+                  class="mt-0 grey--text" 
+                  style="padding-top: 2px;"
                   hide-details dense inset 
                   color="grey darken-3"
                 />
 
                 <portal to="video-screenshare-hangup-buttons">
                   <div style="display: flex; align-items: center;" class="mt-0 mb-2 pl-1">
+                    <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
+                      class="ml-2" x-small dark fab color="red"
+                    >
+                      <v-icon small>mdi-phone-hangup</v-icon>
+                    </v-btn>
                     <v-switch @change="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
                       :input-value="isCamOn" 
                       prepend-icon="mdi-video"
@@ -68,11 +74,6 @@
                       hide-details inset dense
                       color="grey darken-3"
                     />
-                    <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
-                      class="ml-2" x-small dark fab color="red"
-                    >
-                      <v-icon small>mdi-phone-hangup</v-icon>
-                    </v-btn>
                   </div>
                 </portal>
               </template>
@@ -82,7 +83,7 @@
               </template>
 
               <!-- Switch board number here -->
-              <portal-target name="right-side-of-my-participant-name" class="ml-2 mb-2">
+              <portal-target name="right-side-of-my-participant-name" class="ml-2">
 
               </portal-target>
 
@@ -275,7 +276,7 @@ export default {
 <style>
 .video-overlay {
   position: absolute;
-  bottom: 0px;
+  bottom: 15px;
   background-color: white;
   opacity: 0.7;
   width: 100%;

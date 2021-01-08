@@ -153,28 +153,31 @@
         <!-- active-class:  -->
         <!-- hide-details: eliminates unnecessary bottom padding -->
         <div v-if="room" class="d-flex">
-          <div v-if="activeBoardID" style="width: 48px">
-            <v-select 
-              dense
-              :value="activeBoardID"
-              :items="room.blackboards"
-              @change="(id) => activeBoardID = id"
-              hide-details
-              item-color="accent"
-            >
-              <!-- Override default behavior: show the board number instead of the blackboardID -->
-              <template v-slot:selection="{ item }">
-                <div class="mb-0 black--text">{{ getBoardNumberFromID(item) }}</div>
+          <div v-if="activeBoardID">
+            <v-menu v-model="isBoardsMenuOpen" fixed offset-y bottom>
+              <template v-slot:activator>
+                <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-1" style="padding-top: 0; font-size: 1.1rem; font-weight: 400" max-width="180">
+                  <span class="d-inline-block text-truncate" style="max-width: 48px;">
+                    {{ getBoardNumberFromID(activeBoardID) }}
+                  </span>
+                  <v-spacer/>
+                  <v-icon>mdi-menu-down</v-icon>
+                </v-btn>
               </template>
-              <template v-slot:item="{ item }">
-                <div class="mb-0">{{ getBoardNumberFromID(item) }}</div>
-              </template>
-              <template v-slot:append-item>
+
+              <v-list style="overflow-y: auto; max-height: 400px;">
+                <v-list-item v-for="boardID in room.blackboards" 
+                  @click="activeBoardID = boardID"
+                  :key="boardID"
+                >
+                  <div style="margin: auto">{{ getBoardNumberFromID(boardID) }}</div>
+                </v-list-item>
+
                 <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
                   New board
                 </BaseButton>
-              </template>
-            </v-select>
+              </v-list>
+            </v-menu>
           </div>
         </div>
       </portal>
@@ -274,7 +277,8 @@ export default {
       titleOfExplCollection: "",
       newRoomStatus: "",
       newRoomName: "",
-      currentBoardNumber: 1
+      currentBoardNumber: 1,
+      isBoardsMenuOpen: false
     }
   },
   computed: {
@@ -461,9 +465,8 @@ export default {
         roomRef.update({
           blackboards: firebase.firestore.FieldValue.arrayUnion(newID)
         })
-      ]);   
-      // await this.$nextTick(); // give time to re-compute boardsArray 
-      // this.activeBoardID = newID;
+      ]);  
+      this.activeBoardID = newID; 
     }
   }
 };

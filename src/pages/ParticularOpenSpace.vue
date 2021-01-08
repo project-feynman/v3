@@ -155,7 +155,7 @@
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
-        <div class="pt-2" style="width: 100%">
+        <div class="pt-2 pb-3" style="width: 100%">
           <v-row class="d-flex pl-5 pr-3" align="center">
             <div v-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               common table
@@ -184,11 +184,9 @@
             <v-spacer/>
           </div>
 
-          <v-list-item-content>
-            <portal-target name="current-room-participants">
+          <portal-target name="current-room-participants">
 
-            </portal-target>
-          </v-list-item-content>
+          </portal-target>
         </div>
       </template>
 
