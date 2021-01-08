@@ -1,133 +1,123 @@
 <template>
   <div>
-    <portal to="left-side-panel-current-room">
-      <div id="container-for-video-elements">
-
-      </div>
-    </portal> 
-
     <div id="container-for-audio-elements">
 
     </div>
 
     <portal to="current-room-participants">
+      <portal-target name="video-screenshare-hangup-buttons">
+
+      </portal-target>
+
       <template v-for="client in allClients">
-        <v-row :key="client.id" 
-          align="center"
-          :class="['d-flex', `${client.sessionID === sessionID ? 'mt-3' : 'mt-1'}`, 'pl-5', 'pr-2', 'mr-0']"
-        >
-          <div 
-            style="font-size: 0.9em;"
-            :class="['ml-2', 'caption',
-              `${ firestoreIDToDailyID[client.sessionID] === activeSpeakerDailyID ? 'font-weight-bold grey--text text--darken-3' : 'text--secondary' }`,
-            ]"
+        <!-- TODO: rename "id" -->
+        <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="py-0">
+          <div style="display: flex; align-items: center; min-height: 35px;" class="px-4"
+            :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
+                      (participants[firestoreIDToDailyID[client.sessionID]].video ? 'overlay' : '') : ''
+                      ||
+                      participants.hasOwnProperty('local') && client.sessionID === sessionID ? (participants.local.video ? 'overlay' : '') : ''
+                    "
           >
-            {{ client.firstName }}
-          </div>
-      
-          <v-spacer/>
+            <div v-if="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID]" class="caption font-weight-bold grey--text text--darken-3" style="font-size: 0.9em">
+              {{ client.firstName }}
+            </div>
 
-          <template v-if="client.sessionID === sessionID">
-            <!-- 
-              <VideoConferenceRoom/> can only request to join a room if the CallObject is ready i.e. in the 'DISCONNECTED' state 
-              which makes the correctness proof simple. 
-            -->
-            <template v-if="connectionStatus === 'DISCONNECTED'">
-              <v-btn @click.prevent.stop="joinConferenceRoom()" small dark fab color="success" class="mx-2">
-                <v-icon>mdi-video</v-icon>
-              </v-btn>
-            </template>
+            <div v-else class="text--secondary" style="font-size: 0.9em">
+              {{ client.firstName }}
+            </div>
 
-            <template v-else-if="connectionStatus === 'CONNECTING'">
-              <v-btn :loading="true" small dark fab color="success" class="mx-2">
-                <v-icon>mdi-video</v-icon>
-              </v-btn>
-            </template>
+            <v-spacer/>
 
-            <template v-else-if="connectionStatus === 'CONNECTED'">
-              <portal to="bottom-right-of-camera-video">
+            <!-- MYSELF -->
+            <template v-if="client.sessionID === sessionID">
+              <template v-if="connectionStatus === 'DISCONNECTED'">
+                <v-btn @click.prevent.stop="joinConferenceRoom()" small dark fab color="success" class="ml-1 mr-2">
+                  <v-icon>mdi-video</v-icon>
+                </v-btn>
+              </template>
+
+              <template v-else-if="connectionStatus === 'CONNECTING'">
+                <v-btn :loading="true" small dark fab color="success" class="mx-2">
+                  <v-icon>mdi-video</v-icon>
+                </v-btn>
+              </template>
+
+              <template v-else-if="connectionStatus === 'CONNECTED'">
                 <v-switch @change="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)"
                   :input-value="isMicOn"
                   :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                  hide-details dense inset class="mt-0 pt-0 grey--text" color="grey darken-3"
+                  class="pt-0 mt-0 grey--text" 
+                  hide-details dense inset 
+                  color="grey darken-3"
                 />
-              </portal>
 
-              <portal to="video-screenshare-hangup-buttons">
-                <v-row class="d-flex pl-3 pr-1 mt-2" align="center">
-                  <v-switch @change="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
-                    :input-value="isCamOn" 
-                    class="ml-1 mt-0 pt-0 grey--text" color="black" prepend-icon="mdi-video" hide-details inset dense
-                  />
-                  <v-switch @change="toggleScreen()"
-                    :input-value="isSharingScreen" 
-                    color="black" inset dense hide-details
-                    prepend-icon="mdi-monitor"
-                    class="mt-0 pt-0 grey--text"
-                  />
-                  <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" class="ml-2" x-small dark fab color="red">
-                    <v-icon small>mdi-phone-hangup</v-icon>
-                  </v-btn>
-                </v-row>
-              </portal>
+                <portal to="video-screenshare-hangup-buttons">
+                  <div style="display: flex; align-items: center;" class="mt-0 mb-2 pl-1">
+                    <v-switch @change="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
+                      :input-value="isCamOn" 
+                      prepend-icon="mdi-video"
+                      class="ml-1 mt-0 pt-0 grey--text" 
+                      hide-details inset dense
+                      color="grey darken-3"  
+                    />
+                    <v-switch @change="toggleScreen()"
+                      :input-value="isSharingScreen" 
+                      prepend-icon="mdi-monitor"
+                      class="mt-0 pt-0 grey--text"
+                      hide-details inset dense
+                      color="grey darken-3"
+                    />
+                    <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
+                      class="ml-2" x-small dark fab color="red"
+                    >
+                      <v-icon small>mdi-phone-hangup</v-icon>
+                    </v-btn>
+                  </div>
+                </portal>
+              </template>
+
+              <template v-else-if="connectionStatus === 'ERROR'">
+                TODO: show troubleshoot popup
+              </template>
+
+              <!-- Switch board number here -->
+              <portal-target name="right-side-of-my-participant-name" class="ml-2 mb-2">
+
+              </portal-target>
+
+              <!-- VIDEO IS INJECTED HERE -->
+
             </template>
+            <!-- END OF MY OWN UI -->
 
-            <template v-else-if="connectionStatus === 'ERROR'">
-              Error: Troubleshoot Guide
+            <!-- OTHER PARTICIPANT UI -->
+            <template v-else>
+              <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" color="grey darken-3">
+                {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
+              </v-icon>
+        
+              <v-icon v-else-if="client.canHearAudio" color="green">
+                mdi-video
+              </v-icon>
+
+              <v-icon v-if="client.isMusicPlaying" color="cyan">
+                mdi-music-clef-treble
+              </v-icon>
+              <v-icon v-if="client.isViewingLibrary" color="purple">
+                mdi-bookshelf
+              </v-icon>
+              <v-icon v-if="client.isViewingForum" color="yellow darken-3">
+                mdi-forum
+              </v-icon>
+              <div :class="['caption', 'black--text']" style="font-size: 1.2rem;">
+                {{ client.currentBoardNumber }}
+              </div>
             </template>
-
-            <portal-target name="right-side-of-my-participant-name">
-
-            </portal-target>
-          </template>
-          <!-- END OF MY OWN UI -->
-
-          <template v-else>
-            <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" style="font-size: 1rem" color="grey darken-3">
-              {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
-            </v-icon>
-            <v-icon v-else-if="client.canHearAudio" color="green" style="font-size: 0.9rem">
-              mdi-video
-            </v-icon>
-
-            <v-icon v-if="client.isMusicPlaying" color="cyan" style="font-size: 0.9rem">
-              mdi-music-clef-treble
-            </v-icon>
-
-            <v-icon v-if="client.isViewingLibrary" color="purple" style="font-size: 0.9rem">
-              mdi-bookshelf
-            </v-icon>
-            <v-icon v-else-if="client.isViewingForum" color="yellow darken-3" style="font-size: 0.9rem">
-              mdi-forum
-            </v-icon>
-
-            <div :class="['caption', 'black--text']" style="font-size: 1em">
-              {{ client.currentBoardNumber }}
-            </div>
-          </template>
-        </v-row>
-
-        <div v-if="client.sessionID === sessionID" 
-          id="my-local-video" 
-          :key="client.sessionID + 'local-video'"
-          style="position: relative;"
-        >
-          <!-- z-index is not great -->
-          <portal-target name="bottom-right-of-camera-video" 
-            style="position:absolute;
-            bottom: 5px; 
-            right: 5px;
-            z-index: 3;"
-          >
-
-          </portal-target>
+          </div>
         </div>
-        <div v-else :id="client.sessionID" 
-          :key="client.sessionID + 'remote-video'"
-          style="position: relative;"
-        >
-          
-        </div>
+
+        <!-- </div> -->
       </template>
     </portal>
   </div>
@@ -135,25 +125,9 @@
 
 <script>
 /**
- * Better than Twilio: simple, easy-to-use API, much cheaper
- * Better than Jitsi: more reliable, much easier to use than Jitsi, more reliable future
-
- * 
- * TEST with 5 friends
- * 
- * // TODO: persist audio state and camera state across rooms
- * 
- * After reliable testing: 
- *   - Handle unforeseen edge cases: e.g. moving fast between rooms, multiple devices, cache errors
- *   // Error handling : disconnecting in the middle of the session
- *    // TODO: better error handling (for caches with Zooms) 
- *   // UI improvement
+ * TEST with 5 friends: move fast between rooms 
+ *   - Explicit error handling 
  *   - Consistent video constraints / aspect ratios no matter the device size
- * 
- *   // TROUBLESHOOT ADVICE
- *   - Selecting input/output devices 
- *   - Better warnings (e.g. browser compatibility)
- *   - Better troubleshoot warnings (e.g. reset cache, etc.)
  * 
  * @see API guide https://docs.daily.co/reference#%EF%B8%8F-createcallobject
  * @see Github demo code https://github.com/daily-demos/call-object-react/blob/main/src/components/Call/Call.js
@@ -173,7 +147,7 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "canHearAudio", // TODO: rename it to something better
+      "canHearAudio", // TODO: rename it 
       "CallObject",
       "connectionStatus",
       "participants",
@@ -228,9 +202,7 @@ export default {
             })
           }); 
           const room = await response.json(); 
-          console.log("room =", room); 
           if (room.error === "invalid-request-error" && room.info === `a room named ${room_id} already exists`) {
-            console.log("room already exists =", room_id);
             resolve({ url: `https://feynman.daily.co/${room_id}` }); 
           } else {
             resolve(room); 
@@ -247,29 +219,14 @@ export default {
       this.$store.commit("SET_CONNECTION_STATUS", "CONNECTING");
       try {
         const conferenceRoom = await this.createConferenceRoom(); 
-        console.log("conferenceRoom =", conferenceRoom);
         await this.CallObject.join({
           url: conferenceRoom.url, // `https://feynman.daily.co/${'Ly77BmJeKWudV1FJISnD'}`,
           userName: this.sessionID
         }); 
-        // NEED TO LEAVE
-        if (this.isDestroyed) {
-          this.leaveConferenceRoom(); 
-        } else {
+        if (this.isDestroyed) this.leaveConferenceRoom(); 
+        else {
           this.$store.commit("SET_CONNECTION_STATUS", "CONNECTED");
-          if (this.canHearAudio) {
-            // TODO: camera should never be turne don 
-            // fundamentall turn off the audio light and the camera light
-            // TODO: differentiate between the global isMicOn and the true isMicOn
-            // if (this.$store.state.isMicOn !== this.isMicOn) {
-            //   this.toggleMic(); 
-            // } 
-            // if (this.$store.state.isCameraOn !== this.isCamOn) {
-            //   this.toggleCam(); 
-            // }
-          } else {
-            this.$store.commit("SET_CAN_HEAR_AUDIO", true);
-          }
+          this.$store.commit("SET_CAN_HEAR_AUDIO", true);
         }
       } catch (error) {
         this.$store.commit("SET_CONNECTION_STATUS", "ERROR");
@@ -287,34 +244,33 @@ export default {
       this.isSharingScreen = ! this.isSharingScreen; 
     },
     async leaveConferenceRoom () {
-      // await this.CallObject.leave(); 
-      // // unmount camera streams
-      for (const client of this.allClients) {
-        let videoContainer; 
-        if (client.sessionID === this.sessionID) {
-          videoContainer = document.getElementById("my-local-video"); 
-        } else {
-          videoContainer = document.getElementById(client.sessionID); 
-        }
-        if (videoContainer) {
-          if (videoContainer.firstChild) { // note the video could have been already been unmounted by the track-stopped event
-             videoContainer.removeChild(videoContainer.firstChild); 
-          }
-        }
+      const camVideoElems = document.querySelectorAll("video");
+      for (const camVideoElem of camVideoElems) {
+        camVideoElem.remove(); 
       }
-      // unmount audio streams
-      const audioContainer = document.getElementById("container-for-audio-elements"); 
-      while (audioContainer.firstChild) {
-        audioContainer.removeChild(audioContainer.firstChild);
+      const micAudioElems = document.querySelectorAll("audio"); 
+      for (const micAudioElem of micAudioElems) {
+        micAudioElem.remove(); 
       }
-
       this.cleanUpCallObject();
     },
     async cleanUpCallObject () {
-      await this.CallObject.leave(); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTING"); 
+      await this.CallObject.leave(); 
+      this.$store.commit("SET_PARTICIPANTS", {}); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTED");
     }
   }
 };
 </script>
+
+<style scoped>
+.overlay {
+  position: absolute;
+  bottom: 0px;
+  background-color: white;
+  opacity: 75%;
+  width: 100%;
+  z-index: 5;
+}
+</style>

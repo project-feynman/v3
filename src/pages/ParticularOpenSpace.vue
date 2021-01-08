@@ -145,6 +145,7 @@
     <!-- Selectable *should* allow v-chip to be copied and pasted, but it's currently not doing anything -->
   
     <!-- ROOMS -->
+  <v-list>
      <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       active-class="active-blackboard accent--text"
@@ -154,7 +155,7 @@
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
-        <div class="pt-2 pb-3" style="width: 100%">
+        <div class="pt-2" style="width: 100%">
           <v-row class="d-flex pl-5 pr-3" align="center">
             <div v-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               common table
@@ -170,8 +171,7 @@
 
             <v-spacer/>
 
-            <!-- TODO: rename to "room-action-buttons" -->
-            <portal-target name="current-room-buttons" class="">
+            <portal-target name="table-level-actions">
           
             </portal-target>
           </v-row>
@@ -184,20 +184,11 @@
             <v-spacer/>
           </div>
 
-          <portal-target name="video-screenshare-hangup-buttons">
+          <v-list-item-content>
+            <portal-target name="current-room-participants">
 
-          </portal-target>  
-
-          <portal-target name="my-control-buttons"/>
-
-          <portal-target name="my-video-conference-buttons"/>
-
-          <portal-target name="library-popup-button"/>
-
-          <portal-target name="current-room-participants"/>
-
-          <portal-target name="left-side-panel-current-room"/>
-
+            </portal-target>
+          </v-list-item-content>
         </div>
       </template>
 
@@ -258,6 +249,8 @@
     <v-list-item v-if="rooms.length !== 0 && rooms.length < 12" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 50%; font-size: 0.9rem;"> 
       <v-icon left color="black">mdi-plus</v-icon> new table 
     </v-list-item>
+
+  </v-list>
 
     <!--  to create a gap between the last room and the bottom boundary of the area -->
     <div class="mb-1"></div>  

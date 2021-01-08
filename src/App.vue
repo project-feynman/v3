@@ -38,10 +38,18 @@ export default {
   }),
   computed: {
     CallObject () { return this.$store.state.CallObject; },
-    participants () { return this.$store.state.participants }
+    participants () { return this.$store.state.participants },
+    sessionID () { return this.$store.state.session.currentID }
   },
   async created () {
     // initialize CallObject (consumed by DailyVideoConferenceRoom)
+
+    // lightweight is very important for MIT instructors
+    this.CallObject.setBandwidth({
+      kbs: 20,
+      trackConstraints: { width: 320, height: 180, frameRate: 20 }
+    });
+
     for (const event of PARTICIPANT_EVENTS) {
       this.CallObject.on(event, this.maintainParticipantsCorrectness); 
     }
@@ -88,25 +96,38 @@ export default {
     async mountNewTrack ({ track, participant }) {
       switch (track.kind) {
         case "video": 
-          console.log("video track received =", track);
-          const videoElement = document.createElement("video"); 
-          videoElement.srcObject = new MediaStream([track]);
-          videoElement.setAttribute("id", "video" + participant.user_id); 
-          videoElement.setAttribute("muted", true); 
-          videoElement.setAttribute("autoplay", true); 
-          videoElement.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
+          const v = document.createElement("video"); 
+          v.srcObject = new MediaStream([track]);
+          v.setAttribute("id", "video" + participant.user_id); 
+          v.setAttribute("muted", true); 
+          v.setAttribute("autoplay", true); 
+          v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
           
-          videoElement.setAttribute("width", 200); 
-          videoElement.setAttribute("height", 150); 
-          videoElement.setAttribute("position", "relative");
-          videoElement.setAttribute("z-index", 2); // not great
+          v.setAttribute("width", 207); 
+          v.setAttribute("height", 140); 
+          v.setAttribute("position", "relative");
+          v.setAttribute("z-index", 2); // not great
+
+          // v.addEventListener("resize", ({ target }) => {
+          //   const v = target; 
+          //   const w = v.videoWidth;
+          //   const h = v.videoHeight;
+          //   console.log('w =', w); 
+          //   console.log("h =", h);
+          //   if (w && h) {
+          //     console.log("style.width =", v.style.width);
+          //     console.log("w =", w);
+          //     v.style.width = w;
+          //     v.style.height = h;
+          //   }
+          // }, false);
 
           if (! participant.user_name) { // user_name maps to sessionID 
-            document.getElementById("my-local-video").appendChild(videoElement); 
+            document.getElementById("my-local-video").appendChild(v); 
           } else if (participant.user_name === this.sessionID) { // TODO: refactor. Handles the case where I re-share my camera, but now my user_name is defined
-            document.getElementById("my-local-video").appendChild(videoElement); 
+            document.getElementById("my-local-video").appendChild(v); 
           } else { 
-            document.getElementById(participant.user_name).appendChild(videoElement);
+            document.getElementById(participant.user_name).appendChild(v);
           }
           break; 
 
@@ -126,16 +147,8 @@ export default {
     },
     async unmountTrack ({ track, participant }) {
       switch (track.kind) {
-        case "video": 
-          console.log("a video track stopped =", track);
-          const firestoreID = participant.user_name; 
-          if (firestoreID === this.sessionID) {
-            console.log("it was my track");
-            document.getElementById("my-local-video").remove(); 
-          } else {
-            console.log("it was someone else's track =", participant.user_id);
-            document.getElementById("video" + participant.user_id).remove();
-          }
+        case "video":
+          document.getElementById("video" + participant.user_id).remove();
           break;
         case "audio": 
           if (participant.local) return; 

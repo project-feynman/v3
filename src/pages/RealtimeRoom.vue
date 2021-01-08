@@ -110,7 +110,7 @@
       </v-card>
     </v-dialog>
 
-    <portal to="current-room-buttons">
+    <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
       <v-menu v-model="isMenuOpen" offset-y bottom>
@@ -152,8 +152,8 @@
         <!-- item-color:  -->
         <!-- active-class:  -->
         <!-- hide-details: eliminates unnecessary bottom padding -->
-        <div v-if="room" class="d-flex ml-2">
-          <div v-if="activeBoardID" style="width: 50px">
+        <div v-if="room" class="d-flex">
+          <div v-if="activeBoardID" style="width: 48px">
             <v-select 
               dense
               :value="activeBoardID"

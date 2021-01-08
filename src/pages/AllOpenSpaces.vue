@@ -15,7 +15,7 @@
           >
             <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
             <v-list-item-content class="py-0">
-              <v-row class="d-flex px-3 py-2" align="center">
+              <div style="display: flex; align-items: center;" class="pt-2">
                 <div class="ml-4">
                   <div v-if="roomType.id !== sectionID" 
                     style="
@@ -40,8 +40,8 @@
                 >
                   
                 </portal-target>
-              </v-row>
-      
+              </div>
+
               <portal-target v-if="sectionID === roomType.id" 
                 name="currently-active-open-space" 
                 :key="roomType.id + 'rooms-portal'"
