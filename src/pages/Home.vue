@@ -22,7 +22,7 @@
               large class="mr-5 green darken-1 white--text"
             >
               <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
-              GO TO LOUNGE AREA
+              GO TO LOUNGE
             </v-btn>
 
             <v-btn large class="grey darken-3 white--text mx-5">

@@ -11,7 +11,7 @@
     </v-snackbar>
 
     <v-snackbar v-model="musicSnackbar" timeout="5000">
-      Enable background music from Maplestory?
+      Play music from Maplestory?
       <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
       <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
     </v-snackbar>
@@ -42,9 +42,7 @@ export default {
     sessionID () { return this.$store.state.session.currentID }
   },
   async created () {
-    // initialize CallObject (consumed by DailyVideoConferenceRoom)
-
-    // lightweight is very important for MIT instructors
+    // initialize CallObject (consumed by DailyVideoConferenceRoom) lightweight is very important for MIT instructors
     this.CallObject.setBandwidth({
       kbs: 20,
       trackConstraints: { width: 320, height: 180, frameRate: 20 }
@@ -56,7 +54,6 @@ export default {
     this.CallObject.on("track-started", this.mountNewTrack);
     this.CallObject.on("track-stopped", this.unmountTrack);
     this.CallObject.on("active-speaker-change", ({ activeSpeaker }) => {
-      console.log("payload =", activeSpeaker); 
       this.$store.commit("SET_ACTIVE_SPEAKER_DAILY_ID", activeSpeaker.peerId);
     });
 

@@ -14,9 +14,9 @@
         <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="py-0">
           <div style="display: flex; align-items: center; min-height: 35px;" class="px-4"
             :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
-                      (participants[firestoreIDToDailyID[client.sessionID]].video ? 'overlay' : '') : ''
+                      (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
                       ||
-                      participants.hasOwnProperty('local') && client.sessionID === sessionID ? (participants.local.video ? 'overlay' : '') : ''
+                      participants.hasOwnProperty('local') && client.sessionID === sessionID ? (participants.local.video ? 'video-overlay' : '') : ''
                     "
           >
             <div v-if="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID]" class="caption font-weight-bold grey--text text--darken-3" style="font-size: 0.9em">
@@ -127,7 +127,7 @@
 /**
  * TEST with 5 friends: move fast between rooms 
  *   - Explicit error handling 
- *   - Consistent video constraints / aspect ratios no matter the device size
+ *   - Consistent video constraints / aspect ratios no matter the device size (notice in console it wasn't changed);
  * 
  * @see API guide https://docs.daily.co/reference#%EF%B8%8F-createcallobject
  * @see Github demo code https://github.com/daily-demos/call-object-react/blob/main/src/components/Call/Call.js
@@ -172,6 +172,9 @@ export default {
           this.joinConferenceRoom(); 
         }
       }
+    },
+    participants () {
+      console.log("participants =", this.participants);
     }
   },
  async destroyed () {
@@ -216,6 +219,11 @@ export default {
       });
     },
     async joinConferenceRoom () {
+      // quickfix
+      if (this.$store.state.isMusicPlaying) {
+        const { musicAudioElement } = this.$store.state; 
+        if (musicAudioElement) musicAudioElement.pause(); 
+      }
       this.$store.commit("SET_CONNECTION_STATUS", "CONNECTING");
       try {
         const conferenceRoom = await this.createConferenceRoom(); 
@@ -264,12 +272,12 @@ export default {
 };
 </script>
 
-<style scoped>
-.overlay {
+<style>
+.video-overlay {
   position: absolute;
   bottom: 0px;
   background-color: white;
-  opacity: 75%;
+  opacity: 0.7;
   width: 100%;
   z-index: 5;
 }
