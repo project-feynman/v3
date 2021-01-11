@@ -58,7 +58,6 @@ import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { mapState } from "vuex";
-import moment from "moment";
 import { Drag, Drop } from 'vue-drag-drop';
 import TheSideDrawerGroupByFolders from "@/components/TheSideDrawerGroupByFolders.vue";
 import TheSideDrawerGroupByDate from "@/components/TheSideDrawerGroupByDate.vue";

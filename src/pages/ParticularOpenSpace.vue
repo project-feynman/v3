@@ -28,9 +28,9 @@
             <v-icon left color="orange">mdi-bullhorn</v-icon> Make announcement
           </v-list-item>
 
-          <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
+          <!-- <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
             <v-icon left color="orange">mdi-volume-mute</v-icon> Mute everyone
-          </v-list-item>
+          </v-list-item> -->
 
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
