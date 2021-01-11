@@ -1,9 +1,7 @@
 <template>
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
-   
   <div style="height: 100%">
-    <!-- mobile-breakpoint="500": prevents the side-drawer from going into mobile mode where it's temporary -->
     <!-- Elevation ranges from 0 to 24 -->
     <!-- width 240; anything below, if the scrollbar appears (for laptops), then the right margin gets squished and invaded -->
     <!-- Sets the designated mobile breakpoint for the component. This will apply alternate styles for mobile devices such as the temporary prop, or activate the bottom prop when the breakpoint value is met. Setting the value to 0 will disable this functionality. -->
@@ -16,8 +14,8 @@
       touchless 
     >      
       <v-sheet class="pt-3 pl-3">    
-        <div class="d-flex">
-          <v-list-item-avatar @click="$router.push('/')" tile width="40" height="36" style="cursor: pointer;" class="ma-0">
+        <div style="display: flex;">
+          <v-list-item-avatar @click="$router.push('/')" tile width="47" height="42" style="cursor: pointer;" class="ma-0">
             <img src="/logo.png">
           </v-list-item-avatar>
 
@@ -33,16 +31,24 @@
           />
         </div>
 
-        <v-row justify="space-around" class="d-flex mt-3">
+        <div style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
           <v-dialog 
             :value="isViewingForum" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
             persistent
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="px-2" small>
-                <v-icon small class="mr-1 orange--text">mdi-forum</v-icon>
-                <div style="font-size: 0.8rem">FORUM</div>
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text" color="grey" rounded>
+                <!-- orange--text -->
+                <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+                <div style="font-size: 0.85rem; 
+                            font-weight: 500; 
+                            color: '#424242'; 
+                            opacity: 0.9;
+                            text-transform: uppercase;"
+                >
+                  FORUM
+                </div>
               </v-btn>
             </template>
 
@@ -69,9 +75,14 @@
             persistent
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" small class="mr-3">
-                <v-icon small class="mr-1 purple--text">mdi-bookshelf</v-icon>
-                <div style="font-size: 0.8rem">LIBRARY</div>
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="mr-2 white--text grey" rounded>
+                <!-- purple--text -->
+                <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-bookshelf</v-icon>
+                <div style="font-size: 0.85rem; 
+                      font-weight: 500; 
+                      color: '#424242'; 
+                      opacity: 0.9;
+                      text-transform: uppercase;">LIBRARY</div>
               </v-btn>
             </template>
 
@@ -87,10 +98,10 @@
               />
             </v-card>
           </v-dialog>
-        </v-row>  
+        </div>  
       </v-sheet>
 
-      <v-divider class="my-5"/>
+      <!-- <v-divider class="my-5"/> -->
           
       <!-- <v-row align="center" class="d-flex px-1 mt-3">
         <v-switch @change="toggleMaplestoryMusic()"
@@ -103,7 +114,7 @@
           dense
         />
       </v-row> -->  
-      <portal-target name="side-drawer" style="margin-top: 12px;">
+      <portal-target name="side-drawer" style="margin-top: 22px;">
 
       </portal-target>
     </v-navigation-drawer>

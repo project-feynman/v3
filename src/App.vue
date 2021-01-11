@@ -100,8 +100,8 @@ export default {
           v.setAttribute("autoplay", true); 
           v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
           
-          v.setAttribute("width", 207); 
-          v.setAttribute("height", 140); 
+          v.setAttribute("width", 215); 
+          v.setAttribute("height", 145); 
           v.setAttribute("position", "relative");
           v.setAttribute("z-index", 2); // not great
 

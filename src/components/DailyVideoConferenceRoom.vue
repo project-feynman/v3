@@ -11,13 +11,13 @@
 
       <template v-for="client in allClients">
         <!-- TODO: rename "id" -->
-        <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="py-0">
-          <div style="display: flex; align-items: center; height: 30px;" class="px-4"
+        <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="mt-2">
+          <div style="display: flex; justify-content: space-between; align-items: center; height: 30px; padding-left: 12px; padding-right: 0;"
             :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
-                      (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
-                      ||
-                      participants.hasOwnProperty('local') && client.sessionID === sessionID ? (participants.local.video ? 'video-overlay' : '') : ''
-                    "
+              (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
+              ||
+              participants.hasOwnProperty('local') && client.sessionID === sessionID ? (participants.local.video ? 'video-overlay' : '') : ''
+            "
           >
             <div v-if="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID]" class="caption font-weight-bold grey--text text--darken-3" style="font-size: 0.9em">
               {{ client.firstName }}
@@ -27,60 +27,63 @@
               {{ client.firstName }}
             </div>
 
-            <v-spacer/>
+            <!-- <v-spacer/> -->
 
             <!-- MYSELF -->
             <template v-if="client.sessionID === sessionID">
-              <template v-if="connectionStatus === 'DISCONNECTED'">
-                <v-btn @click.prevent.stop="joinConferenceRoom()" small dark fab color="success" class="ml-1 mr-2">
-                  <v-icon>mdi-video</v-icon>
-                </v-btn>
-              </template>
+              <!-- 2nd of the 3 elements in this row -->
+              <div>
+                <template v-if="connectionStatus === 'DISCONNECTED'">
+                  <v-btn @click.prevent.stop="joinConferenceRoom()" small dark fab color="success" class="ml-1">
+                    <v-icon>mdi-video</v-icon>
+                  </v-btn>
+                </template>
 
-              <template v-else-if="connectionStatus === 'CONNECTING'">
-                <v-btn :loading="true" small dark fab color="success" class="mx-2">
-                  <v-icon>mdi-video</v-icon>
-                </v-btn>
-              </template>
+                <template v-else-if="connectionStatus === 'CONNECTING'">
+                  <v-btn :loading="true" small dark fab color="success" class="mx-2">
+                    <v-icon>mdi-video</v-icon>
+                  </v-btn>
+                </template>
 
-              <template v-else-if="connectionStatus === 'CONNECTED'">
-                <v-switch @change="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)"
-                  :input-value="isMicOn"
-                  :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                  class="mt-0 grey--text" 
-                  style="padding-top: 2px;"
-                  hide-details dense inset 
-                  color="grey darken-3"
-                />
+                <template v-else-if="connectionStatus === 'CONNECTED'">
+                  <v-switch @change="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)"
+                    :input-value="isMicOn"
+                    :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
+                    class="mt-0 pt-0 grey--text" 
+                    hide-details inset
+                    color="grey darken-3"
+                  />
 
-                <portal to="video-screenshare-hangup-buttons">
-                  <div style="display: flex; align-items: center;" class="mt-0 mb-2 pl-1">
-                    <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
-                      class="ml-2" x-small dark fab color="red"
-                    >
-                      <v-icon small>mdi-phone-hangup</v-icon>
-                    </v-btn>
-                    <v-switch @change="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
-                      :input-value="isCamOn" 
-                      prepend-icon="mdi-video"
-                      class="ml-1 mt-0 pt-0 grey--text" 
-                      hide-details inset dense
-                      color="grey darken-3"  
-                    />
-                    <v-switch @change="toggleScreen()"
-                      :input-value="isSharingScreen" 
-                      prepend-icon="mdi-monitor"
-                      class="mt-0 pt-0 grey--text"
-                      hide-details inset dense
-                      color="grey darken-3"
-                    />
-                  </div>
-                </portal>
-              </template>
+                  <portal to="video-screenshare-hangup-buttons">
+                    <div style="display: flex; align-items: center;" class="mt-0 mb-2 pl-1">
+                      <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
+                        class="ml-2" x-small dark fab color="red"
+                      >
+                        <v-icon small>mdi-phone-hangup</v-icon>
+                      </v-btn>
+                      <v-switch @change="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
+                        :input-value="isCamOn" 
+                        prepend-icon="mdi-video"
+                        class="ml-1 mt-0 pt-0 grey--text" 
+                        hide-details inset dense
+                        color="grey darken-3"  
+                      />
+                      <v-switch @change="toggleScreen()"
+                        :input-value="isSharingScreen" 
+                        prepend-icon="mdi-monitor"
+                        class="mt-0 pt-0 grey--text"
+                        hide-details inset dense
+                        color="grey darken-3"
+                      />
+                    </div>
+                  </portal>
+                </template>
 
-              <template v-else-if="connectionStatus === 'ERROR'">
-                TODO: show troubleshoot popup
-              </template>
+                <template v-else-if="connectionStatus === 'ERROR'">
+                  TODO: show troubleshoot popup
+                </template>
+              </div>
+              <!-- End of video section (2nd of the 3 items) -->
 
               <!-- Switch board number here -->
               <portal-target name="right-side-of-my-participant-name" class="ml-2">
@@ -111,13 +114,17 @@
               <v-icon v-if="client.isViewingForum" color="yellow darken-3">
                 mdi-forum
               </v-icon>
-              <div :class="['caption', 'black--text']" style="font-size: 1.2rem;">
+         
+              <span 
+                @click="$root.$emit('teleport-to-board', client.currentBoardNumber)"
+                class="white--text" 
+                style="width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-right: 6px;"
+              >
                 {{ client.currentBoardNumber }}
-              </div>
+              </span>
             </template>
           </div>
         </div>
-
         <!-- </div> -->
       </template>
     </portal>
@@ -224,6 +231,7 @@ export default {
       if (this.$store.state.isMusicPlaying) {
         const { musicAudioElement } = this.$store.state; 
         if (musicAudioElement) musicAudioElement.pause(); 
+        this.$store.commit("SET_IS_MUSIC_PLAYING", false);
       }
       this.$store.commit("SET_CONNECTION_STATUS", "CONNECTING");
       try {
@@ -276,7 +284,7 @@ export default {
 <style>
 .video-overlay {
   position: absolute;
-  bottom: 15px;
+  bottom: 0;
   background-color: white;
   opacity: 0.7;
   width: 100%;

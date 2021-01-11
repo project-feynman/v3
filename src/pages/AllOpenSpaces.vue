@@ -9,13 +9,13 @@
           <v-list-item :key="roomType.id"
             :to="(`/class/${classID}/section/${roomType.id}`)"
             active-class="accent--text"
-            class="px-0" 
+            class="px-0 pt-2" 
             :inactive="sectionID === roomType.id"
             :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
           >
             <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
             <v-list-item-content class="py-0">
-              <div style="display: flex; align-items: center;" class="pt-2">
+              <div style="display: flex; align-items: center;">
                 <div class="ml-4">
                   <div v-if="roomType.id !== sectionID" 
                     style="

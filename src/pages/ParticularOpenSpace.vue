@@ -156,7 +156,7 @@
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
-          <v-row class="d-flex pl-5 pr-3" align="center">
+          <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
             <div v-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               common table
             </div>
@@ -174,7 +174,7 @@
             <portal-target name="table-level-actions">
           
             </portal-target>
-          </v-row>
+          </div>
 
           <div class="d-flex pl-2" style="max-width: 175px;">
             <v-chip v-if="room.status" color="blue" class="mt-1" small outlined>

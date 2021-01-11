@@ -25,7 +25,7 @@
               GO TO LOUNGE
             </v-btn>
 
-            <v-btn large class="grey darken-3 white--text mx-5">
+            <v-btn large class="grey darken-1 white--text mx-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>
               <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
             </v-btn>
@@ -73,7 +73,7 @@
               </template>
             </BasePopupButton>
 
-            <v-btn large class="grey darken-3 white--text ml-5">
+            <v-btn large class="grey darken-1 white--text ml-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>
               <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
             </v-btn>

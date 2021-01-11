@@ -156,8 +156,12 @@
           <div v-if="activeBoardID">
             <v-menu v-model="isBoardsMenuOpen" fixed offset-y bottom>
               <template v-slot:activator>
-                <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-1" style="padding-top: 0; font-size: 1.1rem; font-weight: 400" max-width="180">
-                  <span class="d-inline-block text-truncate" style="max-width: 48px;">
+                <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-0" 
+                  style="text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400" max-width="180"
+                >
+                  <!-- The board switch button looks like a blackboard itself -->
+                  <span class="d-inline-block text-truncate white--text" 
+                        style="width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)">
                     {{ getBoardNumberFromID(activeBoardID) }}
                   </span>
                   <v-spacer/>
@@ -165,15 +169,20 @@
                 </v-btn>
               </template>
 
-              <v-list style="overflow-y: auto; max-height: 400px;">
-                <v-list-item v-for="boardID in room.blackboards" 
-                  @click="activeBoardID = boardID"
-                  :key="boardID"
-                >
-                  <div style="margin: auto">{{ getBoardNumberFromID(boardID) }}</div>
-                </v-list-item>
+              <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
+                <template v-for="boardID in room.blackboards">
+                  <v-list-item 
+                    @click="activeBoardID = boardID"
+                    :key="boardID"
+                    style="background-color: rgb(62, 66, 66);"
+                    class="px-0"
+                  >
+                    <div style="margin: auto;" class="white--text">{{ getBoardNumberFromID(boardID) }}</div>
+                  </v-list-item>
+                  <v-divider class="white--text" :key="boardID + 'divider'"/>
+                </template>
 
-                <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
+                <BaseButton @click="createNewBoard()" icon="mdi-plus" color="grey darken-2">
                   New board
                 </BaseButton>
               </v-list>
@@ -323,6 +332,11 @@ export default {
       this.activeBoardID = this.room.blackboards[0]; // TODO: perhaps it's not necessary and can be "naturally handled"
       this.snapshotListeners.push(unsubFunc);
     });
+
+    // TODO: refactor/modularize by finding a way to NOT use a root listener
+    this.$root.$on("teleport-to-board", (newBoardNumber) => {
+      this.activeBoardID =  this.room.blackboards[newBoardNumber - 1];
+    }); 
   },
   destroyed () {
     for (const detachListener of this.snapshotListeners) {
