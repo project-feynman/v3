@@ -22,6 +22,7 @@
 import firebase from "firebase/app"; 
 import "firebase/storage"; 
 import Vue from "vue"; 
+import _ from "lodash"; 
 
 const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
@@ -48,8 +49,9 @@ export default {
       trackConstraints: { width: 320, height: 180, frameRate: 20 }
     });
 
+    const ONE_HUNDRED_MILLISECONDS = 100; 
     for (const event of PARTICIPANT_EVENTS) {
-      this.CallObject.on(event, this.maintainParticipantsCorrectness); 
+      this.CallObject.on(event, _.debounce(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS)); 
     }
     this.CallObject.on("track-started", this.mountNewTrack);
     this.CallObject.on("track-stopped", this.unmountTrack);
@@ -77,7 +79,6 @@ export default {
       this.$store.commit("SET_IS_MUSIC_PLAYING", true);
     },
     maintainParticipantsCorrectness () {
-      console.log("maintainParticipantsCorrectness()");
       this.$store.commit("SET_PARTICIPANTS", { ...this.CallObject.participants() }); 
       this.$store.commit("SET_FIRESTORE_ID_TO_DAILY_ID", {});
       const temp = {}; 

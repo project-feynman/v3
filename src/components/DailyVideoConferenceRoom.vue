@@ -134,8 +134,25 @@
 <script>
 /**
  * TEST with 5 friends: move fast between rooms 
+ * 
+ * TODO: explicit error messages (use event handlers perhaps)
+ *    Error getting camera/mic stream PermissionDeniedError
+ *    Fails silently
+ *    Having to restart the computer
+ *    Clear Cookies and cache
+ * 
+ * KNOWN ISSUES: 
+ *   - Clear cookies and cache
+ *   - Status breakpoints: error
  *   - Explicit error handling 
+ *   - Sometimes the laptop just keeps loading infinitely
+ *   - 
  *   - Consistent video constraints / aspect ratios no matter the device size (notice in console it wasn't changed);
+ * 
+ * Call to get user media (constraints)
+ * 
+ * The reason it's so important to work both hard and smart is that, a startup is is an unpredictable stream of tasks requiring different resources. 
+ * If you are not completely constrained on the tasks, you can defer them until a better time to increase efficiency. 
  * 
  * @see API guide https://docs.daily.co/reference#%EF%B8%8F-createcallobject
  * @see Github demo code https://github.com/daily-demos/call-object-react/blob/main/src/components/Call/Call.js
@@ -146,6 +163,12 @@ import { mapState } from "vuex";
 import Vue from "vue";
 
 export default {
+  props: {
+    roomID: {
+      type: String,
+      required: true
+    }
+  },
   data () {
     return {
       isDestroyed: false,
@@ -165,7 +188,7 @@ export default {
     ]),
     allClients () { 
       if (!this.roomIDtoParticipants) return; 
-      else return this.roomIDtoParticipants[this.$route.params.room_id]; 
+      else return this.roomIDtoParticipants[this.roomID]; 
     },
     sessionID () { return this.$store.state.session.currentID; },
     isMicOn () { return this.participants.local.audio; },
@@ -181,13 +204,19 @@ export default {
         }
       }
     },
-    participants () {
-      console.log("participants =", this.participants);
-    }
+    // participants () {
+    //   console.log("participants =", this.participants);
+    // }
   },
  async destroyed () {
     this.isDestroyed = true; 
-    this.cleanUpCallObject(); 
+    // case 1 (sequential): the user leaves after connection has been resolved
+    if (this.connectionStatus === "CONNECTED") {
+      console.log("sequential case"); 
+      this.cleanUpCallObject(); 
+    }
+    // otherwise, as soon as the user connects to the room via `joinConferenceRoom`, 
+    // the `isDestroyed` flag will initialize the cleanup straight away.
   },
   methods: {
      /**
@@ -196,7 +225,6 @@ export default {
     async createConferenceRoom () {
       return new Promise(async (resolve) => {
         try {
-          const { room_id } = this.$route.params; 
           const SECONDS_IN_TWO_HOURS = 2 * 60 * 60; 
           const response = await fetch("https://api.daily.co/v1/rooms", {
             "method": "POST",
@@ -206,15 +234,15 @@ export default {
             },
             // mode: "cors",
             body: JSON.stringify({
-              name: this.$route.params.room_id,
+              name: this.roomID,
               properties: {
                 exp: Math.round(Date.now() / 1000) + SECONDS_IN_TWO_HOURS 
               }
             })
           }); 
           const room = await response.json(); 
-          if (room.error === "invalid-request-error" && room.info === `a room named ${room_id} already exists`) {
-            resolve({ url: `https://feynman.daily.co/${room_id}` }); 
+          if (room.error === "invalid-request-error" && room.info === `a room named ${this.roomID} already exists`) {
+            resolve({ url: `https://feynman.daily.co/${this.roomID}` }); 
           } else {
             resolve(room); 
           }
@@ -227,6 +255,7 @@ export default {
       });
     },
     async joinConferenceRoom () {
+      console.log("joinConferenceRoom(), roomID =", this.roomID);
       // quickfix
       if (this.$store.state.isMusicPlaying) {
         const { musicAudioElement } = this.$store.state; 
@@ -240,13 +269,17 @@ export default {
           url: conferenceRoom.url, // `https://feynman.daily.co/${'Ly77BmJeKWudV1FJISnD'}`,
           userName: this.sessionID
         }); 
-        if (this.isDestroyed) this.leaveConferenceRoom(); 
-        else {
+        if (this.isDestroyed) { 
+          // case 2 (non-sequential): the user joined this room but left before 
+          // the join request even finished; now that it has finished, we clean up the room immediately
+          this.leaveConferenceRoom();
+        } else {
           this.$store.commit("SET_CONNECTION_STATUS", "CONNECTED");
           this.$store.commit("SET_CAN_HEAR_AUDIO", true);
         }
       } catch (error) {
         this.$store.commit("SET_CONNECTION_STATUS", "ERROR");
+        console.error(error);
       } 
     },
     toggleMic () {
@@ -272,10 +305,13 @@ export default {
       this.cleanUpCallObject();
     },
     async cleanUpCallObject () {
+      console.log("meeting sate =", this.CallObject.meetingState()); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTING"); 
       await this.CallObject.leave(); 
+      console.log("after leaving, CallObject =", this.CallObject.meetingState());
       this.$store.commit("SET_PARTICIPANTS", {}); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTED");
+      console.log("exited room =", this.roomID);
     }
   }
 };

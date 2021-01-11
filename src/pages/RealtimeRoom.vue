@@ -7,7 +7,9 @@
       :classID="classID"
     />
 
-    <DailyVideoConferenceRoom/>
+    <DailyVideoConferenceRoom
+      :roomID="roomId"
+    />
 
     <!-- For wiping all the blackboards -->
     <v-dialog v-model="isWipeBoardsPopupOpen">
@@ -216,6 +218,11 @@
  * 
  * Because RealtimeRoom is rendered by a <router-view :key="$route..."/> component
  * it will be properly destroyed, and so its children components don't require destroy keys.
+ * 
+ * Note, $this.$route.room_id can be mutate. It gets mutated. 
+ * When you write modular code, you win against the most sophisticated and nuanced bugs that exist in the world. 
+ * You immediately kill all possibilities of anything. I can never emphasize enough.
+ * 
  */
 
 import firebase from "firebase/app";
