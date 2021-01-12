@@ -1,8 +1,35 @@
 <template>
-  <v-app>
+  <v-app>    
     <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
     <router-view/>
-    
+
+    <!-- Camera/Mic permission errors -->
+    <VideoTroubleshootPopup v-model="isShowingVideoTroubleshootPopup"/> 
+
+    <!-- General errors  -->
+    <div class="text-center">
+      <v-dialog v-model="isShowingGeneralErrorPopup">
+        <v-card width="500">
+          <v-card-title class="headline">
+            An unusual error occured
+          </v-card-title>
+          <v-card-text>
+            {{ feedbackForUser }}
+
+            <p>Try the general fixes:</p>
+            <ol>
+              <li>Reload the page</li> 
+              <li>Close the page entirely, then open a new one</li> 
+              <li>Ensure you use iPad Safari or desktop Chrome</li>
+              <li>Clear cookies and cache</li>
+              <li>Restart your computer</li>
+              <li>Email eltonlin@mit.edu or Facetime +503 250 3868</li>
+            </ol>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
+
     <v-snackbar v-model="snackbar" timeout="1500">
       {{ snackbarMessage }}
       <template v-slot:action>
@@ -23,6 +50,7 @@ import firebase from "firebase/app";
 import "firebase/storage"; 
 import Vue from "vue"; 
 import _ from "lodash"; 
+import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
 
 const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
@@ -35,20 +63,27 @@ export default {
     musicAudioElement: null,
 
     // Daily Video Conference API 
-    firestoreIDToDailyID: {}
+    firestoreIDToDailyID: {},
+    isShowingVideoTroubleshootPopup: false,
+    isShowingGeneralErrorPopup: false,
+    feedbackForUser: ""
   }),
+  components: {
+    VideoTroubleshootPopup
+  },
   computed: {
     CallObject () { return this.$store.state.CallObject; },
     participants () { return this.$store.state.participants },
     sessionID () { return this.$store.state.session.currentID }
   },
   async created () {
-    // initialize CallObject (consumed by DailyVideoConferenceRoom) lightweight is very important for MIT instructors
+    // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
     this.CallObject.setBandwidth({
       kbs: 20,
       trackConstraints: { width: 320, height: 180, frameRate: 20 }
     });
 
+    // initialize event listeners (documentation: https://docs.daily.co/reference#events)
     const ONE_HUNDRED_MILLISECONDS = 100; 
     for (const event of PARTICIPANT_EVENTS) {
       this.CallObject.on(event, _.debounce(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS)); 
@@ -57,6 +92,30 @@ export default {
     this.CallObject.on("track-stopped", this.unmountTrack);
     this.CallObject.on("active-speaker-change", ({ activeSpeaker }) => {
       this.$store.commit("SET_ACTIVE_SPEAKER_DAILY_ID", activeSpeaker.peerId);
+    });
+
+    // handle specifically because it's common for users to use Zoom 
+    this.CallObject.on("camera-error", (payload) => {
+      this.isShowingVideoTroubleshootPopup = true; 
+      console.error(payload); 
+      console.log("CallObject state =", this.CallObject.meetingState()); 
+    });
+
+    // general errors
+    this.CallObject.on("load-attempt-failed", ({ action, errorMsg }) => {
+      this.isShowingGeneralErrorPopup = true; 
+      this.feedbackForUser = action + ": " + errorMsg; 
+    }); 
+    this.CallObject.on("error", ({ action, errorMsg }) => {
+      this.isShowingGeneralErrorPopup = true; 
+      this.feedbackForUser = action + ": " + errorMsg; 
+    });
+    
+    // TODO: refactor
+    this.$root.$on("error-joining-conference-room", (error) => {
+      this.isShowingGeneralErrorPopup = true; 
+      this.feedbackForUser = error.message; 
+      console.error(error); 
     });
 
     this.$root.$on("show-snackbar", (message) => {

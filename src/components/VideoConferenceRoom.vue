@@ -80,7 +80,8 @@
                 </template>
 
                 <template v-else-if="connectionStatus === 'ERROR'">
-                  TODO: show troubleshoot popup
+                  <p class="red--text">ERROR</p> 
+                  <!-- TODO: show troubleshoot popup -->
                 </template>
               </div>
               <!-- End of video section (2nd of the 3 items) -->
@@ -132,24 +133,11 @@
 </template>
 
 <script>
-/**
- * TEST with 5 friends: move fast between rooms 
- * 
- * TODO: explicit error messages (use event handlers perhaps)
- *    Error getting camera/mic stream PermissionDeniedError
- *    Fails silently
- *    Having to restart the computer
- *    Clear Cookies and cache
- * 
+/** 
  * KNOWN ISSUES: 
- *   - Clear cookies and cache
  *   - Status breakpoints: error
- *   - Explicit error handling 
  *   - Sometimes the laptop just keeps loading infinitely
- *   - 
- *   - Consistent video constraints / aspect ratios no matter the device size (notice in console it wasn't changed);
- * 
- * Call to get user media (constraints)
+ *   - Inconsistent video constraints / aspect ratios: investigate user media constraints
  * 
  * The reason it's so important to work both hard and smart is that, a startup is is an unpredictable stream of tasks requiring different resources. 
  * If you are not completely constrained on the tasks, you can defer them until a better time to increase efficiency. 
@@ -172,7 +160,8 @@ export default {
   data () {
     return {
       isDestroyed: false,
-      isSharingScreen: false
+      isSharingScreen: false,
+      connectionFailureDetector: null
     };
   },
   computed: {
@@ -255,6 +244,12 @@ export default {
       });
     },
     async joinConferenceRoom () {
+      const FIFTEEN_SECONDS_IN_MILLISECONDS = 15 * 1000; 
+      this.connectionFailureDetector = setTimeout(() => {
+        this.$root.$emit("error-joining-conference-room", { message: "Connection timed out after 15 seconds"})
+        console.error("CAN'T CONNECT DESPITE 15 seconds"); 
+      }, FIFTEEN_SECONDS_IN_MILLISECONDS);
+
       console.log("joinConferenceRoom(), roomID =", this.roomID);
       // quickfix
       if (this.$store.state.isMusicPlaying) {
@@ -280,7 +275,10 @@ export default {
       } catch (error) {
         this.$store.commit("SET_CONNECTION_STATUS", "ERROR");
         console.error(error);
-      } 
+        this.$root.$emit("error-joining-conference-room", error); 
+      } finally {
+        clearTimeout(this.connectionFailureDetector); 
+      }
     },
     toggleMic () {
       this.CallObject.setLocalAudio(! this.isMicOn);
@@ -320,9 +318,10 @@ export default {
 <style>
 .video-overlay {
   position: absolute;
-  bottom: 0;
+  top: 132px;
+  /* bottom: 0px; */
   background-color: white;
-  opacity: 0.7;
+  opacity: 0.8;
   width: 100%;
   z-index: 5;
 }

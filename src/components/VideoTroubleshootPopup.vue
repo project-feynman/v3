@@ -10,21 +10,32 @@
 
       <v-card>
         <v-card-title class="headline">
-          Error connecting audio...
+          Unable to access your camera/mic
         </v-card-title>
 
         <v-card-text>
-          <p>How to fix</p>
+          <p style="font-size: 1.3rem;">How to fix</p>
+          <ol style="font-size: 1rem;">
+            <li><b>Turn off camera on Zoom</b></li>
+            <li><b>Allow access to camera/mic</b>: look for an icon near the URL bar</li>
+          </ol>
+
+          <br>
+          
+          <p>If problem remains, try the general fixes:</p>
           <ol>
-            <li>Ensure you gave permission to mic: look for an icon somewhere around the URL bar</li>
-            <li>Open a fresh page for Explain</li>
-            <li>If problems persist, you can email me eltonlin@mit.edu or Facetime me at +503 250 3868 and we can solve it together.</li>
+            <li>Reload the page</li> 
+            <li>Close the page entirely, then open a new one</li> 
+            <li>Ensure you use iPad Safari or desktop Chrome</li>
+            <li>Clear cookies and cache</li>
+            <li>Restart your computer</li>
+            <li>Email eltonlin@mit.edu or Facetime +503 250 3868</li>
           </ol>
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
           <v-btn text @click="$emit('input', false)">
-            Got it.
+            OK
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -33,6 +44,11 @@
 </template>
 
 <script>
+/**
+ * Helps the user fix the issue. 
+ */
+
+
 export default {
   props: {
     value: {

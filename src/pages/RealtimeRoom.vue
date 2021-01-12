@@ -7,7 +7,7 @@
       :classID="classID"
     />
 
-    <DailyVideoConferenceRoom
+    <VideoConferenceRoom
       :roomID="roomId"
     />
 
@@ -236,7 +236,7 @@ import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.vue";
 import { getRandomId } from "@/helpers.js";
-import DailyVideoConferenceRoom from "@/components/DailyVideoConferenceRoom.vue";
+import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 
 export default {
   props: {
@@ -257,7 +257,7 @@ export default {
     BaseButton,
     BaseIconButton,
 
-    DailyVideoConferenceRoom
+    VideoConferenceRoom
   },
   mixins: [
     DatabaseHelpersMixin
