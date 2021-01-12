@@ -196,6 +196,10 @@
         <v-tab-item v-for="(boardID, i) in room.blackboards"
           :value="boardID" :key="i"
         >
+          <!-- Screensharing becomes the background of the blackboard -->
+          <div id="screenshare-container" style="position: relative;">
+
+          </div>
           <RealtimeBlackboard v-if="boardID === activeBoardID"
             :blackboardRef="blackboardRefs[i]"
           >

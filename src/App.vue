@@ -52,6 +52,8 @@ import Vue from "vue";
 import _ from "lodash"; 
 import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
 
+// https://gist.github.com/kwindla/9fd662a83e190e6dd003869282ff0d99
+
 const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
 export default {
@@ -153,6 +155,28 @@ export default {
     async mountNewTrack ({ track, participant }) {
       switch (track.kind) {
         case "video": 
+          if (this.isScreenTrack(track)) {
+            // not DRY code 
+            const v = document.createElement("video"); 
+            v.srcObject = new MediaStream([track]);
+            v.setAttribute("id", "screenshare" + participant.user_id); 
+            v.setAttribute("muted", true); 
+            v.setAttribute("autoplay", true); 
+            v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
+            v.style.width = "100%"; 
+            v.setAttribute("position", "relative");
+
+            v.setAttribute("z-index", 100000); // not great
+
+            // handle it like screen tracks
+            document.getElementById("screenshare-container").appendChild(v); 
+            console.log("added screen track"); 
+            break; // quickfix so I don't have to indent the rest of the video code
+          }
+          console.log("look for a way to differentiate between a camera and screen track"); 
+          console.log("video track =", track); 
+          // console.log("track.kind() =", track.kind());
+
           const v = document.createElement("video"); 
           v.srcObject = new MediaStream([track]);
           v.setAttribute("id", "video" + participant.user_id); 
@@ -160,9 +184,10 @@ export default {
           v.setAttribute("autoplay", true); 
           v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
           
-          v.setAttribute("width", 215); 
-          v.setAttribute("height", 145); 
-          v.setAttribute("position", "relative");
+          v.style.width = "100%"; 
+          // v.setAttribute("width", 215); 
+          // v.setAttribute("height", 145); 
+          // v.setAttribute("position", "relative");
           v.setAttribute("z-index", 2); // not great
 
           // v.addEventListener("resize", ({ target }) => {
@@ -205,13 +230,25 @@ export default {
     async unmountTrack ({ track, participant }) {
       switch (track.kind) {
         case "video":
-          document.getElementById("video" + participant.user_id).remove();
+          if (this.isScreenTrack(track)) {
+            const screenElem = document.getElementById("screen" + participant.user_id);
+            if (screenElem) screenElem.remove(); 
+          } else {
+            const videoElem = document.getElementById("video" + participant.user_id);
+            if (videoElem) videoElem.remove();
+          }
           break;
         case "audio": 
           if (participant.local) return; 
           document.getElementById("audio" + participant.user_id).srcObject = null;
           break;
       }
+    },
+    isScreenTrack (track) {
+      // screen:0:0
+      // window:263938:1
+      // web-contents-media-stream://556:4
+      return ["screen", "window"].includes(track.label.substring(0, 6));
     }
   }
 }
@@ -241,7 +278,6 @@ div.v-snack:not(.v-snack--absolute) {
 }
 
 /* For the hint text under touch draw */
-
 .v-input__control .v-messages {
   font-size: 8px !important; 
   color: white !important;
