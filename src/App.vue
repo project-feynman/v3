@@ -170,13 +170,11 @@ export default {
             v.setAttribute("autoplay", true); 
             v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
             v.style.width = "100%"; 
-            v.setAttribute("position", "relative");
 
             v.setAttribute("z-index", 100000); // not great
 
             // handle it like screen tracks
             document.getElementById("screenshare-container").appendChild(v); 
-            console.log("added screen track"); 
             break; // quickfix so I don't have to indent the rest of the video code
           }
           console.log("look for a way to differentiate between a camera and screen track"); 
@@ -237,7 +235,7 @@ export default {
       switch (track.kind) {
         case "video":
           if (this.isScreenTrack(track)) {
-            const screenElem = document.getElementById("screen" + participant.user_id);
+            const screenElem = document.getElementById("screenshare" + participant.user_id);
             if (screenElem) screenElem.remove(); 
           } else {
             const videoElem = document.getElementById("video" + participant.user_id);

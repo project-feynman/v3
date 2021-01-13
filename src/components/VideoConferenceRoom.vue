@@ -192,16 +192,12 @@ export default {
           this.joinConferenceRoom(); 
         }
       }
-    },
-    // participants () {
-    //   console.log("participants =", this.participants);
-    // }
+    }
   },
  async destroyed () {
     this.isDestroyed = true; 
     // case 1 (sequential): the user leaves after connection has been resolved
     if (this.connectionStatus === "CONNECTED") {
-      console.log("sequential case"); 
       this.cleanUpCallObject(); 
     }
     // otherwise, as soon as the user connects to the room via `joinConferenceRoom`, 
@@ -250,7 +246,6 @@ export default {
         console.error("CAN'T CONNECT DESPITE 15 seconds"); 
       }, FIFTEEN_SECONDS_IN_MILLISECONDS);
 
-      console.log("joinConferenceRoom(), roomID =", this.roomID);
       // quickfix
       if (this.$store.state.isMusicPlaying) {
         const { musicAudioElement } = this.$store.state; 
@@ -303,13 +298,10 @@ export default {
       this.cleanUpCallObject();
     },
     async cleanUpCallObject () {
-      console.log("meeting sate =", this.CallObject.meetingState()); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTING"); 
       await this.CallObject.leave(); 
-      console.log("after leaving, CallObject =", this.CallObject.meetingState());
       this.$store.commit("SET_PARTICIPANTS", {}); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTED");
-      console.log("exited room =", this.roomID);
     }
   }
 };

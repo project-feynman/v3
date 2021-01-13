@@ -197,7 +197,7 @@
           :value="boardID" :key="i"
         >
           <!-- Screensharing becomes the background of the blackboard -->
-          <div id="screenshare-container" style="position: relative;">
+          <div id="screenshare-container" style="position: fixed; z-index: 1;">
 
           </div>
           <RealtimeBlackboard v-if="boardID === activeBoardID"
