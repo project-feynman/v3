@@ -8,24 +8,30 @@
 
     <!-- General errors  -->
     <div class="text-center">
-      <v-dialog v-model="isShowingGeneralErrorPopup">
-        <v-card width="500">
+      <v-dialog v-model="isShowingGeneralErrorPopup" width="500">
+        <v-card>
           <v-card-title class="headline">
             An unusual error occured
           </v-card-title>
           <v-card-text>
-            {{ feedbackForUser }}
+            <p>{{ feedbackForUser }}<p>
 
             <p>Try the general fixes:</p>
             <ol>
-              <li>Reload the page</li> 
-              <li>Close the page entirely, then open a new one</li> 
+              <li>Reload the page (80% success rate)</li> 
+              <li>Close the page entirely, then open a new one (90% success rate)</li> 
+              <li>Clear cookies and cache (95% success rate)</li>
+              <li>Restart your computer (99% success rate)</li>
               <li>Ensure you use iPad Safari or desktop Chrome</li>
-              <li>Clear cookies and cache</li>
-              <li>Restart your computer</li>
               <li>Email eltonlin@mit.edu or Facetime +503 250 3868</li>
             </ol>
           </v-card-text>
+          <v-card-actions>
+            <v-spacer/>
+            <v-btn text @click="isShowingGeneralErrorPopup = false">
+              OK
+            </v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
     </div>

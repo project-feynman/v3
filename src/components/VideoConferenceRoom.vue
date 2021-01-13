@@ -318,7 +318,7 @@ export default {
 <style>
 .video-overlay {
   position: absolute;
-  top: 132px;
+  top: 116px;
   /* bottom: 0px; */
   background-color: white;
   opacity: 0.8;

@@ -16,7 +16,7 @@
             <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
             <v-list-item-content class="py-0">
               <div style="display: flex; align-items: center;">
-                <div class="ml-4">
+                <div class="ml-3">
                   <div v-if="roomType.id !== sectionID" 
                     style="
                       font-size: 0.95rem; 

@@ -13,7 +13,7 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="pt-3 pl-3">    
+      <v-sheet class="pt-3 pl-2">    
         <div style="display: flex;">
           <v-list-item-avatar @click="$router.push('/')" tile width="47" height="42" style="cursor: pointer;" class="ma-0">
             <img src="/logo.png">
@@ -38,10 +38,10 @@
             persistent
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text" color="grey" rounded>
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
                 <!-- orange--text -->
                 <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
-                <div style="font-size: 0.85rem; 
+                <div style="font-size: 0.9rem; 
                             font-weight: 500; 
                             color: '#424242'; 
                             opacity: 0.9;
@@ -75,10 +75,10 @@
             persistent
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="mr-2 white--text grey" rounded>
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-1 mr-2 white--text grey px-3">
                 <!-- purple--text -->
                 <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-bookshelf</v-icon>
-                <div style="font-size: 0.85rem; 
+                <div style="font-size: 0.9rem; 
                       font-weight: 500; 
                       color: '#424242'; 
                       opacity: 0.9;
@@ -114,7 +114,7 @@
           dense
         />
       </v-row> -->  
-      <portal-target name="side-drawer" style="margin-top: 22px;">
+      <portal-target name="side-drawer" style="margin-top: 35px;">
 
       </portal-target>
     </v-navigation-drawer>
