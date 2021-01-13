@@ -11,7 +11,7 @@
 
       <template v-for="client in allClients">
         <!-- TODO: rename "id" -->
-        <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="mt-2">
+        <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="mt-1">
           <div style="display: flex; justify-content: space-between; align-items: center; height: 30px; padding-left: 12px; padding-right: 0;"
             :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
               (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
@@ -309,8 +309,8 @@ export default {
 
 <style>
 .video-overlay {
-  position: absolute;
-  top: 116px;
+  /* position: absolute; */
+  /* top: 116px; */
   /* bottom: 0px; */
   background-color: white;
   opacity: 0.8;

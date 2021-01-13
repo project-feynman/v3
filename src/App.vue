@@ -161,58 +161,27 @@ export default {
     async mountNewTrack ({ track, participant }) {
       switch (track.kind) {
         case "video": 
-          if (this.isScreenTrack(track)) {
-            // not DRY code 
-            const v = document.createElement("video"); 
-            v.srcObject = new MediaStream([track]);
-            v.setAttribute("id", "screenshare" + participant.user_id); 
-            v.setAttribute("muted", true); 
-            v.setAttribute("autoplay", true); 
-            v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
-            v.style.width = "100%"; 
-
-            v.setAttribute("z-index", 100000); // not great
-
-            // handle it like screen tracks
-            document.getElementById("screenshare-container").appendChild(v); 
-            break; // quickfix so I don't have to indent the rest of the video code
-          }
-          console.log("look for a way to differentiate between a camera and screen track"); 
-          console.log("video track =", track); 
-          // console.log("track.kind() =", track.kind());
-
           const v = document.createElement("video"); 
           v.srcObject = new MediaStream([track]);
-          v.setAttribute("id", "video" + participant.user_id); 
+          v.setAttribute("id", track.id);
           v.setAttribute("muted", true); 
           v.setAttribute("autoplay", true); 
           v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
-          
           v.style.width = "100%"; 
-          // v.setAttribute("width", 215); 
-          // v.setAttribute("height", 145); 
-          // v.setAttribute("position", "relative");
           v.setAttribute("z-index", 2); // not great
-
-          // v.addEventListener("resize", ({ target }) => {
-          //   const v = target; 
-          //   const w = v.videoWidth;
-          //   const h = v.videoHeight;
-          //   console.log('w =', w); 
-          //   console.log("h =", h);
-          //   if (w && h) {
-          //     console.log("style.width =", v.style.width);
-          //     console.log("w =", w);
-          //     v.style.width = w;
-          //     v.style.height = h;
-          //   }
-          // }, false);
-
-          if (! participant.user_name) { // user_name maps to sessionID 
+          
+          if (this.isScreenTrack(track, participant)) {
+            document.getElementById("screenshare-container").appendChild(v); 
+          } 
+          else if (! participant.user_name) {  
+            // handles edge case that when joining initially, user_name is not populated by Daily API
+            // user_name maps to sessionID
             document.getElementById("my-local-video").appendChild(v); 
-          } else if (participant.user_name === this.sessionID) { // TODO: refactor. Handles the case where I re-share my camera, but now my user_name is defined
+          } 
+          else if (participant.user_name === this.sessionID) { // TODO: refactor. Handles the case where I re-share my camera, but now my user_name is defined
             document.getElementById("my-local-video").appendChild(v); 
-          } else { 
+          } 
+          else { 
             document.getElementById(participant.user_name).appendChild(v);
           }
           break; 
@@ -232,23 +201,14 @@ export default {
       }
     },
     async unmountTrack ({ track, participant }) {
-      switch (track.kind) {
-        case "video":
-          if (this.isScreenTrack(track)) {
-            const screenElem = document.getElementById("screenshare" + participant.user_id);
-            if (screenElem) screenElem.remove(); 
-          } else {
-            const videoElem = document.getElementById("video" + participant.user_id);
-            if (videoElem) videoElem.remove();
-          }
-          break;
-        case "audio": 
-          if (participant.local) return; 
-          document.getElementById("audio" + participant.user_id).srcObject = null;
-          break;
+      const trackElement = document.getElementById(track.id); 
+      if (trackElement) { // sometimes the trackElement unexpectedly doesn't exist, though the error is harmless
+        trackElement.srcObject = null; 
+        trackElement.remove(); 
       }
     },
-    isScreenTrack (track) {
+    isScreenTrack (track, participant) {
+      if (participant) if (participant.screen && participant.screenVideoTrack.id === track.id) return true; 
       // screen:0:0
       // window:263938:1
       // web-contents-media-stream://556:4
