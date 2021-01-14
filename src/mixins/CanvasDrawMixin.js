@@ -49,9 +49,9 @@ export default {
         /* avoid the "tainted canvas may not be exported" error
             https://stackoverflow.com/questions/22710627/tainted-canvases-may-not-be-exported */
         image.crossOrigin="anonymous";
-        
+
         image.onload = () => { 
-          this.bgCtx.drawImage(image, 0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
+          this.bgCtx.drawImage(image, 0, 0); // (0, 0) specifies the top-left corner of the image
           resolve();
         };
       });

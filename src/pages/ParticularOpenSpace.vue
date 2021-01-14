@@ -3,10 +3,11 @@
     <!-- REPLACE THE TITLE IN ALL OPEN SPACES (BECAUSE WE LISTEN TO THE ROOMTYPE DOC HERE) -->
     <portal to="room-type-name">
       <div style="
-        font-size: 1rem; 
-        font-weight: 400; 
-        color: '#424242' }; 
-        opacity: 70% };
+        font-size: 0.95rem; 
+        font-weight: 500; 
+        color: '#424242'; 
+        opacity: 80%;
+        text-transform: uppercase
       ">
         {{ roomTypeDoc.name }}
       </div>
@@ -24,13 +25,41 @@
 
         <v-list>
           <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
-            <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
+            <v-icon left color="orange">mdi-bullhorn</v-icon> Make announcement
           </v-list-item>
 
-          <BasePopupButton>
+          <!-- <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
+            <v-icon left color="orange">mdi-volume-mute</v-icon> Mute everyone
+          </v-list-item> -->
+
+          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+            <template v-slot:activator-button="{ on, openPopup }">
+              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                <v-icon left color="orange">mdi-shuffle-variant</v-icon> Shuffle everyone
+              </v-list-item>
+            </template>
+            <template v-slot:message-to-user>
+              <v-row>
+                <v-col cols="12" sm="4">
+                  <v-overflow-btn 
+                    label="3"
+                    :items="[2, 3, 4, 5]"
+                    @change="groupSize => groupSize = groupSize"
+                  />
+                </v-col>
+                <v-col>
+                  <h3 class="mt-5">
+                    people per group
+                  </h3>
+                </v-col>
+              </v-row>
+            </template> 
+          </BasePopupButton>
+
+           <BasePopupButton>
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
-                <v-icon left color="black">mdi-file-pdf</v-icon> Set problem
+                <v-icon left color="blue">mdi-file-pdf</v-icon> Add PDF to every table
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -67,38 +96,16 @@
             </template>
           </BasePopupButton>
 
-          <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
-            <v-icon left>mdi-volume-mute</v-icon> Mute everyone
+          <!-- TODO: enable only the creators to change their own open spaces -->
+          <!-- Rename Area-->
+          <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
+            <v-icon class="mr-2" color="blue">mdi-pencil</v-icon> Rename area
           </v-list-item>
-
-          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
-            <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="black">mdi-shuffle-variant</v-icon> Shuffle everyone
-              </v-list-item>
-            </template>
-            <template v-slot:message-to-user>
-              <v-row>
-                <v-col cols="12" sm="4">
-                  <v-overflow-btn 
-                    label="3"
-                    :items="[2, 3, 4, 5]"
-                    @change="groupSize => groupSize = groupSize"
-                  />
-                </v-col>
-                <v-col>
-                  <h3 class="mt-5">
-                    people per group
-                  </h3>
-                </v-col>
-              </v-row>
-            </template> 
-          </BasePopupButton>
 
           <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="red">mdi-delete</v-icon> Wipe all boards
+                <v-icon left color="red">mdi-delete</v-icon> Wipe boards in every table
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -107,20 +114,10 @@
             </template> 
           </BasePopupButton>
 
-          <v-list-item v-if="rooms.length !== 0" @click="createNewRoom()">
-            <v-icon left color="purple">mdi-plus</v-icon> New room
-          </v-list-item>
-
-          <!-- TODO: enable the creators to change their own open spaces -->
-          <!-- Rename the open space -->
-          <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
-            <v-icon class="mr-2">mdi-pencil</v-icon> Rename open space
-          </v-list-item>
-
           <!-- Delete open space -->
           <!-- Don't let anyone delete the lobby section -->
           <v-list-item :disabled="!isAdmin || (roomTypeDoc.id === classID)" @click="isDeletePopupOpen = true">
-            <v-icon class="mr-2" color="red">mdi-delete</v-icon> Delete open space
+            <v-icon class="mr-2" color="red">mdi-delete</v-icon> Delete area
           </v-list-item>
         </v-list>
       </v-menu>
@@ -148,6 +145,7 @@
     <!-- Selectable *should* allow v-chip to be copied and pasted, but it's currently not doing anything -->
   
     <!-- ROOMS -->
+  <v-list>
      <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       active-class="active-blackboard accent--text"
@@ -158,26 +156,25 @@
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
-          <v-row class="d-flex pl-5 pr-3" align="center">
-            <div v-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              common table
-            </div>
-            
-            <div v-else-if="room.name" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
+          <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
+            <div v-if="room.name" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               {{ room.name }}
             </div>
 
+            <div v-else-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
+              common table
+            </div>
+                  
             <div v-else class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              table {{ i - 1 }}
+              table {{ i }}
             </div>
 
             <v-spacer/>
 
-            <!-- TODO: rename to "room-action-buttons" -->
-            <portal-target name="current-room-buttons" class="">
+            <portal-target name="table-level-actions">
           
             </portal-target>
-          </v-row>
+          </div>
 
           <div class="d-flex pl-2" style="max-width: 175px;">
             <v-chip v-if="room.status" color="blue" class="mt-1" small outlined>
@@ -187,49 +184,44 @@
             <v-spacer/>
           </div>
 
-          <portal-target name="my-control-buttons"/>
+          <portal-target name="current-room-participants">
 
-          <portal-target name="my-video-conference-buttons"/>
-
-          <portal-target name="library-popup-button"/>
-
-          <portal-target name="current-room-participants"/>
+          </portal-target>
         </div>
       </template>
 
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex ml-3 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 90%">
-            <div v-if="room.isCommonRoom">
-              common table
-            </div>
-
-            <div v-else-if="room.name">
+          <div class="d-flex pl-2 py-1 mt-2 font-weight-normal text--secondary" style="font-size: 0.95em; opacity: 90%">
+            <div v-if="room.name">
               {{ room.name }}
             </div>
 
+            <div v-else-if="room.isCommonRoom">
+              common table
+            </div>
+
             <div v-else>
-              table {{ i - 1 }}
+              table {{ i }}
             </div>
           </div>
           <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
             {{ room.status }}
           </v-chip>
 
-          <div class="pl-5 pr-2 pb-1 pt-1">
-            <v-row v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-              align="center"
-              style="font-weight: 400; font-size: 0.9em; opacity: 70%"
-              class="text--secondary mb-1 d-flex caption"
+          <div class="pr-2 pb-1 pt-1">
+            <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+              style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em; opacity: 70%"
+              class="text--secondary mb-1 caption"
             >
-              <div class="ml-2">{{ p.firstName + " " + p.lastName }}</div>
+              <div style="padding-left: 12px;">{{ p.firstName + " " + p.lastName }}</div>
 
               <v-spacer/>
               
               <div class="ml-2 mr-4">
                 <v-icon v-if="p.canHearAudio" small color="green">
-                  mdi-phone-check
+                  mdi-video
                 </v-icon>
 
                 <v-icon v-if="p.isMusicPlaying" small color="cyan">
@@ -243,13 +235,22 @@
                   mdi-forum
                 </v-icon>
 
-                {{ "#" + p.currentBoardNumber }} 
+                {{ p.currentBoardNumber }} 
               </div>
-            </v-row>
+            </div>
           </div>
         </div>
       </template>
-    </v-list-item>   
+    </v-list-item> 
+
+    <v-list-item v-if="rooms.length !== 0 && rooms.length < 12" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 50%; font-size: 0.9rem;"> 
+      <v-icon left color="black">mdi-plus</v-icon> new table 
+    </v-list-item>
+
+  </v-list>
+
+    <!--  to create a gap between the last room and the bottom boundary of the area -->
+    <div class="mb-1"></div>  
 
     <portal to="main-content">
       <router-view :key="$route.params.section_id + $route.params.room_id"/>
@@ -354,21 +355,11 @@ export default {
     ...mapGetters([
       "isAdmin"
     ]),
-    classID () {
-      return this.$route.params.class_id; 
-    },
-    sessionID () {
-      return this.session.currentID;
-    },
-    sectionID () {
-      return this.$route.params.section_id;
-    },
-    isInRoom () { 
-      return "room_id" in this.$route.params; 
-    },
-    currentRoomID () {
-      return this.$route.params.room_id;
-    },
+    classID () { return this.$route.params.class_id; },
+    sessionID () { return this.session.currentID; },
+    sectionID () { return this.$route.params.section_id; },
+    isInRoom () { return "room_id" in this.$route.params; },
+    currentRoomID () { return this.$route.params.room_id; },
     sortedRooms () {
       return [
         ...this.rooms.filter(room => room.isCommonRoom), 
@@ -392,13 +383,13 @@ export default {
       immediate: true,
       handler: _.debounce(function () {
         this.updateRoomIDToParticipants();
-      }, 450)
+      }, 1000)
     },
     rooms: {
       immediate: true,
       handler: _.debounce(function () {
         this.updateRoomIDToParticipants();
-      }, 450)
+      }, 1000)
     },
     "roomTypeDoc.roomAssignmentsCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {

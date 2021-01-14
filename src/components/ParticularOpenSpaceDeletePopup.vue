@@ -2,11 +2,11 @@
   <v-dialog :value="isDeletePopupOpen" width="500px">
     <v-card>
       <v-card-title>
-        Delete this open space
+        Delete current area
       </v-card-title>    
 
       <v-card-text>
-        Are you sure you want to delete this open space, as well as all the rooms that it contains?
+        Are you sure you want to delete this area and all its tables?
         <v-text-field v-model="whatUserTyped" label="Type 'CONFIRM DELETE'"/>
       </v-card-text>
 

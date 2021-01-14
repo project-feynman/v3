@@ -90,7 +90,7 @@ export default {
           firstName,
           lastName,
           kind: kind ? kind : null,
-          enrolledClasses: [{ id: exampleClassID, name: "Example class", description: "For new users to explore" }]
+          enrolledClasses: [{ id: exampleClassID, name: "0.000", description: "For new users to explore" }]
         });
         resolve();
       });

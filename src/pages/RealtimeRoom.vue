@@ -7,11 +7,8 @@
       :classID="classID"
     />
 
-    <RealtimeSpaceTwilioRoom 
+    <VideoConferenceRoom
       :roomID="roomId"
-      :willMuteByDefault="true"
-      :key="incrementToDestroyComponent"
-      @disconnect="incrementToDestroyComponent += 1"
     />
 
     <!-- For wiping all the blackboards -->
@@ -108,7 +105,7 @@
       </v-card>
     </v-dialog>
 
-    <portal to="current-room-buttons">
+    <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
       <v-menu v-model="isMenuOpen" offset-y bottom>
@@ -123,17 +120,17 @@
           <v-list-item @click="isRoomStatusPopupOpen = true">
             <v-icon left color="blue">mdi-message-alert</v-icon> Update status
           </v-list-item>
-          <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
-            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe strokes
-          </v-list-item>
-          <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
-            <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe PDFs
+          <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
+            <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
           </v-list-item>
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
-            <v-icon left color="purple">mdi-content-save-all</v-icon> Save boards
+            <v-icon left color="purple">mdi-content-save-all</v-icon> Save sequence of boards
           </v-list-item>
-          <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
-            <v-icon left color="black">mdi-pencil</v-icon> Rename room
+          <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
+            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe all pen strokes
+          </v-list-item>
+          <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
+            <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
           </v-list-item>
         </v-list>
       </v-menu>
@@ -143,6 +140,51 @@
     <portal-target name="destination">
     
     </portal-target>
+
+
+      <portal to="right-side-of-my-participant-name">
+        <!-- For switching between different blackboards -->
+        <!-- item-color:  -->
+        <!-- active-class:  -->
+        <!-- hide-details: eliminates unnecessary bottom padding -->
+        <div v-if="room" class="d-flex">
+          <div v-if="activeBoardID">
+            <v-menu v-model="isBoardsMenuOpen" fixed offset-y bottom>
+              <template v-slot:activator>
+                <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-0" 
+                  style="text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400" max-width="180"
+                >
+                  <!-- The board switch button looks like a blackboard itself -->
+                  <span class="d-inline-block text-truncate white--text" 
+                        style="width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)">
+                    {{ getBoardNumberFromID(activeBoardID) }}
+                  </span>
+                  <v-spacer/>
+                  <v-icon>mdi-menu-down</v-icon>
+                </v-btn>
+              </template>
+
+              <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
+                <template v-for="boardID in room.blackboards">
+                  <v-list-item 
+                    @click="activeBoardID = boardID"
+                    :key="boardID"
+                    style="background-color: rgb(62, 66, 66);"
+                    class="px-0"
+                  >
+                    <div style="margin: auto;" class="white--text">{{ getBoardNumberFromID(boardID) }}</div>
+                  </v-list-item>
+                  <v-divider class="white--text" :key="boardID + 'divider'"/>
+                </template>
+
+                <BaseButton @click="createNewBoard()" icon="mdi-plus" color="grey darken-2">
+                  New board
+                </BaseButton>
+              </v-list>
+            </v-menu>
+          </div>
+        </div>
+      </portal>
 
     <!-- The actual blackboards -->
     <div id="room" class="room-wrapper">
@@ -154,6 +196,10 @@
         <v-tab-item v-for="(boardID, i) in room.blackboards"
           :value="boardID" :key="i"
         >
+          <!-- Screensharing becomes the background of the blackboard -->
+          <div id="screenshare-container" style="position: fixed; z-index: 1;">
+
+          </div>
           <RealtimeBlackboard v-if="boardID === activeBoardID"
             :blackboardRef="blackboardRefs[i]"
           >
@@ -162,36 +208,6 @@
                 :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
                 color="white" small hasLargeIcon
               />
-
-              <!-- For switching between different blackboards -->
-              <!-- item-color:  -->
-              <!-- active-class:  -->
-              <!-- hide-details: eliminates unnecessary bottom padding -->
-              <div v-if="room" class="d-flex mx-2">
-                <div v-if="activeBoardID" style="width: 60px">
-                  <v-select 
-                    dense
-                    :value="activeBoardID"
-                    :items="room.blackboards"
-                    @change="(id) => activeBoardID = id"
-                    hide-details
-                    item-color="accent"
-                  >
-                    <!-- Override default behavior: show the board number instead of the blackboardID -->
-                    <template v-slot:selection="{ item }">
-                      <p class="mb-0 white--text">{{ "#" + getBoardNumberFromID(item) }}</p>
-                    </template>
-                    <template v-slot:item="{ item }">
-                      <p>{{ "#" + getBoardNumberFromID(item) }}</p>
-                    </template>
-                    <template v-slot:append-item>
-                      <BaseButton @click="createNewBoard()" icon="mdi-plus" small color="grey">
-                        New board
-                      </BaseButton>
-                    </template>
-                  </v-select>
-                </div>
-              </div>
             </template>
           </RealtimeBlackboard>
         </v-tab-item>
@@ -206,6 +222,11 @@
  * 
  * Because RealtimeRoom is rendered by a <router-view :key="$route..."/> component
  * it will be properly destroyed, and so its children components don't require destroy keys.
+ * 
+ * Note, $this.$route.room_id can be mutate. It gets mutated. 
+ * When you write modular code, you win against the most sophisticated and nuanced bugs that exist in the world. 
+ * You immediately kill all possibilities of anything. I can never emphasize enough.
+ * 
  */
 
 import firebase from "firebase/app";
@@ -219,7 +240,7 @@ import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.vue";
 import { getRandomId } from "@/helpers.js";
-import RealtimeSpaceTwilioRoom from "@/components/RealtimeSpaceTwilioRoom.vue";
+import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 
 export default {
   props: {
@@ -237,12 +258,13 @@ export default {
   components: {
     HandleUpdatingParticipants,
     RealtimeBlackboard,
-    RealtimeSpaceTwilioRoom,
     BaseButton,
-    BaseIconButton
+    BaseIconButton,
+
+    VideoConferenceRoom
   },
   mixins: [
-    DatabaseHelpersMixin,
+    DatabaseHelpersMixin
   ],
   data () {
     return {
@@ -264,7 +286,8 @@ export default {
       titleOfExplCollection: "",
       newRoomStatus: "",
       newRoomName: "",
-      currentBoardNumber: 1
+      currentBoardNumber: 1,
+      isBoardsMenuOpen: false
     }
   },
   computed: {
@@ -309,6 +332,11 @@ export default {
       this.activeBoardID = this.room.blackboards[0]; // TODO: perhaps it's not necessary and can be "naturally handled"
       this.snapshotListeners.push(unsubFunc);
     });
+
+    // TODO: refactor/modularize by finding a way to NOT use a root listener
+    this.$root.$on("teleport-to-board", (newBoardNumber) => {
+      this.activeBoardID =  this.room.blackboards[newBoardNumber - 1];
+    }); 
   },
   destroyed () {
     for (const detachListener of this.snapshotListeners) {
@@ -451,9 +479,8 @@ export default {
         roomRef.update({
           blackboards: firebase.firestore.FieldValue.arrayUnion(newID)
         })
-      ]);   
-      // await this.$nextTick(); // give time to re-compute boardsArray 
-      // this.activeBoardID = newID;
+      ]);  
+      this.activeBoardID = newID; 
     }
   }
 };

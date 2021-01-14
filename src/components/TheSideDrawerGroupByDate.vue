@@ -97,7 +97,7 @@ export default {
     weeksMounted: function (newVal) {
       if (newVal === true) {
         this.openedWeeks.push(0);
-        this.openThisWeek(this.weeks[0]); // This should have been handled by the watch hook on openedWeeks, but strangely doesn't
+        // this.openThisWeek(this.weeks[0]); // This should have been handled by the watch hook on openedWeeks, but strangely doesn't
       }
     },
   },
@@ -117,24 +117,22 @@ export default {
 
     // Get the 1st and last post 
     let firstDate, lastDate;
+
+    // oldestDate
     const getFirstDate =  collectionRef.orderBy("date", "asc").limit(1).get().then(querySnapshot => {
       if (querySnapshot.empty) return; 
       firstDate = new Date(querySnapshot.docs[0].data().date);
     });
+
+    // newestDate
     const getLastDate = collectionRef.orderBy("date", "desc").limit(1).get().then(querySnapshot => {
       if (querySnapshot.empty) return; 
-      lastDate = moment(querySnapshot.docs[0].data().date); // TODO: don't use moment 
+      lastDate = new Date(querySnapshot.docs[0].data().date);
     });
 
     await Promise.all([getFirstDate, getLastDate]);
 
-    let startOfNextWeek = moment()
-        .isoWeekYear(lastDate.year())
-        .isoWeek(lastDate.week())
-        .startOf("week")
-        .add(1, "week")
-        .toDate();
-    
+    let startOfNextWeek = new Date(lastDate.getTime() + 7 * 24 * 60 * 60 * 1000);
     const weekPromises = [];
     while (startOfNextWeek > firstDate) {
       const endOfThisWeek = new Date(startOfNextWeek.getTime());
@@ -166,7 +164,7 @@ export default {
   },
   methods: {
     async openThisWeek (week) {
-      if (week.children.length!==0) return;
+      if (week.children.length !== 0) return;
       week.isLoading = true
       // const startTime = new Date(week.name.split('-')[0]).toISOString();
       // const endDate = new Date(week.name.split('-')[1]);
