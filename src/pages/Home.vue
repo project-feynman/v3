@@ -139,16 +139,17 @@
 
                     <b>Disadvantages:</b> 
                       <ol>
-                        <li>Less reliable and feature-rich than established software</li>
-                        <li>Early stage startup with no proper team and financing</li>
+                        <li>Less reliable and feature-rich than enterprise software</li>
+                        <li>Early-stage startup without proper team or financing</li>
                       </ol>
                     <br>
 
                     <b>Advantages:</b> 
                     <ol>
-                      <li>Simple design developed by students (<a target="_blank" href="https://github.com/project-feynman/explain-mit">source code</a>)</li>
+                      <li>Minimalistic blackboard with light bandwidth usage</li>
+                      <li>Lightweight videos with 10-100x lighter memory usage</li>
+                      <li>Open source development by MIT contributors (<a target="_blank" href="https://github.com/project-feynman/explain-mit">github</a>)</li>
                       <li>Evolves rapidly according to the needs of students and instructors</li>
-                      <li>Blackboard videos are 10-100x lighter in memory</li>
                     </ol>
                     <br>
 
