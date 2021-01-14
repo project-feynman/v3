@@ -24,11 +24,16 @@
               <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
               GO TO LOUNGE
             </v-btn>
-
+<!-- 
             <v-btn large class="grey darken-1 white--text mx-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>
               <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
-            </v-btn>
+            </v-btn> -->
+
+            <v-btn large class="grey darken-1 white--text mx-5">
+              <v-icon class="mr-2">mdi-gitlab</v-icon>
+              <a target="_blank" href="https://explain-old.web.app" class="white--text">Old version</a>
+            </v-btn> 
 
             <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
               <v-icon class="mr-2">mdi-logout</v-icon>
@@ -73,10 +78,15 @@
               </template>
             </BasePopupButton>
 
-            <v-btn large class="grey darken-1 white--text ml-5">
+            <v-btn large class="grey darken-1 white--text mx-5">
+              <v-icon class="mr-2">mdi-gitlab</v-icon>
+              <a target="_blank" href="https://explain-old.web.app" class="white--text">Old version</a>
+            </v-btn> 
+
+            <!-- <v-btn large class="grey darken-1 white--text ml-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>
               <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
-            </v-btn>
+            </v-btn> -->
           </template>
         </v-row>
       </v-container>
@@ -116,7 +126,7 @@
                     <b>Goals:</b> 
                       <ol>
                         <li>Enable the greatest education experience at MIT</li>
-                        <li>Enable open education where any individual can truly learn for free</li>
+                        <li>Enable open education, where any person can access world-class explanations for free</li>
                       </ol>
                     <br>
                     <b>Features:</b> 
@@ -130,13 +140,13 @@
                     <b>Disadvantages:</b> 
                       <ol>
                         <li>Less reliable and feature-rich than established software</li>
-                        <li>Fragile early-stage startup with no proper team and financing</li>
+                        <li>Early stage startup with no proper team and financing</li>
                       </ol>
                     <br>
 
                     <b>Advantages:</b> 
                     <ol>
-                      <li>Simple design developed by MIT students </li>
+                      <li>Simple design developed by students (<a target="_blank" href="https://github.com/project-feynman/explain-mit">source code</a>)</li>
                       <li>Evolves rapidly according to the needs of students and instructors</li>
                       <li>Blackboard videos are 10-100x lighter in memory</li>
                     </ol>
