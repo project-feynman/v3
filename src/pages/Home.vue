@@ -115,32 +115,39 @@
                   <v-card-text class="grey--text text--darken-3">
                     <b>Goals:</b> 
                       <ol>
-                        <li>Enable radical open collaboration within MIT</li>
-                        <li>Transition the world towards open education</li>
+                        <li>Enable the greatest education experience at MIT</li>
+                        <li>Enable open education where any individual can truly learn for free</li>
                       </ol>
                     <br>
                     <b>Features:</b> 
                     <ol>
-                      <li>Visual Forum: answer questions clearly and quickly by drawing</li> 
-                      <li>Lounge Area: collaborate with new peers without coordinating </li> 
-                      <li>Virtual Classroom: run group problem-solving sessions naturally</li>
+                      <li>Virtual Classroom: instructors can manage multiple small groups efficiently</li>
+                      <li>Lounge Area: students can study together without having to schedule</li> 
+                      <li>Visual Forum: everyone can answer each others' questions by drawing</li> 
                     </ol>
                     <br>
 
-                    <b>Disadvantages:</b> Not as reliable and feature-rich as established enterprise products
-                    <br><br>
+                    <b>Disadvantages:</b> 
+                      <ol>
+                        <li>Less reliable and feature-rich than established software</li>
+                        <li>Fragile early-stage startup with no proper team and financing</li>
+                      </ol>
+                    <br>
 
                     <b>Advantages:</b> 
                     <ol>
-                      <li>Designed specifically for MIT by student and staff developers</li>
-                      <li>Improves rapidly according to the needs of students and instructors</li>
-                      <li>Direct communication with developers</li>
-                      <li>Blackboard videos are 10-100x more lightweight</li>
-                      <li>Simple, minimalistic, easy to use</li>
+                      <li>Simple design developed by MIT students </li>
+                      <li>Evolves rapidly according to the needs of students and instructors</li>
+                      <li>Blackboard videos are 10-100x lighter in memory</li>
                     </ol>
                     <br>
 
-                    <b>Team:</b> Elton Lin (6-14, '20, eltonlin@mit.edu)<br><br>
+                    <b>Team:</b> 
+                      <ol>
+                        <li>Elton Lin (course 6-14, class of 2020, eltonlin@mit.edu)</li>
+                        <li>(Currently recruiting a co-founder and intern)</li>
+                      <br><br>
+                      </ol>
                   </v-card-text>
                 </v-card>
               </v-col>
