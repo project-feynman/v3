@@ -157,16 +157,16 @@
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
           <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
-            <div v-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              common table
-            </div>
-            
-            <div v-else-if="room.name" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
+            <div v-if="room.name" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
               {{ room.name }}
             </div>
 
+            <div v-else-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
+              common table
+            </div>
+                  
             <div v-else class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              table {{ i - 1 }}
+              table {{ i }}
             </div>
 
             <v-spacer/>
@@ -193,30 +193,29 @@
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex ml-3 mt-2 font-weight-normal text--secondary py-1" style="font-size: 0.95em; opacity: 90%">
-            <div v-if="room.isCommonRoom">
-              common table
-            </div>
-
-            <div v-else-if="room.name">
+          <div class="d-flex pl-2 py-1 mt-2 font-weight-normal text--secondary" style="font-size: 0.95em; opacity: 90%">
+            <div v-if="room.name">
               {{ room.name }}
             </div>
 
+            <div v-else-if="room.isCommonRoom">
+              common table
+            </div>
+
             <div v-else>
-              table {{ i - 1 }}
+              table {{ i }}
             </div>
           </div>
           <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
             {{ room.status }}
           </v-chip>
 
-          <div class="pl-5 pr-2 pb-1 pt-1">
-            <v-row v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-              align="center"
-              style="font-weight: 400; font-size: 0.9em; opacity: 70%"
-              class="text--secondary mb-1 d-flex caption"
+          <div class="pr-2 pb-1 pt-1">
+            <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+              style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em; opacity: 70%"
+              class="text--secondary mb-1 caption"
             >
-              <div class="ml-2">{{ p.firstName + " " + p.lastName }}</div>
+              <div style="padding-left: 12px;">{{ p.firstName + " " + p.lastName }}</div>
 
               <v-spacer/>
               
@@ -238,7 +237,7 @@
 
                 {{ p.currentBoardNumber }} 
               </div>
-            </v-row>
+            </div>
           </div>
         </div>
       </template>

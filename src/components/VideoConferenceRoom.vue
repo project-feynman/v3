@@ -11,7 +11,12 @@
 
       <template v-for="client in allClients">
         <!-- TODO: rename "id" -->
-        <div style="position: relative; height: max-content" :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" :key="client.id" class="mt-1">
+        <div 
+          :id="client.sessionID === sessionID ? 'my-local-video' : client.sessionID" 
+          :key="client.id" 
+          style="position: relative; height: max-content" 
+          class="mt-1"
+        >
           <div style="display: flex; justify-content: space-between; align-items: center; height: 30px; padding-left: 12px; padding-right: 0;"
             :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
               (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
@@ -19,12 +24,20 @@
               participants.hasOwnProperty('local') && client.sessionID === sessionID ? (participants.local.video ? 'video-overlay' : '') : ''
             "
           >
-            <div v-if="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID]" class="caption font-weight-bold grey--text text--darken-3" style="font-size: 0.9em">
-              {{ client.firstName }}
-            </div>
+            <div
+              style="font-weight: 400; font-size: 1em; opacity: 90%"
+              class="text--secondary d-flex caption"
+            >
+              <div v-if="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID]" 
+                class="caption font-weight-bold grey--text text--darken-3" 
+                style="font-size: 1em"
+              >
+                {{ client.firstName }}
+              </div>
 
-            <div v-else class="text--secondary" style="font-size: 0.9em">
-              {{ client.firstName }}
+              <div v-else class="text--secondary" style="font-size: 1em">
+                {{ client.firstName }}
+              </div>
             </div>
 
             <!-- <v-spacer/> -->
@@ -91,7 +104,7 @@
 
               </portal-target>
 
-              <!-- VIDEO IS INJECTED HERE -->
+              <!-- <video/> will be injected here VIA `div.appendChild()-->
 
             </template>
             <!-- END OF MY OWN UI -->
@@ -119,7 +132,7 @@
               <span 
                 @click="$root.$emit('teleport-to-board', client.currentBoardNumber)"
                 class="white--text" 
-                style="width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-right: 6px;"
+                style="width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-right: 13px;"
               >
                 {{ client.currentBoardNumber }}
               </span>
