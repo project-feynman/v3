@@ -22,14 +22,34 @@
 
           <br>
           
-          <p>If problem remains, try the general fixes:</p>
+          <p class="mb-0">If problem remains, first try quick-fixes:</p>
           <ol>
             <li>Reload the page</li> 
             <li>Close the page entirely, then open a new one</li> 
-            <li>Ensure you use iPad Safari or desktop Chrome</li>
-            <li>Clear cookies and cache</li>
-            <li>Restart your computer</li>
-            <li>Email eltonlin@mit.edu or Facetime +503 250 3868</li>
+            <li>Use your other device (e.g. iPhone) to connect to video chat</li>
+          </ol>
+
+          <br>
+
+          <p class="mb-0">Then try the general fixes:</p>
+          <ol>
+            <li>For iPads,
+              <a href="https://osxdaily.com/2017/09/28/how-force-quit-apps-ipad-ios-11/" target="_blank">
+                force quit Safari
+              </a>
+            </li>
+            <li>
+              For computers,
+              <a href="https://support.google.com/accounts/answer/32050?co=GENIE.Platform%3DDesktop&hl=en" target="_blank">
+                clear cookies and cache on Chrome
+              </a>
+              and read 
+              <a href="https://help.daily.co/en/articles/2303117-top-troubleshooting-tips" target="_blank">
+                5 tips that solve 99% of issues
+              </a>
+            </li>
+            <li>Restart your computer / iPad</li>
+            <li>Email <a href="mailto: eltonlin@mit.edu">eltonlin@mit.edu</a></li>
           </ol>
         </v-card-text>
         <v-card-actions>

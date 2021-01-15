@@ -16,14 +16,34 @@
           <v-card-text>
             <p>{{ feedbackForUser }}<p>
 
-            <p>Try the general fixes:</p>
+            <p class="mb-0">Try quick-fixes:</p>
             <ol>
-              <li>Reload the page (80% success rate)</li> 
-              <li>Close the page entirely, then open a new one (90% success rate)</li> 
-              <li>Clear cookies and cache (95% success rate)</li>
-              <li>Restart your computer (99% success rate)</li>
+              <li>Reload the page</li> 
+              <li>Close the page entirely, then open a new one</li> 
               <li>Ensure you use iPad Safari or desktop Chrome</li>
-              <li>Email eltonlin@mit.edu or Facetime +503 250 3868</li>
+            </ol>
+
+            <br>
+
+            <p class="mb-0">If problems remain, try the general fixes</p> 
+            <ol>
+              <li>For iPads,
+                <a href="https://osxdaily.com/2017/09/28/how-force-quit-apps-ipad-ios-11/" target="_blank">
+                  force quit Safari
+                </a>
+              </li>
+              <li>
+                For computers,
+                <a href="https://support.google.com/accounts/answer/32050?co=GENIE.Platform%3DDesktop&hl=en" target="_blank">
+                  clear cookies and cache on Chrome
+                </a>
+                and read 
+                <a href="https://help.daily.co/en/articles/2303117-top-troubleshooting-tips" target="_blank">
+                  5 tips that solve 99% of issues
+                </a>
+              </li>
+              <li>Restart your computer / iPad</li>
+              <li>Email <a href="mailto: eltonlin@mit.edu">eltonlin@mit.edu</a></li>
             </ol>
           </v-card-text>
           <v-card-actions>
