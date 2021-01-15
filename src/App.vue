@@ -78,7 +78,8 @@ import Vue from "vue";
 import _ from "lodash"; 
 import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
 
-// https://gist.github.com/kwindla/9fd662a83e190e6dd003869282ff0d99
+// To get realtime support, visit https://www.daily.co/contact/support
+// Helpful gist: https://gist.github.com/kwindla/9fd662a83e190e6dd003869282ff0d99
 
 const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
