@@ -134,6 +134,7 @@ export default {
   },
   computed: {
     ...mapState([
+      "user",
       "currentTool", 
       "onlyAllowApplePencil",
       "canvasDimensions",
@@ -243,7 +244,7 @@ export default {
       this.currentStroke = {
         strokeNumber: this.strokesArray.length + 1,
         startTime: Number(this.currentTime.toFixed(1)),
-        color: this.currentTool.color,
+        color: this.user.currentPenColor,
         lineWidth: this.currentTool.lineWidth,
         isErasing: this.isNormalEraser,
         points: []
@@ -310,7 +311,7 @@ export default {
           1, // `i`: note that setting i = 1 is a quick-fix (will refactor $_connectTwoPoints() in the future)
           this.isNormalEraser || this.isStrokeEraser, // `isErasing`,
           this.ctx,
-          this.currentTool.color,
+          this.user.currentPenColor,
           this.currentTool.lineWidth,
         );
       }
@@ -541,7 +542,7 @@ export default {
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
       const ctx = dummyCanvas.getContext("2d");
-      ctx.fillStyle = this.isPen ? this.currentTool.color: "#fff";
+      ctx.fillStyle = this.isPen ? this.user.currentPenColor : "#fff";
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";

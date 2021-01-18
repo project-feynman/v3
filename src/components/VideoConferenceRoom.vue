@@ -131,8 +131,8 @@
          
               <span 
                 @click="$root.$emit('teleport-to-board', client.currentBoardNumber)"
-                class="white--text" 
-                style="width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-right: 13px;"
+          
+                :style="`font-color: ${user.currentPenColor}; width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-right: 13px;`"
               >
                 {{ client.currentBoardNumber }}
               </span>

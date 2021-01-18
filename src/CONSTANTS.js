@@ -109,7 +109,7 @@ export const BlackboardTools = {
 }
 
 export const navbarHeight = 64; 
-export const toolbarHeight = 52;
+export const toolbarHeight = 80;
 export const aspectRatio = 9/16;
 export const epsilon = 20;
 export const audioPlayerHeight = 52;

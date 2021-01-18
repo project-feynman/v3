@@ -90,21 +90,11 @@ export default {
     }
   },
   watch: {
-    currentBoardNumber () {
-      this.updateParticipantDoc();
-    },
-    canHearAudio () {
-      this.updateParticipantDoc(); 
-    },
-    isMusicPlaying () {
-      this.updateParticipantDoc(); 
-    },
-    isViewingLibrary () {
-      this.updateParticipantDoc(); 
-    },
-    isViewingForum () {
-      this.updateParticipantDoc(); 
-    }
+    currentBoardNumber () { this.updateParticipantDoc(); },
+    canHearAudio () { this.updateParticipantDoc(); },
+    isMusicPlaying () { this.updateParticipantDoc(); },
+    isViewingLibrary () { this.updateParticipantDoc(); },
+    isViewingForum () { this.updateParticipantDoc(); }
   },
   async created () {
     this.infoConnectedListener = firebase.database().ref(".info/connected").on("value", async (connectionState) => {
@@ -155,7 +145,7 @@ export default {
       try {
         Promise.all([
           firebase.database().ref("info/connected").off("value", this.infoConnectedListener), 
-          // this.myFirebaseRef.onDisconnect().cancel(), // still correct without it because it'd simply fail to delete an empty document, but saves bandwidth and is "more correct"
+          this.myFirebaseRef.onDisconnect().cancel(), // still correct without it because it'd simply fail to delete an empty document, but saves bandwidth and is "more correct"
           this.myFirestoreRef.delete()
         ]); 
       } catch (error) {

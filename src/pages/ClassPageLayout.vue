@@ -208,7 +208,8 @@ export default {
         this.$store.commit("SET_CLASS", null);
         this.$store.dispatch("fetchClass", class_id); 
         db.doc(`users/${this.user.uid}`).update({
-          mostRecentClassID: class_id
+          mostRecentClassID: class_id,
+          currentPenColor: "white"
         });
       }
     },

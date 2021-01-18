@@ -14,28 +14,41 @@
   >
     <!-- v-row enables you to ignore the padding of <v-app-bar> -->
     <v-row align="center">
-      <!-- TODO: rename the slot -->
-      <slot name="record-audio-slot">
-
-      </slot>
-
       <v-col class="py-0 px-0" cols="auto">
         <PenSwatch 	
-          :colors="colors" 	
+          :colors="penColors" 	
           :isPenActive="isPen"	
           @select-color="newColor => selectPen(newColor)" 	
         />
       </v-col>
 
-      <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
-        Eraser
-      </BaseButton>
+      <v-col class="py-0 px-0" cols="auto">
+        <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
+    
+        </BaseButton>
+        <v-slider
+          min="2"
+          max="10"
+          hide-details
+          dense
+        />
 
+      </v-col>
+
+      <v-col>
+        <BaseButton icon="mdi-undo" small></BaseButton>
+      </v-col>
+      
       <slot name="touch-slot">
 
       </slot>
 
       <slot name="more-actions-slot">
+
+      </slot>
+
+      <!-- TODO: rename the slot to fullscreen slot-->
+      <slot name="record-audio-slot">
 
       </slot>
     </v-row>
@@ -50,6 +63,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
 import ColorPicker from "@/components/ColorPicker.vue";
+import { mapState } from "vuex"; 
 
 export default {
   props: {
@@ -67,29 +81,27 @@ export default {
     return {
       BlackboardTools,
       toolbarHeight,
-      colors: [
-        "cyan", 
-        "white", 
-        "orange", 
-        "#FF54F1"
-      ],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
   },
   computed: {
-    isBoardFullscreen () { return this.$store.state.isBoardFullscreen; },
+    ...mapState([
+      "isBoardFullscreen",
+      "user"
+    ]),
+    penColors () { return this.user.penColors; },
     isStrokeEraser () { return this.currentTool === BlackboardTools.STROKE_ERASER; },
     isNormalEraser () { return this.currentTool === BlackboardTools.NORMAL_ERASER; },
     isPen () { return this.currentTool === BlackboardTools.PEN; }
   },
   mounted () {
-    window.addEventListener("click", e => this.palleteClose(e), false);
-    window.addEventListener("touchstart", e => this.palleteClose(e));
+    // window.addEventListener("click", e => this.palleteClose(e), false);
+    // window.addEventListener("touchstart", e => this.palleteClose(e));
   },
   destroyed () {
-    window.removeEventListener("click", e => this.palleteClose(e));
-    window.removeEventListener("touchstart", e => this.palleteClose(e));
+    // window.removeEventListener("click", e => this.palleteClose(e));
+    // window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
     selectPen (newColor) {
@@ -116,19 +128,19 @@ export default {
         lineWidth: 5
       });
     },
-    palleteClick () {
-      if (!this.isPen) { 
-        this.colorPaletteExpanded = false; 
-      } else { 
-        this.colorPaletteExpanded = !this.colorPaletteExpanded; 
-      }
-    },
-    palleteClose (e) {
-      const pallete = document.getElementById("swatches-wrapper");
-      if (pallete && !pallete.contains(e.target)) {
-        this.colorPaletteExpanded = false;
-      }
-    },
+    // palleteClick () {
+    //   if (!this.isPen) { 
+    //     this.colorPaletteExpanded = false; 
+    //   } else { 
+    //     this.colorPaletteExpanded = !this.colorPaletteExpanded; 
+    //   }
+    // },
+    // palleteClose (e) {
+    //   const pallete = document.getElementById("swatches-wrapper");
+    //   if (pallete && !pallete.contains(e.target)) {
+    //     this.colorPaletteExpanded = false;
+    //   }
+    // },
     fullScreen () {
       this.$emit('toggle-fullScreen');
     },
