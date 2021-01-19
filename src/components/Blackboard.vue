@@ -85,7 +85,7 @@
                 <template v-if="currentState === RecordState.PRE_RECORD">
                   <v-list-item @click="startRecording()">
                     <v-icon class="mr-2" color="purple">mdi-record</v-icon>
-                    Record voiced explanation with drawings
+                    Record voiced explanation 
                   </v-list-item>
                 </template>
 

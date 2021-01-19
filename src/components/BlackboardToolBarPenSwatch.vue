@@ -1,7 +1,12 @@
 <template>
   <div style="display: flex; align-items: center;">
     <template v-for="(color, i) of ['white', ...user.penColors]">
-      <BaseButton @click="changePenColor(color, i-1)" color="grey darken-2" :filled="isColorActive(color)" :key="i">
+      <BaseButton 
+        @click="changePenColor(color, i-1)" 
+        :filled="isColorActive(color)" 
+        color="grey darken-2" small 
+        :key="i"
+      >
         <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
           width="16px" height="35px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
           <g>
@@ -62,11 +67,11 @@ export default {
       else {
         const penColorsCopy = [...this.user.penColors];
         penColorsCopy[i] = this.getRandomColor();
-        this.$emit("select-color", penColorsCopy[i]);
         userRef.update({
           currentPenColor: penColorsCopy[i],
           penColors: penColorsCopy
         });
+        this.$emit("select-color", penColorsCopy[i]);
       }
     }
   }

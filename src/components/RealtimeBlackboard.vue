@@ -33,7 +33,7 @@
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="secondary">mdi-content-save</v-icon>Convert to silent animation and save to library
+              <v-icon left color="secondary">mdi-content-save</v-icon>Convert to silent animation
             </v-list-item>
           </template>
           
@@ -434,6 +434,7 @@ export default {
       console.log("number of batches to be deleted =", currentBatchSize); 
       
       await Promise.all(batchDeleteRequests);
+      this.hasFetchedStrokesFromDb = false; 
       this.strokesArray = []; 
       this.keepSyncingBoardWithDb(); 
     },
