@@ -9,6 +9,7 @@
       :toggleFullScreen="toggleFullScreen"
       :setTouchDisabled="setTouchDisabled"
       :touchDisabled="onlyAllowApplePencil"
+      :undoPenStroke="eraseStroke"
     >
 
     </slot>
@@ -140,18 +141,11 @@ export default {
       "canvasDimensions",
       "isBoardFullscreen"
     ]),
-    imageBlobUrl () {
-      return this.imageBlob ? URL.createObjectURL(this.imageBlob) : "";
-    },
-    isPen () {
-      return this.currentTool.type === BlackboardTools.PEN;
-    },
-    isNormalEraser () {
-      return this.currentTool.type === BlackboardTools.NORMAL_ERASER;
-    },
-    isStrokeEraser () {
-      return this.currentTool.type === BlackboardTools.STROKE_ERASER;
-    }
+    sessionID () { return this.$store.state.session.currentID; },
+    imageBlobUrl () { return this.imageBlob ? URL.createObjectURL(this.imageBlob) : ""; },
+    isPen () { return this.currentTool.type === BlackboardTools.PEN; },
+    isNormalEraser () { return this.currentTool.type === BlackboardTools.NORMAL_ERASER; },
+    isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; }
   },
   watch: {
     sizeAndOrientationMode () {
@@ -247,7 +241,8 @@ export default {
         color: this.user.currentPenColor,
         lineWidth: this.currentTool.lineWidth,
         isErasing: this.isNormalEraser,
-        points: []
+        points: [],
+        sessionID: this.sessionID
       };
 
       // TODO: This is a quickfix to prevent the pencil offset bug
@@ -256,9 +251,8 @@ export default {
       }
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) {
-        return; 
-      }
+      if (this.isNotValidTouch(e)) return; 
+
       if (this.isDrawingWithApplePencil(e)) { 
         // disable touch drawing so the user doesn't accidentally draw with his/her palm 
         this.$store.commit("SET_ONLY_ALLOW_APPLE_PENCIL", true); 
@@ -270,16 +264,13 @@ export default {
       this.handleContactWithBlackboard(e, { isInitialContact: true });
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) {
-        return;  
-      }
+      if (this.isNotValidTouch(e)) return;  
+  
       this.handleContactWithBlackboard(e, { isInitialContact: false });
     },
     // TODO REFACTOR: can take an optional argument, and share the function with mouse and touch
     mouseMove (e) {
-      if (!this.isHoldingLeftClick) {
-        return;
-      }
+      if (!this.isHoldingLeftClick) return; 
       this.handleContactWithBlackboard(e, { isInitialContact: false });
     },
     /**
@@ -360,11 +351,17 @@ export default {
       this.handleLiftingContactFromBlackboard(e);
     },
     handleLiftingContactFromBlackboard (e) {
-      e.preventDefault(); 
+      e.preventDefault();
+      // NOTE THIS IS COMPLICATED 
       // EDGE CASE: user is touching the screen despite that touch is disabled
+      // if (this.isNotValidTouch(e)) return; // THIS
       if (this.currentStroke.points.length === 0) {
         return; 
       }
+      if (this.onlyAllowApplePencil) {
+        return; 
+      }
+      //////
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
       this.handleEndOfStroke(this.currentStroke);
     },
@@ -445,24 +442,10 @@ export default {
       BlackboardWrapper.style.width = "100%"; 
       BlackboardWrapper.style.height = "100%"; 
 
-      if (this.sizeAndOrientationMode === "landscape") {
-        changeInternalAndExternalDimensionsOfBlackboard({
-          newWidth: LANDSCAPE_WIDTH,
-          newHeight: LANDSCAPE_WIDTH * PPT_SLIDE_RATIO
-        });
-      }
-      else if (this.sizeAndOrientationMode === "portrait") {
-        changeInternalAndExternalDimensionsOfBlackboard({
-          newWidth: VERTICAL_MODE_WIDTH,
-          newHeight: VERTICAL_MODE_WIDTH * PDF_RATIO
-        });
-      }
-      else if (this.sizeAndOrientationMode === "massive") {
-        changeInternalAndExternalDimensionsOfBlackboard({
-          newWidth: MASSIVE_MODE_DIMENSIONS.WIDTH,
-          newHeight: MASSIVE_MODE_DIMENSIONS.HEIGHT
-        });
-      }
+      changeInternalAndExternalDimensionsOfBlackboard({
+        newWidth: MASSIVE_MODE_DIMENSIONS.WIDTH,
+        newHeight: MASSIVE_MODE_DIMENSIONS.HEIGHT
+      });
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
@@ -569,12 +552,10 @@ export default {
     },
     isNotValidTouch (e) {
       // disallow drawing with multiple fingers 
-      if (e.touches.length !== 1) {
-        return true;
-      } 
-      if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) {
-        return true; 
-      }
+      if (! e.touches) return true;
+      if (e.touches.length !== 1) return true;
+      if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) return true; 
+      return false;
     },
     /**
      * Note that a Surface Pen will register as "touch" rather than "stylus" 

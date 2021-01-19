@@ -410,27 +410,32 @@ export default {
       // reset variables
       this.explTitle = ""; 
     },
+    /**
+     * NOTE: the rep invariant of Blackboard is that strokesArray only has one stroke added at a time
+     * And that if it's removed, it's reset. 
+     */
     async deleteAllStrokesFromDb () {
-      const promises = [];
-      const strokeDeleteRequests = [];
+      this.removeBlackboardStrokesListener(); 
+
+      const batchDeleteRequests = [];
       let currentBatch = db.batch();
       let currentBatchSize = 0;
-
       for (const stroke of this.strokesArray) {
         if (currentBatchSize >= 500) {
-          promises.push(currentBatch.commit());
+          batchDeleteRequests.push(currentBatch.commit());
           currentBatch = db.batch(); 
           currentBatchSize = 0; 
         } 
         currentBatch.delete(this.strokesRef.doc(stroke.id));
         currentBatchSize += 1;
       }
-      promises.push(currentBatch.commit()); 
+      batchDeleteRequests.push(currentBatch.commit()); 
       console.log("number of strokes =", this.strokesArray.length);
       console.log("number of batches to be deleted =", currentBatchSize); 
       
-      await Promise.all(promises);
-      console.log("finished deleting everything")
+      await Promise.all(batchDeleteRequests);
+      this.strokesArray = []; 
+      this.keepSyncingBoardWithDb(); 
     },
     handleRecordEnd () {
       // ask if the user wants to save/discard the recorded explanation 

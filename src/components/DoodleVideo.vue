@@ -218,7 +218,7 @@ export default {
     },
     renderFrame ({ strokeIndex, pointIndex }) {
       const stroke = this.strokesArray[strokeIndex];
-      const lineWidth = stroke.isErasing ? ERASER_STROKE_WIDTH : stroke.lineWidth; 
+      const lineWidth = stroke.lineWidth; 
       const normalizedLineWidth = lineWidth * (this.canvas.scrollWidth / 1000);
       this.$_connectTwoPoints(
         stroke.points, 

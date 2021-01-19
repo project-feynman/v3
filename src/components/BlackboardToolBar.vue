@@ -14,6 +14,21 @@
   >
     <!-- v-row enables you to ignore the padding of <v-app-bar> -->
     <v-row align="center">
+      <slot name="touch-slot">
+
+      </slot>
+
+      <v-col class="py-0 px-0" cols="auto">
+        <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 30" 
+          @click="selectNormalEraser({ eraserLineWidth: 30 })" 
+          icon="mdi-eraser-variant" hasLargeIcon color="white"
+        />
+        <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 5"
+          @click="selectNormalEraser({ eraserLineWidth: 5 })" 
+          icon="mdi-eraser-variant" small color="white"
+        />
+      </v-col>
+
       <v-col class="py-0 px-0" cols="auto">
         <PenSwatch 	
           :colors="penColors" 	
@@ -21,27 +36,6 @@
           @select-color="newColor => selectPen(newColor)" 	
         />
       </v-col>
-
-      <v-col class="py-0 px-0" cols="auto">
-        <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" @click="selectNormalEraser()" icon="mdi-eraser-variant">
-    
-        </BaseButton>
-        <v-slider
-          min="2"
-          max="10"
-          hide-details
-          dense
-        />
-
-      </v-col>
-
-      <v-col>
-        <BaseButton icon="mdi-undo" small></BaseButton>
-      </v-col>
-      
-      <slot name="touch-slot">
-
-      </slot>
 
       <slot name="more-actions-slot">
 
@@ -91,17 +85,17 @@ export default {
       "user"
     ]),
     penColors () { return this.user.penColors; },
-    isStrokeEraser () { return this.currentTool === BlackboardTools.STROKE_ERASER; },
-    isNormalEraser () { return this.currentTool === BlackboardTools.NORMAL_ERASER; },
-    isPen () { return this.currentTool === BlackboardTools.PEN; }
+    isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; },
+    isNormalEraser () { return this.currentTool.type === BlackboardTools.NORMAL_ERASER; },
+    isPen () { return this.currentTool.type === BlackboardTools.PEN; }
   },
   mounted () {
-    // window.addEventListener("click", e => this.palleteClose(e), false);
-    // window.addEventListener("touchstart", e => this.palleteClose(e));
+    window.addEventListener("click", e => this.palleteClose(e), false);
+    window.addEventListener("touchstart", e => this.palleteClose(e));
   },
   destroyed () {
-    // window.removeEventListener("click", e => this.palleteClose(e));
-    // window.removeEventListener("touchstart", e => this.palleteClose(e));
+    window.removeEventListener("click", e => this.palleteClose(e));
+    window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
     selectPen (newColor) {
@@ -111,13 +105,13 @@ export default {
         lineWidth: 2
       });
     },
-    selectNormalEraser () {
+    selectNormalEraser ({ eraserLineWidth }) {
       this.lastEraserNormal = true;
       this.colorPaletteExpanded = false;
       this.$emit('tool-select', { 
         type: BlackboardTools.NORMAL_ERASER,
         color: "cyan", // this doesn't actually do anything
-        lineWidth: ERASER_STROKE_WIDTH
+        lineWidth: eraserLineWidth
       });
     },
     selectStrokeEraser () {
@@ -128,19 +122,16 @@ export default {
         lineWidth: 5
       });
     },
-    // palleteClick () {
-    //   if (!this.isPen) { 
-    //     this.colorPaletteExpanded = false; 
-    //   } else { 
-    //     this.colorPaletteExpanded = !this.colorPaletteExpanded; 
-    //   }
-    // },
-    // palleteClose (e) {
-    //   const pallete = document.getElementById("swatches-wrapper");
-    //   if (pallete && !pallete.contains(e.target)) {
-    //     this.colorPaletteExpanded = false;
-    //   }
-    // },
+    palleteClick () {
+      if (!this.isPen) this.colorPaletteExpanded = false; 
+      else this.colorPaletteExpanded = !this.colorPaletteExpanded;
+    },
+    palleteClose (e) {
+      const pallete = document.getElementById("swatches-wrapper");
+      if (pallete && !pallete.contains(e.target)) {
+        this.colorPaletteExpanded = false;
+      }
+    },
     fullScreen () {
       this.$emit('toggle-fullScreen');
     },

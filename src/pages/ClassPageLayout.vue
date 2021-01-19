@@ -209,7 +209,8 @@ export default {
         this.$store.dispatch("fetchClass", class_id); 
         db.doc(`users/${this.user.uid}`).update({
           mostRecentClassID: class_id,
-          currentPenColor: "white"
+          currentPenColor: "white",
+          penColors: this.user.penColors ? this.user.penColors : ["red", "green", "blue", "purple"]
         });
       }
     },
