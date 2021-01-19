@@ -3,6 +3,7 @@
     <!-- Can expose an update participant function -->
     <HandleUpdatingParticipants
       :currentBoardNumber="currentBoardNumber"
+      :currentPenColor="user.currentPenColor"
       :roomID="roomId"
       :classID="classID"
     />
