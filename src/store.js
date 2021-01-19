@@ -112,7 +112,7 @@ export default new Vuex.Store({
     },
     // so the user's pen color persists across different boards
     SET_CURRENT_TOOL (state, newVal) {
-      state.currentTool = newVal; 
+      Vue.set(state, "currentTool", newVal);
     },
     SET_ONLY_ALLOW_APPLE_PENCIL (state, newVal) {
       state.onlyAllowApplePencil = newVal; 

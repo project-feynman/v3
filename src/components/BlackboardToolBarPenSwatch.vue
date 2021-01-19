@@ -53,10 +53,13 @@ export default {
       return color;
     },
     changePenColor (color, i) {
-      // terrible quickfix
+      const { currentPenColor } = this.user; 
       const userRef = db.collection("users").doc(this.user.uid); 
-      if (color === this.user.currentPenColor) {
-        if (i < 0) return; // white pen never changes
+      if (currentPenColor === "white" || color !== currentPenColor) {
+        userRef.update({ currentPenColor: color }); 
+        this.$emit("select-color", color);
+      } 
+      else {
         const penColorsCopy = [...this.user.penColors];
         penColorsCopy[i] = this.getRandomColor();
         this.$emit("select-color", penColorsCopy[i]);
@@ -64,10 +67,6 @@ export default {
           currentPenColor: penColorsCopy[i],
           penColors: penColorsCopy
         });
-      }
-      else {
-        userRef.update({ currentPenColor: color }); 
-        this.$emit("select-color", color);
       }
     }
   }

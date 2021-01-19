@@ -21,7 +21,7 @@
       <v-col class="py-0 px-0" cols="auto">
         <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 30" 
           @click="selectNormalEraser({ eraserLineWidth: 30 })" 
-          icon="mdi-eraser-variant" hasLargeIcon color="white"
+          icon="mdi-eraser-variant" hasLargeIcon small color="white"
         />
         <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 5"
           @click="selectNormalEraser({ eraserLineWidth: 5 })" 
@@ -61,7 +61,6 @@ import { mapState } from "vuex";
 
 export default {
   props: {
-    currentTool: String,
     isFullScreen: Boolean
   },
   components: { 
@@ -82,7 +81,8 @@ export default {
   computed: {
     ...mapState([
       "isBoardFullscreen",
-      "user"
+      "user",
+      "currentTool"
     ]),
     penColors () { return this.user.penColors; },
     isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; },
