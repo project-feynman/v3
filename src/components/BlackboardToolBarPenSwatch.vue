@@ -3,8 +3,8 @@
     <template v-for="(color, i) of ['white', ...user.penColors]">
       <BaseButton 
         @click="changePenColor(color, i-1)" 
-        :filled="isColorActive(color)" 
-        color="grey darken-2" small 
+        :filled="currentTool.color === color && currentTool.type === 'PEN'" 
+        color="white" small 
         :key="i"
       >
         <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
@@ -29,6 +29,7 @@
 <script>
 import BaseButton from "@/components/BaseButton.vue";
 import db from "@/database.js"; 
+import { mapState } from "vuex"; 
 
 export default {
   props: {
@@ -42,13 +43,12 @@ export default {
     BaseButton,
   },
   computed: {
-    selectedColor () { return this.$store.state.currentTool.color; },
-    user () { return this.$store.state.user; },
+    ...mapState([
+      "user",
+      "currentTool"
+    ]),
   },
   methods: {
-    isColorActive (color) {
-      return this.$store.state.currentTool.type === "PEN" && this.user.currentPenColor === color; 
-    },
     getRandomColor () {
       let letters = "0123456789ABCDEF";
       let color = "#";
@@ -61,8 +61,12 @@ export default {
       const { currentPenColor } = this.user; 
       const userRef = db.collection("users").doc(this.user.uid); 
       if (currentPenColor === "white" || color !== currentPenColor) {
+        this.$store.commit("SET_CURRENT_TOOL", {
+          type: "PEN",
+          color,
+          lineWidth: 2
+        });
         userRef.update({ currentPenColor: color }); 
-        this.$emit("select-color", color);
       } 
       else {
         const penColorsCopy = [...this.user.penColors];
@@ -71,7 +75,11 @@ export default {
           currentPenColor: penColorsCopy[i],
           penColors: penColorsCopy
         });
-        this.$emit("select-color", penColorsCopy[i]);
+        this.$store.commit("SET_CURRENT_TOOL", {
+          type: "PEN",
+          color: penColorsCopy[i],
+          lineWidth: 2
+        })
       }
     }
   }

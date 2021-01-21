@@ -58,6 +58,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
 import ColorPicker from "@/components/ColorPicker.vue";
 import { mapState } from "vuex"; 
+import db from "@/database.js"; 
 
 export default {
   props: {
@@ -99,20 +100,24 @@ export default {
   },
   methods: {
     selectPen (newColor) {
-      this.$emit("tool-select", {
+      this.$store.commit("SET_CURRENT_TOOL", {
         type: BlackboardTools.PEN,
-        color: newColor,
+        color: newColor, // for performance issues
         lineWidth: 2
       });
     },
     selectNormalEraser ({ eraserLineWidth }) {
       this.lastEraserNormal = true;
       this.colorPaletteExpanded = false;
-      this.$emit('tool-select', { 
+      // local state has to update instantly
+      this.$store.commit("SET_CURRENT_TOOL", { 
         type: BlackboardTools.NORMAL_ERASER,
-        color: "cyan", // this doesn't actually do anything
+        color: "",
         lineWidth: eraserLineWidth
-      });
+      }); 
+      db.collection("users").doc(this.user.uid).update({ 
+        currentPenColor: "" 
+      }); 
     },
     selectStrokeEraser () {
       this.lastEraserNormal = false;

@@ -16,8 +16,7 @@
             <!-- :to="`/class/${classID}/room/${roomID}/posts/${post.id}`" -->
             <v-list-item @click="$emit('post-was-clicked', post.id)"
               :class="(collection === 'questions') && !post.hasReplies ? 'unanswered' : 'answered'"
-              two-line
-              dense
+              two-line dense
               :key="post.id"
             >
               <v-list-item-icon>
@@ -58,6 +57,7 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import { mapState } from "vuex";
 import moment from "moment";
+import { getCurrentTimeInEST } from "@/helpers.js";
 
 export default {
   props: {
@@ -78,28 +78,24 @@ export default {
   data: function () {
     return {
       weeks: [],
-      search: null,
       snapshotListeners: [],
       openedWeeks: [],
-      weeksMounted: false,
+      fetchedWeeks: [],
       routePath: this.$route.path,
       classID: this.$route.params.class_id,
-      roomID: this.$route.params.room_id
+      roomID: this.$route.params.room_id,
+      search: null,
     }
   },
   watch: {
-    openedWeeks: function (newVal, oldVal) {
-      const justOpened = newVal.filter(x => !oldVal.includes(x));
-      if (justOpened.length===1) {
-        this.openThisWeek(this.weeks[justOpened]);
+    openedWeeks () {
+      for (const weekNumber of this.openedWeeks) {
+        if (! this.fetchedWeeks.includes(weekNumber)) {
+          this.openThisWeek(this.weeks[weekNumber])
+          this.fetchedWeeks.push(weekNumber);
+        } 
       }
-    },
-    weeksMounted: function (newVal) {
-      if (newVal === true) {
-        this.openedWeeks.push(0);
-        // this.openThisWeek(this.weeks[0]); // This should have been handled by the watch hook on openedWeeks, but strangely doesn't
-      }
-    },
+    }
   },
   beforeDestroy () {
     for (const detachListener of this.snapshotListeners) {
@@ -107,60 +103,66 @@ export default {
     }
   },
   async created () {
-    // This only re-groups the posts, but doesn't rerender the UI.
-    // To rerender UI, call groupPosts
-
+    // find min/max date range
+    // everything is Boston EST time
+    // let dateOfNewestPost; 
+    let dateOfOldestPost;
     const { class_id } = this.$route.params; 
-    
-    // TODO: refactor the prop
     const collectionRef = db.collection(`classes/${class_id}/${this.collection}`);
-
-    // Get the 1st and last post 
-    let firstDate, lastDate;
-
-    // oldestDate
-    const getFirstDate =  collectionRef.orderBy("date", "asc").limit(1).get().then(querySnapshot => {
-      if (querySnapshot.empty) return; 
-      firstDate = new Date(querySnapshot.docs[0].data().date);
+    await collectionRef.orderBy("date", "asc").limit(1).get().then(querySnapshot => {
+      if (! querySnapshot.empty) {
+        dateOfOldestPost = new Date(querySnapshot.docs[0].data().date);
+      } 
     });
+    // defensive programming
+    if (! dateOfOldestPost) return; 
 
-    // newestDate
-    const getLastDate = collectionRef.orderBy("date", "desc").limit(1).get().then(querySnapshot => {
-      if (querySnapshot.empty) return; 
-      lastDate = new Date(querySnapshot.docs[0].data().date);
-    });
+    let folderStartDate = dateOfOldestPost; 
+    // note that the exact time of the day is lost and rounded off with this operation
+    let folderEndDate = new Date(folderStartDate.toDateString()); // // let folderEndDate = new Date(dateOfOldestPost + ONE_WEEK_IN_MILLISECONDS);
+    folderEndDate.setDate(folderEndDate.getDate() + 7);
+    let createFolderPromises = []; 
 
-    await Promise.all([getFirstDate, getLastDate]);
+    // only generate folders in between if it's not empty
+    // danger, start date and end date can mutate each other
+    let counter = 1; 
+    const dateObjectOfToday = getCurrentTimeInEST();
 
-    let startOfNextWeek = new Date(lastDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const weekPromises = [];
-    while (startOfNextWeek > firstDate) {
-      const endOfThisWeek = new Date(startOfNextWeek.getTime());
-      endOfThisWeek.setDate(endOfThisWeek.getDate() - 1);
-      const startOfThisWeek = new Date(startOfNextWeek.getTime());
-      startOfThisWeek.setDate(startOfNextWeek.getDate() - 7);
-
-      weekPromises.push(
+    const weekFolders = []; 
+    while (folderStartDate < dateObjectOfToday) {
+      const startCopy = new Date(folderStartDate.toDateString());
+      const endCopy = new Date(folderEndDate.toDateString());
+      createFolderPromises.push(
         collectionRef
-          .where("date", ">=", startOfThisWeek.toISOString())
-          .where("date", "<", startOfNextWeek.toISOString())
+          .where("date", ">=", startCopy.toISOString())
+          .where("date", "<", endCopy.toISOString())
           .limit(1)
           .get()
           .then(querySnapshot => {
-            if (querySnapshot.empty) return;
-            this.weeks.push({
-              name: "Week " + moment(startOfThisWeek).format("MMM D") + " - " + moment(endOfThisWeek).format("MMM D"),
-              start: startOfThisWeek,
-              end: endOfThisWeek,
-              isLoading: false,
-              children: []
-            });
-        })
+            if (! querySnapshot.empty) {
+              weekFolders.push({
+                name: "Week " + moment(startCopy).format("MMM D") + " - " + moment(endCopy).format("MMM D"),
+                start: startCopy,
+                end: endCopy,
+                isLoading: false,
+                children: []
+              });
+            }
+          })
       );
-      startOfNextWeek = startOfThisWeek;
+      // shift the interval by 1 week
+      folderStartDate.setDate(folderStartDate.getDate() + 7);
+      folderEndDate.setDate(folderStartDate.getDate() + 7);
+      // const ONE_WEEK_IN_MILLISECONDS  = 7 * 24 * 60 * 60 * 1000;
+      // folderStartDate = new Date(folderStartDate + ONE_WEEK_IN_MILLISECONDS);
+      // folderEndDate = new Date(folderEndDate + ONE_WEEK_IN_MILLISECONDS); 
+      counter += 1; 
     }
-    await Promise.all(weekPromises);
-    this.weeksMounted = true;
+    await Promise.all(createFolderPromises);
+
+    weekFolders.sort((w1, w2) => w2.start - w1.start);
+    this.weeks = weekFolders; 
+    this.openedWeeks.push(0);
   },
   methods: {
     async openThisWeek (week) {
@@ -170,8 +172,13 @@ export default {
       // const endDate = new Date(week.name.split('-')[1]);
       // endDate.setHours(23, 59, 59); // Since we want the post till the end of the day
       // const endTime = endDate.toISOString();
+
       const startDate = week.start.toISOString();
       const endDate = week.end.toISOString();
+
+      console.log("startDate =", week.start.toDateString()); 
+      console.log("endDate =", week.end.toDateString());
+
       const postsQuery = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`)
         .where("date", ">=", startDate)
         .where("date", "<=", endDate)
@@ -180,7 +187,7 @@ export default {
       await new Promise(resolve => {
         const snapshotListener = postsQuery.onSnapshot(snapshot => {
           if (snapshot.empty) {
-            week.isLoading= false
+            week.isLoading = false
             resolve();
             return;
           }

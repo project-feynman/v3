@@ -16,8 +16,7 @@
       @board-reset="$emit('board-reset')"
     >
       <template v-slot:canvas-toolbar="{ 
-        isFullScreen,
-        changeTool, 
+        isFullScreen, 
         handleImageFile,
         resetBoard,
         toggleFullScreen,
@@ -29,7 +28,6 @@
         <!-- TODO: refactor resetBoard() -->
         <BlackboardToolBar
           :isFullScreen="isFullScreen"
-          @tool-select="newTool => changeTool(newTool)"
           @image-select="imageFile => displayImageFile(imageFile)"
           @toggle-fullScreen="toggleFullScreen()"
         >
@@ -50,13 +48,11 @@
               </template>
             </v-switch>
 
-            <v-col>
-              <BaseButton :disabled="! canUndoStroke"
-                @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 
-                icon="mdi-undo" small color="white"
-              >
-              </BaseButton>
-            </v-col>
+            <BaseButton :disabled="! canUndoStroke"
+              @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 
+              icon="mdi-undo" color="white"
+            >
+            </BaseButton>
           </template>
     
           <template v-slot:record-audio-slot>
