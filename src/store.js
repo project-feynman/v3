@@ -67,7 +67,7 @@ export default new Vuex.Store({
     isBoardFullscreen: false,
     currentTool: { 
       type: BlackboardTools.PEN,
-      color: "cyan",
+      color: "white",
       lineWidth: 2
     },
     onlyAllowApplePencil: true,
