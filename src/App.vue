@@ -111,7 +111,7 @@ export default {
   async created () {
     // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
     this.CallObject.setBandwidth({
-      kbs: 20,
+      kbs: 30,
       trackConstraints: { width: 320, height: 180, frameRate: 25 }
     });
 
