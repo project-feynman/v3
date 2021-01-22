@@ -355,22 +355,15 @@ export default {
     },
     handleLiftingContactFromBlackboard (e) {
       e.preventDefault();
-      // NOTE THIS IS COMPLICATED 
-      // EDGE CASE: user is touching the screen despite that touch is disabled
-      // if (this.isNotValidTouch(e)) return; // THIS
-      if (this.currentStroke.points.length === 0) {
-        return; 
-      }
-      if (this.onlyAllowApplePencil) {
-        return; 
-      }
+      // WARNING: this is more complicated and potentially bug-introducing than you think
+      // MAYBE this method should be designed in a way that it isn't fired in the first place
+     // if (this.isNotValidTouch(e)) return; // THIS
+      if (e.touches && this.onlyAllowApplePencil) return; 
+      if (this.currentStroke.points.length === 0) return; 
       //////
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
       this.handleEndOfStroke(this.currentStroke);
     },
-    /**
-     * Reset the state and UI of this component itself. 
-     */
     async resetBlackboard () {
       this.wipeUI();
       this.resetVariables(); 
