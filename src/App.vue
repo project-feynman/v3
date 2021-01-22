@@ -77,6 +77,7 @@ import "firebase/storage";
 import Vue from "vue"; 
 import _ from "lodash"; 
 import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
+import { mapState } from "vuex"; 
 
 // To get realtime support, visit https://www.daily.co/contact/support
 // Helpful gist: https://gist.github.com/kwindla/9fd662a83e190e6dd003869282ff0d99
@@ -101,21 +102,26 @@ export default {
     VideoTroubleshootPopup
   },
   computed: {
-    CallObject () { return this.$store.state.CallObject; },
-    participants () { return this.$store.state.participants },
-    sessionID () { return this.$store.state.session.currentID }
+    ...mapState([
+      "CallObject",
+      "participants",
+    ]),
+    sessionID () { return this.$store.state.session.currentID },
   },
   async created () {
     // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
     this.CallObject.setBandwidth({
-      kbs: 20,
-      trackConstraints: { width: 320, height: 180, frameRate: 20 }
+      kbs: 30,
+      trackConstraints: { width: 320, height: 180, frameRate: 25 }
     });
 
     // initialize event listeners (documentation: https://docs.daily.co/reference#events)
     const ONE_HUNDRED_MILLISECONDS = 100; 
     for (const event of PARTICIPANT_EVENTS) {
-      this.CallObject.on(event, _.debounce(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS)); 
+      this.CallObject.on(
+        event, 
+        _.debounce(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS)
+      ); 
     }
     this.CallObject.on("track-started", this.mountNewTrack);
     this.CallObject.on("track-stopped", this.unmountTrack);

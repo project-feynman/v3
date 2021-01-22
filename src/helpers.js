@@ -1,3 +1,15 @@
+export const getCurrentTimeInEST = function () {
+  // standardize to UTC
+  const d = new Date(); 
+  const ONE_MINUTE_IN_MILLISECONDS = 60 * 1000; 
+  d.setTime(d.getTime() + d.getTimezoneOffset() * ONE_MINUTE_IN_MILLISECONDS);
+  
+  // convert to EST
+  const minutesDifferenceFromUTCtoEST = -300; 
+  const estDate = new Date(d.getTime() + minutesDifferenceFromUTCtoEST * ONE_MINUTE_IN_MILLISECONDS);
+  return estDate; 
+}
+
 export const displayDate = function (dateString) { 
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {

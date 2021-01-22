@@ -3,6 +3,7 @@
     <!-- Can expose an update participant function -->
     <HandleUpdatingParticipants
       :currentBoardNumber="currentBoardNumber"
+      :currentPenColor="user.currentPenColor"
       :roomID="roomId"
       :classID="classID"
     />
@@ -152,11 +153,13 @@
             <v-menu v-model="isBoardsMenuOpen" fixed offset-y bottom>
               <template v-slot:activator>
                 <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-0" 
-                  style="text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400" max-width="180"
+                  :style="`text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400;`" max-width="180"
                 >
                   <!-- The board switch button looks like a blackboard itself -->
-                  <span class="d-inline-block text-truncate white--text" 
-                        style="width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)">
+                  <span class="`d-inline-block text-truncate" 
+                      :style="
+                        `color: ${user.currentPenColor}; width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
+                  ">
                     {{ getBoardNumberFromID(activeBoardID) }}
                   </span>
                   <v-spacer/>
@@ -172,12 +175,14 @@
                     style="background-color: rgb(62, 66, 66);"
                     class="px-0"
                   >
-                    <div style="margin: auto;" class="white--text">{{ getBoardNumberFromID(boardID) }}</div>
+                    <div :style="`margin: auto; color: ${user.currentPenColor};`">
+                      {{ getBoardNumberFromID(boardID) }}
+                    </div>
                   </v-list-item>
                   <v-divider class="white--text" :key="boardID + 'divider'"/>
                 </template>
 
-                <BaseButton @click="createNewBoard()" icon="mdi-plus" color="grey darken-2">
+                <BaseButton @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);">
                   New board
                 </BaseButton>
               </v-list>

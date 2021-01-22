@@ -1,5 +1,6 @@
 <template>
   <div class="blackboard" elevation="1">
+    <!-- CREATE A CUSTOM CURSOR? -->
     <slot name="canvas-toolbar"
       :currentTool="currentTool"
       :isFullScreen="isFullScreen"
@@ -9,6 +10,7 @@
       :toggleFullScreen="toggleFullScreen"
       :setTouchDisabled="setTouchDisabled"
       :touchDisabled="onlyAllowApplePencil"
+      :undoPenStroke="eraseStroke"
     >
 
     </slot>
@@ -134,23 +136,17 @@ export default {
   },
   computed: {
     ...mapState([
+      "user",
       "currentTool", 
       "onlyAllowApplePencil",
       "canvasDimensions",
       "isBoardFullscreen"
     ]),
-    imageBlobUrl () {
-      return this.imageBlob ? URL.createObjectURL(this.imageBlob) : "";
-    },
-    isPen () {
-      return this.currentTool.type === BlackboardTools.PEN;
-    },
-    isNormalEraser () {
-      return this.currentTool.type === BlackboardTools.NORMAL_ERASER;
-    },
-    isStrokeEraser () {
-      return this.currentTool.type === BlackboardTools.STROKE_ERASER;
-    }
+    sessionID () { return this.$store.state.session.currentID; },
+    imageBlobUrl () { return this.imageBlob ? URL.createObjectURL(this.imageBlob) : ""; },
+    isPen () { return this.currentTool.type === BlackboardTools.PEN; },
+    isNormalEraser () { return this.currentTool.type === BlackboardTools.NORMAL_ERASER; },
+    isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; }
   },
   watch: {
     sizeAndOrientationMode () {
@@ -244,9 +240,11 @@ export default {
         strokeNumber: this.strokesArray.length + 1,
         startTime: Number(this.currentTime.toFixed(1)),
         color: this.currentTool.color,
+        // color: this.user.currentPenColor,
         lineWidth: this.currentTool.lineWidth,
         isErasing: this.isNormalEraser,
-        points: []
+        points: [],
+        sessionID: this.sessionID
       };
 
       // TODO: This is a quickfix to prevent the pencil offset bug
@@ -255,9 +253,8 @@ export default {
       }
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) {
-        return; 
-      }
+      if (this.isNotValidTouch(e)) return; 
+
       if (this.isDrawingWithApplePencil(e)) { 
         // disable touch drawing so the user doesn't accidentally draw with his/her palm 
         this.$store.commit("SET_ONLY_ALLOW_APPLE_PENCIL", true); 
@@ -269,16 +266,13 @@ export default {
       this.handleContactWithBlackboard(e, { isInitialContact: true });
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) {
-        return;  
-      }
+      if (this.isNotValidTouch(e)) return;  
+  
       this.handleContactWithBlackboard(e, { isInitialContact: false });
     },
     // TODO REFACTOR: can take an optional argument, and share the function with mouse and touch
     mouseMove (e) {
-      if (!this.isHoldingLeftClick) {
-        return;
-      }
+      if (!this.isHoldingLeftClick) return; 
       this.handleContactWithBlackboard(e, { isInitialContact: false });
     },
     /**
@@ -311,6 +305,7 @@ export default {
           this.isNormalEraser || this.isStrokeEraser, // `isErasing`,
           this.ctx,
           this.currentTool.color,
+          // this.user.currentPenColor,
           this.currentTool.lineWidth,
         );
       }
@@ -359,17 +354,16 @@ export default {
       this.handleLiftingContactFromBlackboard(e);
     },
     handleLiftingContactFromBlackboard (e) {
-      e.preventDefault(); 
-      // EDGE CASE: user is touching the screen despite that touch is disabled
-      if (this.currentStroke.points.length === 0) {
-        return; 
-      }
+      e.preventDefault();
+      // WARNING: this is more complicated and potentially bug-introducing than you think
+      // MAYBE this method should be designed in a way that it isn't fired in the first place
+     // if (this.isNotValidTouch(e)) return; // THIS
+      if (e.touches && this.onlyAllowApplePencil) return; 
+      if (this.currentStroke.points.length === 0) return; 
+      //////
       this.currentStroke.endTime = Number(this.currentTime.toFixed(1));
       this.handleEndOfStroke(this.currentStroke);
     },
-    /**
-     * Reset the state and UI of this component itself. 
-     */
     async resetBlackboard () {
       this.wipeUI();
       this.resetVariables(); 
@@ -444,24 +438,10 @@ export default {
       BlackboardWrapper.style.width = "100%"; 
       BlackboardWrapper.style.height = "100%"; 
 
-      if (this.sizeAndOrientationMode === "landscape") {
-        changeInternalAndExternalDimensionsOfBlackboard({
-          newWidth: LANDSCAPE_WIDTH,
-          newHeight: LANDSCAPE_WIDTH * PPT_SLIDE_RATIO
-        });
-      }
-      else if (this.sizeAndOrientationMode === "portrait") {
-        changeInternalAndExternalDimensionsOfBlackboard({
-          newWidth: VERTICAL_MODE_WIDTH,
-          newHeight: VERTICAL_MODE_WIDTH * PDF_RATIO
-        });
-      }
-      else if (this.sizeAndOrientationMode === "massive") {
-        changeInternalAndExternalDimensionsOfBlackboard({
-          newWidth: MASSIVE_MODE_DIMENSIONS.WIDTH,
-          newHeight: MASSIVE_MODE_DIMENSIONS.HEIGHT
-        });
-      }
+      changeInternalAndExternalDimensionsOfBlackboard({
+        newWidth: MASSIVE_MODE_DIMENSIONS.WIDTH,
+        newHeight: MASSIVE_MODE_DIMENSIONS.HEIGHT
+      });
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
@@ -541,7 +521,8 @@ export default {
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
       const ctx = dummyCanvas.getContext("2d");
-      ctx.fillStyle = this.isPen ? this.currentTool.color: "#fff";
+      ctx.fillStyle = this.isPen ? this.currentTool.color : "#fff";
+      // ctx.fillStyle = this.isPen ? this.user.currentPenColor : "#fff";
       ctx.font = "24px 'Material Design Icons'";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -568,12 +549,10 @@ export default {
     },
     isNotValidTouch (e) {
       // disallow drawing with multiple fingers 
-      if (e.touches.length !== 1) {
-        return true;
-      } 
-      if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) {
-        return true; 
-      }
+      if (! e.touches) return true;
+      if (e.touches.length !== 1) return true;
+      if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) return true; 
+      return false;
     },
     /**
      * Note that a Surface Pen will register as "touch" rather than "stylus" 

@@ -293,16 +293,8 @@ export default {
       // console.log("backgroundImage =", this.blackboard.backgroundImage)
       // console.log("this.blackboard =", this.blackboard);
 
-
-      // quick-fix code
-      let aspectRatio; 
-      if (this.sizeAndOrientationMode === "landscape") {
-        aspectRatio = PPT_SLIDE_RATIO; 
-      } else if (this.sizeAndOrientationMode === "portrait") {
-        aspectRatio = PDF_RATIO; 
-      } else if (this.sizeAndOrientationMode === "massive") {
-        aspectRatio = 1/2;
-      }
+      // TODO: quickfix code
+      const aspectRatio = 1/2;
 
       // TODO: not DRY, unify with RealtimeBlackboard's uploadExplanation () method
       const { backgroundImage } = this.blackboard; 

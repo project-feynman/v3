@@ -1,5 +1,5 @@
 import db from "@/database.js";
-import { getRandomId } from "@/helpers.js";
+import { getRandomId, getCurrentTimeInEST } from "@/helpers.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
@@ -44,9 +44,13 @@ export default {
         metadata: {
           title,
           html,
-          date: new Date().toISOString(),
+          date: getCurrentTimeInEST().toISOString(),
           creator: this.isAnonymous ? this.anonymousUser : this.simplifiedUser,
-          mitClass: this.mitClass,
+          mitClass: {
+            id: this.mitClass.id,
+            name: this.mitClass.name,
+            description: this.mitClass.description
+          },
           tags,
           order: postOrder,
           duration: this.blackboard.currentTime, 

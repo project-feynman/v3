@@ -14,28 +14,35 @@
   >
     <!-- v-row enables you to ignore the padding of <v-app-bar> -->
     <v-row align="center">
-      <!-- TODO: rename the slot -->
-      <slot name="record-audio-slot">
+      <slot name="touch-slot">
 
       </slot>
 
       <v-col class="py-0 px-0" cols="auto">
+        <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 30" 
+          @click="selectNormalEraser({ eraserLineWidth: 30 })" 
+          icon="mdi-eraser-variant" hasLargeIcon small color="white"
+        />
+        <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 5"
+          @click="selectNormalEraser({ eraserLineWidth: 5 })" 
+          icon="mdi-eraser-variant" small color="white"
+        />
+      </v-col>
+
+      <v-col class="py-0 px-0" cols="auto">
         <PenSwatch 	
-          :colors="colors" 	
+          :colors="penColors" 	
           :isPenActive="isPen"	
           @select-color="newColor => selectPen(newColor)" 	
         />
       </v-col>
 
-      <BaseButton :color="isNormalEraser ? 'white' : 'white'" :filled="isNormalEraser" small @click="selectNormalEraser()" icon="mdi-eraser-variant">
-        Eraser
-      </BaseButton>
-
-      <slot name="touch-slot">
+      <slot name="more-actions-slot">
 
       </slot>
 
-      <slot name="more-actions-slot">
+      <!-- TODO: rename the slot to fullscreen slot-->
+      <slot name="record-audio-slot">
 
       </slot>
     </v-row>
@@ -50,10 +57,11 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
 import ColorPicker from "@/components/ColorPicker.vue";
+import { mapState } from "vuex"; 
+import db from "@/database.js"; 
 
 export default {
   props: {
-    currentTool: String,
     isFullScreen: Boolean
   },
   components: { 
@@ -67,21 +75,20 @@ export default {
     return {
       BlackboardTools,
       toolbarHeight,
-      colors: [
-        "cyan", 
-        "white", 
-        "orange", 
-        "#FF54F1"
-      ],
       colorPaletteExpanded: false,
       lastEraserNormal: true
     }
   },
   computed: {
-    isBoardFullscreen () { return this.$store.state.isBoardFullscreen; },
-    isStrokeEraser () { return this.currentTool === BlackboardTools.STROKE_ERASER; },
-    isNormalEraser () { return this.currentTool === BlackboardTools.NORMAL_ERASER; },
-    isPen () { return this.currentTool === BlackboardTools.PEN; }
+    ...mapState([
+      "isBoardFullscreen",
+      "user",
+      "currentTool"
+    ]),
+    penColors () { return this.user.penColors; },
+    isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; },
+    isNormalEraser () { return this.currentTool.type === BlackboardTools.NORMAL_ERASER; },
+    isPen () { return this.currentTool.type === BlackboardTools.PEN; }
   },
   mounted () {
     window.addEventListener("click", e => this.palleteClose(e), false);
@@ -93,20 +100,24 @@ export default {
   },
   methods: {
     selectPen (newColor) {
-      this.$emit("tool-select", {
+      this.$store.commit("SET_CURRENT_TOOL", {
         type: BlackboardTools.PEN,
-        color: newColor,
+        color: newColor, // for performance issues
         lineWidth: 2
       });
     },
-    selectNormalEraser () {
+    selectNormalEraser ({ eraserLineWidth }) {
       this.lastEraserNormal = true;
       this.colorPaletteExpanded = false;
-      this.$emit('tool-select', { 
+      // local state has to update instantly
+      this.$store.commit("SET_CURRENT_TOOL", { 
         type: BlackboardTools.NORMAL_ERASER,
-        color: "cyan", // this doesn't actually do anything
-        lineWidth: ERASER_STROKE_WIDTH
-      });
+        color: "",
+        lineWidth: eraserLineWidth
+      }); 
+      db.collection("users").doc(this.user.uid).update({ 
+        currentPenColor: "" 
+      }); 
     },
     selectStrokeEraser () {
       this.lastEraserNormal = false;
@@ -117,11 +128,8 @@ export default {
       });
     },
     palleteClick () {
-      if (!this.isPen) { 
-        this.colorPaletteExpanded = false; 
-      } else { 
-        this.colorPaletteExpanded = !this.colorPaletteExpanded; 
-      }
+      if (!this.isPen) this.colorPaletteExpanded = false; 
+      else this.colorPaletteExpanded = !this.colorPaletteExpanded;
     },
     palleteClose (e) {
       const pallete = document.getElementById("swatches-wrapper");

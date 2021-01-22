@@ -16,21 +16,18 @@
       @board-reset="$emit('board-reset')"
     >
       <template v-slot:canvas-toolbar="{ 
-        currentTool,
-        isFullScreen,
-        changeTool, 
+        isFullScreen, 
         handleImageFile,
         resetBoard,
         toggleFullScreen,
         setTouchDisabled,
-        touchDisabled
+        touchDisabled,
+        undoPenStroke
       }"
       >
         <!-- TODO: refactor resetBoard() -->
         <BlackboardToolBar
-          :currentTool="currentTool.type"
           :isFullScreen="isFullScreen"
-          @tool-select="newTool => changeTool(newTool)"
           @image-select="imageFile => displayImageFile(imageFile)"
           @toggle-fullScreen="toggleFullScreen()"
         >
@@ -50,6 +47,12 @@
                 <div class="font-size: 0.5rem">Touch draw</div>
               </template>
             </v-switch>
+
+            <BaseButton :disabled="! canUndoStroke"
+              @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 
+              icon="mdi-undo" color="white"
+            >
+            </BaseButton>
           </template>
     
           <template v-slot:record-audio-slot>
@@ -78,7 +81,7 @@
                 <template v-if="currentState === RecordState.PRE_RECORD">
                   <v-list-item @click="startRecording()">
                     <v-icon class="mr-2" color="purple">mdi-record</v-icon>
-                    Record voiced explanation with drawings
+                    Record voiced explanation 
                   </v-list-item>
                 </template>
 
@@ -182,8 +185,16 @@ export default {
     ...mapGetters([
       "isAdmin"
     ]),
-    isRecording () {
-      return this.currentState === RecordState.MID_RECORD; 
+    sessionID () { return this.$store.state.session.currentID; },
+    isRecording () { return this.currentState === RecordState.MID_RECORD; },
+    canUndoStroke () {
+      const n = this.strokesArray.length; 
+      if (n === 0) return false; 
+      const lastStroke = this.strokesArray[n-1]; 
+      if (lastStroke.isErasing || lastStroke.sessionID !== this.sessionID) {
+        return false;
+      }
+      return true; 
     }
   },
   watch: {

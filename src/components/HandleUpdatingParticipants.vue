@@ -59,6 +59,10 @@ export default {
     currentBoardNumber: {
       type: Number,
       required: true
+    },
+    currentPenColor: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -76,35 +80,18 @@ export default {
       "isViewingLibrary",
       "isViewingForum"
     ]),
-    sessionID () {
-      return this.session.currentID; 
-    },
-    participantsRef () {
-      return db.collection(`classes/${this.classID}/participants`);
-    },
-    myFirestoreRef () {
-      return this.participantsRef.doc(this.sessionID + this.roomID);
-    },
-    myFirebaseRef () {
-      return firebase.database().ref(`/class/${this.classID}/room/${this.roomID}/participants/${this.sessionID}`); 
-    }
+    sessionID () { return this.session.currentID; },
+    participantsRef () { return db.collection(`classes/${this.classID}/participants`); },
+    myFirestoreRef () { return this.participantsRef.doc(this.sessionID + this.roomID); },
+    myFirebaseRef () { return firebase.database().ref(`/class/${this.classID}/room/${this.roomID}/participants/${this.sessionID}`); }
   },
   watch: {
-    currentBoardNumber () {
-      this.updateParticipantDoc();
-    },
-    canHearAudio () {
-      this.updateParticipantDoc(); 
-    },
-    isMusicPlaying () {
-      this.updateParticipantDoc(); 
-    },
-    isViewingLibrary () {
-      this.updateParticipantDoc(); 
-    },
-    isViewingForum () {
-      this.updateParticipantDoc(); 
-    }
+    currentBoardNumber () { this.updateParticipantDoc(); },
+    currentPenColor () { this.updateParticipantDoc(); },
+    canHearAudio () { this.updateParticipantDoc(); },
+    isMusicPlaying () { this.updateParticipantDoc(); },
+    isViewingLibrary () { this.updateParticipantDoc(); },
+    isViewingForum () { this.updateParticipantDoc(); }
   },
   async created () {
     this.infoConnectedListener = firebase.database().ref(".info/connected").on("value", async (connectionState) => {
@@ -138,6 +125,7 @@ export default {
           sessionID: this.sessionID,
           currentRoom: this.roomID,
           currentBoardNumber: this.currentBoardNumber,
+          currentPenColor: this.currentPenColor,
           roomTypeID: this.$route.params.section_id,
           firstName: this.user.firstName,
           lastName: this.user.lastName,
@@ -155,7 +143,7 @@ export default {
       try {
         Promise.all([
           firebase.database().ref("info/connected").off("value", this.infoConnectedListener), 
-          // this.myFirebaseRef.onDisconnect().cancel(), // still correct without it because it'd simply fail to delete an empty document, but saves bandwidth and is "more correct"
+          this.myFirebaseRef.onDisconnect().cancel(), // still correct without it because it'd simply fail to delete an empty document, but saves bandwidth and is "more correct"
           this.myFirestoreRef.delete()
         ]); 
       } catch (error) {

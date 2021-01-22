@@ -69,8 +69,8 @@ function getRandomId () {
 exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/room/{roomID}/participants/{sessionID}").onWrite((change, context) => {
   // it responds to a change in the incrementCounter data
   const { classID, roomID, sessionID } = context.params;
-  firestore.doc(`/classes/${classID}/participants/${sessionID + roomID}`).delete();
-  firestore.doc(`/classes/${classID}/participants/${sessionID}`).delete(); // for backwards compatibility
+  return firestore.doc(`/classes/${classID}/participants/${sessionID + roomID}`).delete();
+  // firestore.doc(`/classes/${classID}/participants/${sessionID}`).delete(); // for backwards compatibility
 })
 
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already

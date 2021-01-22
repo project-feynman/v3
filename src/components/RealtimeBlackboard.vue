@@ -33,7 +33,7 @@
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="secondary">mdi-content-save</v-icon>Convert to silent animation and save to library
+              <v-icon left color="secondary">mdi-content-save</v-icon>Convert to silent animation
             </v-list-item>
           </template>
           
@@ -126,7 +126,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
-import { getRandomId } from "@/helpers.js";
+import { getRandomId, getCurrentTimeInEST } from "@/helpers.js";
 import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 
 export default {
@@ -402,7 +402,7 @@ export default {
         audioBlob: this.blackboard.audioBlob,
         backgroundImageBlob,
         html: "",
-        title: this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleTimeString()})`, 
+        title: this.explTitle ? this.explTitle : `Untitled (${getCurrentTimeInEST().toDateString()})`, 
         tags: [],
         explRef: db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`)
       });
@@ -410,27 +410,33 @@ export default {
       // reset variables
       this.explTitle = ""; 
     },
+    /**
+     * NOTE: the rep invariant of Blackboard is that strokesArray only has one stroke added at a time
+     * And that if it's removed, it's reset. 
+     */
     async deleteAllStrokesFromDb () {
-      const promises = [];
-      const strokeDeleteRequests = [];
+      this.removeBlackboardStrokesListener(); 
+
+      const batchDeleteRequests = [];
       let currentBatch = db.batch();
       let currentBatchSize = 0;
-
       for (const stroke of this.strokesArray) {
         if (currentBatchSize >= 500) {
-          promises.push(currentBatch.commit());
+          batchDeleteRequests.push(currentBatch.commit());
           currentBatch = db.batch(); 
           currentBatchSize = 0; 
         } 
         currentBatch.delete(this.strokesRef.doc(stroke.id));
         currentBatchSize += 1;
       }
-      promises.push(currentBatch.commit()); 
+      batchDeleteRequests.push(currentBatch.commit()); 
       console.log("number of strokes =", this.strokesArray.length);
       console.log("number of batches to be deleted =", currentBatchSize); 
       
-      await Promise.all(promises);
-      console.log("finished deleting everything")
+      await Promise.all(batchDeleteRequests);
+      this.hasFetchedStrokesFromDb = false; 
+      this.strokesArray = []; 
+      this.keepSyncingBoardWithDb(); 
     },
     handleRecordEnd () {
       // ask if the user wants to save/discard the recorded explanation 
