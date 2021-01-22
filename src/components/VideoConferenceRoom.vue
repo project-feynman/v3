@@ -40,11 +40,9 @@
               </div>
             </div>
 
-            <!-- <v-spacer/> -->
-
-            <!-- MYSELF -->
+            <!-- MY UI -->
             <template v-if="client.sessionID === sessionID">
-              <!-- 2nd of the 3 elements in this row -->
+              <!-- Start of video call buttons -->
               <div>
                 <template v-if="connectionStatus === 'DISCONNECTED'">
                   <v-btn @click.prevent.stop="joinConferenceRoom()" small dark fab color="success" class="ml-1">
@@ -97,9 +95,9 @@
                   <!-- TODO: show troubleshoot popup -->
                 </template>
               </div>
-              <!-- End of video section (2nd of the 3 items) -->
+              <!-- End of video call buttons -->
 
-              <!-- Switch board number here -->
+              <!-- Switch board dropdown -->
               <portal-target name="right-side-of-my-participant-name" class="ml-2">
 
               </portal-target>
