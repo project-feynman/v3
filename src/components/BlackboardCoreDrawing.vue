@@ -519,10 +519,11 @@ export default {
     },
     checkRepInvariant () {
       if (this.strokesArray.length !== this.localStrokesArray.length) {
-        throw new Error(
-          `Rep invariant violated: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
-        );
-        alert("Blackboard broke for some unknown reason, reload the page while I figure out why!");
+        alert("This blackboard might have broke, reload the page, and meanwhile I'm trying to figure out what conditions this happens.");
+        console.error(`Rep invariant violated: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`);
+        // throw new Error(
+        //   `Rep invariant violated: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
+        // );
       }
     },
     isNotValidTouch (e) {

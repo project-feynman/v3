@@ -56,7 +56,7 @@
       </v-dialog>
     </div>
 
-    <v-snackbar v-model="snackbar" timeout="1500">
+    <v-snackbar v-model="snackbar" timeout="2500">
       {{ snackbarMessage }}
       <template v-slot:action>
         <v-btn @click="snackbar = false" text>CLOSE</v-btn>
