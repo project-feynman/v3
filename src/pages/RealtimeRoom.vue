@@ -3,7 +3,7 @@
     <!-- Can expose an update participant function -->
     <HandleUpdatingParticipants
       :currentBoardNumber="currentBoardNumber"
-      :currentPenColor="user.currentPenColor"
+      :currentPenColor="currentTool.color"
       :roomID="roomId"
       :classID="classID"
     />
@@ -158,7 +158,7 @@
                   <!-- The board switch button looks like a blackboard itself -->
                   <span class="`d-inline-block text-truncate" 
                       :style="
-                        `color: ${user.currentPenColor}; width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
+                        `color: ${currentTool.color}; width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
                   ">
                     {{ getBoardNumberFromID(activeBoardID) }}
                   </span>
@@ -175,7 +175,7 @@
                     style="background-color: rgb(62, 66, 66);"
                     class="px-0"
                   >
-                    <div :style="`margin: auto; color: ${user.currentPenColor};`">
+                    <div :style="`margin: auto; color: ${currentTool.color};`">
                       {{ getBoardNumberFromID(boardID) }}
                     </div>
                   </v-list-item>
@@ -300,7 +300,8 @@ export default {
       "user",
       "mitClass",
       "session",
-      "isBoardFullscreen"
+      "isBoardFullscreen",
+      "currentTool"
     ]),
     classID () {
       return this.$route.params.class_id; 

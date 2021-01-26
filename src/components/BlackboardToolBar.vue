@@ -115,9 +115,6 @@ export default {
         color: "",
         lineWidth: eraserLineWidth
       }); 
-      db.collection("users").doc(this.user.uid).update({ 
-        currentPenColor: "" 
-      }); 
     },
     selectStrokeEraser () {
       this.lastEraserNormal = false;

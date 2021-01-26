@@ -58,21 +58,18 @@ export default {
       return color;
     },
     changePenColor (color, i) {
-      const { currentPenColor } = this.user; 
-      const userRef = db.collection("users").doc(this.user.uid); 
-      if (currentPenColor === "white" || color !== currentPenColor) {
+      if (this.currentTool.color === "white" || color !== this.currentTool.color) {
         this.$store.commit("SET_CURRENT_TOOL", {
           type: "PEN",
           color,
           lineWidth: 2
         });
-        userRef.update({ currentPenColor: color }); 
       } 
+      // generate random color
       else {
         const penColorsCopy = [...this.user.penColors];
         penColorsCopy[i] = this.getRandomColor();
-        userRef.update({
-          currentPenColor: penColorsCopy[i],
+        db.collection("users").doc(this.user.uid).update({
           penColors: penColorsCopy
         });
         this.$store.commit("SET_CURRENT_TOOL", {
