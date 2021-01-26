@@ -18,7 +18,6 @@
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <!-- QUICKFIX: record-start will change blackboard from infinite to horizontal mode -->
     <Blackboard v-else
-      sizeAndOrientationMode="massive"
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :key="incrementKeyToDestroyComponent"

@@ -1,15 +1,10 @@
 <template>
   <div class="blackboard" elevation="1">
-    <!-- CREATE A CUSTOM CURSOR? -->
     <slot name="canvas-toolbar"
-      :currentTool="currentTool"
       :isFullScreen="isFullScreen"
-      :changeTool="changeTool"
       :handleImageFile="handleImageFile"
       :resetBoard="resetBlackboard"
       :toggleFullScreen="toggleFullScreen"
-      :setTouchDisabled="setTouchDisabled"
-      :touchDisabled="onlyAllowApplePencil"
       :undoPenStroke="eraseStroke"
     >
 
@@ -89,10 +84,6 @@ export default {
     backgroundImage: {
       type: Object
       // don't set `required` to true yet to avoid minor crashes
-    },
-    sizeAndOrientationMode: {
-      type: String,
-      required: true
     }
   },
   mixins: [
@@ -139,9 +130,6 @@ export default {
     isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; }
   },
   watch: {
-    sizeAndOrientationMode () {
-      this.resizeBlackboard(); 
-    },
     /**
      * Ensures `strokesArray => UI`, that is whenever the client mutates the `strokesArray` prop, we update <canvas/> accordingly`. 
      * 
@@ -184,11 +172,14 @@ export default {
           blob ? URL.createObjectURL(blob) : downloadURL
         );
       }
+    },
+    currentTool () {
+      this.createCustomCursor();
     }
   },
   mounted () {
     this.initializeCanvas();
-    // document.fonts.ready.then(this.createCustomCusor); // since cursor uses material icons font, load it after fonts are ready
+    document.fonts.ready.then(this.createCustomCursor); // since cursor uses material icons font, load it after fonts are ready
     
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
@@ -257,7 +248,6 @@ export default {
     },
     touchMove (e) {
       if (this.isNotValidTouch(e)) return;  
-  
       this.handleContactWithBlackboard(e, { isInitialContact: false });
     },
     // TODO REFACTOR: can take an optional argument, and share the function with mouse and touch
@@ -342,13 +332,15 @@ export default {
     mouseUp (e) {
       this.isHoldingLeftClick = false;
       this.handleEndOfStroke(this.currentStroke); 
+      this.currentStroke = { points: [] };
     },
+    // unintuitively, isNotValidTouch does not work for touch end (touches will be empty always, so it's in changedTouches), so the best way is just to note that 
+    // points.length === 0 reflects that touchStart, touchMove didn't do anything
     touchEnd (e) {
-      if (! this.isDrawingWithApplePencil && this.onlyAllowApplePencil) {
-        return; 
-      }
+      if (this.currentStroke.points.length === 0) return; 
       e.preventDefault(); 
       this.handleEndOfStroke(this.currentStroke); 
+      this.currentStroke = { points: [] };
     },
     async resetBlackboard () {
       this.wipeUI();
@@ -502,7 +494,7 @@ export default {
       }
       return new File([u8arr], filename, {type:mime});
     },
-    createCustomCusor () {
+    createCustomCursor () {
       const dummyCanvas = document.createElement("canvas");
       dummyCanvas.width = 24;
       dummyCanvas.height = 24;
@@ -545,18 +537,6 @@ export default {
      */
     isDrawingWithApplePencil (e) {
       return e.touches[0].touchType === "stylus";
-    },
-    /**
-     * Sets the current tool, which directly affects:
-     *   1. The behavior of `setStrokeProperties()`
-     *   2. The cursor icon (for laptop users)
-     * 
-     * Let the source of truth be Vuex
-     */
-    changeTool (tool) {
-      // set tool
-      this.$store.commit("SET_CURRENT_TOOL", tool); 
-      this.createCustomCusor();
     },
     /**
      * Get (x, y) position of stylus/touch/mouse

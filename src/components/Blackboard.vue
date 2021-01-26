@@ -7,7 +7,6 @@
     />
 
     <BlackboardCoreDrawing
-      :sizeAndOrientationMode="sizeAndOrientationMode"
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
@@ -20,8 +19,6 @@
         handleImageFile,
         resetBoard,
         toggleFullScreen,
-        setTouchDisabled,
-        touchDisabled,
         undoPenStroke
       }"
       >
@@ -34,8 +31,8 @@
           <template v-slot:touch-slot>
             <!-- :messages needs to be populated for the v-slot:message to exist -->
             <v-switch 
-              :input-value="! touchDisabled"
-              @change="setTouchDisabled(!touchDisabled)"
+              :input-value="! onlyAllowApplePencil"
+              @change="$store.commit('SET_ONLY_ALLOW_APPLE_PENCIL', ! onlyAllowApplePencil)"
               color="yellow"
               class="mt-0 ml-2"
               persistent-hint
@@ -144,18 +141,13 @@ import { mapState, mapGetters } from "vuex";
 
 export default {
   props: {
+    // width and height are optional props
     strokesArray: {
       type: Array,
       required: true
     },
     backgroundImage: {
       type: Object
-    },
-    sizeAndOrientationMode: {
-      type: String,
-      default () {
-        return "landscape";
-      }
     }
   },
   components: { 
@@ -180,7 +172,8 @@ export default {
   },
   computed: {
     ...mapState([
-      "user"
+      "user",
+      "onlyAllowApplePencil"
     ]),
     ...mapGetters([
       "isAdmin"

@@ -500,8 +500,7 @@ export default {
           const boardDbPath = `/classes/${this.classID}/blackboards/${boardID}`;
           promises.push(
             db.doc(boardDbPath).update({ 
-              backgroundImageDownloadURL: "",
-              sizeAndOrientationMode: "massive" // PDF and horizontal mode are more special cases
+              backgroundImageDownloadURL: ""
             })
           );
           promises.push(
@@ -542,7 +541,6 @@ export default {
               const ref = this.classDocRef.collection("blackboards").doc(room.blackboards[idx]);
               promises.push(
                 ref.update({
-                  sizeAndOrientationMode: "portrait", // TODO: use landscape if it's a powerpoint slide
                   backgroundImageDownloadURL: downloadURL
                 })
               );

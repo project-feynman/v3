@@ -59,7 +59,6 @@
       <div style="position: relative;"> 
         <!-- Blackboard (use `v-show` to preserve the data even when Blackboard is hidden) -->
         <Blackboard v-show="!isPreviewing"
-          :sizeAndOrientationMode="sizeAndOrientationMode"
           :strokesArray="strokesArray" @stroke-drawn="stroke => strokesArray.push(stroke)"
           :backgroundImage="blackboard.backgroundImage" @update:background-image="newImage => blackboard.backgroundImage = newImage"
           :key="changeKeyToForceReset"
@@ -108,7 +107,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import db from "@/database.js";
-import { RecordState, PPT_SLIDE_RATIO } from "@/CONSTANTS.js";
+import { RecordState, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js";
 import { mapState } from "vuex";
 
@@ -145,7 +144,6 @@ export default {
       backgroundImage: null,
       currentTime: 0
     },
-    sizeAndOrientationMode: "landscape",
     strokesArray: [],
     uploadProgress: 0,
     isRecordingVideo: false,
@@ -293,9 +291,6 @@ export default {
       // console.log("backgroundImage =", this.blackboard.backgroundImage)
       // console.log("this.blackboard =", this.blackboard);
 
-      // TODO: quickfix code
-      const aspectRatio = 1/2;
-
       // TODO: not DRY, unify with RealtimeBlackboard's uploadExplanation () method
       const { backgroundImage } = this.blackboard; 
       this.$_saveExplToCacheThenUpload({
@@ -306,7 +301,7 @@ export default {
         title: this.postTitle,
         tags: this.folder === "" ? [] : [this.folder],
         explRef: this.explType === "post" ? this.newPostRef : this.newReplyRef,
-        aspectRatio
+        aspectRatio: MASSIVE_MODE_DIMENSIONS.HEIGHT / MASSIVE_MODE_DIMENSIONS.WIDTH
       });
   
       this.hardResetChildrenComponents(); 
