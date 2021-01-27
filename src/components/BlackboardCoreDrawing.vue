@@ -136,22 +136,31 @@ export default {
      * CRITICAL ASSUMPTION: strokesArray can be pushed singularly and deleted in batch, but can never be modified in place. 
      */
     strokesArray () {
-      const n = this.strokesArray.length; 
-      if (n - this.localStrokesArray.length === 1) { 
-        const newStroke = this.strokesArray[n-1];
-        if (newStroke.startTime === newStroke.endTime) {
-          this.$_drawStroke(newStroke, null) // instantly
-        } else {
-          this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); // smoothly 
+      let m = this.localStrokesArray.length; 
+      let n = this.strokesArray.length; 
+      if (m === n) { 
+        // DO NOTHING: I created the stroke in by drawing and the client only knows about it now
+      }
+      // catch up many times
+      else if (m < n) {
+        for (let i = m; i < n; i++) {
+          const newStroke = this.strokesArray[i];
+          if (newStroke.startTime === newStroke.endTime) {
+            this.$_drawStroke(newStroke, null) // instantly
+          } else {
+            this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); // smoothly 
+          }
+          this.localStrokesArray.push(newStroke);
         }
-        this.localStrokesArray.push(newStroke);
-      } 
-      else if (n < this.localStrokesArray.length) { // deletion
+      }
+      else if (m > n) { // deletion
         this.resetBlackboard(); // wipe
         this.resizeBlackboard(); // then draw to the current progress
       }
-      else {
-        alert("This blackboard might have broke, reload the page, and meanwhile I'm trying to figure out what conditions this happens.");
+
+      // check rep invariant 
+      if (this.localStrokesArray.length !== this.strokesArray.length) {
+        alert(`This board might have broke, external, internal lengths are ${this.localStrokesArray.length}, ${this.strokesArray.length}, reload the page, and meanwhile I'm trying to figure out what conditions this happens.`);
       }
     },
     /**
@@ -489,15 +498,6 @@ export default {
     },
     setTouchDisabled (newBoolean) {
       this.$store.commit("SET_ONLY_ALLOW_APPLE_PENCIL", newBoolean); 
-    },
-    checkRepInvariant () {
-      if (this.strokesArray.length !== this.localStrokesArray.length) {
-        alert("This blackboard might have broke, reload the page, and meanwhile I'm trying to figure out what conditions this happens.");
-        console.error(`Rep invariant violated: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`);
-        // throw new Error(
-        //   `Rep invariant violated: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
-        // );
-      }
     },
     /**
      * Get (x, y) position of stylus/touch/mouse
