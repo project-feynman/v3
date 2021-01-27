@@ -260,7 +260,7 @@ export default {
     },
     touchEnd (e) {
       this.handleEndOfStroke(this.currentStroke); 
-      this.currentStroke = { points: [] }; // this line might not be necessary, it's an attempt to fix stray strokes
+      // this.currentStroke = { points: [] }; // this line might not be necessary, it's an attempt to fix stray strokes
       this.$refs.FrontCanvas.removeEventListener("touchmove", this.touchMove);
       this.$refs.FrontCanvas.removeEventListener("touchend", this.touchEnd);
     },
@@ -270,7 +270,9 @@ export default {
     handleContactWithBlackboard (e, { isInitialContact }) {
       if (isInitialContact) this.startNewStroke(e);
       const contactPoint = this.getStylusOrFingerOrMousePosition(e); // should make "isHoldingLeftClick" an explicit parameter
-      this.lengthenTheCurrentStroke(e, contactPoint);
+      if (Math.abs(contactPoint.x - this.prevPoint.x) + Math.abs(contactPoint.y - this.prevPoint.y) > 0.5) {
+        this.lengthenTheCurrentStroke(e, contactPoint);
+      }
     },
     lengthenTheCurrentStroke (e, contactPoint) {
       // update state

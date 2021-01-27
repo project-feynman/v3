@@ -66,22 +66,28 @@
     </v-dialog>
 
     <!-- Update status -->
-    <v-dialog v-model="isRoomStatusPopupOpen">
+    <v-dialog v-model="isRoomStatusPopupOpen" width="500">
       <v-card>
         <v-card-title>
-          Update status to communicate across different rooms
+          HELP / DONE 
         </v-card-title>
 
-        <v-card-text>
+        <div style="display: flex; justify-content: center;">
+          <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Help!'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Help!</v-chip>
+          <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
+          <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
+        </div>
+
+        <!-- <v-card-text>
           <v-text-field v-model="newRoomStatus" placeholder="(You can empty the status by entering nothing.)"/>
-        </v-card-text>
+        </v-card-text> -->
       
         <v-card-actions>
           <v-spacer/>
           <v-btn @click="isRoomStatusPopupOpen = false">CANCEL</v-btn>
-          <v-btn @click="updateRoomStatus(); isRoomStatusPopupOpen = false;" color="accent">
+          <!-- <v-btn @click="updateRoomStatus(); isRoomStatusPopupOpen = false;" color="accent">
             Update status
-          </v-btn>
+          </v-btn> -->
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -118,8 +124,11 @@
         </template>
         
         <v-list>
-          <v-list-item @click="isRoomStatusPopupOpen = true">
-            <v-icon left color="blue">mdi-message-alert</v-icon> Update status
+          <v-list-item>
+            <!-- <v-icon left color="blue">mdi-message-alert</v-icon> -->
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Help!'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Help!</v-chip>
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
           </v-list-item>
           <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
@@ -128,7 +137,7 @@
             <v-icon left color="purple">mdi-content-save-all</v-icon> Save sequence of boards
           </v-list-item>
           <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
-            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe all pen strokes
+            <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe all boards in table
           </v-list-item>
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
             <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
