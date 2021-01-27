@@ -8,8 +8,8 @@ export const PPT_SLIDE_RATIO = 3/4;
 export const PDF_RATIO = 11/8.5; 
 
 export const MASSIVE_MODE_DIMENSIONS = {
-  HEIGHT: 1300,
-  WIDTH: 1400
+  HEIGHT: 1600,
+  WIDTH: 2000
 };
 
 export const ERASER_STROKE_WIDTH = 25;

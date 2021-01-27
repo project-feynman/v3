@@ -33,7 +33,6 @@
         <PenSwatch 	
           :colors="penColors" 	
           :isPenActive="isPen"	
-          @select-color="newColor => selectPen(newColor)" 	
         />
       </v-col>
 
@@ -86,7 +85,6 @@ export default {
       "currentTool"
     ]),
     penColors () { return this.user.penColors; },
-    isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; },
     isNormalEraser () { return this.currentTool.type === BlackboardTools.NORMAL_ERASER; },
     isPen () { return this.currentTool.type === BlackboardTools.PEN; }
   },
@@ -99,13 +97,6 @@ export default {
     window.removeEventListener("touchstart", e => this.palleteClose(e));
   },
   methods: {
-    selectPen (newColor) {
-      this.$store.commit("SET_CURRENT_TOOL", {
-        type: BlackboardTools.PEN,
-        color: newColor, // for performance issues
-        lineWidth: 2
-      });
-    },
     selectNormalEraser ({ eraserLineWidth }) {
       this.lastEraserNormal = true;
       this.colorPaletteExpanded = false;
@@ -115,14 +106,6 @@ export default {
         color: "",
         lineWidth: eraserLineWidth
       }); 
-    },
-    selectStrokeEraser () {
-      this.lastEraserNormal = false;
-      this.$emit('tool-select', { 
-        type: BlackboardTools.STROKE_ERASER,
-        color: "cyan", // doesn't do anything and is ignored
-        lineWidth: 5
-      });
     },
     palleteClick () {
       if (!this.isPen) this.colorPaletteExpanded = false; 

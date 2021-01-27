@@ -414,8 +414,6 @@ export default {
      * And that if it's removed, it's reset. 
      */
     async deleteAllStrokesFromDb () {
-      this.removeBlackboardStrokesListener(); 
-
       const batchDeleteRequests = [];
       let currentBatch = db.batch();
       let currentBatchSize = 0;
@@ -433,9 +431,6 @@ export default {
       console.log("number of batches to be deleted =", currentBatchSize); 
       
       await Promise.all(batchDeleteRequests);
-      this.hasFetchedStrokesFromDb = false; 
-      this.strokesArray = []; 
-      this.keepSyncingBoardWithDb(); 
     },
     handleRecordEnd () {
       // ask if the user wants to save/discard the recorded explanation 

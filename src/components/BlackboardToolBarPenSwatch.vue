@@ -62,7 +62,7 @@ export default {
         this.$store.commit("SET_CURRENT_TOOL", {
           type: "PEN",
           color,
-          lineWidth: 2
+          lineWidth: 2.5
         });
       } 
       // generate random color
@@ -75,7 +75,7 @@ export default {
         this.$store.commit("SET_CURRENT_TOOL", {
           type: "PEN",
           color: penColorsCopy[i],
-          lineWidth: 2
+          lineWidth: 2.5
         })
       }
     }

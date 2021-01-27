@@ -13,8 +13,6 @@
     <div ref="BlackboardWrapper" class="blackboard-wrapper" style="position: relative;">
       <canvas ref="FrontCanvas" class="front-canvas"
         @touchstart="e => touchStart(e)"
-        @touchmove="e => touchMove(e)"
-        @touchend="e => touchEnd(e)"
         @mousedown="e => mouseDown(e)"
         @mousemove="e => mouseMove(e)"
         @mouseup="e => mouseUp(e)"
@@ -126,8 +124,7 @@ export default {
     sessionID () { return this.$store.state.session.currentID; },
     imageBlobUrl () { return this.imageBlob ? URL.createObjectURL(this.imageBlob) : ""; },
     isPen () { return this.currentTool.type === BlackboardTools.PEN; },
-    isNormalEraser () { return this.currentTool.type === BlackboardTools.NORMAL_ERASER; },
-    isStrokeEraser () { return this.currentTool.type === BlackboardTools.STROKE_ERASER; }
+    isNormalEraser () { return this.currentTool.type === BlackboardTools.NORMAL_ERASER; }
   },
   watch: {
     /**
@@ -135,13 +132,12 @@ export default {
      * 
      * Note we ignore the case where (n == this.localStrokesArray.length)
      * because it means that user drew on canvas --> emits event --> client changes --> triggers our own watch hook
+     * 
+     * CRITICAL ASSUMPTION: strokesArray can be pushed singularly and deleted in batch, but can never be modified in place. 
      */
     strokesArray () {
       const n = this.strokesArray.length; 
-      if (n === 0) {
-        this.ctx.clearRect(0, 0, this.canvas.scrollWidth, this.canvas.scrollHeight);
-        this.localStrokesArray = [];
-      } else if (n - this.localStrokesArray.length === 1) { 
+      if (n - this.localStrokesArray.length === 1) { 
         const newStroke = this.strokesArray[n-1];
         if (newStroke.startTime === newStroke.endTime) {
           this.$_drawStroke(newStroke, null) // instantly
@@ -150,7 +146,13 @@ export default {
         }
         this.localStrokesArray.push(newStroke);
       } 
-      this.checkRepInvariant(); 
+      else if (n < this.localStrokesArray.length) { // deletion
+        this.resetBlackboard(); // wipe
+        this.resizeBlackboard(); // then draw to the current progress
+      }
+      else {
+        alert("This blackboard might have broke, reload the page, and meanwhile I'm trying to figure out what conditions this happens.");
+      }
     },
     /**
      * Updates the background image. 
@@ -172,14 +174,10 @@ export default {
           blob ? URL.createObjectURL(blob) : downloadURL
         );
       }
-    },
-    currentTool () {
-      this.createCustomCursor();
     }
   },
   mounted () {
     this.initializeCanvas();
-    document.fonts.ready.then(this.createCustomCursor); // since cursor uses material icons font, load it after fonts are ready
     
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
@@ -234,41 +232,36 @@ export default {
       }
     },
     touchStart (e) {
-      if (this.isNotValidTouch(e)) return; 
-
-      if (this.isDrawingWithApplePencil(e)) { 
-        // disable touch drawing so the user doesn't accidentally draw with his/her palm 
-        this.$store.commit("SET_ONLY_ALLOW_APPLE_PENCIL", true); 
+      if (e.touches.length > 1) {
+        console.log("error: only 1 finger allowed");
+        return;
+      }
+      const isApplePencil = e.touches[0].touchType === "stylus"
+      if (this.onlyAllowApplePencil && !isApplePencil)   {
+        console.log('error: cannot use finger during Apple Pencil mode');
+        return;
       }
       this.handleContactWithBlackboard(e, { isInitialContact: true });
-    },
-    mouseDown (e) {
-      this.isHoldingLeftClick = true;
-      this.handleContactWithBlackboard(e, { isInitialContact: true });
+      // touchmove is single-threaded, which prevents multi-touch edge cases from happening in the first place
+      this.$refs.FrontCanvas.addEventListener("touchmove", this.touchMove);
+      this.$refs.FrontCanvas.addEventListener("touchend", this.touchEnd);
     },
     touchMove (e) {
-      if (this.isNotValidTouch(e)) return;  
       this.handleContactWithBlackboard(e, { isInitialContact: false });
     },
-    // TODO REFACTOR: can take an optional argument, and share the function with mouse and touch
-    mouseMove (e) {
-      if (!this.isHoldingLeftClick) return; 
-      this.handleContactWithBlackboard(e, { isInitialContact: false });
+    touchEnd (e) {
+      this.handleEndOfStroke(this.currentStroke); 
+      this.currentStroke = { points: [] }; // this line might not be necessary, it's an attempt to fix stray strokes
+      this.$refs.FrontCanvas.removeEventListener("touchmove", this.touchMove);
+      this.$refs.FrontCanvas.removeEventListener("touchend", this.touchEnd);
     },
     /**
      * TODO: Make `tool` an explicit parameter 
      */
     handleContactWithBlackboard (e, { isInitialContact }) {
-      e.preventDefault(); // don't know what will happen if e.preventDefault is here
+      if (isInitialContact) this.startNewStroke(e);
       const contactPoint = this.getStylusOrFingerOrMousePosition(e); // should make "isHoldingLeftClick" an explicit parameter
-      
-      if (this.isStrokeEraser) { 
-        this.eraseAllStrokesWithinRadius(e, contactPoint); 
-      } 
-      else {
-        if (isInitialContact) this.startNewStroke(e);
-        this.lengthenTheCurrentStroke(e, contactPoint);
-      }
+      this.lengthenTheCurrentStroke(e, contactPoint);
     },
     lengthenTheCurrentStroke (e, contactPoint) {
       // update state
@@ -282,33 +275,13 @@ export default {
         this.$_connectTwoPoints(
           [this.normalizePoint(this.prevPoint), this.normalizePoint(contactPoint)], // `points`: note that the points have to be normalized for now before refactors
           1, // `i`: note that setting i = 1 is a quick-fix (will refactor $_connectTwoPoints() in the future)
-          this.isNormalEraser || this.isStrokeEraser, // `isErasing`,
+          this.isNormalEraser, // `isErasing`,
           this.ctx,
           this.currentTool.color,
           this.currentTool.lineWidth,
         );
       }
       this.prevPoint = contactPoint;
-    },
-    /**
-     * For each stroke that intersects with a circular region,
-     * draw an "anti-stroke" to effectively delete it. 
-     */
-    eraseAllStrokesWithinRadius (e, eraserPosition) {
-      for (const stroke of this.strokesArray) {
-        if (stroke.wasErased || stroke.isErasing) {  
-          continue;
-        }
-        for (const point of stroke.points) {
-          const deltaX = eraserPosition.x - point.unitX * this.canvas.width;
-          const deltaY = eraserPosition.y - point.unitY * this.canvas.height;
-          const radius = 10; 
-          if (Math.sqrt(deltaX**2 + deltaY**2) < radius) {
-            this.eraseStroke(stroke);
-            break; 
-          }
-        }
-      }
     },
     /**
      * Create an anti-stroke that covers over another stroke, effectively erasing it. 
@@ -329,19 +302,6 @@ export default {
       this.$_drawStroke(antiStroke);
       this.handleEndOfStroke(antiStroke);
     },
-    mouseUp (e) {
-      this.isHoldingLeftClick = false;
-      this.handleEndOfStroke(this.currentStroke); 
-      this.currentStroke = { points: [] };
-    },
-    // unintuitively, isNotValidTouch does not work for touch end (touches will be empty always, so it's in changedTouches), so the best way is just to note that 
-    // points.length === 0 reflects that touchStart, touchMove didn't do anything
-    touchEnd (e) {
-      if (this.currentStroke.points.length === 0) return; 
-      e.preventDefault(); 
-      this.handleEndOfStroke(this.currentStroke); 
-      this.currentStroke = { points: [] };
-    },
     async resetBlackboard () {
       this.wipeUI();
       this.resetVariables(); 
@@ -358,6 +318,19 @@ export default {
         y: -1 
       };
       this.imageBlob = null;
+    },
+    mouseDown (e) {
+      this.isHoldingLeftClick = true;
+      this.handleContactWithBlackboard(e, { isInitialContact: true });
+    },
+    // TODO REFACTOR: can take an optional argument, and share the function with mouse and touch
+    mouseMove (e) {
+      if (!this.isHoldingLeftClick) return; 
+      this.handleContactWithBlackboard(e, { isInitialContact: false });
+    },
+    mouseUp (e) {
+      this.isHoldingLeftClick = false;
+      this.handleEndOfStroke(this.currentStroke); 
     },
     /**
      * Generates a thumbnail by: 
@@ -525,19 +498,6 @@ export default {
         //   `Rep invariant violated: external, internal lengths are ${this.strokesArray.length}, ${this.localStrokesArray.length}`
         // );
       }
-    },
-    isNotValidTouch (e) {
-      // disallow drawing with multiple fingers 
-      if (! e.touches) return true;
-      if (e.touches.length !== 1) return true;
-      if (this.onlyAllowApplePencil && !this.isDrawingWithApplePencil(e)) return true; 
-      return false;
-    },
-    /**
-     * Note that a Surface Pen will register as "touch" rather than "stylus" 
-     */
-    isDrawingWithApplePencil (e) {
-      return e.touches[0].touchType === "stylus";
     },
     /**
      * Get (x, y) position of stylus/touch/mouse
