@@ -69,7 +69,14 @@ export const SUPER_USER_EMAILS = [
   "jorloff@mit.edu", // Jeremy Orloff
 
   // 8.022
-  "harlow@mit.edu"
+  "harlow@mit.edu",
+
+  // 6.437
+  "gww@mit.edu",
+  "polina@mit.edu",
+  "chueh@mit.edu",
+  "samtenka@mit.edu",
+  "zhxzhang@mit.edu"
 ];
 
 export const DefaultEmailSettings = {
