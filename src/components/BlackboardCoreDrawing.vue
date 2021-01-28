@@ -65,9 +65,9 @@
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import { BlackboardTools, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
-
 import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState } from "vuex";
+import _ from "lodash";
 
 export default {
   props: {
@@ -141,26 +141,36 @@ export default {
       if (m === n) { 
         // DO NOTHING: I created the stroke in by drawing and the client only knows about it now
       }
-      // catch up many times
       else if (m < n) {
         for (let i = m; i < n; i++) {
           const newStroke = this.strokesArray[i];
-          if (newStroke.startTime === newStroke.endTime) {
-            this.$_drawStroke(newStroke, null) // instantly
-          } else {
-            this.$_drawStroke(newStroke, this.$_getPointDuration(newStroke)); // smoothly 
-          }
+          this.$_drawStroke(
+            newStroke, 
+            newStroke.startTime !== newStroke.endTime ? this.$_getPointDuration(newStroke) : null // instantly or smoothly
+          );
           this.localStrokesArray.push(newStroke);
         }
       }
-      else if (m > n) { // deletion
-        this.resetBlackboard(); // wipe
-        this.resizeBlackboard(); // then draw to the current progress
-      }
+      else { 
+        // [WHY USE DEBOUNCE]: if number of strokes > 500, then deletion happens in multiple batches that can 
+        // resolve very close to each other, and the resizeBlackboard()
+        // which draws hundreds of strokes instantly overfloods the event loop 
+        // and causes strange remnant strokes to linger on the board
+        const one_second_in_milliseconds = 1000; 
+        const wipeThenDraw = _.debounce(() => {
+          console.log("debounced board reset");
+          // reset component
+          this.wipeUI(); 
+          this.localStrokesArray = [];
+          this.prevPoint = { 
+            x: -1, 
+            y: -1 
+          };
 
-      // check rep invariant 
-      if (this.localStrokesArray.length !== this.strokesArray.length) {
-        alert(`This board might have broke, external, internal lengths are ${this.localStrokesArray.length}, ${this.strokesArray.length}, reload the page, and meanwhile I'm trying to figure out what conditions this happens.`);
+          // draw to current progress
+          this.resizeBlackboard(); 
+        }, one_second_in_milliseconds);
+        wipeThenDraw(); 
       }
     },
     /**
