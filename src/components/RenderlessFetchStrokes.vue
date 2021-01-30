@@ -20,6 +20,7 @@ export default {
     async fetchStrokes () {
       this.isLoading = true;
       const promises = [];
+      console.log("this.strokesRef =", this.strokesRef);
       const strokesPromise = this.$_getCollection(this.strokesRef.orderBy("strokeNumber", "asc")).then((strokesArray) => this.strokesArray = strokesArray);
       promises.push(strokesPromise);
       if (this.imageDownloadUrl) {

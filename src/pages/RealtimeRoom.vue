@@ -1,7 +1,9 @@
 <template>
   <div>  
     <!-- Can expose an update participant function -->
-    <HandleUpdatingParticipants
+    <!-- Note activeBoardID will not be reactive because we just see the change in currentBoardNumber to represent both -->
+    <HandleUpdatingParticipants v-if="activeBoardID"
+      :activeBoardID="activeBoardID"
       :currentBoardNumber="currentBoardNumber"
       :currentPenColor="currentTool.color"
       :roomID="roomId"

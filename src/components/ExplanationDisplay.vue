@@ -61,7 +61,7 @@
             :backgroundUrl="expl.imageUrl"
             :aspectRatio="expl.aspectRatio"
           />
-      </div>
+        </div>
       </RenderlessFetchStrokes>
 
       <!-- Delete popup TODO: refactor -->
