@@ -255,7 +255,7 @@
       </template>
     </v-list-item> 
 
-    <v-list-item v-if="rooms.length !== 0 && rooms.length < 12" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 50%; font-size: 0.9rem;"> 
+    <v-list-item v-if="rooms.length !== 0 && rooms.length < 20" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 50%; font-size: 0.9rem;"> 
       <v-icon left color="black">mdi-plus</v-icon> new table 
     </v-list-item>
 

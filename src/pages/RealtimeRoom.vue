@@ -94,7 +94,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="isRenameRoomPopupOpen">
+    <v-dialog v-model="isRenameRoomPopupOpen" width="500">
       <v-card>
         <v-card-title>
           Rename the room to designate it for another purpose
