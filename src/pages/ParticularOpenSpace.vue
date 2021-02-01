@@ -29,11 +29,13 @@
         </template>
 
         <v-list>
-          <v-list-item @click="isBirdsEyeViewPopupOpen = true">
+          <!-- For some reason you need click.stop -->
+          <v-list-item @click.stop="isBirdsEyeViewPopupOpen = true">
             <v-icon left color="orange">mdi-bullhorn</v-icon> Birds Eye View
           </v-list-item>
+
           <ParticularOpenSpaceBirdsEyeViewPopup v-if="participants" 
-            :value="true"
+            :value="isBirdsEyeViewPopupOpen"
             @input="newValue => isBirdsEyeViewPopupOpen = newValue"
             :participants="participants"
           />

@@ -1,11 +1,28 @@
 <template>
-  <v-dialog 
+   <!-- `v-if` is not redundant, as it forces the birds-eye view to be refetched --> 
+  <v-dialog v-if="value"
     :value="value" 
     @input="(newValue) => $emit('input', newValue)" 
-    width="90vw"
+    width="98vw"
+    ref="popup-element"
   >
+    <!-- <v-toolbar dark fixed>
+      <v-btn icon dark @click="$emit('input', false)">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </v-toolbar> -->
+
     <v-card> 
-      <div style="display: flex; justify-content: space-evenly">
+      <v-card-title>
+        There are {{ blackboardIDsWithPeopleOn.length }} active blackboards (to refresh blackboards, exit and re-open this popup by tapping outside)
+      </v-card-title>
+
+      <v-card-subtitle>
+        Warning: might lag if there are too many blackboard strokes
+      </v-card-subtitle>
+
+      <!-- Without `position: relative` the interection might not work -->
+      <div :style="`height: ${getPopupWidth()}; display: flex; justify-content: space-evenly; flex-flow: wrap;`">
         <template v-for="boardID of blackboardIDsWithPeopleOn">
           <RenderlessFetchStrokes
             :strokesRef="getStrokesRefFrom(boardID)"
@@ -19,22 +36,30 @@
                   
               More info: https://vuetifyjs.com/en/directives/intersect/#intersection-observer 
             -->
-            <div style="position: relative;" v-intersect.once="{
+            <div class="ma-1" v-intersect.once="{
               handler (entries, observer, isIntersecting) {
                 if (isIntersecting) {
                   fetchStrokes(); 
                 } 
               },
               options: {
-                threshold: 0.5 // intersection triggers when 0.5 i.e. 50% of blackboard is in view 
+                threshold: 0.3 // intersection triggers when 0.5 i.e. 50% of blackboard is in view 
               }
             }"> 
+              <template v-if="strokesArray.length === 0 || isLoading">
+                <!-- PLACEHOLDER so intersection doesn't autofire for a dimensionless element -->
+                <div :style="`width: ${getPopupWidth()}px; height: ${getPopupWidth()}px;`">
+                  Loading...
+                </div>
+              </template>
+
               <BlackboardCoreDrawing v-if="! isLoading"
                 :strokesArray="strokesArray"
-                :width="500"
-                :height="500"
-                :isReadOnly="true"
+                :width="getPopupWidth()"
+                :height="getPopupWidth()"
+                isReadOnly
               />
+
               <div style="margin-right: 30px"></div>
             </div>
           </RenderlessFetchStrokes>
@@ -83,6 +108,11 @@ export default {
     }
   },
   methods: {
+    getPopupWidth () {
+      const separationBetweenBoards = 20; 
+      const deltaBetweenPopupAndFullWidth = 50; 
+      return (window.screen.width / 2) - separationBetweenBoards - deltaBetweenPopupAndFullWidth; 
+    },
     getStrokesRefFrom (boardID) {
       return db.collection(`/classes/${this.$route.params.class_id}/blackboards/${boardID}/strokes`);
     }
