@@ -46,7 +46,7 @@
                 threshold: 0.3 // intersection triggers when 0.5 i.e. 50% of blackboard is in view 
               }
             }"> 
-              <template v-if="strokesArray.length === 0 || isLoading">
+              <template v-if="isLoading">
                 <!-- PLACEHOLDER so intersection doesn't autofire for a dimensionless element -->
                 <div :style="`width: ${getPopupWidth()}px; height: ${getPopupWidth()}px;`">
                   <!-- Loading... -->
