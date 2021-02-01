@@ -36,7 +36,7 @@
                   
               More info: https://vuetifyjs.com/en/directives/intersect/#intersection-observer 
             -->
-            <div class="ma-1" v-intersect.once="{
+            <div style="margin: 2px" v-intersect.once="{
               handler (entries, observer, isIntersecting) {
                 if (isIntersecting) {
                   fetchStrokes(); 
@@ -111,7 +111,7 @@ export default {
   },
   methods: {
     getPopupWidth () {
-      const separationBetweenBoards = 20; 
+      const separationBetweenBoards = 10; 
       const deltaBetweenPopupAndFullWidth = 50; 
       // for iOS Safari compatibility 
       // see https://stackoverflow.com/questions/58390221/js-safari-on-ios-how-to-get-viewport-scale-property
