@@ -7,7 +7,7 @@
     @change="(newClass) => handleChange(newClass)"
     return-object 
     prepend-inner-icon="mdi-magnify"
-    placeholder="e.g. 8.01, 18.01, ESG"
+    placeholder="e.g. 8.02"
     color="accent" 
     outlined 
     clearable 

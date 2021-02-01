@@ -21,7 +21,7 @@
 
           <ClassSwitchDropdown>
             <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-              <v-icon left class="mr-2">mdi-plus</v-icon> Add class
+              <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
             </v-list-item>
           </ClassSwitchDropdown>
 
