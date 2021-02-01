@@ -4,7 +4,7 @@
     :value="value" 
     @input="(newValue) => $emit('input', newValue)" 
     width="98vw"
-    ref="popup-element"
+    id="birds-eye-view-popup"
   >
     <!-- <v-toolbar dark fixed>
       <v-btn icon dark @click="$emit('input', false)">
@@ -49,7 +49,9 @@
               <template v-if="strokesArray.length === 0 || isLoading">
                 <!-- PLACEHOLDER so intersection doesn't autofire for a dimensionless element -->
                 <div :style="`width: ${getPopupWidth()}px; height: ${getPopupWidth()}px;`">
-                  Loading...
+                  <!-- Loading... -->
+                  <p v-if="isLoading">Loading...</p>
+                  <p v-else>Scroll down to load</p>
                 </div>
               </template>
 
@@ -111,7 +113,10 @@ export default {
     getPopupWidth () {
       const separationBetweenBoards = 20; 
       const deltaBetweenPopupAndFullWidth = 50; 
-      return (window.screen.width / 2) - separationBetweenBoards - deltaBetweenPopupAndFullWidth; 
+      // for iOS Safari compatibility 
+      // see https://stackoverflow.com/questions/58390221/js-safari-on-ios-how-to-get-viewport-scale-property
+      // const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      return (window.innerWidth * 0.5) - separationBetweenBoards - deltaBetweenPopupAndFullWidth; 
     },
     getStrokesRefFrom (boardID) {
       return db.collection(`/classes/${this.$route.params.class_id}/blackboards/${boardID}/strokes`);
