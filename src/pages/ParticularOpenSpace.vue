@@ -13,6 +13,7 @@
       </div>
     </portal>
 
+
     <!-- START OF "SPACE ACTIONS" dropdown menu -->
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal to="current-open-space-actions">
@@ -24,6 +25,17 @@
         </template>
 
         <v-list>
+          <!-- For some reason you need click.stop -->
+          <v-list-item @click.stop="isBirdsEyeViewPopupOpen = true">
+            <v-icon left color="orange">mdi-bullhorn</v-icon> Birds Eye View
+          </v-list-item>
+
+          <ParticularOpenSpaceBirdsEyeViewPopup v-if="participants" 
+            :value="isBirdsEyeViewPopupOpen"
+            @input="newValue => isBirdsEyeViewPopupOpen = newValue"
+            :participants="participants"
+          />
+
           <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
             <v-icon left color="orange">mdi-bullhorn</v-icon> Make announcement
           </v-list-item>
@@ -304,6 +316,8 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
 import ParticularOpenSpaceRenamePopup from "@/components/ParticularOpenSpaceRenamePopup.vue";
 import ParticularOpenSpaceDeletePopup from "@/components/ParticularOpenSpaceDeletePopup.vue";
+import ParticularOpenSpaceBirdsEyeViewPopup from "@/components/ParticularOpenSpaceBirdsEyeViewPopup.vue"; 
+
 import firebase from "firebase/app";
 import "firebase/firestore"; 
 import "firebase/functions";
@@ -321,7 +335,8 @@ export default {
     HandleAnnouncements,
     ClassLibrary,
     ParticularOpenSpaceRenamePopup,
-    ParticularOpenSpaceDeletePopup
+    ParticularOpenSpaceDeletePopup,
+    ParticularOpenSpaceBirdsEyeViewPopup
   },
   data () {
     return {
@@ -342,7 +357,8 @@ export default {
       minRoomSizeOnShuffle: 2,
       incrementKeyToDestroy: 0,
       isRenamePopupOpen: false,
-      isDeletePopupOpen: false
+      isDeletePopupOpen: false,
+      isBirdsEyeViewPopupOpen: false
     }
   },
   computed: {

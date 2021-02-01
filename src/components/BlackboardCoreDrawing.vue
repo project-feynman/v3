@@ -11,12 +11,17 @@
     </slot>
 
     <div ref="BlackboardWrapper" class="blackboard-wrapper" style="position: relative;">
-      <canvas ref="FrontCanvas" class="front-canvas"
+      <canvas v-if="! isReadOnly"
+        ref="FrontCanvas" class="front-canvas"
         @touchstart="e => touchStart(e)"
         @mousedown="e => mouseDown(e)"
         @mousemove="e => mouseMove(e)"
         @mouseup="e => mouseUp(e)"
       ></canvas>
+      <canvas v-else
+        ref="FrontCanvas" class="front-canvas"
+      >
+      </canvas>
 
       <canvas ref="BackCanvas" class="back-canvas">
 
@@ -82,6 +87,22 @@ export default {
     backgroundImage: {
       type: Object
       // don't set `required` to true yet to avoid minor crashes
+    },
+    isReadOnly: {
+      type: Boolean,
+      required: true
+    },
+    width: {
+      type: Number,
+      default () {
+        return MASSIVE_MODE_DIMENSIONS.WIDTH; 
+      }
+    },
+    height: {
+      type: Number,
+      default () {
+        return MASSIVE_MODE_DIMENSIONS.HEIGHT;
+      }
     }
   },
   mixins: [
@@ -411,8 +432,8 @@ export default {
       BlackboardWrapper.style.height = "100%"; 
 
       changeInternalAndExternalDimensionsOfBlackboard({
-        newWidth: MASSIVE_MODE_DIMENSIONS.WIDTH,
-        newHeight: MASSIVE_MODE_DIMENSIONS.HEIGHT
+        newWidth: this.width,
+        newHeight: this.height
       });
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"

@@ -56,6 +56,10 @@ export default {
       type: String,
       required: true
     },
+    activeBoardID: {
+      type: String,
+      required: true
+    },
     currentBoardNumber: {
       type: Number,
       required: true
@@ -124,6 +128,7 @@ export default {
         await this.myFirestoreRef.set({
           sessionID: this.sessionID,
           currentRoom: this.roomID,
+          currentBoardID: this.activeBoardID,
           currentBoardNumber: this.currentBoardNumber,
           currentPenColor: this.currentPenColor,
           roomTypeID: this.$route.params.section_id,

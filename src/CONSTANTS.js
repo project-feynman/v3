@@ -9,7 +9,7 @@ export const PDF_RATIO = 11/8.5;
 
 export const MASSIVE_MODE_DIMENSIONS = {
   HEIGHT: 1600,
-  WIDTH: 1800
+  WIDTH: 1600
 };
 
 export const ERASER_STROKE_WIDTH = 25;

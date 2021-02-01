@@ -10,6 +10,7 @@
       :strokesArray="strokesArray" @stroke-drawn="stroke => $emit('stroke-drawn', stroke)"
       :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
+      :isReadOnly="false"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
@@ -206,9 +207,10 @@ export default {
     async startRecording () {
       this.audioRecorder.startRecording();
       this.currentTime = 0;
+      const ONE_HUNDRED_MILLISECONDS = 100; 
       this.timer = setInterval(
-        () => this.currentTime += 0.1,
-        100
+        () => this.currentTime += 0.1, 
+        ONE_HUNDRED_MILLISECONDS
       );   
       this.currentState = RecordState.MID_RECORD;
       this.$emit("record-start"); // inform the parent to disable the "submit post" button
