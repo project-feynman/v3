@@ -13,10 +13,6 @@
       </div>
     </portal>
 
-    <!-- popup portal -->
-    <portal-target name="popup-portal">
-
-    </portal-target>
 
     <!-- START OF "SPACE ACTIONS" dropdown menu -->
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
