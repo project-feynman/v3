@@ -213,9 +213,13 @@
           :value="boardID" :key="i"
         >
           <!-- Screensharing becomes the background of the blackboard -->
+          <!-- TODO: fix this -->
           <div id="screenshare-container" style="position: fixed; z-index: 1;">
 
           </div>
+
+          <!-- <MyParticipantDocUpdater/> -->
+
           <RealtimeBlackboard v-if="boardID === activeBoardID"
             :blackboardRef="blackboardRefs[i]"
           >
@@ -316,9 +320,6 @@ export default {
     ]),
     classID () {
       return this.$route.params.class_id; 
-    },
-    sessionID () {
-      return this.session.currentID;
     }
   },
   // database => state 
@@ -327,6 +328,7 @@ export default {
       // updates `currentBoardNumber`, assumes `this.room.blackboards` is hydrated
       // correct because `activeBoardID` can only be changed via user interaction, `this.room.blackboards` is defined
       this.currentBoardNumber = this.getBoardNumberFromID(newVal);
+      this.$store.commit("SET_CURRENT_BOARD_ID", newVal);
     },
     room: {
       handler (newVal, oldVal) {

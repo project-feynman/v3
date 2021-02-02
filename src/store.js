@@ -7,27 +7,6 @@ import DailyIframe from '@daily-co/daily-js';
 
 Vue.use(Vuex);
 
-function setDisconnectHook (user) {
-	// const firebaseRef = firebase.database().ref('/status/' + user.uid);
-	// firebase.database().ref('.info/connected').on('value', async snapshot => {
-  //   if (snapshot.val() === false) return; // copied from Firebase, no idea why it's needed  
-  //   await firebaseRef.onDisconnect().set({ isOnline: false }); // server now knows if connection is lost, perform "set(isOfflineForDatabase)"
-  //   firebaseRef.set({ isOnline: true });
-  //   firebase.firestore().collection('users').doc(user.uid).update({
-  //     isOnline: true // updating firestore directly is much faster, don't wait for mirroring
-  //   });
-  // });
-}
-
-// function syncMitClassWithDb (mitClassRef, context) {
-//   mitClassRef.onSnapshot(mitClass => {
-//     if (!mitClass.exists) return; 
-//     console.log(mitClass.data())
-//     context.commit('SET_CLASS', mitClass.data());
-//     setDisconnectHook(mitClass.data()); // TODO: delete previous onDisconnect() hook 
-//   });
-// }
-
 async function getDocFromDb (ref) {
   return new Promise(async (resolve, reject) => {
     const doc = await ref.get();
@@ -47,8 +26,13 @@ export default new Vuex.Store({
     mitClass: null,
     explCache: {},
     blackboardRoom: null,
-    session: {},
+    
+    currentBoardNumber: 1,
+    currentBoardID: "",
 
+    // DEPRECTATE
+    browserTabID: getRandomId(), 
+    session: {},
 
     // video conference related states
     participants: {},
@@ -163,6 +147,9 @@ export default new Vuex.Store({
     },
     SET_DOMINANT_SPEAKER_UID (state, dominantSpeakerUID) {
       state.dominantSpeakerUID = dominantSpeakerUID; 
+    },
+    SET_CURRENT_BOARD_ID (state, currentBoardID) {
+      state.currentBoardID = currentBoardID; 
     }
   },
   actions: {

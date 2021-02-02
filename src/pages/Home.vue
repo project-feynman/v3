@@ -92,7 +92,6 @@
       </v-container>
     </v-card>
     
-    <!-- TODO: <HomeNextUpdateCountdownTimer/> -->
       <v-card elevation="5" class="mt-5">
         <!-- color="accent" makes the slider indicator orange -->
         <v-tabs vertical touchless color="accent" class="ml-1">
@@ -640,8 +639,6 @@ import AuthHelpers from "@/mixins/AuthHelpers.js";
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import { demoVideo, demoVideo2, DefaultEmailSettings } from "@/CONSTANTS.js";
-import HomeNextUpdateCountdownTimer from "@/components/HomeNextUpdateCountdownTimer.vue"; 
-import HomeUserGrowthMoneyBurnGraph from "@/components/HomeUserGrowthMoneyBurnGraph.vue";
 
 export default {
   name: "HomePage",
@@ -652,9 +649,7 @@ export default {
     ExplanationCreate,
     TheAppBar,
     TheDropdownMenu,
-    TheSearchBar,
-    HomeNextUpdateCountdownTimer,
-    HomeUserGrowthMoneyBurnGraph
+    TheSearchBar
   },
   mixins: [
     AuthHelpers,

@@ -121,6 +121,10 @@
 
     <!-- MAIN CONTENT / AREA (where the collaborative blackboard resides) -->
     <v-main>
+      <MyParticipantDocUpdater
+        :classID="$route.params.class_id"
+        :roomID="$route.params.room_id"
+      />
       <portal-target name="main-content">
         
       </portal-target>
@@ -151,6 +155,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js"; 
 
+import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
 import GroupChat from "@/components/GroupChat.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
@@ -173,7 +178,8 @@ export default {
     ClassSwitchDropdown,
     ClassNewPopup,
     AllOpenSpaces,
-    VisualForum
+    VisualForum,
+    MyParticipantDocUpdater
   },
   data: () => ({
     firebaseRef: null,
