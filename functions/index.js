@@ -66,11 +66,15 @@ function getRandomId () {
 /**
  * `.onWrite` is Triggered on any mutation event: when data is created, updated, or deleted in the Realtime Database.
  * */
-exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/room/{roomID}/participants/{sessionID}").onWrite((change, context) => {
-  // it responds to a change in the incrementCounter data
-  const { classID, roomID, sessionID } = context.params;
-  return firestore.doc(`/classes/${classID}/participants/${sessionID + roomID}`).delete();
-  // firestore.doc(`/classes/${classID}/participants/${sessionID}`).delete(); // for backwards compatibility
+exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/room/{roomID}/participants/{disconnectID}").onWrite((change, context) => {
+  // `change` has a `before` and `after` property, which each has a `_data` property that looks like `{ hasDisconnected: true }`
+  console.log("change.after =", change.after);
+  const { classID, roomID, disconnectID } = context.params;
+  
+  // for backwards compatibility
+  firestore.doc(`/classes/${classID}/participants/${disconnectID + roomID}`).delete(); 
+
+  return firestore.doc(`/classes/${classID}/participants/${disconnectID}`).delete();
 })
 
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already

@@ -2,6 +2,12 @@
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
   <div style="height: 100%">
+    <MyParticipantDocUpdater v-if="classID && roomID"
+      :classID="classID"
+      :roomID="roomID"
+      :key="classID + roomID"
+    />
+
     <!-- Elevation ranges from 0 to 24 -->
     <!-- width 240; anything below, if the scrollbar appears (for laptops), then the right margin gets squished and invaded -->
     <!-- Sets the designated mobile breakpoint for the component. This will apply alternate styles for mobile devices such as the temporary prop, or activate the bottom prop when the breakpoint value is met. Setting the value to 0 will disable this functionality. -->
@@ -151,6 +157,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { DefaultEmailSettings } from "@/CONSTANTS.js";
 import { getRandomId } from "@/helpers.js"; 
 
+import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
 import GroupChat from "@/components/GroupChat.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
@@ -173,7 +180,8 @@ export default {
     ClassSwitchDropdown,
     ClassNewPopup,
     AllOpenSpaces,
-    VisualForum
+    VisualForum,
+    MyParticipantDocUpdater
   },
   data: () => ({
     firebaseRef: null,
@@ -191,7 +199,11 @@ export default {
       "isBoardFullscreen",
       "isViewingLibrary",
       "isViewingForum"
-    ])
+    ]),
+    // note: these properties are not reactive, but I assume they will be re-rendered and therefore updated 
+    // due to <router-view :key="$route.params.class_id> in App.vue
+    classID () { return this.$route.params.class_id; },
+    roomID () { return this.$route.params.room_id; }
   },
   // TODO: refactor this quickfix
   watch: {

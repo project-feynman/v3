@@ -156,12 +156,13 @@
 
     <!-- Selectable *should* allow v-chip to be copied and pasted, but it's currently not doing anything -->
   
-    <!-- ROOMS -->
+  <!-- active-class="active-blackboard accent--text" -->
+  <!-- ROOMS -->
   <v-list>
      <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
-      active-class="active-blackboard accent--text"
       dense
+      color="accent"
       selectable
       class="pl-0 pr-0 mx-2 mb-0"
     >

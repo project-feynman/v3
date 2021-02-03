@@ -110,10 +110,10 @@ export default {
   },
   async created () {
     // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
-    this.CallObject.setBandwidth({
-      kbs: 30,
-      trackConstraints: { width: 320, height: 180, frameRate: 25 }
-    });
+    // this.CallObject.setBandwidth({
+    //   kbs: 30,
+    //   trackConstraints: { width: 320, height: 180, frameRate: 25 }
+    // });
 
     // initialize event listeners (documentation: https://docs.daily.co/reference#events)
     const ONE_HUNDRED_MILLISECONDS = 100; 
