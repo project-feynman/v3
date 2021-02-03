@@ -1,15 +1,5 @@
 <template>
   <div>  
-    <!-- Can expose an update participant function -->
-    <!-- Note activeBoardID will not be reactive because we just see the change in currentBoardNumber to represent both -->
-    <HandleUpdatingParticipants v-if="activeBoardID"
-      :activeBoardID="activeBoardID"
-      :currentBoardNumber="currentBoardNumber"
-      :currentPenColor="currentTool.color"
-      :roomID="roomId"
-      :classID="classID"
-    />
-
     <VideoConferenceRoom
       :roomID="roomId"
     />
@@ -160,7 +150,7 @@
         <!-- active-class:  -->
         <!-- hide-details: eliminates unnecessary bottom padding -->
         <div v-if="room" class="d-flex">
-          <div v-if="activeBoardID">
+          <div v-if="currentBoardID">
             <v-menu v-model="isBoardsMenuOpen" fixed offset-y bottom>
               <template v-slot:activator>
                 <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-0" 
@@ -171,7 +161,7 @@
                       :style="
                         `color: ${currentTool.color}; width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
                   ">
-                    {{ getBoardNumberFromID(activeBoardID) }}
+                    {{ getBoardNumberFromID(currentBoardID) }}
                   </span>
                   <v-spacer/>
                   <v-icon>mdi-menu-down</v-icon>
@@ -181,7 +171,7 @@
               <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
                 <template v-for="boardID in room.blackboards">
                   <v-list-item 
-                    @click="activeBoardID = boardID"
+                    @click="currentBoardID = boardID"
                     :key="boardID"
                     style="background-color: rgb(62, 66, 66);"
                     class="px-0"
@@ -204,8 +194,8 @@
 
     <!-- The actual blackboards -->
     <div id="room" class="room-wrapper">
-      <v-tabs-items v-if="blackboardRefs.length !== 0 && room && activeBoardID" 
-        v-model="activeBoardID" 
+      <v-tabs-items v-if="blackboardRefs.length !== 0 && room && currentBoardID" 
+        v-model="currentBoardID" 
         touchless
       >
       <!-- re-render the blackboard everytime someone switches -->
@@ -220,7 +210,7 @@
 
           <!-- <MyParticipantDocUpdater/> -->
 
-          <RealtimeBlackboard v-if="boardID === activeBoardID"
+          <RealtimeBlackboard v-if="boardID === currentBoardID"
             :blackboardRef="blackboardRefs[i]"
           >
             <template v-slot:blackboard-toolbar>
@@ -258,7 +248,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import BaseIconButton from "@/components/BaseIconButton.vue";
 import { mapState } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
-import HandleUpdatingParticipants from "@/components/HandleUpdatingParticipants.vue";
 import { getRandomId } from "@/helpers.js";
 import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 
@@ -276,7 +265,6 @@ export default {
     }
   },
   components: {
-    HandleUpdatingParticipants,
     RealtimeBlackboard,
     BaseButton,
     BaseIconButton,
@@ -292,7 +280,7 @@ export default {
       blackboardRefs: [],
       snapshotListeners: [],
       roomRef: null,
-      activeBoardID: null,
+      // activeBoardID: null,
       incrementToDestroyComponent: -100000,
       isMenuOpen: false,
       isSavingAllBoards: false,
@@ -316,7 +304,8 @@ export default {
       "mitClass",
       "session",
       "isBoardFullscreen",
-      "currentTool"
+      "currentTool",
+      "currentBoardID"
     ]),
     classID () {
       return this.$route.params.class_id; 
@@ -324,11 +313,11 @@ export default {
   },
   // database => state 
   watch: {
-    activeBoardID (newVal) {
+    currentBoardID (newVal) {
       // updates `currentBoardNumber`, assumes `this.room.blackboards` is hydrated
       // correct because `activeBoardID` can only be changed via user interaction, `this.room.blackboards` is defined
       this.currentBoardNumber = this.getBoardNumberFromID(newVal);
-      this.$store.commit("SET_CURRENT_BOARD_ID", newVal);
+      // this.$store.commit("SET_CURRENT_BOARD_ID", newVal);
     },
     room: {
       handler (newVal, oldVal) {
@@ -348,13 +337,15 @@ export default {
   async created () {
     this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
     this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
-      this.activeBoardID = this.room.blackboards[0]; // TODO: perhaps it's not necessary and can be "naturally handled"
+      this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[0]);
+      // this.activeBoardID = this.room.blackboards[0]; // TODO: perhaps it's not necessary and can be "naturally handled"
       this.snapshotListeners.push(unsubFunc);
     });
 
     // TODO: refactor/modularize by finding a way to NOT use a root listener
     this.$root.$on("teleport-to-board", (newBoardNumber) => {
-      this.activeBoardID =  this.room.blackboards[newBoardNumber - 1];
+      this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[newBoardNumber - 1]);
+      // this.activeBoardID = this.room.blackboards[newBoardNumber - 1];
     }); 
   },
   destroyed () {
@@ -499,7 +490,7 @@ export default {
           blackboards: firebase.firestore.FieldValue.arrayUnion(newID)
         })
       ]);  
-      this.activeBoardID = newID; 
+      this.currentBoardID = newID; 
     }
   }
 };

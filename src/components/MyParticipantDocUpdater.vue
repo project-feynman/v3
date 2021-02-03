@@ -1,22 +1,19 @@
 <template>
-  <!-- TODO: renderless -->
-  <div>Hello World</div>
+  <div></div>
 </template>
 
 <script>
-// Given a particular area, it syncs the current participant's metadata from Vuex as a `participants` document in Firestore 
-// It syncs Vuex with Firestore
-//
-// Assumes the place-centric model: 
-//   If the user is in a class, he/she must be on some particular board in some particular room in some particular area
+// Given a particular area, it syncs the current participant's metadata from Vuex as a `participants` document in Firestore.
+// Assumes the place-centric model: If the user is in a class, he/she must be on some particular board in some particular room in some particular area
 
-// sessionID represents a unique browser tab running explain.mit.edu
-// NOTE: for the disconnect hook pair, the sessionID does not suffice
-// I will rename sessionID to browserTabID
+// browserTabID: uniquely identifies a "person" or "agent" who is using Explain, and is also used for video conferencing
+// disconnectID: uniquely identifies a new participantDoc lifecycle. A single user can cause connect/disconnect with the same browser tab
+// many times and cause concurrency havocs, so the disconnectID ensures each of these sessions are separate
 
-// safety from concurrency: 
-//   A unique pair of ID is created whenever the user creates a disconnect hook
-import { mapState } from "vuex"; 
+// CONCURRENCY SAFETY: 
+//   Create a correctness proof that covers all cases and explains the use of `disconnectID`, `wasDestroyedHookCalled`, props
+//   Must always guard against a disconnection throughout this component's entire lifecycle, 
+import { mapState, mapGetters } from "vuex"; 
 import { getRandomId } from "@/helpers.js"; 
 import db from "@/database.js"; 
 import firebase from "firebase/app";
@@ -25,7 +22,6 @@ import "firebase/firestore";
 
 export default {
   props: {
-    // use props to avoid complicated timing-related issues and ensure modularity
     classID: {
       type: String,
       required: true
@@ -36,44 +32,66 @@ export default {
     }
   },
   data () {
-    return {
+    return { 
       myFirebaseRef: null,
       myFirestoreRef: null,
-      infoConnectedListener: null,
-      wasDestroyedHookCalled: false
+      wasDestroyedHookCalled: false,
+      isFirestoreDocCreated: false
     };
   },
   computed:  {
     ...mapState([
-      "user",
-      "isAdmin",
-      "browserTabID",
+      "user", 
       "currentBoardNumber",
-      "activeBoardID",
+      "currentBoardID",
       "currentTool",
       "canHearAudio",
       "isMusicPlaying",
       "isViewingLibrary",
       "isViewingForum",
-    ])
+    ]),
+    ...mapGetters([
+      "isAdmin"
+    ]),
+    sessionID () {
+      return this.$store.state.session.currentID; // rename to browserTabID
+    }
   },
   // DON'T introduce new API changes, because the visual forum is getting delayed.
+  // create a unique ID so the disconnect hook pairs will be independent from each other making it safe for concurrency 
+  // NOTE: if the disconnect hook takes too long, the ghost will linger for that period of time but as long as it eventually happens then the code is correct and robust. 
   created () {
-    console.log("CREATED ()");
-    // step 1: set up a disconnect hook 
-    firebase.database().ref(".info/connected").on("value", async (connectionState) => {
-      if (connectionState.val() === true) {
-        // create a unique ID
+    firebase.database().ref(".info/connected").on("value", async (snapshot) => {
+      if (snapshot.val() === true) {
         const disconnectID = getRandomId(); 
-        // initialize the proper firebase ref
-
-        const snapshot = await this.myFirebaseRef.child("disconnectCounter").once("value"); 
-        // Cloud Functions will detect this change and update Firestore accordingly
-        await this.myFirebaseRef.onDisconnect().set({ 
-          // Set disconnect hook is triggered by a counter the operation because the user can turn on/off the iPad repeatedly.
-          disconnectCounter: (snapshot.val() ? snapshot.val() : 0) + 1 
+        
+        this.myFirebaseRef = firebase.database().ref(`/class/${this.classID}/room/${this.roomID}/participants/${disconnectID}`);
+        await this.myFirebaseRef.onDisconnect().set({
+          hasDisconnected: true
         });
-        await this.createMyFirestoreDoc(disconnectID);
+
+        this.myFirestoreRef = this.myFirestoreRef = db.doc(`classes/${this.classID}/participants/${disconnectID}`);
+        await this.myFirestoreRef.set({
+          classID: this.classID,
+          sessionID: this.sessionID, // TODO: rename it, but backwards compatibility's sake keep the property name `sessionID` 
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+          email: this.user.email,
+          uid: this.user.uid,
+          isAdmin: this.isAdmin,
+
+          roomTypeID: this.$route.params.section_id,
+          currentRoom: this.roomID,
+          currentBoardID: this.currentBoardID,
+          currentBoardNumber: this.currentBoardNumber,
+          currentPenColor: this.currentTool.color,
+
+          canHearAudio: this.canHearAudio, // TODO: rename to hasJoinedVideoCall
+          isMusicPlaying: this.isMusicPlaying,
+          isViewingLibrary: this.isViewingLibrary,
+          isViewingForum: this.isViewingForum
+        });
+        this.isFirestoreDocCreated = true; 
 
         if (this.wasDestroyedHookCalled) this.cleanUpEverything();
       } 
@@ -91,54 +109,28 @@ export default {
     isViewingLibrary () { this.sync("isViewingLibrary", this.isViewingLibrary) },
     isViewingForum () { this.sync("isViewingForum", this.isViewingForum) }
   },
-  methods: {
-    createMyFirestoreDoc (disconnectID) {
-      const { section_id, class_id } = this.$route.params; 
-      // create the object once, then update both Vuex and the Participant doc
-      // must always guard against a disconnection throughout this component's entire lifecycle, 
-      // and a unique ID will be generated for each connect/disconnect hook pair
-      // TODO: draw a quick diagram
-      this.myFirestoreRef = db.doc(`classes/${class_id}/participants/${disconnectID}`);
-
-      this.myFirestoreRef.set({
-        sessionID: this.browserTabID, // TODO: rename it, but backwards compatibility's sake keep the property name `sessionID` 
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-        email: this.user.email,
-        uid: this.user.uid,
-        isAdmin: this.isAdmin,
-
-        roomTypeID: section_id,
-        currentRoom: this.roomID,
-        currentBoardID: this.currentBoardID,
-        currentBoardNumber: this.currentBoardNumber,
-        currentPenColor: this.currentTool.color,
-
-        canHearAudio: this.canHearAudio, // TODO: rename to hasJoinedVideoCall
-        isMusicPlaying: this.isMusicPlaying,
-        isViewingLibrary: this.isViewingLibrary,
-        isViewingForum: this.isViewingForum
-      });
-    },
-    // syntax sugar for updating 
-    sync (key, value) {
-      const updatePayload = {};
-      updatePayload[key] = value; 
-      console.log("updatePayload =", updatePayload);
-      this.myFirestoreRef.update(updatePayload);
-    },
-    cleanUpEverything () {
-      // `.on()` and `.off()` are not asynchronous so no need for an if statement
-      firebase.database().ref("info/connected").off(); 
-      if (this.myFirestoreRef) this.myFirestoreRef.delete(); 
-      if (this.myFirebaseRef.onDisconnect()) this.myFirebaseRef.onDisconnect().cancel(); 
-    }
-  },
-  destroy () {
-    // that means the user is no longer in any class, and is in the home page (as of Feb 2nd's version)
-    // NOTE: tiny chance of concurrency issue
+  destroyed () {
+    console.log("DESTROYED");
+    // that means the user is no longer in any class, and is in the home page (as of current version)
     this.wasDestroyedHookCalled = true; // sometimes destroy() is called before the initialization logic has even finished
     this.cleanUpEverything(); 
+  },
+  methods: {
+    // syntax shorthand for `doc.update()`
+    // TODO: debounce the operation
+    sync (key, value) {
+      if (this.isFirestoreDocCreated) {
+        const updatePayload = {};
+        updatePayload[key] = value; 
+        console.log("updatePayload =", updatePayload);
+        this.myFirestoreRef.update(updatePayload);
+      }
+    },
+    cleanUpEverything () {
+      firebase.database().ref("info/connected").off(); // `.on()` and `.off()` are not asynchronous, so no need for an if statement
+      if (this.isFirestoreDocCreated) this.myFirestoreRef.delete(); 
+      if (this.myFirebaseRef.onDisconnect()) this.myFirebaseRef.onDisconnect().cancel(); 
+    }
   }
 };
 </script>

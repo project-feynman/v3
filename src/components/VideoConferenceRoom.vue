@@ -34,7 +34,6 @@
               >
                 {{ client.firstName }}
               </div>
-
               <div v-else class="text--secondary" style="font-size: 1em">
                 {{ client.firstName }}
               </div>
@@ -102,17 +101,20 @@
 
               </portal-target>
 
-              <!-- <video/> will be injected here VIA `div.appendChild()-->
+              <!-- 
+                <video/> will be injected here VIA `div.appendChild()
+              -->
 
             </template>
             <!-- END OF MY OWN UI -->
 
             <!-- OTHER PARTICIPANT UI -->
             <template v-else>
+              <v-spacer/>
+
               <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" color="grey darken-3">
                 {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
-        
               <v-icon v-else-if="client.canHearAudio" color="green">
                 mdi-video
               </v-icon>
@@ -129,7 +131,7 @@
          
               <div
                 @click="$root.$emit('teleport-to-board', client.currentBoardNumber)"
-                :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-right: 13px;`"
+                :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-left: 5px; margin-right: 13px;`"
               >
                 {{ client.currentBoardNumber }}
               </div>
