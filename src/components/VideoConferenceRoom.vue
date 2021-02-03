@@ -130,7 +130,7 @@
               </v-icon>
          
               <div
-                @click="$root.$emit('teleport-to-board', client.currentBoardNumber)"
+                @click="$store.commit('SET_CURRENT_BOARD_ID', client.currentBoardID)"
                 :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-left: 5px; margin-right: 13px;`"
               >
                 {{ client.currentBoardNumber }}

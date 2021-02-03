@@ -150,6 +150,9 @@ export default new Vuex.Store({
     },
     SET_CURRENT_BOARD_ID (state, currentBoardID) {
       state.currentBoardID = currentBoardID; 
+    },
+    SET_CURRENT_BOARD_NUMBER (state, currentBoardNumber) {
+      state.currentBoardNumber = currentBoardNumber; 
     }
   },
   actions: {

@@ -171,7 +171,7 @@
               <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
                 <template v-for="boardID in room.blackboards">
                   <v-list-item 
-                    @click="currentBoardID = boardID"
+                    @click="$store.commit('SET_CURRENT_BOARD_ID', boardID)"
                     :key="boardID"
                     style="background-color: rgb(62, 66, 66);"
                     class="px-0"
@@ -280,7 +280,6 @@ export default {
       blackboardRefs: [],
       snapshotListeners: [],
       roomRef: null,
-      // activeBoardID: null,
       incrementToDestroyComponent: -100000,
       isMenuOpen: false,
       isSavingAllBoards: false,
@@ -294,7 +293,6 @@ export default {
       titleOfExplCollection: "",
       newRoomStatus: "",
       newRoomName: "",
-      currentBoardNumber: 1,
       isBoardsMenuOpen: false
     }
   },
@@ -305,7 +303,8 @@ export default {
       "session",
       "isBoardFullscreen",
       "currentTool",
-      "currentBoardID"
+      "currentBoardID",
+      "currentBoardNumber"
     ]),
     classID () {
       return this.$route.params.class_id; 
@@ -313,11 +312,14 @@ export default {
   },
   // database => state 
   watch: {
+    // boardNumber is just useful for UI, so the boardID => boardNumber sufficies, and there is no need yet for boardNumber => boardID
     currentBoardID (newVal) {
       // updates `currentBoardNumber`, assumes `this.room.blackboards` is hydrated
       // correct because `activeBoardID` can only be changed via user interaction, `this.room.blackboards` is defined
-      this.currentBoardNumber = this.getBoardNumberFromID(newVal);
-      // this.$store.commit("SET_CURRENT_BOARD_ID", newVal);
+      this.$store.commit(
+        "SET_CURRENT_BOARD_NUMBER", 
+        this.getBoardNumberFromID(newVal)
+      );
     },
     room: {
       handler (newVal, oldVal) {
@@ -337,16 +339,9 @@ export default {
   async created () {
     this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
     this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
-      this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[0]);
-      // this.activeBoardID = this.room.blackboards[0]; // TODO: perhaps it's not necessary and can be "naturally handled"
+      this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[0]); // TODO: perhaps this is a special case that can be "naturally handled" by the general case
       this.snapshotListeners.push(unsubFunc);
     });
-
-    // TODO: refactor/modularize by finding a way to NOT use a root listener
-    this.$root.$on("teleport-to-board", (newBoardNumber) => {
-      this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[newBoardNumber - 1]);
-      // this.activeBoardID = this.room.blackboards[newBoardNumber - 1];
-    }); 
   },
   destroyed () {
     for (const detachListener of this.snapshotListeners) {
@@ -354,6 +349,20 @@ export default {
     }
   },
   methods: { 
+    async createNewBoard () {
+      const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
+      const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
+      const newID = getRandomId();  
+      await Promise.all([
+        blackboardsRef.doc(newID).set({
+          roomType: '',
+        }),
+        roomRef.update({
+          blackboards: firebase.firestore.FieldValue.arrayUnion(newID)
+        })
+      ]);  
+      this.$store.commit("SET_CURRENT_BOARD_ID", newID); 
+    },
     getBoardNumberFromID (id) {
       for (const [i, boardID] of this.room.blackboards.entries()) {
         if (boardID === id) {
@@ -477,20 +486,6 @@ export default {
       } finally {
         this.isSavingAllBoards = false; 
       }
-    },
-    async createNewBoard () {
-      const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
-      const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
-      const newID = getRandomId();  
-      await Promise.all([
-        blackboardsRef.doc(newID).set({
-          roomType: '',
-        }),
-        roomRef.update({
-          blackboards: firebase.firestore.FieldValue.arrayUnion(newID)
-        })
-      ]);  
-      this.currentBoardID = newID; 
     }
   }
 };
