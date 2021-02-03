@@ -109,7 +109,6 @@ export default {
     sessionID () { return this.$store.state.session.currentID },
   },
   async created () {
-    console.log("CREATED");
     // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
     // this.CallObject.setBandwidth({
     //   kbs: 30,

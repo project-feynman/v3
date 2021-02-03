@@ -110,7 +110,6 @@ export default {
     isViewingForum () { this.sync("isViewingForum", this.isViewingForum) }
   },
   destroyed () {
-    console.log("DESTROYED");
     // that means the user is no longer in any class, and is in the home page (as of current version)
     this.wasDestroyedHookCalled = true; // sometimes destroy() is called before the initialization logic has even finished
     this.cleanUpEverything(); 

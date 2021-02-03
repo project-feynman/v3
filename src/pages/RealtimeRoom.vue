@@ -195,7 +195,7 @@
     <!-- The actual blackboards -->
     <div id="room" class="room-wrapper">
       <v-tabs-items v-if="blackboardRefs.length !== 0 && room && currentBoardID" 
-        v-model="currentBoardID" 
+        :value="currentBoardID" 
         touchless
       >
       <!-- re-render the blackboard everytime someone switches -->
@@ -207,8 +207,6 @@
           <div id="screenshare-container" style="position: fixed; z-index: 1;">
 
           </div>
-
-          <!-- <MyParticipantDocUpdater/> -->
 
           <RealtimeBlackboard v-if="boardID === currentBoardID"
             :blackboardRef="blackboardRefs[i]"
