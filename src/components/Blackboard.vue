@@ -11,6 +11,8 @@
       :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
       :isReadOnly="false"
+      :height="height"
+      :width="width"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
@@ -133,7 +135,7 @@ import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import { RecordState } from "@/CONSTANTS.js";
+import { RecordState, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { mapState, mapGetters } from "vuex";
 
 export default {
@@ -145,6 +147,18 @@ export default {
     },
     backgroundImage: {
       type: Object
+    },
+    width: {
+      type: Number,
+      default () {
+        return MASSIVE_MODE_DIMENSIONS.WIDTH; 
+      }
+    },
+    height: {
+      type: Number,
+      default () {
+        return MASSIVE_MODE_DIMENSIONS.HEIGHT;
+      }
     }
   },
   components: { 

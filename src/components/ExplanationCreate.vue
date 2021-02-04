@@ -61,6 +61,8 @@
         <Blackboard v-show="!isPreviewing"
           :strokesArray="strokesArray" @stroke-drawn="stroke => strokesArray.push(stroke)"
           :backgroundImage="blackboard.backgroundImage" @update:background-image="newImage => blackboard.backgroundImage = newImage"
+          :width="getWidthOfAvailableArea()"
+          :height="getWidthOfAvailableArea()"
           :key="changeKeyToForceReset"
           @board-reset="strokesArray = []"
           @mounted="blackboardMethods => bindBlackboardMethods(blackboardMethods)"
@@ -205,6 +207,9 @@ export default {
     }
   },
   methods: {
+    getWidthOfAvailableArea () {
+      return (window.innerWidth * 0.7); 
+    },
     /**
      * TODO: refactor (the if statements and the implicit settings are code smells)
      */
@@ -287,11 +292,14 @@ export default {
       }
       this.$emit("expl-upload-started", { 
         questionTitle: this.postTitle, 
+        questionDescriptionHTML: this.html,
         questionID: this.freshQuestionID
       }); 
 
       // this is misleading code because ExplanationCreate is used in so many places, but test this out
-      this.$emit("expl-is-a-reply"); 
+      if (this.explType === "reply") {
+        this.$emit("reply-upload-started", this.html); 
+      }
 
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();

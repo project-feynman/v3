@@ -42,7 +42,7 @@
         <!-- also inform people -->
         <ExplanationCreate 
           explType="post"
-          @expl-upload-started="({ questionTitle, questionID }) => sendEmailNotificationsToClass(questionTitle, questionID, $route.params.class_id)"
+          @expl-upload-started="({ questionTitle, questionDescriptionHTML, questionID }) => sendEmailNotificationsToClass(questionTitle, questionDescriptionHTML, questionID, $route.params.class_id)"
         />
       </template>
 
@@ -77,6 +77,7 @@ import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import ClassPageSeePost from "@/components/ClassPageSeePost.vue"; 
 import ClassPageSeeQuestion from "@/pages/ClassPageSeeQuestion.vue"; 
 import moment from "moment"
+import { mapState } from "vuex"; 
 
 export default {
   mixins: [
@@ -89,9 +90,10 @@ export default {
     ExplanationDisplay
   },
   computed: {
-    currentlySelectedQuestionID () {
-      return this.$store.state.currentlySelectedQuestionID; // AF("") means no question selected as it cannot be an empty string
-    }
+    ...mapState([
+      "currentlySelectedQuestionID", // AF("") means no question selected as it cannot be an empty string
+      "mitClass"
+    ])
   },
   data () {
     return {
@@ -99,6 +101,30 @@ export default {
       questions: null, // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
       unsubscribeQuestionsListener: null
     };
+  },
+  watch: {
+    // simple way to ensure the increment count number never diverges
+    async questions () {
+      // count the number of unanswered questionsRef
+      let numOfUnansweredQuestions = 0; 
+      for (const q of this.questions) {
+        if (! q.hasReplies) numOfUnansweredQuestions += 1; 
+      }
+      console.log("numOfUnansweredQuestions =", numOfUnansweredQuestions);
+      
+      // sync them if they differ from the database
+      // current behavior is that the number syncs for the client if he/she opens the popup
+      // so divergence can only briefly appear if the forum is never opened
+      if (numOfUnansweredQuestions !== this.mitClass.numOfUnansweredQuestions) {
+        await db.doc(`classes/${this.$route.params.class_id}`).update({
+          numOfUnansweredQuestions
+        });
+        // note mitClass is out of date because we want to minimize the use of listeners
+        const mitClassCopy = { ...this.mitClass }; 
+        mitClassCopy.numOfUnansweredQuestions = numOfUnansweredQuestions; 
+        this.$store.commit("SET_CLASS", mitClassCopy); 
+      }
+    }
   },
   async created () {
     // it's better if the forum is semi-realtime, but ensure that you do destroy the listener 
@@ -118,16 +144,7 @@ export default {
     console.log("succesfully unsubscribed the questions listener");
   },
   methods: {
-    incrementForumNewQuestionCount () {
-      db.doc(`classes/${this.$route.params.class_id}`).update({
-        numOfUnansweredQuestions: firebase.firestore.FieldValue.increment(1)
-      });
-    },
-    // create another function
-    async sendEmailNotificationsToClass (questionTitle, questionID, classID) {
-      this.incrementForumNewQuestionCount()
-
-
+    async sendEmailNotificationsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
       const usersToEmail = await this.$_getCollection(db.collection("users").where("emailOnNewQuestion", "array-contains", classID));
       console.log("usersToEmail");
       for (const user of usersToEmail) {
@@ -135,7 +152,12 @@ export default {
         sendEmailToPerson({ 
           emailOfPerson: user.email, 
           title: questionTitle, 
-          contentHTML: `To view question, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>`,
+          contentHTML: `
+            <p>${questionDescriptionHTML}</p>
+            <br>
+            <br>
+            To view drawings, click <a href="https://explain-latest.web.app/forum/${classID}/${questionID}">here</a>
+          `,
         });
       }
     },

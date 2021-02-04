@@ -94,15 +94,11 @@ export default {
     },
     width: {
       type: Number,
-      default () {
-        return MASSIVE_MODE_DIMENSIONS.WIDTH; 
-      }
+      required: true
     },
     height: {
       type: Number,
-      default () {
-        return MASSIVE_MODE_DIMENSIONS.HEIGHT;
-      }
+      required: true
     }
   },
   mixins: [
