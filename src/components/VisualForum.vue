@@ -39,6 +39,7 @@
         <!-- TODO: refactor this unintuitive prop -->
         <!-- misleadingly, post means it's not a reply, so it contains its own subcollection -->
         <!-- it's not to distinguish between a library post and a forum question, confusingly -->
+        <!-- also inform people -->
         <ExplanationCreate 
           explType="post"
           @expl-upload-started="({ questionTitle, questionID }) => sendEmailNotificationsToClass(questionTitle, questionID, $route.params.class_id)"
@@ -68,6 +69,7 @@
 <script>
 import db from "@/database.js"; 
 import firebase from "firebase/app";
+import "firebase/firestore"; 
 import "firebase/functions"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import ExplanationCreate from "@/components/ExplanationCreate.vue"; 
@@ -88,14 +90,12 @@ export default {
   },
   computed: {
     currentlySelectedQuestionID () {
-      return this.$store.state.currentlySelectedQuestionID; 
+      return this.$store.state.currentlySelectedQuestionID; // AF("") means no question selected as it cannot be an empty string
     }
   },
   data () {
     return {
       isCreatingNewQuestion: false,
-      // TODO: make this global
-      // currentlySelectedQuestionID: "", // AF("") means no question selected as it cannot be an empty string
       questions: null, // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
       unsubscribeQuestionsListener: null
     };
@@ -118,16 +118,26 @@ export default {
     console.log("succesfully unsubscribed the questions listener");
   },
   methods: {
-    sendEmailNotificationsToClass (questionTitle, questionID, classID) {
-      console.log("questionTitle =", questionTitle);
-      console.log("questionID =", questionID); 
-      console.log("classID =", classID); 
-      const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
-      sendEmailToPerson({ 
-        title: questionTitle, 
-        contentHTML: `To view question, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>`,
-        emailOfPerson: "eltonlin@mit.edu" // will change to be dynamic from a for loop
+    incrementForumNewQuestionCount () {
+      db.doc(`classes/${this.$route.params.class_id}`).update({
+        numOfUnansweredQuestions: firebase.firestore.FieldValue.increment(1)
       });
+    },
+    // create another function
+    async sendEmailNotificationsToClass (questionTitle, questionID, classID) {
+      this.incrementForumNewQuestionCount()
+
+
+      const usersToEmail = await this.$_getCollection(db.collection("users").where("emailOnNewQuestion", "array-contains", classID));
+      console.log("usersToEmail");
+      for (const user of usersToEmail) {
+        const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
+        sendEmailToPerson({ 
+          emailOfPerson: user.email, 
+          title: questionTitle, 
+          contentHTML: `To view question, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>`,
+        });
+      }
     },
     getDate (date) {
       const theDate = moment(date);

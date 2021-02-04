@@ -210,9 +210,10 @@
 
           <RealtimeBlackboard v-if="boardID === currentBoardID"
             :blackboardRef="blackboardRefs[i]"
+            id="current-blackboard"
           >
             <template v-slot:blackboard-toolbar>
-              <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
+              <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen); requestFullscreenFromDevice()" 
                 :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
                 color="white" small hasLargeIcon
               />
@@ -347,6 +348,14 @@ export default {
     }
   },
   methods: { 
+    async requestFullscreenFromDevice () {
+      const blackboardElem = document.getElementById("current-blackboard"); 
+      if (! document.fullscreenElement) {
+        await blackboardElem.requestFullscreen();
+      } else {
+        document.exitFullscreen(); 
+      }
+    },
     async createNewBoard () {
       const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);

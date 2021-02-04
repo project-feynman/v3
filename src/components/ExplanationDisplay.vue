@@ -196,8 +196,10 @@ export default {
     },
     // TODO: should be a recursive deletion
     async deleteExplanation () {
+      const hasReplies = this.expl.hasReplies; 
       this.popup = false;
       await db.doc(this.expl.ref).delete();
+      this.$emit("expl-deleted", { hasReplies }); // will update the unanswered questions count for the visual forum
       // this.$router.push(`/class/${this.$route.params.class_id}`);
       this.$root.$emit("show-snackbar", "Successfully deleted post, you might have to leave the page though");
     },

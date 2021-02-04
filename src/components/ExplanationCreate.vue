@@ -289,6 +289,10 @@ export default {
         questionTitle: this.postTitle, 
         questionID: this.freshQuestionID
       }); 
+
+      // this is misleading code because ExplanationCreate is used in so many places, but test this out
+      this.$emit("expl-is-a-reply"); 
+
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
 

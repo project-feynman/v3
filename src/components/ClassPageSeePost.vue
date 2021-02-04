@@ -3,10 +3,12 @@
     <ExplanationDisplay v-if="originalPost" 
       :expl="originalPost"
       hasTitle
+      @expl-deleted="hasReplies => $emit('expl-deleted', hasReplies)"
     />
     <ExplanationDisplay v-for="expl in sortedExplanations" 
       :expl="expl" 
       :key="expl.id"
+      @expl-deleted="hasReplies => $emit('expl-deleted', hasReplies)"
     />
     <!-- TODO: rename, question, reply, posts -->
     <!-- Note the props are specifically for :questionID -->
