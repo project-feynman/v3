@@ -342,6 +342,14 @@ exports.recursiveDelete = functions
     // };
 });
 
+exports.sendEmailToPerson = functions.https.onCall(({ title, contentHTML, emailOfPerson }) => {
+  sendEmail(
+    emailOfPerson,
+    title,
+    contentHTML
+  ); 
+});
+
 exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
   const ourEmails = [
     "eltonlin@mit.edu",

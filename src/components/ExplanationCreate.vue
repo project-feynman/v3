@@ -158,7 +158,10 @@ export default {
     messageToUser: "",
     changeKeyToForceReset: 0,
     folder: '',
-    newReplyRef: null
+    newReplyRef: null,
+
+    // quick-fix variable
+    freshQuestionID: "",
   }),
   computed: {
     ...mapState([
@@ -211,8 +214,9 @@ export default {
       const classPath = `classes/${this.mitClass.id}`;
 
       if (this.explType === "post") {
+        this.freshQuestionID = getRandomId() // quickfix for the use of the visual forum
         this.newPostRef = db.doc(
-          `${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${getRandomId()}`
+          `${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${this.freshQuestionID}`
         );
       } 
 
@@ -281,6 +285,10 @@ export default {
       if (this.postTitle === "" && this.explType === "post") {
         this.postTitle = `Untitled (${new Date().toLocaleTimeString()})`;
       }
+      this.$emit("expl-upload-started", { 
+        questionTitle: this.postTitle, 
+        questionID: this.freshQuestionID
+      }); 
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
 

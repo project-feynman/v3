@@ -17,7 +17,7 @@
         
         <template v-if="questions">
           <v-list-item v-for="question in questions" :key="question.id"
-            @click="currentlySelectedQuestionID = question.id; isCreatingNewQuestion = false;"
+            @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false;"
             :class="question.hasReplies ? '' : ['red']"
           >
             <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
@@ -37,7 +37,12 @@
     <v-col cols="6" sm="9">
       <template v-if="isCreatingNewQuestion">
         <!-- TODO: refactor this unintuitive prop -->
-        <ExplanationCreate explType="post"/>
+        <!-- misleadingly, post means it's not a reply, so it contains its own subcollection -->
+        <!-- it's not to distinguish between a library post and a forum question, confusingly -->
+        <ExplanationCreate 
+          explType="post"
+          @expl-upload-started="({ questionTitle, questionID }) => sendEmailNotificationsToClass(questionTitle, questionID, $route.params.class_id)"
+        />
       </template>
 
       <template v-else-if="currentlySelectedQuestionID">
@@ -63,6 +68,7 @@
 <script>
 import db from "@/database.js"; 
 import firebase from "firebase/app";
+import "firebase/functions"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import ExplanationCreate from "@/components/ExplanationCreate.vue"; 
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue"; 
@@ -80,24 +86,24 @@ export default {
     ExplanationCreate,
     ExplanationDisplay
   },
+  computed: {
+    currentlySelectedQuestionID () {
+      return this.$store.state.currentlySelectedQuestionID; 
+    }
+  },
   data () {
     return {
       isCreatingNewQuestion: false,
-      currentlySelectedQuestionID: "", // AF("") means no question selected as it cannot be an empty string
+      // TODO: make this global
+      // currentlySelectedQuestionID: "", // AF("") means no question selected as it cannot be an empty string
       questions: null, // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
       unsubscribeQuestionsListener: null
     };
   },
   async created () {
     // it's better if the forum is semi-realtime, but ensure that you do destroy the listener 
-
-
     const classRef = db.doc(`classes/${this.$route.params.class_id}`); 
     const questionsRef = classRef.collection("questions").orderBy("date", "desc"); 
-
-    // this.questionsListener = await this.$_bindVarToDB({
-
-    // });
 
     this.unsubscribeQuestionsListener = this.$_bindVarToDB({
       varName: "questions",
@@ -112,6 +118,17 @@ export default {
     console.log("succesfully unsubscribed the questions listener");
   },
   methods: {
+    sendEmailNotificationsToClass (questionTitle, questionID, classID) {
+      console.log("questionTitle =", questionTitle);
+      console.log("questionID =", questionID); 
+      console.log("classID =", classID); 
+      const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
+      sendEmailToPerson({ 
+        title: questionTitle, 
+        contentHTML: `To view question, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>`,
+        emailOfPerson: "eltonlin@mit.edu" // will change to be dynamic from a for loop
+      });
+    },
     getDate (date) {
       const theDate = moment(date);
       return theDate.format('MMM D, YYYY');

@@ -11,11 +11,18 @@
     </template>
 
     <v-list>
-      <v-list-item v-for="mitClass in $store.state.user.enrolledClasses" :key="mitClass.id"
-        @click="switchClass(mitClass)"
-      >
-        {{ mitClass.name }}
-      </v-list-item>
+      <template v-for="mitClass in $store.state.user.enrolledClasses">
+        <v-list-item v-if="$route.params.class_id === mitClass.id" class="accent--text">
+          <v-icon class="mr-2">mdi-settings</v-icon>
+          Change {{ mitClass.name }} settings
+        </v-list-item>
+        <v-list-item v-else
+          :key="mitClass.id"
+          @click="switchClass(mitClass)"
+        >
+          {{ mitClass.name }}
+        </v-list-item>
+      </template>
       
       <!-- For adding new classes -->
       <slot>

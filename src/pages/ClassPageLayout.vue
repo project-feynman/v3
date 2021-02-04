@@ -44,18 +44,27 @@
             persistent
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
-                <!-- orange--text -->
-                <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
-                <div style="font-size: 0.9rem; 
-                            font-weight: 500; 
-                            color: '#424242'; 
-                            opacity: 0.9;
-                            text-transform: uppercase;"
-                >
-                  FORUM
-                </div>
-              </v-btn>
+              <!-- TODO: show number of unanswered questions -->
+               <v-badge
+                left
+                color="info"
+                content="2"
+                overlap
+                style="z-index: 1;"
+              >
+                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
+                  <!-- orange--text -->
+                  <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+                  <div style="font-size: 0.9rem; 
+                              font-weight: 500; 
+                              color: '#424242'; 
+                              opacity: 0.9;
+                              text-transform: uppercase;"
+                  >
+                    FORUM
+                  </div>
+                </v-btn>
+              </v-badge>
             </template>
 
             <v-card>

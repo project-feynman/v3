@@ -15,6 +15,17 @@ const router = new Router({
       path: "/",
       component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
     },
+    { 
+      name: "RedirectToForumQuestion",
+      path: "/forum/:class_id/:question_id",
+      component: () => import(/* webpackChunkName: "redirect-to-forum-question" */ "./pages/RedirectToForumQuestion.vue"),
+      props: route => {
+        return {
+          classID: route.params.class_id,
+          questionID: route.params.question_id
+        };
+      }
+    },
     {
       path: "/explanation/:expl_id/class/:class_id",
       component: () => import(/* webpackChunkName: "home" */ "./components/ClassPageSeePost.vue"),
