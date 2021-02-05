@@ -61,6 +61,8 @@
         <Blackboard v-show="!isPreviewing"
           :strokesArray="strokesArray" @stroke-drawn="stroke => strokesArray.push(stroke)"
           :backgroundImage="blackboard.backgroundImage" @update:background-image="newImage => blackboard.backgroundImage = newImage"
+          :width="getWidthOfAvailableArea()"
+          :height="getWidthOfAvailableArea()"
           :key="changeKeyToForceReset"
           @board-reset="strokesArray = []"
           @mounted="blackboardMethods => bindBlackboardMethods(blackboardMethods)"
@@ -158,7 +160,10 @@ export default {
     messageToUser: "",
     changeKeyToForceReset: 0,
     folder: '',
-    newReplyRef: null
+    newReplyRef: null,
+
+    // quick-fix variable
+    freshQuestionID: "",
   }),
   computed: {
     ...mapState([
@@ -202,6 +207,9 @@ export default {
     }
   },
   methods: {
+    getWidthOfAvailableArea () {
+      return (window.innerWidth * 0.7); 
+    },
     /**
      * TODO: refactor (the if statements and the implicit settings are code smells)
      */
@@ -211,8 +219,9 @@ export default {
       const classPath = `classes/${this.mitClass.id}`;
 
       if (this.explType === "post") {
+        this.freshQuestionID = getRandomId() // quickfix for the use of the visual forum
         this.newPostRef = db.doc(
-          `${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${getRandomId()}`
+          `${classPath}/${this.$route.query.type === "post" ? "posts" : "questions"}/${this.freshQuestionID}`
         );
       } 
 
@@ -281,6 +290,17 @@ export default {
       if (this.postTitle === "" && this.explType === "post") {
         this.postTitle = `Untitled (${new Date().toLocaleTimeString()})`;
       }
+      this.$emit("expl-upload-started", { 
+        questionTitle: this.postTitle, 
+        questionDescriptionHTML: this.html,
+        questionID: this.freshQuestionID
+      }); 
+
+      // this is misleading code because ExplanationCreate is used in so many places, but test this out
+      if (this.explType === "reply") {
+        this.$emit("reply-upload-started", this.html); 
+      }
+
       const thumbnailBlob = this.previewVideo.thumbnailBlob ? 
         this.previewVideo.thumbnailBlob : await this.blackboard.getThumbnailBlob();
 

@@ -11,14 +11,20 @@
     </template>
 
     <v-list>
-      <v-list-item v-for="mitClass in $store.state.user.enrolledClasses" :key="mitClass.id"
-        @click="switchClass(mitClass)"
-      >
-        {{ mitClass.name }}
-      </v-list-item>
+      <slot name="current-class-settings">  
+
+      </slot>
+
+      <template v-for="mitClass in $store.state.user.enrolledClasses">
+        <v-list-item v-if="mitClass.id !== $route.params.class_id"
+          :key="mitClass.id"
+          @click="switchClass(mitClass)"
+        >
+          {{ mitClass.name }}
+        </v-list-item>
+      </template>
       
-      <!-- For adding new classes -->
-      <slot>
+      <slot name="add-join-leave-class">
 
       </slot>
     </v-list>
@@ -28,8 +34,12 @@
 <script>
 import db from "@/database.js";
 import { mapState } from "vuex"; 
+import ClassSettingsPopup from "@/components/ClassSettingsPopup.vue"; 
 
 export default {
+  components: {
+    ClassSettingsPopup
+  },
   data () {
     return {
       isMenuOpen: false

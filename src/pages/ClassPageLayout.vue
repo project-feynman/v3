@@ -5,7 +5,7 @@
     <MyParticipantDocUpdater v-if="classID && roomID"
       :classID="classID"
       :roomID="roomID"
-      :key="classID + roomID"
+      :key="classID + 'participant-doc-updater'"
     />
 
     <!-- Elevation ranges from 0 to 24 -->
@@ -26,36 +26,76 @@
           </v-list-item-avatar>
 
           <ClassSwitchDropdown>
-            <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-              <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
-            </v-list-item>
+            <template v-slot:current-class-settings>
+              <v-list-item @click="isClassSettingsPopupOpen = true" class="accent--text">
+                <v-icon class="mr-2">mdi-settings</v-icon>
+                {{ currentClass.name }} settings
+              </v-list-item>
+            </template>
+
+            <template v-slot:add-join-leave-class>
+              <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
+                <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
+              </v-list-item>
+            </template>
           </ClassSwitchDropdown>
+
+          <ClassSettingsPopup
+            :isClassSettingsPopupOpen="isClassSettingsPopupOpen"
+            @input="(newVal) => isClassSettingsPopupOpen = newVal"
+          />
 
           <ClassNewPopup 
             :isAddClassPopupOpen="isAddClassPopupOpen"
-            @change="(newVal) => isAddClassPopupOpen = newVal"
+            @input="(newVal) => isAddClassPopupOpen = newVal"
           />
         </div>
 
-        <div style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
+        <div v-if="mitClass" style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
           <v-dialog 
             :value="isViewingForum" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
             persistent
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
-                <!-- orange--text -->
-                <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
-                <div style="font-size: 0.9rem; 
-                            font-weight: 500; 
-                            color: '#424242'; 
-                            opacity: 0.9;
-                            text-transform: uppercase;"
+              <!-- TODO: show number of unanswered questions -->
+              <template v-if="mitClass.numOfUnansweredQuestions">
+                <v-badge :value="mitClass.numOfUnansweredQuestions"
+                  left
+                  color="info"
+                  :content="mitClass.numOfUnansweredQuestions"
+                  overlap
+                  style="z-index: 1;"
                 >
-                  FORUM
-                </div>
-              </v-btn>
+                  <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
+                    <!-- orange--text -->
+                    <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+                    <div style="font-size: 0.9rem; 
+                                font-weight: 500; 
+                                color: '#424242'; 
+                                opacity: 0.9;
+                                text-transform: uppercase;"
+                    >
+                      FORUM
+                    </div>
+                  </v-btn>
+                </v-badge>
+              </template>
+              
+              <template v-else>
+                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
+                  <!-- orange--text -->
+                  <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+                  <div style="font-size: 0.9rem; 
+                              font-weight: 500; 
+                              color: '#424242'; 
+                              opacity: 0.9;
+                              text-transform: uppercase;"
+                  >
+                    FORUM
+                  </div>
+                </v-btn>
+              </template>
             </template>
 
             <v-card>
@@ -70,7 +110,7 @@
                 even if the popup closes
               -->
               <VisualForum v-if="isViewingForum" 
-                :key="$route.params.class_id"
+                :key="$route.params.class_id + 'forum'"
               />
             </v-card>
           </v-dialog>
@@ -100,7 +140,7 @@
               </v-toolbar>
 
               <ClassLibrary v-if="isViewingLibrary" 
-                :key="$route.params.class_id"
+                :key="$route.params.class_id + 'library'"
               />
             </v-card>
           </v-dialog>
@@ -163,6 +203,8 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
+import ClassSettingsPopup from "@/components/ClassSettingsPopup.vue"; 
+
 import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
@@ -179,6 +221,7 @@ export default {
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
+    ClassSettingsPopup,
     AllOpenSpaces,
     VisualForum,
     MyParticipantDocUpdater
@@ -189,7 +232,8 @@ export default {
     isChatOpen: false,
     isShowingDrawer: true,
     isAddClassPopupOpen: false,
-    isClassActionsMenuOpen: false
+    isClassActionsMenuOpen: false,
+    isClassSettingsPopupOpen: false
     // isHelpPopupOpen: false
   }),
   computed: {
@@ -203,7 +247,14 @@ export default {
     // note: these properties are not reactive, but I assume they will be re-rendered and therefore updated 
     // due to <router-view :key="$route.params.class_id> in App.vue
     classID () { return this.$route.params.class_id; },
-    roomID () { return this.$route.params.room_id; }
+    roomID () { return this.$route.params.room_id; },
+    currentClass () {
+      for (const mitClass of this.user.enrolledClasses) {
+        if (mitClass.id === this.$route.params.class_id) {
+          return mitClass; 
+        }
+      }
+    }
   },
   // TODO: refactor this quickfix
   watch: {
@@ -211,17 +262,21 @@ export default {
       deep: true,
       immediate: true,
       handler (newClassID) {
-        if (this.mitClass) {
-          if (newClassID === this.mitClass.id) {
+        const { user, mitClass } = this; 
+
+        if (mitClass) {
+          if (newClassID === mitClass.id) {
             return; 
           }
         }
         const { class_id } = this.$route.params; 
         this.$store.commit("SET_CLASS", null);
         this.$store.dispatch("fetchClass", class_id); 
-        db.doc(`users/${this.user.uid}`).update({
+        db.doc(`users/${user.uid}`).update({
           mostRecentClassID: class_id,
-          penColors: this.user.penColors ? this.user.penColors : ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"]
+          penColors: user.penColors ? user.penColors : ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"],
+          emailOnNewQuestion: user.emailOnNewQuestion ? user.emailOnNewQuestion : [],
+          emailOnNewReply: user.emailOnNewReply ? user.emailOnNewReply : []
         });
       }
     },

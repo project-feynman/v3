@@ -17,7 +17,7 @@
         
         <template v-if="questions">
           <v-list-item v-for="question in questions" :key="question.id"
-            @click="currentlySelectedQuestionID = question.id; isCreatingNewQuestion = false;"
+            @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false;"
             :class="question.hasReplies ? '' : ['red']"
           >
             <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
@@ -37,7 +37,13 @@
     <v-col cols="6" sm="9">
       <template v-if="isCreatingNewQuestion">
         <!-- TODO: refactor this unintuitive prop -->
-        <ExplanationCreate explType="post"/>
+        <!-- misleadingly, post means it's not a reply, so it contains its own subcollection -->
+        <!-- it's not to distinguish between a library post and a forum question, confusingly -->
+        <!-- also inform people -->
+        <ExplanationCreate 
+          explType="post"
+          @expl-upload-started="({ questionTitle, questionDescriptionHTML, questionID }) => sendEmailNotificationsToClass(questionTitle, questionDescriptionHTML, questionID, $route.params.class_id)"
+        />
       </template>
 
       <template v-else-if="currentlySelectedQuestionID">
@@ -63,12 +69,15 @@
 <script>
 import db from "@/database.js"; 
 import firebase from "firebase/app";
+import "firebase/firestore"; 
+import "firebase/functions"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import ExplanationCreate from "@/components/ExplanationCreate.vue"; 
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue"; 
 import ClassPageSeePost from "@/components/ClassPageSeePost.vue"; 
 import ClassPageSeeQuestion from "@/pages/ClassPageSeeQuestion.vue"; 
 import moment from "moment"
+import { mapState } from "vuex"; 
 
 export default {
   mixins: [
@@ -80,24 +89,47 @@ export default {
     ExplanationCreate,
     ExplanationDisplay
   },
+  computed: {
+    ...mapState([
+      "currentlySelectedQuestionID", // AF("") means no question selected as it cannot be an empty string
+      "mitClass"
+    ])
+  },
   data () {
     return {
       isCreatingNewQuestion: false,
-      currentlySelectedQuestionID: "", // AF("") means no question selected as it cannot be an empty string
       questions: null, // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
       unsubscribeQuestionsListener: null
     };
   },
+  watch: {
+    // simple way to ensure the increment count number never diverges
+    async questions () {
+      // count the number of unanswered questionsRef
+      let numOfUnansweredQuestions = 0; 
+      for (const q of this.questions) {
+        if (! q.hasReplies) numOfUnansweredQuestions += 1; 
+      }
+      console.log("numOfUnansweredQuestions =", numOfUnansweredQuestions);
+      
+      // sync them if they differ from the database
+      // current behavior is that the number syncs for the client if he/she opens the popup
+      // so divergence can only briefly appear if the forum is never opened
+      if (numOfUnansweredQuestions !== this.mitClass.numOfUnansweredQuestions) {
+        await db.doc(`classes/${this.$route.params.class_id}`).update({
+          numOfUnansweredQuestions
+        });
+        // note mitClass is out of date because we want to minimize the use of listeners
+        const mitClassCopy = { ...this.mitClass }; 
+        mitClassCopy.numOfUnansweredQuestions = numOfUnansweredQuestions; 
+        this.$store.commit("SET_CLASS", mitClassCopy); 
+      }
+    }
+  },
   async created () {
     // it's better if the forum is semi-realtime, but ensure that you do destroy the listener 
-
-
     const classRef = db.doc(`classes/${this.$route.params.class_id}`); 
     const questionsRef = classRef.collection("questions").orderBy("date", "desc"); 
-
-    // this.questionsListener = await this.$_bindVarToDB({
-
-    // });
 
     this.unsubscribeQuestionsListener = this.$_bindVarToDB({
       varName: "questions",
@@ -112,6 +144,23 @@ export default {
     console.log("succesfully unsubscribed the questions listener");
   },
   methods: {
+    async sendEmailNotificationsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
+      const usersToEmail = await this.$_getCollection(db.collection("users").where("emailOnNewQuestion", "array-contains", classID));
+      console.log("usersToEmail");
+      for (const user of usersToEmail) {
+        const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
+        sendEmailToPerson({ 
+          emailOfPerson: user.email, 
+          title: questionTitle, 
+          contentHTML: `
+            <p>${questionDescriptionHTML}</p>
+            <br>
+            <br>
+            To view drawings, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>
+          `,
+        });
+      }
+    },
     getDate (date) {
       const theDate = moment(date);
       return theDate.format('MMM D, YYYY');

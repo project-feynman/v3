@@ -1,7 +1,7 @@
 <template>
   <v-dialog 
     :value="isAddClassPopupOpen" 
-    @input="(newVal) => $emit('change', newVal)"
+    @input="(newVal) => $emit('input', newVal)"
     max-width="800"
   >
     <v-card>
@@ -19,7 +19,7 @@
             />
           </v-col>
           <v-col cols="2">
-            <v-btn @click="$emit('change', false)" color="secondary" text>DONE</v-btn>
+            <v-btn @click="$emit('input', false)" color="secondary" text>DONE</v-btn>
           </v-col>
         </v-row>
         
@@ -33,20 +33,6 @@
           </v-col>
           <v-col cols="2">
             <v-btn @click="createNewClass()" text color="secondary">CREATE</v-btn>
-          </v-col>
-        </v-row>
-
-        <v-row> 
-          <v-col cols="3" class="pr-0">
-            <v-subheader class="px-0">Or leave current class</v-subheader>
-          </v-col>
-          <v-col cols="2">
-            <v-btn v-if="user.enrolledClasses.length >= 2" 
-              @click="leaveClass()" 
-              text color="secondary" class="mt-2"
-            >
-              Leave current class
-            </v-btn>
           </v-col>
         </v-row>
       </v-card-text>
@@ -91,24 +77,12 @@ export default {
     async join ({ mitClass }) {    
       this.userRef.update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(mitClass),
-        mostRecentClassID: mitClass.id
+        mostRecentClassID: mitClass.id,
+        emailOnNewQuestion: firebase.firestore.FieldValue.arrayUnion(mitClass.id),
+        emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(mitClass.id)
       });
       this.$root.$emit("show-snackbar", `Successfully joined ${mitClass.name}.`);
       this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}`);
-    },
-    async leaveClass () {
-      let classToRemove = null; 
-      for (const enrolledClass of this.user.enrolledClasses) {
-        if (enrolledClass.id === this.$route.params.class_id) {
-          classToRemove = enrolledClass;
-          break; 
-        }
-      }
-      await db.collection("users").doc(this.user.uid).update({
-        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
-        mostRecentClassID: this.user.enrolledClasses[0].id
-      });
-      this.$router.push("/");
     },
     async signOut () {
       await firebase.auth().signOut(); // will trigger `onAuthStateChanged` in router.js
@@ -141,7 +115,9 @@ export default {
             id: classDoc.id,
             name: this.nameOfNewCommunity,
             description: this.descriptionOfNewCommunity
-          })
+          }),
+          emailOnNewQuestion: firebase.firestore.FieldValue.arrayUnion(classDoc.id),
+          emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(classDoc.id)
         }),
         // TODO: not DRY, was copied and pasted from ClassPageLayout
         ref.collection("roomTypes").doc(classDoc.id).set({ 

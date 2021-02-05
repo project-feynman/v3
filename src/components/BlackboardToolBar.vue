@@ -8,7 +8,7 @@
     :absolute="$store.state.isViewingForum"
     elevation="5" 
     :height="toolbarHeight" 
-    color="grey darken-1" 
+    color="grey darken-2" 
     style="right: 0; top: 0; bottom: auto; left: auto; z-index: 100" 
     rounded
   >

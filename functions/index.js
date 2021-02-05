@@ -23,7 +23,7 @@ function sendEmail (to, subject, body) {
       to,
       subject,
       html: body,
-      from: "feynmannotif@gmail.com", // "no-reply@explain.mit.edu"
+      from: "feynman.team@gmail.com", // "no-reply@explain.mit.edu"
       text: subject,
     });
   } catch (reason) {
@@ -340,6 +340,14 @@ exports.recursiveDelete = functions
     // return {
     //   path: path 
     // };
+});
+
+exports.sendEmailToPerson = functions.https.onCall(({ title, contentHTML, emailOfPerson }) => {
+  sendEmail(
+    emailOfPerson,
+    title,
+    contentHTML
+  ); 
 });
 
 exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {

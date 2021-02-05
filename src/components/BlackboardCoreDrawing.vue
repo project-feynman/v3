@@ -14,6 +14,8 @@
       <canvas v-if="! isReadOnly"
         ref="FrontCanvas" class="front-canvas"
         @touchstart="e => touchStart(e)"
+        @touchmove="e => touchMove(e)"
+        @touchend="e => touchEnd(e)"
         @mousedown="e => mouseDown(e)"
         @mousemove="e => mouseMove(e)"
         @mouseup="e => mouseUp(e)"
@@ -94,15 +96,11 @@ export default {
     },
     width: {
       type: Number,
-      default () {
-        return MASSIVE_MODE_DIMENSIONS.WIDTH; 
-      }
+      required: true
     },
     height: {
       type: Number,
-      default () {
-        return MASSIVE_MODE_DIMENSIONS.HEIGHT;
-      }
+      required: true
     }
   },
   mixins: [
@@ -124,6 +122,7 @@ export default {
       currentStroke: { 
         points: [] 
       },
+      isInMiddleOfStroke: false,
 
       // initialize `prevPoint` to an invalid coordinate to signal that it's not defined initially
       prevPoint: { 
@@ -250,7 +249,7 @@ export default {
      * Mutates this.currentStroke
      */
     startNewStroke (e) {
-      e.preventDefault(); 
+      this.isInMiddleOfStroke = true;
 
       this.prevPoint = { // TODO: use an optional
         x: -1, 
@@ -273,7 +272,7 @@ export default {
     },
     touchStart (e) {
       if (e.touches.length > 1) {
-        console.log("error: only 1 finger allowed");
+        // console.log("error: only 1 finger allowed");
         return;
       }
       const isApplePencil = e.touches[0].touchType === "stylus"
@@ -282,28 +281,55 @@ export default {
         return;
       }
       this.handleContactWithBlackboard(e, { isInitialContact: true });
-      // touchmove is single-threaded, which prevents multi-touch edge cases from happening in the first place
-      this.$refs.FrontCanvas.addEventListener("touchmove", this.touchMove);
-      this.$refs.FrontCanvas.addEventListener("touchend", this.touchEnd);
     },
     touchMove (e) {
+      if (! this.isInMiddleOfStroke) {
+        return; // concurrent touches
+      }
+
+      if (e.touches.length > 1) {
+        console.log("touchmove ignored: only 1 finger allowed");
+        return;
+      }
+      const isApplePencil = e.touches[0].touchType === "stylus"
+      if (this.onlyAllowApplePencil && !isApplePencil)   {
+        console.log('error: cannot use finger during Apple Pencil mode');
+        return;
+      }
       this.handleContactWithBlackboard(e, { isInitialContact: false });
     },
+    // note concurrent touches issue
     touchEnd (e) {
+      // case 1: active finished first, but other finger remained
+      if (! this.isInMiddleOfStroke) {
+        return; 
+      }
+
+      // case 2: other finger finished first, active finger is still on screen
+      if (e.touches.length > 0) {
+        return; 
+      }
+
+      // normal check for Apple Pencil (note changedTouches)
+      const isApplePencil = e.changedTouches[0].touchType === "stylus"
+      if (this.onlyAllowApplePencil && !isApplePencil)   {
+        console.log('error: cannot use finger during Apple Pencil mode');
+        return;
+      }
       this.handleEndOfStroke(this.currentStroke); 
       // this.currentStroke = { points: [] }; // this line might not be necessary, it's an attempt to fix stray strokes
-      this.$refs.FrontCanvas.removeEventListener("touchmove", this.touchMove);
-      this.$refs.FrontCanvas.removeEventListener("touchend", this.touchEnd);
+      this.isInMiddleOfStroke = false; 
     },
     /**
      * TODO: Make `tool` an explicit parameter 
      */
     handleContactWithBlackboard (e, { isInitialContact }) {
+      e.preventDefault();
       if (isInitialContact) this.startNewStroke(e);
       const contactPoint = this.getStylusOrFingerOrMousePosition(e); // should make "isHoldingLeftClick" an explicit parameter
-      if (Math.abs(contactPoint.x - this.prevPoint.x) + Math.abs(contactPoint.y - this.prevPoint.y) > 0.5) {
+      // if (Math.abs(contactPoint.x - this.prevPoint.x) + Math.abs(contactPoint.y - this.prevPoint.y) > 0.5) {
         this.lengthenTheCurrentStroke(e, contactPoint);
-      }
+      // }
     },
     lengthenTheCurrentStroke (e, contactPoint) {
       // update state
@@ -373,6 +399,7 @@ export default {
     mouseUp (e) {
       this.isHoldingLeftClick = false;
       this.handleEndOfStroke(this.currentStroke); 
+      this.isInMiddleOfStroke = false; // though unnecessary because there are no concurrent touches
     },
     /**
      * Generates a thumbnail by: 
@@ -569,12 +596,14 @@ export default {
 </script>
 
 <style scoped>
+/* without pan-x pan-y sometimes user accidentally zooms on Safari when toggling fullscreen which is annoying */
 .front-canvas {
   background-color: transparent;
   display: block;
   z-index: 2;
   /* Position relative is necessary for some reason */
   position: relative; 
+  touch-action: pan-x pan-y;
 }
 .back-canvas {
   position: absolute;
@@ -582,6 +611,7 @@ export default {
   left: 0;
   z-index: 0;
   display: block;
-  background-color: rgb(62, 66, 66);
+  background-color: rgb(46, 49, 49);
+  touch-action: pan-x pan-y;
 }
 </style>

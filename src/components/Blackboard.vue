@@ -11,6 +11,8 @@
       :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
       :isReadOnly="false"
+      :height="height"
+      :width="width"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
@@ -62,6 +64,13 @@
        
           <!-- More actions slot -->
           <template v-slot:more-actions-slot>
+            <BaseButton v-if="currentState === RecordState.PRE_RECORD" @click="startRecording()" icon="mdi-record" color="white">
+              Record voice
+            </BaseButton>
+            <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
+              Finish
+            </BaseButton>
+
             <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
               <template v-slot:activator="{ on }">
                 <!-- Cannot let user wipe board / reupload background image while recording -->
@@ -69,20 +78,9 @@
                   @click="isMenuOpen = true" icon="mdi-dots-vertical" color="white" small hasLargeIcon
                 >
                 </BaseButton>
-
-                <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
-                  Finish
-                </BaseButton>
               </template>
               
               <v-list>
-                <template v-if="currentState === RecordState.PRE_RECORD">
-                  <v-list-item @click="startRecording()">
-                    <v-icon class="mr-2" color="purple">mdi-record</v-icon>
-                    Record voiced explanation 
-                  </v-list-item>
-                </template>
-
                 <!-- SET BACKGROUND IMAGE -->
                 <slot name="set-background-button-slot" :closeMenu="closeMenu">
                   <v-list-item @click="$refs.fileInput.click()">
@@ -137,7 +135,7 @@ import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue";
 import BlackboardAudioRecorder from "@/components/BlackboardAudioRecorder.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import { RecordState } from "@/CONSTANTS.js";
+import { RecordState, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { mapState, mapGetters } from "vuex";
 
 export default {
@@ -149,6 +147,18 @@ export default {
     },
     backgroundImage: {
       type: Object
+    },
+    width: {
+      type: Number,
+      default () {
+        return MASSIVE_MODE_DIMENSIONS.WIDTH; 
+      }
+    },
+    height: {
+      type: Number,
+      default () {
+        return MASSIVE_MODE_DIMENSIONS.HEIGHT;
+      }
     }
   },
   components: { 

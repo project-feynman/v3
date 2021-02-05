@@ -52,7 +52,7 @@ export default new Vuex.Store({
     currentTool: { 
       type: BlackboardTools.PEN,
       color: "white",
-      lineWidth: 2.5
+      lineWidth: 3
     },
     onlyAllowApplePencil: true,
 
@@ -60,7 +60,9 @@ export default new Vuex.Store({
     isMusicPlaying: false,
 
     isViewingLibrary: false,
+
     isViewingForum: false,
+    currentlySelectedQuestionID: ""
   },
   getters: {
     isAdmin: state => {
@@ -68,6 +70,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_CURRENTLY_SELECTED_QUESTION_ID (state, newValue) {
+      state.currentlySelectedQuestionID = newValue; 
+    },
     SET_PARTICIPANTS (state, newValue) {
       state.participants = newValue; 
     },

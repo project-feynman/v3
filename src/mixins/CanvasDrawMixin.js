@@ -88,7 +88,16 @@ export default {
       ctx.globalCompositeOperation = isEraserStroke ? 'destination-out' : 'source-over';
       ctx.strokeStyle = color; 
       ctx.lineWidth = lineWidth; 
-      ctx.lineCap = "round"; // lines at different angles can join into each other
+      /**
+       * when two independent lines meet (think two straight lines meeting each other), instead of zigzagging abruptly, they'll be "rounded" together"
+       * NOTE: "This property has no effect wherever two connected segments have the same direction"
+       * @see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineJoin
+       */
+      ctx.lineJoin = "round"; 
+
+      // end of line is not a square, but a rounded edge  
+      // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/lineCap
+      ctx.lineCap = "round"; 
     },
     /**
      * Joins together 2 points using a straight line. 
@@ -118,6 +127,16 @@ export default {
 
       ctx.beginPath();
       ctx.moveTo(prevX, prevY);
+
+      
+      /**
+       * Draw a quadratic curve according to: https://github.com/shuding/apple-pencil-safari-api-test/blob/gh-pages/index.js
+       * 
+       * But if I set the control points like this, it's just equivalent to `lineTo()`
+       */
+      // const controlX = (prevX + curX) / 2; 
+      // const controlY = (prevY + curY) / 2;  
+      // ctx.quadraticCurveTo(controlX, controlY, curX, curY);
       ctx.lineTo(curX, curY);
       ctx.stroke();
     },

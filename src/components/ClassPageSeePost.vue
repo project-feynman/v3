@@ -14,6 +14,7 @@
       <ExplanationCreate v-if="isViewingForum" 
         :questionID="postID"
         explType="reply"
+        @reply-upload-started="replyContentHTML => sendEmailToExplParticipants(replyContentHTML)"
       />
     </div>
   </div>
@@ -25,6 +26,8 @@ import ExplanationDisplay from "@/components/ExplanationDisplay.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import { mapState } from "vuex";
+import firebase from "firebase/app";
+import "firebase/functions";
 
 export default {
   props: {
@@ -50,6 +53,7 @@ export default {
   computed: {
     ...mapState([
       "user",
+      "mitClass",
       "isViewingForum",
       "isViewingLibrary"
     ]),
@@ -79,6 +83,33 @@ export default {
   destroyed () { 
     for (const unsubscribeListener of this.databaseListeners) {
       unsubscribeListener();
+    }
+  },
+  methods: {
+    // probably need a lot more arguments here
+    sendEmailToExplParticipants (replyContentHTML) {
+      console.log("participants =", this.originalPost.participants);
+      for (const participant of this.originalPost.participants) {
+        // get their email and participant
+        const { class_id } = this.$route.params; 
+        this.$_getDoc(db.doc(`users/${participant.uid}`)).then(participant => {
+          if (participant.emailOnNewReply.includes(class_id)) {
+            console.log("about to send email to person =", participant.email);
+            const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
+            sendEmailToPerson({ 
+              emailOfPerson: participant.email,
+              title: `Someone replied on the ${this.mitClass.name} forum`, 
+              contentHTML: `
+                <p>${replyContentHTML}</p>
+                <br>
+                <br>
+                To view drawings, click <a href="https://explain.mit.edu/forum/${class_id}/${this.originalPost.id}">here</a>
+              `,
+            });
+          }
+        });
+      }
+      // how to do these things
     }
   }
 }

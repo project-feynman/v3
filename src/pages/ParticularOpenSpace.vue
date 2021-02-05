@@ -27,7 +27,7 @@
         <v-list>
           <!-- For some reason you need click.stop -->
           <v-list-item :disabled="! isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
-            <v-icon left color="orange">mdi-bullhorn</v-icon> Birds Eye View
+            <v-icon left color="purple">mdi-eye</v-icon> Birds Eye View
           </v-list-item>
 
           <ParticularOpenSpaceBirdsEyeViewPopup v-if="participants" 
