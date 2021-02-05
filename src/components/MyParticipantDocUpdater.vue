@@ -98,16 +98,16 @@ export default {
     });
   },
   watch: {
-    classID () { this.sync("currentClassID", this.classID) }, // handle this differently
-    roomID () { this.sync("currentRoom", this.roomID) },
-    currentBoardID () { this.sync("currentBoardID", this.currentBoardID) }, 
-    currentBoardNumber () { this.sync("currentBoardNumber", this.currentBoardNumber) },
-    currentTool () { this.sync("currentPenColor", this.currentTool.color) },
+    classID () { this.throttledSync() }, // handle this differently
+    roomID () { this.throttledSync() },
+    currentBoardID () { this.throttledSync() }, 
+    currentBoardNumber () { this.throttledSync() },
+    currentTool () { this.throttledSync() },
 
-    canHearAudio () { this.sync("canHearAudio", this.canHearAudio) },
-    isMusicPlaying () { this.sync("isMusicPlaying", this.isMusicPlaying) },
-    isViewingLibrary () { this.sync("isViewingLibrary", this.isViewingLibrary) },
-    isViewingForum () { this.sync("isViewingForum", this.isViewingForum) }
+    canHearAudio () { this.throttledSync() },
+    isMusicPlaying () { this.throttledSync() },
+    isViewingLibrary () { this.throttledSync() },
+    isViewingForum () { this.throttledSync() }
   },
   destroyed () {
     // that means the user is no longer in any class, and is in the home page (as of current version)
@@ -115,14 +115,36 @@ export default {
     this.cleanUpEverything(); 
   },
   methods: {
-    // syntax shorthand for `doc.update()`
-    // TODO: debounce the operation
-    sync (key, value) {
+    // e.g. within 500 milliseconds, it can be called at most twice (one on the 0th second, then, everything else is ignored the next on the 500th millisecond)
+    // if 1st is on 0, and 2nd is 200, the 2nd will be deferred to the 500th millisecond if there is no third
+    throttledSync: _.throttle(
+      // without function () {}, `this.searchDatabase()` will be undefined
+      function () {  this.sync(); }, 
+      500
+    ),
+    sync () {
+      console.log("sync()");
       if (this.isFirestoreDocCreated) {
-        const updatePayload = {};
-        updatePayload[key] = value; 
-        console.log("updatePayload =", updatePayload);
-        this.myFirestoreRef.update(updatePayload);
+        this.myFirestoreRef.update({
+          classID: this.classID,
+          sessionID: this.sessionID, // TODO: rename it, but backwards compatibility's sake keep the property name `sessionID` 
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+          email: this.user.email,
+          uid: this.user.uid,
+          isAdmin: this.isAdmin,
+
+          roomTypeID: this.$route.params.section_id,
+          currentRoom: this.roomID,
+          currentBoardID: this.currentBoardID,
+          currentBoardNumber: this.currentBoardNumber,
+          currentPenColor: this.currentTool.color,
+
+          canHearAudio: this.canHearAudio, // TODO: rename to hasJoinedVideoCall
+          isMusicPlaying: this.isMusicPlaying,
+          isViewingLibrary: this.isViewingLibrary,
+          isViewingForum: this.isViewingForum
+        });
       }
     },
     cleanUpEverything () {
