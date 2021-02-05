@@ -103,7 +103,7 @@ export default {
                 <p>${replyContentHTML}</p>
                 <br>
                 <br>
-                To view drawings, click <a href="https://explain-latest.web.app/forum/${class_id}/${this.originalPost.id}">here</a>
+                To view drawings, click <a href="https://explain.mit.edu/forum/${class_id}/${this.originalPost.id}">here</a>
               `,
             });
           }

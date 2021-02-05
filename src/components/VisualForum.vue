@@ -156,7 +156,7 @@ export default {
             <p>${questionDescriptionHTML}</p>
             <br>
             <br>
-            To view drawings, click <a href="https://explain-latest.web.app/forum/${classID}/${questionID}">here</a>
+            To view drawings, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>
           `,
         });
       }
