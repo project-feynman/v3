@@ -48,46 +48,13 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "library-playground" */ "./pages/LibraryPlayground.vue")
     },
     {
-      path: "/class/:class_id",
+      path: "/class/:class_id/section/:section_id/room/:room_id",
       component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout.vue"),
-      children: [
-        {
-          path: "section/:section_id",
-          component: () => import(/* webpackChunkName: "particular-open-space" */ "./pages/ParticularOpenSpace.vue"),
-          children: [
-            {
-              path: "room/:room_id",
-              component: () => import(/* webpackChunkName: "realtime-room" */ "./pages/RealtimeRoom.vue"),
-              props: route => {
-                return {
-                  roomId: route.params.room_id
-                };
-              }
-            }
-          ]
-        },
-        // {
-        //   // when /user/:id/posts is matched
-        //   path: "new",
-        //   // component: () => import(/* webpackChunkName: "new" */ "./pages/ClassPageNewPost.vue") 
-        //   // move from components folder to pages folder later
-        //   component: () => import(/* webpackChunkName: "new" */ "./components/ExplanationCreate.vue"),
-        //   props: route => {
-        //     // if it's a new post/question, the query type will be "post" or "question"
-        //     return {
-        //       explType: route.query.type ? "post" : "reply" 
-        //     };  
-        //   }
-        // },
-        // {
-        //   path: "posts/:post_id",
-        //   component: () => import(/* webpackChunkName: "post" */ "./pages/ClassPageSeePost.vue")
-        // },
-        // {
-        //   path: "questions/:question_id",
-        //   component: () => import(/* webpackChunkName: "question" */ "./pages/ClassPageSeeQuestion.vue")
-        // }
-      ]
+      props: route => {
+        return {
+          classID: route.params.class_id
+        }
+      }
     }
   ]
 });

@@ -82,7 +82,7 @@ export default {
         emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(mitClass.id)
       });
       this.$root.$emit("show-snackbar", `Successfully joined ${mitClass.name}.`);
-      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}`);
+      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}/room/${mitClass.id}`);
     },
     async signOut () {
       await firebase.auth().signOut(); // will trigger `onAuthStateChanged` in router.js
@@ -141,7 +141,7 @@ export default {
       this.descriptionOfNewCommunity = ""; 
 
       // automatic redirect
-      this.$router.push(`/class/${classDoc.id}/section/${classDoc.id}`);
+      this.$router.push(`/class/${classDoc.id}/section/${classDoc.id}/room/${classDoc.id}`);
     }
   }
 };

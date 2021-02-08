@@ -1,7 +1,9 @@
 <template>
   <v-app>    
     <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
-    <router-view/>
+    <router-view 
+      :key="'rerender-when-class-changes' + $route.params.class_id"
+    />
 
     <!-- Camera/Mic permission errors -->
     <VideoTroubleshootPopup v-model="isShowingVideoTroubleshootPopup"/> 
@@ -120,7 +122,7 @@ export default {
     for (const event of PARTICIPANT_EVENTS) {
       this.CallObject.on(
         event, 
-        _.debounce(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS)
+        _.throttle(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS) 
       ); 
     }
     this.CallObject.on("track-started", this.mountNewTrack);

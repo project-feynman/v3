@@ -264,10 +264,6 @@
 
     <!--  to create a gap between the last room and the bottom boundary of the area -->
     <div class="mb-1"></div>  
-
-    <portal to="main-content">
-      <router-view :key="$route.params.section_id + $route.params.room_id"/>
-    </portal>
     
     <!-- Announcement creation popup -->
     <v-dialog :value="makeAnnouncementPopup.show" persistent max-width="600px">
@@ -390,6 +386,7 @@ export default {
       return db.doc(`classes/${this.classID}`);
     },
     roomTypeRef () {
+      // TODO: change section_Id to prop
       return this.classDocRef.collection("roomTypes").doc(this.$route.params.section_id); 
     }
   },
@@ -398,13 +395,13 @@ export default {
     // `roomIDToParticipants` array, but debounce with Lodash so it does not cause lag issues
     participants: {
       immediate: true,
-      handler: _.debounce(function () {
+      handler: _.throttle(function () {
         this.updateRoomIDToParticipants();
       }, 1000)
     },
     rooms: {
       immediate: true,
-      handler: _.debounce(function () {
+      handler: _.throttle(function () {
         this.updateRoomIDToParticipants();
       }, 1000)
     },

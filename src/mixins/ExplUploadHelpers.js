@@ -33,7 +33,6 @@ export default {
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
     async $_saveExplToCacheThenUpload ({ thumbnailBlob, audioBlob, backgroundImageBlob, html, title, tags, explRef, aspectRatio }) {
-    
       const postOrder = parseInt(this.mitClass.maxOrder + 1) || 1
       this.$store.commit("ADD_EXPL_TO_CACHE", {
         ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads

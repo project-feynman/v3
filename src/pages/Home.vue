@@ -18,7 +18,7 @@
         <v-row class="my-5 pt-2" justify="center">
           <template v-if="user">
             <!-- Do NOT split the URL to multiple lines, it will be interpreted as %20%20%20...etc -->
-            <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+            <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/room/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
               large class="mr-5 green darken-1 white--text"
             >
               <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>

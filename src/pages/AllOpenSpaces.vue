@@ -1,72 +1,68 @@
 <template>
-  <div>
-    <portal to="side-drawer">
-      <v-list nav class="pa-0">
-        <template v-for="roomType in sortedRoomTypes">
-          <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
-          <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
-          <!-- id is used for scrollToView() -->
-          <v-list-item :key="roomType.id"
-            :to="(`/class/${classID}/section/${roomType.id}`)"
-            active-class="accent--text"
-            class="px-0 pt-2" 
-            :inactive="sectionID === roomType.id"
-            :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
-          >
-            <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
-            <v-list-item-content class="py-0">
-              <div style="display: flex; align-items: center;">
-                <div class="ml-3">
-                  <div v-if="roomType.id !== sectionID" 
-                    style="
-                      font-size: 0.95rem; 
-                      font-weight: 500; 
-                      color: '#424242'; 
-                      opacity: 20%;
-                      text-transform: uppercase;
-                  ">
-                    {{ roomType.name }}
-                  </div>
-                  <portal-target v-else name="room-type-name">
-
-                  </portal-target>
-                </div>
-
-                <v-spacer/>
-
-                <portal-target v-if="sectionID === roomType.id"
-                  name="current-open-space-actions"
-                  :key="roomType.id + 'actions-portal'"
-                >
-                  
-                </portal-target>
+  <v-list nav class="pa-0">
+    <template v-for="roomType in sortedRoomTypes">
+      <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
+      <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
+      <!-- id is used for scrollToView() -->
+      <v-list-item :key="roomType.id"
+        :to="(`/class/${classID}/section/${roomType.id}`)"
+        active-class="accent--text"
+        class="px-0 pt-2" 
+        :inactive="sectionID === roomType.id"
+        :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
+      >
+        <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
+        <v-list-item-content class="py-0">
+          <div style="display: flex; align-items: center;">
+            <div class="ml-3">
+              <div v-if="roomType.id !== sectionID" 
+                style="
+                  font-size: 0.95rem; 
+                  font-weight: 500; 
+                  color: '#424242'; 
+                  opacity: 20%;
+                  text-transform: uppercase;
+              ">
+                {{ roomType.name }}
               </div>
-
-              <portal-target v-if="sectionID === roomType.id" 
-                name="currently-active-open-space" 
-                :key="roomType.id + 'rooms-portal'"
-              >
+              <portal-target v-else name="room-type-name">
 
               </portal-target>
-            </v-list-item-content>
-          </v-list-item>
-        </template>
-        
-        <BasePopupButton v-if="sortedRoomTypes.length !== 0"
-          actionName="Create a new area"
-          :inputFields="['name']" 
-          @action-do="({ name }) => createNewRoomType(name)"
-        >
-          <template v-slot:activator-button="{ on }">
-            <v-list-item v-on="on" style="font-weight: 500; opacity: 20%; font-size: 0.95rem;">
-              <v-icon class="ml-1 mr-2 black--text">mdi-plus</v-icon>
-              <div style="color: '#424242'">NEW AREA</div>
-            </v-list-item>
-          </template> 
-        </BasePopupButton>
-      </v-list>
-    </portal>
-  </div>
+            </div>
+
+            <v-spacer/>
+
+            <portal-target v-if="sectionID === roomType.id"
+              name="current-open-space-actions"
+              :key="roomType.id + 'actions-portal'"
+            >
+              
+            </portal-target>
+          </div>
+
+          <portal-target v-if="sectionID === roomType.id" 
+            name="currently-active-open-space" 
+            :key="roomType.id + 'rooms-portal'"
+          >
+
+          </portal-target>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    
+    <BasePopupButton v-if="sortedRoomTypes.length !== 0"
+      actionName="Create a new area"
+      :inputFields="['name']" 
+      @action-do="({ name }) => createNewRoomType(name)"
+    >
+      <template v-slot:activator-button="{ on }">
+        <v-list-item v-on="on" style="font-weight: 500; opacity: 20%; font-size: 0.95rem;">
+          <v-icon class="ml-1 mr-2 black--text">mdi-plus</v-icon>
+          <div style="color: '#424242'">NEW AREA</div>
+        </v-list-item>
+      </template> 
+    </BasePopupButton>
+  </v-list>
 </template>
 
 <script>
@@ -111,7 +107,8 @@ export default {
     this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes")); 
     await this.$nextTick(); 
     document.getElementById("space-title").scrollIntoView({ 
-      behavior: "smooth", block: "nearest" 
+      behavior: "smooth", 
+      block: "nearest" 
     });
   },
   methods: {
@@ -132,7 +129,7 @@ export default {
         ref.collection("blackboards").doc(id).set({})
       ]);
       this.$root.$emit("show-snackbar", "Successfully created new open space.")
-      this.$router.push(`/class/${class_id}/section/${id}`);
+      this.$router.push(`/class/${class_id}/section/${id}/room/${id}`);
     }
   }
 }

@@ -57,7 +57,7 @@ export default {
       userRef.update({
         mostRecentClassID: mitClass.id
       });
-      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}`);
+      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}/room/${mitClass.id}`);
     }
   }
 }
