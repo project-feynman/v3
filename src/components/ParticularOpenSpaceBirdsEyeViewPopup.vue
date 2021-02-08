@@ -14,7 +14,7 @@
 
     <v-card> 
       <v-card-title>
-        There are {{ blackboardIDsWithPeopleOn.length }} active blackboards (to refresh blackboards, exit and re-open this popup by tapping outside)
+        There are {{ blackboardIDsWithPeopleOn.length }} active blackboards
       </v-card-title>
 
       <v-card-subtitle>
@@ -24,7 +24,7 @@
       <!-- Without `position: relative` the interection might not work -->
       <div :style="`height: ${getPopupWidth()}; display: flex; justify-content: space-evenly; flex-flow: wrap;`">
         <template v-for="boardID of blackboardIDsWithPeopleOn">
-          <RenderlessFetchStrokes
+          <RenderlessSyncStrokes
             :strokesRef="getStrokesRefFrom(boardID)"
             v-slot="{ fetchStrokes, strokesArray, isLoading }"
             :key="boardID"
@@ -64,7 +64,7 @@
 
               <div style="margin-right: 30px"></div>
             </div>
-          </RenderlessFetchStrokes>
+          </RenderlessSyncStrokes>
         </template>
       </div>
     </v-card>
@@ -76,6 +76,7 @@ import Blackboard from "@/components/Blackboard.vue";
 import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue"; 
 import db from "@/database.js";
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"; 
+import RenderlessSyncStrokes from "@/components/RenderlessSyncStrokes.vue"; 
 
 export default {
   props: {
@@ -91,7 +92,8 @@ export default {
   components: {
     Blackboard,
     BlackboardCoreDrawing,
-    RenderlessFetchStrokes
+    RenderlessFetchStrokes,
+    RenderlessSyncStrokes
   },
   data () {
     return {
