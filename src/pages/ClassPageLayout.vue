@@ -2,10 +2,9 @@
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
   <div style="height: 100%">
-    <MyParticipantDocUpdater v-if="classID && roomID"
+    <MyParticipantDocUpdater
       :classID="classID"
       :roomID="roomID"
-      :key="classID + 'participant-doc-updater'"
     />
 
     <!-- Elevation ranges from 0 to 24 -->
@@ -89,9 +88,7 @@
                 Without isViewingForum, the VisualForum does not get destroyed 
                 even if the popup closes
               -->
-              <VisualForum v-if="isViewingForum" 
-                :key="classID + 'forum'"
-              />
+              <VisualForum v-if="isViewingForum"/>
             </v-card>
           </v-dialog>
 
@@ -119,18 +116,13 @@
                 </v-btn>
               </v-toolbar>
 
-              <ClassLibrary v-if="isViewingLibrary" 
-                :key="classID + 'library'"
-              />
+              <ClassLibrary v-if="isViewingLibrary" />
             </v-card>
           </v-dialog>
         </div>  
       </v-sheet>
 
-      <AllOpenSpaces 
-        :key="classID + 'all-open-spaces'" 
-        style="margin-top: 35px;"
-      />  
+      <AllOpenSpaces style="margin-top: 35px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
