@@ -1,9 +1,9 @@
 <template>
   <v-app>    
-    <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
-    <router-view 
-      :key="'rerender-when-class-changes' + $route.params.class_id"
-    />
+    <ClassPageLayout v-if="user && $route.params.class_id"
+      :classID="$route.params.class_id"
+      :key="'force-rerender-if-class-id-changes' + $route.params.class_id"
+    /> 
 
     <!-- Camera/Mic permission errors -->
     <VideoTroubleshootPopup v-model="isShowingVideoTroubleshootPopup"/> 
@@ -76,9 +76,11 @@
 <script>
 import firebase from "firebase/app"; 
 import "firebase/storage"; 
-import Vue from "vue"; 
+import "firebase/auth"; 
+import { getRandomId } from "@/helpers.js"; 
 import _ from "lodash"; 
 import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
+import ClassPageLayout from "@/pages/ClassPageLayout.vue"; 
 import { mapState } from "vuex"; 
 
 // To get realtime support, visit https://www.daily.co/contact/support
@@ -87,6 +89,10 @@ import { mapState } from "vuex";
 const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
 export default {
+  components: {
+    VideoTroubleshootPopup,
+    ClassPageLayout
+  },
   data: () => ({
     snackbar: false,
     snackbarMessage: "",
@@ -100,17 +106,72 @@ export default {
     isShowingGeneralErrorPopup: false,
     feedbackForUser: ""
   }),
-  components: {
-    VideoTroubleshootPopup
-  },
   computed: {
     ...mapState([
+      "user",
       "CallObject",
       "participants",
     ]),
     sessionID () { return this.$store.state.session.currentID },
   },
   async created () {
+    // USER AUTHENTICATION
+    /** Checks from Firebase auth whether the user exists or not. 
+      * If user isn't logged in, sets `state.user` to null. 
+      * Otherwise, populates `state.user` with the full Firestore mirror doc. 
+    **/
+     firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) {
+        // necessary to handle if the user logs out
+        // generate a randomID
+        // TODO: use Firebase anonymous login
+        const exampleClassID = "lvzQqyZIV1wjwYnRV9hn";
+        const exampleClass = {
+          id: exampleClassID,
+          name: "0.000", 
+          description: "For new users to explore"
+        };
+        this.$store.commit("SET_USER", {
+          uid: getRandomId(),
+          firstName: "Anonymous",
+          lastName: `Beaver ${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
+          email: "", // empty string to distinguish it from signed in accounts
+          enrolledClasses: [exampleClass],
+          emailOnNewQuestion: [],
+          emailOnNewReply: [],
+          penColors: ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"]
+        });
+
+        // introduce the tutorial via the library
+
+        // let the library contain pointers that lets the user ask questions in the VisualForum as well
+        // however, you have to log in to receive email notifications
+
+        // there should also be a way for you to be notified of a post or to upvote a question
+        // but those are straightforward...there will be infinite tasks and infinite pain
+        this.$store.commit("SET_IS_VIEWING_LIBRARY", true);
+        this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", "aJWnGgnWMWjRGQzNSq3n");
+
+        // redirect to 0.000
+        this.$router.push(`/class/${exampleClassID}/section/${exampleClassID}/room/${exampleClassID}`);
+      } 
+      else {
+        try {
+          // fetch mirror document from Firestore
+          await this.$store.dispatch("fetchUser", { uid: user.uid });
+          // redirect to the most recent class
+          const { mostRecentClassID } = this.$store.state.user; 
+          this.$router.push(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
+        } catch (error) {
+          // TODO: still some unexplained behavior for authentication
+          console.log("Cannot find user's mirror doc on Firestore");
+          this.$store.commit("SET_USER", null);
+        }
+      }
+
+      this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
+    });
+
     // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
     // this.CallObject.setBandwidth({
     //   kbs: 30,

@@ -32,7 +32,9 @@ export default new Vuex.Store({
 
     // DEPRECTATE
     browserTabID: getRandomId(), 
-    session: {},
+    session: {
+      currentID: getRandomId()
+    },
 
     // video conference related states
     participants: {},
@@ -60,6 +62,7 @@ export default new Vuex.Store({
     isMusicPlaying: false,
 
     isViewingLibrary: false,
+    currentlySelectedLibraryPostID: "",
 
     isViewingForum: false,
     currentlySelectedQuestionID: ""
@@ -70,6 +73,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_CURRENTLY_SELECTED_LIBRARY_POST_ID (state, newValue) {
+      state.currentlySelectedLibraryPostID = newValue; 
+    },
     SET_CURRENTLY_SELECTED_QUESTION_ID (state, newValue) {
       state.currentlySelectedQuestionID = newValue; 
     },
@@ -172,16 +178,8 @@ export default new Vuex.Store({
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     // TODO: rename to listenToFirestoreUser
-    async fetchUser (context, { uid, refreshToken }) {
+    async fetchUser (context, { uid }) {
       return new Promise((resolve, reject) => {
-        const sessionObject = {
-          currentID: getRandomId()
-        };
-        if (refreshToken) {
-          sessionObject.refreshToken = refreshToken.substring(refreshToken.length - 20) 
-        }
-        context.commit('SET_SESSION', sessionObject);
-
         const mirrorUserRef = db.collection("users").doc(uid);
         mirrorUserRef.onSnapshot(userDoc => {
           if (!userDoc.exists) {

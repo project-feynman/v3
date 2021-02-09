@@ -20,7 +20,9 @@
     >      
       <v-sheet class="pt-3 pl-2">    
         <div style="display: flex;">
-          <v-list-item-avatar @click="$router.push('/')" tile width="47" height="42" style="cursor: pointer;" class="ma-0">
+          <!-- enable user to report issues, directly email me, etc. -->
+          <!-- style="cursor: pointer;" -->
+          <v-list-item-avatar tile width="47" height="42" @click=""  class="ma-0">
             <img src="/logo.png">
           </v-list-item-avatar>
 
@@ -236,12 +238,16 @@ export default {
 
     // good place to ensure backwards compatibility for new features
     const { user } = this; 
-    db.doc(`users/${user.uid}`).update({
-      mostRecentClassID: this.classID,
-      penColors: user.penColors ? user.penColors : ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"],
-      emailOnNewQuestion: user.emailOnNewQuestion ? user.emailOnNewQuestion : [],
-      emailOnNewReply: user.emailOnNewReply ? user.emailOnNewReply : []
-    });
+
+    // note the email does not exist for an anonymous user
+    if (user.email) {
+      db.doc(`users/${user.uid}`).update({
+        mostRecentClassID: this.classID,
+        penColors: user.penColors ? user.penColors : ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"],
+        emailOnNewQuestion: user.emailOnNewQuestion ? user.emailOnNewQuestion : [],
+        emailOnNewReply: user.emailOnNewReply ? user.emailOnNewReply : []
+      });
+    }
   },
   destroyed () {
     this.unsubscribeClassDocListener(); 
