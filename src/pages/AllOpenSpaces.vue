@@ -5,7 +5,7 @@
       <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
       <!-- id is used for scrollToView() -->
       <v-list-item :key="roomType.id"
-        :to="(`/class/${classID}/section/${roomType.id}`)"
+        :to="(`/class/${classID}/section/${roomType.id}/room/${roomType.id}`)"
         active-class="accent--text"
         class="px-0 pt-2" 
         :inactive="sectionID === roomType.id"
