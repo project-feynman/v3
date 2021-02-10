@@ -97,7 +97,6 @@
           <v-dialog 
             :value="isViewingLibrary" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
-            persistent
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-1 mr-2 white--text grey px-3">
@@ -112,11 +111,11 @@
             </template>
 
             <v-card>
-              <v-toolbar dark>
+              <!-- <v-toolbar dark>
                 <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
-              </v-toolbar>
+              </v-toolbar> -->
 
               <ClassLibrary v-if="isViewingLibrary" />
             </v-card>

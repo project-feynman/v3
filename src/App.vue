@@ -65,11 +65,13 @@
       </template>
     </v-snackbar>
 
-    <v-snackbar v-model="musicSnackbar" timeout="5000">
-      Play music from Maplestory?
-      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
-      <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
-    </v-snackbar>
+    <template v-if="user">
+      <v-snackbar v-if="user.email" v-model="musicSnackbar" timeout="5000">
+        Play music from Maplestory?
+        <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
+        <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
+      </v-snackbar>
+    </template>
   </v-app>
 </template>
 
@@ -162,6 +164,20 @@ export default {
           // redirect to the most recent class
           const { mostRecentClassID } = this.$store.state.user; 
           this.$router.push(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
+
+          // temporary fix just to avoid error messages
+          // it's actually precisely when the user is new that you want to prompt for 
+          // maplestory music, so eventually we have to revert. 
+          
+          // fetch music
+          const maplestorySoundtrack = [
+            "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
+            "[MapleStory BGM] Ereve Raindrop Flower.mp3",
+          ];
+          const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
+          const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
+          const url = await pathReference.getDownloadURL(); 
+          this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
         } catch (error) {
           // TODO: still some unexplained behavior for authentication
           console.log("Cannot find user's mirror doc on Firestore");
@@ -220,15 +236,6 @@ export default {
       this.snackbar = true;
       this.snackbarMessage = message;
     });
-
-    const maplestorySoundtrack = [
-      "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
-      "[MapleStory BGM] Ereve Raindrop Flower.mp3",
-    ];
-    const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
-    const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
-    const url = await pathReference.getDownloadURL(); 
-    this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
   },
   methods: {
     playBackgroundMusic () {
