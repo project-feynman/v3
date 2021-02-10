@@ -39,7 +39,7 @@
     </template>
 
     <template v-slot:append="{ item }">
-      <v-menu v-if="user.email && item.isFolder" bottom right>
+      <v-menu v-if="item.isFolder" bottom right>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on">
             <v-icon>mdi-dots-vertical</v-icon>
@@ -72,7 +72,7 @@
       </v-menu>
       
       <!-- Different dropdown options for pages (refactor later) -->
-      <v-menu v-else-if="user" bottom right>
+      <v-menu v-else-if="user.email" bottom right>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on">
             <v-icon>mdi-dots-vertical</v-icon>

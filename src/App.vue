@@ -128,7 +128,7 @@ export default {
         // necessary to handle if the user logs out
         // generate a randomID
         await firebase.auth().signInAnonymously(); 
-        
+
         const exampleClassID = "lvzQqyZIV1wjwYnRV9hn";
         const exampleClass = {
           id: exampleClassID,
@@ -155,7 +155,8 @@ export default {
         // there should also be a way for you to be notified of a post or to upvote a question
         // but those are straightforward...there will be infinite tasks and infinite pain
         this.$store.commit("SET_IS_VIEWING_LIBRARY", true);
-        this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", "aJWnGgnWMWjRGQzNSq3n");
+        const tutorialPostID = "nG8VBZg4QanbSkKjPuCX"; // "aJWnGgnWMWjRGQzNSq3n"
+        this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", tutorialPostID);
 
         // redirect to 0.000
         this.$router.push(`/class/${exampleClassID}/section/${exampleClassID}/room/${exampleClassID}`);
