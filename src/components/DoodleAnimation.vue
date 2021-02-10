@@ -135,12 +135,12 @@ export default {
       let videoHeight; 
       let videoWidth; 
 
-      if (availableWidth * this.aspectRatio < availableHeight) {
+      if (availableWidth * (1/this.aspectRatio) < availableHeight) {
         videoWidth = availableWidth;
-        videoHeight = videoWidth * this.aspectRatio;
+        videoHeight = videoWidth * (1/this.aspectRatio);
       } else {
         videoHeight = availableHeight;
-        videoWidth = videoHeight * (1/this.aspectRatio);
+        videoWidth = videoHeight * this.aspectRatio;
       }
 
       CanvasWrapper.style.height = `${videoHeight}px`;

@@ -123,16 +123,19 @@ export default {
       * Otherwise, populates `state.user` with the full Firestore mirror doc. 
     **/
      firebase.auth().onAuthStateChanged(async (user) => {
-      if (!user) {
+      console.log("authStateChanged, user =", user); 
+      if (!user || !user.email) {
         // necessary to handle if the user logs out
         // generate a randomID
-        // TODO: use Firebase anonymous login
+        await firebase.auth().signInAnonymously(); 
+        
         const exampleClassID = "lvzQqyZIV1wjwYnRV9hn";
         const exampleClass = {
           id: exampleClassID,
           name: "0.000", 
           description: "For new users to explore"
         };
+
         this.$store.commit("SET_USER", {
           uid: getRandomId(),
           firstName: "Anonymous",
@@ -168,7 +171,7 @@ export default {
           // temporary fix just to avoid error messages
           // it's actually precisely when the user is new that you want to prompt for 
           // maplestory music, so eventually we have to revert. 
-          
+
           // fetch music
           const maplestorySoundtrack = [
             "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
