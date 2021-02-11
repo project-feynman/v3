@@ -74,16 +74,19 @@
             </v-btn>
           </v-badge>
 
+          <!-- scrollable -->
           <v-dialog 
             :value="isViewingForum" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
             persistent
+            width="70vw"
           >
             <v-card>
-              <v-toolbar dark>
+              <v-toolbar dark color="grey">
                 <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
+                <h2>FORUM</h2>
               </v-toolbar>
 
               <!--
@@ -94,9 +97,12 @@
             </v-card>
           </v-dialog>
 
+          <!-- scrollable -->
           <v-dialog 
             :value="isViewingLibrary" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
+            persistent
+            width="70vw"
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-1 mr-2 white--text grey px-3">
@@ -111,11 +117,12 @@
             </template>
 
             <v-card>
-              <!-- <v-toolbar dark>
+              <v-toolbar dark color="grey">
                 <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
-              </v-toolbar> -->
+                <h2>LIBRARY</h2>
+              </v-toolbar>
 
               <ClassLibrary v-if="isViewingLibrary" />
             </v-card>

@@ -18,7 +18,7 @@
         <template v-if="questions">
           <v-list-item v-for="question in questions" :key="question.id"
             @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false;"
-            :class="question.hasReplies ? '' : ['red']"
+            :class="question.hasReplies ? '' : ['info']"
           >
             <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
               <v-list-item-title>

@@ -65,13 +65,13 @@
       </template>
     </v-snackbar>
 
-    <template v-if="user">
+    <!-- <template v-if="user">
       <v-snackbar v-if="user.email" v-model="musicSnackbar" timeout="5000">
         Play music from Maplestory?
         <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
         <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
       </v-snackbar>
-    </template>
+    </template> -->
   </v-app>
 </template>
 
@@ -155,7 +155,7 @@ export default {
         // there should also be a way for you to be notified of a post or to upvote a question
         // but those are straightforward...there will be infinite tasks and infinite pain
         this.$store.commit("SET_IS_VIEWING_LIBRARY", true);
-        const tutorialPostID = "nG8VBZg4QanbSkKjPuCX"; // "aJWnGgnWMWjRGQzNSq3n"
+        const tutorialPostID = "SX3chANZirfspySFxAqD"; // "nG8VBZg4QanbSkKjPuCX"; // "aJWnGgnWMWjRGQzNSq3n"
         this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", tutorialPostID);
 
         // redirect to 0.000
@@ -174,18 +174,20 @@ export default {
           // maplestory music, so eventually we have to revert. 
 
           // fetch music
-          const maplestorySoundtrack = [
-            "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
-            "[MapleStory BGM] Ereve Raindrop Flower.mp3",
-          ];
-          const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
-          const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
-          const url = await pathReference.getDownloadURL(); 
-          this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
+          // const maplestorySoundtrack = [
+          //   "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
+          //   "[MapleStory BGM] Ereve Raindrop Flower.mp3",
+          // ];
+          // const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
+          // const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
+          // const url = await pathReference.getDownloadURL(); 
+          // this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
         } catch (error) {
           // TODO: still some unexplained behavior for authentication
           console.log("Cannot find user's mirror doc on Firestore");
+          this.$root.$emit("show-snackbar", "Can't find user's mirror doc");
           this.$store.commit("SET_USER", null);
+          firebase.auth().signOut();
         }
       }
 

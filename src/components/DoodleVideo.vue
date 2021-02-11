@@ -74,7 +74,7 @@ export default {
     DoodleFullscreenMixin
   ],
   data: () => ({
-    playbackSpeed: 2,
+    playbackSpeed: 1,
     speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'3x', value: 3}],
     canvas: null,
     ctx: null,
