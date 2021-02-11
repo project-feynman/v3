@@ -28,7 +28,7 @@
             <v-subheader class="px-0">Or create a new class</v-subheader>
           </v-col>
           <v-col cols="7">
-            <v-text-field v-model="nameOfNewCommunity" label="Name" placeholder="e.g. GIR server"/>
+            <v-text-field v-model="nameOfNewCommunity" label="Name" placeholder="e.g. 6.036"/>
             <v-text-field v-model="descriptionOfNewCommunity" label="Description" placeholder="e.g. Intro to Machine Learning"/>
           </v-col>
           <v-col cols="2">

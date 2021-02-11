@@ -123,7 +123,8 @@ export default {
         }
       }
 
-      this.$router.push("/");
+      const { id } = newDefaultRedirectedClass; 
+      this.$router.push(`/class/${id}/section/${id}/room/${id}`);
 
       await db.collection("users").doc(user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
