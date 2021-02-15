@@ -1,7 +1,9 @@
 <template>
   <v-app>    
-    <!-- DIFFERENT PAGES WILL BE INJECTED BELOW -->
-    <router-view/>
+    <ClassPageLayout v-if="user && $route.params.class_id"
+      :classID="$route.params.class_id"
+      :key="'force-rerender-if-class-id-changes' + $route.params.class_id"
+    /> 
 
     <!-- Camera/Mic permission errors -->
     <VideoTroubleshootPopup v-model="isShowingVideoTroubleshootPopup"/> 
@@ -63,20 +65,24 @@
       </template>
     </v-snackbar>
 
-    <v-snackbar v-model="musicSnackbar" timeout="5000">
-      Play music from Maplestory?
-      <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
-      <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
-    </v-snackbar>
+    <!-- <template v-if="user">
+      <v-snackbar v-if="user.email" v-model="musicSnackbar" timeout="5000">
+        Play music from Maplestory?
+        <v-btn @click="playBackgroundMusic(); musicSnackbar = false;" text color="cyan">YES </v-btn>
+        <v-btn @click="musicSnackbar = false;" text>NO</v-btn>
+      </v-snackbar>
+    </template> -->
   </v-app>
 </template>
 
 <script>
 import firebase from "firebase/app"; 
 import "firebase/storage"; 
-import Vue from "vue"; 
+import "firebase/auth"; 
+import { getRandomId } from "@/helpers.js"; 
 import _ from "lodash"; 
 import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
+import ClassPageLayout from "@/pages/ClassPageLayout.vue"; 
 import { mapState } from "vuex"; 
 
 // To get realtime support, visit https://www.daily.co/contact/support
@@ -85,6 +91,10 @@ import { mapState } from "vuex";
 const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
 export default {
+  components: {
+    VideoTroubleshootPopup,
+    ClassPageLayout
+  },
   data: () => ({
     snackbar: false,
     snackbarMessage: "",
@@ -98,17 +108,95 @@ export default {
     isShowingGeneralErrorPopup: false,
     feedbackForUser: ""
   }),
-  components: {
-    VideoTroubleshootPopup
-  },
   computed: {
     ...mapState([
+      "user",
       "CallObject",
       "participants",
     ]),
     sessionID () { return this.$store.state.session.currentID },
   },
   async created () {
+    // USER AUTHENTICATION
+    /** Checks from Firebase auth whether the user exists or not. 
+      * If user isn't logged in, sets `state.user` to null. 
+      * Otherwise, populates `state.user` with the full Firestore mirror doc. 
+    **/
+     firebase.auth().onAuthStateChanged(async (user) => {
+      console.log("authStateChanged, user =", user); 
+      // !user means logged out, !user.email means anonymous user
+      if (!user || !user.email) {
+        // necessary to handle if the user logs out
+        // generate a randomID
+        await firebase.auth().signInAnonymously(); 
+
+        const exampleClassID = "lvzQqyZIV1wjwYnRV9hn";
+        const exampleClass = {
+          id: exampleClassID,
+          name: "0.000", 
+          description: "For new users to explore"
+        };
+
+        this.$store.commit("SET_USER", {
+          uid: getRandomId(),
+          firstName: "Anonymous",
+          lastName: `Beaver ${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
+          email: "", // empty string to distinguish it from signed in accounts
+          enrolledClasses: [exampleClass],
+          emailOnNewQuestion: [],
+          emailOnNewReply: [],
+          penColors: ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"]
+        });
+
+        // introduce the tutorial via the library
+
+        // let the library contain pointers that lets the user ask questions in the VisualForum as well
+        // however, you have to log in to receive email notifications
+
+        // there should also be a way for you to be notified of a post or to upvote a question
+        // but those are straightforward...there will be infinite tasks and infinite pain
+        this.$store.commit("SET_IS_VIEWING_LIBRARY", true);
+        const tutorialPostID = "SX3chANZirfspySFxAqD"; // "nG8VBZg4QanbSkKjPuCX"; // "aJWnGgnWMWjRGQzNSq3n"
+        this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", tutorialPostID);
+
+        // redirect to 0.000
+        this.$router.push(`/class/${exampleClassID}/section/${exampleClassID}/room/${exampleClassID}`);
+      } 
+      else {
+        try {
+          // fetch mirror document from Firestore
+          await this.$store.dispatch("fetchUser", { uid: user.uid });
+          const { class_id, section_id, room_id } = this.$route.params; 
+          // redirect to the most recent class if user only types explain.mit.edu
+          if (!(class_id && section_id && room_id)) {
+            const { mostRecentClassID } = this.$store.state.user; 
+            this.$router.push(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
+          }
+          // temporary fix just to avoid error messages
+          // it's actually precisely when the user is new that you want to prompt for 
+          // maplestory music, so eventually we have to revert. 
+
+          // fetch music
+          // const maplestorySoundtrack = [
+          //   "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
+          //   "[MapleStory BGM] Ereve Raindrop Flower.mp3",
+          // ];
+          // const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
+          // const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
+          // const url = await pathReference.getDownloadURL(); 
+          // this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
+        } catch (error) {
+          // TODO: still some unexplained behavior for authentication
+          console.log("Cannot find user's mirror doc on Firestore");
+          this.$root.$emit("show-snackbar", "Can't find user's mirror doc");
+          this.$store.commit("SET_USER", null);
+          firebase.auth().signOut();
+        }
+      }
+
+      this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
+    });
+
     // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
     // this.CallObject.setBandwidth({
     //   kbs: 30,
@@ -120,7 +208,7 @@ export default {
     for (const event of PARTICIPANT_EVENTS) {
       this.CallObject.on(
         event, 
-        _.debounce(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS)
+        _.throttle(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS) 
       ); 
     }
     this.CallObject.on("track-started", this.mountNewTrack);
@@ -157,15 +245,6 @@ export default {
       this.snackbar = true;
       this.snackbarMessage = message;
     });
-
-    const maplestorySoundtrack = [
-      "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
-      "[MapleStory BGM] Ereve Raindrop Flower.mp3",
-    ];
-    const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
-    const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
-    const url = await pathReference.getDownloadURL(); 
-    this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
   },
   methods: {
     playBackgroundMusic () {

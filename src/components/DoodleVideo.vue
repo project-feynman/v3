@@ -74,7 +74,7 @@ export default {
     DoodleFullscreenMixin
   ],
   data: () => ({
-    playbackSpeed: 2,
+    playbackSpeed: 1,
     speedOptions: [{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'1.5x', value: 1.5},{text:'2x', value: 2},{text:'3x', value: 3}],
     canvas: null,
     ctx: null,
@@ -166,12 +166,12 @@ export default {
       let videoHeight; 
       let videoWidth; 
 
-      if (availableWidth * this.aspectRatio < availableHeight) {
+      if (availableWidth * (1/this.aspectRatio) < availableHeight) {
         videoWidth = availableWidth;
-        videoHeight = videoWidth * this.aspectRatio;
+        videoHeight = videoWidth * (1/this.aspectRatio);
       } else {
         videoHeight = availableHeight;
-        videoWidth = videoHeight * (1/this.aspectRatio);
+        videoWidth = videoHeight * this.aspectRatio;
       }
 
       CanvasWrapper.style.height = `${videoHeight}px`;

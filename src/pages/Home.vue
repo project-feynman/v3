@@ -18,7 +18,7 @@
         <v-row class="my-5 pt-2" justify="center">
           <template v-if="user">
             <!-- Do NOT split the URL to multiple lines, it will be interpreted as %20%20%20...etc -->
-            <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
+            <v-btn @click="$router.push(`class/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/section/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}/room/${user.mostRecentClassID || 'lvzQqyZIV1wjwYnRV9hn'}`)" 
               large class="mr-5 green darken-1 white--text"
             >
               <v-icon class="mr-2">mdi-emoticon-wink-outline</v-icon>
@@ -30,10 +30,10 @@
               <a target="_blank" href="https://github.com/project-feynman/explain-mit" class="white--text">GITHUB</a>
             </v-btn> -->
 
-            <v-btn large class="grey darken-1 white--text mx-5">
+            <!-- <v-btn large class="grey darken-1 white--text mx-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>
               <a target="_blank" href="https://explain-old.web.app" class="white--text">Old version</a>
-            </v-btn> 
+            </v-btn>  -->
 
             <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
               <v-icon class="mr-2">mdi-logout</v-icon>
@@ -78,10 +78,10 @@
               </template>
             </BasePopupButton>
 
-            <v-btn large class="grey darken-1 white--text mx-5">
+            <!-- <v-btn large class="grey darken-1 white--text mx-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>
               <a target="_blank" href="https://explain-old.web.app" class="white--text">Old version</a>
-            </v-btn> 
+            </v-btn>  -->
 
             <!-- <v-btn large class="grey darken-1 white--text ml-5">
               <v-icon class="mr-2">mdi-gitlab</v-icon>

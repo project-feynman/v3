@@ -1,4 +1,5 @@
 <template>
+  <!-- :value prop controls which item is currently active -->
   <v-treeview
     :items="folders"
     :search="search"
@@ -6,6 +7,8 @@
     :load-children="(folder) => fetchRelevantPosts(folder)"
     :key="incrementKeyToDestroy"
     open-on-click
+    :active="[currentlySelectedLibraryPostID]"
+    color="accent"
   >
     <template v-slot:prepend="{ item, open }">
       <v-icon v-if="item.isFolder">
@@ -19,9 +22,15 @@
     <template v-slot:label="{ item }">
       <drop class="drop" @drop="handleDrop(item, ...arguments)">
         <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
-          <v-list-item v-if="!item.isFolder" @click="$emit('post-was-clicked', item.id)" dense>
-            <v-list-item-subtitle v-text="item.name"/>
+          <!-- Document -->
+          <v-list-item v-if="!item.isFolder" 
+            @click="$emit('post-was-clicked', item.id)" 
+            dense
+          >
+            <v-list-item-subtitle :class="item.id === currentlySelectedLibraryPostID ? 'accent--text' : ''" v-text="item.name"/>
           </v-list-item>
+
+          <!-- Folder -->
           <v-list-item v-else dense>
             <v-list-item-subtitle v-text="item.name"/>
           </v-list-item>
@@ -30,7 +39,7 @@
     </template>
 
     <template v-slot:append="{ item }">
-      <v-menu v-if="user && item.isFolder" bottom right>
+      <v-menu v-if="item.isFolder" bottom right>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on">
             <v-icon>mdi-dots-vertical</v-icon>
@@ -63,7 +72,7 @@
       </v-menu>
       
       <!-- Different dropdown options for pages (refactor later) -->
-      <v-menu v-else-if="user" bottom right>
+      <v-menu v-else-if="user.email" bottom right>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on">
             <v-icon>mdi-dots-vertical</v-icon>
@@ -119,13 +128,13 @@ import db from "@/database.js";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import { mapState } from "vuex";
-import { Drag, Drop } from 'vue-drag-drop';
+import { Drag, Drop } from "vue-drag-drop";
 
 export default {
   props: {
     collection: {
       type: String,
-      default: 'posts'
+      default: "posts"
     },
   },
   mixins: [
@@ -139,7 +148,8 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      "currentlySelectedLibraryPostID"
     ])
   },
   data: function () {
@@ -148,7 +158,7 @@ export default {
       openedFoldersIndices: [],
       search: null,
       snapshotListeners: [],
-      incrementKeyToDestroy: 0,
+      incrementKeyToDestroy: 0
     }
   },
   beforeDestroy () {
@@ -168,10 +178,9 @@ export default {
       this.$root.$emit("show-snackbar", "Successfully renamed the post.");
     },
     async renameTag (payload, tag) {
-      const i = this.mitClass.tags.findIndex(({name}) => name ==tag.name);
+      const i = this.mitClass.tags.findIndex(({ name }) => name ==tag.name);
       this.mitClass.tags[i].name=payload['New Name']
-      const postRef = db.doc(`classes/${this.$route.params.class_id}`);
-      await postRef.update({
+      db.doc(`classes/${this.$route.params.class_id}`).update({
         tags: this.mitClass.tags,
       });
       this.groupPosts(true);
@@ -191,10 +200,10 @@ export default {
      */
     async createNewFolder (name, parentID = null) {
       const newFolder = {
-          id: getRandomId(),
-          name,
-          parent: parentID
-        }
+        id: getRandomId(),
+        name,
+        parent: parentID
+      };
       await db.doc(`classes/${this.mitClass.id}`).update({
         tags: firebase.firestore.FieldValue.arrayUnion(newFolder)
       });
@@ -267,7 +276,13 @@ export default {
       // force: (Boolean) forces the tag tree to update even if it was already filled. We don't want ot force every single time user switches between
       // but only when a new folder is added (cause we are not listening to mitClass (but not sure if fixing that would solve the problem))
       if ((!this.mitClass || this.folders.length!==0) && !force) return;
-      this.folders.length=0;
+      this.folders.length = 0;
+      this.fetchPostsWithNoTags(); 
+
+      if (! this.mitClass.tags) {
+        // this.createNewFolder("Default folder"); 
+        return; 
+      }
       for (const tag of this.mitClass.tags) {
         const tag_object = {
           id: tag.id,
@@ -286,7 +301,6 @@ export default {
           }
         }
       }
-      this.fetchPostsWithNoTags(); 
     },
     fetchPostsWithNoTags () {
       const query = db.collection(`classes/${this.$route.params.class_id}/${this.collection}`).where("tags", "==", []);
@@ -311,19 +325,20 @@ export default {
         // clear previous data (but don't clear the folders)
         // Consider only the root folders
         // We can't just filter the classtags for root folders since folders can be deleted, but we should make better way to delete 
-        let rootTagsLength = 0;
-        for (const tag of this.mitClass.tags) {
-          if (tag.parent === null) {
-            rootTagsLength +=1
-          } else {
-            const n = this.mitClass.tags.findIndex(({id}) => id == tag.parent);
-            if (n === -1) { // In case parent doesn't exist (maybe deleted or sth)
-              rootTagsLength+=1
-            }
-          }
-        }
-        this.folders.length = rootTagsLength;
-        snapshot.forEach((doc) => {
+        // let rootTagsLength = 0;
+        // for (const tag of this.mitClass.tags) {
+        //   if (tag.parent === null) {
+        //     rootTagsLength +=1
+        //   } else {
+        //     const n = this.mitClass.tags.findIndex(({id}) => id == tag.parent);
+        //     if (n === -1) { // In case parent doesn't exist (maybe deleted or sth)
+        //       rootTagsLength+=1
+        //     }
+        //   }
+        // }
+        // this.folders.length = rootTagsLength;
+        this.folders.length = 0; 
+        snapshot.forEach(doc => {
           this.folders.push({
             id: doc.id,
             name: doc.data().title,

@@ -2,10 +2,9 @@
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
   <div style="height: 100%">
-    <MyParticipantDocUpdater v-if="classID && roomID"
+    <MyParticipantDocUpdater
       :classID="classID"
       :roomID="roomID"
-      :key="classID + 'participant-doc-updater'"
     />
 
     <!-- Elevation ranges from 0 to 24 -->
@@ -21,7 +20,9 @@
     >      
       <v-sheet class="pt-3 pl-2">    
         <div style="display: flex;">
-          <v-list-item-avatar @click="$router.push('/')" tile width="47" height="42" style="cursor: pointer;" class="ma-0">
+          <!-- enable user to report issues, directly email me, etc. -->
+          <!-- style="cursor: pointer;" -->
+          <v-list-item-avatar tile width="47" height="42" @click=""  class="ma-0">
             <img src="/logo.png">
           </v-list-item-avatar>
 
@@ -51,74 +52,57 @@
           />
         </div>
 
-        <div v-if="mitClass" style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
+        <div style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
+          <v-badge v-if="mitClass"
+            left
+            color="info"
+            :content="mitClass.numOfUnansweredQuestions"
+            overlap
+            style="z-index: 1;"
+          >
+            <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
+
+              <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+              <div style="font-size: 0.9rem; 
+                          font-weight: 500; 
+                          color: '#424242'; 
+                          opacity: 0.9;
+                          text-transform: uppercase;"
+              >
+                FORUM
+              </div>
+            </v-btn>
+          </v-badge>
+
+          <!-- scrollable -->
           <v-dialog 
             :value="isViewingForum" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
             persistent
+            width="70vw"
           >
-            <template v-slot:activator>
-              <!-- TODO: show number of unanswered questions -->
-              <template v-if="mitClass.numOfUnansweredQuestions">
-                <v-badge :value="mitClass.numOfUnansweredQuestions"
-                  left
-                  color="info"
-                  :content="mitClass.numOfUnansweredQuestions"
-                  overlap
-                  style="z-index: 1;"
-                >
-                  <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
-                    <!-- orange--text -->
-                    <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
-                    <div style="font-size: 0.9rem; 
-                                font-weight: 500; 
-                                color: '#424242'; 
-                                opacity: 0.9;
-                                text-transform: uppercase;"
-                    >
-                      FORUM
-                    </div>
-                  </v-btn>
-                </v-badge>
-              </template>
-              
-              <template v-else>
-                <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
-                  <!-- orange--text -->
-                  <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
-                  <div style="font-size: 0.9rem; 
-                              font-weight: 500; 
-                              color: '#424242'; 
-                              opacity: 0.9;
-                              text-transform: uppercase;"
-                  >
-                    FORUM
-                  </div>
-                </v-btn>
-              </template>
-            </template>
-
             <v-card>
-              <v-toolbar dark>
+              <v-toolbar dark color="grey">
                 <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
+                <h2>FORUM</h2>
               </v-toolbar>
 
               <!--
                 Without isViewingForum, the VisualForum does not get destroyed 
                 even if the popup closes
               -->
-              <VisualForum v-if="isViewingForum" 
-                :key="$route.params.class_id + 'forum'"
-              />
+              <VisualForum v-if="isViewingForum"/>
             </v-card>
           </v-dialog>
 
+          <!-- scrollable -->
           <v-dialog 
             :value="isViewingLibrary" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
             persistent
+            width="70vw"
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-1 mr-2 white--text grey px-3">
@@ -133,56 +117,36 @@
             </template>
 
             <v-card>
-              <v-toolbar dark>
+              <v-toolbar dark color="grey">
                 <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
+                <h2>LIBRARY</h2>
               </v-toolbar>
 
-              <ClassLibrary v-if="isViewingLibrary" 
-                :key="$route.params.class_id + 'library'"
-              />
+              <ClassLibrary v-if="isViewingLibrary" />
             </v-card>
           </v-dialog>
         </div>  
       </v-sheet>
 
-      <!-- <v-divider class="my-5"/> -->
-          
-      <!-- <v-row align="center" class="d-flex px-1 mt-3">
-        <v-switch @change="toggleMaplestoryMusic()"
-          :input-value="$store.state.isMusicPlaying"
-          color="cyan"
-          prepend-icon="mdi-music-clef-treble"
-          hide-details
-          class="mt-0 ml-3 grey--text"
-          inset
-          dense
-        />
-      </v-row> -->  
-      <portal-target name="side-drawer" style="margin-top: 35px;">
-
-      </portal-target>
-    </v-navigation-drawer>
-
-    <!-- MAIN CONTENT / AREA (where the collaborative blackboard resides) -->
-    <v-main>
-      <portal-target name="main-content">
-        
-      </portal-target>
-    </v-main>
-
-    <div v-if="mitClass" :key="$route.params.class_id + $route.params.section_id">
-      <!-- :key="...class_id" forces <router-view/> to re-render -->
-      <!-- Many things from <router-view> will teleport to the portals above -->
+      <AllOpenSpaces style="margin-top: 35px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
           It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
        -->
-      <AllOpenSpaces/>  
-      <router-view/>
-    </div>
+      <ParticularOpenSpace 
+        :key="$route.params.section_id"
+      /> 
+    </v-navigation-drawer>
+
+    <v-main>
+      <RealtimeRoom 
+        :roomId="$route.params.room_id" 
+        :key="$route.params.room_id"
+      />
+    </v-main>
   </div>
 </template>
 
@@ -208,9 +172,17 @@ import ClassSettingsPopup from "@/components/ClassSettingsPopup.vue";
 import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
+import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue"; 
+import RealtimeRoom from "@/pages/RealtimeRoom.vue";
 
 export default {
   name: "ClassPageLayout",
+  props: {
+    classID: {
+      type: String,
+      required: true
+    }
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -224,7 +196,9 @@ export default {
     ClassSettingsPopup,
     AllOpenSpaces,
     VisualForum,
-    MyParticipantDocUpdater
+    MyParticipantDocUpdater,
+    ParticularOpenSpace,
+    RealtimeRoom
   },
   data: () => ({
     firebaseRef: null,
@@ -233,7 +207,8 @@ export default {
     isShowingDrawer: true,
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
-    isClassSettingsPopupOpen: false
+    isClassSettingsPopupOpen: false,
+    unsubscribeClassDocListener: null
     // isHelpPopupOpen: false
   }),
   computed: {
@@ -246,11 +221,10 @@ export default {
     ]),
     // note: these properties are not reactive, but I assume they will be re-rendered and therefore updated 
     // due to <router-view :key="$route.params.class_id> in App.vue
-    classID () { return this.$route.params.class_id; },
     roomID () { return this.$route.params.room_id; },
     currentClass () {
       for (const mitClass of this.user.enrolledClasses) {
-        if (mitClass.id === this.$route.params.class_id) {
+        if (mitClass.id === this.classID) {
           return mitClass; 
         }
       }
@@ -258,48 +232,33 @@ export default {
   },
   // TODO: refactor this quickfix
   watch: {
-    "$route.params.class_id": {
-      deep: true,
-      immediate: true,
-      handler (newClassID) {
-        const { user, mitClass } = this; 
-
-        if (mitClass) {
-          if (newClassID === mitClass.id) {
-            return; 
-          }
-        }
-        const { class_id } = this.$route.params; 
-        this.$store.commit("SET_CLASS", null);
-        this.$store.dispatch("fetchClass", class_id); 
-        db.doc(`users/${user.uid}`).update({
-          mostRecentClassID: class_id,
-          penColors: user.penColors ? user.penColors : ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"],
-          emailOnNewQuestion: user.emailOnNewQuestion ? user.emailOnNewQuestion : [],
-          emailOnNewReply: user.emailOnNewReply ? user.emailOnNewReply : []
-        });
-      }
-    },
     isBoardFullscreen (newVal) {
       if (newVal) this.isShowingDrawer = false; 
       else this.isShowingDrawer = true; 
     }
   },
-  methods: {
-    async leaveClass () {
-      let classToRemove = null; 
-      for (const enrolledClass of this.user.enrolledClasses) {
-        if (enrolledClass.id === this.$route.params.class_id) {
-          classToRemove = enrolledClass;
-          break; 
-        }
-      }
-      await db.collection("users").doc(this.user.uid).update({
-        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
-        mostRecentClassID: this.user.enrolledClasses[0].id
+  created () {
+    this.unsubscribeClassDocListener = db.doc(`classes/${this.classID}`).onSnapshot(classDocSnapshot => {
+      this.$store.commit("SET_CLASS", { id: classDocSnapshot.id, ...classDocSnapshot.data() });
+    });
+
+    // good place to ensure backwards compatibility for new features
+    const { user } = this; 
+
+    // note the email does not exist for an anonymous user
+    if (user.email) {
+      db.doc(`users/${user.uid}`).update({
+        mostRecentClassID: this.classID,
+        penColors: user.penColors ? user.penColors : ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"],
+        emailOnNewQuestion: user.emailOnNewQuestion ? user.emailOnNewQuestion : [],
+        emailOnNewReply: user.emailOnNewReply ? user.emailOnNewReply : []
       });
-      this.$router.push("/");
-    },
+    }
+  },
+  destroyed () {
+    this.unsubscribeClassDocListener(); 
+  },
+  methods: {
     async toggleMaplestoryMusic () {
       const { isMusicPlaying, musicAudioElement } = this.$store.state; 
       

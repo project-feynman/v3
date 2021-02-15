@@ -54,7 +54,8 @@ export default {
           const unsubscribeListener = ref.onSnapshot(doc => { // onSnapshot does NOT return a promise
             if (!doc.exists) {
               obj[val] = undefined;
-              throw new Error("Document doesn't exist");
+              console.log("error, ref =", ref); 
+              throw new Error("Can't listen to non-existent doc", ref);
             }
             obj[val] = { 
               id: doc.id, 

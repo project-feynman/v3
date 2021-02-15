@@ -18,7 +18,7 @@
         <template v-if="questions">
           <v-list-item v-for="question in questions" :key="question.id"
             @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false;"
-            :class="question.hasReplies ? '' : ['red']"
+            :class="question.hasReplies ? '' : ['info']"
           >
             <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
               <v-list-item-title>
@@ -110,7 +110,6 @@ export default {
       for (const q of this.questions) {
         if (! q.hasReplies) numOfUnansweredQuestions += 1; 
       }
-      console.log("numOfUnansweredQuestions =", numOfUnansweredQuestions);
       
       // sync them if they differ from the database
       // current behavior is that the number syncs for the client if he/she opens the popup
@@ -141,13 +140,12 @@ export default {
   destroyed () {
     this.isCreatingNewQuestion = false;
     this.unsubscribeQuestionsListener(); 
-    console.log("succesfully unsubscribed the questions listener");
   },
   methods: {
     async sendEmailNotificationsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
       const usersToEmail = await this.$_getCollection(db.collection("users").where("emailOnNewQuestion", "array-contains", classID));
-      console.log("usersToEmail");
       for (const user of usersToEmail) {
+        console.log("emailing ", user.email);
         const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
         sendEmailToPerson({ 
           emailOfPerson: user.email, 

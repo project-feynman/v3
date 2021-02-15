@@ -93,7 +93,10 @@
             <v-spacer/>
             <!-- <v-btn>Copy to clipboard</v-btn> -->
             <!-- email is unique for MIT Kerberos -->
-            <template v-if="expl.creator.email === user.email">
+
+            <!-- anonymous posts can be deleted and editted by anyone -->
+            <!-- user posts can be deleted and editted only by himself/herself -->
+            <template v-if="!expl.creator.email || (expl.creator.email === user.email)">
               <BaseButton @click="startEditing()" icon="mdi-pencil">Edit Text</BaseButton>
               <BaseButton @click="popup = true" icon="mdi-delete" data-qa="delete-post-btn">Delete</BaseButton>
             </template>

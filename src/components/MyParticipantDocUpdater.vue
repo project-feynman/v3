@@ -123,7 +123,6 @@ export default {
       500
     ),
     sync () {
-      console.log("sync()");
       if (this.isFirestoreDocCreated) {
         this.myFirestoreRef.update({
           classID: this.classID,

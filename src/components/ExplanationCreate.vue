@@ -228,7 +228,6 @@ export default {
       else if (this.explType === "reply") {
         const { post_id } = this.$route.params;
         if (this.$store.state.isViewingForum) {
-          console.log("questionID =", this.questionID);
           this.newPostRef = db.doc(`${classPath}/questions/${this.questionID}`);
         } else {
           this.newPostRef = db.doc(`${classPath}/posts/${post_id}`);

@@ -71,29 +71,35 @@
            <BasePopupButton>
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
-                <v-icon left color="blue">mdi-file-pdf</v-icon> Add PDF to every table
+                <v-icon left color="blue">mdi-file-pdf</v-icon> Add background to every table
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
-              <p>If you upload a multi-paged PDF, each page will be seeded in sequence in every room. 
-                For example, if you upload a PDF document with 5 problems, then every room's board #1 ~ #5 will be those problems. 
+              <p>
+                If you upload a single image/PDF, the page will be placed on your specified board number.
+                <br>
+                <br>
+                If you upload a multi-page PDF, the pages will be placed sequentially on the boards, <u>starting</u> from your specified board number.
+                For example, if your PDF has 3 pages: page 1, page 2 and page 3, then board 1 gets page 1, board 2 gets page 2 and board 3 gets page 3. 
               </p>
 
-              <v-row>
+                 <v-row>
                 <v-col>
-                  Set PDF problem in every room's board # 
+                  Specify the starting board number
                 </v-col>
                 <v-col cols="12" sm="4">
                   <v-overflow-btn 
                     label="1"
-                    :items="[1, 2, 3, 4, 5, 6, 7, 8]"
+                    :items="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
                     @change="newVal => targetBoardNum = (newVal - 1)"
                   />
                 </v-col>
               </v-row>
             </template>
             <template v-slot:popup-content="{ closePopup }">
-              <v-btn @click="$refs.fileInput.click()">Select file</v-btn>
+              <v-btn @click="$refs.fileInput.click()" block color="green" class="white--text">
+                Select file
+              </v-btn>
               <input 
                 @change="e => { seedEachRoomWithProblem(e); closePopup(); incrementKeyToDestroy += 1; }" 
                 style="display: none" 
@@ -264,10 +270,6 @@
 
     <!--  to create a gap between the last room and the bottom boundary of the area -->
     <div class="mb-1"></div>  
-
-    <portal to="main-content">
-      <router-view :key="$route.params.section_id + $route.params.room_id"/>
-    </portal>
     
     <!-- Announcement creation popup -->
     <v-dialog :value="makeAnnouncementPopup.show" persistent max-width="600px">
@@ -390,6 +392,7 @@ export default {
       return db.doc(`classes/${this.classID}`);
     },
     roomTypeRef () {
+      // TODO: change section_Id to prop
       return this.classDocRef.collection("roomTypes").doc(this.$route.params.section_id); 
     }
   },
@@ -398,13 +401,13 @@ export default {
     // `roomIDToParticipants` array, but debounce with Lodash so it does not cause lag issues
     participants: {
       immediate: true,
-      handler: _.debounce(function () {
+      handler: _.throttle(function () {
         this.updateRoomIDToParticipants();
       }, 1000)
     },
     rooms: {
       immediate: true,
-      handler: _.debounce(function () {
+      handler: _.throttle(function () {
         this.updateRoomIDToParticipants();
       }, 1000)
     },
@@ -547,6 +550,42 @@ export default {
         return; 
       }
 
+      // create the blackboards upfront if there are not enough in each room
+      // defensive programming is good, it gives you more freedom to be daring
+      // rename targetBoardNum to "startingBoardNumber"
+      // NOTE: highestBoardNumberNeeded and `targetBoardNum` are both 0-indexed
+      const boardCreationRequests = []; 
+      const highestBoardIndexNeeded = this.targetBoardNum + imageFiles.length - 1; 
+
+      if (highestBoardIndexNeeded > 10) {
+        this.$root.$emit("show-snackbar", "Can't upload beyond board number 10!")
+        return; 
+      }
+
+      console.log("highestBoardIndexNeeded =", highestBoardIndexNeeded);
+      // STEP 2/3: automatically create as many extra boards as needed to handle the PDFs
+      for (const room of this.rooms) {
+        // note `numberOfNewBoardsNeeded` can be negative, but is naturally handled by the for loop
+        const numberOfNewBoardsNeeded = highestBoardIndexNeeded - (room.blackboards.length - 1); 
+        console.log("current boards =", room.blackboards.length);
+        console.log("new boards needed =", numberOfNewBoardsNeeded);
+        for (let i = 0; i < numberOfNewBoardsNeeded; i++) {
+          const newBoardID = getRandomId(); 
+          boardCreationRequests.push(
+            this.classDocRef.collection("blackboards").doc(newBoardID).set({})
+          );
+          boardCreationRequests.push(
+            this.classDocRef.collection("rooms").doc(room.id).update({
+              blackboards: firebase.firestore.FieldValue.arrayUnion(newBoardID)
+            })
+          );
+        }
+      }
+      await Promise.all(boardCreationRequests);
+      console.log("all rooms now have enough blackboards"); 
+
+      // STEP 3/3: plant the PDF images
+      console.log("imageFiles =", imageFiles);
       const promises = []; 
       for (const [i, imageFile] of imageFiles.entries()) {
         // console.log("processing image number ", i);

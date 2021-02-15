@@ -4,6 +4,7 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import { mapState } from "vuex"; 
+import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 
 export default {
   mixins: [
@@ -33,8 +34,40 @@ export default {
      * @effect uploads the explanation data to Firestore and Firebase Storage
      */
     async $_saveExplToCacheThenUpload ({ thumbnailBlob, audioBlob, backgroundImageBlob, html, title, tags, explRef, aspectRatio }) {
-    
-      const postOrder = parseInt(this.mitClass.maxOrder + 1) || 1
+      const postOrder = parseInt(this.mitClass.maxOrder + 1) || 1; 
+
+      // experimental: if only part of the blackboard has drawing, then the resulting video would have lots of unused spaces
+      // therefore, eliminate it by calculating the maximum x,y values with drawings
+      let maxUnitX = 0; 
+      let maxUnitY = 0; 
+      for (const stroke of this.strokesArray) {
+        for (const point of stroke.points) {
+          if (point.unitX > maxUnitX) maxUnitX = point.unitX; 
+          if (point.unitY > maxUnitY) maxUnitY = point.unitY; 
+        }
+      }
+      let { HEIGHT, WIDTH } = MASSIVE_MODE_DIMENSIONS; 
+      const epsilon = 20; 
+      // width and height should be arbitary, but for now it's the massive mode dimensions
+
+      let trueWidth = maxUnitX * WIDTH; 
+      let trueHeight = maxUnitY * HEIGHT; 
+
+      // add a 10% margin for empty space around the side of the video
+      trueWidth = trueWidth * 1.1; 
+      trueHeight = trueHeight * 1.1; 
+
+      let trueAspectRatio = trueWidth / trueHeight; 
+      console.log("trueAspectRatio =", trueAspectRatio); 
+
+      // now the unitX and unitY values are off because the number that they are divided by is different
+      for (const stroke of this.strokesArray) {
+        for (const point of stroke.points) {
+          point.unitX = (point.unitX * WIDTH) / trueWidth; 
+          point.unitY = (point.unitY * HEIGHT) / trueHeight; 
+        }
+      }
+
       this.$store.commit("ADD_EXPL_TO_CACHE", {
         ref: explRef, // to uniquely identify each explanation when there are simultaneous uploads
         strokesArray: this.strokesArray,
@@ -54,7 +87,7 @@ export default {
           tags,
           order: postOrder,
           duration: this.blackboard.currentTime, 
-          aspectRatio,
+          aspectRatio: trueAspectRatio,
           hasStrokes: this.strokesArray.length > 0
         }
       });

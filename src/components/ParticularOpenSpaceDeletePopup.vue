@@ -40,7 +40,7 @@ export default {
     async deleteRoomType () {
       const { class_id, section_id } = this.$route.params; 
       // redirect to lobby first so ParticularOpenSpace does not listen to a deleted document
-      this.$router.push(`/class/${class_id}/section/${class_id}`);
+      this.$router.push(`/class/${class_id}/section/${class_id}/room/${class_id}`);
 
       const roomTypeRef = db.doc(`classes/${class_id}/roomTypes/${section_id}`);
       const roomsRef = db.collection(`classes/${class_id}/rooms`).where("roomTypeID", "==", section_id);

@@ -12,7 +12,6 @@ export default {
      * Otherwise it returns false. Most of the time this is because rescaleCanvas is used as a quick-fix to prevent the pencil offset bug:
      * every time the user makes a new stroke, rescaleCanvas is called O(1) if check and would return false most of the time. 
      *
-     * TODO: debounce?
      * 
     */
     $_rescaleCanvas () {

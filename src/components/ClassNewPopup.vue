@@ -4,7 +4,7 @@
     @input="(newVal) => $emit('input', newVal)"
     max-width="800"
   >
-    <v-card>
+    <v-card v-if="user.email">
       <v-card-title class="headline">Classes</v-card-title>
       <v-card-text>
         <v-row>
@@ -28,23 +28,73 @@
             <v-subheader class="px-0">Or create a new class</v-subheader>
           </v-col>
           <v-col cols="7">
-            <v-text-field v-model="nameOfNewCommunity" label="Name" placeholder="e.g. GIR server"/>
+            <v-text-field v-model="nameOfNewCommunity" label="Name" placeholder="e.g. 6.036"/>
             <v-text-field v-model="descriptionOfNewCommunity" label="Description" placeholder="e.g. Intro to Machine Learning"/>
           </v-col>
           <v-col cols="2">
             <v-btn @click="createNewClass()" text color="secondary">CREATE</v-btn>
           </v-col>
         </v-row>
+
+        <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
+          <v-icon class="mr-2">mdi-logout</v-icon>
+          SIGN OUT
+        </v-btn>          
+      </v-card-text>
+    </v-card>
+
+    <!-- Alternative if the user does not exist -->
+    <v-card v-else>
+      <v-card-title>Sign in / Sign up to join classes</v-card-title>
+      <v-card-text>
+        <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text mx-5">
+          <v-icon class="mr-2">mdi-school</v-icon>
+          MIT KERBEROS LOGIN
+        </v-btn>
+
+        <!-- Email Sign Up -->
+        <BasePopupButton actionName="Sign up with email" 
+          :inputFields="['first name', 'last name', 'email', 'password']" 
+          @action-do="user => $_signUp(user)"
+        >
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-on="on" large class="ml-5 mr-2 grey darken-1 white--text">
+              <v-icon class="mr-2">mdi-email</v-icon>
+              EMAIL SIGNUP
+            </v-btn>
+          </template>
+
+          <template v-slot:message-to-user>
+            Email sign-up is a back-up option if you have trouble with MIT Touchstone. 
+            To prevent unexpected behavior, use a <u>non-MIT</u> email address to sign up. 
+          </template>
+        </BasePopupButton>
+
+        <!-- Email Log In -->
+        <BasePopupButton actionName="Log in with email" 
+          :inputFields="['email', 'password']" 
+          @action-do="user => $_logIn(user)"
+        >
+          <template v-slot:activator-button="{ on }">
+            <v-btn v-on="on" large class="grey darken-1 white--text mr-5">
+              <v-icon class="mr-2">mdi-email</v-icon>
+              EMAIL LOGIN
+            </v-btn>
+          </template>
+        </BasePopupButton>
       </v-card-text>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
+import AuthHelpers from "@/mixins/AuthHelpers.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import TheSearchBar from "@/components/TheSearchBar.vue";
 import db from "@/database.js";
 import firebase from "firebase/app";
+import BasePopupButton from "@/components/BasePopupButton.vue"; 
+import BaseButton from "@/components/BaseButton.vue"; 
 
 export default {
   props: {
@@ -54,10 +104,13 @@ export default {
     }
   },
   mixins: [
+    AuthHelpers,
     DatabaseHelpersMixin
   ],
   components: {
-    TheSearchBar
+    TheSearchBar,
+    BasePopupButton,
+    BaseButton
   },
   data () {
     return {
@@ -82,7 +135,7 @@ export default {
         emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(mitClass.id)
       });
       this.$root.$emit("show-snackbar", `Successfully joined ${mitClass.name}.`);
-      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}`);
+      this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}/room/${mitClass.id}`);
     },
     async signOut () {
       await firebase.auth().signOut(); // will trigger `onAuthStateChanged` in router.js
@@ -141,7 +194,7 @@ export default {
       this.descriptionOfNewCommunity = ""; 
 
       // automatic redirect
-      this.$router.push(`/class/${classDoc.id}/section/${classDoc.id}`);
+      this.$router.push(`/class/${classDoc.id}/section/${classDoc.id}/room/${classDoc.id}`);
     }
   }
 };
