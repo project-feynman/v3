@@ -124,6 +124,7 @@ export default {
     **/
      firebase.auth().onAuthStateChanged(async (user) => {
       console.log("authStateChanged, user =", user); 
+      // !user means logged out, !user.email means anonymous user
       if (!user || !user.email) {
         // necessary to handle if the user logs out
         // generate a randomID
@@ -165,10 +166,12 @@ export default {
         try {
           // fetch mirror document from Firestore
           await this.$store.dispatch("fetchUser", { uid: user.uid });
-          // redirect to the most recent class
-          const { mostRecentClassID } = this.$store.state.user; 
-          this.$router.push(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
-
+          const { class_id, section_id, room_id } = this.$route.params; 
+          // redirect to the most recent class if user only types explain.mit.edu
+          if (!(class_id && section_id && room_id)) {
+            const { mostRecentClassID } = this.$store.state.user; 
+            this.$router.push(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
+          }
           // temporary fix just to avoid error messages
           // it's actually precisely when the user is new that you want to prompt for 
           // maplestory music, so eventually we have to revert. 
