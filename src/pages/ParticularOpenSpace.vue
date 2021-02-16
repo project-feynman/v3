@@ -25,9 +25,11 @@
         </template>
 
         <v-list>
+          <v-list-item><b>During class</b></v-list-item> 
+
           <!-- For some reason you need click.stop -->
           <v-list-item :disabled="! isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
-            <v-icon left color="purple">mdi-eye</v-icon> Birds Eye View
+            <v-icon left color="purple">mdi-eye-outline</v-icon> Bird's-eye view
           </v-list-item>
 
           <ParticularOpenSpaceBirdsEyeViewPopup v-if="participants" 
@@ -36,39 +38,16 @@
             :participants="participants"
           />
 
-          <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
-            <v-icon left color="orange">mdi-bullhorn</v-icon> Make announcement
-          </v-list-item>
-
           <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
-            <v-icon left color="orange">mdi-volume-mute</v-icon> Mute everyone
+            <v-icon left color="orange">mdi-volume-off</v-icon> Mute everyone to stop echoes
           </v-list-item>
 
-          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
-            <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="orange">mdi-shuffle-variant</v-icon> Shuffle everyone
-              </v-list-item>
-            </template>
-            <template v-slot:message-to-user>
-              <v-row>
-                <v-col cols="12" sm="4">
-                  <v-overflow-btn 
-                    label="3"
-                    :items="[2, 3, 4, 5]"
-                    @change="groupSize => groupSize = groupSize"
-                  />
-                </v-col>
-                <v-col>
-                  <h3 class="mt-5">
-                    people per group
-                  </h3>
-                </v-col>
-              </v-row>
-            </template> 
-          </BasePopupButton>
 
-           <BasePopupButton>
+          <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
+            <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
+          </v-list-item>
+
+          <BasePopupButton>
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
                 <v-icon left color="blue">mdi-file-pdf</v-icon> Add background to every table
@@ -114,23 +93,52 @@
             </template>
           </BasePopupButton>
 
-          <!-- TODO: enable only the creators to change their own open spaces -->
-          <!-- Rename Area-->
-          <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
-            <v-icon class="mr-2" color="blue">mdi-pencil</v-icon> Rename area
-          </v-list-item>
+          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+            <template v-slot:activator-button="{ on, openPopup }">
+              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                <v-icon left color="blue">mdi-dice-5</v-icon> Randomly shuffle everyone
+              </v-list-item>
+            </template>
+            <template v-slot:message-to-user>
+              <v-row>
+                <v-col cols="12" sm="4">
+                  <v-overflow-btn 
+                    label="3"
+                    :items="[2, 3, 4, 5]"
+                    @change="groupSize => groupSize = groupSize"
+                  />
+                </v-col>
+                <v-col>
+                  <h3 class="mt-5">
+                    people per group
+                  </h3>
+                </v-col>
+              </v-row>
+            </template> 
+          </BasePopupButton>
 
-          <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
+
+          <v-divider/>
+
+          <v-list-item><b>Outside of class</b></v-list-item> 
+
+          <BasePopupButton actionName="Wipe everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
                 <v-icon left color="red">mdi-delete</v-icon> Wipe boards in every table
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
-              Are you sure you?
-              This will reset the blackboards and status of every single room. 
+              Are you sure?
+              This will wipe all the blackboards in this area
             </template> 
           </BasePopupButton>
+
+          <!-- TODO: enable only the creators to change their own open spaces -->
+          <!-- Rename Area-->
+          <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
+            <v-icon class="mr-2" color="blue">mdi-pencil</v-icon> Rename area
+          </v-list-item>
 
           <!-- Delete open space -->
           <!-- Don't let anyone delete the lobby section -->
