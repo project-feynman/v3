@@ -45,13 +45,13 @@
               <div>
                 <template v-if="connectionStatus === 'DISCONNECTED'">
                   <v-btn @click.prevent.stop="joinConferenceRoom()" small dark fab color="success" class="ml-1">
-                    <v-icon>mdi-video</v-icon>
+                    <v-icon>mdi-phone</v-icon>
                   </v-btn>
                 </template>
 
                 <template v-else-if="connectionStatus === 'CONNECTING'">
                   <v-btn :loading="true" small dark fab color="success" class="mx-2">
-                    <v-icon>mdi-video</v-icon>
+                    <v-icon>mdi-phone</v-icon>
                   </v-btn>
                 </template>
 
@@ -218,6 +218,7 @@ export default {
   methods: {
      /**
      * @see https://www.daily.co/blog/video-call-api-tutorial-the-rooms-family-of-endpoints/
+     * @see https://docs.daily.co/reference#room-configuration
      */
     async createConferenceRoom () {
       return new Promise(async (resolve) => {
@@ -233,7 +234,8 @@ export default {
             body: JSON.stringify({
               name: this.roomID,
               properties: {
-                exp: Math.round(Date.now() / 1000) + SECONDS_IN_TWO_HOURS 
+                exp: Math.round(Date.now() / 1000) + SECONDS_IN_TWO_HOURS,
+                start_video_off: true
               }
             })
           }); 
