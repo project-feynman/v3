@@ -40,9 +40,9 @@
             <v-icon left color="orange">mdi-bullhorn</v-icon> Make announcement
           </v-list-item>
 
-          <!-- <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
+          <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
             <v-icon left color="orange">mdi-volume-mute</v-icon> Mute everyone
-          </v-list-item> -->
+          </v-list-item>
 
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
@@ -369,6 +369,7 @@ export default {
       "user",
       "mitClass",
       "session",
+      "CallObject",
       "dominantSpeaker"
     ]),
     ...mapGetters([
@@ -428,7 +429,7 @@ export default {
     },
     "roomTypeDoc.muteAllCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {
-        this.$store.commit("SET_IS_MIC_ON", false);
+        this.CallObject.setLocalAudio(false);
         this.$root.$emit("show-snackbar", "An admin muted everyone"); 
       }
     },
@@ -712,14 +713,7 @@ export default {
       this.$root.$emit("show-snackbar", "Announcement sent.");
       this.makeAnnouncementPopup['show'] = false;
     },
-    /**
-     * Mutes all participants in rooms of roomType
-     * Does this by incrementing a counter in each targeted room.
-     * This counter is watched by participants inside the rooms.
-     * TODO: Can be refactored such that there is a single counter for each
-     *       roomType and participants all watch the roomType counter.
-     * */
-    async muteParticipantsInRooms(roomType) {
+    async muteParticipantsInRooms () {
       this.roomTypeRef.update({
         muteAllCounter: firebase.firestore.FieldValue.increment(1)
       });
