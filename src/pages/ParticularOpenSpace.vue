@@ -193,7 +193,7 @@
             </div>
                   
             <div v-else class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              table {{ i }}
+              table {{ i - 1 }}
             </div>
 
             <v-spacer/>
@@ -230,7 +230,7 @@
             </div>
 
             <div v-else>
-              table {{ i }}
+              table {{ i - 1 }}
             </div>
           </div>
           <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
@@ -573,6 +573,7 @@ export default {
 
       console.log("highestBoardIndexNeeded =", highestBoardIndexNeeded);
       // STEP 2/3: automatically create as many extra boards as needed to handle the PDFs
+      const batch = db.batch(); 
       for (const room of this.rooms) {
         // note `numberOfNewBoardsNeeded` can be negative, but is naturally handled by the for loop
         const numberOfNewBoardsNeeded = highestBoardIndexNeeded - (room.blackboards.length - 1); 
@@ -580,17 +581,17 @@ export default {
         console.log("new boards needed =", numberOfNewBoardsNeeded);
         for (let i = 0; i < numberOfNewBoardsNeeded; i++) {
           const newBoardID = getRandomId(); 
-          boardCreationRequests.push(
-            this.classDocRef.collection("blackboards").doc(newBoardID).set({})
+          batch.set(
+            this.classDocRef.collection("blackboards").doc(newBoardID),
+            {}
           );
-          boardCreationRequests.push(
-            this.classDocRef.collection("rooms").doc(room.id).update({
-              blackboards: firebase.firestore.FieldValue.arrayUnion(newBoardID)
-            })
+          batch.update(
+            this.classDocRef.collection("rooms").doc(room.id),
+            { blackboards: firebase.firestore.FieldValue.arrayUnion(newBoardID) }
           );
         }
       }
-      await Promise.all(boardCreationRequests);
+      await batch.commit(); 
       console.log("all rooms now have enough blackboards"); 
 
       // STEP 3/3: plant the PDF images

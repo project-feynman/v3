@@ -122,7 +122,7 @@
             <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
           </v-list-item>
-          <v-list-item @click="isRenameRoomPopupOpen = true" :loading="isSavingAllBoards">
+          <v-list-item @click="isRenameRoomPopupOpen = true">
             <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
           </v-list-item>
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
@@ -133,6 +133,9 @@
           </v-list-item>
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
             <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
+          </v-list-item>
+          <v-list-item @click="deleteThisRoom()">
+            <v-icon left color="red">mdi-delete</v-icon> Delete this room
           </v-list-item>
         </v-list>
       </v-menu>
@@ -213,7 +216,7 @@
             id="current-blackboard"
           >
             <template v-slot:blackboard-toolbar>
-              <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen); requestFullscreenFromDevice()" 
+              <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
                 :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
                 color="white" small hasLargeIcon
               />
@@ -348,14 +351,31 @@ export default {
     }
   },
   methods: { 
-    async requestFullscreenFromDevice () {
-      const blackboardElem = document.getElementById("current-blackboard"); 
-      if (! document.fullscreenElement) {
-        await blackboardElem.requestFullscreen();
-      } else {
-        document.exitFullscreen(); 
+    async deleteThisRoom () {
+      // warning: the strokes will remain, but find a fix later as Feynman is way more likely to die from other things
+      const batch = db.batch();
+      console.log("roomRef =", this.roomRef); 
+      batch.delete(this.roomRef); 
+      for (const boardID of this.room.blackboards) {
+        console.log("boardID =", boardID); 
+        batch.delete(
+          db.doc(`classes/${this.classID}/blackboards/${boardID}`)
+        );
       }
+      console.log("batch is committing =", batch); 
+      await batch.commit(); 
+      this.$root.$emit("show-snackbar", "Room was deleted.")
     },
+    // TODO: commented out because it doesn't work on iOS Safari and also 
+    // causes the screenshare to be offset incorrectly
+    // async requestFullscreenFromDevice () {
+    //   const blackboardElem = document.getElementById("current-blackboard"); 
+    //   if (! document.fullscreenElement) {
+    //     await blackboardElem.requestFullscreen();
+    //   } else {
+    //     document.exitFullscreen(); 
+    //   }
+    // },
     async createNewBoard () {
       const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
