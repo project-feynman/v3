@@ -76,7 +76,31 @@ export const SUPER_USER_EMAILS = [
   "polina@mit.edu",
   "chueh@mit.edu",
   "samtenka@mit.edu",
-  "zhxzhang@mit.edu"
+  "zhxzhang@mit.edu",
+
+  // 8.02 (Spring 2020) 
+  "shvonski@mit.edu", "cnpeng@mit.edu",
+  "paus@mit.edu","cnpeng@mit.edu",
+  "mtomasik@mit.edu", "mtekant@mit.edu",
+  "mcdonald@space.mit.edu", "kenkyng@mit.edu",
+  "gedik@mit.edu","liut@mit.edu",
+  "kmasui@mit.edu","grahams@mit.edu",
+  "padour@mit.edu", "rmurdock@mit.edu",
+  "svitale@mit.edu", "sgh256@mit.edu",
+  "mohamedr@mit.edu", "crabb@mit.edu",
+  "rgarciar@mit.edu", "lmartins@mit.edu",
+
+  // technical instructors
+  "wolfej@mit.edu", "cbonyun@mit.edu",
+
+  // utility TA
+  "wszhong@mit.edu",
+
+  // site admin 
+  "aamacdon@mit.edu",
+
+  // course administrator
+  "denisew@mit.edu"
 ];
 
 export const DefaultEmailSettings = {

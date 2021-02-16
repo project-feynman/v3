@@ -25,9 +25,11 @@
         </template>
 
         <v-list>
+          <v-list-item><b>During class</b></v-list-item> 
+
           <!-- For some reason you need click.stop -->
           <v-list-item :disabled="! isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
-            <v-icon left color="purple">mdi-eye</v-icon> Birds Eye View
+            <v-icon left color="purple">mdi-eye-outline</v-icon> Bird's-eye view
           </v-list-item>
 
           <ParticularOpenSpaceBirdsEyeViewPopup v-if="participants" 
@@ -36,39 +38,16 @@
             :participants="participants"
           />
 
-          <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
-            <v-icon left color="orange">mdi-bullhorn</v-icon> Make announcement
+          <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
+            <v-icon left color="orange">mdi-volume-off</v-icon> Mute everyone to stop echoes
           </v-list-item>
 
-          <!-- <v-list-item :disabled="!isAdmin" @click="muteParticipantsInRooms(roomTypeDoc.id)" >
-            <v-icon left color="orange">mdi-volume-mute</v-icon> Mute everyone
-          </v-list-item> -->
 
-          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
-            <template v-slot:activator-button="{ on, openPopup }">
-              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="orange">mdi-shuffle-variant</v-icon> Shuffle everyone
-              </v-list-item>
-            </template>
-            <template v-slot:message-to-user>
-              <v-row>
-                <v-col cols="12" sm="4">
-                  <v-overflow-btn 
-                    label="3"
-                    :items="[2, 3, 4, 5]"
-                    @change="groupSize => groupSize = groupSize"
-                  />
-                </v-col>
-                <v-col>
-                  <h3 class="mt-5">
-                    people per group
-                  </h3>
-                </v-col>
-              </v-row>
-            </template> 
-          </BasePopupButton>
+          <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
+            <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
+          </v-list-item>
 
-           <BasePopupButton>
+          <BasePopupButton>
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item @click.stop="openPopup()" :disabled="!isAdmin">
                 <v-icon left color="blue">mdi-file-pdf</v-icon> Add background to every table
@@ -114,23 +93,52 @@
             </template>
           </BasePopupButton>
 
-          <!-- TODO: enable only the creators to change their own open spaces -->
-          <!-- Rename Area-->
-          <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
-            <v-icon class="mr-2" color="blue">mdi-pencil</v-icon> Rename area
-          </v-list-item>
+          <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
+            <template v-slot:activator-button="{ on, openPopup }">
+              <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                <v-icon left color="blue">mdi-dice-5</v-icon> Randomly shuffle everyone
+              </v-list-item>
+            </template>
+            <template v-slot:message-to-user>
+              <v-row>
+                <v-col cols="12" sm="4">
+                  <v-overflow-btn 
+                    label="3"
+                    :items="[2, 3, 4, 5]"
+                    @change="groupSize => groupSize = groupSize"
+                  />
+                </v-col>
+                <v-col>
+                  <h3 class="mt-5">
+                    people per group
+                  </h3>
+                </v-col>
+              </v-row>
+            </template> 
+          </BasePopupButton>
 
-          <BasePopupButton actionName="Reset everything" @action-do="resetAbsolutelyEverything()">
+
+          <v-divider/>
+
+          <v-list-item><b>Outside of class</b></v-list-item> 
+
+          <BasePopupButton actionName="Wipe everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
                 <v-icon left color="red">mdi-delete</v-icon> Wipe boards in every table
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
-              Are you sure you?
-              This will reset the blackboards and status of every single room. 
+              Are you sure?
+              This will wipe all the blackboards in this area
             </template> 
           </BasePopupButton>
+
+          <!-- TODO: enable only the creators to change their own open spaces -->
+          <!-- Rename Area-->
+          <v-list-item :disabled="!isAdmin" @click="isRenamePopupOpen = true">
+            <v-icon class="mr-2" color="blue">mdi-pencil</v-icon> Rename area
+          </v-list-item>
 
           <!-- Delete open space -->
           <!-- Don't let anyone delete the lobby section -->
@@ -185,7 +193,7 @@
             </div>
                   
             <div v-else class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              table {{ i }}
+              table {{ i - 1 }}
             </div>
 
             <v-spacer/>
@@ -222,7 +230,7 @@
             </div>
 
             <div v-else>
-              table {{ i }}
+              table {{ i - 1 }}
             </div>
           </div>
           <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
@@ -369,6 +377,7 @@ export default {
       "user",
       "mitClass",
       "session",
+      "CallObject",
       "dominantSpeaker"
     ]),
     ...mapGetters([
@@ -428,7 +437,7 @@ export default {
     },
     "roomTypeDoc.muteAllCounter" (newVal, oldVal) {
       if (oldVal && oldVal !== newVal) {
-        this.$store.commit("SET_IS_MIC_ON", false);
+        this.CallObject.setLocalAudio(false);
         this.$root.$emit("show-snackbar", "An admin muted everyone"); 
       }
     },
@@ -564,6 +573,7 @@ export default {
 
       console.log("highestBoardIndexNeeded =", highestBoardIndexNeeded);
       // STEP 2/3: automatically create as many extra boards as needed to handle the PDFs
+      const batch = db.batch(); 
       for (const room of this.rooms) {
         // note `numberOfNewBoardsNeeded` can be negative, but is naturally handled by the for loop
         const numberOfNewBoardsNeeded = highestBoardIndexNeeded - (room.blackboards.length - 1); 
@@ -571,17 +581,17 @@ export default {
         console.log("new boards needed =", numberOfNewBoardsNeeded);
         for (let i = 0; i < numberOfNewBoardsNeeded; i++) {
           const newBoardID = getRandomId(); 
-          boardCreationRequests.push(
-            this.classDocRef.collection("blackboards").doc(newBoardID).set({})
+          batch.set(
+            this.classDocRef.collection("blackboards").doc(newBoardID),
+            {}
           );
-          boardCreationRequests.push(
-            this.classDocRef.collection("rooms").doc(room.id).update({
-              blackboards: firebase.firestore.FieldValue.arrayUnion(newBoardID)
-            })
+          batch.update(
+            this.classDocRef.collection("rooms").doc(room.id),
+            { blackboards: firebase.firestore.FieldValue.arrayUnion(newBoardID) }
           );
         }
       }
-      await Promise.all(boardCreationRequests);
+      await batch.commit(); 
       console.log("all rooms now have enough blackboards"); 
 
       // STEP 3/3: plant the PDF images
@@ -712,14 +722,7 @@ export default {
       this.$root.$emit("show-snackbar", "Announcement sent.");
       this.makeAnnouncementPopup['show'] = false;
     },
-    /**
-     * Mutes all participants in rooms of roomType
-     * Does this by incrementing a counter in each targeted room.
-     * This counter is watched by participants inside the rooms.
-     * TODO: Can be refactored such that there is a single counter for each
-     *       roomType and participants all watch the roomType counter.
-     * */
-    async muteParticipantsInRooms(roomType) {
+    async muteParticipantsInRooms () {
       this.roomTypeRef.update({
         muteAllCounter: firebase.firestore.FieldValue.increment(1)
       });

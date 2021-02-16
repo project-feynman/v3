@@ -39,6 +39,9 @@ export default new Vuex.Store({
     // video conference related states
     participants: {},
     canHearAudio: false,
+
+    // consider deprecating `isMicOn`, though it can be modified / renamed to be a variable 
+    // that helps persists the user's mic / camera states across different rooms
     isMicOn: false,
     isCameraOn: false,
     isConnectedToAudio: false,
