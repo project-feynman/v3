@@ -100,7 +100,47 @@ export const SUPER_USER_EMAILS = [
   "aamacdon@mit.edu",
 
   // course administrator
-  "denisew@mit.edu"
+  "denisew@mit.edu",
+
+  // UTAs
+  "piti3080@mit.edu",
+  "chslee@mit.edu",
+  "mozig@mit.edu",
+  "gndakwah@mit.edu",
+  "nfisher7@mit.edu",
+  "herreras@mit.edu",
+  "dmccabe@mit.edu",
+  "lkp@mit.edu",
+  "mtulla@mit.edu",
+  "jonik@mit.edu",
+  "lilianw@mit.edu",
+  "scuadra@mit.edu",
+  "mattdl@mit.edu",
+  "vanduzer@mit.edu",
+  "julieyu@mit.edu",
+  "nagomezg@mit.edu",
+  "hbyang@mit.edu",
+  "herreras@mit.edu",
+  "aidandc@mit.edu",
+  "vyyang@mit.edu",
+  "alasmari@mit.edu",
+  "chslee@mit.edu",
+  "saitoy@mit.edu",
+  "gberrey@mit.edu",
+  "arona@mit.edu",
+  "cocampbe@mit.edu",
+  "facosta@mit.edu",
+  "kdesoto@mit.edu",
+  "hsobie@mit.edu",
+  "adcho@mit.edu",
+  "ebarrios@mit.edu",
+  "dcolin@mit.edu",
+  "azreen@mit.edu",
+  "lilianw@mit.edu",
+  "naiello@mit.edu",
+  "megflynn@mit.edu",
+  "ksottila@mit.edu",
+  "akilasar@mit.edu"
 ];
 
 export const DefaultEmailSettings = {
