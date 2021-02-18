@@ -32,10 +32,10 @@
                 class="caption font-weight-bold grey--text text--darken-3" 
                 style="font-size: 1em"
               >
-                {{ client.firstName }} {{ client.sessionID !== sessionID ? client.lastName : '' }}
+                {{ client.firstName }} {{ client.sessionID !== sessionID ? client.lastName : '' }} {{ client.isAdmin ? ' (staff)' : '' }}
               </div>
               <div v-else class="text--secondary" style="font-size: 1em">
-                {{ client.firstName }} {{ client.sessionID !== sessionID ? client.lastName : '' }}
+                {{ client.firstName }} {{ client.sessionID !== sessionID ? client.lastName : '' }} {{ client.isAdmin ? ' (staff)' : '' }}
               </div>
             </div>
 

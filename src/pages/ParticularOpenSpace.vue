@@ -242,7 +242,9 @@
               style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em; opacity: 70%"
               class="text--secondary mb-1 caption"
             >
-              <div style="padding-left: 12px;">{{ p.firstName + " " + p.lastName }}</div>
+              <div style="padding-left: 12px;">
+                {{ p.firstName + " " + p.lastName + `${p.isAdmin ? ' (staff)' : ''}`}}
+              </div>
 
               <v-spacer/>
               
