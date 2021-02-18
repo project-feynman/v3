@@ -68,12 +68,8 @@ function getRandomId () {
  * */
 exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/room/{roomID}/participants/{disconnectID}").onWrite((change, context) => {
   // `change` has a `before` and `after` property, which each has a `_data` property that looks like `{ hasDisconnected: true }`
-  console.log("change.after =", change.after);
-  const { classID, roomID, disconnectID } = context.params;
-  
-  // for backwards compatibility
-  firestore.doc(`/classes/${classID}/participants/${disconnectID + roomID}`).delete(); 
-
+  console.log("change.after =", change.after); // leave it, as it can potentially help a lot with debugging
+  const { classID, disconnectID } = context.params;
   return firestore.doc(`/classes/${classID}/participants/${disconnectID}`).delete();
 })
 
