@@ -1,6 +1,6 @@
 <template>
   <div style="display: flex; align-items: center;">
-    <template v-for="(color, i) of ['white', ...user.penColors]">
+    <template v-for="(color, i) of ['#FDFEFE', ...user.penColors]">
       <BaseButton 
         @click="changePenColor(color, i-1)" 
         :filled="currentTool.color === color && currentTool.type === 'PEN'" 
@@ -50,12 +50,19 @@ export default {
   },
   methods: {
     getRandomColor () {
-      let letters = "0123456789ABCDEF";
-      let color = "#";
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
+      // randomize the hue i.e. the color
+      // 100% saturation i.e. maximize on its vividness and purity
+      // 60% lightness / mix with white (otherwise it becomes too faded)
+      // 1 alpha
+      return "hsla(" + ~~(360 * Math.random()) + "," +
+                    "100%,"+
+                    "60%,1)"; // hue, saturation (how vivid), lightness (how much black / white mix ), alpha
+      // let letters = "0123456789ABCDEF";
+      // let color = "#";
+      // for (let i = 0; i < 6; i++) {
+      //   color += letters[Math.floor(Math.random() * 16)];
+      // }
+      // return color;
     },
     changePenColor (color, i) {
       if (this.currentTool.color === "white" || color !== this.currentTool.color) {
