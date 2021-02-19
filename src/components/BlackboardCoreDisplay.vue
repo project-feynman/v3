@@ -5,7 +5,6 @@
       :handleImageFile="handleImageFile"
       :resetBoard="resetBlackboard"
       :toggleFullScreen="toggleFullScreen"
-      :undoPenStroke="eraseStroke"
     >
 
     </slot>
@@ -79,10 +78,6 @@ export default {
     backgroundImage: {
       type: Object
       // don't set `required` to true yet to avoid minor crashes
-    },
-    isReadOnly: {
-      type: Boolean,
-      required: true
     },
     width: {
       type: Number,

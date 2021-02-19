@@ -25,6 +25,8 @@ export default new Vuex.Store({
     isFetchingUser: true,
     mitClass: null,
     explCache: {},
+
+    currentAreaRooms: [],
     blackboardRoom: null,
     
     currentBoardNumber: 1,
@@ -81,6 +83,9 @@ export default new Vuex.Store({
     },
     SET_CURRENTLY_SELECTED_QUESTION_ID (state, newValue) {
       state.currentlySelectedQuestionID = newValue; 
+    },
+    SET_CURRENT_AREA_ROOMS (state, newValue) {
+      state.currentAreaRooms = newValue; 
     },
     SET_PARTICIPANTS (state, newValue) {
       state.participants = newValue; 

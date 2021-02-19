@@ -420,6 +420,7 @@ export default {
       immediate: true,
       handler: _.throttle(function () {
         this.updateRoomIDToParticipants();
+        this.$store.commit("SET_CURRENT_AREA_ROOMS", this.rooms);
       }, 1000)
     },
     "roomTypeDoc.roomAssignmentsCounter" (newVal, oldVal) {

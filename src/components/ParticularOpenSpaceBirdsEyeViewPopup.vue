@@ -55,6 +55,7 @@
                 </div>
               </template>
 
+              <h2>{{ getRoomName(boardID) }}</h2>
               <BlackboardCoreDisplay v-if="! isLoading"
                 :strokesArray="strokesArray"
                 :width="getPopupWidth()"
@@ -100,6 +101,13 @@ export default {
     };
   },
   computed: {
+    currentAreaRooms () { return this.$store.state.currentAreaRooms; },
+    sortedRooms () {
+      return [
+        ...this.currentAreaRooms.filter(room => room.isCommonRoom), 
+        ...this.currentAreaRooms.filter(room => ! room.isCommonRoom)
+      ];
+    },
     blackboardIDsWithPeopleOn () {
       const boardIDs = new Set(); 
       for (const participant of this.participants) {
@@ -111,6 +119,15 @@ export default {
     }
   },
   methods: {
+    getRoomName (boardID) {
+      for (const [i, room] of this.sortedRooms.entries()) {
+        if (room.blackboards.includes(boardID)) {
+          if (room.name) return room.name; 
+          else if (room.isCommonRoom) return "common table"
+          else return `table ${i - 1}`; // this index is very annoying and will be wrong and brittle, but quickfix for now before a redesign/rewrite
+        }
+      }
+    },
     getPopupWidth () {
       const separationBetweenBoards = 10; 
       const deltaBetweenPopupAndFullWidth = 50; 
