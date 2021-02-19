@@ -55,11 +55,10 @@
                 </div>
               </template>
 
-              <BlackboardCoreDrawing v-if="! isLoading"
+              <BlackboardCoreDisplay v-if="! isLoading"
                 :strokesArray="strokesArray"
                 :width="getPopupWidth()"
                 :height="getPopupWidth()"
-                isReadOnly
               />
 
               <div style="margin-right: 30px"></div>
@@ -73,7 +72,7 @@
 
 <script>
 import Blackboard from "@/components/Blackboard.vue"; 
-import BlackboardCoreDrawing from "@/components/BlackboardCoreDrawing.vue"; 
+import BlackboardCoreDisplay from "@/components/BlackboardCoreDisplay.vue"; 
 import db from "@/database.js";
 import RenderlessFetchStrokes from "@/components/RenderlessFetchStrokes.vue"; 
 import RenderlessSyncStrokes from "@/components/RenderlessSyncStrokes.vue"; 
@@ -91,7 +90,7 @@ export default {
   },
   components: {
     Blackboard,
-    BlackboardCoreDrawing,
+    BlackboardCoreDisplay,
     RenderlessFetchStrokes,
     RenderlessSyncStrokes
   },

@@ -72,6 +72,20 @@ export default {
     $_drawStrokesInstantly (ctx = this.ctx) {
       this.strokesArray.forEach(stroke => this.$_drawStroke(stroke, null, ctx));
     },
+    $_drawStrokesInstantlyButNormalizeLineWidth (ctx = this.ctx) {
+      this.strokesArray.forEach(stroke => {
+        this.$_drawStroke(
+          { 
+            points: stroke.points, 
+            color: stroke.color, 
+            lineWidth: stroke.lineWidth * (this.canvas.scrollWidth / 1000),
+            isErasing: stroke.isErasing 
+          }, 
+          null, 
+          ctx
+        );
+      });
+    },
     $_drawStroke ({ points, color, lineWidth, isErasing }, pointPeriod = null, ctx = this.ctx) {
       return new Promise(async resolve => {
         for (let i = 1; i < points.length; i++) {
