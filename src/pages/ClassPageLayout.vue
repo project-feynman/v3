@@ -86,7 +86,7 @@
                 <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
-                <h2>FORUM</h2>
+                <h2>VISUAL FORUM</h2>
               </v-toolbar>
 
               <!--

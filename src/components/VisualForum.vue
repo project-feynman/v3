@@ -16,20 +16,24 @@
         </v-list-item>
         
         <template v-if="questions">
-          <v-list-item v-for="question in questions" :key="question.id"
-            @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false;"
-            :class="question.hasReplies ? '' : ['info']"
-          >
-            <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
-              <v-list-item-title>
-                {{ question.title }}
-              </v-list-item-title> 
-              <v-list-item-subtitle v-html="question.html" :class="question.hasReplies ? '' : 'white--text'"/>
-              <v-list-item-subtitle :class="question.hasReplies ? '' : 'white--text'">
-                {{ getDate(question.date) }}
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
+          <template v-for="question in questions">
+            <v-list-item :key="question.id"
+              @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false;"
+              :class="question.hasReplies ? '' : ['info']"
+            >
+              <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
+                <v-list-item-title>
+                  {{ question.title }}
+                </v-list-item-title> 
+                <v-list-item-subtitle v-html="question.html" :class="question.hasReplies ? '' : 'white--text'"/>
+                <v-list-item-subtitle :class="question.hasReplies ? '' : 'white--text'">
+                  {{ getDate(question.date) }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+
+            <v-divider :key="question.id + 'divider'"/>
+          </template>
         </template>
       </v-list>
     </v-col>
