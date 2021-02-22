@@ -1,12 +1,13 @@
 <template>
-  <portal v-if="roomTypeDoc" to="currently-active-open-space">
+  <div>
+
     <!-- REPLACE THE TITLE IN ALL OPEN SPACES (BECAUSE WE LISTEN TO THE ROOMTYPE DOC HERE) -->
     <portal to="room-type-name">
       <div style="
         font-size: 0.95rem; 
         font-weight: 500; 
         color: '#424242'; 
-        opacity: 80%;
+        opacity: 100%;
         text-transform: uppercase
       ">
         {{ roomTypeDoc.name }}
@@ -316,7 +317,7 @@
       :roomDoc="currentRoomDoc" 
       :key="currentRoomID + '1'"
     />
-  </portal>
+  </div>
 </template>
 
 <script>

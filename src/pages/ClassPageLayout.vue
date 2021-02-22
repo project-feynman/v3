@@ -18,7 +18,7 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="pt-3 pl-2">    
+      <v-sheet class="py-3 pl-2" elevation="5">    
         <div style="display: flex;">
           <!-- enable user to report issues, directly email me, etc. -->
           <!-- style="cursor: pointer;" -->
@@ -130,7 +130,7 @@
         </div>  
       </v-sheet>
 
-      <AllOpenSpaces style="margin-top: 35px;"/>  
+      <AllOpenSpaces style="margin-top: 20px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 

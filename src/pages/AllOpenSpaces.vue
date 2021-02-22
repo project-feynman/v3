@@ -1,68 +1,74 @@
 <template>
-  <v-list nav class="pa-0">
-    <template v-for="roomType in sortedRoomTypes">
-      <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
-      <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
-      <!-- id is used for scrollToView() -->
-      <v-list-item :key="roomType.id"
-        :to="(`/class/${classID}/section/${roomType.id}/room/${roomType.id}`)"
-        active-class="accent--text"
-        class="px-0 pt-2" 
-        :inactive="sectionID === roomType.id"
-        :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
-      >
-        <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
-        <v-list-item-content class="py-0">
-          <div style="display: flex; align-items: center;">
-            <div class="ml-3">
-              <div v-if="roomType.id !== sectionID" 
-                style="
-                  font-size: 0.95rem; 
-                  font-weight: 500; 
-                  color: '#424242'; 
-                  opacity: 20%;
-                  text-transform: uppercase;
-              ">
-                {{ roomType.name }}
-              </div>
-              <portal-target v-else name="room-type-name">
+  <div style="display: flex; align-items: center;" class="px-1">
+    <v-menu max-height="500">
+      <template v-slot:activator="{ on }">
+        <v-btn v-on="on" text tile class="pa-1" style="font-size: 1rem; font-weight: 500" max-width="180">
+          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 150px;">
+            {{ roomTypes.filter(roomType => roomType.id === sectionID)[0].name }}
+          </span>
+          <v-spacer/>
+          <v-icon>mdi-menu-down</v-icon>
+        </v-btn>
+      </template>
 
-              </portal-target>
-            </div>
-
-            <v-spacer/>
-
-            <portal-target v-if="sectionID === roomType.id"
-              name="current-open-space-actions"
-              :key="roomType.id + 'actions-portal'"
-            >
-              
-            </portal-target>
-          </div>
-
-          <portal-target v-if="sectionID === roomType.id" 
-            name="currently-active-open-space" 
-            :key="roomType.id + 'rooms-portal'"
+      <v-list nav class="pa-0" >
+        <template v-for="roomType in sortedRoomTypes">
+          <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
+          <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
+          <!-- id is used for scrollToView() -->
+          <v-list-item :key="roomType.id"
+            :to="(`/class/${classID}/section/${roomType.id}/room/${roomType.id}`)"
+            active-class="accent--text"
+            class="px-0 pt-2" 
+            :inactive="sectionID === roomType.id"
+            :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
+            dense
           >
+            <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
+            <v-list-item-content class="py-0">
+              <div style="display: flex; align-items: center;">
+                <div class="ml-3">
+                  <div v-if="roomType.id !== sectionID" 
+                    style="
+                      font-size: 0.95rem; 
+                      font-weight: 500; 
+                      color: '#424242'; 
+                      opacity: 60%;
+                      text-transform: uppercase;
+                  ">
+                    {{ roomType.name }}
+                  </div>
+                  <portal-target v-else name="room-type-name">
 
-          </portal-target>
-        </v-list-item-content>
-      </v-list-item>
-    </template>
-    
-    <BasePopupButton v-if="sortedRoomTypes.length !== 0"
-      actionName="Create a new area"
-      :inputFields="['name']" 
-      @action-do="({ name }) => createNewRoomType(name)"
-    >
-      <template v-slot:activator-button="{ on }">
-        <v-list-item v-on="on" style="font-weight: 500; opacity: 20%; font-size: 0.95rem;">
-          <v-icon class="ml-1 mr-2 black--text">mdi-plus</v-icon>
-          <div style="color: '#424242'">NEW AREA</div>
-        </v-list-item>
-      </template> 
-    </BasePopupButton>
-  </v-list>
+                  </portal-target>
+                </div>
+
+                <v-spacer/>
+              </div>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        
+        <BasePopupButton v-if="sortedRoomTypes.length !== 0"
+          actionName="Create a new area"
+          :inputFields="['name']" 
+          @action-do="({ name }) => createNewRoomType(name)"
+        >
+          <template v-slot:activator-button="{ on }">
+            <v-list-item v-on="on" style="font-weight: 500; opacity: 50%; font-size: 0.95rem;">
+              <v-icon class="ml-1 mr-2 black--text">mdi-plus</v-icon>
+              <div style="color: '#424242'">NEW AREA</div>
+            </v-list-item>
+          </template> 
+        </BasePopupButton>
+      </v-list>
+    </v-menu>
+
+    <!-- AREA ACTIONS PORTAL -->
+    <portal-target name="current-open-space-actions">
+
+    </portal-target>
+  </div>
 </template>
 
 <script>
@@ -105,11 +111,6 @@ export default {
   async created () {
     // fetch once for light bandwidth usage
     this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes")); 
-    await this.$nextTick(); 
-    document.getElementById("space-title").scrollIntoView({ 
-      behavior: "smooth", 
-      block: "nearest" 
-    });
   },
   methods: {
      /**
