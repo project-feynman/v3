@@ -64,6 +64,8 @@
       </v-list>
     </v-menu>
 
+    <v-spacer/>
+
     <!-- AREA ACTIONS PORTAL -->
     <portal-target name="current-open-space-actions">
 
