@@ -11,11 +11,6 @@ const router = new Router({
   base: process.env.BASE_URL,
   routes: [
     { 
-      name: "HomePage",
-      path: "/",
-      component: () => import(/* webpackChunkName: "home" */ "./pages/Home.vue")
-    },
-    { 
       name: "RedirectToForumQuestion",
       path: "/forum/:class_id/:question_id",
       component: () => import(/* webpackChunkName: "redirect-to-forum-question" */ "./pages/RedirectToForumQuestion.vue"),
