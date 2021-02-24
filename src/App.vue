@@ -282,9 +282,11 @@ export default {
           else if (! participant.user_name) {  
             // handles edge case that when joining initially, user_name is not populated by Daily API
             // user_name maps to sessionID
+            v.classList.add("mirror-flip");
             document.getElementById("my-local-video").appendChild(v); 
           } 
           else if (participant.user_name === this.sessionID) { // TODO: refactor. Handles the case where I re-share my camera, but now my user_name is defined
+            v.classList.add("mirror-flip");
             document.getElementById("my-local-video").appendChild(v); 
           } 
           else { 
@@ -351,6 +353,13 @@ div.v-snack:not(.v-snack--absolute) {
 .v-input__control .v-messages {
   font-size: 8px !important; 
   color: white !important;
+}
+
+.mirror-flip
+{
+  transform: rotateY(180deg);
+  -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+  -moz-transform:rotateY(180deg); /* Firefox */
 }
 
 /* Global styles */
