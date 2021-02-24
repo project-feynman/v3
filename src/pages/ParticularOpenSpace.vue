@@ -677,7 +677,7 @@ export default {
           roomTypeID: this.roomTypeDoc.id, 
           blackboards: [newDocID]
         })
-      ])
+      ]);
     },
     async clearRoomStatuses (roomType) {
       const querySnapshot = await db

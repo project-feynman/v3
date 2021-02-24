@@ -143,7 +143,7 @@
 
     <v-main>
       <RealtimeRoom 
-        :roomId="$route.params.room_id" 
+        :roomID="$route.params.room_id" 
         :key="$route.params.room_id"
       />
     </v-main>

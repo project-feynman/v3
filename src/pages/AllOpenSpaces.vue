@@ -4,7 +4,9 @@
       <template v-slot:activator="{ on }">
         <v-btn v-on="on" text tile class="pa-1" style="font-size: 1rem; font-weight: 500" max-width="180">
           <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 150px;">
-            {{ roomTypes.filter(roomType => roomType.id === sectionID)[0].name }}
+            <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
+            <template v-if="currentRoomTypeDoc">{{ currentRoomTypeDoc.name }}</template>
+            <template v-else>Error area...</template>
           </span>
           <v-spacer/>
           <v-icon>mdi-menu-down</v-icon>
@@ -108,6 +110,9 @@ export default {
         ...this.roomTypes.filter(roomType => roomType.id === this.$route.params.class_id),
         ...this.roomTypes.filter(roomType => roomType.id !== this.$route.params.class_id)
       ];
+    },
+    currentRoomTypeDoc () {
+      return this.roomTypes.filter(roomType => roomType.id === this.sectionID)[0];
     }
   },
   async created () {
@@ -119,6 +124,10 @@ export default {
      * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
      */
     async createNewRoomType (name) {
+      if (!name) {
+        this.$root.$emit("show-snackbar", "Don't forget to name this area"); 
+        return;
+      }
       const { class_id } = this.$route.params; 
       const id = getRandomId(); 
       const ref = db.doc(`classes/${class_id}`);

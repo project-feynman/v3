@@ -1,7 +1,7 @@
 <template>
   <div>  
     <VideoConferenceRoom
-      :roomID="roomId"
+      :roomID="roomID"
     />
 
     <!-- For wiping all the blackboards -->
@@ -134,7 +134,8 @@
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
             <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
           </v-list-item>
-          <v-list-item @click="deleteThisRoom()">
+          <!-- Can't delete the default room -->
+          <v-list-item :disabled="roomID === classID" @click="deleteThisRoom()">
             <v-icon left color="red">mdi-delete</v-icon> Delete this room
           </v-list-item>
         </v-list>
@@ -255,7 +256,7 @@ import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 
 export default {
   props: {
-    roomId: {
+    roomID: {
       type: String,
       required: true
     },
@@ -339,7 +340,7 @@ export default {
     }
   },
   async created () {
-    this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
+    this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomID}`);
     this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
       this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[0]); // TODO: perhaps this is a special case that can be "naturally handled" by the general case
       this.snapshotListeners.push(unsubFunc);
@@ -377,7 +378,7 @@ export default {
     //   }
     // },
     async createNewBoard () {
-      const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomId}`);
+      const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomID}`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       const newID = getRandomId();  
       await Promise.all([
@@ -398,13 +399,13 @@ export default {
       }
     },
     renameRoom () {
-      db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
+      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({ 
         name: this.newRoomName
       });
       this.newRoomName = ""; 
     },
     updateRoomStatus () {
-      db.doc(`classes/${this.classID}/rooms/${this.roomId}`).update({ 
+      db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({ 
         status: this.newRoomStatus
       });
       this.newRoomStatus = ""; 
