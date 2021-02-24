@@ -7,7 +7,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
-    "@daily-co/daily-js": "^0.9.996",
+    "@daily-co/daily-js": "^0.9.998",
     "@google-cloud/logging": "^4.5.2",
     "algoliasearch": "^4.4.0",
     "audio-recorder-polyfill": "^0.3.6",
