@@ -30,19 +30,16 @@
             <v-list-item-content class="py-0">
               <div style="display: flex; align-items: center;">
                 <div class="ml-3">
-                  <div v-if="roomType.id !== sectionID" 
-                    style="
+                  <div
+                    :style="`
                       font-size: 0.95rem; 
                       font-weight: 500; 
                       color: '#424242'; 
-                      opacity: 60%;
+                      opacity: ${roomType.id === sectionID ? '100%' : '60%' };
                       text-transform: uppercase;
-                  ">
+                  `">
                     {{ roomType.name }}
                   </div>
-                  <portal-target v-else name="room-type-name">
-
-                  </portal-target>
                 </div>
 
                 <v-spacer/>
@@ -118,18 +115,22 @@ export default {
   async created () {
     // fetch once for light bandwidth usage
     this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes")); 
+
+    // for backwards compatibility
+    if (! this.currentRoomTypeDoc) {
+      this.createNewRoomType("PSET LOUNGE", this.classID);
+    }
   },
   methods: {
      /**
      * Create a new roomType, and initialize it with a common room, which is initialized with a blackboard
      */
-    async createNewRoomType (name) {
+    async createNewRoomType (name, id = getRandomId()) {
       if (!name) {
         this.$root.$emit("show-snackbar", "Don't forget to name this area"); 
         return;
       }
       const { class_id } = this.$route.params; 
-      const id = getRandomId(); 
       const ref = db.doc(`classes/${class_id}`);
       await Promise.all([
         ref.collection("roomTypes").doc(id).set({ id, name }),

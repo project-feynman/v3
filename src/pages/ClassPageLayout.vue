@@ -137,6 +137,7 @@
           It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
        -->
       <ParticularOpenSpace 
+        :sectionID="$route.params.section_id"
         :key="$route.params.section_id"
       /> 
     </v-navigation-drawer>

@@ -1,24 +1,12 @@
 <template>
   <div>
-
-    <!-- REPLACE THE TITLE IN ALL OPEN SPACES (BECAUSE WE LISTEN TO THE ROOMTYPE DOC HERE) -->
-    <portal to="room-type-name">
-      <div style="
-        font-size: 0.95rem; 
-        font-weight: 500; 
-        color: '#424242'; 
-        opacity: 100%;
-        text-transform: uppercase
-      ">
-        {{ roomTypeDoc.name }}
-      </div>
-    </portal>
-
-
     <!-- START OF "SPACE ACTIONS" dropdown menu -->
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal to="current-open-space-actions">
-      <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
+      <v-menu v-if="roomTypeDoc" 
+        v-model="isMenuOpen" 
+        bottom nudge-left offset-y
+      >
         <template v-slot:activator>
           <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
             <!-- Space actions -->
@@ -29,7 +17,7 @@
           <v-list-item><b>During class</b></v-list-item> 
 
           <!-- For some reason you need click.stop -->
-          <v-list-item :disabled="! isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
+          <v-list-item :disabled="!isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
             <v-icon left color="purple">mdi-eye-outline</v-icon> Bird's-eye view
           </v-list-item>
 
@@ -340,6 +328,12 @@ import _ from "lodash";
 
 export default {
   name: "ParticularOpenSpace",
+  props: {
+    sectionID: {
+      type: String,
+      required: true
+    }
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -388,7 +382,6 @@ export default {
     ]),
     classID () { return this.$route.params.class_id; },
     sessionID () { return this.session.currentID; },
-    sectionID () { return this.$route.params.section_id; },
     isInRoom () { return "room_id" in this.$route.params; },
     currentRoomID () { return this.$route.params.room_id; },
     sortedRooms () {
@@ -404,8 +397,7 @@ export default {
       return db.doc(`classes/${this.classID}`);
     },
     roomTypeRef () {
-      // TODO: change section_Id to prop
-      return this.classDocRef.collection("roomTypes").doc(this.$route.params.section_id); 
+      return this.classDocRef.collection("roomTypes").doc(this.sectionID); 
     }
   },
   watch: {
@@ -432,7 +424,7 @@ export default {
         for (const roomAssignment of this.roomTypeDoc.roomAssignments) {
           if (roomAssignment.assignees.includes(this.user.uid)) {
             if (this.currentRoomID !== roomAssignment.roomID) {
-              this.$router.push(`/class/${this.classID}/section/${this.$route.params.section_id}/room/${roomAssignment.roomID}`);
+              this.$router.push(`/class/${this.classID}/section/${this.sectionID}/room/${roomAssignment.roomID}`);
               this.$root.$emit("show-snackbar", "You have been put in random room with other people. Have fun :)"); 
             }
           }
@@ -452,10 +444,8 @@ export default {
   },
   async created () {
     // navigate to the common room, which will have the same ID as the section category itself
-    const { class_id, section_id, room_id } = this.$route.params; 
-    if (! room_id) { // if statement handles reloading on the spot
-      this.$router.replace(`${section_id}/room/${section_id}`);
-      //this.$router.replace(`class/${class_id}/section/${section_id}room/${section_id}`);
+    if (! this.$route.params.room_id) { // if statement handles reloading on the spot
+      this.$router.replace(`${this.sectionID}/room/${this.sectionID}`);
     }
     this.$_listenToDoc(this.roomTypeRef, this, "roomTypeDoc")
       .then(unsubFunc => this.unsubFuncs.push(unsubFunc));
@@ -464,7 +454,7 @@ export default {
     this.unsubFuncs.push(
       this.$_bindVarToDB({
         varName: "rooms",
-        dbRef: this.classDocRef.collection("rooms").where("roomTypeID", "==", this.$route.params.section_id),
+        dbRef: this.classDocRef.collection("rooms").where("roomTypeID", "==", this.sectionID),
         component: this
       })
     );
@@ -473,12 +463,12 @@ export default {
     this.unsubFuncs.push(
       this.$_bindVarToDB({
         varName: "participants",
-        dbRef: this.classDocRef.collection("participants").where("roomTypeID", "==", this.$route.params.section_id),
+        dbRef: this.classDocRef.collection("participants").where("roomTypeID", "==", this.sectionID),
         component: this
       })
     );
   },
-  beforeDestroy () {
+  destroyed () {
     for (const unsubFunc of this.unsubFuncs) {
       unsubFunc(); 
     }
