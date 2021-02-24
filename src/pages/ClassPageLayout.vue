@@ -21,10 +21,44 @@
       <v-sheet class="py-3 pl-2" elevation="5">    
         <div style="display: flex;">
           <!-- enable user to report issues, directly email me, etc. -->
-          <!-- style="cursor: pointer;" -->
-          <v-list-item-avatar tile width="47" height="42" @click=""  class="ma-0">
+          <v-list-item-avatar @click="isTechSupportPopupOpen = true"  
+            class="ma-0" style="cursor: pointer;" tile width="47" height="42"
+          >
             <img src="/logo.png">
           </v-list-item-avatar>
+
+          <v-dialog v-model="isTechSupportPopupOpen" width="600">
+            <v-card>
+              <v-card-title>Tech Support</v-card-title>
+              <v-card-subtitle></v-card-subtitle>
+              <v-card-text style="font-size: 1.1rem;">
+                If you're facing an annoying problem on Explain, <u>call me anytime 503 250 3868</u>(though I'm asleep 1:30 am ~ 9:30 am) or <u>email eltonlin@mit.edu</u>. 
+                I guarantee I can 100% solve it for you, 70% of the time. Meanwhile, here is more detail on the common issues that arise: 
+
+                <br>
+                <br>
+                If you're on iPad Safari or desktop Chrome and voice chat just doesn't work despite of everything, it's probably because of <u>corrupted state</u>. 
+                This happens when different video call apps, active or inactive, interfere with each other on the same device.
+                A workaround is to just use another device, e.g. an iPhone, for connecting to the voice chat.
+                The proper way to solve the problem is to <u>clear cookies and cache or to restart your device completely</u>.
+                
+                <br>
+                <br>
+                Other times, it's a backwards compatibility issue: try closing the browser tab and open a fresh copy to always fetch the latest version of Explain. 
+
+                <br>
+                <br>
+                But overall, the best weapon against bugs is <u>"close the tab, open a new tab"</u>.
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer/>
+                <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
+                  <v-icon class="mr-2">mdi-logout</v-icon>
+                  SIGN OUT
+                </v-btn>       
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
 
           <ClassSwitchDropdown>
             <template v-slot:current-class-settings>
@@ -175,6 +209,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
 import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue"; 
 import RealtimeRoom from "@/pages/RealtimeRoom.vue";
+import AuthHelpers from "@/mixins/AuthHelpers.js";
 
 export default {
   name: "ClassPageLayout",
@@ -185,7 +220,8 @@ export default {
     }
   },
   mixins: [
-    DatabaseHelpersMixin
+    DatabaseHelpersMixin,
+    AuthHelpers
   ],
   components: {
     BaseButton,
@@ -209,7 +245,8 @@ export default {
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
     isClassSettingsPopupOpen: false,
-    unsubscribeClassDocListener: null
+    unsubscribeClassDocListener: null,
+    isTechSupportPopupOpen: false
     // isHelpPopupOpen: false
   }),
   computed: {

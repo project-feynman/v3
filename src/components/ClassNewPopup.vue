@@ -34,12 +34,7 @@
           <v-col cols="2">
             <v-btn @click="createNewClass()" text color="secondary">CREATE</v-btn>
           </v-col>
-        </v-row>
-
-        <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
-          <v-icon class="mr-2">mdi-logout</v-icon>
-          SIGN OUT
-        </v-btn>          
+        </v-row>   
       </v-card-text>
     </v-card>
 
