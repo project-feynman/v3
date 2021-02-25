@@ -160,17 +160,18 @@ export default {
         this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", tutorialPostID);
 
         // redirect to 0.000
-        this.$router.push(`/class/${exampleClassID}/section/${exampleClassID}/room/${exampleClassID}`);
+        this.$router.replace(`/class/${exampleClassID}/section/${exampleClassID}/room/${exampleClassID}`);
       } 
       else {
         try {
           // fetch mirror document from Firestore
           await this.$store.dispatch("fetchUser", { uid: user.uid });
+
+          // redirect to the most recent class even if user types explain.mit.edu
           const { class_id, section_id, room_id } = this.$route.params; 
-          // redirect to the most recent class if user only types explain.mit.edu
           if (!(class_id && section_id && room_id)) {
             const { mostRecentClassID } = this.$store.state.user; 
-            this.$router.push(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
+            this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
           }
           // temporary fix just to avoid error messages
           // it's actually precisely when the user is new that you want to prompt for 
