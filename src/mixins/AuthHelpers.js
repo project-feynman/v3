@@ -127,7 +127,7 @@ export default {
     },
     $_signOut () { 
       firebase.auth().signOut(); 
-      document.location.reload(); 
+      window.location = "https://explain.mit.edu"; 
     }
   }
 }
