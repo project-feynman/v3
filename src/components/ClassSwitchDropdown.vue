@@ -1,6 +1,7 @@
 <template>
   <v-menu v-model="isMenuOpen" fixed offset-y bottom>
     <template v-slot:activator="{ on }">
+      <!-- TODO: why does the menu disappear for Gabrielle? -->
       <v-btn v-on="on" text tile class="pa-1" style="margin-top: 2px; font-size: 1.5rem; font-weight: 400" max-width="180">
         <span v-if="mitClass" class="d-inline-block text-truncate" style="max-width: 140px;">
           {{ mitClass.name }}

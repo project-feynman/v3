@@ -4,6 +4,8 @@ import db from '@/database.js';
 import { getRandomId } from '@/helpers.js';
 import { SUPER_USER_EMAILS, BlackboardTools } from "@/CONSTANTS.js";
 import DailyIframe from '@daily-co/daily-js';
+import firebase from "firebase/app"; 
+import "firebase/auth";
 
 Vue.use(Vuex);
 
@@ -186,13 +188,14 @@ export default new Vuex.Store({
     },
     // Fetches the user document, binds it to a variable accessible by all components and listens for any changes
     // TODO: rename to listenToFirestoreUser
-    async fetchUser (context, { uid }) {
+    async listenToUserDoc (context, { uid }) {
       return new Promise((resolve, reject) => {
         const mirrorUserRef = db.collection("users").doc(uid);
         mirrorUserRef.onSnapshot(userDoc => {
           if (!userDoc.exists) {
-            reject("Can't find user's Firestore doc with given UID");
+            reject("Error in listenToUserDoc: uid doesn't exist");
             context.commit("SET_USER", null);
+            firebase.auth().signOut(); 
           } else {
             context.commit("SET_USER", userDoc.data());
             resolve();

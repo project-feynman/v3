@@ -1,5 +1,9 @@
 <template>
-  <v-dialog :value="isClassSettingsPopupOpen" @input="newValue => $emit('input', newValue)" width="600">
+  <v-dialog v-if="currentClass"
+    :value="isClassSettingsPopupOpen" 
+    @input="newValue => $emit('input', newValue)" 
+    width="600"
+  >
     <v-card>
       <v-card-title>
         {{ currentClass.name }} settings

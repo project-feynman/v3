@@ -83,6 +83,7 @@ import { getRandomId } from "@/helpers.js";
 import _ from "lodash"; 
 import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
 import ClassPageLayout from "@/pages/ClassPageLayout.vue"; 
+import AuthHelpers from "@/mixins/AuthHelpers.js"; 
 import { mapState } from "vuex"; 
 
 // To get realtime support, visit https://www.daily.co/contact/support
@@ -91,7 +92,11 @@ import { mapState } from "vuex";
 const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
 export default {
+  mixins: [
+    AuthHelpers
+  ],
   components: {
+    AuthHelpers,
     VideoTroubleshootPopup,
     ClassPageLayout
   },
@@ -117,85 +122,52 @@ export default {
     sessionID () { return this.$store.state.session.currentID },
   },
   async created () {
-    // USER AUTHENTICATION
-    /** Checks from Firebase auth whether the user exists or not. 
-      * If user isn't logged in, sets `state.user` to null. 
-      * Otherwise, populates `state.user` with the full Firestore mirror doc. 
+    /** 
+      * USER AUTHENTICATION
+      * 
+      * Only use `onAuthStateChanged` for getting the INITIAL authentication state of the user, so that
+      * it's unnecessary to deal with edge cases related to intermediate states.
+      * 
+      * Don't use it as callbacks because of concurrency issues between onAuthStateChanged() versus versus the callbacks of `signInWithPopup` firing 
+      * in different sequences according to slow internet. Even if it fires in the same sequence, there are too many dependent operations 
+      * that zigzag between the two such as creating a mirror document. 
+      * 
+      * That's why we remove the listener once it has done its job. 
+      * 
+      * `user === null` unhelpfully can both mean the user is not logged in or hasn't been initialized
     **/
-     firebase.auth().onAuthStateChanged(async (user) => {
+    this.unsubscribeAuthListener = firebase.auth().onAuthStateChanged(async (user) => {
       console.log("authStateChanged, user =", user); 
-      // !user means logged out, !user.email means anonymous user
-      if (!user || !user.email) {
-        // necessary to handle if the user logs out
-        // generate a randomID
+      if (!user) {
         await firebase.auth().signInAnonymously(); 
-
-        const exampleClassID = "lvzQqyZIV1wjwYnRV9hn";
-        const exampleClass = {
-          id: exampleClassID,
-          name: "0.000", 
-          description: "For new users to explore"
-        };
-
-        this.$store.commit("SET_USER", {
-          uid: getRandomId(),
-          firstName: "Anonymous",
-          lastName: `Beaver ${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
-          email: "", // empty string to distinguish it from signed in accounts
-          enrolledClasses: [exampleClass],
-          emailOnNewQuestion: [],
-          emailOnNewReply: [],
-          penColors: ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"]
-        });
-
-        // introduce the tutorial via the library
-
-        // let the library contain pointers that lets the user ask questions in the VisualForum as well
-        // however, you have to log in to receive email notifications
-
-        // there should also be a way for you to be notified of a post or to upvote a question
-        // but those are straightforward...there will be infinite tasks and infinite pain
-        this.$store.commit("SET_IS_VIEWING_LIBRARY", true);
-        const tutorialPostID = "SX3chANZirfspySFxAqD"; // "nG8VBZg4QanbSkKjPuCX"; // "aJWnGgnWMWjRGQzNSq3n"
-        this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", tutorialPostID);
-
-        // redirect to 0.000
-        this.$router.replace(`/class/${exampleClassID}/section/${exampleClassID}/room/${exampleClassID}`);
+        this.initializeTutorialDemo();
+        console.log("user is not logged in", this.unsubscribeAuthListener);
+        this.unsubscribeAuthListener(); 
+      }
+      
+      else if (user.isAnonymous) {
+        this.initializeTutorialDemo(); 
+        console.log("user is anonymous =");
+        this.unsubscribeAuthListener(); 
       } 
-      else {
-        try {
-          // fetch mirror document from Firestore
-          await this.$store.dispatch("fetchUser", { uid: user.uid });
 
-          // redirect to the most recent class even if user types explain.mit.edu
-          const { class_id, section_id, room_id } = this.$route.params; 
-          if (!(class_id && section_id && room_id)) {
-            const { mostRecentClassID } = this.$store.state.user; 
-            this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
-          }
-          // temporary fix just to avoid error messages
-          // it's actually precisely when the user is new that you want to prompt for 
-          // maplestory music, so eventually we have to revert. 
-
-          // fetch music
-          // const maplestorySoundtrack = [
-          //   "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
-          //   "[MapleStory BGM] Ereve Raindrop Flower.mp3",
-          // ];
-          // const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length));
-          // const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
-          // const url = await pathReference.getDownloadURL(); 
-          // this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url)); 
-        } catch (error) {
-          // TODO: still some unexplained behavior for authentication
-          console.log("Cannot find user's mirror doc on Firestore");
-          this.$root.$emit("show-snackbar", "Can't find user's mirror doc");
-          this.$store.commit("SET_USER", null);
-          firebase.auth().signOut();
+      else if (user && !user.isAnonymous) {
+        await this.$store.dispatch("listenToUserDoc", { uid: user.uid });
+        this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
+        // redirect to most recent class
+        const { class_id, section_id, room_id } = this.$route.params; 
+        if (!(class_id && section_id && room_id)) {
+          const { mostRecentClassID } = this.$store.state.user; 
+          this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
         }
+
+        console.log("user is signed in, will unsubscribe");
+        this.unsubscribeAuthListener(); 
       }
 
-      this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
+      else {
+        // intermediate state, don't unsubscribeAuthListener() yet 
+      }
     });
 
     // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
@@ -248,6 +220,35 @@ export default {
     });
   },
   methods: {
+    initializeTutorialDemo () {
+      const exampleClassID = "lvzQqyZIV1wjwYnRV9hn";
+      const exampleClass = {
+        id: exampleClassID,
+        name: "0.000", 
+        description: "For new users to explore"
+      };
+
+      this.$store.commit("SET_USER", {
+        uid: getRandomId(),
+        firstName: "Anonymous",
+        lastName: `Beaver ${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
+        email: "", // empty string to distinguish it from signed in accounts
+        enrolledClasses: [exampleClass],
+        emailOnNewQuestion: [],
+        emailOnNewReply: [],
+        penColors: ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"]
+      });
+
+      this.$store.commit("SET_IS_VIEWING_LIBRARY", true);
+      const tutorialPostID = "SX3chANZirfspySFxAqD"; // "nG8VBZg4QanbSkKjPuCX"; // "aJWnGgnWMWjRGQzNSq3n"
+      this.$store.commit("SET_CURRENTLY_SELECTED_LIBRARY_POST_ID", tutorialPostID);
+
+      // redirect to 0.000
+      const { class_id, section_id, room_id } = this.$route.params; 
+      if (!(class_id && section_id && room_id)) {
+        this.$router.replace(`/class/${exampleClassID}/section/${exampleClassID}/room/${exampleClassID}`);
+      }
+    },
     playBackgroundMusic () {
       this.$store.state.musicAudioElement.play(); 
       this.$store.commit("SET_IS_MUSIC_PLAYING", true);

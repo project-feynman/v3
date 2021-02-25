@@ -21,36 +21,14 @@ export default {
       const provider = new firebase.auth.SAMLAuthProvider("saml.mit-touchstone"); 
       firebase.auth().signInWithPopup(provider)
         .then(async result => {
-          const userInfo = result.additionalUserInfo.profile; 
-          const fullName = userInfo["urn:oid:2.16.840.1.113730.3.1.241"];
-          const firstName = fullName.split(" ")[0];
-          const lastName = fullName.split(" ")[1];
-          const email = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.6"];
-          const kind = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"];
-          const year = userInfo["urn:oid:1.2.840.113554.1.4.1.1.15"];
-
-          const userObject = {
-            firstName,
-            lastName,
-            email,
-            year, // "1", "2", "3", "4", etc. 
-            kind // "student", "staff" or "affiliate"
-          };
-
-          const queryResult = await db.collection("users").where("email", "==", email).get();
-          if (queryResult.empty) {
-            await this.$_createAccount({
-              firstName,
-              lastName,
-              email,
-              uid: result.user.uid,
-              kind
-            });            
-            this.$store.dispatch("fetchUser", { uid: result.user.uid });
-            this.$root.$emit("show-snackbar", "Successfully created account");
-          } else {
-            this.$store.dispatch("fetchUser", { uid: queryResult.docs[0].id });
-            this.$root.$emit("show-snackbar", "Welcome back!");
+          this.$_createMirrorDocIfNeeded(result); 
+          await this.$store.dispatch("listenToUserDoc", { uid: result.user.uid });
+          this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
+          // redirect to most recent class
+          const { class_id, section_id, room_id } = this.$route.params; 
+          if (!(class_id && section_id && room_id)) {
+            const { mostRecentClassID } = this.$store.state.user; 
+            this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
           }
         })
         .catch(error => {
@@ -77,6 +55,40 @@ export default {
         this.$root.$emit("show-snackbar", error.message);
       }
     },
+    async $_createMirrorDocIfNeeded (result) {
+      try {
+        return new Promise(async (resolve) => {  
+          // translate variable names
+          const userInfo = result.additionalUserInfo.profile; 
+          const fullName = userInfo["urn:oid:2.16.840.1.113730.3.1.241"];
+          const firstName = fullName.split(" ")[0];
+          const lastName = fullName.split(" ")[1];
+          const email = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.6"];
+          const kind = userInfo["urn:oid:1.3.6.1.4.1.5923.1.1.1.1"];
+          const year = userInfo["urn:oid:1.2.840.113554.1.4.1.1.15"];
+
+          const queryResult = await db.collection("users").where("email", "==", email).get();
+          console.log("queryResult =", queryResult);
+          if (queryResult.empty) {
+            await this.$_createAccount({
+              firstName,
+              lastName,
+              email,
+              uid: result.user.uid,
+              kind // "student", "staff", "affiliate"
+            });            
+            this.$root.$emit("show-snackbar", "Successfully created account");
+          } else {
+            // queryResult.docs[0].id
+            this.$root.$emit("show-snackbar", "Welcome back!");
+          }
+          resolve(); 
+        });
+      }
+      catch (error) {
+        console.log("error =", error);
+      }
+    },
     /**
      * Must include uid, email, firstName, lastName 
      * Optional attribute: `kind` 
@@ -98,9 +110,16 @@ export default {
     },
     $_logIn ({ email, password }) {
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(result => {
-          this.$store.dispatch("fetchUser", result.user); 
-          this.$root.$emit("show-snackbar", "Welcome back!");
+        .then(async result => {
+          await this.$store.dispatch("listenToUserDoc", result.user); 
+          this.$store.commit("SET_HAS_FETCHED_USER_INFO", true);
+          this.$root.$emit("show-snackbar", "Welcome back!"); 
+          // redirect to most recent class
+          const { class_id, section_id, room_id } = this.$route.params; 
+          if (!(class_id && section_id && room_id)) {
+            const { mostRecentClassID } = this.$store.state.user; 
+            this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
+          }
         })
         .catch(error => {
           this.$root.$emit("show-snackbar", error.message);
@@ -108,6 +127,7 @@ export default {
     },
     $_signOut () { 
       firebase.auth().signOut(); 
+      document.location.reload(); 
     }
   }
 }
