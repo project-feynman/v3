@@ -21,34 +21,24 @@
       <v-sheet class="py-3 pl-2" elevation="5">    
         <div style="display: flex;">
           <!-- enable user to report issues, directly email me, etc. -->
-          <v-list-item-avatar @click="isTechSupportPopupOpen = true"  
-            class="ma-0" style="cursor: pointer;" tile width="47" height="42"
+          <v-badge 
+            :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+            :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+            left color="info" overlap style="z-index: 1;"
           >
-            <img src="/logo.png">
-          </v-list-item-avatar>
+            <v-list-item-avatar @click="isTechSupportPopupOpen = true"  
+              class="ma-0" style="cursor: pointer;" tile width="47" height="42"
+            >
+              <img src="/logo.png">
+            </v-list-item-avatar>
+          </v-badge>
 
-          <v-dialog v-model="isTechSupportPopupOpen" width="600">
+          <v-dialog v-model="isTechSupportPopupOpen" width="700">
             <v-card>
-              <v-card-title>Tech Support</v-card-title>
+              <v-card-title>Chats</v-card-title>
               <v-card-subtitle></v-card-subtitle>
               <v-card-text>
-                If you're facing an annoying problem on Explain, call me anytime 503 250 3868 (though I'm asleep 1:30 am ~ 9:30 am) or <u>email eltonlin@mit.edu</u>. 
-                I guarantee I can 100% solve it for you, 70% of the time. Meanwhile, here is more detail on the common issues that arise: 
-
-                <br>
-                <br>
-                If you're on iPad Safari or desktop Chrome and voice chat just doesn't work despite of everything, it's probably because of corrupted state. 
-                This happens when different video call apps, active or inactive, interfere with each other on the same device.
-                A workaround is to just use another device, e.g. an iPhone, for connecting to the voice chat.
-                The proper way to solve the problem is to <u>clear cookies and cache or to restart your device completely</u>.
-                
-                <br>
-                <br>
-                Other times, it's a backwards compatibility issue: try closing the browser tab and open a fresh copy to always fetch the latest version of Explain. 
-
-                <br>
-                <br>
-                But overall, the best weapon against bugs is "close the tab, open a new tab". Worse case, you can always use 0.000 as the fallback class that is accessible by everyone. 
+                <SlackChat v-if="isTechSupportPopupOpen"/>      
               </v-card-text>
               <v-card-actions>
                 <v-spacer/>
@@ -88,11 +78,9 @@
 
         <div style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
           <v-badge v-if="mitClass"
-            left
-            color="info"
+            :value="mitClass.numOfUnansweredQuestions"
             :content="mitClass.numOfUnansweredQuestions"
-            overlap
-            style="z-index: 1;"
+            left color="info" overlap style="z-index: 1;"
           >
             <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
 
@@ -198,6 +186,7 @@ import { getRandomId } from "@/helpers.js";
 
 import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
 import GroupChat from "@/components/GroupChat.vue"; 
+import SlackChat from "@/components/SlackChat.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
@@ -227,6 +216,7 @@ export default {
     BaseButton,
     BasePopupButton,
     GroupChat,
+    SlackChat,
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
@@ -266,6 +256,12 @@ export default {
           return mitClass; 
         }
       }
+    },
+    numOfUnreadMsgsInArea () {
+      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id];
+    },
+    numOfUnreadMsgsInTable () {
+      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id];
     }
   },
   // TODO: refactor this quickfix

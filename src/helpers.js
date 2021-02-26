@@ -10,6 +10,7 @@ export const getCurrentTimeInEST = function () {
   return estDate; 
 }
 
+// what's the difference between dateString and timestamp? 
 export const displayDate = function (dateString) { 
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {

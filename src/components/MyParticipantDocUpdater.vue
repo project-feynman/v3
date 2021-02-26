@@ -70,7 +70,7 @@ export default {
           hasDisconnected: true
         });
 
-        this.myFirestoreRef = this.myFirestoreRef = db.doc(`classes/${this.classID}/participants/${disconnectID}`);
+        this.myFirestoreRef = db.doc(`classes/${this.classID}/participants/${disconnectID}`);
         await this.myFirestoreRef.set({
           classID: this.classID,
           sessionID: this.sessionID, // TODO: rename it, but backwards compatibility's sake keep the property name `sessionID` 
@@ -118,9 +118,8 @@ export default {
     // e.g. within 500 milliseconds, it can be called at most twice (one on the 0th second, then, everything else is ignored the next on the 500th millisecond)
     // if 1st is on 0, and 2nd is 200, the 2nd will be deferred to the 500th millisecond if there is no third
     throttledSync: _.throttle(
-      // without function () {}, `this.searchDatabase()` will be undefined
-      function () {  this.sync(); }, 
-      500
+      function () { this.sync(); }, // without function () {}, `this.searchDatabase()` will be undefined
+      500 // milliseconds
     ),
     sync () {
       if (this.isFirestoreDocCreated) {
