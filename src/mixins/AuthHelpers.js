@@ -21,7 +21,7 @@ export default {
       const provider = new firebase.auth.SAMLAuthProvider("saml.mit-touchstone"); 
       firebase.auth().signInWithPopup(provider)
         .then(async result => {
-          this.$_createMirrorDocIfNeeded(result); 
+          await this.$_createMirrorDocIfNeeded(result); 
           await this.$store.dispatch("listenToUserDoc", { uid: result.user.uid });
           this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
           // redirect to most recent class
@@ -103,7 +103,8 @@ export default {
           lastName,
           kind: kind ? kind : null,
           enrolledClasses: [{ id: exampleClassID, name: "0.000", description: "For new users to explore" }],
-          mostRecentClassID: exampleClassID
+          mostRecentClassID: exampleClassID,
+          penColors: ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"]
         });
         resolve();
       });

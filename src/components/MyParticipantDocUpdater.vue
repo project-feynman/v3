@@ -98,6 +98,7 @@ export default {
     });
   },
   watch: {
+    "user.firstName" () { this.throttledSync() }, // e.g so you don't show up as anonymous after signing up
     classID () { this.throttledSync() }, // handle this differently
     roomID () { this.throttledSync() },
     currentBoardID () { this.throttledSync() }, 
