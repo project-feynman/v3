@@ -3,8 +3,8 @@
     <template v-slot:activator="{ on }">
       <!-- TODO: why does the menu disappear for Gabrielle? -->
       <v-btn v-on="on" text tile class="pa-1" style="margin-top: 2px; font-size: 1.5rem; font-weight: 400" max-width="180">
-        <span v-if="mitClass" class="d-inline-block text-truncate" style="max-width: 140px;">
-          {{ mitClass.name }}
+        <span class="d-inline-block text-truncate" style="max-width: 140px;">
+          {{ currentClass ? currentClass.name : "ERROR" }}
         </span>
         <v-spacer/>
         <v-icon>mdi-menu-down</v-icon>
@@ -48,9 +48,15 @@ export default {
   },
   computed: {
     ...mapState([
-      "user",
-      "mitClass"
-    ])
+      "user"
+    ]),
+    currentClass () {
+      for (const mitClass of this.user.enrolledClasses) {
+        if (mitClass.id === this.$route.params.class_id) {
+          return mitClass; 
+        }
+      }
+    }
   },
   methods: {
     switchClass (mitClass) {

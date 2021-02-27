@@ -1,7 +1,7 @@
 <template>
    <v-list style="max-height: 500px" class="overflow-y-auto">
     <v-list-item v-for="(message, i) in allMessages" :key="message.id" :ref="i === allMessages.length - 1 ? 'NewestMessage' : ''">
-      {{ message.author.firstName }} ({{ message.timestamp.toDate().toLocaleString() }}):
+      {{ message.author.firstName + " " + message.author.lastName }} ({{ displaySimpleTimestamp(message.timestamp) }}):
       {{ message.content }} 
     </v-list-item>
   </v-list>
@@ -16,7 +16,8 @@ export default {
     }
   },
   watch: {
-    allMessages () {
+    async allMessages () {
+      await this.$nextTick(); 
       this.scrollToBottom();
     }
   },
@@ -29,6 +30,15 @@ export default {
       if (NewestMessage) {
         NewestMessage[0].$el.scrollIntoView({ alignToTop: false, behavior: "smooth" });
       }
+    },
+    displaySimpleTimestamp (timestamp) {
+      if (!timestamp) return ""; 
+      return timestamp.toDate().toLocaleString(undefined, { 
+        day: "numeric",
+        month: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
     }
   }
 }
