@@ -21,25 +21,15 @@
       <v-sheet class="py-3 pl-2" elevation="5">    
         <div style="display: flex;">
           <!-- enable user to report issues, directly email me, etc. -->
-          <v-badge 
-            :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            left color="info" overlap style="z-index: 1;"
-          >
             <v-list-item-avatar @click="isTechSupportPopupOpen = true"  
               class="ma-0" style="cursor: pointer;" tile width="47" height="42"
             >
               <img src="/logo.png">
             </v-list-item-avatar>
-          </v-badge>
 
           <v-dialog v-model="isTechSupportPopupOpen" width="700">
             <v-card>
-              <v-card-title>Chats</v-card-title>
-              <v-card-subtitle></v-card-subtitle>
-              <v-card-text>
-                <SlackChat v-if="isTechSupportPopupOpen"/>      
-              </v-card-text>
+              <v-card-title>App Overview</v-card-title>
               <v-card-actions>
                 <v-spacer/>
                 <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
@@ -76,15 +66,59 @@
           />
         </div>
 
-        <div style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
-          <v-badge v-if="mitClass"
-            :value="mitClass.numOfUnansweredQuestions"
-            :content="mitClass.numOfUnansweredQuestions"
-            left color="info" overlap style="z-index: 1;"
+        <div class="pr-2">
+          <v-menu
+            v-model="isChatOpen"
+            :close-on-content-click="false"
+            :close-on-click="false"
+            offset-y
+            left
+            nudge-left="250"
+            nudge-top="200"
+            max-height="200"
+            style="max-width: 200px; z-index: 5;"
           >
-            <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn block v-on="on" class="white--text grey px-3">
+                <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-chat</v-icon>
+                <v-badge 
+                  :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+                  :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+                  left color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="15"
+                >
+                  <div style="font-size: 0.9rem; 
+                          font-weight: 500; 
+                          color: '#424242'; 
+                          opacity: 0.9;
+                          text-transform: uppercase;"
+                  >
+                    Chats
+                  </div>
+                </v-badge>
+              </v-btn>
+            </template>
 
-              <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+            <v-card max-width="250">
+              <v-card-text class="pa-0">
+                <SlackChat v-if="isChatOpen">
+                  <v-btn icon @click="isChatOpen = false" small>
+                    <v-icon color="black">mdi-close</v-icon>
+                  </v-btn>
+                </SlackChat>      
+              </v-card-text>
+            </v-card>
+          </v-menu>
+
+          <!-- FORUM BUTTON -->
+          <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
+            class="white--text px-3" color="grey" block
+          >
+            <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+            <v-badge v-if="mitClass"
+              :value="mitClass.numOfUnansweredQuestions"
+              :content="mitClass.numOfUnansweredQuestions"
+              left color="info" overlap style="z-index: 1;" offset-x="-20" offset-y="15"
+            >
               <div style="font-size: 0.9rem; 
                           font-weight: 500; 
                           color: '#424242'; 
@@ -93,10 +127,10 @@
               >
                 FORUM
               </div>
-            </v-btn>
-          </v-badge>
+            </v-badge>
+          </v-btn>
 
-          <!-- scrollable -->
+          <!-- FORUM POPUP -->
           <v-dialog 
             :value="isViewingForum" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
@@ -119,7 +153,7 @@
             </v-card>
           </v-dialog>
 
-          <!-- scrollable -->
+          <!-- OPEN, CROWDSOURCED LIBRARY -->
           <v-dialog 
             :value="isViewingLibrary" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
@@ -127,7 +161,9 @@
             width="70vw"
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-1 mr-2 white--text grey px-3">
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
+                class="white--text grey px-3" block
+              >
                 <!-- purple--text -->
                 <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-bookshelf</v-icon>
                 <div style="font-size: 0.9rem; 
@@ -149,10 +185,10 @@
               <ClassLibrary v-if="isViewingLibrary" />
             </v-card>
           </v-dialog>
-        </div>  
+        </div>
       </v-sheet>
 
-      <AllOpenSpaces style="margin-top: 20px;"/>  
+      <AllOpenSpaces style="margin-top: 36px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
