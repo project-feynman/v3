@@ -1,9 +1,10 @@
 <template>
-  <div style="display: flex; align-items: center;" class="px-1">
+  <div style="display: flex; align-items: center;" class="pl-1 pr-0">
     <v-menu max-height="500">
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" text tile class="pa-1" style="font-size: 1rem; font-weight: 500" max-width="180">
-          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 150px;">
+        <v-btn v-on="on" text tile class="pa-1" style="font-size: 0.85rem; font-weight: 600" max-width="180">
+                                                                            <!-- somehow this `max-width` property below is the one that actually does something -->
+          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 110px;">
             <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
             <template v-if="currentRoomTypeDoc">{{ currentRoomTypeDoc.name }}</template>
             <template v-else>Error area...</template>
@@ -65,6 +66,36 @@
 
     <v-spacer/>
 
+    <!-- AREA CHAT -->
+    <v-menu
+      v-model="isChatOpen"
+      :close-on-content-click="false"
+      :close-on-click="false"
+      max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
+    >
+      <template v-slot:activator="{ on }">
+        <v-badge 
+          :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+          :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+          top left color="info" overlap style="z-index: 1;"
+        >
+          <BaseButton :on="on" @click="isMenuOpen = true" stopPropagation icon="mdi-chat-outline" color="black" small>
+            
+          </BaseButton>
+        </v-badge>
+      </template>
+
+      <v-card max-width="250">
+        <v-card-text class="pa-0">
+          <SlackChat v-if="isChatOpen">
+            <v-btn icon @click="isChatOpen = false" small>
+              <v-icon color="black">mdi-close</v-icon>
+            </v-btn>
+          </SlackChat>      
+        </v-card-text>
+      </v-card>
+    </v-menu>
+
     <!-- AREA ACTIONS PORTAL -->
     <portal-target name="current-open-space-actions">
 
@@ -79,6 +110,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import BaseButton from "@/components/BaseButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
+import SlackChat from "@/components/SlackChat.vue";
 import { mapState, mapGetters } from "vuex";
 
 export default {
@@ -89,16 +121,24 @@ export default {
   components: {
     ClassLibrary,
     BaseButton,
-    BasePopupButton
+    BasePopupButton,
+    SlackChat
   },
   data () {
     return {
       roomTypes: [],
+      isChatOpen: false
     };
   },
   computed: {
-    ...mapState([ "mitClass" ]),
-    ...mapGetters([ "isAdmin" ]),
+    ...mapState([ 
+      "user",
+      "mitClass"
+    ]),
+    ...mapGetters([ 
+      "numOfUnreadMsgsInArea",
+      "numOfUnreadMsgsInTable"
+    ]),
     classID () { return this.$route.params.class_id; },
     sectionID () { return this.$route.params.section_id; },
     classDocRef () { return db.doc(`classes/${this.classID}`); },

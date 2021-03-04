@@ -67,48 +67,6 @@
         </div>
 
         <div class="pr-2 pt-2">
-          <v-menu
-            v-model="isChatOpen"
-            :close-on-content-click="false"
-            :close-on-click="false"
-            max-height="225"
-            offset-y
-            left
-            nudge-left="250"
-            nudge-top="200"
-            style="max-width: 200px; z-index: 5;"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn block v-on="on" class="white--text grey px-3 my-1">
-                <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-chat</v-icon>
-                <v-badge 
-                  :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-                  :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-                  right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
-                >
-                  <div style="font-size: 0.9rem; 
-                          font-weight: 500; 
-                          color: '#424242'; 
-                          opacity: 0.9;
-                          text-transform: uppercase;"
-                  >
-                    Chats
-                  </div>
-                </v-badge>
-              </v-btn>
-            </template>
-
-            <v-card max-width="250">
-              <v-card-text class="pa-0">
-                <SlackChat v-if="isChatOpen">
-                  <v-btn icon @click="isChatOpen = false" small>
-                    <v-icon color="black">mdi-close</v-icon>
-                  </v-btn>
-                </SlackChat>      
-              </v-card-text>
-            </v-card>
-          </v-menu>
-
           <!-- FORUM BUTTON -->
           <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
             class="white--text px-3 my-1" color="grey" block
@@ -217,12 +175,8 @@ import { mapState } from "vuex";
 
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import { DefaultEmailSettings } from "@/CONSTANTS.js";
-import { getRandomId } from "@/helpers.js"; 
 
 import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
-import GroupChat from "@/components/GroupChat.vue"; 
-import SlackChat from "@/components/SlackChat.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
@@ -251,8 +205,6 @@ export default {
   components: {
     BaseButton,
     BasePopupButton,
-    GroupChat,
-    SlackChat,
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
@@ -266,7 +218,6 @@ export default {
   data: () => ({
     firebaseRef: null,
     classParticipantsRef: null,
-    isChatOpen: false,
     isShowingDrawer: true,
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
@@ -292,12 +243,6 @@ export default {
           return mitClass; 
         }
       }
-    },
-    numOfUnreadMsgsInArea () {
-      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id] || 0;
-    },
-    numOfUnreadMsgsInTable () {
-      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id] || 0;
     }
   },
   // TODO: refactor this quickfix
@@ -351,36 +296,7 @@ export default {
         musicAudioElement.play(); 
         this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
       } 
-    },   
-    // async submitBug ({ "Describe your problem": title }) {
-    //   if (!title) {
-    //     this.$root.$emit("show-snackbar", "Error: don't forget to write something")
-    //     return;
-    //   }
-    //   const sendEmailToTeam = firebase.functions().httpsCallable("sendEmailToCoreTeam");
-    //   sendEmailToTeam({ 
-    //     userEmail: this.user ? this.user.email : "anonymous@mit.edu",
-    //     userFeedback: title  
-    //   });
-    //   await db.collection("bugs").add({ 
-    //     title,
-    //     email: this.user ? this.user.email : "anonymous@mit.edu"
-    //   }); 
-    //   this.$root.$emit("show-snackbar", "Successfully sent feedback.");
-    // },
-    // async leaveClass () {
-    //   const emailSettingsUpdate = {};
-    //   for (let emailOption of Object.keys(DefaultEmailSettings)) {
-    //     emailSettingsUpdate[emailOption] = firebase.firestore.FieldValue.arrayRemove(this.mitClass.id);
-    //   }
-    //   const updatedEnroll = this.user.enrolledClasses.filter((course) => course.id !== this.$route.params.class_id);
-    //   await db.collection("users").doc(this.user.uid).update({
-    //     enrolledClasses: updatedEnroll,
-    //     ...emailSettingsUpdate
-    //   });
-    //   this.$router.push({ path: '/' });
-    //   this.$root.$emit("show-snackbar", "Successfully dropped class.");
-    // }
+    }
   }
 }
 </script>
