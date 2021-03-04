@@ -66,20 +66,20 @@
           />
         </div>
 
-        <div class="pr-2">
+        <div class="pr-2 pt-2">
           <v-menu
             v-model="isChatOpen"
             :close-on-content-click="false"
             :close-on-click="false"
+            max-height="225"
             offset-y
             left
             nudge-left="250"
             nudge-top="200"
-            max-height="200"
             style="max-width: 200px; z-index: 5;"
           >
             <template v-slot:activator="{ on, attrs }">
-              <v-btn block v-on="on" class="white--text grey px-3">
+              <v-btn block v-on="on" class="white--text grey px-3 my-1">
                 <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-chat</v-icon>
                 <v-badge 
                   :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
@@ -111,7 +111,7 @@
 
           <!-- FORUM BUTTON -->
           <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
-            class="white--text px-3" color="grey" block
+            class="white--text px-3 my-1" color="grey" block
           >
             <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
             <v-badge v-if="mitClass"
@@ -162,7 +162,7 @@
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
-                class="white--text grey px-3" block
+                class="white--text grey px-3 my-1" block
               >
                 <!-- purple--text -->
                 <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-bookshelf</v-icon>
@@ -188,7 +188,7 @@
         </div>
       </v-sheet>
 
-      <AllOpenSpaces style="margin-top: 36px;"/>  
+      <AllOpenSpaces style="margin-top: 28px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
