@@ -71,8 +71,8 @@ export default new Vuex.Store({
     isViewingLibrary: false,
     currentlySelectedLibraryPostID: "",
 
-    isViewingForum: false,
-    currentlySelectedQuestionID: ""
+    isViewingForum: false, 
+    currentlySelectedQuestionID: "EMAIL_SETTINGS" // either EMAIL_SETTINGS, NEW_QUESTION or <question-id> of the form "1xhlqidlfoiq"
   },
   getters: {
     isAdmin: state => {

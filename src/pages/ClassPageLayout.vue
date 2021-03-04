@@ -188,7 +188,7 @@
         </div>
       </v-sheet>
 
-      <AllOpenSpaces style="margin-top: 16px;"/>  
+      <AllOpenSpaces style="margin-top: 14px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 

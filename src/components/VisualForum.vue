@@ -1,21 +1,18 @@
 <template>
-  <v-row>
-    <!-- By default, the sidedrawer and videos each take up 5 columns -->
-    <!-- But if it's a medium / larger screen, we can afford fewer columns for the side-drawer -->
-    <v-col cols="6" sm="3">
-      <!-- Within the SideDrawer itself, it's a vertical flex -->
+  <div style="display: flex;">
+    <div style="width: 260px;">
       <v-list style="max-height: 80vh" class="overflow-y-auto">
         <v-list-item 
-          @click="isClassSettingsOpen = true; isCreatingNewQuestion = false; $store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', '')"
-          :input-value="isClassSettingsOpen"
+          @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'EMAIL_SETTINGS')"
+          :input-value="currentlySelectedQuestionID === 'EMAIL_SETTINGS'"
           active-class="orange"
         >
           <v-icon class="mr-2">mdi-settings</v-icon>Email settings
         </v-list-item>
 
         <v-list-item 
-          @click="isCreatingNewQuestion = true; isClassSettingsOpen = false; $store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', '')"
-          :input-value="isCreatingNewQuestion"
+          @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'NEW_QUESTION')"
+          :input-value="currentlySelectedQuestionID === 'NEW_QUESTION'"
           active-class="orange"
         > 
           <v-icon class="mr-2">mdi-plus</v-icon>New question
@@ -24,7 +21,7 @@
         <template v-if="questions">
           <template v-for="question in questions">
             <v-list-item :key="question.id"
-              @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false; isClassSettingsOpen = false;"
+              @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id);"
               :class="!question.hasReplies && question.id !== currentlySelectedQuestionID ? ['info'] : ''" three-line active-class="orange"
               :input-value="question.id === currentlySelectedQuestionID" 
             >
@@ -43,10 +40,10 @@
           </template>
         </template>
       </v-list>
-    </v-col>
+    </div>
 
-    <v-col cols="6" sm="9">
-      <template v-if="isClassSettingsOpen">
+    <div style="flex-grow: 1;">
+      <template v-if="currentlySelectedQuestionID === 'EMAIL_SETTINGS'">
         <v-card>
           <v-card-title>Email Settings</v-card-title>
           <v-card-text>
@@ -64,7 +61,7 @@
         </v-card>
       </template>
 
-      <template v-else-if="isCreatingNewQuestion">
+      <template v-else-if="currentlySelectedQuestionID === 'NEW_QUESTION'">
         <!-- TODO: refactor this unintuitive prop -->
         <!-- misleadingly, post means it's not a reply, so it contains its own subcollection -->
         <!-- it's not to distinguish between a library post and a forum question, confusingly -->
@@ -74,17 +71,19 @@
         />
       </template>
 
-      <template v-else-if="currentlySelectedQuestionID">
-        <div class="d-flex flex-column mb-6">
+      <template v-else>
+        <!-- <div class="d-flex flex-column mb-6"> -->
           <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
+          <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
+        <div style="max-height: 80vh; overflow-x: hidden" class="overflow-y-auto">
           <ClassPageSeePost 
             :postID="currentlySelectedQuestionID"
             :key="currentlySelectedQuestionID"
           /> 
         </div>
       </template>
-    </v-col>
-  </v-row>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -119,8 +118,6 @@ export default {
   },
   data () {
     return {
-      isClassSettingsOpen: true,
-      isCreatingNewQuestion: false,
       questions: null, // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
       unsubscribeQuestionsListener: null
     };
@@ -161,7 +158,6 @@ export default {
     // eventually incorporate the previous code for only fetching questions by week, but there are only two weeks remaining...
   },
   destroyed () {
-    this.isCreatingNewQuestion = false;
     this.unsubscribeQuestionsListener(); 
   },
   methods: {
