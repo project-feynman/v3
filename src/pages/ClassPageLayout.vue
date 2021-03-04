@@ -135,7 +135,7 @@
             :value="isViewingForum" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
             persistent
-            width="70vw"
+            width="95vw"
           >
             <v-card>
               <v-toolbar dark color="grey">
