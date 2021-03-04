@@ -84,7 +84,7 @@
                 <v-badge 
                   :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
                   :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-                  left color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="15"
+                  right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
                 >
                   <div style="font-size: 0.9rem; 
                           font-weight: 500; 
@@ -117,7 +117,7 @@
             <v-badge v-if="mitClass"
               :value="mitClass.numOfUnansweredQuestions"
               :content="mitClass.numOfUnansweredQuestions"
-              left color="info" overlap style="z-index: 1;" offset-x="-20" offset-y="15"
+              right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
             >
               <div style="font-size: 0.9rem; 
                           font-weight: 500; 
@@ -188,7 +188,7 @@
         </div>
       </v-sheet>
 
-      <AllOpenSpaces style="margin-top: 28px;"/>  
+      <AllOpenSpaces style="margin-top: 16px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
@@ -294,10 +294,10 @@ export default {
       }
     },
     numOfUnreadMsgsInArea () {
-      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id];
+      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id] || 0;
     },
     numOfUnreadMsgsInTable () {
-      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id];
+      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id] || 0;
     }
   },
   // TODO: refactor this quickfix

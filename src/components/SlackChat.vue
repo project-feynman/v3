@@ -10,7 +10,7 @@
           <v-badge
             :value="user['numOfUnreadMsgsInArea:' + sectionID]"
             :content="user['numOfUnreadMsgsInArea:' + sectionID]"
-            left color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="15"
+            right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
           >
             AREA
           </v-badge>
@@ -21,7 +21,7 @@
           <v-badge 
             :value="numOfUnreadMsgsInTable"
             :content="numOfUnreadMsgsInTable"
-            left color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="15"
+            right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
           >
             TABLE
           </v-badge>
@@ -52,7 +52,6 @@
 </template>
 
 <script>
-// for version 1, to speed up decisions, non-obvious decisions will just copy Slack
 import GroupChatListOfMessages from "@/components/GroupChatListOfMessages.vue"; 
 import firebase from "firebase/app"; 
 import "firebase/firestore"; 
@@ -94,14 +93,10 @@ export default {
       return this.$route.params.section_id;
     },
     numOfUnreadMsgsInArea () {
-      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id] ? 
-        this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id] :
-        0;
+      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id] || 0; 
     },
     numOfUnreadMsgsInTable () {
-      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id] ? 
-         this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id] : 
-         0;
+      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id] || 0;  
     }
   },
   watch: {
@@ -110,7 +105,6 @@ export default {
       handler () {
         switch (this.chatType) {
           case "AREA":
-            // clear the notification count
             const updatePayload1 = {}; 
             updatePayload1["numOfUnreadMsgsInArea:" + this.sectionID] = 0; 
             db.doc(`users/${this.user.uid}`).update(updatePayload1);
@@ -183,10 +177,12 @@ export default {
 
       const batch = db.batch(); 
       for (const uid of deduplicatedUIDs) {
-        const pUserRef = db.doc(`users/${uid}`); 
-        const updatePayload = {};
-        updatePayload[notifFieldName] = firebase.firestore.FieldValue.increment(1); 
-        batch.update(pUserRef, updatePayload); 
+        if (uid !== this.user.uid) {
+          const pUserRef = db.doc(`users/${uid}`); 
+          const updatePayload = {};
+          updatePayload[notifFieldName] = firebase.firestore.FieldValue.increment(1); 
+          batch.update(pUserRef, updatePayload);
+        }
       }
       await batch.commit(); 
     },
