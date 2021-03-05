@@ -36,6 +36,9 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer/>
+                <v-btn large @click="leaveClass()">
+                  Leave class
+                </v-btn>
                 <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
                   <v-icon class="mr-2">mdi-logout</v-icon>
                   SIGN OUT
@@ -45,24 +48,12 @@
           </v-dialog>
 
           <ClassSwitchDropdown>
-            <template v-slot:current-class-settings>
-              <v-list-item @click="isClassSettingsPopupOpen = true" class="accent--text">
-                <v-icon class="mr-2">mdi-settings</v-icon>
-                {{ currentClass.name }} settings
-              </v-list-item>
-            </template>
-
             <template v-slot:add-join-leave-class>
               <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
                 <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
               </v-list-item>
             </template>
           </ClassSwitchDropdown>
-
-          <ClassSettingsPopup
-            :isClassSettingsPopupOpen="isClassSettingsPopupOpen"
-            @input="(newVal) => isClassSettingsPopupOpen = newVal"
-          />
 
           <ClassNewPopup 
             :isAddClassPopupOpen="isAddClassPopupOpen"
@@ -185,7 +176,6 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
-import ClassSettingsPopup from "@/components/ClassSettingsPopup.vue"; 
 
 import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
@@ -213,7 +203,6 @@ export default {
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
-    ClassSettingsPopup,
     AllOpenSpaces,
     VisualForum,
     MyParticipantDocUpdater,
@@ -227,7 +216,6 @@ export default {
     isShowingDrawer: true,
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
-    isClassSettingsPopupOpen: false,
     unsubscribeClassDocListener: null,
     isTechSupportPopupOpen: false
     // isHelpPopupOpen: false
@@ -280,6 +268,35 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
+    async leaveClass () {
+      const { user } = this; 
+      let classToRemove = null; 
+      for (const enrolledClass of user.enrolledClasses) {
+        if (enrolledClass.id === this.$route.params.class_id) {
+          classToRemove = enrolledClass;
+          break; 
+        }
+      }
+
+      // bad quickfix code to find a different classID to become the default redirected class
+      let newDefaultRedirectedClass = null; 
+      for (const enrolledClass of user.enrolledClasses) {
+        if (enrolledClass.id !== classToRemove.id) {
+          newDefaultRedirectedClass = enrolledClass; 
+          break; 
+        }
+      }
+
+      const { id } = newDefaultRedirectedClass; 
+      this.$router.push(`/class/${id}/section/${id}/room/${id}`);
+
+      await db.collection("users").doc(user.uid).update({
+        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
+        mostRecentClassID: newDefaultRedirectedClass.id,
+        emailOnNewQuestion: firebase.firestore.FieldValue.arrayRemove(classToRemove.id),
+        emailOnNewReply: firebase.firestore.FieldValue.arrayRemove(classToRemove.id)
+      });
+    },
     async toggleMaplestoryMusic () {
       const { isMusicPlaying, musicAudioElement } = this.$store.state; 
       
