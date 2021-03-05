@@ -27,9 +27,13 @@
               <img src="/logo.png">
             </v-list-item-avatar>
 
+          <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isTechSupportPopupOpen" width="700">
             <v-card>
               <v-card-title>App Overview</v-card-title>
+              <v-card-text>
+                <SlackChats2/>
+              </v-card-text>
               <v-card-actions>
                 <v-spacer/>
                 <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
@@ -189,6 +193,7 @@ import VisualForum from "@/components/VisualForum.vue";
 import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue"; 
 import RealtimeRoom from "@/pages/RealtimeRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
+import SlackChats2 from "@/components/SlackChats2.vue"; 
 
 export default {
   name: "ClassPageLayout",
@@ -213,7 +218,8 @@ export default {
     VisualForum,
     MyParticipantDocUpdater,
     ParticularOpenSpace,
-    RealtimeRoom
+    RealtimeRoom,
+    SlackChats2
   },
   data: () => ({
     firebaseRef: null,
