@@ -79,7 +79,7 @@
           :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
           top left color="info" overlap style="z-index: 1;"
         >
-          <BaseButton :on="on" @click="isMenuOpen = true" stopPropagation icon="mdi-chat-outline" color="black" small>
+          <BaseButton :on="on" stopPropagation icon="mdi-chat-outline" color="black" small>
             
           </BaseButton>
         </v-badge>
