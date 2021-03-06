@@ -36,7 +36,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer/>
-                <v-btn large @click="leaveClass()">
+                <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
                   Leave class
                 </v-btn>
                 <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
