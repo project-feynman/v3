@@ -6,6 +6,7 @@ import { SUPER_USER_EMAILS, BlackboardTools } from "@/CONSTANTS.js";
 import DailyIframe from '@daily-co/daily-js';
 import firebase from "firebase/app"; 
 import "firebase/auth";
+import router from "@/router.js";
 
 Vue.use(Vuex);
 
@@ -71,12 +72,18 @@ export default new Vuex.Store({
     isViewingLibrary: false,
     currentlySelectedLibraryPostID: "",
 
-    isViewingForum: false,
-    currentlySelectedQuestionID: ""
+    isViewingForum: false, 
+    currentlySelectedQuestionID: "EMAIL_SETTINGS" // either EMAIL_SETTINGS, NEW_QUESTION or <question-id> of the form "1xhlqidlfoiq"
   },
   getters: {
     isAdmin: state => {
       return SUPER_USER_EMAILS.includes(state.user.email) || ["staff", "affiliate"].includes(state.user.kind); 
+    },
+    numOfUnreadMsgsInArea: state => {
+      return state.user["numOfUnreadMsgsInArea:" + router.currentRoute.params.section_id] || 0;
+    },
+    numOfUnreadMsgsInTable: state => {
+      return state.user["numOfUnreadMsgsInTable:" + router.currentRoute.params.room_id] || 0;
     }
   },
   mutations: {

@@ -1,25 +1,29 @@
 <template>
-  <!-- TODO: 
-    - Display question in red   
-    - Show unanswered questions
-    - Fix styling
-   -->
-  <v-row>
-    <!-- By default, the sidedrawer and videos each take up 5 columns -->
-    <!-- But if it's a medium / larger screen, we can afford fewer columns for the side-drawer -->
-    <v-col cols="6" sm="3">
-      <!-- Within the SideDrawer itself, it's a vertical flex -->
-      <v-list style="max-height: 80vh" three-line class="overflow-y-auto">
-        <!-- The best initial guess is usually to copy what the incumbents do -->
-        <v-list-item @click="isCreatingNewQuestion = true"> 
-          <v-icon>mdi-plus</v-icon>New question
+  <div style="display: flex;">
+    <div style="width: 260px;">
+      <v-list style="max-height: 80vh" class="overflow-y-auto">
+        <v-list-item 
+          @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'EMAIL_SETTINGS')"
+          :input-value="currentlySelectedQuestionID === 'EMAIL_SETTINGS'"
+          active-class="orange"
+        >
+          <v-icon class="mr-2">mdi-settings</v-icon>Email settings
+        </v-list-item>
+
+        <v-list-item 
+          @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'NEW_QUESTION')"
+          :input-value="currentlySelectedQuestionID === 'NEW_QUESTION'"
+          active-class="orange"
+        > 
+          <v-icon class="mr-2">mdi-plus</v-icon>New question
         </v-list-item>
         
         <template v-if="questions">
           <template v-for="question in questions">
             <v-list-item :key="question.id"
-              @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id); isCreatingNewQuestion = false;"
-              :class="question.hasReplies ? '' : ['info']"
+              @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id);"
+              :class="!question.hasReplies && question.id !== currentlySelectedQuestionID ? ['info'] : ''" three-line active-class="orange"
+              :input-value="question.id === currentlySelectedQuestionID" 
             >
               <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
                 <v-list-item-title>
@@ -36,38 +40,50 @@
           </template>
         </template>
       </v-list>
-    </v-col>
+    </div>
 
-    <v-col cols="6" sm="9">
-      <template v-if="isCreatingNewQuestion">
+    <div style="flex-grow: 1;">
+      <template v-if="currentlySelectedQuestionID === 'EMAIL_SETTINGS'">
+        <v-card>
+          <v-card-title>Email Settings</v-card-title>
+          <v-card-text>
+            Get emailed whenever someone asks a question
+            <v-switch 
+              :input-value="user.emailOnNewQuestion.includes($route.params.class_id)" 
+              @change="isEnabled => toggleEmailOnNewQuestion(isEnabled)"
+            />
+            Get emailed whenever someone replies to a question that you asked or replied to
+            <v-switch 
+              :input-value="user.emailOnNewReply.includes($route.params.class_id)" 
+              @change="isEnabled => toggleEmailOnNewReply(isEnabled)"
+            />
+          </v-card-text>
+        </v-card>
+      </template>
+
+      <template v-else-if="currentlySelectedQuestionID === 'NEW_QUESTION'">
         <!-- TODO: refactor this unintuitive prop -->
         <!-- misleadingly, post means it's not a reply, so it contains its own subcollection -->
         <!-- it's not to distinguish between a library post and a forum question, confusingly -->
-        <!-- also inform people -->
         <ExplanationCreate 
           explType="post"
           @expl-upload-started="({ questionTitle, questionDescriptionHTML, questionID }) => sendEmailNotificationsToClass(questionTitle, questionDescriptionHTML, questionID, $route.params.class_id)"
         />
       </template>
 
-      <template v-else-if="currentlySelectedQuestionID">
-        <!-- Within the list of videos, it's also a vertical flex -->
-        <!-- You need to use the ClassPageSeePost component -->
-        <!-- Optimize for change and pivots -->
-        <div class="d-flex flex-column mb-6">
+      <template v-else>
+        <!-- <div class="d-flex flex-column mb-6"> -->
+          <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
+          <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
+        <div style="max-height: 80vh; overflow-x: hidden" class="overflow-y-auto">
           <ClassPageSeePost 
             :postID="currentlySelectedQuestionID"
             :key="currentlySelectedQuestionID"
           /> 
-          <!-- Won't work yet because this component is coupled with the $route variables -->
-          <!-- <ClassPageSeeQuestion
-            :postID="currentlySelectedQuestionID"
-            :key="currentlySelectedQuestionID"
-          /> -->
         </div>
       </template>
-    </v-col>
-  </v-row>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -96,12 +112,12 @@ export default {
   computed: {
     ...mapState([
       "currentlySelectedQuestionID", // AF("") means no question selected as it cannot be an empty string
-      "mitClass"
+      "mitClass",
+      "user"
     ])
   },
   data () {
     return {
-      isCreatingNewQuestion: false,
       questions: null, // AF(questions) -> null means questions is not initialized, [] means no questions actually exist on the database
       unsubscribeQuestionsListener: null
     };
@@ -142,10 +158,39 @@ export default {
     // eventually incorporate the previous code for only fetching questions by week, but there are only two weeks remaining...
   },
   destroyed () {
-    this.isCreatingNewQuestion = false;
     this.unsubscribeQuestionsListener(); 
   },
   methods: {
+    toggleEmailOnNewReply (isEnabled) { 
+      const { class_id } = this.$route.params; 
+      const ref = db.doc(`users/${this.user.uid}`); 
+      if (isEnabled) {
+        console.log("unioning");
+        ref.update({
+          emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(class_id)
+        }); 
+      } 
+      else {
+        console.log("removing"); 
+        ref.update({
+          emailOnNewReply: firebase.firestore.FieldValue.arrayRemove(class_id)
+        }); 
+      }
+    },
+    toggleEmailOnNewQuestion (isEnabled) {
+      const { class_id } = this.$route.params; 
+      const ref = db.doc(`users/${this.user.uid}`);
+      if (isEnabled) {
+        ref.update({
+          emailOnNewQuestion: firebase.firestore.FieldValue.arrayUnion(class_id)
+        });
+      } 
+      else {
+        ref.update({
+          emailOnNewQuestion: firebase.firestore.FieldValue.arrayRemove(class_id)
+        }); 
+      }
+    },
     async sendEmailNotificationsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
       const usersToEmail = await this.$_getCollection(db.collection("users").where("emailOnNewQuestion", "array-contains", classID));
       for (const user of usersToEmail) {

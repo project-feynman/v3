@@ -1,66 +1,34 @@
 <template>
-  <div style="display: flex;">
+  <div style="width: 100%;">
+    <div style="display: flex;">
+      <slot>
+        <!-- CLOSE button is injected here -->
+      </slot>
+      <v-tabs height="28">
+        <!-- AREA CHAT TAB -->
+        <v-tab @click="chatType = 'AREA'">
+          <v-badge
+            :value="user['numOfUnreadMsgsInArea:' + sectionID]"
+            :content="user['numOfUnreadMsgsInArea:' + sectionID]"
+            right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
+          >
+            AREA
+          </v-badge>
+        </v-tab>
+
+        <!-- GROUP CHAT TAB -->
+        <v-tab @click="chatType = 'ROOM'">
+          <v-badge 
+            :value="numOfUnreadMsgsInTable"
+            :content="numOfUnreadMsgsInTable"
+            right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
+          >
+            TABLE
+          </v-badge>
+        </v-tab>
+      </v-tabs>
+    </div>
     <div>
-      <!-- LEFT PANE -->
-      <!-- announcements -->
-      <v-list>
-        <!-- <v-list-item>Explain-wide</v-list-item> -->
-        <!-- AREA CHAT -->
-        <!-- <v-badge 
-          :value="user.numOfUnreadExplainWideMessages"
-          :content="user.numOfUnreadWebsiteWideMessages"
-          left color="info" overlap style="z-index: 1;"
-        >
-          <v-list-item @click="chatType = 'AREA'">
-            Current Area
-          </v-list-item>
-        </v-badge> -->
-
-        <!-- AREA CHAT -->
-        <v-badge 
-          :value="user['numOfUnreadMsgsInArea:' + sectionID]"
-          :content="user['numOfUnreadMsgsInArea:' + sectionID]"
-          left color="info" overlap style="z-index: 1;"
-        >
-          <v-list-item @click="chatType = 'AREA'">
-            Current Area
-          </v-list-item>
-        </v-badge>
-
-        <!-- ROOM CHAT -->
-
-        <v-badge 
-          :value="user['numOfUnreadMsgsInTable:' + $route.params.room_id]"
-          :content="user['numOfUnreadMsgsInTable:' + $route.params.room_id]"
-          left color="info" overlap style="z-index: 1;"
-        >
-          <v-list-item @click="chatType = 'ROOM'">
-            Current Table 
-          </v-list-item>
-        </v-badge>
-
-        <!-- direct messages -->
-        <!-- <v-list-item>Direct Message</v-list-item> -->
-      </v-list>
-    </div>
-
-    <div v-if="!chatType">
-      <v-card>
-        <v-card-text>
-        How to use these chats: 
-          <ul>
-            <li>Keep track of Office Hours wait-lines</li>
-            <li>Study with new classmates and answer each others' questions</li>
-            <li>Report technical difficulties</li>
-            <li>...anything</li>
-          </ul>
-        </v-card-text>
-      </v-card>
-    </div>
-
-    <div v-else>
-      <h2>{{ chatType }} CHAT</h2>
-
       <GroupChatListOfMessages v-if="chatType === 'AREA' && areaMessages"
         :allMessages="areaMessages"
       />
@@ -68,36 +36,28 @@
         :allMessages="roomMessages"
       />
       <!-- Type a new message -->
-      <v-container class="py-0">
-        <v-row class="pa-0">
-          <v-col cols="10" class="mr-0 pr-0">
-            <v-text-field 
-              @keyup.enter="sendMessage()" 
-              placeholder="Type message here..." 
-              v-model="newlyTypedMessage" 
-              hide-details
-            />
-          </v-col>
-
-          <v-col cols="2" class="px-0">
-            <v-btn fab icon @click="sendMessage()" color="secondary">
-              <v-icon>mdi-send</v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-container>
+      <div style="display: flex; align-items: center;" class="px-1 pb-1 pt-0">
+          <v-text-field 
+            @keyup.enter="sendMessage()" 
+            placeholder="Type message here..." 
+            v-model="newlyTypedMessage" 
+            hide-details dense style="font-size: 0.9rem;"
+          />
+          <v-btn fab icon @click="sendMessage()" color="info" x-small>
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-// for version 1, to speed up decisions, non-obvious decisions will just copy Slack
 import GroupChatListOfMessages from "@/components/GroupChatListOfMessages.vue"; 
 import firebase from "firebase/app"; 
 import "firebase/firestore"; 
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
-import { mapState } from "vuex"; 
+import { mapState, mapGetters } from "vuex"; 
 
 export default {
   name: "SlackChat", 
@@ -109,7 +69,7 @@ export default {
   },
   data () {
     return {
-      chatType: "", // APP, CLASS, AREA, ROOM, DM "" represents my own direct communication
+      chatType: "AREA", // APP, CLASS, AREA, ROOM, DM "" represents my own direct communication
       areaMessages: null,
       roomMessages: null,
       unsubscribeAreaMessagesListener: null,
@@ -120,6 +80,10 @@ export default {
   computed: {
     ...mapState([
       "user"
+    ]),
+    ...mapGetters([
+      "numOfUnreadMsgsInArea",
+      "numOfUnreadMsgsInTable"
     ]),
     areaMessagesRef () {
       const { class_id } = this.$route.params; 
@@ -134,31 +98,33 @@ export default {
     }
   },
   watch: {
-    chatType () {
-      switch (this.chatType) {
-        case "AREA":
-          // clear the notification count
-          const updatePayload1 = {}; 
-          updatePayload1["numOfUnreadMsgsInArea:" + this.sectionID] = 0; 
-          db.doc(`users/${this.user.uid}`).update(updatePayload1);
+    chatType: {
+      immediate: true,
+      handler () {
+        switch (this.chatType) {
+          case "AREA":
+            const updatePayload1 = {}; 
+            updatePayload1["numOfUnreadMsgsInArea:" + this.sectionID] = 0; 
+            db.doc(`users/${this.user.uid}`).update(updatePayload1);
 
-          this.unsubscribeAreaMessagesListener = this.$_bindVarToDB({
-            varName: "areaMessages",
-            dbRef: this.areaMessagesRef.orderBy("timestamp"),
-            component: this
-          });
-          break;
-        case "ROOM":
-          const updatePayload2 = {}; 
-          updatePayload2["numOfUnreadMsgsInTable:" + this.$route.params.room_id] = 0; 
-          db.doc(`users/${this.user.uid}`).update(updatePayload2);
+            this.unsubscribeAreaMessagesListener = this.$_bindVarToDB({
+              varName: "areaMessages",
+              dbRef: this.areaMessagesRef.orderBy("timestamp"),
+              component: this
+            });
+            break;
+          case "ROOM":
+            const updatePayload2 = {}; 
+            updatePayload2["numOfUnreadMsgsInTable:" + this.$route.params.room_id] = 0; 
+            db.doc(`users/${this.user.uid}`).update(updatePayload2);
 
-          this.unsubscribeRoomMessagesListener = this.$_bindVarToDB({
-            varName: "roomMessages",
-            dbRef: this.roomMessagesRef.orderBy("timestamp"),
-            component: this
-          });
-          break; 
+            this.unsubscribeRoomMessagesListener = this.$_bindVarToDB({
+              varName: "roomMessages",
+              dbRef: this.roomMessagesRef.orderBy("timestamp"),
+              component: this
+            });
+            break; 
+        }
       }
     }
   },
@@ -209,10 +175,12 @@ export default {
 
       const batch = db.batch(); 
       for (const uid of deduplicatedUIDs) {
-        const pUserRef = db.doc(`users/${uid}`); 
-        const updatePayload = {};
-        updatePayload[notifFieldName] = firebase.firestore.FieldValue.increment(1); 
-        batch.update(pUserRef, updatePayload); 
+        if (uid !== this.user.uid) {
+          const pUserRef = db.doc(`users/${uid}`); 
+          const updatePayload = {};
+          updatePayload[notifFieldName] = firebase.firestore.FieldValue.increment(1); 
+          batch.update(pUserRef, updatePayload);
+        }
       }
       await batch.commit(); 
     },

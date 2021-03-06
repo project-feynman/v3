@@ -12,10 +12,6 @@
     </template>
 
     <v-list>
-      <slot name="current-class-settings">  
-
-      </slot>
-
       <template v-for="mitClass in $store.state.user.enrolledClasses">
         <v-list-item v-if="mitClass.id !== $route.params.class_id"
           :key="mitClass.id"
@@ -35,12 +31,8 @@
 <script>
 import db from "@/database.js";
 import { mapState } from "vuex"; 
-import ClassSettingsPopup from "@/components/ClassSettingsPopup.vue"; 
 
 export default {
-  components: {
-    ClassSettingsPopup
-  },
   data () {
     return {
       isMenuOpen: false

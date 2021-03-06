@@ -21,27 +21,24 @@
       <v-sheet class="py-3 pl-2" elevation="5">    
         <div style="display: flex;">
           <!-- enable user to report issues, directly email me, etc. -->
-          <v-badge 
-            :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            left color="info" overlap style="z-index: 1;"
-          >
             <v-list-item-avatar @click="isTechSupportPopupOpen = true"  
               class="ma-0" style="cursor: pointer;" tile width="47" height="42"
             >
               <img src="/logo.png">
             </v-list-item-avatar>
-          </v-badge>
 
+          <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isTechSupportPopupOpen" width="700">
             <v-card>
-              <v-card-title>Chats</v-card-title>
-              <v-card-subtitle></v-card-subtitle>
+              <v-card-title>App Overview</v-card-title>
               <v-card-text>
-                <SlackChat v-if="isTechSupportPopupOpen"/>      
+                <SlackChats2/>
               </v-card-text>
               <v-card-actions>
                 <v-spacer/>
+                <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
+                  Leave class
+                </v-btn>
                 <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
                   <v-icon class="mr-2">mdi-logout</v-icon>
                   SIGN OUT
@@ -51,13 +48,6 @@
           </v-dialog>
 
           <ClassSwitchDropdown>
-            <template v-slot:current-class-settings>
-              <v-list-item @click="isClassSettingsPopupOpen = true" class="accent--text">
-                <v-icon class="mr-2">mdi-settings</v-icon>
-                {{ currentClass.name }} settings
-              </v-list-item>
-            </template>
-
             <template v-slot:add-join-leave-class>
               <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
                 <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
@@ -65,26 +55,23 @@
             </template>
           </ClassSwitchDropdown>
 
-          <ClassSettingsPopup
-            :isClassSettingsPopupOpen="isClassSettingsPopupOpen"
-            @input="(newVal) => isClassSettingsPopupOpen = newVal"
-          />
-
           <ClassNewPopup 
             :isAddClassPopupOpen="isAddClassPopupOpen"
             @input="(newVal) => isAddClassPopupOpen = newVal"
           />
         </div>
 
-        <div style="display: flex; align-content: center; justify-content: space-around;" class="mt-2">
-          <v-badge v-if="mitClass"
-            :value="mitClass.numOfUnansweredQuestions"
-            :content="mitClass.numOfUnansweredQuestions"
-            left color="info" overlap style="z-index: 1;"
+        <div class="pr-2 pt-2">
+          <!-- FORUM BUTTON -->
+          <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
+            class="white--text px-3 my-1" color="grey" block
           >
-            <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" class="white--text px-3" color="grey">
-
-              <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+            <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+            <v-badge v-if="mitClass"
+              :value="mitClass.numOfUnansweredQuestions"
+              :content="mitClass.numOfUnansweredQuestions"
+              right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
+            >
               <div style="font-size: 0.9rem; 
                           font-weight: 500; 
                           color: '#424242'; 
@@ -93,15 +80,15 @@
               >
                 FORUM
               </div>
-            </v-btn>
-          </v-badge>
+            </v-badge>
+          </v-btn>
 
-          <!-- scrollable -->
+          <!-- FORUM POPUP -->
           <v-dialog 
             :value="isViewingForum" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
             persistent
-            width="70vw"
+            width="95vw"
           >
             <v-card>
               <v-toolbar dark color="grey">
@@ -119,7 +106,7 @@
             </v-card>
           </v-dialog>
 
-          <!-- scrollable -->
+          <!-- OPEN, CROWDSOURCED LIBRARY -->
           <v-dialog 
             :value="isViewingLibrary" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
@@ -127,7 +114,9 @@
             width="70vw"
           >
             <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" class="ml-1 mr-2 white--text grey px-3">
+              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
+                class="white--text grey px-3 my-1" block
+              >
                 <!-- purple--text -->
                 <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-bookshelf</v-icon>
                 <div style="font-size: 0.9rem; 
@@ -149,10 +138,10 @@
               <ClassLibrary v-if="isViewingLibrary" />
             </v-card>
           </v-dialog>
-        </div>  
+        </div>
       </v-sheet>
 
-      <AllOpenSpaces style="margin-top: 20px;"/>  
+      <AllOpenSpaces style="margin-top: 14px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
@@ -181,17 +170,12 @@ import { mapState } from "vuex";
 
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
-import { DefaultEmailSettings } from "@/CONSTANTS.js";
-import { getRandomId } from "@/helpers.js"; 
 
 import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
-import GroupChat from "@/components/GroupChat.vue"; 
-import SlackChat from "@/components/SlackChat.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
-import ClassSettingsPopup from "@/components/ClassSettingsPopup.vue"; 
 
 import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
@@ -199,6 +183,7 @@ import VisualForum from "@/components/VisualForum.vue";
 import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue"; 
 import RealtimeRoom from "@/pages/RealtimeRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
+import SlackChats2 from "@/components/SlackChats2.vue"; 
 
 export default {
   name: "ClassPageLayout",
@@ -215,26 +200,22 @@ export default {
   components: {
     BaseButton,
     BasePopupButton,
-    GroupChat,
-    SlackChat,
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
-    ClassSettingsPopup,
     AllOpenSpaces,
     VisualForum,
     MyParticipantDocUpdater,
     ParticularOpenSpace,
-    RealtimeRoom
+    RealtimeRoom,
+    SlackChats2
   },
   data: () => ({
     firebaseRef: null,
     classParticipantsRef: null,
-    isChatOpen: false,
     isShowingDrawer: true,
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
-    isClassSettingsPopupOpen: false,
     unsubscribeClassDocListener: null,
     isTechSupportPopupOpen: false
     // isHelpPopupOpen: false
@@ -256,12 +237,6 @@ export default {
           return mitClass; 
         }
       }
-    },
-    numOfUnreadMsgsInArea () {
-      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id];
-    },
-    numOfUnreadMsgsInTable () {
-      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id];
     }
   },
   // TODO: refactor this quickfix
@@ -293,6 +268,35 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
+    async leaveClass () {
+      const { user } = this; 
+      let classToRemove = null; 
+      for (const enrolledClass of user.enrolledClasses) {
+        if (enrolledClass.id === this.$route.params.class_id) {
+          classToRemove = enrolledClass;
+          break; 
+        }
+      }
+
+      // bad quickfix code to find a different classID to become the default redirected class
+      let newDefaultRedirectedClass = null; 
+      for (const enrolledClass of user.enrolledClasses) {
+        if (enrolledClass.id !== classToRemove.id) {
+          newDefaultRedirectedClass = enrolledClass; 
+          break; 
+        }
+      }
+
+      const { id } = newDefaultRedirectedClass; 
+      this.$router.push(`/class/${id}/section/${id}/room/${id}`);
+
+      await db.collection("users").doc(user.uid).update({
+        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
+        mostRecentClassID: newDefaultRedirectedClass.id,
+        emailOnNewQuestion: firebase.firestore.FieldValue.arrayRemove(classToRemove.id),
+        emailOnNewReply: firebase.firestore.FieldValue.arrayRemove(classToRemove.id)
+      });
+    },
     async toggleMaplestoryMusic () {
       const { isMusicPlaying, musicAudioElement } = this.$store.state; 
       
@@ -315,36 +319,7 @@ export default {
         musicAudioElement.play(); 
         this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
       } 
-    },   
-    // async submitBug ({ "Describe your problem": title }) {
-    //   if (!title) {
-    //     this.$root.$emit("show-snackbar", "Error: don't forget to write something")
-    //     return;
-    //   }
-    //   const sendEmailToTeam = firebase.functions().httpsCallable("sendEmailToCoreTeam");
-    //   sendEmailToTeam({ 
-    //     userEmail: this.user ? this.user.email : "anonymous@mit.edu",
-    //     userFeedback: title  
-    //   });
-    //   await db.collection("bugs").add({ 
-    //     title,
-    //     email: this.user ? this.user.email : "anonymous@mit.edu"
-    //   }); 
-    //   this.$root.$emit("show-snackbar", "Successfully sent feedback.");
-    // },
-    // async leaveClass () {
-    //   const emailSettingsUpdate = {};
-    //   for (let emailOption of Object.keys(DefaultEmailSettings)) {
-    //     emailSettingsUpdate[emailOption] = firebase.firestore.FieldValue.arrayRemove(this.mitClass.id);
-    //   }
-    //   const updatedEnroll = this.user.enrolledClasses.filter((course) => course.id !== this.$route.params.class_id);
-    //   await db.collection("users").doc(this.user.uid).update({
-    //     enrolledClasses: updatedEnroll,
-    //     ...emailSettingsUpdate
-    //   });
-    //   this.$router.push({ path: '/' });
-    //   this.$root.$emit("show-snackbar", "Successfully dropped class.");
-    // }
+    }
   }
 }
 </script>
