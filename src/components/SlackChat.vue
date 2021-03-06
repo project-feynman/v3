@@ -57,7 +57,7 @@ import firebase from "firebase/app";
 import "firebase/firestore"; 
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
-import { mapState } from "vuex"; 
+import { mapState, mapGetters } from "vuex"; 
 
 export default {
   name: "SlackChat", 
@@ -81,6 +81,10 @@ export default {
     ...mapState([
       "user"
     ]),
+    ...mapGetters([
+      "numOfUnreadMsgsInArea",
+      "numOfUnreadMsgsInTable"
+    ]),
     areaMessagesRef () {
       const { class_id } = this.$route.params; 
       return db.collection(`classes/${class_id}/roomTypes/${this.sectionID}/messages`); 
@@ -91,12 +95,6 @@ export default {
     },
     sectionID () {
       return this.$route.params.section_id;
-    },
-    numOfUnreadMsgsInArea () {
-      return this.user["numOfUnreadMsgsInArea:" + this.$route.params.section_id] || 0; 
-    },
-    numOfUnreadMsgsInTable () {
-      return this.user["numOfUnreadMsgsInTable:" + this.$route.params.room_id] || 0;  
     }
   },
   watch: {
