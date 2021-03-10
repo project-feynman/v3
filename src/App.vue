@@ -137,17 +137,17 @@ export default {
       * `user === null` unhelpfully can both mean the user is not logged in or hasn't been initialized
     **/
     this.unsubscribeAuthListener = firebase.auth().onAuthStateChanged(async (user) => {
-      console.log("authStateChanged, user =", user); 
+      // console.log("authStateChanged, user =", user); 
       if (!user) {
         await firebase.auth().signInAnonymously(); 
         this.initializeTutorialDemo();
-        console.log("user is not logged in", this.unsubscribeAuthListener);
+        // console.log("user is not logged in", this.unsubscribeAuthListener);
         this.unsubscribeAuthListener(); 
       }
       
       else if (user.isAnonymous) {
         this.initializeTutorialDemo(); 
-        console.log("user is anonymous =");
+        // console.log("user is anonymous =");
         this.unsubscribeAuthListener(); 
       } 
 
@@ -161,7 +161,7 @@ export default {
           this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
         }
 
-        console.log("user is signed in, will unsubscribe");
+        // console.log("user is signed in, will unsubscribe");
         this.unsubscribeAuthListener(); 
       }
 

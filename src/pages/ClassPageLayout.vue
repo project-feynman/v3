@@ -21,11 +21,17 @@
       <v-sheet class="py-3 pl-2" elevation="5">    
         <div style="display: flex;">
           <!-- enable user to report issues, directly email me, etc. -->
+          <v-badge 
+            :value="numOfUnreadGlobalMsgs"
+            :content="numOfUnreadGlobalMsgs"
+            top left color="info" overlap style="z-index: 1;"
+          >
             <v-list-item-avatar @click="isTechSupportPopupOpen = true"  
               class="ma-0" style="cursor: pointer;" tile width="47" height="42"
             >
               <img src="/logo.png">
             </v-list-item-avatar>
+          </v-badge>
 
           <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isTechSupportPopupOpen" width="700">
@@ -33,11 +39,14 @@
               <v-card-title>App Overview</v-card-title>
               <v-card-text>
                 <SlackChats2/>
+                <br>
+                If you're interested in Explain,
+                consider exploring the source code on <a href="https://github.com/project-feynman/explain-mit" target="_blank">Github</a>
               </v-card-text>
               <v-card-actions>
                 <v-spacer/>
                 <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
-                  Leave class
+                  LEAVE CLASS
                 </v-btn>
                 <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
                   <v-icon class="mr-2">mdi-logout</v-icon>
@@ -166,7 +175,7 @@
 import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/storage";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 
 import db from "@/database.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
@@ -227,6 +236,9 @@ export default {
       "isBoardFullscreen",
       "isViewingLibrary",
       "isViewingForum"
+    ]),
+    ...mapGetters([
+      "numOfUnreadGlobalMsgs"
     ]),
     // note: these properties are not reactive, but I assume they will be re-rendered and therefore updated 
     // due to <router-view :key="$route.params.class_id> in App.vue

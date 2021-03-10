@@ -1,11 +1,16 @@
 const firebase_tools = require("firebase-tools");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const sgMail = require('@sendgrid/mail');
 const adminCredentials = require("./adminCredentials.json");
+
+// SENDGRID
+const sgMail = require('@sendgrid/mail');
 const { SENDGRID_API_KEY } = require("./sendgrid.json");
+
+// ALGOLIA
 const algoliasearch = require('algoliasearch')
-const { APP_SID, ADMIN_API_KEY } = require('./algoliaCreds.json')
+const { APP_SID, ADMIN_API_KEY } = require('./algoliaCreds.json');
+
 const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY);
 
 admin.initializeApp({
@@ -71,7 +76,7 @@ exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/ro
   console.log("change.after =", change.after); // leave it, as it can potentially help a lot with debugging
   const { classID, disconnectID } = context.params;
   return firestore.doc(`/classes/${classID}/participants/${disconnectID}`).delete();
-})
+});
 
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already
   return `
@@ -344,6 +349,28 @@ exports.sendEmailToPerson = functions.https.onCall(({ title, contentHTML, emailO
     title,
     contentHTML
   ); 
+});
+
+exports.notifyEveryoneAboutGlobalMessage = functions.https.onCall(async () => {
+  const snapshotOfAllUsers = await firestore.collection("users").get(); 
+  let currentBatch = firestore.batch(); 
+  let sizeOfCurrentBatch = 0; 
+  const batchRequests = []; 
+  snapshotOfAllUsers.forEach(doc => {
+    const user = doc.data(); 
+    if (sizeOfCurrentBatch === 500) {
+      batchRequests.push(currentBatch.commit());
+      currentBatch = firestore.batch(); 
+      sizeOfCurrentBatch = 0; 
+    }
+    currentBatch.update(
+      firestore.doc(`users/${user.uid}`),
+      { numOfUnreadGlobalMsgs: admin.firestore.FieldValue.increment(1) }
+    );
+  });
+  batchRequests.push(currentBatch.commit()); // process the last batch 
+  console.log("incrementing `numOfUnreadGlobalMsgs` for each user...");
+  return Promise.all(batchRequests); 
 });
 
 exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
