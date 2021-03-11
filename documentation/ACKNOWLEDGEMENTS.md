@@ -76,7 +76,7 @@ The internet:
 Special inspirations:
    - Pre-project: ExplainEverything, KhanAcademy, Quora, The Number Devil, Surely You're Joking Mr Feynman
    - (2017) Dr and vivid snow: a sight exists that can cure all diseases of the heart
-   - (2018) Chelsea: why isn't there a web platform where students can help each other by drawing on a whiteboard?
+   - (2018) C. why isn't there a web platform where students can help each other by drawing on a whiteboard?
    - (2019) Charlie, Discord and Dota: there is something magical about open voice channels
    - (2020) Joe and Closer: save the world, even if it's for selfish cause, even if kindness is mere hypocrisy, because if someone's life is better because of that, then that is more real than anything. 
 
