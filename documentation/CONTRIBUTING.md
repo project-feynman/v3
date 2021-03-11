@@ -1,4 +1,5 @@
 # CONTRIBUTING.md
+NOTE: if you get mysterious errors with npm install, try using node version 10.10.0!
 
 ## Get Started
 The App uses secret API keys, which we cannot share for open source contributors. 
