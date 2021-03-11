@@ -32,7 +32,7 @@
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="secondary">mdi-content-save</v-icon>Convert to silent animation
+              <v-icon left color="secondary">mdi-content-save</v-icon>Save board to library
             </v-list-item>
           </template>
           
