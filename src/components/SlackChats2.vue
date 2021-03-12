@@ -7,14 +7,14 @@
           :content="numOfUnreadGlobalMsgs"
           right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
         >
-          <v-icon class="mr-2">mdi-world</v-icon> Global Chat
+          <v-icon class="mr-2">mdi-earth</v-icon> Global Chat
         </v-badge>
       </v-list-item>
       
       <v-list-item @click="currentChatRoomID = 'NEW_MESSAGE'">
         <v-icon class="mr-2">mdi-plus</v-icon> New Chat
       </v-list-item>
-    
+  
       <v-list-item v-for="chatRoom in myChatRooms" :key="chatRoom.id"
         @click="currentChatRoomID = chatRoom.id"
       >   
@@ -69,7 +69,10 @@
           @created="resetGlobalUnreadCountToZero()"
           v-slot="{ allMessages }"
         >
-          <GroupChatListOfMessages :allMessages="allMessages"/>
+          <GroupChatListOfMessages 
+            :allMessages="allMessages"
+            :chatWindowHeight="GRAND_CHAT_WINDOW_HEIGHT"
+          />
         </RenderlessListenToGlobalMessages>
 
          <!-- Type a new global message -->
@@ -87,12 +90,16 @@
       </template>
 
       <template v-else>
-        <RenderlessListenToMessages 
+        <RenderlessListenToMessages
           :chatRoomID="currentChatRoomID"
+          :key="currentChatRoomID"
           @created="resetUnreadCountToZero(currentChatRoomID)"
         >
           <template v-slot="{ allMessages }">
-            <GroupChatListOfMessages :allMessages="allMessages"/>
+            <GroupChatListOfMessages 
+              :allMessages="allMessages"
+              :chatWindowHeight="GRAND_CHAT_WINDOW_HEIGHT"
+            />
           </template>
         </RenderlessListenToMessages>
 
@@ -143,7 +150,8 @@ export default {
       allInvitees: [],
       roomName: "",
       newlyTypedMessage: "",
-      newlyTypedGlobalMessage: ""
+      newlyTypedGlobalMessage: "",
+      GRAND_CHAT_WINDOW_HEIGHT: 275
     };
   },
   computed: {

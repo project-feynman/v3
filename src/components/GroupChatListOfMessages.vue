@@ -1,5 +1,5 @@
 <template>
-   <v-list style="min-height: 20px; max-height: 135px" class="overflow-y-auto">
+   <v-list :style="`height: ${chatWindowHeight}px`" class="overflow-y-auto">
     <v-list-item v-for="(message, i) in allMessages" :key="message.id" :ref="i === allMessages.length - 1 ? 'NewestMessage' : ''"
       dense
       class="px-1"
@@ -16,6 +16,10 @@ export default {
   props: {
     allMessages: {
       type: Array,
+      required: true
+    },
+    chatWindowHeight: {
+      type: Number,
       required: true
     }
   },
