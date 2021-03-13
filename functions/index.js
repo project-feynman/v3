@@ -83,7 +83,7 @@ function getEmailBody (explDoc, classId, postId) { // assumes .data() has been c
     <h3>${explDoc.title}</h3>
     <p>${explDoc.description ? explDoc.description : "" }</p>
     <img src="${explDoc.thumbnail ? explDoc.thumbnail : "" }"></img>
-    <a href="https://explain.mit.edu/class/${classId}/questions/${postId}">Click here to view.</a>
+    <a href="https://explain.mit.edu/forum/${classId}/${postId}">Click here to view.</a>
   `; 
 }
 
