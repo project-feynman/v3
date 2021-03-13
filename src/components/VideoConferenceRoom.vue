@@ -119,13 +119,14 @@
                 mdi-video
               </v-icon>
 
+              <!-- Deprecate or choose a new color -->
               <v-icon v-if="client.isMusicPlaying" color="cyan">
                 mdi-music-clef-treble
               </v-icon>
-              <v-icon v-if="client.isViewingLibrary" color="purple">
+              <v-icon v-if="client.isViewingLibrary" color="yellow darken-3">
                 mdi-bookshelf
               </v-icon>
-              <v-icon v-if="client.isViewingForum" color="yellow darken-3">
+              <v-icon v-if="client.isViewingForum" color="cyan">
                 mdi-forum
               </v-icon>
          

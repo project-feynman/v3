@@ -1,8 +1,5 @@
 import Vue from "vue";
 import Router from "vue-router";
-import store from "@/store.js"; 
-import firebase from "firebase/app";
-import "firebase/auth";
 
 Vue.use(Router);
 

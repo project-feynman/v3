@@ -4,7 +4,7 @@
   <div style="height: 100%">
     <MyParticipantDocUpdater
       :classID="classID"
-      :roomID="roomID"
+      :roomID="tableID"
     />
 
     <!-- Elevation ranges from 0 to 24 -->
@@ -26,7 +26,7 @@
             :content="numOfUnreadGlobalMsgs"
             top left color="info" overlap style="z-index: 1;"
           >
-            <v-list-item-avatar @click="isTechSupportPopupOpen = true"  
+            <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
               class="ma-0" style="cursor: pointer;" tile width="47" height="42"
             >
               <img src="/logo.png">
@@ -34,13 +34,30 @@
           </v-badge>
 
           <!-- Have the app overview, updates, news, as well as the chats -->
-          <v-dialog v-model="isTechSupportPopupOpen" width="700">
+          <v-dialog v-model="isAppOverviewPopupOpen" width="700">
+            <MapleMusicPlayer
+              :incrementToToggleMusic="incrementToToggleMusic"
+              @music-fetched="incrementToToggleMusic += 1"
+            /> 
             <v-card>
               <v-card-title>App Overview</v-card-title>
               <v-card-text>
                 <SlackChats2/>
                 <br>
-                If you're interested in Explain,
+                Every Friday evening, an update will be deployed to fix bugs and build new features. 
+                If the update changes the UI in major ways, a global announcement will be made. 
+                <br>
+                <br>
+
+                Besides from quality improvements, the Spring 2021 roadmap includes: 
+                <ol>
+                  <li>Visual Forum: help each other by drawing and talking asynchronously</li>
+                  <li>Area Chats: find study partners who you didn't know before</li> 
+                  <li>Open Library: organize the saved explanations from everyone</li>
+                </ol>
+
+                <br>
+                If you think Explain can truly solve problems for students and instructors,
                 consider exploring the source code on <a href="https://github.com/project-feynman/explain-mit" target="_blank">Github</a>
               </v-card-text>
               <v-card-actions>
@@ -157,15 +174,15 @@
           It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
        -->
       <ParticularOpenSpace 
-        :sectionID="$route.params.section_id"
-        :key="$route.params.section_id"
+        :sectionID="areaID"
+        :key="areaID"
       /> 
     </v-navigation-drawer>
 
     <v-main>
       <RealtimeRoom 
-        :roomID="$route.params.room_id" 
-        :key="$route.params.room_id"
+        :roomID="tableID" 
+        :key="tableID"
       />
     </v-main>
   </div>
@@ -193,11 +210,20 @@ import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue";
 import RealtimeRoom from "@/pages/RealtimeRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
+import MapleMusicPlayer from "@/components/MapleMusicPlayer.vue"; 
 
 export default {
   name: "ClassPageLayout",
   props: {
     classID: {
+      type: String,
+      required: true
+    },
+    areaID: {
+      type: String,
+      required: true
+    },
+    tableID: {
       type: String,
       required: true
     }
@@ -215,6 +241,7 @@ export default {
     AllOpenSpaces,
     VisualForum,
     MyParticipantDocUpdater,
+    MapleMusicPlayer,
     ParticularOpenSpace,
     RealtimeRoom,
     SlackChats2
@@ -226,8 +253,8 @@ export default {
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
-    isTechSupportPopupOpen: false
-    // isHelpPopupOpen: false
+    isAppOverviewPopupOpen: false,
+    incrementToToggleMusic: 0
   }),
   computed: {
     ...mapState([
@@ -240,9 +267,6 @@ export default {
     ...mapGetters([
       "numOfUnreadGlobalMsgs"
     ]),
-    // note: these properties are not reactive, but I assume they will be re-rendered and therefore updated 
-    // due to <router-view :key="$route.params.class_id> in App.vue
-    roomID () { return this.$route.params.room_id; },
     currentClass () {
       for (const mitClass of this.user.enrolledClasses) {
         if (mitClass.id === this.classID) {

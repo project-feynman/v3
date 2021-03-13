@@ -1,8 +1,10 @@
 <template>
   <v-app>    
-    <ClassPageLayout v-if="user && $route.params.class_id"
-      :classID="$route.params.class_id"
-      :key="'force-rerender-if-class-id-changes' + $route.params.class_id"
+    <ClassPageLayout v-if="user && classID && areaID && tableID"
+      :classID="classID"
+      :areaID="areaID"
+      :tableID="tableID"
+      :key="'force-rerender-if-class-id-changes' + classID"
     /> 
 
     <!-- Camera/Mic permission errors -->
@@ -120,6 +122,9 @@ export default {
       "participants",
     ]),
     sessionID () { return this.$store.state.session.currentID },
+    classID () { return this.$route.params.class_id; },
+    areaID () { return this.$route.params.section_id; },
+    tableID () {return this.$route.params.room_id; }
   },
   async created () {
     /** 

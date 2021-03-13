@@ -174,7 +174,9 @@ export default {
   },
   methods: {
     async addInvitee ({ firstName }) {
-      this.possibleUsers = await this.$_getCollection(db.collection("users").where("firstName", "==", firstName));
+      this.possibleUsers = await this.$_getCollection(
+        db.collection("users").where("firstName", "==", firstName)
+      );
     },
     createNewChatRoom () {
       let roomName = ""; 
