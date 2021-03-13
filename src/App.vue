@@ -120,6 +120,7 @@ export default {
       "user",
       "CallObject",
       "participants",
+      "isViewingForum"
     ]),
     sessionID () { return this.$store.state.session.currentID },
     classID () { return this.$route.params.class_id; },
@@ -160,8 +161,15 @@ export default {
         await this.$store.dispatch("listenToUserDoc", { uid: user.uid });
         this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
         // redirect to most recent class
-        const { class_id, section_id, room_id } = this.$route.params; 
-        if (!(class_id && section_id && room_id)) {
+        const { class_id, section_id, room_id, question_id } = this.$route.params; 
+        // check if the user should be redirected to the visual forum via <RedirectToForumQuestion/>
+        if (question_id) {
+          const { classID } = this; 
+          this.$router.push(`/class/${classID}/section/${classID}/room/${classID}`); 
+          this.$store.commit("SET_IS_VIEWING_FORUM", true);
+          this.$store.commit("SET_CURRENTLY_SELECTED_QUESTION_ID", question_id);
+        }
+        else if (!(class_id && section_id && room_id)) {
           const { mostRecentClassID } = this.$store.state.user; 
           this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
         }

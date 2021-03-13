@@ -35,7 +35,7 @@
 
           <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isAppOverviewPopupOpen" width="700">
-            <MapleMusicPlayer
+            <MapleMusicPlayer v-if="isAppOverviewPopupOpen"
               :incrementToToggleMusic="incrementToToggleMusic"
               @music-fetched="incrementToToggleMusic += 1"
             /> 
@@ -125,7 +125,7 @@
               </v-toolbar>
 
               <!--
-                Without isViewingForum, the VisualForum does not get destroyed 
+                Without v-if="isViewingForum", the VisualForum does not get destroyed 
                 even if the popup closes
               -->
               <VisualForum v-if="isViewingForum"/>

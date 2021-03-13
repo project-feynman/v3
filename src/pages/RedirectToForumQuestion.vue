@@ -15,11 +15,7 @@ export default {
     }
   },
   created () {
-    const { classID, questionID } = this; 
-    this.$store.commit("SET_IS_VIEWING_FORUM", true); 
-    this.$store.commit("SET_CURRENTLY_SELECTED_QUESTION_ID", questionID);
-    
-    this.$router.push(`/class/${classID}/section/${classID}/room/${classID}`); 
-  }
+      // This component, in fact, never will get rendered because we never use <router-view/> 
+    }
 };
 </script>
