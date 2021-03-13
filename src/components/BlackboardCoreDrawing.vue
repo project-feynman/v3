@@ -603,7 +603,7 @@ export default {
   z-index: 2;
   /* Position relative is necessary for some reason */
   position: relative; 
-  touch-action: pan-x pan-y;
+  /* touch-action: pan-x pan-y; */
 }
 .back-canvas {
   position: absolute;
@@ -612,6 +612,6 @@ export default {
   z-index: 0;
   display: block;
   background-color: rgb(46, 49, 49);
-  touch-action: pan-x pan-y;
+  /* touch-action: pan-x pan-y; */
 }
 </style>
