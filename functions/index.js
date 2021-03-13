@@ -367,6 +367,7 @@ exports.notifyEveryoneAboutGlobalMessage = functions.https.onCall(async () => {
       firestore.doc(`users/${user.uid}`),
       { numOfUnreadGlobalMsgs: admin.firestore.FieldValue.increment(1) }
     );
+    sizeOfCurrentBatch += 1; 
   });
   batchRequests.push(currentBatch.commit()); // process the last batch 
   console.log("incrementing `numOfUnreadGlobalMsgs` for each user...");
