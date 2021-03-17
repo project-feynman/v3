@@ -243,8 +243,8 @@ export default {
 
       this.$store.commit("SET_USER", {
         uid: getRandomId(),
-        firstName: "Anonymous",
-        lastName: `Beaver ${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
+        firstName: "Beaver",
+        lastName: `${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
         email: "", // empty string to distinguish it from signed in accounts
         enrolledClasses: [exampleClass],
         emailOnNewQuestion: [],
