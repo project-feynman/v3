@@ -34,21 +34,16 @@
             } 
           },
           options: {
-            threshold: 0.5 
+            threshold: 0.7
           }
         }"> 
-          <template v-if="strokesArray.length === 0 || isLoading">
-            <!-- PLACEHOLDER -->
-            <div style="width: 100%; height: 500px;">
-
+          <template v-if="strokesArray.length === 0">
+            <!-- A blank placeholder, otherwise the intersection block would have height 0 i.e always trigger -->
+            <div style="width: 100%; height: 500px; background-color: rgb(46, 49, 49)">
+              <div class="overlay-item" v-if="isLoading">
+                <v-progress-circular :indeterminate="true" size="50" color="cyan"/>
+              </div>
             </div>
-            <!-- <v-img :src="expl.thumbnail || 'https://miro.medium.com/max/4406/1*KjJ8jkkARDfxSsgD2AykwA.png'" :aspect-ratio="16/9" data-qa="expl-thumbnail"/>
-            <div v-if="expl.hasStrokes" @click="handlePlayClick(fetchStrokes)" class="overlay-item">
-              <v-progress-circular v-if="isLoading" :indeterminate="true" size="50" color="orange"/>
-              <v-btn v-else large dark>
-                <v-icon>mdi-play</v-icon>
-              </v-btn>
-            </div> -->
           </template>
           <DoodleVideo v-else-if="expl.audioUrl"
             :strokesArray="strokesArray"
