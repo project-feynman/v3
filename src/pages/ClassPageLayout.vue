@@ -137,7 +137,7 @@
             :value="isViewingLibrary" 
             @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
             persistent
-            width="70vw"
+            width="95vw"
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
