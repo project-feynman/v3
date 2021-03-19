@@ -1,12 +1,12 @@
 <template>
   <div style="display: flex">
-    <div style="width: 300px;">
+    <div style="width: 300px; max-height: 80vh" class="overflow-y-auto">
      <TheSideDrawerGroupByFolders v-if="mitClass"
         @post-was-clicked="postID => $store.commit('SET_CURRENTLY_SELECTED_LIBRARY_POST_ID', postID)"
       /> 
     </div>
     <!-- `flex-grow` lets the video take the remaining available space, see https://stackoverflow.com/questions/37745051/make-div-fill-remaining-horizontal-space-in-flexbox -->
-    <div style="flex-grow: 1">
+    <div style="flex-grow: 1; max-height: 80vh" class="overflow-y-auto">
       <!-- TODO: inject the expl_prop into here  -->
       <ClassPageSeePost v-if="currentlySelectedLibraryPostID"
         :postID="currentlySelectedLibraryPostID"
