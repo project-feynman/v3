@@ -6,23 +6,33 @@
     width="98vw"
     id="birds-eye-view-popup"
   >
-    <!-- <v-toolbar dark fixed>
+    <v-toolbar dark fixed>
       <v-btn icon dark @click="$emit('input', false)">
         <v-icon>mdi-close</v-icon>
       </v-btn>
-    </v-toolbar> -->
+    </v-toolbar>
 
-    <v-card> 
+    <v-card :key="fractionOfPopupEachBoardTakes"> 
       <v-card-title>
-        There are {{ blackboardIDsWithPeopleOn.length }} active blackboards
+        Bird's-eye View
       </v-card-title>
 
       <v-card-subtitle>
-        Warning: might lag if there are too many blackboard strokes
+        There are {{ blackboardIDsWithPeopleOn.length }} active blackboards
       </v-card-subtitle>
 
+      <v-btn @click="fractionOfPopupEachBoardTakes = 25">
+        Small 
+      </v-btn>
+      <v-btn @click="fractionOfPopupEachBoardTakes = 50">
+        Medium
+      </v-btn>
+      <v-btn @click="fractionOfPopupEachBoardTakes = 95">
+        Large
+      </v-btn>
+
       <!-- Without `position: relative` the interection might not work -->
-      <div :style="`height: ${getPopupWidth()}; display: flex; justify-content: space-evenly; flex-flow: wrap;`">
+      <div :style="`height: ${getPopupWidth}; display: flex; justify-content: space-evenly; flex-flow: wrap;`">
         <template v-for="boardID of blackboardIDsWithPeopleOn">
           <RenderlessSyncStrokes
             :strokesRef="getStrokesRefFrom(boardID)"
@@ -43,24 +53,37 @@
                 } 
               },
               options: {
-                threshold: 0.3 // intersection triggers when 0.5 i.e. 50% of blackboard is in view 
+                threshold: 0.6 // intersection triggers when 0.5 i.e. 50% of blackboard is in view 
               }
             }"> 
-              <template v-if="isLoading">
+              <h3>{{ getRoomName(boardID) }}</h3>
+              <div style="display: flex" class="mb-1">
+                <p v-for="participant in boardIdToParticipants[boardID]" :key="participant.id" class="mr-2 mb-0">
+                  {{ participant.firstName + " " + participant.lastName }}
+                </p>
+                <p v-if="strokesArray" class="mb-0">({{ strokesArray.length }} strokes)</p>
+              </div>
+              <template v-if="!strokesArray">
                 <!-- PLACEHOLDER so intersection doesn't autofire for a dimensionless element -->
-                <div :style="`width: ${getPopupWidth()}px; height: ${getPopupWidth()}px;`">
-                  <!-- Loading... -->
-                  <p v-if="isLoading">Loading...</p>
-                  <p v-else>Scroll down to load</p>
+                <div :style="`
+                  position: relative;
+                  width: ${getPopupWidth}px; 
+                  height: ${getPopupWidth}px; 
+                  background-color: rgb(46, 49, 49)
+                `
+                ">
+                  <div class="overlay-item" v-if="isLoading">
+                    <v-progress-circular :indeterminate="true" size="50" color="cyan"/>
+                  </div>
                 </div>
               </template>
-
-              <h2>{{ getRoomName(boardID) }}</h2>
-              <BlackboardCoreDisplay v-if="! isLoading"
-                :strokesArray="strokesArray"
-                :width="getPopupWidth()"
-                :height="getPopupWidth()"
-              />
+              <template v-else>
+                <BlackboardCoreDisplay 
+                  :strokesArray="strokesArray"
+                  :width="getPopupWidth"
+                  :height="getPopupWidth"
+                />
+              </template>
 
               <div style="margin-right: 30px"></div>
             </div>
@@ -97,8 +120,35 @@ export default {
   },
   data () {
     return {
-      isPopupOpen: false
+      isPopupOpen: false,
+      blackboardIDsWithPeopleOn: [],
+      boardIdToParticipants: {},
+      fractionOfPopupEachBoardTakes: 50
     };
+  },
+  watch: {
+    participants: {
+      immediate: true,
+      // TODO: debounce so that it doesn't overreact to participants changing colors, for example
+      handler () {
+        console.log('participants changed'); 
+        const boardIdToParticipants = {}; 
+        // determine which blackboards are active
+        const boardIDs = new Set(); 
+        for (const p of this.participants) {
+          if (p.currentBoardID) { // sometimes, perhaps because on an updated version, the participant doc doesn't have activeBoardID on
+            boardIDs.add(p.currentBoardID); 
+            if (boardIdToParticipants[p.currentBoardID]) {
+              boardIdToParticipants[p.currentBoardID].push(p)
+            } else {
+              boardIdToParticipants[p.currentBoardID] = [p]; 
+            }
+          }
+        }
+        this.blackboardIDsWithPeopleOn = Array.from(boardIDs);
+        this.boardIdToParticipants = boardIdToParticipants; 
+      }
+    }
   },
   computed: {
     currentAreaRooms () { return this.$store.state.currentAreaRooms; },
@@ -108,14 +158,13 @@ export default {
         ...this.currentAreaRooms.filter(room => ! room.isCommonRoom)
       ];
     },
-    blackboardIDsWithPeopleOn () {
-      const boardIDs = new Set(); 
-      for (const participant of this.participants) {
-        if (participant.currentBoardID) { // sometimes, perhaps because on an updated version, the participant doc doesn't have activeBoardID on
-          boardIDs.add(participant.currentBoardID); 
-        }
-      }
-      return Array.from(boardIDs);
+    getPopupWidth () {
+      const separationBetweenBoards = 10; 
+      const deltaBetweenPopupAndFullWidth = 50; 
+      // for iOS Safari compatibility 
+      // see https://stackoverflow.com/questions/58390221/js-safari-on-ios-how-to-get-viewport-scale-property
+      // const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      return (window.innerWidth * this.fractionOfPopupEachBoardTakes / 100) - separationBetweenBoards - deltaBetweenPopupAndFullWidth; 
     }
   },
   methods: {
@@ -128,17 +177,22 @@ export default {
         }
       }
     },
-    getPopupWidth () {
-      const separationBetweenBoards = 10; 
-      const deltaBetweenPopupAndFullWidth = 50; 
-      // for iOS Safari compatibility 
-      // see https://stackoverflow.com/questions/58390221/js-safari-on-ios-how-to-get-viewport-scale-property
-      // const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-      return (window.innerWidth * 0.5) - separationBetweenBoards - deltaBetweenPopupAndFullWidth; 
-    },
     getStrokesRefFrom (boardID) {
       return db.collection(`/classes/${this.$route.params.class_id}/blackboards/${boardID}/strokes`);
     }
   }
 }
 </script>
+
+<style scoped>
+.overlay-item {
+  position: absolute; 
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>
