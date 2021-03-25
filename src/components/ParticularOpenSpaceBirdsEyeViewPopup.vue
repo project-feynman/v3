@@ -25,11 +25,11 @@
         Small 
       </v-btn>
       <v-btn @click="fractionOfPopupEachBoardTakes = 50">
-        Medium
-      </v-btn>
-      <v-btn @click="fractionOfPopupEachBoardTakes = 95">
         Large
       </v-btn>
+      <!-- <v-btn @click="fractionOfPopupEachBoardTakes = 95">
+        Large
+      </v-btn> -->
 
       <!-- Without `position: relative` the interection might not work -->
       <div :style="`height: ${getPopupWidth}; display: flex; justify-content: space-evenly; flex-flow: wrap;`">
