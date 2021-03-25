@@ -125,7 +125,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
-import { getRandomId, getCurrentTimeInEST } from "@/helpers.js";
+import { getRandomId } from "@/helpers.js";
 import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 
 export default {
@@ -401,7 +401,7 @@ export default {
         audioBlob: this.blackboard.audioBlob,
         backgroundImageBlob,
         html: "",
-        title: this.explTitle ? this.explTitle : `Untitled (${getCurrentTimeInEST().toDateString()})`, 
+        title: this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleDateString()})`, 
         tags: [],
         explRef: db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`)
       });

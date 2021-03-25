@@ -73,8 +73,8 @@
 
       <template v-else>
         <!-- <div class="d-flex flex-column mb-6"> -->
-          <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
-          <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
+        <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
+        <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
         <div style="max-height: 80vh; overflow-x: hidden" class="overflow-y-auto">
           <ClassPageSeePost 
             :postID="currentlySelectedQuestionID"
@@ -96,8 +96,8 @@ import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue"; 
 import ClassPageSeePost from "@/components/ClassPageSeePost.vue"; 
 import ClassPageSeeQuestion from "@/pages/ClassPageSeeQuestion.vue"; 
-import moment from "moment"
 import { mapState } from "vuex"; 
+import { displayDate } from "@/helpers.js";
 
 export default {
   mixins: [
@@ -209,8 +209,7 @@ export default {
       }
     },
     getDate (date) {
-      const theDate = moment(date);
-      return theDate.format('MMM D, YYYY');
+      return displayDate(date); 
     }
   }
 };

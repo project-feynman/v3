@@ -53,11 +53,8 @@
 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
-import firebase from "firebase/app";
-import "firebase/firestore";
 import { mapState } from "vuex";
-import moment from "moment";
-import { getCurrentTimeInEST } from "@/helpers.js";
+import { displayDate } from "@/helpers.js"; 
 
 export default {
   props: {
@@ -110,12 +107,12 @@ export default {
     const { class_id } = this.$route.params; 
     const collectionRef = db.collection(`classes/${class_id}/${this.collection}`);
     await collectionRef.orderBy("date", "asc").limit(1).get().then(querySnapshot => {
-      if (! querySnapshot.empty) {
+      if (!querySnapshot.empty) {
         dateOfOldestPost = new Date(querySnapshot.docs[0].data().date);
       } 
     });
     // defensive programming
-    if (! dateOfOldestPost) return; 
+    if (!dateOfOldestPost) return; 
 
     let folderStartDate = dateOfOldestPost; 
     // note that the exact time of the day is lost and rounded off with this operation
@@ -126,8 +123,8 @@ export default {
     // only generate folders in between if it's not empty
     // danger, start date and end date can mutate each other
     let counter = 1; 
-    const dateObjectOfToday = getCurrentTimeInEST();
-
+    const monthDayFormat = { month: "long", day: "2-digit" };
+    const dateObjectOfToday = new Date();
     const weekFolders = []; 
     while (folderStartDate < dateObjectOfToday) {
       const startCopy = new Date(folderStartDate.toDateString());
@@ -141,7 +138,7 @@ export default {
           .then(querySnapshot => {
             if (! querySnapshot.empty) {
               weekFolders.push({
-                name: "Week " + moment(startCopy).format("MMM D") + " - " + moment(endCopy).format("MMM D"),
+                name: "Week " + displayDate(startCopy, monthDayFormat) + " - " + displayDate(endCopy, monthDayFormat),
                 start: startCopy,
                 end: endCopy,
                 isLoading: false,
@@ -215,8 +212,7 @@ export default {
       // return this.mitClass.tags[folderIndex].name;
     },
     getDate (post) {
-      const theDate = moment(post.date);
-      return theDate.format('MMM D, YYYY');
+      return displayDate(post.date); 
     }
   }
 }
