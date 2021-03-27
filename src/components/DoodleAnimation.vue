@@ -55,10 +55,7 @@
 </template>
 
 <script>
-// TODO: 
-// add a loading spinner while fetching the strokes
-// show the entire picture up front
-// optimize the slider to be fast and responsive
+// TODO: optimize the slider to be fast and responsive
 
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
