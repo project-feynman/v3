@@ -402,7 +402,7 @@ export default {
         backgroundImageBlob,
         html: "",
         title: this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleDateString()})`, 
-        tags: [],
+        tags: [this.$route.params.class_id], // i.e. save it to the default folder of the class library
         explRef: db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`)
       });
       

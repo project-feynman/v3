@@ -67,7 +67,7 @@
         <!-- it's not to distinguish between a library post and a forum question, confusingly -->
         <ExplanationCreate 
           explType="post"
-          @expl-upload-started="({ questionTitle, questionDescriptionHTML, questionID }) => sendEmailNotificationsToClass(questionTitle, questionDescriptionHTML, questionID, $route.params.class_id)"
+          @expl-upload-started="({ questionTitle, questionDescriptionHTML, questionID }) => sendEmailNotifsToClass(questionTitle, questionDescriptionHTML, questionID, $route.params.class_id)"
         />
       </template>
 
@@ -191,19 +191,21 @@ export default {
         }); 
       }
     },
-    async sendEmailNotificationsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
+    async sendEmailNotifsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
       const usersToEmail = await this.$_getCollection(db.collection("users").where("emailOnNewQuestion", "array-contains", classID));
       for (const user of usersToEmail) {
         console.log("emailing ", user.email);
         const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
         sendEmailToPerson({ 
           emailOfPerson: user.email, 
-          title: questionTitle, 
+          title: "[explain.mit.edu] Someone asked a question", 
           contentHTML: `
+            <h3>${questionTitle}</h3>
             <p>${questionDescriptionHTML}</p>
             <br>
             <br>
-            To view drawings, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>
+            <p>To see the full question, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a></p>
+            <p>To unsubscribe, click the same link above but go to "Email Settings"</p>
           `,
         });
       }

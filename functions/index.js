@@ -120,7 +120,7 @@ exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/quest
       if (currParticipant.uid !== newReply.creator.uid && currParticipant.emailOnNewReply.includes(classId)) { 
         sendEmail(
           currParticipant.email, 
-          `${newReply.creator.firstName} replied in a ${newReply.mitClass.name} post you engaged in`,
+          `[explain.mit.edu] ${newReply.creator.firstName} replied in ${newReply.mitClass.name}`,
           getEmailBody(newReply, classId, postId)
         );
       }
@@ -302,7 +302,7 @@ exports.saveExpl = functions
       },
       order: parseInt(mitClass.maxOrder + 1) || 1,
       mitClass,
-      tags: [],
+      tags: [mitClass.id],
       duration: 0,
       hasStrokes: strokesArray.length > 0,
       aspectRatio: boardSnapshot.data().isVertical ? PDF_RATIO : PPT_SLIDE_RATIO

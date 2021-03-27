@@ -153,7 +153,12 @@ export default {
       // TODO: parallelize with Promise.all() or use getRandomId(); 
       const classDoc = await db.collection("classes").add({
         name: this.nameOfNewCommunity,
-        description: this.descriptionOfNewCommunity
+        description: this.descriptionOfNewCommunity,
+        tags: [{
+          name: "Default Class Folder",
+          id: this.$route.params.class_id,
+          parent: null 
+        }]
       });
 
       const ref = db.doc(`classes/${classDoc.id}`);
