@@ -300,10 +300,6 @@ export default {
       if ((!this.mitClass || this.folders.length !== 0) && !force) return;
       this.folders.length = 0;
 
-      if (!this.mitClass.tags) {
-        await this.createNewFolder("Default folder"); 
-        await this.$store.dispatch("fetchClass", this.mitClass.id); 
-      }
       for (const tag of this.mitClass.tags) {
         const tag_object = {
           id: tag.id,
