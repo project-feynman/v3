@@ -32,7 +32,7 @@
         <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="secondary">mdi-content-save</v-icon>Convert to silent animation
+              <v-icon left color="secondary">mdi-content-save</v-icon>Save board to library
             </v-list-item>
           </template>
           
@@ -125,7 +125,7 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
-import { getRandomId, getCurrentTimeInEST } from "@/helpers.js";
+import { getRandomId } from "@/helpers.js";
 import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 
 export default {
@@ -401,8 +401,8 @@ export default {
         audioBlob: this.blackboard.audioBlob,
         backgroundImageBlob,
         html: "",
-        title: this.explTitle ? this.explTitle : `Untitled (${getCurrentTimeInEST().toDateString()})`, 
-        tags: [],
+        title: this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleDateString()})`, 
+        tags: [this.$route.params.class_id], // i.e. save it to the default folder of the class library
         explRef: db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`)
       });
       

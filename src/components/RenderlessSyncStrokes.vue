@@ -11,7 +11,7 @@ export default {
   ],
   data () {
     return {
-      strokesArray: [],
+      strokesArray: null,
       imageBlob: null,
       isLoading: false,
       unsubscribeStrokesListener: null
@@ -35,7 +35,6 @@ export default {
       }       
       try {
         await Promise.all(promises);
-        this.isLoading = false;
       } catch (error) {
         this.$root.$emit("show-snackbar", "Error: cannot fetch video strokes and/or image")
       }

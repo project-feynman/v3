@@ -10,10 +10,15 @@
     <div class="d-flex animation-controls">
       <v-col cols="auto" class="px-1">
         <v-btn @click="pausePlay()" color="#333" text>
-          <v-icon>{{ isPlaying ? 'mdi-pause' : 'mdi-play' }}</v-icon>
+          <v-icon v-if="!isInReplayMode">
+            mdi-replay
+          </v-icon>
+          <v-icon v-else>
+            {{ isPlaying ? 'mdi-pause' : 'mdi-play' }}
+          </v-icon>
         </v-btn>
       </v-col>
-      <v-col class="px-1">
+      <v-col v-if="isInReplayMode" class="px-1">
         <v-slider
           color="#333"
           track-color="rgba(0,0,0,0.30)"
@@ -50,6 +55,8 @@
 </template>
 
 <script>
+// TODO: optimize the slider to be fast and responsive
+
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
 import _ from "lodash";
@@ -75,9 +82,11 @@ export default {
     CanvasDrawMixin,
     DoodleFullscreenMixin
   ],
+  // LOADED (just shows the final frame), MID_PROGRESS (shows according to the current index), ENDED
   data: () => ({
+    isInReplayMode: false, // when in replay mode, you can slide the slider. The beginning (show full picture) and the end (show full picture) are equivalent and handled the same way
     currentFrameIdx: -1,
-    isPlaying: true,
+    isPlaying: false,
     isSeeking: false,
     playbackSpeed: 1,
     speedOptions: [{text:'.25x', value: 0.25},{text:'0.5x', value: 0.5},{text:'1x', value: 1},{text:'2x', value: 2},{text:'4x', value: 4}],
@@ -106,7 +115,7 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
     await this.handleResize();
-    this.playAnimation();
+    // this.playAnimation();
     // if I put the below line before playAnimation then the debounce will mess up the await 
     this.handleResize = _.debounce(this.handleResize, 100); 
     window.addEventListener("resize", this.handleResize);
@@ -120,9 +129,10 @@ export default {
         this.resizeVideo();
         this.$_rescaleCanvas();
         await this.renderBackground();
-        this.syncAnimation();
+        if (this.isInReplayMode) this.syncAnimation();
+        else this.$_drawStrokesInstantly(); 
         resolve();
-      })
+      });
     },
     /** 
      * Maximizes the size of the animation canvas while preserving aspect ratio
@@ -180,7 +190,10 @@ export default {
     },
     pausePlay () {
       this.isPlaying = !this.isPlaying;
-      if (this.isPlaying) this.playAnimation();
+      if (this.isPlaying) {
+        this.isInReplayMode = true; 
+        this.playAnimation();
+      } 
     },
     speedChange (newSpeed) {
       this.playbackSpeed = newSpeed;
@@ -193,7 +206,7 @@ export default {
       let playBreak = false; // If the current instance of player breaks out of loop before completion
       await this.syncAnimation();
       for (let i = this.currentFrameIdx+1; i < this.allFrames.length; i++) {
-        if (!this.isPlaying || this.isSeeking || this.playerCount!==currentPlayer) {
+        if (!this.isPlaying || this.isSeeking || this.playerCount !== currentPlayer) {
           // Break the loops i.e., don't play the current instance when paused, or user is seeking, 
           // or when the instance of the player is not the latest
           playBreak = true;

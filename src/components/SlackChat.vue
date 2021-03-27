@@ -31,9 +31,11 @@
     <div>
       <GroupChatListOfMessages v-if="chatType === 'AREA' && areaMessages"
         :allMessages="areaMessages"
+        :chatWindowHeight="MINI_CHAT_WINDOW_HEIGHT"
       />
       <GroupChatListOfMessages v-else-if="chatType === 'ROOM' && roomMessages"
         :allMessages="roomMessages"
+        :chatWindowHeight="MINI_CHAT_WINDOW_HEIGHT"
       />
       <!-- Type a new message -->
       <div style="display: flex; align-items: center;" class="px-1 pb-1 pt-0">
@@ -74,7 +76,8 @@ export default {
       roomMessages: null,
       unsubscribeAreaMessagesListener: null,
       unsubscribeRoomMessagesListener: null,
-      newlyTypedMessage: ""
+      newlyTypedMessage: "",
+      MINI_CHAT_WINDOW_HEIGHT: 135
     };
   },
   computed: {

@@ -90,6 +90,7 @@ import db from "@/database.js";
 import firebase from "firebase/app";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue"; 
+import { getRandomId } from "@/helpers.js"; 
 
 export default {
   props: {
@@ -151,32 +152,38 @@ export default {
       }
 
       // TODO: parallelize with Promise.all() or use getRandomId(); 
-      const classDoc = await db.collection("classes").add({
+      const newClassID = getRandomId(); 
+      const classDoc = await db.doc(`/classes/${newClassID}`).set({
         name: this.nameOfNewCommunity,
-        description: this.descriptionOfNewCommunity
+        description: this.descriptionOfNewCommunity,
+        tags: [{
+          name: "Default Class Folder",
+          id: newClassID,
+          parent: null 
+        }]
       });
 
-      const ref = db.doc(`classes/${classDoc.id}`);
+      const ref = db.doc(`classes/${newClassID}`);
       await Promise.all([
         this.userRef.update({
           enrolledClasses: firebase.firestore.FieldValue.arrayUnion({
-            id: classDoc.id,
+            id: newClassID,
             name: this.nameOfNewCommunity,
             description: this.descriptionOfNewCommunity
           }),
-          emailOnNewQuestion: firebase.firestore.FieldValue.arrayUnion(classDoc.id),
-          emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(classDoc.id)
+          emailOnNewQuestion: firebase.firestore.FieldValue.arrayUnion(newClassID),
+          emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(newClassID)
         }),
         // TODO: not DRY, was copied and pasted from ClassPageLayout
-        ref.collection("roomTypes").doc(classDoc.id).set({ 
-          id: classDoc.id, name: "Lounge Area" 
+        ref.collection("roomTypes").doc(newClassID).set({ 
+          id: newClassID, name: "Lounge Area" 
         }),
-        ref.collection("rooms").doc(classDoc.id).set({
+        ref.collection("rooms").doc(newClassID).set({
           isCommonRoom: true,
-          roomTypeID: classDoc.id,
-          blackboards: [classDoc.id]
+          roomTypeID: newClassID,
+          blackboards: [newClassID]
         }),
-        ref.collection("blackboards").doc(classDoc.id).set({
+        ref.collection("blackboards").doc(newClassID).set({
 
         })
       ]);
@@ -189,7 +196,7 @@ export default {
       this.descriptionOfNewCommunity = ""; 
 
       // automatic redirect
-      this.$router.push(`/class/${classDoc.id}/section/${classDoc.id}/room/${classDoc.id}`);
+      this.$router.push(`/class/${newClassID}/section/${newClassID}/room/${newClassID}`);
     }
   }
 };

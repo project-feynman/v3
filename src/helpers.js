@@ -1,24 +1,23 @@
-export const getCurrentTimeInEST = function () {
-  // standardize to UTC
-  const d = new Date(); 
-  const ONE_MINUTE_IN_MILLISECONDS = 60 * 1000; 
-  d.setTime(d.getTime() + d.getTimezoneOffset() * ONE_MINUTE_IN_MILLISECONDS);
-  
-  // convert to EST
-  const minutesDifferenceFromUTCtoEST = -300; 
-  const estDate = new Date(d.getTime() + minutesDifferenceFromUTCtoEST * ONE_MINUTE_IN_MILLISECONDS);
-  return estDate; 
-}
-
-// what's the difference between dateString and timestamp? 
-export const displayDate = function (dateString) { 
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+/**
+ * Displays the date in the user's local time
+ * 
+ * @param {String} dateString  an ISO string
+ * @returns a human readable form of the date e.g. March 24th 5:46
+ */
+export const displayDate = function (dateString, format = {
+  month: 'long',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'utc',
+}) 
+{ 
+  const deserializedDate = new Date(dateString)
+  let currentTimeZoneOffset = deserializedDate.getTimezoneOffset() * 60000;
+  return new Date(deserializedDate - currentTimeZoneOffset).toLocaleDateString(
+    'en-US',
+    format
+  );
 } 
 
 export const getRandomId = function () {

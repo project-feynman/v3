@@ -15,7 +15,7 @@
       </v-col>
 
       <!-- Text Editor -->
-      <TextEditor @update:html="html => this.html = html" :key="changeKeyToForceReset + 1"/>
+      <TextEditor @update:html="html => this.html = html" :key="changeKeyToForceResetTextEditor"/>
       <p class="red--text">{{ messageToUser }}</p>
       
       <div v-if="user" class="d-flex align-center">
@@ -159,6 +159,7 @@ export default {
     isUploadingPost: false,
     messageToUser: "",
     changeKeyToForceReset: 0,
+    changeKeyToForceResetTextEditor: 0,
     folder: '',
     newReplyRef: null,
 
@@ -351,6 +352,7 @@ export default {
 
       // always reset state before re-rendering 
       this.changeKeyToForceReset += 1; 
+      this.changeKeyToForceResetTextEditor += 1; 
       this.decideWhereExplsAreSaved();
     }
   }

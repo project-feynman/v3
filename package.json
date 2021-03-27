@@ -13,7 +13,6 @@
     "audio-recorder-polyfill": "^0.3.6",
     "firebase": "^7.19.1",
     "lodash": "^4.17.20",
-    "moment": "^2.26.0",
     "pdfjs-dist": "^2.4.456",
     "portal-vue": "^2.1.7",
     "tiptap": "^1.29.6",

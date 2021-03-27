@@ -65,7 +65,7 @@
           <!-- More actions slot -->
           <template v-slot:more-actions-slot>
             <BaseButton v-if="currentState === RecordState.PRE_RECORD" @click="startRecording()" icon="mdi-record" color="white">
-              Record voice
+              Explain
             </BaseButton>
             <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
               Finish

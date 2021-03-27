@@ -67,14 +67,14 @@
         <!-- it's not to distinguish between a library post and a forum question, confusingly -->
         <ExplanationCreate 
           explType="post"
-          @expl-upload-started="({ questionTitle, questionDescriptionHTML, questionID }) => sendEmailNotificationsToClass(questionTitle, questionDescriptionHTML, questionID, $route.params.class_id)"
+          @expl-upload-started="({ questionTitle, questionDescriptionHTML, questionID }) => sendEmailNotifsToClass(questionTitle, questionDescriptionHTML, questionID, $route.params.class_id)"
         />
       </template>
 
       <template v-else>
         <!-- <div class="d-flex flex-column mb-6"> -->
-          <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
-          <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
+        <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
+        <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
         <div style="max-height: 80vh; overflow-x: hidden" class="overflow-y-auto">
           <ClassPageSeePost 
             :postID="currentlySelectedQuestionID"
@@ -96,8 +96,8 @@ import ExplanationCreate from "@/components/ExplanationCreate.vue";
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue"; 
 import ClassPageSeePost from "@/components/ClassPageSeePost.vue"; 
 import ClassPageSeeQuestion from "@/pages/ClassPageSeeQuestion.vue"; 
-import moment from "moment"
 import { mapState } from "vuex"; 
+import { displayDate } from "@/helpers.js";
 
 export default {
   mixins: [
@@ -191,26 +191,27 @@ export default {
         }); 
       }
     },
-    async sendEmailNotificationsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
+    async sendEmailNotifsToClass (questionTitle, questionDescriptionHTML, questionID, classID) {
       const usersToEmail = await this.$_getCollection(db.collection("users").where("emailOnNewQuestion", "array-contains", classID));
       for (const user of usersToEmail) {
         console.log("emailing ", user.email);
         const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
         sendEmailToPerson({ 
           emailOfPerson: user.email, 
-          title: questionTitle, 
+          title: "[explain.mit.edu] Someone asked a question", 
           contentHTML: `
+            <h3>${questionTitle}</h3>
             <p>${questionDescriptionHTML}</p>
             <br>
             <br>
-            To view drawings, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a>
+            <p>To see the full question, click <a href="https://explain.mit.edu/forum/${classID}/${questionID}">here</a></p>
+            <p>To unsubscribe, click the same link above but go to "Email Settings"</p>
           `,
         });
       }
     },
     getDate (date) {
-      const theDate = moment(date);
-      return theDate.format('MMM D, YYYY');
+      return displayDate(date); 
     }
   }
 };

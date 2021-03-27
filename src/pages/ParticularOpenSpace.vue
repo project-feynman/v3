@@ -242,14 +242,15 @@
                   mdi-video
                 </v-icon>
 
+                <!-- Deprecate -->
                 <v-icon v-if="p.isMusicPlaying" small color="cyan">
                   mdi-music-clef-treble
                 </v-icon>
 
-                <v-icon v-if="p.isViewingLibrary" small color="purple">
+                <v-icon v-if="p.isViewingLibrary" small color="yellow darken-3">
                   mdi-bookshelf
                 </v-icon>
-                <v-icon v-else-if="p.isViewingForum" small color="yellow darken-3">
+                <v-icon v-else-if="p.isViewingForum" small color="cyan">
                   mdi-forum
                 </v-icon>
 

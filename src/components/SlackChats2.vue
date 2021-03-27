@@ -1,10 +1,20 @@
 <template>
   <div style="display: flex;">
     <v-list max-height="400" style="overflow-y: auto; width: 200;">
+      <v-list-item @click="currentChatRoomID = 'GLOBAL_CHAT'">
+        <v-badge
+          :value="numOfUnreadGlobalMsgs"
+          :content="numOfUnreadGlobalMsgs"
+          right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
+        >
+          <v-icon class="mr-2">mdi-earth</v-icon> Global Chat
+        </v-badge>
+      </v-list-item>
+      
       <v-list-item @click="currentChatRoomID = 'NEW_MESSAGE'">
         <v-icon class="mr-2">mdi-plus</v-icon> New Chat
       </v-list-item>
-
+  
       <v-list-item v-for="chatRoom in myChatRooms" :key="chatRoom.id"
         @click="currentChatRoomID = chatRoom.id"
       >   
@@ -54,13 +64,42 @@
         <v-btn v-if="allInvitees.length > 0" @click="createNewChatRoom()">Create chat</v-btn>
       </template>
 
+      <template v-else-if="currentChatRoomID === 'GLOBAL_CHAT'">
+        <RenderlessListenToGlobalMessages 
+          @created="resetGlobalUnreadCountToZero()"
+          v-slot="{ allMessages }"
+        >
+          <GroupChatListOfMessages 
+            :allMessages="allMessages"
+            :chatWindowHeight="GRAND_CHAT_WINDOW_HEIGHT"
+          />
+        </RenderlessListenToGlobalMessages>
+
+         <!-- Type a new global message -->
+        <div style="display: flex; align-items: center;" class="px-1 pb-1 pt-0">
+          <v-text-field 
+            @keyup.enter="sendGlobalMessage()" 
+            placeholder="Type message here..." 
+            v-model="newlyTypedGlobalMessage" 
+            hide-details dense style="font-size: 0.9rem;"
+          />
+          <v-btn fab icon @click="sendGlobalMessage()" color="info" x-small>
+            <v-icon>mdi-send</v-icon>
+          </v-btn>
+        </div>
+      </template>
+
       <template v-else>
-        <RenderlessListenToMessages 
+        <RenderlessListenToMessages
           :chatRoomID="currentChatRoomID"
+          :key="currentChatRoomID"
           @created="resetUnreadCountToZero(currentChatRoomID)"
         >
           <template v-slot="{ allMessages }">
-            <GroupChatListOfMessages :allMessages="allMessages"/>
+            <GroupChatListOfMessages 
+              :allMessages="allMessages"
+              :chatWindowHeight="GRAND_CHAT_WINDOW_HEIGHT"
+            />
           </template>
         </RenderlessListenToMessages>
 
@@ -82,13 +121,15 @@
 </template>
 
 <script>
-import { mapState } from "vuex"; 
+import { mapState, mapGetters } from "vuex"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import db from "@/database.js";
 import GroupChatListOfMessages from "@/components/GroupChatListOfMessages.vue"; 
 import RenderlessListenToMessages from "@/components/RenderlessListenToMessages.vue";
+import RenderlessListenToGlobalMessages from "@/components/RenderlessListenToGlobalMessages.vue";
 import firebase from "firebase/app";
 import "firebase/firestore"; 
+import "firebase/functions";
 
 export default {
   mixins: [
@@ -96,23 +137,29 @@ export default {
   ],
   components: {
     GroupChatListOfMessages,
-    RenderlessListenToMessages
+    RenderlessListenToMessages,
+    RenderlessListenToGlobalMessages
   },
   data () {
     return {
       myChatRooms: [],
       unsubChatsListener: null,
-      currentChatRoomID: "NEW_MESSAGE",
+      currentChatRoomID: "GLOBAL_CHAT",
       currentInviteeFirstName: "",
       possibleUsers: [],
       allInvitees: [],
       roomName: "",
-      newlyTypedMessage: ""
+      newlyTypedMessage: "",
+      newlyTypedGlobalMessage: "",
+      GRAND_CHAT_WINDOW_HEIGHT: 275
     };
   },
   computed: {
     ...mapState([
       "user"
+    ]),
+    ...mapGetters([
+      "numOfUnreadGlobalMsgs"
     ])
   },
   created () {
@@ -127,7 +174,9 @@ export default {
   },
   methods: {
     async addInvitee ({ firstName }) {
-      this.possibleUsers = await this.$_getCollection(db.collection("users").where("firstName", "==", firstName));
+      this.possibleUsers = await this.$_getCollection(
+        db.collection("users").where("firstName", "==", firstName)
+      );
     },
     createNewChatRoom () {
       let roomName = ""; 
@@ -143,6 +192,11 @@ export default {
       updatePayload["numOfUnreadMsgsInChatRoom:" + chatRoomID] = 0; 
       db.doc(`users/${this.user.uid}`).update(updatePayload); 
     },  
+    resetGlobalUnreadCountToZero () {
+      db.doc(`users/${this.user.uid}`).update({
+        numOfUnreadGlobalMsgs: 0
+      });
+    },
     async sendMessage ({ chatRoomID }) {
       db.collection(`chatRooms/${chatRoomID}/messages`).add({
         author: {
@@ -165,6 +219,23 @@ export default {
           db.doc(`users/${uid}`).update(updatePayload); 
         }
       }
+    },
+    async sendGlobalMessage () {
+      db.collection("globalMessages").add({
+        author: {
+          firstName: this.user.firstName,
+          lastName: this.user.lastName,
+          uid: this.user.uid
+        },
+        content: this.newlyTypedGlobalMessage,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      this.newlyTypedGlobalMessage = ""; 
+
+      const notifyEveryoneAboutGlobalMessage = firebase.functions().httpsCallable("notifyEveryoneAboutGlobalMessage");
+      console.log("notifying everyone...");
+      await notifyEveryoneAboutGlobalMessage(); 
+      this.$root.$emit("show-snackbar", "Sent global message.");
     }
   }
 };

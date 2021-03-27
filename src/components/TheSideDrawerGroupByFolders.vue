@@ -1,128 +1,142 @@
 <template>
-  <!-- :value prop controls which item is currently active -->
-  <v-treeview
-    :items="folders"
-    :search="search"
-    :open.sync="openedFoldersIndices"
-    :load-children="(folder) => fetchRelevantPosts(folder)"
-    :key="incrementKeyToDestroy"
-    open-on-click
-    :active="[currentlySelectedLibraryPostID]"
-    color="accent"
-  >
-    <template v-slot:prepend="{ item, open }">
-      <v-icon v-if="item.isFolder">
-        {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-      </v-icon> 
-      <v-icon v-else :class="(collection === 'questions' && ! item.hasReplies) ? 'unanswered' : ''">
-        mdi-file-document
-      </v-icon>
-    </template>
+  <!-- :value prop controls which item is highlighted on the UI -->
+  <div>
+    <v-treeview
+      :items="folders"
+      :search="search"
+      :open.sync="openedFoldersIndices"
+      :load-children="(folder) => fetchRelevantPosts(folder)"
+      :key="incrementKeyToDestroy"
+      open-on-click
+      :active="[currentlySelectedLibraryPostID]"
+      color="accent"
+      dense
+    >
+      <template v-slot:prepend="{ item, open }">
+        <v-icon v-if="item.isFolder">
+          {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+        </v-icon> 
+        <v-icon v-else :class="(collection === 'questions' && ! item.hasReplies) ? 'unanswered' : ''">
+          mdi-file-document
+        </v-icon>
+      </template>
 
-    <template v-slot:label="{ item }">
-      <drop class="drop" @drop="handleDrop(item, ...arguments)">
-        <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
-          <!-- Document -->
-          <v-list-item v-if="!item.isFolder" 
-            @click="$emit('post-was-clicked', item.id)" 
-            dense
-          >
-            <v-list-item-subtitle :class="item.id === currentlySelectedLibraryPostID ? 'accent--text' : ''" v-text="item.name"/>
-          </v-list-item>
-
-          <!-- Folder -->
-          <v-list-item v-else dense>
-            <v-list-item-subtitle v-text="item.name"/>
-          </v-list-item>
-        </drag>
-      </drop>
-    </template>
-
-    <template v-slot:append="{ item }">
-      <v-menu v-if="item.isFolder" bottom right>
-        <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on">
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
-        </template>
-
-        <v-list>
-          <v-list-item>
-            <BasePopupButton actionName="Rename Folder" 
-              :inputFields="['New Name']"
-              @action-do="payload => renameTag(payload, item)"
+      <template v-slot:label="{ item }">
+        <drop class="drop" @drop="handleDrop(item, ...arguments)">
+          <drag class="drag" :key="item.id" :transfer-data="{ data: item }">
+            <!-- Document -->
+            <v-list-item v-if="!item.isFolder" 
+              @click="$emit('post-was-clicked', item.id)" 
+              dense
             >
-              <template v-slot:activator-button="{ on }">
-                <v-btn v-on="on" color="accent" text>Rename</v-btn>
-              </template>
-            </BasePopupButton>
-          </v-list-item>
-          <!-- Ability to create a sub-folder -->
-          <v-list-item>
-            <BasePopupButton actionName="Create Sub-folder"
-              :inputFields="['Folder name']"
-              @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
-            >
-              <template v-slot:activator-button="{ on }">
-                  <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
-              </template>
-            </BasePopupButton>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      
-      <!-- Different dropdown options for pages (refactor later) -->
-      <v-menu v-else-if="user.email" bottom right>
-        <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on">
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
-        </template>
+              <v-list-item-subtitle :class="item.id === currentlySelectedLibraryPostID ? 'accent--text' : ''" v-text="item.name"/>
+            </v-list-item>
 
-        <v-list>
-          <v-list-item>
-            <BasePopupButton>
-              <template v-slot:activator-button="{ on }">
-                <v-btn v-on="on" color="secondary" text>
-                  MOVE
-                </v-btn>
-              </template>
-              <template v-slot:popup-content="{ closePopup }">
-                <h1>Select a folder</h1>
-                <template v-if="mitClass">
-                  <div class="text-center mt-5">
-                    <v-chip v-for="tagName in mitClass.tags" 
-                      @click="movePostToFolder(item, tagName.id, closePopup)"
-                      :key="tagName.id" 
-                      color="accent" 
-                      class="ma-2">
-                      {{ tagName.name }}
-                    </v-chip>
-                  </div>
+            <!-- Folder -->
+            <v-list-item v-else dense>
+              <v-list-item-subtitle v-text="item.name"/>
+            </v-list-item>
+          </drag>
+        </drop>
+      </template>
+
+      <template v-slot:append="{ item }">
+        <v-menu v-if="item.isFolder" bottom right>
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item>
+              <BasePopupButton actionName="Rename Folder" 
+                :inputFields="['New Name']"
+                @action-do="payload => renameTag(payload, item)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" color="accent" text>Rename</v-btn>
                 </template>
-              </template>
-            </BasePopupButton>
-          </v-list-item>
-          <v-list-item>
-            <BasePopupButton actionName="Rename Post" 
-              :inputFields="['New Name']"
-              @action-do="(payload) => renamePost(payload, item)"
-            >
-              <template v-slot:activator-button="{ on }">
-                <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
-              </template>
-            </BasePopupButton>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </template>
-  </v-treeview>
+              </BasePopupButton>
+            </v-list-item>
+            <!-- Ability to create a sub-folder -->
+            <v-list-item>
+              <BasePopupButton actionName="Create Sub-folder"
+                :inputFields="['Folder name']"
+                @action-do="({ 'Folder name': name }) => createNewFolder(name, item.id)"
+              >
+                <template v-slot:activator-button="{ on }">
+                    <v-btn v-on="on" color="accent">Create Sub-folder</v-btn>
+                </template>
+              </BasePopupButton>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        
+        <!-- Different dropdown options for pages (refactor later) -->
+        <v-menu v-else-if="user.email" bottom right>
+          <template v-slot:activator="{ on }">
+            <v-btn icon v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item>
+              <BasePopupButton>
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" color="secondary" text>
+                    MOVE
+                  </v-btn>
+                </template>
+                <template v-slot:popup-content="{ closePopup }">
+                  <h1>Select a folder</h1>
+                  <template v-if="mitClass">
+                    <div class="text-center mt-5">
+                      <v-chip v-for="tagName in mitClass.tags" 
+                        @click="movePostToFolder(item, tagName.id, closePopup)"
+                        :key="tagName.id" 
+                        color="accent" 
+                        class="ma-2">
+                        {{ tagName.name }}
+                      </v-chip>
+                    </div>
+                  </template>
+                </template>
+              </BasePopupButton>
+            </v-list-item>
+            <v-list-item>
+              <BasePopupButton actionName="Rename Post" 
+                :inputFields="['New Name']"
+                @action-do="(payload) => renamePost(payload, item)"
+              >
+                <template v-slot:activator-button="{ on }">
+                  <v-btn v-on="on" color="secondary" text>RENAME</v-btn>
+                </template>
+              </BasePopupButton>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </template>
+    </v-treeview>
+
+    <!-- Create a root folder  -->
+    <BasePopupButton actionName="Create a New Folder" 
+      :inputFields="['Folder Name']"
+      @action-do="({ 'Folder Name': name }) => createNewFolder(name)"
+    >
+      <template v-slot:activator-button="{ on }">
+        <BaseButton :on="on" color="accent" icon="mdi-folder-plus">Create Folder</BaseButton>
+      </template>
+    </BasePopupButton>
+  </div>
 </template>
 
 <script>
 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
+import BaseButton from "@/components/BaseButton.vue"; 
 import { displayDate, getRandomId } from "@/helpers.js";
 import db from "@/database.js";
 import firebase from "firebase/app";
@@ -142,6 +156,7 @@ export default {
   ],
   components: {
     BasePopupButton,
+    BaseButton,
     Drag,
     Drop
   },
@@ -178,19 +193,21 @@ export default {
       this.$root.$emit("show-snackbar", "Successfully renamed the post.");
     },
     async renameTag (payload, tag) {
-      const i = this.mitClass.tags.findIndex(({ name }) => name ==tag.name);
-      this.mitClass.tags[i].name=payload['New Name']
-      db.doc(`classes/${this.$route.params.class_id}`).update({
-        tags: this.mitClass.tags,
+      const i = this.mitClass.tags.findIndex(({ name }) => name == tag.name);
+      this.mitClass.tags[i].name = payload['New Name']; 
+      await db.doc(`classes/${this.$route.params.class_id}`).update({
+        tags: this.mitClass.tags
       });
+      await this.$store.dispatch("fetchClass", this.mitClass.id); 
       this.groupPosts(true);
+      this.incrementKeyToDestroy += 1; 
       this.$root.$emit("show-snackbar", "Successfully renamed the folder.");
     },
-    openThisFolder (folder) {
-      if ( !this.openedFoldersIndices.includes(folder) ) {
-        this.openedFoldersIndices.push(folder);
-      }
-    },
+    // openThisFolder (folder) {
+    //   if ( !this.openedFoldersIndices.includes(folder) ) {
+    //     this.openedFoldersIndices.push(folder);
+    //   }
+    // },
     /**
      * Create a new folder in the class archive via Firestore. 
      * 
@@ -199,17 +216,21 @@ export default {
      *                 If "", a root folder is created.
      */
     async createNewFolder (name, parentID = null) {
-      const newFolder = {
-        id: getRandomId(),
-        name,
-        parent: parentID
-      };
-      await db.doc(`classes/${this.mitClass.id}`).update({
-        tags: firebase.firestore.FieldValue.arrayUnion(newFolder)
+      return new Promise(async (resolve) => {
+        const newFolder = {
+          id: getRandomId(),
+          name,
+          parent: parentID
+        };
+        await db.doc(`classes/${this.mitClass.id}`).update({
+          tags: firebase.firestore.FieldValue.arrayUnion(newFolder)
+        });
+        await this.$store.dispatch("fetchClass", this.mitClass.id); 
+        this.groupPosts(true);
+        this.incrementKeyToDestroy += 1; 
+        this.$root.$emit("show-snackbar", "Successfully created a new folder.");
+        resolve();
       });
-      this.mitClass.tags.push(newFolder)
-      this.groupPosts(true);
-      this.$root.$emit("show-snackbar", "Successfully created a new folder.");
     },
     async handleDrop (droppedAt, item) {
       // item.highlight = false; For better UX
@@ -264,25 +285,21 @@ export default {
         await postRef.update({
           tags: tag, // a file can only exist in one folder at the time (for now)
           order: order
-        }).then(function() {
+        }).then(() => {
           msg = "Successfully moved post to the specified folder";
-        }).catch(function(error) {
-          msg = "Something went wrong while moving the post";
+          this.incrementKeyToDestroy += 1; 
+        }).catch((error) => {
+          msg = error;
         });
       }
       this.$root.$emit("show-snackbar", msg);
     },
-    groupPosts (force = false) {
+    async groupPosts (force = false) {
       // force: (Boolean) forces the tag tree to update even if it was already filled. We don't want ot force every single time user switches between
       // but only when a new folder is added (cause we are not listening to mitClass (but not sure if fixing that would solve the problem))
-      if ((!this.mitClass || this.folders.length!==0) && !force) return;
+      if ((!this.mitClass || this.folders.length !== 0) && !force) return;
       this.folders.length = 0;
-      this.fetchPostsWithNoTags(); 
 
-      if (! this.mitClass.tags) {
-        // this.createNewFolder("Default folder"); 
-        return; 
-      }
       for (const tag of this.mitClass.tags) {
         const tag_object = {
           id: tag.id,

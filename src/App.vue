@@ -1,8 +1,10 @@
 <template>
   <v-app>    
-    <ClassPageLayout v-if="user && $route.params.class_id"
-      :classID="$route.params.class_id"
-      :key="'force-rerender-if-class-id-changes' + $route.params.class_id"
+    <ClassPageLayout v-if="user && classID && areaID && tableID"
+      :classID="classID"
+      :areaID="areaID"
+      :tableID="tableID"
+      :key="'force-rerender-if-class-id-changes' + classID"
     /> 
 
     <!-- Camera/Mic permission errors -->
@@ -118,8 +120,12 @@ export default {
       "user",
       "CallObject",
       "participants",
+      "isViewingForum"
     ]),
     sessionID () { return this.$store.state.session.currentID },
+    classID () { return this.$route.params.class_id; },
+    areaID () { return this.$route.params.section_id; },
+    tableID () {return this.$route.params.room_id; }
   },
   async created () {
     /** 
@@ -137,17 +143,17 @@ export default {
       * `user === null` unhelpfully can both mean the user is not logged in or hasn't been initialized
     **/
     this.unsubscribeAuthListener = firebase.auth().onAuthStateChanged(async (user) => {
-      console.log("authStateChanged, user =", user); 
+      // console.log("authStateChanged, user =", user); 
       if (!user) {
         await firebase.auth().signInAnonymously(); 
         this.initializeTutorialDemo();
-        console.log("user is not logged in", this.unsubscribeAuthListener);
+        // console.log("user is not logged in", this.unsubscribeAuthListener);
         this.unsubscribeAuthListener(); 
       }
       
       else if (user.isAnonymous) {
         this.initializeTutorialDemo(); 
-        console.log("user is anonymous =");
+        // console.log("user is anonymous =");
         this.unsubscribeAuthListener(); 
       } 
 
@@ -155,13 +161,20 @@ export default {
         await this.$store.dispatch("listenToUserDoc", { uid: user.uid });
         this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
         // redirect to most recent class
-        const { class_id, section_id, room_id } = this.$route.params; 
-        if (!(class_id && section_id && room_id)) {
+        const { class_id, section_id, room_id, question_id } = this.$route.params; 
+        // check if the user should be redirected to the visual forum via <RedirectToForumQuestion/>
+        if (question_id) {
+          const { classID } = this; 
+          this.$router.push(`/class/${classID}/section/${classID}/room/${classID}`); 
+          this.$store.commit("SET_IS_VIEWING_FORUM", true);
+          this.$store.commit("SET_CURRENTLY_SELECTED_QUESTION_ID", question_id);
+        }
+        else if (!(class_id && section_id && room_id)) {
           const { mostRecentClassID } = this.$store.state.user; 
           this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
         }
 
-        console.log("user is signed in, will unsubscribe");
+        // console.log("user is signed in, will unsubscribe");
         this.unsubscribeAuthListener(); 
       }
 
@@ -230,8 +243,8 @@ export default {
 
       this.$store.commit("SET_USER", {
         uid: getRandomId(),
-        firstName: "Anonymous",
-        lastName: `Beaver ${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
+        firstName: "Beaver",
+        lastName: `${Math.floor(Math.random() * 90 + 10)}`, // e.g. Beaver 27,
         email: "", // empty string to distinguish it from signed in accounts
         enrolledClasses: [exampleClass],
         emailOnNewQuestion: [],

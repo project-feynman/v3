@@ -84,6 +84,9 @@ export default new Vuex.Store({
     },
     numOfUnreadMsgsInTable: state => {
       return state.user["numOfUnreadMsgsInTable:" + router.currentRoute.params.room_id] || 0;
+    },
+    numOfUnreadGlobalMsgs: state => {
+      return state.user["numOfUnreadGlobalMsgs"] || 0;
     }
   },
   mutations: {

@@ -1,11 +1,16 @@
 const firebase_tools = require("firebase-tools");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-const sgMail = require('@sendgrid/mail');
 const adminCredentials = require("./adminCredentials.json");
+
+// SENDGRID
+const sgMail = require('@sendgrid/mail');
 const { SENDGRID_API_KEY } = require("./sendgrid.json");
+
+// ALGOLIA
 const algoliasearch = require('algoliasearch')
-const { APP_SID, ADMIN_API_KEY } = require('./algoliaCreds.json')
+const { APP_SID, ADMIN_API_KEY } = require('./algoliaCreds.json');
+
 const algoliaClient = algoliasearch(APP_SID, ADMIN_API_KEY);
 
 admin.initializeApp({
@@ -23,7 +28,7 @@ function sendEmail (to, subject, body) {
       to,
       subject,
       html: body,
-      from: "feynman.team@gmail.com", // "no-reply@explain.mit.edu"
+      from: "eltonlin@mit.edu", // "no-reply@explain.mit.edu" // feynman.team@gmail.com
       text: subject,
     });
   } catch (reason) {
@@ -71,35 +76,37 @@ exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/ro
   console.log("change.after =", change.after); // leave it, as it can potentially help a lot with debugging
   const { classID, disconnectID } = context.params;
   return firestore.doc(`/classes/${classID}/participants/${disconnectID}`).delete();
-})
+});
 
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already
   return `
     <h3>${explDoc.title}</h3>
     <p>${explDoc.description ? explDoc.description : "" }</p>
     <img src="${explDoc.thumbnail ? explDoc.thumbnail : "" }"></img>
-    <a href="https://explain.mit.edu/class/${classId}/questions/${postId}">Click here to view.</a>
+    <a href="https://explain.mit.edu/forum/${classId}/${postId}">Click here to view.</a>
   `; 
 }
 
-exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/questions/{postId}").onCreate(async (newPostDoc, context) => {
-  const { classId, postId } = context.params;
-  const classmatesRef = firestore.collection("users").where("emailOnNewPost", "array-contains", classId);
-  const classmatesDocs = await classmatesRef.get();
-  classmatesDocs.forEach((classmateDoc) => {
-    const newPost = newPostDoc.data();
-    const classmate = classmateDoc.data();
-    if (newPost.creator.email === classmate.email) { 
-      return; 
-    }
-    console.log("sending to classmate =", classmate.email);
-    sendEmail(
-      classmate.email, 
-      `${newPost.creator.firstName} posted in ${newPost.mitClass.name}`,
-      getEmailBody(newPost, classId, postId)
-    );
-  });
-});
+
+// CURRENTLY NOT USED BECAUSE THE FRONTEND HANDLES THE EMAIL LOGIC
+// exports.emailOnNewPost = functions.firestore.document("/classes/{classId}/questions/{postId}").onCreate(async (newPostDoc, context) => {
+//   const { classId, postId } = context.params;
+//   const classmatesRef = firestore.collection("users").where("emailOnNewPost", "array-contains", classId);
+//   const classmatesDocs = await classmatesRef.get();
+//   classmatesDocs.forEach((classmateDoc) => {
+//     const newPost = newPostDoc.data();
+//     const classmate = classmateDoc.data();
+//     if (newPost.creator.email === classmate.email) { 
+//       return; 
+//     }
+//     console.log("sending to classmate =", classmate.email);
+//     sendEmail(
+//       classmate.email, 
+//       `${newPost.creator.firstName} posted in ${newPost.mitClass.name}`,
+//       getEmailBody(newPost, classId, postId)
+//     );
+//   });
+// });
 
 exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/questions/{postId}/explanations/{explanationId}").onCreate(async (newReplyDoc, context) => {
   const { classId, postId } = context.params;
@@ -113,7 +120,7 @@ exports.emailOnNewReply = functions.firestore.document("/classes/{classId}/quest
       if (currParticipant.uid !== newReply.creator.uid && currParticipant.emailOnNewReply.includes(classId)) { 
         sendEmail(
           currParticipant.email, 
-          `${newReply.creator.firstName} replied in a ${newReply.mitClass.name} post you engaged in`,
+          `[explain.mit.edu] ${newReply.creator.firstName} replied in ${newReply.mitClass.name}`,
           getEmailBody(newReply, classId, postId)
         );
       }
@@ -127,22 +134,23 @@ const emailSummaryFrequencyEnum = {
   DAILY: "Daily"
 }
 
-async function sendEmailToSubscribers (context, frequency) { // frequency can be `Weekly` or `Daily` 
-  const classesRef = firestore.collection("classes");
-  const classesDocs = await classesRef.get();
-  classesDocs.forEach(async (mitClassDoc) => {
-    const subscribedUsersQuery = firestore.collection("users").where(`email${frequency}Summary`, "array-contains", mitClassDoc.id);
-    const subscribedUsersDocs = await subscribedUsersQuery.get();
-    const summaryEmail = await createDailySummaryEmail(frequency);
-    subscribedUsersDocs.forEach((userDoc) => {
-      sendEmail(
-        userDoc.data().email, 
-        `${mitClassDoc.data().name}'s ${frequency} Summary from ExplainMIT`,
-        summaryEmail
-      );  
-    });
-  }); 
-}
+// TODO: currently not used
+// async function sendEmailToSubscribers (context, frequency) { // frequency can be `Weekly` or `Daily` 
+//   const classesRef = firestore.collection("classes");
+//   const classesDocs = await classesRef.get();
+//   classesDocs.forEach(async (mitClassDoc) => {
+//     const subscribedUsersQuery = firestore.collection("users").where(`email${frequency}Summary`, "array-contains", mitClassDoc.id);
+//     const subscribedUsersDocs = await subscribedUsersQuery.get();
+//     const summaryEmail = await createDailySummaryEmail(frequency);
+//     subscribedUsersDocs.forEach((userDoc) => {
+//       sendEmail(
+//         userDoc.data().email, 
+//         `${mitClassDoc.data().name}'s ${frequency} Summary from ExplainMIT`,
+//         summaryEmail
+//       );  
+//     });
+//   }); 
+// }
 
 function getYesterday () {
   const d = new Date();
@@ -294,7 +302,7 @@ exports.saveExpl = functions
       },
       order: parseInt(mitClass.maxOrder + 1) || 1,
       mitClass,
-      tags: [],
+      tags: [mitClass.id],
       duration: 0,
       hasStrokes: strokesArray.length > 0,
       aspectRatio: boardSnapshot.data().isVertical ? PDF_RATIO : PPT_SLIDE_RATIO
@@ -346,19 +354,27 @@ exports.sendEmailToPerson = functions.https.onCall(({ title, contentHTML, emailO
   ); 
 });
 
-exports.sendEmailToCoreTeam = functions.https.onCall((data, context) => {
-  const ourEmails = [
-    "eltonlin@mit.edu",
-    "wfee@mit.edu",
-    "pkafle@mit.edu"
-  ];
-  for (let email of ourEmails) {
-    sendEmail(
-      email, 
-      `New feedback from a user!`,
-      `<h1>${data.userEmail} said ${data.userFeedback}</h1>`
+exports.notifyEveryoneAboutGlobalMessage = functions.https.onCall(async () => {
+  const snapshotOfAllUsers = await firestore.collection("users").get(); 
+  let currentBatch = firestore.batch(); 
+  let sizeOfCurrentBatch = 0; 
+  const batchRequests = []; 
+  snapshotOfAllUsers.forEach(doc => {
+    const user = doc.data(); 
+    if (sizeOfCurrentBatch === 500) {
+      batchRequests.push(currentBatch.commit());
+      currentBatch = firestore.batch(); 
+      sizeOfCurrentBatch = 0; 
+    }
+    currentBatch.update(
+      firestore.doc(`users/${user.uid}`),
+      { numOfUnreadGlobalMsgs: admin.firestore.FieldValue.increment(1) }
     );
-  }
+    sizeOfCurrentBatch += 1; 
+  });
+  batchRequests.push(currentBatch.commit()); // process the last batch 
+  console.log("incrementing `numOfUnreadGlobalMsgs` for each user...");
+  return Promise.all(batchRequests); 
 });
 
 // exports.onNewPost = functions.firestore.document('/classes/{classId}/{postType}/{postId}').onCreate((snap, context) => {

@@ -3,9 +3,6 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js"; 
 
 export default {
-  props: {
-    chatRoomID: ""
-  },
   mixins: [
     DatabaseHelpersMixin
   ],
@@ -19,7 +16,7 @@ export default {
     this.$emit("created");
     this.unsubMessagesListener = this.$_bindVarToDB({
       varName: "allMessages",
-      dbRef: db.collection(`chatRooms/${this.chatRoomID}/messages`).orderBy("timestamp"),
+      dbRef: db.collection("globalMessages").orderBy("timestamp"),
       component: this
     }); 
   },

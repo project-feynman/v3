@@ -87,8 +87,8 @@ export default {
     }
   },
   methods: {
-    // probably need a lot more arguments here
     sendEmailToExplParticipants (replyContentHTML) {
+      return; // email will already be sent by Cloud Functions
       console.log("participants =", this.originalPost.participants);
       for (const participant of this.originalPost.participants) {
         // get their email and participant
@@ -110,7 +110,6 @@ export default {
           }
         });
       }
-      // how to do these things
     }
   }
 }
