@@ -77,7 +77,7 @@ export default new Vuex.Store({
   },
   getters: {
     isAdmin: state => {
-      return SUPER_USER_EMAILS.includes(state.user.email) || ["staff", "affiliate"].includes(state.user.kind); 
+      return SUPER_USER_EMAILS.includes(state.user.email) || ["staff", "affiliate", "pioneer", "engineer"].includes(state.user.kind); 
     },
     numOfUnreadMsgsInArea: state => {
       return state.user["numOfUnreadMsgsInArea:" + router.currentRoute.params.section_id] || 0;
