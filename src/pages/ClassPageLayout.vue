@@ -13,7 +13,7 @@
     <v-navigation-drawer v-model="isShowingDrawer" 
       app 
       class="elevation-24" 
-      width="240" 
+      width="270" 
       disable-resize-watcher
       mobile-breakpoint="0"
       touchless 
@@ -24,7 +24,7 @@
           <v-badge 
             :value="numOfUnreadGlobalMsgs"
             :content="numOfUnreadGlobalMsgs"
-            top left color="info" overlap style="z-index: 1;"
+            top left color="secondary" overlap style="z-index: 1;"
           >
             <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
               class="ma-0" style="cursor: pointer;" tile width="47" height="42"
@@ -92,11 +92,11 @@
           <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
             class="white--text px-3 my-1" color="grey" block
           >
-            <v-icon class="mr-1" style="font-size: 0.85rem; opacity: 0.9;">mdi-forum</v-icon>
+            <v-icon class="mr-1" style="font-size: 1rem; opacity: 0.9;">mdi-draw</v-icon>
             <v-badge v-if="mitClass"
               :value="mitClass.numOfUnansweredQuestions"
               :content="mitClass.numOfUnansweredQuestions"
-              right color="info" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
+              right color="secondary" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
             >
               <div style="font-size: 0.9rem; 
                           font-weight: 500; 
@@ -144,7 +144,7 @@
                 class="white--text grey px-3 my-1" block
               >
                 <!-- purple--text -->
-                <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-bookshelf</v-icon>
+                <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-folder</v-icon>
                 <div style="font-size: 0.9rem; 
                       font-weight: 500; 
                       color: '#424242'; 
@@ -158,7 +158,7 @@
                 <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
-                <h2>LIBRARY</h2>
+                <h2>OPEN LIBRARY</h2>
               </v-toolbar>
 
               <ClassLibrary v-if="isViewingLibrary" />

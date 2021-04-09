@@ -163,7 +163,7 @@
                   <!-- The board switch button looks like a blackboard itself -->
                   <span class="`d-inline-block text-truncate" 
                       :style="
-                        `color: ${currentTool.color}; width: 40px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
+                        `color: ${currentTool.color}; width: 38px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
                   ">
                     {{ getBoardNumberFromID(currentBoardID) }}
                   </span>

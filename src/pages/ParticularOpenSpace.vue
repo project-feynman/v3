@@ -155,10 +155,7 @@
     <!-- should just v-for="room in rooms" 
       When you are feeling down, either you have to suddenly do something courageous,
       or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
-    -->
-
-    <!-- Selectable *should* allow v-chip to be copied and pasted, but it's currently not doing anything -->
-  
+    -->  
   <!-- active-class="active-blackboard accent--text" -->
   <!-- ROOMS -->
   <v-list>
@@ -166,24 +163,23 @@
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       dense
       color="accent"
-      selectable
       class="pl-0 pr-0 mx-2 mb-0"
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
           <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
-            <div v-if="room.name" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
+            <v-icon style="opacity: 90%" class="mr-1">
+              mdi-atom
+            </v-icon>
+
+            <div v-if="room.name" class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase">
               {{ room.name }}
             </div>
 
-            <div v-else-if="room.isCommonRoom" class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              common table
-            </div>
-                  
-            <div v-else class="font-weight-normal py-2 pl-1" style="font-size: 0.95em">
-              table {{ i - 1 }}
-            </div>
+            <div v-else class="font-weight-medium py-2" style="padding-top: 1px;">
+              {{ i - 1 }}
+            </div> 
 
             <v-spacer/>
 
@@ -209,18 +205,18 @@
       <!-- CASE 2: I'm not in the room-->
       <template v-else>
         <div style="width: 100%;">
-          <div class="d-flex pl-2 py-1 mt-2 font-weight-normal text--secondary" style="font-size: 0.95em; opacity: 90%">
-            <div v-if="room.name">
+          <div class="d-flex py-1 pl-1 mt-2 font-weight-medium" style="font-size: 0.95em; align-items: center;">
+            <v-icon class="mr-1" style="opacity: 80%;">
+              mdi-atom
+            </v-icon>
+
+            <div v-if="room.name" style="opacity: 55%; text-transform: lowercase; margin-top: 1px">
               {{ room.name }}
             </div>
 
-            <div v-else-if="room.isCommonRoom">
-              common table
-            </div>
-
-            <div v-else>
-              table {{ i - 1 }}
-            </div>
+            <div v-else class="py-2 grey--text darken--3" style="margin-top: 1px">
+              {{ i - 1  }}
+            </div>  
           </div>
           <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
             {{ room.status }}
@@ -228,11 +224,17 @@
 
           <div class="pr-2 pb-1 pt-1">
             <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-              style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em; opacity: 70%"
+              style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em;"
               class="text--secondary mb-1 caption"
             >
-              <div style="padding-left: 12px;">
-                {{ p.firstName + " " + p.lastName + `${p.isAdmin ? ' (staff)' : ''}`}}
+              <div style="padding-left: 22px; display: flex; align-items: center;">
+                <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
+                <v-icon v-else-if="p.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
+                <v-icon v-else-if="p.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
+                <v-icon v-else>mdi-account</v-icon>
+                <p style="padding-top: 0px; margin-bottom: 0; margin-left: 5px; ">
+                  {{ p.firstName + " " + p.lastName }}
+                </p>
               </div>
 
               <v-spacer/>
@@ -254,7 +256,7 @@
                   mdi-forum
                 </v-icon>
 
-                {{ p.currentBoardNumber }} 
+                <p class="mb-0" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
               </div>
             </div>
           </div>
@@ -262,7 +264,7 @@
       </template>
     </v-list-item> 
 
-    <v-list-item v-if="rooms.length !== 0 && rooms.length < 20" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 50%; font-size: 0.9rem;"> 
+    <v-list-item v-if="rooms.length !== 0 && rooms.length < 20" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 80%; font-size: 0.9rem;"> 
       <v-icon left color="black">mdi-plus</v-icon> new table 
     </v-list-item>
 

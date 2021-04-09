@@ -89,7 +89,7 @@ import AuthHelpers from "@/mixins/AuthHelpers.js";
 import { mapState } from "vuex"; 
 
 // TODO:
-//   - Fix ghosts: let source of truth for video conference from Daily
+//   - Fix ghosts: let source of truth for video conference from Daily (CURRENTLY WORKING ON THIS)
 //   - Introduce pioneer badges
 //   - Introduce the personal library
 

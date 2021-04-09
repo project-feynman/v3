@@ -28,7 +28,7 @@
           style="position: relative; height: max-content" 
           class="mt-1"
         >
-          <div style="display: flex; justify-content: space-between; align-items: center; height: 30px; padding-left: 12px; padding-right: 0;"
+          <div style="display: flex; justify-content: space-between; align-items: center; height: 30px; padding-left: 4px; padding-right: 0;"
             :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
               (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
               ||
@@ -36,20 +36,20 @@
             "
           >
             <div
-              style="font-weight: 400; font-size: 1em; opacity: 90%"
+              style="font-weight: 400; font-size: 1em;"
               class="text--secondary d-flex caption"
             >
               <div :class="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID] ? 
-                'caption font-weight-bold grey--text text--darken-3' : 'text--secondary'" 
-                style="font-size: 1em; align-items: center;"
+                `caption font-weight-bold text--darken-3 grey--text` : 'text--secondary'" 
+                style="font-size: 0.9em; align-items: center; display: flex; margin-left: 18px;"
               >
-                <v-icon v-if="user.kind === 'engineer'" small>mdi-wrench</v-icon>
-                <v-icon v-else-if="user.kind === 'pioneer'" small>mdi-cowboy</v-icon>
-                <v-icon v-else-if="client.isAdmin" small>mdi-account-tie</v-icon>
+                <v-icon v-if="user.kind === 'engineer'" :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small :style="`opacity: 70%;`">mdi-wrench</v-icon>
+                <v-icon v-else-if="user.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
+                <v-icon v-else-if="client.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
                 <v-icon v-else>mdi-account</v-icon>
-                <template>
+                <p :class="client.sessionID === sessionID ? 'cyan--text mb-0 ml-1 text-truncate' : 'mb-0 ml-1 text-truncate'" style="padding-top: 1px; max-width: 110px">
                   {{ client.firstName  + " " + client.lastName }} 
-                </template>
+                </p>
               </div>
             </div>
 
@@ -58,34 +58,36 @@
               <div>
                 <template v-if="connectionStatus === 'CONNECTED'">
                   <portal to="video-screenshare-hangup-buttons">
-                    <div style="display: flex; align-items: center; justify-content: space-around;" class="mt-0 mb-2">
-                      <v-btn @click.stop.prevent="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)" fab small>
-                        <v-icon v-if="isMicOn">
+                    <div style="display: flex; align-items: center; justify-content: space-around;" class="mt-0 mb-3">
+                      <v-btn @click.stop.prevent="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)" 
+                        small fab :color="`${ isMicOn ? 'cyan' : 'grey' }`"
+                      >
+                        <v-icon v-if="isMicOn" color="white">
                           mdi-microphone
                         </v-icon>
-                        <v-icon v-else color="red">
+                        <v-icon v-else>
                           mdi-microphone-off
                         </v-icon>
                       </v-btn>
 
                       <v-btn @click.prevent="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
-                        fab small
+                        fab small :color="`${ isCamOn ? 'cyan' : 'grey' }`"
                       >
-                        <v-icon v-if="isCamOn">
+                        <v-icon v-if="isCamOn" color="white">
                           mdi-video
                         </v-icon>
-                        <v-icon v-else color="grey">
+                        <v-icon v-else color="white">
                           mdi-video
                         </v-icon>
                       </v-btn>
 
                       <v-btn @click.prevent.stop="toggleScreen()" 
-                        fab small 
+                        fab small :color="`${ isSharingScreen ? 'cyan' : 'grey' }`"
                       >
-                        <v-icon v-if="isSharingScreen">
+                        <v-icon v-if="isSharingScreen" color="white">
                           mdi-monitor
                         </v-icon>
-                        <v-icon v-else color="grey">
+                        <v-icon v-else color="white">
                           mdi-monitor
                         </v-icon>
                       </v-btn>
@@ -106,8 +108,13 @@
               </div>
               <!-- End of video call buttons -->
 
+              <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
+                {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
+              </v-icon>
+
+
               <!-- Switch board dropdown -->
-              <portal-target name="right-side-of-my-participant-name" class="ml-2">
+              <portal-target name="right-side-of-my-participant-name">
 
               </portal-target>
 
@@ -122,7 +129,8 @@
             <template v-else>
               <v-spacer/>
 
-              <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" color="grey darken-3">
+              <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" 
+                :color="`${participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'grey darken-3' : 'red'}`">
                 {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
               <v-icon v-else-if="client.canHearAudio" color="green">
@@ -142,7 +150,16 @@
          
               <div
                 @click="$store.commit('SET_CURRENT_BOARD_ID', client.currentBoardID)"
-                :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-left: 5px; margin-right: 13px;`"
+                :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; 
+                         width: 38px; 
+                         height: 30px; 
+                         display: flex; 
+                         justify-content: center; 
+                         align-items: center; 
+                         background-color: rgb(62, 66, 66); 
+                         margin-left: 5px; 
+                         margin-right: 24px;
+                       `"
               >
                 {{ client.currentBoardNumber }}
               </div>
