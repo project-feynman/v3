@@ -41,7 +41,7 @@
             >
               <div :class="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID] ? 
                 `caption font-weight-bold text--darken-3 grey--text` : 'text--secondary'" 
-                style="font-size: 0.9em; align-items: center; display: flex; margin-left: 18px;"
+                style="align-items: center; display: flex; margin-left: 18px;"
               >
                 <v-icon v-if="user.kind === 'engineer'" :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small :style="`opacity: 70%;`">mdi-wrench</v-icon>
                 <v-icon v-else-if="user.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>

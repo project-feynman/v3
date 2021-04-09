@@ -169,15 +169,15 @@
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
           <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
-            <v-icon style="opacity: 90%" class="mr-1">
+            <v-icon large style="opacity: 90%" class="mr-1">
               mdi-atom
             </v-icon>
 
-            <div v-if="room.name" class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase">
+            <div v-if="room.name" class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
               {{ room.name }}
             </div>
 
-            <div v-else class="font-weight-medium py-2" style="padding-top: 1px;">
+            <div v-else class="font-weight-medium py-2">
               {{ i - 1 }}
             </div> 
 
@@ -206,15 +206,15 @@
       <template v-else>
         <div style="width: 100%;">
           <div class="d-flex py-1 pl-1 mt-2 font-weight-medium" style="font-size: 0.95em; align-items: center;">
-            <v-icon class="mr-1" style="opacity: 80%;">
+            <v-icon large class="mr-1" style="opacity: 80%;">
               mdi-atom
             </v-icon>
 
-            <div v-if="room.name" style="opacity: 55%; text-transform: lowercase; margin-top: 1px">
+            <div v-if="room.name" style="opacity: 55%; text-transform: lowercase;">
               {{ room.name }}
             </div>
 
-            <div v-else class="py-2 grey--text darken--3" style="margin-top: 1px">
+            <div v-else class="py-2 grey--text darken--3">
               {{ i - 1  }}
             </div>  
           </div>
