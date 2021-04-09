@@ -108,13 +108,15 @@
               </div>
               <!-- End of video call buttons -->
 
+              <v-spacer/> 
+
               <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
                 {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
 
 
               <!-- Switch board dropdown -->
-              <portal-target name="right-side-of-my-participant-name">
+              <portal-target name="right-side-of-my-participant-name" style="margin-left: 5px;">
 
               </portal-target>
 
