@@ -239,7 +239,7 @@
 
               <v-spacer/>
               
-              <div class="ml-2 mr-4">
+              <div class="ml-2 mr-4" style="display: flex;">
                 <v-icon v-if="p.canHearAudio" small color="green">
                   mdi-video
                 </v-icon>
@@ -256,7 +256,7 @@
                   mdi-forum
                 </v-icon>
 
-                <p class="mb-0" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
+                <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
               </div>
             </div>
           </div>
