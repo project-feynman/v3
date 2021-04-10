@@ -64,6 +64,8 @@ import { BlackboardTools, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState } from "vuex";
 import _ from "lodash";
+import { jsPDF } from "jspdf";
+
 
 export default {
   props: {
@@ -204,7 +206,7 @@ export default {
   },
   mounted () {
     this.initializeCanvas();
-    
+
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
@@ -217,7 +219,7 @@ export default {
       this.ctx = this.canvas.getContext("2d");
       this.bgCtx = this.bgCanvas.getContext("2d");
 
-      this.resizeBlackboard(); // resizeBlackboard also re-renders everything
+      this.resizeBlackboard(); // rsizeBlackboard also re-renders everything
     },
     async resetBlackboard () {
       this.wipeUI();
