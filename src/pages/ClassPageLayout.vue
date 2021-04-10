@@ -87,17 +87,17 @@
           />
         </div>
 
-        <div class="pt-2 px-1" style="display: flex; justify-content: space-around;">
+        <div class="pt-2" style="display: flex; justify-content: space-around;">
           <!-- FORUM BUTTON -->
-          <v-badge v-if="mitClass"
-            :value="mitClass.numOfUnansweredQuestions"
-            :content="mitClass.numOfUnansweredQuestions"
-            left overlap color="secondary" style="z-index: 1;"
+          <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
+            class="white--text" color="grey darken-4" 
           >
-            <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
-              class="white--text px-3" color="grey darken-4" 
+            <v-icon class="mr-1" style="opacity: 0.9;">mdi-draw</v-icon>
+            <v-badge v-if="mitClass"
+              :value="mitClass.numOfUnansweredQuestions"
+              :content="mitClass.numOfUnansweredQuestions"
+              right color="secondary" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
             >
-              <v-icon class="mr-1" style="opacity: 0.9;">mdi-draw</v-icon>
               <div style="font-size: 0.9rem; 
                           font-weight: 500; 
                           color: '#424242'; 
@@ -106,8 +106,8 @@
               >
                 FORUM
               </div>
-            </v-btn>
-          </v-badge>
+            </v-badge>
+          </v-btn>
 
           <!-- FORUM POPUP -->
           <v-dialog 
@@ -141,7 +141,7 @@
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
-                class="white--text grey darken-4 px-3" 
+                class="white--text grey darken-4" 
               >
                 <!-- purple--text -->
                 <v-icon small class="mr-1">mdi-folder</v-icon>
