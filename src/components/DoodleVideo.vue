@@ -161,8 +161,8 @@ export default {
     resizeVideo () {
       const { CanvasWrapper, VideoWrapper } = this.$refs;
       VideoWrapper.style.width = "100%";
-      const availableWidth = VideoWrapper.offsetWidth; 
-      const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight;
+      const availableWidth = VideoWrapper.offsetWidth - 20; 
+      const availableHeight = window.innerHeight - navbarHeight - audioPlayerHeight - 120;
       let videoHeight; 
       let videoWidth; 
 

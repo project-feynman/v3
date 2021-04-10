@@ -1,9 +1,8 @@
 <template>
   <v-menu v-model="isMenuOpen" fixed offset-y bottom>
     <template v-slot:activator="{ on }">
-      <!-- TODO: why does the menu disappear for Gabrielle? -->
-      <v-btn v-on="on" text tile class="pa-1" style="margin-top: 2px; font-size: 1.5rem; font-weight: 400" max-width="180">
-        <span class="d-inline-block text-truncate" style="max-width: 140px;">
+      <v-btn v-on="on" text tile class="pa-1 text-h4" max-width="180">
+        <span class="d-inline-block text-truncate" style="max-width: 150px;">
           {{ currentClass ? currentClass.name : "ERROR" }}
         </span>
         <v-spacer/>

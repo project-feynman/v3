@@ -1,10 +1,10 @@
 <template>
-  <div style="display: flex; align-items: center;" class="pl-1 pr-0">
-    <v-menu max-height="500">
+  <div style="display: flex; align-items: center; padding-left: 8px; padding-bottom: 2px;" class="pr-0">
+    <v-menu max-height="500" offset-y bottom>
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" text tile class="pa-1" style="font-size: 0.85rem; font-weight: 600" max-width="180">
-                                                                            <!-- somehow this `max-width` property below is the one that actually does something -->
-          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 110px;">
+        <v-btn v-on="on" text tile class="pa-1 text-h6" max-width="180">
+                                                                                 <!-- somehow this `max-width` property below is the one that actually does something -->
+          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 140px;">
             <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
             <template v-if="currentRoomTypeDoc">{{ currentRoomTypeDoc.name }}</template>
             <template v-else>Error area...</template>
@@ -19,7 +19,8 @@
           <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
           <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
           <!-- id is used for scrollToView() -->
-          <v-list-item :key="roomType.id"
+          <v-list-item v-if="roomType.id !== sectionID"
+            :key="roomType.id"
             :to="(`/class/${classID}/section/${roomType.id}/room/${roomType.id}`)"
             active-class="accent--text"
             class="px-0 pt-2" 

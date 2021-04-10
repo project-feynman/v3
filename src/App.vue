@@ -88,6 +88,11 @@ import ClassPageLayout from "@/pages/ClassPageLayout.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js"; 
 import { mapState } from "vuex"; 
 
+// TODO:
+//   - Fix ghosts: let source of truth for video conference from Daily (CURRENTLY WORKING ON THIS)
+//   - Introduce pioneer badges
+//   - Introduce the personal library
+
 // To get realtime support, visit https://www.daily.co/contact/support
 // Helpful gist: https://gist.github.com/kwindla/9fd662a83e190e6dd003869282ff0d99
 

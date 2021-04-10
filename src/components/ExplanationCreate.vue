@@ -209,7 +209,7 @@ export default {
   },
   methods: {
     getWidthOfAvailableArea () {
-      return (window.innerWidth * 0.7); 
+      return (window.innerWidth * 0.65); 
     },
     /**
      * TODO: refactor (the if statements and the implicit settings are code smells)

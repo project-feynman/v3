@@ -5,9 +5,20 @@
     </div>
 
     <portal to="current-room-participants">
-      <portal-target name="video-screenshare-hangup-buttons">
+      <portal-target name="video-screenshare-hangup-buttons" class="mb-2">
 
       </portal-target>
+
+      <div class="mb-2">
+        <template v-if="connectionStatus !== 'CONNECTED'">
+          <v-btn @click.prevent.stop="joinConferenceRoom()" 
+            :loading="connectionStatus === 'CONNECTING'"
+            small block color="success"
+          >
+            Join voice
+          </v-btn>
+        </template>
+      </div>
 
       <template v-for="client in allClients">
         <!-- TODO: rename "id" -->
@@ -17,7 +28,7 @@
           style="position: relative; height: max-content" 
           class="mt-1"
         >
-          <div style="display: flex; justify-content: space-between; align-items: center; height: 30px; padding-left: 12px; padding-right: 0;"
+          <div style="display: flex; justify-content: space-between; align-items: center; height: 30px; padding-left: 4px; padding-right: 0;"
             :class="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] ) ? 
               (participants[firestoreIDToDailyID[client.sessionID]].video ? 'video-overlay' : '') : ''
               ||
@@ -25,66 +36,83 @@
             "
           >
             <div
-              style="font-weight: 400; font-size: 1em; opacity: 90%"
+              style="font-weight: 400; font-size: 1em;"
               class="text--secondary d-flex caption"
             >
-              <div v-if="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID]" 
-                class="caption font-weight-bold grey--text text--darken-3" 
-                style="font-size: 1em"
+              <div :class="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID] ? 
+                `caption font-weight-bold text--darken-3 grey--text` : 'text--secondary'" 
+                style="align-items: center; display: flex; margin-left: 18px;"
               >
-                {{ client.firstName }} {{ client.sessionID !== sessionID ? client.lastName : '' }} {{ client.isAdmin ? ' (staff)' : '' }}
-              </div>
-              <div v-else class="text--secondary" style="font-size: 1em">
-                {{ client.firstName }} {{ client.sessionID !== sessionID ? client.lastName : '' }} {{ client.isAdmin ? ' (staff)' : '' }}
+                <v-icon v-if="client.kind === 'engineer'" 
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small :style="`opacity: 70%;`"
+                >
+                  mdi-wrench
+                </v-icon>
+                <v-icon v-else-if="client.kind === 'pioneer'" 
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small style="opacity: 70%;"
+                >
+                  mdi-cowboy
+                </v-icon>
+                <v-icon v-else-if="client.isAdmin" 
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small style="opacity: 70%;"
+                >
+                  mdi-account-tie
+                </v-icon>
+                <v-icon v-else x-small style="opacity: 70%;"
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`"
+                >
+                  mdi-account
+                </v-icon>
+                <p :class="client.sessionID === sessionID ? 'cyan--text mb-0 ml-1 text-truncate' : 'mb-0 ml-1 text-truncate'" style="max-width: 110px">
+                  {{ client.firstName  + " " + client.lastName }} 
+                </p>
               </div>
             </div>
 
             <!-- MY UI -->
             <template v-if="client.sessionID === sessionID">
-              <!-- Start of video call buttons -->
               <div>
-                <template v-if="connectionStatus === 'DISCONNECTED'">
-                  <v-btn @click.prevent.stop="joinConferenceRoom()" small dark fab color="success" class="ml-1">
-                    <v-icon>mdi-phone</v-icon>
-                  </v-btn>
-                </template>
-
-                <template v-else-if="connectionStatus === 'CONNECTING'">
-                  <v-btn :loading="true" small dark fab color="success" class="mx-2">
-                    <v-icon>mdi-phone</v-icon>
-                  </v-btn>
-                </template>
-
-                <template v-else-if="connectionStatus === 'CONNECTED'">
-                  <v-switch @change="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)"
-                    :input-value="isMicOn"
-                    :prepend-icon="isMicOn ? 'mdi-microphone' : 'mdi-microphone-off'"
-                    class="mt-0 pt-0 grey--text" 
-                    hide-details inset
-                    color="grey darken-3"
-                  />
-
+                <template v-if="connectionStatus === 'CONNECTED'">
                   <portal to="video-screenshare-hangup-buttons">
-                    <div style="display: flex; align-items: center;" class="mt-0 mb-2 pl-1">
-                      <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
-                        class="ml-2" x-small dark fab color="red"
+                    <div style="display: flex; align-items: center; justify-content: space-around;" class="mt-0 mb-3">
+                      <v-btn @click.stop.prevent="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)" 
+                        small fab :color="`${ isMicOn ? 'cyan' : 'grey' }`"
+                      >
+                        <v-icon v-if="isMicOn" color="white">
+                          mdi-microphone
+                        </v-icon>
+                        <v-icon v-else>
+                          mdi-microphone-off
+                        </v-icon>
+                      </v-btn>
+
+                      <v-btn @click.prevent="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
+                        fab small :color="`${ isCamOn ? 'cyan' : 'grey' }`"
+                      >
+                        <v-icon v-if="isCamOn" color="white">
+                          mdi-video
+                        </v-icon>
+                        <v-icon v-else color="white">
+                          mdi-video
+                        </v-icon>
+                      </v-btn>
+
+                      <v-btn @click.prevent.stop="toggleScreen()" 
+                        fab small :color="`${ isSharingScreen ? 'cyan' : 'grey' }`"
+                      >
+                        <v-icon v-if="isSharingScreen" color="white">
+                          mdi-monitor
+                        </v-icon>
+                        <v-icon v-else color="white">
+                          mdi-monitor
+                        </v-icon>
+                      </v-btn>
+
+                       <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
+                        small dark fab color="red"
                       >
                         <v-icon small>mdi-phone-hangup</v-icon>
                       </v-btn>
-                      <v-switch @change="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
-                        :input-value="isCamOn" 
-                        prepend-icon="mdi-video"
-                        class="ml-1 mt-0 pt-0 grey--text" 
-                        hide-details inset dense
-                        color="grey darken-3"  
-                      />
-                      <v-switch @change="toggleScreen()"
-                        :input-value="isSharingScreen" 
-                        prepend-icon="mdi-monitor"
-                        class="mt-0 pt-0 grey--text"
-                        hide-details inset dense
-                        color="grey darken-3"
-                      />
                     </div>
                   </portal>
                 </template>
@@ -96,8 +124,17 @@
               </div>
               <!-- End of video call buttons -->
 
+              <v-spacer/> 
+
+              <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
+                {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
+              </v-icon>
+              <v-icon v-else color="red">
+                mdi-headphones-off
+              </v-icon>
+
               <!-- Switch board dropdown -->
-              <portal-target name="right-side-of-my-participant-name" class="ml-2">
+              <portal-target name="right-side-of-my-participant-name" style="margin-left: 5px;">
 
               </portal-target>
 
@@ -112,11 +149,16 @@
             <template v-else>
               <v-spacer/>
 
-              <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" color="grey darken-3">
+              <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" 
+                :color="`${participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'grey darken-3' : 'red'}`">
                 {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
+              <!-- If I'm not connected, but someone else is connected, I'll see that their connected in a phone/voice chat-->
               <v-icon v-else-if="client.canHearAudio" color="green">
-                mdi-video
+                mdi-phone
+              </v-icon>
+              <v-icon v-else color="red">
+                mdi-headphones-off
               </v-icon>
 
               <!-- Deprecate or choose a new color -->
@@ -124,15 +166,24 @@
                 mdi-music-clef-treble
               </v-icon>
               <v-icon v-if="client.isViewingLibrary" color="yellow darken-3">
-                mdi-bookshelf
+                mdi-folder
               </v-icon>
-              <v-icon v-if="client.isViewingForum" color="cyan">
-                mdi-forum
+              <v-icon v-if="client.isViewingForum" color="secondary">
+                mdi-draw
               </v-icon>
          
               <div
                 @click="$store.commit('SET_CURRENT_BOARD_ID', client.currentBoardID)"
-                :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; width: 30px; height: 24px; display: flex; justify-content: center; align-items: center; background-color: rgb(62, 66, 66); margin-left: 5px; margin-right: 13px;`"
+                :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; 
+                         width: 38px; 
+                         height: 30px; 
+                         display: flex; 
+                         justify-content: center; 
+                         align-items: center; 
+                         background-color: rgb(62, 66, 66); 
+                         margin-left: 5px; 
+                         margin-right: 24px;
+                       `"
               >
                 {{ client.currentBoardNumber }}
               </div>
@@ -152,16 +203,11 @@
  *   - Sometimes the laptop just keeps loading infinitely
  *   - Inconsistent video constraints / aspect ratios: investigate user media constraints
  * 
- * The reason it's so important to work both hard and smart is that, a startup is is an unpredictable stream of tasks requiring different resources. 
- * If you are not completely constrained on the tasks, you can defer them until a better time to increase efficiency. 
- * 
  * @see API guide https://docs.daily.co/reference#%EF%B8%8F-createcallobject
  * @see Github demo code https://github.com/daily-demos/call-object-react/blob/main/src/components/Call/Call.js
  */
-import DailyIframe from '@daily-co/daily-js';
 import { API_KEY_SECRET } from "@/dailyCreds.js";
 import { mapState } from "vuex"; 
-import Vue from "vue";
 
 export default {
   props: {
@@ -317,6 +363,7 @@ export default {
       await this.CallObject.leave(); 
       this.$store.commit("SET_PARTICIPANTS", {}); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTED");
+      this.$store.commit("SET_ACTIVE_SPEAKER_DAILY_ID", "");
     }
   }
 };
