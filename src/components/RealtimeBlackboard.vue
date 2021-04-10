@@ -25,6 +25,7 @@
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
       @record-end="handleRecordEnd()"
+      @canvas-snapshot="canvasObj => returnCanvasPDF(canvasObj)"
     >
       <!-- TODO: don't let user wipe board / set background while recording -->
       <!-- Set Background (overrides the normal behavior) -->
@@ -166,10 +167,9 @@ export default {
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
       messagesOpen: false,
-
       // new code
       incrementKeyToDestroyComponent: 0,
-      isMenuOpen: false
+      isMenuOpen: false,
     };
   },
   computed: {
@@ -374,19 +374,6 @@ export default {
       return new File([u8arr], filename, {type:mime});
     },
     async uploadExplanation () {
-      console.log(this.strokesArray);
-      
-      const doc = new jsPDF();
-      doc.text("Hello world!", 10, 10);
-      doc.save("a4.pdf");
-      console.log("Imma try something");
-      console.log(this.canvas);
-      var imgData = this.canvas.toDataURL("image/jpeg", 1.0);
-      var pdf = new jsPDF();
-
-      pdf.addImage(imgData, 'JPEG', 0, 0);
-      console.log(pdf);
-      pdf.save("download.pdf");
       // TODO: refactor backgroundImage so the blob is fetched once (otherwise display background will 
       // make many calls to the internet during resizing which is highly inefficient). We can then
       // just directly upload it instead of making another fetch from storage. 
@@ -461,6 +448,21 @@ export default {
     },
     toggleChat () {
       this.messagesOpen = !this.messagesOpen;
+    },
+    returnCanvasPDF(canvasObj) {
+      const doc = new jsPDF();
+      doc.text("Hello world!", 10, 10);
+      doc.save("a4.pdf");
+
+      console.log("Imma try something");
+
+      console.log(canvasObj);
+      var imgData = canvasObj.toDataURL("image/jpeg", 1.0);
+      var pdf = new jsPDF();
+
+      pdf.addImage(imgData, 'JPEG', 0, 0);
+      console.log(pdf);
+      pdf.save("download.pdf");
     }
   }
 }

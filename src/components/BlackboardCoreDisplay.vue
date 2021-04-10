@@ -64,7 +64,6 @@ import { BlackboardTools, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState } from "vuex";
 import _ from "lodash";
-import { jsPDF } from "jspdf";
 
 
 export default {
@@ -211,6 +210,7 @@ export default {
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
     });
+    this.$emit("canvas-snapshot",this.canvas);
   },
   methods: {
     initializeCanvas () {

@@ -16,6 +16,7 @@
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
+      @canvas-snapshot="canvasObj => $emit('canvas-snapshot',canvasObj)"
     >
       <template v-slot:canvas-toolbar="{ 
         isFullScreen, 
