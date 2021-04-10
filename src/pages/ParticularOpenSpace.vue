@@ -231,7 +231,7 @@
                 <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
                 <v-icon v-else-if="p.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
                 <v-icon v-else-if="p.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
-                <v-icon v-else>mdi-account</v-icon>
+                <v-icon v-else x-small style="opacity: 70%;">mdi-account</v-icon>
                 <p style="padding-top: 0px; margin-bottom: 0; margin-left: 5px; ">
                   {{ p.firstName + " " + p.lastName }}
                 </p>

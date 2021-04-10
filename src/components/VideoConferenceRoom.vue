@@ -43,11 +43,27 @@
                 `caption font-weight-bold text--darken-3 grey--text` : 'text--secondary'" 
                 style="align-items: center; display: flex; margin-left: 18px;"
               >
-                <v-icon v-if="user.kind === 'engineer'" :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small :style="`opacity: 70%;`">mdi-wrench</v-icon>
-                <v-icon v-else-if="user.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
-                <v-icon v-else-if="client.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
-                <v-icon v-else>mdi-account</v-icon>
-                <p :class="client.sessionID === sessionID ? 'cyan--text mb-0 ml-1 text-truncate' : 'mb-0 ml-1 text-truncate'" style="padding-top: 1px; max-width: 110px">
+                <v-icon v-if="client.kind === 'engineer'" 
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small :style="`opacity: 70%;`"
+                >
+                  mdi-wrench
+                </v-icon>
+                <v-icon v-else-if="client.kind === 'pioneer'" 
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small style="opacity: 70%;"
+                >
+                  mdi-cowboy
+                </v-icon>
+                <v-icon v-else-if="client.isAdmin" 
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small style="opacity: 70%;"
+                >
+                  mdi-account-tie
+                </v-icon>
+                <v-icon v-else x-small style="opacity: 70%;"
+                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`"
+                >
+                  mdi-account
+                </v-icon>
+                <p :class="client.sessionID === sessionID ? 'cyan--text mb-0 ml-1 text-truncate' : 'mb-0 ml-1 text-truncate'" style="max-width: 110px">
                   {{ client.firstName  + " " + client.lastName }} 
                 </p>
               </div>
@@ -113,7 +129,6 @@
               <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
                 {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
-
 
               <!-- Switch board dropdown -->
               <portal-target name="right-side-of-my-participant-name" style="margin-left: 5px;">
@@ -186,6 +201,7 @@
  */
 import { API_KEY_SECRET } from "@/dailyCreds.js";
 import { mapState } from "vuex"; 
+
 export default {
   props: {
     roomID: {
