@@ -250,10 +250,10 @@
                 </v-icon>
 
                 <v-icon v-if="p.isViewingLibrary" small color="yellow darken-3">
-                  mdi-bookshelf
+                  mdi-folder
                 </v-icon>
-                <v-icon v-else-if="p.isViewingForum" small color="cyan">
-                  mdi-forum
+                <v-icon v-else-if="p.isViewingForum" small color="secondary">
+                  mdi-draw
                 </v-icon>
 
                 <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>

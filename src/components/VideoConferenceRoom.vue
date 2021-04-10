@@ -166,10 +166,10 @@
                 mdi-music-clef-treble
               </v-icon>
               <v-icon v-if="client.isViewingLibrary" color="yellow darken-3">
-                mdi-bookshelf
+                mdi-folder
               </v-icon>
-              <v-icon v-if="client.isViewingForum" color="cyan">
-                mdi-forum
+              <v-icon v-if="client.isViewingForum" color="secondary">
+                mdi-draw
               </v-icon>
          
               <div
