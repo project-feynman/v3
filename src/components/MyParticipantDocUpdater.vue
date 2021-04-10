@@ -78,7 +78,7 @@ export default {
           lastName: this.user.lastName,
           email: this.user.email,
           uid: this.user.uid,
-          kind: this.user.kind,
+          kind: this.user.kind || "",
           isAdmin: this.isAdmin,
 
           roomTypeID: this.$route.params.section_id,
