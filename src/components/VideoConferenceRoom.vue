@@ -129,6 +129,9 @@
               <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
                 {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
+              <v-icon v-else color="red">
+                mdi-headphones-off
+              </v-icon>
 
               <!-- Switch board dropdown -->
               <portal-target name="right-side-of-my-participant-name" style="margin-left: 5px;">
@@ -150,8 +153,12 @@
                 :color="`${participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'grey darken-3' : 'red'}`">
                 {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
+              <!-- If I'm not connected, but someone else is connected, I'll see that their connected in a phone/voice chat-->
               <v-icon v-else-if="client.canHearAudio" color="green">
-                mdi-video
+                mdi-phone
+              </v-icon>
+              <v-icon v-else color="red">
+                mdi-headphones-off
               </v-icon>
 
               <!-- Deprecate or choose a new color -->
@@ -356,6 +363,7 @@ export default {
       await this.CallObject.leave(); 
       this.$store.commit("SET_PARTICIPANTS", {}); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTED");
+      this.$store.commit("SET_ACTIVE_SPEAKER_DAILY_ID", "");
     }
   }
 };

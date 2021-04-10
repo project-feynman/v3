@@ -241,7 +241,7 @@
               
               <div class="ml-2 mr-4" style="display: flex;">
                 <v-icon v-if="p.canHearAudio" small color="green">
-                  mdi-video
+                  mdi-phone
                 </v-icon>
 
                 <!-- Deprecate -->
