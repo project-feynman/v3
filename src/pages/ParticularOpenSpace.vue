@@ -264,8 +264,8 @@
       </template>
     </v-list-item> 
 
-    <v-list-item v-if="rooms.length !== 0 && rooms.length < 20" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 80%; font-size: 0.9rem;"> 
-      <v-icon left color="black">mdi-plus</v-icon> new table 
+    <v-list-item v-if="rooms.length !== 0 && rooms.length < 20" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
+      <v-icon left color="black">mdi-plus</v-icon> new workspace
     </v-list-item>
 
   </v-list>

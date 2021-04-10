@@ -18,8 +18,8 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="py-3 pl-2" elevation="5">    
-        <div style="display: flex;">
+      <v-sheet class="pt-2 pb-4 px-1" elevation="5">    
+        <div style="display: flex; align-items: center;">
           <!-- enable user to report issues, directly email me, etc. -->
           <v-badge 
             :value="numOfUnreadGlobalMsgs"
@@ -27,7 +27,7 @@
             top left color="secondary" overlap style="z-index: 1;"
           >
             <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
-              class="ma-0" style="cursor: pointer;" tile width="47" height="42"
+              class="mr-0 mb-1" style="cursor: pointer; margin-left: 6px;" tile width="54" height="48"
             >
               <img src="/logo.png">
             </v-list-item-avatar>
@@ -87,12 +87,12 @@
           />
         </div>
 
-        <div class="pr-2 pt-2">
+        <div class="pt-2" style="display: flex; justify-content: space-around;">
           <!-- FORUM BUTTON -->
           <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
-            class="white--text px-3 my-1" color="grey" block
+            class="white--text" color="grey darken-4" 
           >
-            <v-icon class="mr-1" style="font-size: 1rem; opacity: 0.9;">mdi-draw</v-icon>
+            <v-icon class="mr-1" style="opacity: 0.9;">mdi-draw</v-icon>
             <v-badge v-if="mitClass"
               :value="mitClass.numOfUnansweredQuestions"
               :content="mitClass.numOfUnansweredQuestions"
@@ -141,10 +141,10 @@
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
-                class="white--text grey px-3 my-1" block
+                class="white--text grey darken-4" 
               >
                 <!-- purple--text -->
-                <v-icon small class="mr-1" style="opacity: 1; font-size: 0.9">mdi-folder</v-icon>
+                <v-icon small class="mr-1">mdi-folder</v-icon>
                 <div style="font-size: 0.9rem; 
                       font-weight: 500; 
                       color: '#424242'; 

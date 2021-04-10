@@ -1,8 +1,8 @@
 <template>
-  <div style="display: flex; align-items: center;" class="pl-1 pr-0">
+  <div style="display: flex; align-items: center; padding-left: 8px; padding-bottom: 2px;" class="pr-0">
     <v-menu max-height="500" offset-y bottom>
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" text tile class="pa-1" style="font-size: 0.9rem; font-weight: 600" max-width="180">
+        <v-btn v-on="on" text tile class="pa-1 text-h6" max-width="180">
                                                                                  <!-- somehow this `max-width` property below is the one that actually does something -->
           <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 140px;">
             <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
