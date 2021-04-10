@@ -172,9 +172,13 @@
             <v-icon large style="opacity: 90%" class="mr-1">
               mdi-atom
             </v-icon>
-
+        
             <div v-if="room.name" class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
               {{ room.name }}
+            </div>
+
+            <div v-else-if="room.isCommonRoom" class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
+              common workspace
             </div>
 
             <div v-else class="font-weight-medium py-2">
@@ -212,6 +216,10 @@
 
             <div v-if="room.name" style="opacity: 55%; text-transform: lowercase;">
               {{ room.name }}
+            </div>
+
+            <div v-else-if="room.isCommonRoom" style="opacity: 55%; text-transform: lowercase;">
+              common workspace
             </div>
 
             <div v-else class="py-2 grey--text darken--3">
