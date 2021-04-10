@@ -1,5 +1,6 @@
 <template>
-  <div style="display: flex;">
+  <div style="display: flex; overflow-x: none;">
+    <!-- SIDE-PANEL -->
     <div style="width: 260px;">
       <v-list style="max-height: 80vh" class="overflow-y-auto">
         <v-list-item 
@@ -20,10 +21,12 @@
         
         <template v-if="questions">
           <template v-for="question in questions">
+            <!-- Using the prop `three-line` requires `overflow: hidden` to work across all browsers, see https://vuetifyjs.com/en/api/v-list-item/#props -->
             <v-list-item :key="question.id"
               @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id);"
               :class="!question.hasReplies && question.id !== currentlySelectedQuestionID ? ['info'] : ''" three-line active-class="orange"
               :input-value="question.id === currentlySelectedQuestionID" 
+              style="max-height: 40px;"
             >
               <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
                 <v-list-item-title>
@@ -42,6 +45,7 @@
       </v-list>
     </div>
 
+    <!-- MAIN CONTENT -->
     <div style="flex-grow: 1;">
       <template v-if="currentlySelectedQuestionID === 'EMAIL_SETTINGS'">
         <v-card>
@@ -75,7 +79,7 @@
         <!-- <div class="d-flex flex-column mb-6"> -->
         <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
         <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
-        <div style="max-height: 80vh; overflow-x: hidden" class="overflow-y-auto">
+        <div style="max-height: 80vh; overflow-x: hidden; overflow-y: scroll">
           <ClassPageSeePost 
             :postID="currentlySelectedQuestionID"
             :key="currentlySelectedQuestionID"
