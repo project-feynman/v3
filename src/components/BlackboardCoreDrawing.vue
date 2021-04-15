@@ -101,6 +101,10 @@ export default {
     height: {
       type: Number,
       required: true
+    },
+    downloadPDF: {
+      type: Boolean,
+      required: true
     }
   },
   mixins: [
@@ -213,6 +217,14 @@ export default {
           blob ? URL.createObjectURL(blob) : downloadURL
         );
       }
+    },
+    /**
+     * Triggers sending canvas data to parent for PDF conversion
+     */
+    downloadPDF() {
+      if(this.downloadPDF == true && this.canvas){
+        this.$emit("canvas-snapshot",{canvas:this.canvas}); //eventually received in RealtimeBlackboard
+      }
     }
   },
   mounted () {
@@ -222,6 +234,7 @@ export default {
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
     });
+
   },
   methods: {
     /** 

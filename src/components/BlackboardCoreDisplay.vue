@@ -210,7 +210,6 @@ export default {
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
     });
-    this.$emit("canvas-snapshot",this.canvas);
   },
   methods: {
     initializeCanvas () {

@@ -21,6 +21,7 @@
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :key="incrementKeyToDestroyComponent"
+      :downloadPDF="downloadPDF"
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
@@ -41,6 +42,10 @@
             <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
           </template> 
         </BasePopupButton>
+
+        <v-list-item @click="downloadPDF = true">
+          <v-icon left color="orange">mdi-image</v-icon>Download as PDF
+        </v-list-item>
 
         <v-list-item @click="$refs.fileInput.click()">
           <v-icon left color="blue">mdi-image</v-icon>Upload background
@@ -128,7 +133,7 @@ import db from "@/database.js";
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
 import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
-import { jsPDF } from "jspdf";
+import { jsPDF } from "jspdf"; //new module
 
 export default {
   props: {
@@ -170,6 +175,9 @@ export default {
       // new code
       incrementKeyToDestroyComponent: 0,
       isMenuOpen: false,
+
+      //Harry's code
+      downloadPDF: false,
     };
   },
   computed: {
@@ -450,19 +458,13 @@ export default {
       this.messagesOpen = !this.messagesOpen;
     },
     returnCanvasPDF(canvasObj) {
-      const doc = new jsPDF();
-      doc.text("Hello world!", 10, 10);
-      doc.save("a4.pdf");
-
-      console.log("Imma try something");
-
-      console.log(canvasObj);
-      var imgData = canvasObj.toDataURL("image/jpeg", 1.0);
-      var pdf = new jsPDF();
-
-      pdf.addImage(imgData, 'JPEG', 0, 0);
-      console.log(pdf);
-      pdf.save("download.pdf");
+      var imgData = canvasObj.canvas.toDataURL("image/jpeg", 1.0);
+      var width = canvasObj.canvas.width;
+      var height = canvasObj.canvas.height;
+      var pdf = new jsPDF('p','pt',[width,height]); //specify custom page size
+      pdf.addImage(imgData, 'JPEG', 0, 0, width, width); //make sure to get full image
+      pdf.save("download.pdf"); //could be changed to user-specified
+      this.$store.downloadPDF = false; //reset state variable
     }
   }
 }
