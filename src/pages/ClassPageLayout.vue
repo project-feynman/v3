@@ -42,23 +42,19 @@
             <v-card>
               <v-card-title>App Overview</v-card-title>
               <v-card-text>
+                 explain.mit.edu is <a href="https://github.com/project-feynman/explain-mit">open source</a> and updates every two weeks.
+                <br>
+                <br>
+
+                <b>Note to students</b>
+                <br>
+                If you have trouble with classes, sleep or just don't feel good, I provide "free listening" and "free brainstorm" services as an empathetic outsider.  
+                You can just text/call 503 250 3868 or email eltonlin@mit.edu. Mental health is why I started Explain in the first place!
+                
+                <br>
+                <br>
                 <SlackChats2/>
                 <br>
-                Every Friday evening, an update will be deployed to fix bugs and build new features. 
-                If the update changes the UI in major ways, a global announcement will be made. 
-                <br>
-                <br>
-
-                Besides from quality improvements, the Spring 2021 roadmap includes: 
-                <ol>
-                  <li>Visual Forum: help each other by drawing and talking asynchronously</li>
-                  <li>Area Chats: find study partners who you didn't know before</li> 
-                  <li>Open Library: organize the saved explanations from everyone</li>
-                </ol>
-
-                <br>
-                If you think Explain can truly solve problems for students and instructors,
-                consider exploring the source code on <a href="https://github.com/project-feynman/explain-mit" target="_blank">Github</a>
               </v-card-text>
               <v-card-actions>
                 <v-spacer/>
