@@ -44,7 +44,7 @@
         </BasePopupButton>
 
         <v-list-item @click="downloadPDF = true">
-          <v-icon left color="orange">mdi-image</v-icon>Download as PDF
+          <v-icon left color="orange">mdi-file-pdf</v-icon>Download as PDF
         </v-list-item>
 
         <v-list-item @click="$refs.fileInput.click()">
@@ -462,7 +462,7 @@ export default {
       var width = canvasObj.canvas.width;
       var height = canvasObj.canvas.height;
       var pdf = new jsPDF('p','pt',[width,height]); //specify custom page size
-      pdf.addImage(imgData, 'JPEG', 0, 0, width, width); //make sure to get full image
+      pdf.addImage(imgData, 'JPEG', 0, 0, width, height); //make sure to get full image
       pdf.save("download.pdf"); //could be changed to user-specified
       this.$store.downloadPDF = false; //reset state variable
     }
