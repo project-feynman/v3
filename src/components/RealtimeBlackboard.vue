@@ -43,7 +43,7 @@
         </BasePopupButton>
 
         <v-list-item @click="downloadPDF = !downloadPDF">
-          <v-icon left color="orange">mdi-file-pdf</v-icon>Download blackboard as PDF
+          <v-icon left color="orange">mdi-file-pdf</v-icon>Download board as PDF
         </v-list-item>
 
         <v-list-item @click="$refs.fileInput.click()">
