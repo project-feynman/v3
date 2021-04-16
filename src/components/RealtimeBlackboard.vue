@@ -26,7 +26,6 @@
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
       @record-end="handleRecordEnd()"
-      @canvas-snapshot="canvasObj => returnCanvasPDF(canvasObj)"
     >
       <!-- TODO: don't let user wipe board / set background while recording -->
       <!-- Set Background (overrides the normal behavior) -->
@@ -43,8 +42,8 @@
           </template> 
         </BasePopupButton>
 
-        <v-list-item @click="downloadPDF = true">
-          <v-icon left color="orange">mdi-file-pdf</v-icon>Download as PDF
+        <v-list-item @click="downloadPDF = !downloadPDF">
+          <v-icon left color="orange">mdi-file-pdf</v-icon>Download blackboard as PDF
         </v-list-item>
 
         <v-list-item @click="$refs.fileInput.click()">
@@ -133,7 +132,6 @@ import db from "@/database.js";
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
 import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
-import { jsPDF } from "jspdf"; //new module
 
 export default {
   props: {
@@ -457,15 +455,6 @@ export default {
     toggleChat () {
       this.messagesOpen = !this.messagesOpen;
     },
-    returnCanvasPDF(canvasObj) {
-      var imgData = canvasObj.canvas.toDataURL("image/jpeg", 1.0);
-      var width = canvasObj.canvas.width;
-      var height = canvasObj.canvas.height;
-      var pdf = new jsPDF('p','pt',[width,height]); //specify custom page size
-      pdf.addImage(imgData, 'JPEG', 0, 0, width, height); //make sure to get full image
-      pdf.save("download.pdf"); //could be changed to user-specified
-      this.$store.downloadPDF = false; //reset state variable
-    }
   }
 }
 </script>

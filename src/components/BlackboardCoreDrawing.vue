@@ -71,6 +71,7 @@
  */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
+import CanvasDownloadPDFMixin from "@/mixins/CanvasDownloadPDFMixin.js";
 import { BlackboardTools, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState } from "vuex";
@@ -102,13 +103,10 @@ export default {
       type: Number,
       required: true
     },
-    downloadPDF: {
-      type: Boolean,
-      required: true
-    }
   },
   mixins: [
-    CanvasDrawMixin
+    CanvasDrawMixin,
+    CanvasDownloadPDFMixin,
   ],
   components: { 
     BlackboardToolBar
@@ -218,14 +216,6 @@ export default {
         );
       }
     },
-    /**
-     * Triggers sending canvas data to parent for PDF conversion
-     */
-    downloadPDF() {
-      if(this.downloadPDF == true && this.canvas){
-        this.$emit("canvas-snapshot",{canvas:this.canvas}); //eventually received in RealtimeBlackboard
-      }
-    }
   },
   mounted () {
     this.initializeCanvas();
