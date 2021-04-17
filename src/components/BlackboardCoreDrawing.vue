@@ -106,7 +106,7 @@ export default {
   },
   mixins: [
     CanvasDrawMixin,
-    CanvasDownloadPDFMixin,
+    CanvasDownloadPDFMixin
   ],
   components: { 
     BlackboardToolBar
@@ -215,7 +215,7 @@ export default {
           blob ? URL.createObjectURL(blob) : downloadURL
         );
       }
-    },
+    }
   },
   mounted () {
     this.initializeCanvas();
@@ -224,7 +224,6 @@ export default {
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
     });
-
   },
   methods: {
     /** 

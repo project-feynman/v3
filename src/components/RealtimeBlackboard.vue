@@ -174,8 +174,7 @@ export default {
       incrementKeyToDestroyComponent: 0,
       isMenuOpen: false,
 
-      //Harry's code
-      downloadPDF: false,
+      downloadPDF: false
     };
   },
   computed: {
@@ -454,7 +453,7 @@ export default {
     },
     toggleChat () {
       this.messagesOpen = !this.messagesOpen;
-    },
+    }
   }
 }
 </script>
