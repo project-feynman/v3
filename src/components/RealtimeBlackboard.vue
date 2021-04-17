@@ -42,7 +42,7 @@
           </template> 
         </BasePopupButton>
 
-        <v-list-item @click="downloadPDF = !downloadPDF">
+        <v-list-item @click="willDownloadPDF = !willDownloadPDF">
           <v-icon left color="orange">mdi-file-pdf</v-icon>Download board as PDF
         </v-list-item>
 
