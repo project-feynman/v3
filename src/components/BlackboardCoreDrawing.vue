@@ -102,7 +102,7 @@ export default {
     height: {
       type: Number,
       required: true
-    },
+    }
   },
   mixins: [
     CanvasDrawMixin,
