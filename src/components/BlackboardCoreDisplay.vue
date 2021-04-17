@@ -204,7 +204,7 @@ export default {
   },
   mounted () {
     this.initializeCanvas();
-    
+
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,

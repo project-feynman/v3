@@ -12,6 +12,7 @@
     "algoliasearch": "^4.4.0",
     "audio-recorder-polyfill": "^0.3.6",
     "firebase": "^7.19.1",
+    "jspdf": "^2.3.1",
     "lodash": "^4.17.20",
     "pdfjs-dist": "^2.4.456",
     "portal-vue": "^2.1.7",

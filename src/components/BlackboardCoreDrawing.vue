@@ -71,6 +71,7 @@
  */
 import BlackboardToolBar from "@/components/BlackboardToolBar.vue";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
+import CanvasDownloadPDFMixin from "@/mixins/CanvasDownloadPDFMixin.js";
 import { BlackboardTools, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState } from "vuex";
@@ -104,7 +105,8 @@ export default {
     }
   },
   mixins: [
-    CanvasDrawMixin
+    CanvasDrawMixin,
+    CanvasDownloadPDFMixin
   ],
   components: { 
     BlackboardToolBar

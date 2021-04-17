@@ -21,6 +21,7 @@
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :key="incrementKeyToDestroyComponent"
+      :willDownloadPDF="willDownloadPDF"
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
@@ -40,6 +41,10 @@
             <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
           </template> 
         </BasePopupButton>
+
+        <v-list-item @click="downloadPDF = !downloadPDF">
+          <v-icon left color="orange">mdi-file-pdf</v-icon>Download board as PDF
+        </v-list-item>
 
         <v-list-item @click="$refs.fileInput.click()">
           <v-icon left color="blue">mdi-image</v-icon>Upload background
@@ -165,10 +170,11 @@ export default {
       classId: this.$route.params.class_id,
       roomId: this.$route.params.room_id,
       messagesOpen: false,
-
       // new code
       incrementKeyToDestroyComponent: 0,
-      isMenuOpen: false
+      isMenuOpen: false,
+      
+      willDownloadPDF: false
     };
   },
   computed: {
