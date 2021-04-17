@@ -65,7 +65,6 @@ import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState } from "vuex";
 import _ from "lodash";
 
-
 export default {
   props: {
     strokesArray: {
@@ -218,7 +217,7 @@ export default {
       this.ctx = this.canvas.getContext("2d");
       this.bgCtx = this.bgCanvas.getContext("2d");
 
-      this.resizeBlackboard(); // rsizeBlackboard also re-renders everything
+      this.resizeBlackboard(); // resizeBlackboard also re-renders everything
     },
     async resetBlackboard () {
       this.wipeUI();
