@@ -222,15 +222,32 @@ export default {
       this.audioRecorder.stopRecording = stopRecording;
     },
     async startRecording () {
-      this.audioRecorder.startRecording();
-      this.currentTime = 0;
-      const ONE_HUNDRED_MILLISECONDS = 100; 
-      this.timer = setInterval(
-        () => this.currentTime += 0.1, 
-        ONE_HUNDRED_MILLISECONDS
-      );   
       this.currentState = RecordState.MID_RECORD;
       this.$emit("record-start"); // inform the parent to disable the "submit post" button
+      
+      this.audioRecorder.startRecording();
+
+      // START THE TIMER
+      // accurate timer implementation from https://stackoverflow.com/a/29972322
+      this.currentTime = 0; 
+      const ONE_HUNDRED_MILLISECONDS = 100; 
+      const interval = ONE_HUNDRED_MILLISECONDS; 
+      let expected = Date.now() + interval;
+      
+      const incrementCurrentTime = () => {
+        const dt = Date.now() - expected; // the drift (positive for overshooting)
+        if (dt > interval) {
+          // something really bad happened. Maybe the browser (tab) was inactive?
+          // possibly special handling to avoid futile "catch up" run
+          alert("The recording stopclock broke...")
+        }
+        this.currentTime += 0.1; 
+        expected += interval;
+        if (this.currentState === RecordState.POST_RECORD) return; 
+        else setTimeout(incrementCurrentTime, Math.max(0, interval - dt)); // take into account drift
+      }
+
+      setTimeout(incrementCurrentTime, interval);
     },
     async stopRecording () {
       clearInterval(this.timer); 
