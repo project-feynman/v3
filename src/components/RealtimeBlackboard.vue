@@ -21,7 +21,7 @@
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :key="incrementKeyToDestroyComponent"
-      :downloadPDF="downloadPDF"
+      :willDownloadPDF="willDownloadPDF"
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
@@ -173,8 +173,8 @@ export default {
       // new code
       incrementKeyToDestroyComponent: 0,
       isMenuOpen: false,
-
-      downloadPDF: false
+      
+      willDownloadPDF: false
     };
   },
   computed: {

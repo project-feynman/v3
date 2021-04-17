@@ -13,7 +13,7 @@
       :isReadOnly="false"
       :height="height"
       :width="width"
-      :downloadPDF="downloadPDF"
+      :willDownloadPDF="willDownloadPDF"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
@@ -161,7 +161,7 @@ export default {
         return MASSIVE_MODE_DIMENSIONS.HEIGHT;
       }
     },
-    downloadPDF: {
+    willDownloadPDF: {
       type: Boolean,
       default () {
         return false;

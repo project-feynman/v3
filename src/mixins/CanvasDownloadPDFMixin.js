@@ -2,13 +2,13 @@ import { jsPDF } from "jspdf";
 
 export default {
   props:{
-    downloadPDF: {
+    willDownloadPDF: {
       type: Boolean,
       required: true
     }
   },
   watch:{
-    downloadPDF() {
+    willDownloadPDF () {
       if (this.canvas) {
         this.returnCanvasPDF(this.canvas);
       }
