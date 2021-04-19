@@ -157,7 +157,7 @@
               <v-icon v-else-if="client.canHearAudio" color="green">
                 mdi-phone
               </v-icon>
-              <v-icon v-else color="red">
+              <v-icon v-else color="grey">
                 mdi-headphones-off
               </v-icon>
 
