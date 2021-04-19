@@ -9,7 +9,7 @@
 
       </portal-target>
 
-      <div class="mb-2">
+      <div class="mb-2 mx-2">
         <template v-if="connectionStatus !== 'CONNECTED'">
           <v-btn @click.prevent.stop="joinConferenceRoom()" 
             :loading="connectionStatus === 'CONNECTING'"
@@ -63,7 +63,7 @@
                 >
                   mdi-account
                 </v-icon>
-                <p :class="client.sessionID === sessionID ? 'cyan--text mb-0 ml-1 text-truncate' : 'mb-0 ml-1 text-truncate'" style="max-width: 110px">
+                <p :class="client.sessionID === sessionID ? 'mb-0 ml-1 text-truncate' : 'mb-0 ml-1 text-truncate'" style="max-width: 110px">
                   {{ client.firstName  + " " + client.lastName }} 
                 </p>
               </div>
@@ -74,7 +74,7 @@
               <div>
                 <template v-if="connectionStatus === 'CONNECTED'">
                   <portal to="video-screenshare-hangup-buttons">
-                    <div style="display: flex; align-items: center; justify-content: space-around;" class="mt-0 mb-3">
+                    <div style="display: flex; align-items: center; justify-content: space-around;" class="mt-1 mb-3">
                       <v-btn @click.stop.prevent="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)" 
                         small fab :color="`${ isMicOn ? 'cyan' : 'grey' }`"
                       >
@@ -129,7 +129,7 @@
               <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
                 {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
-              <v-icon v-else color="red">
+              <v-icon v-else color="grey">
                 mdi-headphones-off
               </v-icon>
 

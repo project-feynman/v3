@@ -86,7 +86,7 @@
         <div class="pt-2" style="display: flex; justify-content: space-around;">
           <!-- FORUM BUTTON -->
           <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
-            class="white--text" color="grey darken-4" 
+            class="white--text" color="black" 
           >
             <v-icon class="mr-1" style="opacity: 0.9;">mdi-draw</v-icon>
             <v-badge v-if="mitClass"
@@ -137,7 +137,7 @@
           >
             <template v-slot:activator>
               <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
-                class="white--text grey darken-4" 
+                class="white--text black" 
               >
                 <!-- purple--text -->
                 <v-icon small class="mr-1">mdi-folder</v-icon>
