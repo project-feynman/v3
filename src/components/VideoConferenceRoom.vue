@@ -126,10 +126,12 @@
 
               <v-spacer/> 
 
-              <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
+              <v-icon v-if="participants && participants.local" 
+                small :color="`${isMicOn ? 'grey darken-3' : 'red'}`"
+              >
                 {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
-              <v-icon v-else color="grey">
+              <v-icon v-else small color="grey darken-2">
                 mdi-headphones-off
               </v-icon>
 
@@ -150,14 +152,14 @@
               <v-spacer/>
 
               <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" 
-                :color="`${participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'grey darken-3' : 'red'}`">
+                small :color="`${participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'grey darken-3' : 'red'}`">
                 {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
               <!-- If I'm not connected, but someone else is connected, I'll see that their connected in a phone/voice chat-->
               <v-icon v-else-if="client.canHearAudio" color="green">
                 mdi-phone
               </v-icon>
-              <v-icon v-else color="grey">
+              <v-icon v-else small color="grey darken-2">
                 mdi-headphones-off
               </v-icon>
 
