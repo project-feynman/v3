@@ -18,7 +18,7 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="pt-2 pb-4 px-1" elevation="5">    
+      <v-sheet class="py-1 px-1" elevation="5">    
         <div style="display: flex; align-items: center;">
           <!-- enable user to report issues, directly email me, etc. -->
           <v-badge 
@@ -26,11 +26,35 @@
             :content="numOfUnreadGlobalMsgs"
             top left color="secondary" overlap style="z-index: 1;"
           >
-            <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
-              class="mr-0 mb-1" style="cursor: pointer; margin-left: 6px;" tile width="54" height="48"
-            >
-              <img src="/logo.png">
-            </v-list-item-avatar>
+            <v-list-item two-line class="px-0">
+              <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
+                class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 15px;" tile width="50" height="45"
+              >
+                <img src="/logo.png">
+              </v-list-item-avatar>
+
+              <v-list-item-content class="py-0">
+                <v-list-item-title>
+                  <ClassSwitchDropdown>
+                    <template v-slot:add-join-leave-class>
+                      <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
+                        <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
+                      </v-list-item>
+                    </template>
+                  </ClassSwitchDropdown>
+                </v-list-item-title>
+
+                <v-list-item-subtitle>
+                  <AllOpenSpaces style="margin-top: 6px;"/>  
+                </v-list-item-subtitle>
+              </v-list-item-content>
+              <portal-target name="area-chat">
+
+              </portal-target>
+              <portal-target name="current-open-space-actions">
+
+              </portal-target>
+            </v-list-item>
           </v-badge>
 
           <!-- Have the app overview, updates, news, as well as the chats -->
@@ -42,15 +66,96 @@
             <v-card>
               <v-card-title>App Overview</v-card-title>
               <v-card-text>
-                 explain.mit.edu is <a href="https://github.com/project-feynman/explain-mit">open source</a> and updates every two weeks.
+                 explain.mit.edu is <a href="https://github.com/project-feynman/explain-mit">open source</a> and updates weekly. I'm the full-time developer (eltonlin@mit.edu, 6-14, '20, 503 250 3868) and you can ask me about feature requests, support for troubleshoot, etc.
                 <br>
                 <br>
 
-                <b>Note to students</b>
+                <b>Free listening for students</b>
                 <br>
-                If you have trouble with classes, sleep or just don't feel good, I provide "free listening" and "free brainstorm" services as an empathetic outsider.  
-                You can just text/call 503 250 3868 or email eltonlin@mit.edu. Mental health is why I started Explain in the first place!
-                
+                This semester can be hard, so I also provide "free-listening-as-a-service" for anyone having trouble with classes and sleeping. Talking things out to an outsider can increase happiness,
+                and I can serve as a redirect to other people and resources (mental health is why I started Explain in the first place : )
+
+                <br>
+                <br>
+                <div class="pt-2" style="display: flex; justify-content: space-around;">
+                  <!-- FORUM BUTTON -->
+                  <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
+                    class="white--text" color="black" 
+                  >
+                    <v-icon class="mr-1" style="opacity: 0.9;">mdi-draw</v-icon>
+                    <v-badge v-if="mitClass"
+                      :value="mitClass.numOfUnansweredQuestions"
+                      :content="mitClass.numOfUnansweredQuestions"
+                      right color="secondary" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
+                    >
+                      <div style="font-size: 0.9rem; 
+                                  font-weight: 500; 
+                                  color: '#424242'; 
+                                  opacity: 0.9;
+                                  text-transform: uppercase;"
+                      >
+                        FORUM
+                      </div>
+                    </v-badge>
+                  </v-btn>
+
+                  <!-- FORUM POPUP -->
+                  <v-dialog 
+                    :value="isViewingForum" 
+                    @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
+                    persistent
+                    width="95vw"
+                  >
+                    <v-card>
+                      <v-toolbar dark color="grey">
+                        <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
+                          <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                        <h2>VISUAL FORUM</h2>
+                      </v-toolbar>
+
+                      <!--
+                        Without v-if="isViewingForum", the VisualForum does not get destroyed 
+                        even if the popup closes
+                      -->
+                      <VisualForum v-if="isViewingForum"/>
+                    </v-card>
+                  </v-dialog>
+
+                  <!-- OPEN, CROWDSOURCED LIBRARY -->
+                  <v-dialog 
+                    :value="isViewingLibrary" 
+                    @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
+                    persistent
+                    width="95vw"
+                  >
+                    <template v-slot:activator>
+                      <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
+                        class="white--text black" 
+                      >
+                        <!-- purple--text -->
+                        <v-icon small class="mr-1">mdi-folder</v-icon>
+                        <div style="font-size: 0.9rem; 
+                              font-weight: 500; 
+                              color: '#424242'; 
+                              opacity: 0.9;
+                              text-transform: uppercase;">LIBRARY</div>
+                      </v-btn>
+                    </template>
+
+                    <v-card>
+                      <v-toolbar dark color="grey">
+                        <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
+                          <v-icon>mdi-close</v-icon>
+                        </v-btn>
+                        <h2>OPEN LIBRARY</h2>
+                      </v-toolbar>
+
+                      <ClassLibrary v-if="isViewingLibrary" />
+                    </v-card>
+                  </v-dialog>
+                </div>
+
                 <br>
                 <br>
                 <SlackChats2/>
@@ -69,101 +174,12 @@
             </v-card>
           </v-dialog>
 
-          <ClassSwitchDropdown>
-            <template v-slot:add-join-leave-class>
-              <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-                <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
-              </v-list-item>
-            </template>
-          </ClassSwitchDropdown>
-
           <ClassNewPopup 
             :isAddClassPopupOpen="isAddClassPopupOpen"
             @input="(newVal) => isAddClassPopupOpen = newVal"
           />
         </div>
-
-        <div class="pt-2" style="display: flex; justify-content: space-around;">
-          <!-- FORUM BUTTON -->
-          <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
-            class="white--text" color="black" 
-          >
-            <v-icon class="mr-1" style="opacity: 0.9;">mdi-draw</v-icon>
-            <v-badge v-if="mitClass"
-              :value="mitClass.numOfUnansweredQuestions"
-              :content="mitClass.numOfUnansweredQuestions"
-              right color="secondary" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
-            >
-              <div style="font-size: 0.9rem; 
-                          font-weight: 500; 
-                          color: '#424242'; 
-                          opacity: 0.9;
-                          text-transform: uppercase;"
-              >
-                FORUM
-              </div>
-            </v-badge>
-          </v-btn>
-
-          <!-- FORUM POPUP -->
-          <v-dialog 
-            :value="isViewingForum" 
-            @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
-            persistent
-            width="95vw"
-          >
-            <v-card>
-              <v-toolbar dark color="grey">
-                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-                <h2>VISUAL FORUM</h2>
-              </v-toolbar>
-
-              <!--
-                Without v-if="isViewingForum", the VisualForum does not get destroyed 
-                even if the popup closes
-              -->
-              <VisualForum v-if="isViewingForum"/>
-            </v-card>
-          </v-dialog>
-
-          <!-- OPEN, CROWDSOURCED LIBRARY -->
-          <v-dialog 
-            :value="isViewingLibrary" 
-            @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
-            persistent
-            width="95vw"
-          >
-            <template v-slot:activator>
-              <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
-                class="white--text black" 
-              >
-                <!-- purple--text -->
-                <v-icon small class="mr-1">mdi-folder</v-icon>
-                <div style="font-size: 0.9rem; 
-                      font-weight: 500; 
-                      color: '#424242'; 
-                      opacity: 0.9;
-                      text-transform: uppercase;">LIBRARY</div>
-              </v-btn>
-            </template>
-
-            <v-card>
-              <v-toolbar dark color="grey">
-                <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-                <h2>OPEN LIBRARY</h2>
-              </v-toolbar>
-
-              <ClassLibrary v-if="isViewingLibrary" />
-            </v-card>
-          </v-dialog>
-        </div>
       </v-sheet>
-
-      <AllOpenSpaces style="margin-top: 14px;"/>  
       <!-- 
           For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 

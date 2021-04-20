@@ -219,7 +219,7 @@
             <template v-slot:blackboard-toolbar>
               <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
                 :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
-                color="white" small hasLargeIcon
+                color="white" small 
               />
             </template>
           </RealtimeBlackboard>

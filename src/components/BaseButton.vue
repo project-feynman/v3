@@ -111,6 +111,6 @@ export default {
   padding: 8px 16px;
 }
 .button-custom.small-btn:not(.v-btn--round) {
-  padding: 4px 8px;
+  padding: 4px 7px;
 }
 </style>

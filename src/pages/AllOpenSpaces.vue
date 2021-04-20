@@ -1,10 +1,10 @@
 <template>
-  <div style="display: flex; align-items: center; padding-left: 8px; padding-bottom: 2px;" class="pr-0">
+  <div style="display: flex; align-items: center;" class="px-0 mt-0">
     <v-menu max-height="500" offset-y bottom>
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" text tile class="pa-1 text-h6" max-width="180">
+        <v-btn v-on="on" text tile class="py-1 pl-1 pr-0" max-width="140" max-height="20">
                                                                                  <!-- somehow this `max-width` property below is the one that actually does something -->
-          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 140px;">
+          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 110px;">
             <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
             <template v-if="currentRoomTypeDoc">{{ currentRoomTypeDoc.name }}</template>
             <template v-else>Error area...</template>
@@ -23,10 +23,11 @@
             :key="roomType.id"
             :to="(`/class/${classID}/section/${roomType.id}/room/${roomType.id}`)"
             active-class="accent--text"
-            class="px-0 pt-2" 
+            class="px-0" 
             :inactive="sectionID === roomType.id"
             :id="`${ sectionID === roomType.id ? 'space-title' : '' }`"
             dense
+            style="height: 20px;"
           >
             <!--  color: ${ sectionID === roomType.id ? '#ff5b24' : '#424242' };  -->
             <v-list-item-content class="py-0">
@@ -68,39 +69,36 @@
     <v-spacer/>
 
     <!-- AREA CHAT -->
-    <v-menu
-      v-model="isChatOpen"
-      :close-on-content-click="false"
-      :close-on-click="false"
-      max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
-    >
-      <template v-slot:activator="{ on }">
-        <v-badge 
-          :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-          :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-          top left color="info" overlap style="z-index: 1;"
-        >
-          <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
-            
-          </BaseButton>
-        </v-badge>
-      </template>
+    <portal to="area-chat">
+      <v-menu
+        v-model="isChatOpen"
+        :close-on-content-click="false"
+        :close-on-click="false"
+        max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
+      >
+        <template v-slot:activator="{ on }">
+          <v-badge 
+            :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+            :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+            top left color="info" overlap style="z-index: 1;"
+          >
+            <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
+              
+            </BaseButton>
+          </v-badge>
+        </template>
 
-      <v-card max-width="250">
-        <v-card-text class="pa-0">
-          <SlackChat v-if="isChatOpen">
-            <v-btn icon @click="isChatOpen = false" small>
-              <v-icon color="black">mdi-close</v-icon>
-            </v-btn>
-          </SlackChat>      
-        </v-card-text>
-      </v-card>
-    </v-menu>
-
-    <!-- AREA ACTIONS PORTAL -->
-    <portal-target name="current-open-space-actions">
-
-    </portal-target>
+        <v-card max-width="250">
+          <v-card-text class="pa-0">
+            <SlackChat v-if="isChatOpen">
+              <v-btn icon @click="isChatOpen = false" small>
+                <v-icon color="black">mdi-close</v-icon>
+              </v-btn>
+            </SlackChat>      
+          </v-card-text>
+        </v-card>
+      </v-menu>
+    </portal>
   </div>
 </template>
 

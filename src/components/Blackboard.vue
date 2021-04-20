@@ -51,7 +51,7 @@
 
             <BaseButton :disabled="! canUndoStroke"
               @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 
-              icon="mdi-undo" color="white"
+              icon="mdi-undo" color="white" small
             >
             </BaseButton>
           </template>
@@ -62,10 +62,12 @@
             </slot>
           </template>
 
-       
           <!-- More actions slot -->
           <template v-slot:more-actions-slot>
-            <BaseButton v-if="currentState === RecordState.PRE_RECORD" @click="startRecording()" icon="mdi-record" color="white">
+            <BaseButton v-if="currentState === RecordState.PRE_RECORD" 
+              @click="startRecording()" 
+              icon="mdi-record" color="white" small
+            >
               Explain
             </BaseButton>
             <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
@@ -76,7 +78,7 @@
               <template v-slot:activator="{ on }">
                 <!-- Cannot let user wipe board / reupload background image while recording -->
                 <BaseButton v-if="currentState !== RecordState.MID_RECORD" 
-                  @click="isMenuOpen = true" icon="mdi-dots-vertical" color="white" small hasLargeIcon
+                  @click="isMenuOpen = true" icon="mdi-dots-vertical" color="white" small
                 >
                 </BaseButton>
               </template>
