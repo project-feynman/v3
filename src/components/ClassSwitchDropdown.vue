@@ -10,7 +10,7 @@
       </v-btn>
     </template>
 
-    <v-list style="overflow-y: auto; max-height: 600px">
+    <v-list style="overflow-y: auto; max-height: 400px">
       <template v-for="mitClass in $store.state.user.enrolledClasses">
         <v-list-item v-if="mitClass.id !== $route.params.class_id"
           :key="mitClass.id"
