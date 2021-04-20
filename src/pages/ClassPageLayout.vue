@@ -45,7 +45,7 @@
                 </v-list-item-title>
 
                 <v-list-item-subtitle>
-                  <AllOpenSpaces style="margin-top: 6px;"/>  
+                  <AllAreas style="margin-top: 6px;"/>  
                 </v-list-item-subtitle>
               </v-list-item-content>
               <portal-target name="area-chat">
@@ -181,7 +181,7 @@
         </div>
       </v-sheet>
       <!-- 
-          For AllOpenSpaces, because we no longer use a bandwidth-consuming listener to the roomTypes, 
+          For AllAreas, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
           It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
        -->
@@ -215,7 +215,7 @@ import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
 
-import AllOpenSpaces from "@/pages/AllOpenSpaces.vue"; 
+import AllAreas from "@/pages/AllAreas.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
 import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue"; 
@@ -250,7 +250,7 @@ export default {
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
-    AllOpenSpaces,
+    AllAreas,
     VisualForum,
     MyParticipantDocUpdater,
     MapleMusicPlayer,
