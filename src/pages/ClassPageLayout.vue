@@ -18,7 +18,7 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="py-1 px-1" elevation="5">    
+      <v-sheet class="px-1 py-0 mb-3" elevation="8">    
         <div style="display: flex; align-items: center;">
           <!-- enable user to report issues, directly email me, etc. -->
           <v-badge 
