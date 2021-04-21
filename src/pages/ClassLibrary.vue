@@ -12,7 +12,9 @@
     <!-- `flex-grow` lets the video take the remaining available space, see https://stackoverflow.com/questions/37745051/make-div-fill-remaining-horizontal-space-in-flexbox -->
     <div style="flex-grow: 1; max-height: 80vh" class="overflow-y-auto">
       <!-- TODO: inject the expl_prop into here  -->
-      <ClassPageSeePost v-if="currentlySelectedLibraryPostID"
+      <ExplanationGroupDisplay v-if="currentlySelectedLibraryPostID"
+        :originalExplDbPath="`classes/${mitClass.id}/posts/${currentlySelectedLibraryPostID}`"
+        :replyExplsDbPath="`classes/${mitClass.id}/posts/${currentlySelectedLibraryPostID}/replies`"
         :postID="currentlySelectedLibraryPostID"
         :key="currentlySelectedLibraryPostID"
       />
@@ -24,7 +26,7 @@
 import TheSideDrawerFileExplorer from "@/components/TheSideDrawerFileExplorer.vue";
 import TheSideDrawerGroupByDate from "@/components/TheSideDrawerGroupByDate.vue";
 import TheSideDrawerGroupByFolders from "@/components/TheSideDrawerGroupByFolders.vue";
-import ClassPageSeePost from "@/components/ClassPageSeePost.vue";
+import ExplanationGroupDisplay from "@/components/ExplanationGroupDisplay.vue";
 import { mapState } from "vuex"; 
 
 export default {
@@ -32,7 +34,7 @@ export default {
     TheSideDrawerFileExplorer,
     TheSideDrawerGroupByDate,
     TheSideDrawerGroupByFolders,
-    ClassPageSeePost
+    ExplanationGroupDisplay
   },
   computed: {
     ...mapState([

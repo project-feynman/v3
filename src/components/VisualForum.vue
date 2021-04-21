@@ -80,7 +80,9 @@
         <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
         <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
         <div style="max-height: 80vh; overflow-x: hidden; overflow-y: scroll">
-          <ClassPageSeePost 
+          <ExplanationGroupDisplay
+            :originalExplDbPath="`classes/${mitClass.id}/questions/${currentlySelectedQuestionID}`"
+            :replyExplsDbPath="`classes/${mitClass.id}/questions/${currentlySelectedQuestionID}/explanations`"
             :postID="currentlySelectedQuestionID"
             :key="currentlySelectedQuestionID"
           /> 
@@ -98,7 +100,7 @@ import "firebase/functions";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import ExplanationCreate from "@/components/ExplanationCreate.vue"; 
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue"; 
-import ClassPageSeePost from "@/components/ClassPageSeePost.vue"; 
+import ExplanationGroupDisplay from "@/components/ExplanationGroupDisplay.vue"; 
 import ClassPageSeeQuestion from "@/pages/ClassPageSeeQuestion.vue"; 
 import { mapState } from "vuex"; 
 import { displayDate } from "@/helpers.js";
@@ -108,7 +110,7 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    ClassPageSeePost,
+    ExplanationGroupDisplay,
     ClassPageSeeQuestion,
     ExplanationCreate,
     ExplanationDisplay

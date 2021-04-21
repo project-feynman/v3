@@ -35,6 +35,14 @@ export default {
     postID: {
       type: String,
       required: true
+    },
+    originalExplDbPath: {
+      type: String,
+      required: true
+    },
+    replyExplsDbPath: {
+      type: String,
+      required: true
     }
   },
   mixins: [
@@ -63,21 +71,10 @@ export default {
     }
   },
   async created () {
-    // Decouple the component from the route: const type = this.$route.query.type === 'question' ? 'questions' : 'posts';
-    // TODO: unify, the naming is super inconsistent "replies" for posts vs "explanations" for questions
-    const { class_id } = this.$route.params;
-    if (this.isViewingForum) {
-      this.postRef = db.doc(`classes/${class_id}/questions/${this.postID}`);
-      this.explanationsRef = this.postRef.collection("explanations");
-    } 
-    else if (this.isViewingLibrary) {
-      this.postRef = db.doc(`classes/${class_id}/posts/${this.postID}`);
-      this.explanationsRef = this.postRef.collection("replies");
-    }
-    this.$_listenToDoc(this.postRef, this, "originalPost").then(listener => {
+    this.$_listenToDoc(db.doc(this.originalExplDbPath), this, "originalPost").then(listener => {
       this.databaseListeners.push(listener);
     });
-    this.$_listenToCollection(this.explanationsRef, this, "explanations").then(listener => {
+    this.$_listenToCollection(db.collection(this.replyExplsDbPath), this, "explanations").then(listener => {
       this.databaseListeners.push(listener);
     });
   },

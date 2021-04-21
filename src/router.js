@@ -19,15 +19,6 @@ const router = new Router({
       }
     },
     {
-      path: "/explanation/:expl_id/class/:class_id",
-      component: () => import(/* webpackChunkName: "home" */ "./components/ClassPageSeePost.vue"),
-      props: route => {
-        return { 
-          postID: route.params.expl_id
-        };
-      }
-    },
-    {
       path: "/music-playground",
       component: () => import(/* webpackChunkName: "music-playground" */ "./components/MusicPlayer.vue")
     },
@@ -48,6 +39,15 @@ const router = new Router({
         }
       }
     }
+    // {
+    //   path: "/explanation/:expl_id/class/:class_id",
+    //   component: () => import(/* webpackChunkName: "home" */ "./components/ClassPageSeePost.vue"),
+    //   props: route => {
+    //     return { 
+    //       postID: route.params.expl_id
+    //     };
+    //   }
+    // },
   ]
 });
 
