@@ -14,7 +14,10 @@
         </template>
 
         <v-list>
-          <v-list-item><b>During class</b></v-list-item> 
+          <!-- <v-list-item><b>During class</b></v-list-item>  -->
+          <portal-target name="area-chat">
+
+          </portal-target>
 
           <!-- For some reason you need click.stop -->
           <v-list-item :disabled="!isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
@@ -85,7 +88,7 @@
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="blue">mdi-dice-5</v-icon> Randomly shuffle everyone
+                <v-icon left color="blue">mdi-dice-5</v-icon> Shuffle everyone randomly
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -109,12 +112,12 @@
 
           <v-divider/>
 
-          <v-list-item><b>Outside of class</b></v-list-item> 
+          <!-- <v-list-item><b>Outside of class</b></v-list-item>  -->
 
           <BasePopupButton actionName="Wipe everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="red">mdi-delete</v-icon> Wipe boards in every table
+                <v-icon left color="red">mdi-delete</v-icon> Wipe all boards in this area
               </v-list-item>
             </template>
             <template v-slot:message-to-user>

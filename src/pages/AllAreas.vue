@@ -2,9 +2,9 @@
   <div style="display: flex; align-items: center;" class="px-0 mt-0">
     <v-menu max-height="500" offset-y bottom>
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" text tile class="py-1 pl-1 pr-0" max-width="140" max-height="20">
+        <v-btn v-on="on" text tile class="py-1 pl-1 pr-0" max-width="160" max-height="28">
                                                                                  <!-- somehow this `max-width` property below is the one that actually does something -->
-          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 110px;">
+          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 130px;">
             <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
             <template v-if="currentRoomTypeDoc">{{ currentRoomTypeDoc.name }}</template>
             <template v-else>Error area...</template>
@@ -14,7 +14,7 @@
         </v-btn>
       </template>
 
-      <v-list nav class="pa-0" >
+      <v-list nav class="pa-0">
         <template v-for="roomType in sortedRoomTypes">
           <!-- accent-text counterintuitively gives the orange shading and NOT the orange text-->
           <!-- :inactive prop is necessary because otherwise, the user can click it to go into a void (without being in a room) -->
@@ -68,7 +68,7 @@
 
     <v-spacer/>
 
-    <!-- AREA CHAT -->
+    <!-- TODO: AREA CHAT should NOT belong here -->
     <portal to="area-chat">
       <v-menu
         v-model="isChatOpen"
@@ -82,9 +82,13 @@
             :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
             top left color="info" overlap style="z-index: 1;"
           >
-            <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
+            <v-list-item v-on="on">
+              <v-icon class="mr-2" color="purple">mdi-chat</v-icon>
+              Open this area's chat
+            </v-list-item>
+            <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
               
-            </BaseButton>
+            </BaseButton> -->
           </v-badge>
         </template>
 

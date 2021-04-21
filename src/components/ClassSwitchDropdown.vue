@@ -1,8 +1,8 @@
 <template>
   <v-menu v-model="isMenuOpen" fixed offset-y bottom>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" text tile class="py-0 text-h6" max-width="150" max-height="25" style="padding-left: 3px; padding-right: 0px;">
-        <span class="d-inline-block text-truncate" style="max-width: 110px;">
+      <v-btn v-on="on" text tile class="py-0 text-h6" max-width="160" max-height="28" style="padding-left: 3px; padding-right: 0px;">
+        <span class="d-inline-block text-truncate" style="max-width: 120px;">
           {{ currentClass ? currentClass.name : "ERROR" }}
         </span>
         <v-spacer/>
@@ -10,7 +10,7 @@
       </v-btn>
     </template>
 
-    <v-list style="overflow-y: auto; max-height: 400px">
+    <v-list style="overflow-y: auto; max-height: 350px">
       <template v-for="mitClass in $store.state.user.enrolledClasses">
         <v-list-item v-if="mitClass.id !== $route.params.class_id"
           :key="mitClass.id"

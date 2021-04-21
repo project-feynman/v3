@@ -28,13 +28,13 @@
           >
             <v-list-item two-line class="px-0">
               <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
-                class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 15px;" tile width="50" height="45"
+                class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 16px;" tile width="55" height="50"
               >
                 <img src="/logo.png">
               </v-list-item-avatar>
 
               <v-list-item-content class="py-0">
-                <v-list-item-title>
+                <v-list-item-title class="mb-0">
                   <ClassSwitchDropdown>
                     <template v-slot:add-join-leave-class>
                       <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
@@ -48,9 +48,6 @@
                   <AllAreas style="margin-top: 6px;"/>  
                 </v-list-item-subtitle>
               </v-list-item-content>
-              <portal-target name="area-chat">
-
-              </portal-target>
               <portal-target name="current-open-space-actions">
 
               </portal-target>
@@ -58,26 +55,93 @@
           </v-badge>
 
           <!-- Have the app overview, updates, news, as well as the chats -->
-          <v-dialog v-model="isAppOverviewPopupOpen" width="700">
-            <MapleMusicPlayer v-if="isAppOverviewPopupOpen"
-              :incrementToToggleMusic="incrementToToggleMusic"
-              @music-fetched="incrementToToggleMusic += 1"
-            /> 
-            <v-card>
-              <v-card-title>App Overview</v-card-title>
-              <v-card-text>
-                 explain.mit.edu is <a href="https://github.com/project-feynman/explain-mit">open source</a> and updates weekly. I'm the full-time developer (eltonlin@mit.edu, 6-14, '20, 503 250 3868) and you can ask me about feature requests, support for troubleshoot, etc.
-                <br>
-                <br>
+          <v-dialog v-model="isAppOverviewPopupOpen" width="90vw" style="height: 90vh" persistent>
+            <v-toolbar dark fixed>
+              <v-btn icon dark @click="isAppOverviewPopupOpen = false">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-toolbar>   
+            <v-card style="height: 80vh">     
+              <MapleMusicPlayer v-if="isAppOverviewPopupOpen"
+                :incrementToToggleMusic="incrementToToggleMusic"
+                @music-fetched="incrementToToggleMusic += 1"
+              />  
+                <v-tabs
+                  v-model="tab"
+                  background-color="transparent"
+                  color="accent"
+                > 
+                  <v-tab>School Messenger</v-tab>
+                  <v-tab>Visual Forum</v-tab>
+                  <v-tab>Open Library</v-tab>
+                </v-tabs>
 
-                <b>Free listening for students</b>
-                <br>
-                This semester can be hard, so I also provide "free-listening-as-a-service" for anyone having trouble with classes and sleeping. Talking things out to an outsider can increase happiness,
-                and I can serve as a redirect to other people and resources (mental health is why I started Explain in the first place : )
+                <v-tabs-items v-model="tab" touchless>
+                  <!-- <v-tab-item key="overview">
+                    <v-card-text>
+                      <b>Problem</b>
+                      <br>
+                      MIT is hard because of its relentless pace, and once you fall behind your problems exponentiate: worse sleep, worse learning, worse health, worse psychology, worse relationships. 
+                      Moreover, when people are already at their limit themselves, it's near impossible to find time to help each other. 
+                      <br>
+                      <br>
+                      <b>Solution</b>
+                      <br>
+                      The goal of explain.mit.edu is to make helping each other so efficient that it becomes the optimal strategy for everyone. 
+                      There are four active experiments running: 
+                      <ol>
+                        <li>Pset Lounge: a convenient central place for people to pset together, host Office Hours, etc.</li>
+                        <li>Visual forum: a blackboard-centric forum where you can draw and talk</li>
+                        <li>Open Library: a visual, crowdsourced repository of explanations that outlasts each class generation</li>
+                        <li>School Messenger: a centralized, distraction-free environment to message classmates</li>
+                      </ol>
 
-                <br>
-                <br>
-                <div class="pt-2" style="display: flex; justify-content: space-around;">
+                      <br>
+                      It is <a href="https://github.com/project-feynman/explain-mit">open source</a> and updates weekly. 
+                      Contact any of the active developers for help with troubleshooting, feature requests, etc:
+
+                      <ul>
+                        <li>Elton Lin, eltonlin@mit.edu, class of 2020)</li>
+                        <li>Huy Dai, huydai@mit.edu, class of 2024)</li>
+                        <li>(We're recruiting!)</li>
+                      </ul>
+                      <br>
+
+                      <b>Free listening for students</b>
+                      <br>
+                      I also provide "free-listening-as-a-service" for anyone having trouble with classes and sleeping. Talking things out to an outsider can increase happiness,
+                      and I can serve as a redirect to other people and resources (mental health is why I started Explain in the first place : )
+                    </v-card-text>
+                    
+                    <v-card-actions>
+                      <v-spacer/>
+                      <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
+                        LEAVE CLASS
+                      </v-btn>
+                      <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
+                        <v-icon class="mr-2">mdi-logout</v-icon>
+                        SIGN OUT
+                      </v-btn>       
+                  </v-card-actions>
+                  </v-tab-item> -->
+
+                  <v-tab-item>
+                    <v-card-text>
+                      <SlackChats2/>
+                    </v-card-text>
+                  </v-tab-item>
+
+                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_FORUM', true)">
+                    <VisualForum/>
+                  </v-tab-item>
+
+                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_LIBRARY', true)">
+                    <ClassLibrary/>
+                  </v-tab-item>
+                </v-tabs-items>
+
+              <v-card-text v-if="false">
+                <div v-if="false" class="pt-2" style="display: flex; justify-content: space-around;">
                   <!-- FORUM BUTTON -->
                   <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
                     class="white--text" color="black" 
@@ -158,19 +222,9 @@
 
                 <br>
                 <br>
-                <SlackChats2/>
+           
                 <br>
               </v-card-text>
-              <v-card-actions>
-                <v-spacer/>
-                <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
-                  LEAVE CLASS
-                </v-btn>
-                <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
-                  <v-icon class="mr-2">mdi-logout</v-icon>
-                  SIGN OUT
-                </v-btn>       
-              </v-card-actions>
             </v-card>
           </v-dialog>
 
@@ -265,8 +319,9 @@ export default {
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
-    isAppOverviewPopupOpen: false,
-    incrementToToggleMusic: 0
+    incrementToToggleMusic: 0,
+    tab: 0, // 0, 1, 2
+    isViewingMessenger: false
   }),
   computed: {
     ...mapState([
@@ -285,6 +340,19 @@ export default {
           return mitClass; 
         }
       }
+    },
+    isAppOverviewPopupOpen: {
+      get () {
+        return (this.isViewingForum || this.isViewingLibrary || this.isViewingMessenger); 
+      },
+      set (newBoolean) {
+        if (newBoolean) this.isViewingMessenger = true; 
+        else {
+          this.isViewingMessenger = false; 
+          this.$store.commit("SET_IS_VIEWING_FORUM", false); 
+          this.$store.commit("SET_IS_VIEWING_LIBRARY", false); 
+        } 
+      }
     }
   },
   // TODO: refactor this quickfix
@@ -292,6 +360,21 @@ export default {
     isBoardFullscreen (newVal) {
       if (newVal) this.isShowingDrawer = false; 
       else this.isShowingDrawer = true; 
+    },
+    // REFACTOR THIS
+    // setting isViewingForum to true will display the AppOverViewPopup because it's computed property relies on it, 
+    // and the right tab will be selected because the tab is set here. Not a great solution, but <v-tabs> is really hard to get to work
+    isViewingForum: {
+      immediate: true,
+      handler () {
+        this.tab = 1; 
+      }
+    },
+    isViewingLibrary: {
+      immediate: true, 
+      handler () {
+        this.tab = 2; 
+      }
     }
   },
   created () {
