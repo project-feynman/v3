@@ -4,11 +4,10 @@
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal to="current-open-space-actions">
       <v-menu v-if="roomTypeDoc" 
-        v-model="isMenuOpen" 
         bottom nudge-left offset-y
       >
-        <template v-slot:activator>
-          <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
+        <template v-slot:activator="{ on }">
+          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
             <!-- Space actions -->
           </BaseButton>
         </template>
@@ -369,7 +368,6 @@ export default {
       participants: [],
       unsubFuncs: [],
       targetBoardNum: 0,
-      isMenuOpen: false,
       makeAnnouncementPopup: {
         show: false,
         roomType: null,

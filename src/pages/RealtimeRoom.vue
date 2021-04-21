@@ -107,10 +107,10 @@
     <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
-      <v-menu v-model="isMenuOpen" offset-y bottom>
+      <v-menu offset-y bottom>
         <!-- Triple-dots button -->
-        <template v-slot:activator>
-          <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
+        <template v-slot:activator="{ on }">
+          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
             <!-- Room actions -->
           </BaseButton>
         </template>
@@ -155,9 +155,11 @@
         <!-- hide-details: eliminates unnecessary bottom padding -->
         <div v-if="room" class="d-flex">
           <div v-if="currentBoardID">
-            <v-menu v-model="isBoardsMenuOpen" fixed offset-y bottom>
-              <template v-slot:activator>
-                <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-0" 
+            <!-- `click.native.stop` is the workaround for the menu causing the entire page to reload https://github.com/vuetifyjs/vuetify/issues/3333#issuecomment-366832774 -->
+            <v-menu @click.prevent.stop fixed offset-y bottom>
+              <template v-slot:activator="{ on }">
+                <!-- `click.prevent.stop -->
+                <v-btn v-on="on" @click.prevent.stop height="30" text tile class="px-0" 
                   :style="`text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400;`" max-width="180"
                 >
                   <!-- The board switch button looks like a blackboard itself -->
@@ -295,8 +297,7 @@ export default {
       isRenameRoomPopupOpen: false,
       titleOfExplCollection: "",
       newRoomStatus: "",
-      newRoomName: "",
-      isBoardsMenuOpen: false
+      newRoomName: ""
     }
   },
   computed: {
