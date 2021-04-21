@@ -4,7 +4,7 @@
       <template v-slot:activator="{ on }">
         <v-btn v-on="on" text tile class="pa-1" max-width="160" max-height="28">
                                                                                  <!-- somehow this `max-width` property below is the one that actually does something -->
-          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="font-size: 1rem; max-width: 130px;">
+          <span v-if="roomTypes.length > 0" class="caption font-weight-normal d-inline-block text-truncate grey--text text--darken-2" style="font-size: 1rem !important; max-width: 130px;">
             <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
             <template v-if="currentRoomTypeDoc">{{ currentRoomTypeDoc.name }}</template>
             <template v-else>Error area...</template>
