@@ -28,7 +28,7 @@
           >
             <v-list-item two-line class="px-0">
               <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
-                class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 16px;" tile width="55" height="50"
+                class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 16px;" tile width="60" height="55"
               >
                 <img src="/logo.png">
               </v-list-item-avatar>
@@ -56,16 +56,14 @@
 
           <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isAppOverviewPopupOpen" width="90vw" style="height: 90vh" persistent>
-            <v-toolbar dark fixed>
-              <v-btn icon dark @click="isAppOverviewPopupOpen = false">
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-            </v-toolbar>   
             <v-card style="height: 80vh">     
               <MapleMusicPlayer v-if="isAppOverviewPopupOpen"
                 :incrementToToggleMusic="incrementToToggleMusic"
                 @music-fetched="incrementToToggleMusic += 1"
               />  
+                <v-btn icon @click="isAppOverviewPopupOpen = false">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
                 <v-tabs
                   v-model="tab"
                   background-color="transparent"

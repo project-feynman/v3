@@ -1,8 +1,8 @@
 <template>
   <v-menu v-model="isMenuOpen" fixed offset-y bottom>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" text tile class="py-0 text-h6" max-width="160" max-height="28" style="padding-left: 3px; padding-right: 0px;">
-        <span class="d-inline-block text-truncate" style="max-width: 120px;">
+      <v-btn v-on="on" text tile class="py-1 px-0 text-h5" max-width="160" max-height="30">
+        <span class="d-inline-block text-truncate" style="max-width: 120px; font-size: 1.8rem;">
           {{ currentClass ? currentClass.name : "ERROR" }}
         </span>
         <v-spacer/>

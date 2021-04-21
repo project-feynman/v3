@@ -2,9 +2,9 @@
   <div style="display: flex; align-items: center;" class="px-0 mt-0">
     <v-menu max-height="500" offset-y bottom>
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" text tile class="py-1 pl-1 pr-0" max-width="160" max-height="28">
+        <v-btn v-on="on" text tile class="pa-1" max-width="160" max-height="28">
                                                                                  <!-- somehow this `max-width` property below is the one that actually does something -->
-          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style="max-width: 130px;">
+          <span v-if="roomTypes.length > 0" class="d-inline-block text-truncate" style=" max-width: 130px;">
             <!-- looks inelegant, but saves A LOT of time and focus from breakages from backwards incompatibility  -->
             <template v-if="currentRoomTypeDoc">{{ currentRoomTypeDoc.name }}</template>
             <template v-else>Error area...</template>
