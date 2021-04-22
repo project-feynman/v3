@@ -7,9 +7,16 @@
         bottom nudge-left offset-y
       >
         <template v-slot:activator="{ on }">
-          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
+          <!-- TODO: Fix badge not getting displayed -->
+          <v-badge v-if="mitClass"
+            :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+            :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+            right color="secondary" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
+          >
+            <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
             <!-- Space actions -->
-          </BaseButton>
+            </BaseButton>
+          </v-badge>
         </template>
 
         <v-list>
@@ -158,20 +165,19 @@
       When you are feeling down, either you have to suddenly do something courageous,
       or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
     -->  
-  <!-- active-class="active-blackboard accent--text" -->
   <!-- ROOMS -->
   <v-list>
      <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       dense
-      color="accent"
+      active-class="orange--text text--darken-3"
       class="pl-0 pr-0 mx-2 mb-0"
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
           <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
-            <v-icon large style="opacity: 90%" class="mr-1">
+            <v-icon large class="mr-1">
               mdi-atom
             </v-icon>
         
@@ -390,7 +396,9 @@ export default {
       "dominantSpeaker"
     ]),
     ...mapGetters([
-      "isAdmin"
+      "isAdmin",
+      "numOfUnreadMsgsInArea",
+      "numOfUnreadMsgsInTable"
     ]),
     classID () { return this.$route.params.class_id; },
     sessionID () { return this.session.currentID; },

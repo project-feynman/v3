@@ -20,7 +20,6 @@
     >      
       <v-sheet class="px-1 py-0 mb-3" elevation="8">    
         <div style="display: flex; align-items: center;">
-          <!-- enable user to report issues, directly email me, etc. -->
           <v-badge 
             :value="numOfUnreadGlobalMsgs"
             :content="numOfUnreadGlobalMsgs"
@@ -48,6 +47,7 @@
                   <AllAreas style="margin-top: 6px;"/>  
                 </v-list-item-subtitle>
               </v-list-item-content>
+              
               <portal-target name="current-open-space-actions">
 
               </portal-target>
@@ -67,7 +67,7 @@
                 <v-tabs
                   v-model="tab"
                   background-color="transparent"
-                  color="accent"
+                  color="cyan"
                 > 
                   <v-tab>School Messenger</v-tab>
                   <v-tab>Visual Forum</v-tab>

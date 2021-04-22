@@ -18,6 +18,12 @@
         :postID="currentlySelectedLibraryPostID"
         :key="currentlySelectedLibraryPostID"
       />
+      <!-- Add a tutorial here -->
+      <p v-else>
+        The library is about minimizing the pain of exporting a file and sharing it with people. 
+        On any Explain board, you can press "Save board to library" and it'll end up here. 
+        The difference is most noticeable for video files. 
+      </p>
     </div>
   </div>
 </template>

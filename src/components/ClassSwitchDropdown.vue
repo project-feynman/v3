@@ -1,7 +1,7 @@
 <template>
   <v-menu v-model="isMenuOpen" fixed offset-y bottom>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" text tile class="py-1 text-h5" max-width="160" max-height="30" style="padding-left: 1px;">
+      <v-btn v-on="on" text tile class="py-1 text-h5" max-width="160" max-height="30" style="padding-left: 1px; padding-right: 1px;">
         <span class="d-inline-block text-truncate" style="max-width: 120px; font-size: 1.85rem;">
           {{ currentClass ? currentClass.name : "ERROR" }}
         </span>

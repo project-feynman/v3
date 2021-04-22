@@ -6,7 +6,7 @@
         <v-list-item 
           @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'EMAIL_SETTINGS')"
           :input-value="currentlySelectedQuestionID === 'EMAIL_SETTINGS'"
-          active-class="orange"
+          active-class="cyan--text"
         >
           <v-icon class="mr-2">mdi-settings</v-icon>Email settings
         </v-list-item>
@@ -14,7 +14,7 @@
         <v-list-item 
           @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'NEW_QUESTION')"
           :input-value="currentlySelectedQuestionID === 'NEW_QUESTION'"
-          active-class="orange"
+          active-class="cyan--text"
         > 
           <v-icon class="mr-2">mdi-plus</v-icon>New question
         </v-list-item>
@@ -24,9 +24,10 @@
             <!-- Using the prop `three-line` requires `overflow: hidden` to work across all browsers, see https://vuetifyjs.com/en/api/v-list-item/#props -->
             <v-list-item :key="question.id"
               @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id);"
-              :class="!question.hasReplies && question.id !== currentlySelectedQuestionID ? ['info'] : ''" three-line active-class="orange"
+              :class="!question.hasReplies && question.id !== currentlySelectedQuestionID ? ['info'] : ''" three-line 
               :input-value="question.id === currentlySelectedQuestionID" 
               style="max-height: 40px;"
+              active-class="cyan--text"
             >
               <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
                 <v-list-item-title>
