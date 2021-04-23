@@ -65,44 +65,6 @@
         </BasePopupButton>
       </v-list>
     </v-menu>
-
-    <v-spacer/>
-
-    <!-- TODO: AREA CHAT should NOT belong here -->
-    <portal to="area-chat">
-      <v-menu
-        v-model="isChatOpen"
-        :close-on-content-click="false"
-        :close-on-click="false"
-        max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
-      >
-        <template v-slot:activator="{ on }">
-          <v-badge 
-            :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            top left color="info" overlap style="z-index: 1;"
-          >
-            <v-list-item v-on="on">
-              <v-icon class="mr-2" color="purple">mdi-chat</v-icon>
-              Open this area's chat
-            </v-list-item>
-            <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
-              
-            </BaseButton> -->
-          </v-badge>
-        </template>
-
-        <v-card max-width="250">
-          <v-card-text class="pa-0">
-            <SlackChat v-if="isChatOpen">
-              <v-btn icon @click="isChatOpen = false" small>
-                <v-icon color="black">mdi-close</v-icon>
-              </v-btn>
-            </SlackChat>      
-          </v-card-text>
-        </v-card>
-      </v-menu>
-    </portal>
   </div>
 </template>
 
@@ -113,19 +75,23 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import BaseButton from "@/components/BaseButton.vue";
 import ClassLibrary from "@/pages/ClassLibrary.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
-import SlackChat from "@/components/SlackChat.vue";
-import { mapState, mapGetters } from "vuex";
+import { mapState } from "vuex";
 
 export default {
-  name: "AllOpenSpaces",
+  name: "AllAreas",
+  props: {
+    areaID: {
+      type: String,
+      required: true
+    }
+  },
   mixins: [
     DatabaseHelpersMixin
   ],
   components: {
     ClassLibrary,
     BaseButton,
-    BasePopupButton,
-    SlackChat
+    BasePopupButton
   },
   data () {
     return {
@@ -137,10 +103,6 @@ export default {
     ...mapState([ 
       "user",
       "mitClass"
-    ]),
-    ...mapGetters([ 
-      "numOfUnreadMsgsInArea",
-      "numOfUnreadMsgsInTable"
     ]),
     classID () { return this.$route.params.class_id; },
     sectionID () { return this.$route.params.section_id; },

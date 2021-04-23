@@ -122,6 +122,46 @@
             <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
           </v-list-item>
+
+          <!-- Add a chat here -->
+          <v-menu
+            v-model="isChatOpen"
+            :close-on-content-click="false"
+            :close-on-click="false"
+            max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
+          >
+            <template v-slot:activator="{ on }">
+              <v-badge 
+                :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+                :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+                top left color="info" overlap style="z-index: 1;"
+              >
+                <v-list-item v-on="on">
+                  <v-icon class="mr-2" color="purple">mdi-chat</v-icon>
+                  Open this room's chat
+                </v-list-item>
+                <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
+                  
+                </BaseButton> -->
+              </v-badge>
+            </template>
+
+            <v-card max-width="250">
+              <v-card-text class="pa-0">
+                <ZoomChat v-if="isChatOpen"
+                  :messagesDbPath="`classes/${classID}/rooms/${roomID}/messages`"
+                  :participantsDbRef="roomParticipantsRef"
+                  :notifFieldName="`numOfUnreadMsgsInTable:${roomID}`"
+                >
+                  <v-btn icon @click="isChatOpen = false" small>
+                    <v-icon color="black">mdi-close</v-icon>
+                  </v-btn>
+                </ZoomChat>   
+              </v-card-text>
+            </v-card>
+          </v-menu>
+          <!--  -->
+
           <v-list-item @click="isRenameRoomPopupOpen = true">
             <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
           </v-list-item>
@@ -251,10 +291,11 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseIconButton from "@/components/BaseIconButton.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId } from "@/helpers.js";
 import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
+import ZoomChat from "@/components/ZoomChat.vue";
 
 export default {
   props: {
@@ -274,7 +315,8 @@ export default {
     BaseButton,
     BaseIconButton,
 
-    VideoConferenceRoom
+    VideoConferenceRoom,
+    ZoomChat
   },
   mixins: [
     DatabaseHelpersMixin
@@ -297,7 +339,9 @@ export default {
       isRenameRoomPopupOpen: false,
       titleOfExplCollection: "",
       newRoomStatus: "",
-      newRoomName: ""
+      newRoomName: "",
+
+      isChatOpen: false
     }
   },
   computed: {
@@ -310,8 +354,14 @@ export default {
       "currentBoardID",
       "currentBoardNumber"
     ]),
-    classID () {
-      return this.$route.params.class_id; 
+    ...mapGetters([
+      "numOfUnreadMsgsInArea",
+      "numOfUnreadMsgsInTable"
+    ]),
+    classID () { return this.$route.params.class_id; },
+    roomParticipantsRef () {
+      const { classID, roomID } = this; 
+      return db.collection(`classes/${classID}/participants`).where("currentRoom", "==", roomID); 
     }
   },
   // database => state 

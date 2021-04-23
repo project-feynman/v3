@@ -21,9 +21,47 @@
 
         <v-list>
           <!-- <v-list-item><b>During class</b></v-list-item>  -->
-          <portal-target name="area-chat">
+          <v-menu
+            v-model="isChatOpen"
+            :close-on-content-click="false"
+            :close-on-click="false"
+            max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
+          >
+            <template v-slot:activator="{ on }">
+              <v-badge 
+                :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+                :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
+                top left color="info" overlap style="z-index: 1;"
+              >
+                <v-list-item v-on="on">
+                  <v-icon class="mr-2" color="purple">mdi-chat</v-icon>
+                  Open this area's chat
+                </v-list-item>
+                <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
+                  
+                </BaseButton> -->
+              </v-badge>
+            </template>
 
-          </portal-target>
+            <v-card max-width="250">
+              <v-card-text class="pa-0">
+                <ZoomChat v-if="isChatOpen"
+                  :messagesDbPath="`classes/${classID}/roomTypes/${sectionID}/messages`"
+                  :participantsDbRef="participantsRef"
+                  :notifFieldName="`numOfUnreadMsgsInArea:${sectionID}`"
+                >
+                  <v-btn icon @click="isChatOpen = false" small>
+                    <v-icon color="black">mdi-close</v-icon>
+                  </v-btn>
+                </ZoomChat>   
+                <!-- <SlackChat v-if="isChatOpen">
+                  <v-btn icon @click="isChatOpen = false" small>
+                    <v-icon color="black">mdi-close</v-icon>
+                  </v-btn>
+                </SlackChat>       -->
+              </v-card-text>
+            </v-card>
+          </v-menu>
 
           <!-- For some reason you need click.stop -->
           <v-list-item :disabled="!isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
@@ -338,6 +376,7 @@ import HandleAnnouncements from "@/components/HandleAnnouncements.vue";
 import ParticularOpenSpaceRenamePopup from "@/components/ParticularOpenSpaceRenamePopup.vue";
 import ParticularOpenSpaceDeletePopup from "@/components/ParticularOpenSpaceDeletePopup.vue";
 import ParticularOpenSpaceBirdsEyeViewPopup from "@/components/ParticularOpenSpaceBirdsEyeViewPopup.vue"; 
+import ZoomChat from "@/components/ZoomChat.vue"; 
 
 import firebase from "firebase/app";
 import "firebase/firestore"; 
@@ -363,7 +402,8 @@ export default {
     ClassLibrary,
     ParticularOpenSpaceRenamePopup,
     ParticularOpenSpaceDeletePopup,
-    ParticularOpenSpaceBirdsEyeViewPopup
+    ParticularOpenSpaceBirdsEyeViewPopup,
+    ZoomChat
   },
   data () {
     return {
@@ -384,7 +424,9 @@ export default {
       incrementKeyToDestroy: 0,
       isRenamePopupOpen: false,
       isDeletePopupOpen: false,
-      isBirdsEyeViewPopupOpen: false
+      isBirdsEyeViewPopupOpen: false,
+
+      isChatOpen: false // refactor into a component right away, just for testing for now
     }
   },
   computed: {
@@ -418,6 +460,9 @@ export default {
     },
     roomTypeRef () {
       return this.classDocRef.collection("roomTypes").doc(this.sectionID); 
+    },
+    participantsRef () {
+      return this.classDocRef.collection("participants").where("roomTypeID", "==", this.sectionID);
     }
   },
   watch: {
@@ -483,7 +528,7 @@ export default {
     this.unsubFuncs.push(
       this.$_bindVarToDB({
         varName: "participants",
-        dbRef: this.classDocRef.collection("participants").where("roomTypeID", "==", this.sectionID),
+        dbRef: this.participantsRef, // this.classDocRef.collection("participants").where("roomTypeID", "==", this.sectionID),
         component: this
       })
     );
@@ -499,7 +544,7 @@ export default {
       for (const room of this.rooms) {
         const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 
         peopleInRoom.sort((p1, p2) => {
-          // pin myself to the top
+          // the user sees himself/herself on top
           if ([p1.sessionID, p2.sessionID].includes(this.sessionID)) {
             return (p2.sessionID === this.sessionID) - (p1.sessionID === this.sessionID);
           } 

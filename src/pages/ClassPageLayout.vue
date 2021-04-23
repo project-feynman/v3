@@ -24,6 +24,8 @@
             :value="numOfUnreadGlobalMsgs"
             :content="numOfUnreadGlobalMsgs"
             top left color="secondary" overlap style="z-index: 1;"
+            offset-x="18"
+            offset-y="25"
           >
             <v-list-item two-line class="px-0">
               <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
@@ -44,7 +46,10 @@
                 </v-list-item-title>
 
                 <v-list-item-subtitle>
-                  <AllAreas style="margin-top: 6px;"/>  
+                  <AreaSwitchDropdown 
+                    :areaID="areaID"
+                    style="margin-top: 6px;"
+                  />  
                 </v-list-item-subtitle>
               </v-list-item-content>
               
@@ -233,7 +238,7 @@
         </div>
       </v-sheet>
       <!-- 
-          For AllAreas, because we no longer use a bandwidth-consuming listener to the roomTypes, 
+          For AreaSwitchDropdown, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
           It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
        -->
@@ -267,7 +272,7 @@ import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
 
-import AllAreas from "@/pages/AllAreas.vue"; 
+import AreaSwitchDropdown from "@/components/AreaSwitchDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
 import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue"; 
@@ -302,7 +307,7 @@ export default {
     ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
-    AllAreas,
+    AreaSwitchDropdown,
     VisualForum,
     MyParticipantDocUpdater,
     MapleMusicPlayer,
