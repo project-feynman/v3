@@ -132,6 +132,17 @@
                     <v-card-text>
                       <SlackChats2/>
                     </v-card-text>
+                    
+                    <v-card-actions>
+                      <v-spacer/>
+                      <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
+                        LEAVE CLASS
+                      </v-btn>
+                      <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
+                        <v-icon class="mr-2">mdi-logout</v-icon>
+                        SIGN OUT
+                      </v-btn>       
+                    </v-card-actions>
                   </v-tab-item>
 
                   <v-tab-item @click="$store.commit('SET_IS_VIEWING_FORUM', true)">
@@ -370,13 +381,13 @@ export default {
     isViewingForum: {
       immediate: true,
       handler () {
-        this.tab = 1; 
+        if (this.isViewingForum) this.tab = 1; 
       }
     },
     isViewingLibrary: {
       immediate: true, 
       handler () {
-        this.tab = 2; 
+        if (this.isViewingLibrary) this.tab = 2; 
       }
     }
   },
