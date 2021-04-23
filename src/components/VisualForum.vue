@@ -29,12 +29,12 @@
               style="max-height: 40px;"
               active-class="cyan--text"
             >
-              <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
+              <v-list-item-content :class="question.hasReplies ? '' : ''">
                 <v-list-item-title>
                   {{ question.title }}
                 </v-list-item-title> 
-                <v-list-item-subtitle v-html="question.html" :class="question.hasReplies ? '' : 'white--text'"/>
-                <v-list-item-subtitle :class="question.hasReplies ? '' : 'white--text'">
+                <v-list-item-subtitle v-html="question.html" :class="question.hasReplies ? '' : ''"/>
+                <v-list-item-subtitle :class="question.hasReplies ? '' : ''">
                   {{ getDate(question.date) }}
                 </v-list-item-subtitle>
               </v-list-item-content>
