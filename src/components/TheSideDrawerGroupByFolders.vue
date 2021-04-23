@@ -9,7 +9,7 @@
       :key="incrementKeyToDestroy"
       open-on-click
       :active="[currentlySelectedLibraryPostID]"
-      color="accent"
+      color="cyan"
       dense
     >
       <template v-slot:prepend="{ item, open }">
@@ -29,7 +29,7 @@
               @click="$emit('post-was-clicked', item.id)" 
               dense
             >
-              <v-list-item-subtitle :class="item.id === currentlySelectedLibraryPostID ? 'accent--text' : ''" v-text="item.name"/>
+              <v-list-item-subtitle :class="item.id === currentlySelectedLibraryPostID ? 'cyan--text' : ''" v-text="item.name"/>
             </v-list-item>
 
             <!-- Folder -->
