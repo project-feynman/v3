@@ -7,15 +7,15 @@
         bottom nudge-left offset-y
       >
         <template v-slot:activator="{ on }">
-            <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
-              <v-badge v-if="numOfUnreadMsgsInArea"
-                :value="numOfUnreadMsgsInArea"
-                :content="numOfUnreadMsgsInArea"
-                top left color="info" overlap style="z-index: 1;" offset-x="25" offset-y="-25"
-              >
+          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
+            <v-badge v-if="numOfUnreadMsgsInArea"
+              :value="numOfUnreadMsgsInArea"
+              :content="numOfUnreadMsgsInArea"
+              top left color="info" overlap style="z-index: 1;" offset-x="25" offset-y="-25"
+            >
 
-              </v-badge>
-            </BaseButton>
+            </v-badge>
+          </BaseButton>
         </template>
 
         <v-list>
@@ -146,7 +146,6 @@
               </v-row>
             </template> 
           </BasePopupButton>
-
 
           <v-divider/>
 

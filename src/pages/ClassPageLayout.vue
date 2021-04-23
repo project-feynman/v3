@@ -115,17 +115,6 @@
                       I also provide "free-listening-as-a-service" for anyone having trouble with classes and sleeping. Talking things out to an outsider can increase happiness,
                       and I can serve as a redirect to other people and resources (mental health is why I started Explain in the first place : )
                     </v-card-text>
-                    
-                    <v-card-actions>
-                      <v-spacer/>
-                      <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
-                        LEAVE CLASS
-                      </v-btn>
-                      <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
-                        <v-icon class="mr-2">mdi-logout</v-icon>
-                        SIGN OUT
-                      </v-btn>       
-                  </v-card-actions>
                   </v-tab-item> -->
 
                   <v-tab-item>
