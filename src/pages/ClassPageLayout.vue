@@ -249,7 +249,7 @@
     </v-navigation-drawer>
 
     <v-main>
-      <RealtimeRoom 
+      <CurrentRoom 
         :roomID="tableID" 
         :key="tableID"
       />
@@ -276,7 +276,7 @@ import AreaSwitchDropdown from "@/components/AreaSwitchDropdown.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
 import CurrentArea from "@/pages/CurrentArea.vue"; 
-import RealtimeRoom from "@/pages/RealtimeRoom.vue";
+import CurrentRoom from "@/pages/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
 import MapleMusicPlayer from "@/components/MapleMusicPlayer.vue"; 
@@ -312,7 +312,7 @@ export default {
     MyParticipantDocUpdater,
     MapleMusicPlayer,
     CurrentArea,
-    RealtimeRoom,
+    CurrentRoom,
     SlackChats2
   },
   data: () => ({
