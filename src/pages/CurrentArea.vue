@@ -7,16 +7,15 @@
         bottom nudge-left offset-y
       >
         <template v-slot:activator="{ on }">
-          <!-- TODO: Fix badge not getting displayed -->
-          <v-badge v-if="mitClass"
-            :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-            right color="secondary" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
-          >
             <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
-            <!-- Space actions -->
+              <v-badge v-if="numOfUnreadMsgsInArea"
+                :value="numOfUnreadMsgsInArea"
+                :content="numOfUnreadMsgsInArea"
+                top left color="info" overlap style="z-index: 1;" offset-x="25" offset-y="-25"
+              >
+
+              </v-badge>
             </BaseButton>
-          </v-badge>
         </template>
 
         <v-list>
@@ -29,12 +28,12 @@
           >
             <template v-slot:activator="{ on }">
               <v-badge 
-                :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-                :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-                top left color="info" overlap style="z-index: 1;"
+                :value="numOfUnreadMsgsInArea"
+                :content="numOfUnreadMsgsInArea"
+                top right color="info" overlap style="z-index: 1;"
               >
                 <v-list-item v-on="on">
-                  <v-icon class="mr-2" color="purple">mdi-chat</v-icon>
+                  <v-icon class="mr-2" color="info">mdi-chat</v-icon>
                   Open this area's chat
                 </v-list-item>
                 <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
@@ -434,8 +433,7 @@ export default {
     ]),
     ...mapGetters([
       "isAdmin",
-      "numOfUnreadMsgsInArea",
-      "numOfUnreadMsgsInTable"
+      "numOfUnreadMsgsInArea"
     ]),
     classID () { return this.$route.params.class_id; },
     sessionID () { return this.session.currentID; },

@@ -111,19 +111,19 @@
         <!-- Triple-dots button -->
         <template v-slot:activator="{ on }">
           <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
-            <!-- Room actions -->
+            <v-badge v-if="numOfUnreadMsgsInTable" 
+              :value="numOfUnreadMsgsInTable" 
+              :content="numOfUnreadMsgsInTable" 
+              color="green" 
+              top 
+              left 
+              offset-x="25" 
+              offset-y="-25">
+            </v-badge>
           </BaseButton>
         </template>
         
         <v-list>
-          <v-list-item>
-            <!-- <v-icon left color="blue">mdi-message-alert</v-icon> -->
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Help!'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Help!</v-chip>
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
-          </v-list-item>
-
-          <!-- Add a chat here -->
           <v-menu
             v-model="isChatOpen"
             :close-on-content-click="false"
@@ -132,16 +132,16 @@
           >
             <template v-slot:activator="{ on }">
               <v-badge 
-                :value="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-                :content="numOfUnreadMsgsInArea + numOfUnreadMsgsInTable"
-                top left color="info" overlap style="z-index: 1;"
+                :value="numOfUnreadMsgsInTable"
+                :content="numOfUnreadMsgsInTable"
+                top right color="green" overlap style="z-index: 1;"
               >
                 <v-list-item v-on="on">
-                  <v-icon class="mr-2" color="purple">mdi-chat</v-icon>
+                  <v-icon class="mr-2" color="green">mdi-chat</v-icon>
                   Open this room's chat
                 </v-list-item>
                 <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
-                  
+                    
                 </BaseButton> -->
               </v-badge>
             </template>
@@ -165,12 +165,22 @@
           <v-list-item @click="isRenameRoomPopupOpen = true">
             <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
           </v-list-item>
-          <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
-            <v-icon left color="purple">mdi-content-save-all</v-icon> Save sequence of boards
+
+          <v-list-item>
+            <!-- <v-icon left color="blue">mdi-message-alert</v-icon> -->
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Help!'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Help!</v-chip>
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
           </v-list-item>
+
+          <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
+            <v-icon left color="cyan">mdi-content-save-all</v-icon> Save sequence of boards
+          </v-list-item>
+
           <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
             <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe all boards in table
           </v-list-item>
+          
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
             <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
           </v-list-item>
@@ -355,7 +365,6 @@ export default {
       "currentBoardNumber"
     ]),
     ...mapGetters([
-      "numOfUnreadMsgsInArea",
       "numOfUnreadMsgsInTable"
     ]),
     classID () { return this.$route.params.class_id; },
