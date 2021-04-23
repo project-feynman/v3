@@ -242,7 +242,7 @@
           it's okay to fetch 10 documents everytime someone switches a section. 
           It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
        -->
-      <ParticularOpenSpace 
+      <CurrentArea
         :sectionID="areaID"
         :key="areaID"
       /> 
@@ -275,7 +275,7 @@ import ClassNewPopup from "@/components/ClassNewPopup.vue";
 import AreaSwitchDropdown from "@/components/AreaSwitchDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
-import ParticularOpenSpace from "@/pages/ParticularOpenSpace.vue"; 
+import CurrentArea from "@/pages/CurrentArea.vue"; 
 import RealtimeRoom from "@/pages/RealtimeRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
@@ -311,7 +311,7 @@ export default {
     VisualForum,
     MyParticipantDocUpdater,
     MapleMusicPlayer,
-    ParticularOpenSpace,
+    CurrentArea,
     RealtimeRoom,
     SlackChats2
   },
