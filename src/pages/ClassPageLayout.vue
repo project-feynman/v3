@@ -66,14 +66,14 @@
                 :incrementToToggleMusic="incrementToToggleMusic"
                 @music-fetched="incrementToToggleMusic += 1"
               />  
-                <v-btn icon @click="isAppOverviewPopupOpen = false">
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
                 <v-tabs
                   v-model="tab"
                   background-color="transparent"
                   color="cyan"
                 > 
+                  <v-btn icon @click="isAppOverviewPopupOpen = false" style="margin-top: 5px; margin-left: 2px;">
+                    <v-icon>mdi-close</v-icon>
+                  </v-btn>
                   <v-tab>School Messenger</v-tab>
                   <v-tab>Visual Forum</v-tab>
                   <v-tab>Open Library</v-tab>
