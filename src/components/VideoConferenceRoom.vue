@@ -9,16 +9,6 @@
 
       </portal-target>
 
-      <div class="mb-2 mx-2">
-        <template v-if="connectionStatus !== 'CONNECTED'">
-          <v-btn @click.prevent.stop="joinConferenceRoom()" 
-            :loading="connectionStatus === 'CONNECTING'"
-            small block color="success"
-          >
-            Join voice
-          </v-btn>
-        </template>
-      </div>
 
       <template v-for="client in allClients">
         <!-- TODO: rename "id" -->
@@ -44,22 +34,22 @@
                 style="align-items: center; display: flex; margin-left: 18px;"
               >
                 <v-icon v-if="client.kind === 'engineer'" 
-                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small :style="`opacity: 70%;`"
+                  :color="`${client.sessionID === sessionID ? '' : '' }`" x-small :style="`opacity: 70%;`"
                 >
                   mdi-wrench
                 </v-icon>
                 <v-icon v-else-if="client.kind === 'pioneer'" 
-                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small style="opacity: 70%;"
+                  :color="`${client.sessionID === sessionID ? '' : '' }`" x-small style="opacity: 70%;"
                 >
                   mdi-cowboy
                 </v-icon>
                 <v-icon v-else-if="client.isAdmin" 
-                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`" x-small style="opacity: 70%;"
+                  :color="`${client.sessionID === sessionID ? '' : '' }`" x-small style="opacity: 70%;"
                 >
                   mdi-account-tie
                 </v-icon>
                 <v-icon v-else x-small style="opacity: 70%;"
-                  :color="`${client.sessionID === sessionID ? 'cyan' : '' }`"
+                  :color="`${client.sessionID === sessionID ? '' : '' }`"
                 >
                   mdi-account
                 </v-icon>
@@ -126,10 +116,25 @@
 
               <v-spacer/> 
 
-              <v-icon v-if="participants && participants.local" :color="`${isMicOn ? 'grey darken-3' : 'red'}`">
+              <!-- Display a call icon if not connected -->
+              <template v-if="connectionStatus !== 'CONNECTED'">
+                <v-btn @click.prevent.stop="joinConferenceRoom()" 
+                  :loading="connectionStatus === 'CONNECTING'"
+                  icon
+                  dark
+                  style="background-color:  #1abd53"
+                >
+                  <v-icon color="white" small>mdi-headphones-off</v-icon>
+                </v-btn>
+              </template>
+              
+              <v-icon v-else-if="participants && participants.local" 
+                small :color="`${isMicOn ? 'grey darken-3' : 'red'}`"
+              >
                 {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
-              <v-icon v-else color="grey">
+
+              <v-icon v-else small color="grey darken-2">
                 mdi-headphones-off
               </v-icon>
 
@@ -150,14 +155,14 @@
               <v-spacer/>
 
               <v-icon v-if="participants.hasOwnProperty( firestoreIDToDailyID[client.sessionID] )" 
-                :color="`${participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'grey darken-3' : 'red'}`">
+                small :color="`${participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'grey darken-3' : 'red'}`">
                 {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
               <!-- If I'm not connected, but someone else is connected, I'll see that their connected in a phone/voice chat-->
               <v-icon v-else-if="client.canHearAudio" color="green">
                 mdi-phone
               </v-icon>
-              <v-icon v-else color="grey">
+              <v-icon v-else small color="grey darken-2">
                 mdi-headphones-off
               </v-icon>
 
@@ -375,7 +380,7 @@ export default {
   /* top: 116px; */
   /* bottom: 0px; */
   background-color: white;
-  opacity: 0.8;
+  opacity: 0.9;
   width: 100%;
   z-index: 5;
 }

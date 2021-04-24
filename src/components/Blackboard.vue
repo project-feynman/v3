@@ -51,7 +51,7 @@
 
             <BaseButton :disabled="! canUndoStroke"
               @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 
-              icon="mdi-undo" color="white"
+              icon="mdi-undo" color="white" small
             >
             </BaseButton>
           </template>
@@ -62,10 +62,12 @@
             </slot>
           </template>
 
-       
           <!-- More actions slot -->
           <template v-slot:more-actions-slot>
-            <BaseButton v-if="currentState === RecordState.PRE_RECORD" @click="startRecording()" icon="mdi-record" color="white">
+            <BaseButton v-if="currentState === RecordState.PRE_RECORD" 
+              @click="startRecording()" 
+              icon="mdi-record" color="white" small
+            >
               Explain
             </BaseButton>
             <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
@@ -73,10 +75,12 @@
             </BaseButton>
 
             <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
-              <template v-slot:activator="{ on }">
+              <template v-slot:activator="{ on, attrs }">
                 <!-- Cannot let user wipe board / reupload background image while recording -->
                 <BaseButton v-if="currentState !== RecordState.MID_RECORD" 
-                  @click="isMenuOpen = true" icon="mdi-dots-vertical" color="white" small hasLargeIcon
+                  :on="on" 
+                  v-bind="attrs"
+                  icon="mdi-dots-vertical" color="white" small
                 >
                 </BaseButton>
               </template>
@@ -185,7 +189,7 @@ export default {
       currentTime: 0,
       currentState: RecordState.PRE_RECORD,
       RecordState,
-      isMenuOpen: false
+      isMenuOpen: false // TODO: this is a temporary fix so that including a BasePopupButton within a v-menu works and doesn't disappear because v-menu disappears
     };
   },
   computed: {

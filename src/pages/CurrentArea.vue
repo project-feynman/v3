@@ -4,17 +4,58 @@
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal to="current-open-space-actions">
       <v-menu v-if="roomTypeDoc" 
-        v-model="isMenuOpen" 
         bottom nudge-left offset-y
       >
-        <template v-slot:activator>
-          <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
-            <!-- Space actions -->
+        <template v-slot:activator="{ on }">
+          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
+            <v-badge v-if="numOfUnreadMsgsInArea"
+              :value="numOfUnreadMsgsInArea"
+              :content="numOfUnreadMsgsInArea"
+              top left color="info" overlap style="z-index: 1;" offset-x="25" offset-y="-25"
+            >
+
+            </v-badge>
           </BaseButton>
         </template>
 
         <v-list>
-          <v-list-item><b>During class</b></v-list-item> 
+          <!-- <v-list-item><b>During class</b></v-list-item>  -->
+          <v-menu
+            v-model="isChatOpen"
+            :close-on-content-click="false"
+            :close-on-click="false"
+            max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
+          >
+            <template v-slot:activator="{ on }">
+              <v-badge 
+                :value="numOfUnreadMsgsInArea"
+                :content="numOfUnreadMsgsInArea"
+                top right color="info" overlap style="z-index: 1;"
+              >
+                <v-list-item v-on="on">
+                  <v-icon class="mr-2" color="info">mdi-chat</v-icon>
+                  Open this area's chat
+                </v-list-item>
+                <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
+                  
+                </BaseButton> -->
+              </v-badge>
+            </template>
+
+            <v-card max-width="250">
+              <v-card-text class="pa-0">
+                <ZoomChat v-if="isChatOpen"
+                  :messagesDbPath="`classes/${classID}/roomTypes/${sectionID}/messages`"
+                  :participantsDbRef="participantsRef"
+                  :notifFieldName="`numOfUnreadMsgsInArea:${sectionID}`"
+                >
+                  <v-btn icon @click="isChatOpen = false" small>
+                    <v-icon color="black">mdi-close</v-icon>
+                  </v-btn>
+                </ZoomChat>   
+              </v-card-text>
+            </v-card>
+          </v-menu>
 
           <!-- For some reason you need click.stop -->
           <v-list-item :disabled="!isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
@@ -85,7 +126,7 @@
           <BasePopupButton actionName="Shuffle everyone" @action-do="shuffleParticipants(roomTypeDoc.id)">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="blue">mdi-dice-5</v-icon> Randomly shuffle everyone
+                <v-icon left color="blue">mdi-dice-5</v-icon> Shuffle everyone randomly
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -106,15 +147,14 @@
             </template> 
           </BasePopupButton>
 
-
           <v-divider/>
 
-          <v-list-item><b>Outside of class</b></v-list-item> 
+          <!-- <v-list-item><b>Outside of class</b></v-list-item>  -->
 
           <BasePopupButton actionName="Wipe everything" @action-do="resetAbsolutelyEverything()">
             <template v-slot:activator-button="{ on, openPopup }">
               <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
-                <v-icon left color="red">mdi-delete</v-icon> Wipe boards in every table
+                <v-icon left color="red">mdi-delete</v-icon> Wipe all boards in this area
               </v-list-item>
             </template>
             <template v-slot:message-to-user>
@@ -156,20 +196,19 @@
       When you are feeling down, either you have to suddenly do something courageous,
       or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
     -->  
-  <!-- active-class="active-blackboard accent--text" -->
   <!-- ROOMS -->
   <v-list>
      <v-list-item v-for="(room, i) in sortedRooms" :key="room.id"
       :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
       dense
-      color="accent"
+      active-class="orange--text text--darken-3"
       class="pl-0 pr-0 mx-2 mb-0"
     >
       <!-- CASE 1: I'm in the room -->
       <template v-if="room.id === currentRoomID">
         <div class="pt-2 pb-3" style="width: 100%">
           <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
-            <v-icon large style="opacity: 90%" class="mr-1">
+            <v-icon large class="mr-1">
               mdi-atom
             </v-icon>
         
@@ -330,6 +369,7 @@ import HandleAnnouncements from "@/components/HandleAnnouncements.vue";
 import ParticularOpenSpaceRenamePopup from "@/components/ParticularOpenSpaceRenamePopup.vue";
 import ParticularOpenSpaceDeletePopup from "@/components/ParticularOpenSpaceDeletePopup.vue";
 import ParticularOpenSpaceBirdsEyeViewPopup from "@/components/ParticularOpenSpaceBirdsEyeViewPopup.vue"; 
+import ZoomChat from "@/components/ZoomChat.vue"; 
 
 import firebase from "firebase/app";
 import "firebase/firestore"; 
@@ -355,7 +395,8 @@ export default {
     ClassLibrary,
     ParticularOpenSpaceRenamePopup,
     ParticularOpenSpaceDeletePopup,
-    ParticularOpenSpaceBirdsEyeViewPopup
+    ParticularOpenSpaceBirdsEyeViewPopup,
+    ZoomChat
   },
   data () {
     return {
@@ -366,7 +407,6 @@ export default {
       participants: [],
       unsubFuncs: [],
       targetBoardNum: 0,
-      isMenuOpen: false,
       makeAnnouncementPopup: {
         show: false,
         roomType: null,
@@ -377,7 +417,9 @@ export default {
       incrementKeyToDestroy: 0,
       isRenamePopupOpen: false,
       isDeletePopupOpen: false,
-      isBirdsEyeViewPopupOpen: false
+      isBirdsEyeViewPopupOpen: false,
+
+      isChatOpen: false // refactor into a component right away, just for testing for now
     }
   },
   computed: {
@@ -389,7 +431,8 @@ export default {
       "dominantSpeaker"
     ]),
     ...mapGetters([
-      "isAdmin"
+      "isAdmin",
+      "numOfUnreadMsgsInArea"
     ]),
     classID () { return this.$route.params.class_id; },
     sessionID () { return this.session.currentID; },
@@ -409,6 +452,9 @@ export default {
     },
     roomTypeRef () {
       return this.classDocRef.collection("roomTypes").doc(this.sectionID); 
+    },
+    participantsRef () {
+      return this.classDocRef.collection("participants").where("roomTypeID", "==", this.sectionID);
     }
   },
   watch: {
@@ -474,7 +520,7 @@ export default {
     this.unsubFuncs.push(
       this.$_bindVarToDB({
         varName: "participants",
-        dbRef: this.classDocRef.collection("participants").where("roomTypeID", "==", this.sectionID),
+        dbRef: this.participantsRef, // this.classDocRef.collection("participants").where("roomTypeID", "==", this.sectionID),
         component: this
       })
     );
@@ -490,7 +536,7 @@ export default {
       for (const room of this.rooms) {
         const peopleInRoom = this.participants.filter(p => p.currentRoom === room.id); 
         peopleInRoom.sort((p1, p2) => {
-          // pin myself to the top
+          // the user sees himself/herself on top
           if ([p1.sessionID, p2.sessionID].includes(this.sessionID)) {
             return (p2.sessionID === this.sessionID) - (p1.sessionID === this.sessionID);
           } 

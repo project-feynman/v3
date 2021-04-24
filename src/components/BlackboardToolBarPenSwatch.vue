@@ -1,7 +1,7 @@
 <template>
   <div style="display: flex; align-items: center;">
     <template v-for="(color, i) of ['#FDFEFE', ...user.penColors]">
-      <BaseButton 
+      <BaseButton v-if="!((i > 2) && $vuetify.breakpoint.smAndDown)"
         @click="changePenColor(color, i-1)" 
         :filled="currentTool.color === color && currentTool.type === 'PEN'" 
         color="white" small 

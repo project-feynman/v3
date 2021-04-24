@@ -131,7 +131,6 @@ export default {
       immediate: true,
       // TODO: debounce so that it doesn't overreact to participants changing colors, for example
       handler () {
-        console.log('participants changed'); 
         const boardIdToParticipants = {}; 
         // determine which blackboards are active
         const boardIDs = new Set(); 

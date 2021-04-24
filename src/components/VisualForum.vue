@@ -6,7 +6,7 @@
         <v-list-item 
           @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'EMAIL_SETTINGS')"
           :input-value="currentlySelectedQuestionID === 'EMAIL_SETTINGS'"
-          active-class="orange"
+          active-class="cyan--text"
         >
           <v-icon class="mr-2">mdi-settings</v-icon>Email settings
         </v-list-item>
@@ -14,7 +14,7 @@
         <v-list-item 
           @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', 'NEW_QUESTION')"
           :input-value="currentlySelectedQuestionID === 'NEW_QUESTION'"
-          active-class="orange"
+          active-class="cyan--text"
         > 
           <v-icon class="mr-2">mdi-plus</v-icon>New question
         </v-list-item>
@@ -24,16 +24,17 @@
             <!-- Using the prop `three-line` requires `overflow: hidden` to work across all browsers, see https://vuetifyjs.com/en/api/v-list-item/#props -->
             <v-list-item :key="question.id"
               @click="$store.commit('SET_CURRENTLY_SELECTED_QUESTION_ID', question.id);"
-              :class="!question.hasReplies && question.id !== currentlySelectedQuestionID ? ['info'] : ''" three-line active-class="orange"
+              :class="!question.hasReplies && question.id !== currentlySelectedQuestionID ? ['info'] : ''" three-line 
               :input-value="question.id === currentlySelectedQuestionID" 
               style="max-height: 40px;"
+              active-class="cyan--text"
             >
-              <v-list-item-content :class="question.hasReplies ? '' : 'white--text'">
+              <v-list-item-content :class="question.hasReplies ? '' : ''">
                 <v-list-item-title>
                   {{ question.title }}
                 </v-list-item-title> 
-                <v-list-item-subtitle v-html="question.html" :class="question.hasReplies ? '' : 'white--text'"/>
-                <v-list-item-subtitle :class="question.hasReplies ? '' : 'white--text'">
+                <v-list-item-subtitle v-html="question.html" :class="question.hasReplies ? '' : ''"/>
+                <v-list-item-subtitle :class="question.hasReplies ? '' : ''">
                   {{ getDate(question.date) }}
                 </v-list-item-subtitle>
               </v-list-item-content>
@@ -80,7 +81,9 @@
         <!-- Won't work withClassPageSeeQuestion because it is coupled with the $route variables -->
         <!-- overflow-x hidden is a fix because blackboard is too large for the forum, and we don't want sidescrolling -->
         <div style="max-height: 80vh; overflow-x: hidden; overflow-y: scroll">
-          <ClassPageSeePost 
+          <ExplanationGroupDisplay
+            :originalExplDbPath="`classes/${mitClass.id}/questions/${currentlySelectedQuestionID}`"
+            :replyExplsDbPath="`classes/${mitClass.id}/questions/${currentlySelectedQuestionID}/explanations`"
             :postID="currentlySelectedQuestionID"
             :key="currentlySelectedQuestionID"
           /> 
@@ -98,7 +101,7 @@ import "firebase/functions";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import ExplanationCreate from "@/components/ExplanationCreate.vue"; 
 import ExplanationDisplay from "@/components/ExplanationDisplay.vue"; 
-import ClassPageSeePost from "@/components/ClassPageSeePost.vue"; 
+import ExplanationGroupDisplay from "@/components/ExplanationGroupDisplay.vue"; 
 import ClassPageSeeQuestion from "@/pages/ClassPageSeeQuestion.vue"; 
 import { mapState } from "vuex"; 
 import { displayDate } from "@/helpers.js";
@@ -108,7 +111,7 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    ClassPageSeePost,
+    ExplanationGroupDisplay,
     ClassPageSeeQuestion,
     ExplanationCreate,
     ExplanationDisplay

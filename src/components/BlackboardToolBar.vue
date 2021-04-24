@@ -23,7 +23,8 @@
           @click="selectNormalEraser({ eraserLineWidth: 40 })" 
           icon="mdi-eraser-variant" hasLargeIcon small color="white"
         />
-        <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 5"
+        <BaseButton v-if="$vuetify.breakpoint.mdAndUp"
+          :filled="isNormalEraser && currentTool.lineWidth === 5"
           @click="selectNormalEraser({ eraserLineWidth: 5 })" 
           icon="mdi-eraser-variant" small color="white"
         />

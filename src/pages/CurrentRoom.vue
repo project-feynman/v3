@@ -107,30 +107,80 @@
     <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
-      <v-menu v-model="isMenuOpen" offset-y bottom>
+      <v-menu offset-y bottom>
         <!-- Triple-dots button -->
-        <template v-slot:activator>
-          <BaseButton @click="isMenuOpen = true" stopPropagation icon="mdi-dots-vertical" color="black" small>
-            <!-- Room actions -->
+        <template v-slot:activator="{ on }">
+          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
+            <v-badge v-if="numOfUnreadMsgsInTable" 
+              :value="numOfUnreadMsgsInTable" 
+              :content="numOfUnreadMsgsInTable" 
+              color="green" 
+              top 
+              left 
+              offset-x="25" 
+              offset-y="-25">
+            </v-badge>
           </BaseButton>
         </template>
         
         <v-list>
+          <v-menu
+            v-model="isChatOpen"
+            :close-on-content-click="false"
+            :close-on-click="false"
+            max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
+          >
+            <template v-slot:activator="{ on }">
+              <v-badge 
+                :value="numOfUnreadMsgsInTable"
+                :content="numOfUnreadMsgsInTable"
+                top right color="green" overlap style="z-index: 1;"
+              >
+                <v-list-item v-on="on">
+                  <v-icon class="mr-2" color="green">mdi-chat</v-icon>
+                  Open this room's chat
+                </v-list-item>
+                <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
+                    
+                </BaseButton> -->
+              </v-badge>
+            </template>
+
+            <v-card max-width="250">
+              <v-card-text class="pa-0">
+                <ZoomChat v-if="isChatOpen"
+                  :messagesDbPath="`classes/${classID}/rooms/${roomID}/messages`"
+                  :participantsDbRef="roomParticipantsRef"
+                  :notifFieldName="`numOfUnreadMsgsInTable:${roomID}`"
+                >
+                  <v-btn icon @click="isChatOpen = false" small>
+                    <v-icon color="black">mdi-close</v-icon>
+                  </v-btn>
+                </ZoomChat>   
+              </v-card-text>
+            </v-card>
+          </v-menu>
+          <!--  -->
+
+          <v-list-item @click="isRenameRoomPopupOpen = true">
+            <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
+          </v-list-item>
+
           <v-list-item>
             <!-- <v-icon left color="blue">mdi-message-alert</v-icon> -->
             <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Help!'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Help!</v-chip>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
           </v-list-item>
-          <v-list-item @click="isRenameRoomPopupOpen = true">
-            <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
-          </v-list-item>
+
           <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
-            <v-icon left color="purple">mdi-content-save-all</v-icon> Save sequence of boards
+            <v-icon left color="cyan">mdi-content-save-all</v-icon> Save sequence of boards
           </v-list-item>
+
           <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
             <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe all boards in table
           </v-list-item>
+          
           <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
             <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
           </v-list-item>
@@ -155,9 +205,11 @@
         <!-- hide-details: eliminates unnecessary bottom padding -->
         <div v-if="room" class="d-flex">
           <div v-if="currentBoardID">
-            <v-menu v-model="isBoardsMenuOpen" fixed offset-y bottom>
-              <template v-slot:activator>
-                <v-btn @click.submit.prevent="isBoardsMenuOpen = true" height="30" text tile class="px-0" 
+            <!-- `click.native.stop` is the workaround for the menu causing the entire page to reload https://github.com/vuetifyjs/vuetify/issues/3333#issuecomment-366832774 -->
+            <v-menu @click.prevent.stop fixed offset-y bottom>
+              <template v-slot:activator="{ on }">
+                <!-- `click.prevent.stop -->
+                <v-btn v-on="on" @click.prevent.stop height="30" text tile class="px-0" 
                   :style="`text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400;`" max-width="180"
                 >
                   <!-- The board switch button looks like a blackboard itself -->
@@ -219,7 +271,7 @@
             <template v-slot:blackboard-toolbar>
               <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
                 :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
-                color="white" small hasLargeIcon
+                color="white" small 
               />
             </template>
           </RealtimeBlackboard>
@@ -249,10 +301,11 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseIconButton from "@/components/BaseIconButton.vue";
-import { mapState } from "vuex";
+import { mapState, mapGetters } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId } from "@/helpers.js";
 import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
+import ZoomChat from "@/components/ZoomChat.vue";
 
 export default {
   props: {
@@ -272,7 +325,8 @@ export default {
     BaseButton,
     BaseIconButton,
 
-    VideoConferenceRoom
+    VideoConferenceRoom,
+    ZoomChat
   },
   mixins: [
     DatabaseHelpersMixin
@@ -296,7 +350,8 @@ export default {
       titleOfExplCollection: "",
       newRoomStatus: "",
       newRoomName: "",
-      isBoardsMenuOpen: false
+
+      isChatOpen: false
     }
   },
   computed: {
@@ -309,8 +364,13 @@ export default {
       "currentBoardID",
       "currentBoardNumber"
     ]),
-    classID () {
-      return this.$route.params.class_id; 
+    ...mapGetters([
+      "numOfUnreadMsgsInTable"
+    ]),
+    classID () { return this.$route.params.class_id; },
+    roomParticipantsRef () {
+      const { classID, roomID } = this; 
+      return db.collection(`classes/${classID}/participants`).where("currentRoom", "==", roomID); 
     }
   },
   // database => state 
