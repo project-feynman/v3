@@ -80,43 +80,6 @@
                 </v-tabs>
 
                 <v-tabs-items v-model="tab" touchless>
-                  <!-- <v-tab-item key="overview">
-                    <v-card-text>
-                      <b>Problem</b>
-                      <br>
-                      MIT is hard because of its relentless pace, and once you fall behind your problems exponentiate: worse sleep, worse learning, worse health, worse psychology, worse relationships. 
-                      Moreover, when people are already at their limit themselves, it's near impossible to find time to help each other. 
-                      <br>
-                      <br>
-                      <b>Solution</b>
-                      <br>
-                      The goal of explain.mit.edu is to make helping each other so efficient that it becomes the optimal strategy for everyone. 
-                      There are four active experiments running: 
-                      <ol>
-                        <li>Pset Lounge: a convenient central place for people to pset together, host Office Hours, etc.</li>
-                        <li>Visual forum: a blackboard-centric forum where you can draw and talk</li>
-                        <li>Open Library: a visual, crowdsourced repository of explanations that outlasts each class generation</li>
-                        <li>School Messenger: a centralized, distraction-free environment to message classmates</li>
-                      </ol>
-
-                      <br>
-                      It is <a href="https://github.com/project-feynman/explain-mit">open source</a> and updates weekly. 
-                      Contact any of the active developers for help with troubleshooting, feature requests, etc:
-
-                      <ul>
-                        <li>Elton Lin, eltonlin@mit.edu, class of 2020)</li>
-                        <li>Huy Dai, huydai@mit.edu, class of 2024)</li>
-                        <li>(We're recruiting!)</li>
-                      </ul>
-                      <br>
-
-                      <b>Free listening for students</b>
-                      <br>
-                      I also provide "free-listening-as-a-service" for anyone having trouble with classes and sleeping. Talking things out to an outsider can increase happiness,
-                      and I can serve as a redirect to other people and resources (mental health is why I started Explain in the first place : )
-                    </v-card-text>
-                  </v-tab-item> -->
-
                   <v-tab-item>
                     <v-card-text>
                       <SlackChats2/>
