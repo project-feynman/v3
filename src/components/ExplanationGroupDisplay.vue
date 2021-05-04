@@ -10,9 +10,9 @@
     />
     <!-- TODO: rename, question, reply, posts -->
     <!-- Note the props are specifically for :questionID -->
-    <div style="margin-top: 50px;">
+    <div v-if="isViewingForum" style="margin-top: 50px;">
       <div class="ma-2"><h3>Your Reply</h3></div>
-      <ExplanationCreate v-if="isViewingForum" 
+      <ExplanationCreate 
         :questionID="postID"
         explType="reply"
         @reply-upload-started="replyContentHTML => sendEmailToExplParticipants(replyContentHTML)"

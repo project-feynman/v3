@@ -1,92 +1,185 @@
 <template>
   <div>
-    <h1>Army of Helpers</h1>
+    <MapleMusicPlayer 
+      :incrementToToggleMusic="incrementToToggleMusic"
+      @music-fetched="incrementToToggleMusic += 1"
+    />  
 
-    <p style="margin-top: 10px; margin-bottom: 0"><b>How it works</b></p>
-    <ol style="font-size: 1.5rem;">
-      <li>If you want timely help but it's 11 pm with no Office Hours, press the help button</li>
-      <li>Your peers who signed up as helpers (currently 15 people) will be notified, and if nobody shows up within 30 seconds, it means nobody was available</li>
-      <li>Use the room chat, collaborative blackboard and audio-video to explain things</li>
-      <li>Any explanation can be recorded and shared to the open library to benefit your classmates</li>
-    </ol>
-    <br>
-  
-    <p>
-      University is hard because it's a brutal game of efficiency. 
-    
-      If you have a question, press "HELP". Your peers who have signed up to be helpers will be notified,
-      and ideally someone will join your Explain workspace within 30 seconds. 
+    <div class="headline mb-2"><b>How it works</b></div>
+    <h3>Step 1</h3>
+    <p>Some people have voluntarily signed up as helpers, so you can press the help button to notify them at any time</p>
 
-      Sometimes, nobody is available, but give it a shot (and you can also defer the question to the visual forum).
-
-      When the helper comes, he/she can record the explanation. If it's an explanation done many times, then it can probably be one-sided and wtih voice. 
-      If it's a new explanation, you can save it just as a silent animation so the back-and-forth verbal exchanges don't get saved. 
-
-      Counterintuitively, when you ask for help, you can actually have potential to help many other classmates, because your question led to 
-      an explanation that ends up helping many people. To capture this concept, everyone has "assisted views" - that is, the number of views on explanation videos
-      that were made by someone who was originally trying to answer just your question. 
-
-      Recording explanation is the key to efficiency. Time is very scarce in school, and the pace is relentless. Everyone has very finite resources. When you record 
-      key explanations, you scale it indefinitely, and there is only a finite number of concepts, etc. To capture this concept and encourage people to record their explanations 
-      (it's unlike YouTube - it's all about informal yet helpful explanations rather than polished videos), everyone has "views" and "upvotes"
-    </p>
-    <br>
-    
-
-    <h2>Your statistics</h2>
-    <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-      <div style="display: flex;">
-        <p style="margin-bottom: 0; margin-right: 10px;">Videos shared</p>
-        <h1>2</h1>
-      </div>
-
-      <div style="display: flex;">
-        <p style="margin-bottom: 0; margin-right: 10px;">Animations shared</p>
-        <h1>5</h1>
-      </div>
-
-      <div style="display: flex;">
-      <p style="margin-bottom: 0; margin-right: 10px;">Assisted upvotes</p>
-      <h1>360</h1>
-      </div>
-
-      <div style="display: flex;">
-        <p style="margin-bottom: 0; margin-right: 10px;">Upvotes</p>
-        <h1>60</h1>
-      </div>
-
+    <div style="display: flex; margin-top: 5px; margin-left: 15px;">
+      Sign up as a helper (there are {{ armyMembers.length }} helpers in {{ mitClass.name }})
     </div>
-
-    <div style="display: flex; justify-content: center; margin-top: 20px;">
-      <v-btn block large dark color="purple">
-        Help! (8 people will be notified)
+    <v-switch style="margin-top: 1px; margin-left: 15px;"
+      hide-details
+      :input-value="isUserAHelper" 
+      @change="toggleEmailOnHelpRequest(!isUserAHelper)"
+    />
+    
+    <div style="display: flex; margin-top: 10px; margin-left: 15px;">
+      <v-btn @click="requestForHelpFromTheArmy()"
+        :disabled="hasSentNotif"
+        large color="cyan white--text"
+      >
+        <template v-if="!hasSentNotif">
+          Request for help
+        </template>
+        <template v-else>
+          Reinforcements are incoming.
+        </template>
       </v-btn>
     </div>
-    <div style="display: flex; justify-content: center; margin-top: 5px;">
-      <v-btn block large dark color="purple">
-        <!-- Help! -->
-        Sign up as a helper
-        <!-- <v-icon>mdi-chat</v-icon> -->
-      </v-btn>
+
+    <h3 style="margin-top: 20px">Step 2</h3>
+    Your helper should arrive at your current Explain workspace within 30 seconds. Communicate over the chat, blackboard and audio-video.
+    <br>
+    (Tip: if you are helping someone, record your explanation to re-use it later for everyone else. Two-birds-with-one-stone!)
+
+    <ExplanationGroupDisplay
+      style="margin-top: 10px;"
+      postID="PW7PmplbODxlxVTxomj3"
+      originalExplDbPath="classes/mDbUrvjy4pe8Q5s5wyoD/posts/PW7PmplbODxlxVTxomj3"
+      :replyExplsDbPath="'classes/mDbUrvjy4pe8Q5s5wyoD/posts/PW7Pmplb0DxlxVTxomj3/explanations'"
+    />
+
+    <div class="headline mt-5"><b>Your statistics</b></div>
+    <div style="justify-content: space-around; margin-top: 10px; margin-left: 20px;">
+      <div style="display: flex; align-items: center;">
+        <h1>0</h1>
+        <v-list-item two-line>
+          <v-list-item-content>
+            <v-list-item-title>
+              Assisted Upvotes
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              Upvotes on explanations that were created to answer your questions in the first place
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </div>
+
+      <div style="display: flex; align-items: center;">
+        <h1>0</h1>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title> 
+              Upvotes
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              Upvotes on explanations you created 
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </div>
+      
+      <div style="display: flex; align-items: center;">
+        <h1 style="flex-grow: 2">
+          0
+        </h1>
+        <v-list-item style="flex-grow: 2">
+          <v-list-item-content>
+            <v-list-item-title> 
+              Videos shared
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              To record a voiced explanation, press the "Explain" record button
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </div>
+
+      <div style="display: flex; align-items: center;">
+        <h1 style="flex-grow: 2">0</h1>
+        <v-list-item style="flex-grow: 2">
+          <v-list-item-content>
+            <v-list-item-title> 
+              Animations shared
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              To share an animation, press "Save board to library"
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { mapState } from "vuex";
+import db from "@/database.js"; 
+import firebase from "firebase/app"; 
+import "firebase/firestore"; 
+import "firebase/functions"; 
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
+import MapleMusicPlayer from "@/components/MapleMusicPlayer.vue"; 
+import ExplanationGroupDisplay from "@/components/ExplanationGroupDisplay.vue"; 
 
 export default {
+  mixins: [
+    DatabaseHelpersMixin
+  ],
+  components: {
+    MapleMusicPlayer,
+    ExplanationGroupDisplay
+  },
   data () {
-    return {};
+    return {
+      armyMembers: [],
+      hasSentNotif: false,
+      incrementToToggleMusic: 0
+    };
   },
   computed: {
     ...mapState([
       "mitClass",
       "user"
-    ])
+    ]),
+    isUserAHelper () {
+      if (!this.user.emailOnHelpRequest) return false; 
+      else return this.user.emailOnHelpRequest.includes(this.mitClass.id); 
+    }
   },
-  created () {
-
+  created () {    
+    this.$_bindVarToDB({
+      varName: "armyMembers",
+      dbRef: db.collection("users").where("emailOnHelpRequest", "array-contains", this.mitClass.id),
+      component: this
+    });
+  },
+  methods: {
+    async requestForHelpFromTheArmy () {
+      for (const member of this.armyMembers) {
+        console.log("member =", member); 
+        const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
+        const { class_id, section_id, room_id } = this.$route.params;
+        sendEmailToPerson({ 
+          emailOfPerson: member.email, 
+          title: `[explain.mit.edu] Help Request for ${this.mitClass.name}`, 
+          contentHTML: `
+            <p>${this.user.firstName} requested for help on ${this.mitClass.name}, join their workspace <a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">here</a>.</p>
+            <p>If you're currently busy, no need to do anything.</p>
+            <p>To get push notifications on your iPad and iPhone, press on "eltonlin@mit.edu", then press "Add to VIP". Meanwhile I'm working on a way for Explain to just send push notiications without any emails.</p>
+          `,
+        });
+      }
+      this.hasSentNotif = true; 
+      this.$root.$emit("show-snackbar", "Hopefully someone will show up within 30 seconds!");
+    },
+    toggleEmailOnHelpRequest (isEnabled) {
+      const ref = db.doc(`users/${this.user.uid}`); 
+      if (isEnabled) {
+        ref.update({  
+          emailOnHelpRequest: firebase.firestore.FieldValue.arrayUnion(this.mitClass.id)
+        });
+      } else {
+        ref.update({
+          emailOnHelpRequest: firebase.firestore.FieldValue.arrayRemove(this.mitClass.id)
+        });
+      }
+    }
   }
 };
 </script>

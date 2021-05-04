@@ -96,7 +96,7 @@
               <BaseButton @click="popup = true" icon="mdi-delete" data-qa="delete-post-btn">Delete</BaseButton>
             </template>
             <BaseButton @click="upvoteExpl()" class="mr-5" :disabled="expl.creator.uid === user.uid">
-              I finally understand! ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
+              Upvote ({{ expl.upvotersIds ? expl.upvotersIds.length : 0 }})
             </BaseButton>
           </template>
         </v-layout>

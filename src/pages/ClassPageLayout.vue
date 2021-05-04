@@ -62,10 +62,6 @@
           <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isAppOverviewPopupOpen" width="90vw" style="height: 90vh" persistent>
             <v-card style="height: 80vh">     
-              <MapleMusicPlayer v-if="isAppOverviewPopupOpen"
-                :incrementToToggleMusic="incrementToToggleMusic"
-                @music-fetched="incrementToToggleMusic += 1"
-              />  
                 <v-tabs
                   v-model="tab"
                   background-color="transparent"
@@ -75,17 +71,14 @@
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-tab>ARMY OF HELPERS</v-tab>
-                  <v-tab>Visual Forum</v-tab>
-                  <v-tab>Open Library</v-tab>
+                  <v-tab>VISUAL FORUM</v-tab>
+                  <v-tab>CROWDSOURCED LIBRARY</v-tab>
                 </v-tabs>
 
                 <v-tabs-items v-model="tab" touchless>
                   <v-tab-item>
-                    <!-- <v-card-text>
-                      <SlackChats2/>
-                    </v-card-text> -->
                     <v-card-text>
-                      <ArmyOfHelpers/>
+                      <ArmyOfHelpers v-if="tab === 0 && isAppOverviewPopupOpen"/>
                     </v-card-text>
 
                     <v-card-actions>
@@ -245,7 +238,6 @@ import CurrentArea from "@/pages/CurrentArea.vue";
 import CurrentRoom from "@/pages/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
-import MapleMusicPlayer from "@/components/MapleMusicPlayer.vue"; 
 import ArmyOfHelpers from "@/components/ArmyOfHelpers.vue";
 
 export default {
@@ -277,7 +269,6 @@ export default {
     AreaSwitchDropdown,
     VisualForum,
     MyParticipantDocUpdater,
-    MapleMusicPlayer,
     CurrentArea,
     CurrentRoom,
     SlackChats2,
@@ -290,7 +281,6 @@ export default {
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
-    incrementToToggleMusic: 0,
     tab: 0, // 0, 1, 2
     isViewingMessenger: false
   }),
