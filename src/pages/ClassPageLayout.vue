@@ -74,17 +74,20 @@
                   <v-btn icon @click="isAppOverviewPopupOpen = false" style="margin-top: 5px; margin-left: 2px;">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
-                  <v-tab>School Messenger</v-tab>
+                  <v-tab>ARMY OF HELPERS</v-tab>
                   <v-tab>Visual Forum</v-tab>
                   <v-tab>Open Library</v-tab>
                 </v-tabs>
 
                 <v-tabs-items v-model="tab" touchless>
                   <v-tab-item>
-                    <v-card-text>
+                    <!-- <v-card-text>
                       <SlackChats2/>
+                    </v-card-text> -->
+                    <v-card-text>
+                      <ArmyOfHelpers/>
                     </v-card-text>
-                    
+
                     <v-card-actions>
                       <v-spacer/>
                       <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
@@ -243,6 +246,7 @@ import CurrentRoom from "@/pages/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
 import MapleMusicPlayer from "@/components/MapleMusicPlayer.vue"; 
+import ArmyOfHelpers from "@/components/ArmyOfHelpers.vue";
 
 export default {
   name: "ClassPageLayout",
@@ -276,7 +280,8 @@ export default {
     MapleMusicPlayer,
     CurrentArea,
     CurrentRoom,
-    SlackChats2
+    SlackChats2,
+    ArmyOfHelpers
   },
   data: () => ({
     firebaseRef: null,
