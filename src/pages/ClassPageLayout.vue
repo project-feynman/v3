@@ -71,9 +71,25 @@
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                   <v-tab>ARMY OF HELPERS</v-tab>
-                  <v-tab>VISUAL FORUM</v-tab>
+                  <v-tab>
+                    <v-badge 
+                      :value="mitClass.numOfUnansweredQuestions"
+                      :content="mitClass.numOfUnansweredQuestions"
+                      top right color="secondary" overlap style="z-index: 1;"
+                    > 
+                      VISUAL FORUM
+                    </v-badge>
+                  </v-tab>
                   <v-tab>CROWDSOURCED LIBRARY</v-tab>
-                  <v-tab>OVERVIEW</v-tab>
+                  <v-tab>
+                    <v-badge 
+                      :value="numOfUnreadGlobalMsgs"
+                      :content="numOfUnreadGlobalMsgs"
+                      top right color="secondary" overlap style="z-index: 1;"
+                    >
+                      OVERVIEW
+                    </v-badge>
+                  </v-tab>
                 </v-tabs>
 
                 <v-tabs-items v-model="tab" touchless>
