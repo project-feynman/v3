@@ -70,13 +70,29 @@
                   <v-btn icon @click="isAppPopupOpen = false" style="margin-top: 5px; margin-left: 2px;">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
-                  <v-tab>ANNOUNCEMENTS</v-tab>
+                  <v-tab>ARMY OF HELPERS</v-tab>
                   <v-tab>VISUAL FORUM</v-tab>
                   <v-tab>CROWDSOURCED LIBRARY</v-tab>
-                  <v-tab>ARMY OF HELPERS</v-tab>
+                  <v-tab>OVERVIEW</v-tab>
                 </v-tabs>
 
                 <v-tabs-items v-model="tab" touchless>
+                  <v-tab-item>
+                    <v-card>
+                      <v-card-text>
+                        <ArmyOfHelpers v-if="tab === 0 && isAppPopupOpen"/>
+                      </v-card-text>
+                    </v-card>
+                  </v-tab-item>
+
+                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_FORUM', true)">
+                    <VisualForum/>
+                  </v-tab-item>
+
+                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_LIBRARY', true)">
+                    <ClassLibrary/>
+                  </v-tab-item>
+
                   <v-tab-item>
                     <v-card-text>
                       <SlackChats2/>
@@ -92,22 +108,6 @@
                         SIGN OUT
                       </v-btn>       
                     </v-card-actions>
-                  </v-tab-item>
-
-                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_FORUM', true)">
-                    <VisualForum/>
-                  </v-tab-item>
-
-                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_LIBRARY', true)">
-                    <ClassLibrary/>
-                  </v-tab-item>
-
-                  <v-tab-item>
-                    <v-card>
-                      <v-card-text>
-                        <ArmyOfHelpers v-if="tab === 3 && isAppPopupOpen"/>
-                      </v-card-text>
-                    </v-card>
                   </v-tab-item>
                 </v-tabs-items>
 
