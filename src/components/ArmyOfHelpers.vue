@@ -7,7 +7,7 @@
 
     <div class="headline mb-2"><b>How it works</b></div>
     <h3>Step 1</h3>
-    <p>Some people have voluntarily signed up as helpers, so you can press the help button to notify them at any time</p>
+    <p>Some people have voluntarily signed up as helpers - press the help button to notify them at any time</p>
 
     <div style="display: flex; margin-top: 5px; margin-left: 15px;">
       Sign up as a helper (there are {{ armyMembers.length }} helpers in {{ mitClass.name }})
@@ -33,7 +33,7 @@
     </div>
 
     <h3 style="margin-top: 20px">Step 2</h3>
-    Your helper should arrive at your current Explain workspace within 30 seconds. Communicate over the chat, blackboard and audio-video.
+    If they're not all busy, a helper will arrive at your current Explain workspace within 30 seconds. Communicate over the board, chat and audio-video.
     <br>
     (Tip: if you are helping someone, record your explanation to re-use it later for everyone else. Two-birds-with-one-stone!)
 
