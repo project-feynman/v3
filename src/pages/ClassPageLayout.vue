@@ -28,7 +28,7 @@
             offset-y="25"
           >
             <v-list-item two-line class="px-0">
-              <v-list-item-avatar @click="isAppOverviewPopupOpen = true"  
+              <v-list-item-avatar @click="isAppPopupOpen = true"  
                 class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 18px;" tile width="62" height="56"
               >
                 <img src="/logo.png">
@@ -60,23 +60,20 @@
           </v-badge>
 
           <!-- Have the app overview, updates, news, as well as the chats -->
-          <v-dialog v-model="isAppOverviewPopupOpen" width="90vw" style="height: 90vh" persistent>
+          <v-dialog v-model="isAppPopupOpen" width="90vw" style="height: 90vh" persistent>
             <v-card style="height: 80vh">     
-              <MapleMusicPlayer v-if="isAppOverviewPopupOpen"
-                :incrementToToggleMusic="incrementToToggleMusic"
-                @music-fetched="incrementToToggleMusic += 1"
-              />  
                 <v-tabs
                   v-model="tab"
                   background-color="transparent"
                   color="cyan"
                 > 
-                  <v-btn icon @click="isAppOverviewPopupOpen = false" style="margin-top: 5px; margin-left: 2px;">
+                  <v-btn icon @click="isAppPopupOpen = false" style="margin-top: 5px; margin-left: 2px;">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
-                  <v-tab>School Messenger</v-tab>
-                  <v-tab>Visual Forum</v-tab>
-                  <v-tab>Open Library</v-tab>
+                  <v-tab>ANNOUNCEMENTS</v-tab>
+                  <v-tab>VISUAL FORUM</v-tab>
+                  <v-tab>CROWDSOURCED LIBRARY</v-tab>
+                  <v-tab>ARMY OF HELPERS</v-tab>
                 </v-tabs>
 
                 <v-tabs-items v-model="tab" touchless>
@@ -84,7 +81,7 @@
                     <v-card-text>
                       <SlackChats2/>
                     </v-card-text>
-                    
+
                     <v-card-actions>
                       <v-spacer/>
                       <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
@@ -103,6 +100,14 @@
 
                   <v-tab-item @click="$store.commit('SET_IS_VIEWING_LIBRARY', true)">
                     <ClassLibrary/>
+                  </v-tab-item>
+
+                  <v-tab-item>
+                    <v-card>
+                      <v-card-text>
+                        <ArmyOfHelpers v-if="tab === 3 && isAppPopupOpen"/>
+                      </v-card-text>
+                    </v-card>
                   </v-tab-item>
                 </v-tabs-items>
 
@@ -242,7 +247,7 @@ import CurrentArea from "@/pages/CurrentArea.vue";
 import CurrentRoom from "@/pages/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
-import MapleMusicPlayer from "@/components/MapleMusicPlayer.vue"; 
+import ArmyOfHelpers from "@/components/ArmyOfHelpers.vue";
 
 export default {
   name: "ClassPageLayout",
@@ -273,10 +278,10 @@ export default {
     AreaSwitchDropdown,
     VisualForum,
     MyParticipantDocUpdater,
-    MapleMusicPlayer,
     CurrentArea,
     CurrentRoom,
-    SlackChats2
+    SlackChats2,
+    ArmyOfHelpers
   },
   data: () => ({
     firebaseRef: null,
@@ -285,7 +290,6 @@ export default {
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
-    incrementToToggleMusic: 0,
     tab: 0, // 0, 1, 2
     isViewingMessenger: false
   }),
@@ -307,7 +311,7 @@ export default {
         }
       }
     },
-    isAppOverviewPopupOpen: {
+    isAppPopupOpen: {
       get () {
         return (this.isViewingForum || this.isViewingLibrary || this.isViewingMessenger); 
       },

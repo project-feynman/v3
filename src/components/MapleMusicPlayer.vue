@@ -39,6 +39,7 @@ export default {
         if (this.musicAudioElement.ended) {        
           this.fetchRandomMusicFromFirebaseStorage(); 
         }
+        this.musicAudioElement.volume = 0.25;
         this.musicAudioElement.play(); 
         this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
       } 
