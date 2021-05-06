@@ -104,6 +104,11 @@
       </v-card>
     </v-dialog>
 
+    <!-- INFINITE TUTORING -->
+    <v-dialog v-model="isInfiniteTutoringPopupOpen">
+      <InfiniteTutoring/>
+    </v-dialog> 
+
     <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
@@ -124,6 +129,10 @@
         </template>
         
         <v-list>
+          <v-list-item @click="isInfiniteTutoringPopupOpen = true">
+            <v-icon left color="pink">mdi-radioactive</v-icon> Infinite tutoring
+          </v-list-item> 
+          
           <v-menu
             v-model="isChatOpen"
             :close-on-content-click="false"
@@ -160,7 +169,6 @@
               </v-card-text>
             </v-card>
           </v-menu>
-          <!--  -->
 
           <v-list-item @click="isRenameRoomPopupOpen = true">
             <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
@@ -306,6 +314,7 @@ import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId } from "@/helpers.js";
 import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 import ZoomChat from "@/components/ZoomChat.vue";
+import InfiniteTutoring from "@/components/InfiniteTutoring.vue"; 
 
 export default {
   props: {
@@ -326,7 +335,9 @@ export default {
     BaseIconButton,
 
     VideoConferenceRoom,
-    ZoomChat
+    ZoomChat,
+
+    InfiniteTutoring
   },
   mixins: [
     DatabaseHelpersMixin
@@ -347,6 +358,8 @@ export default {
       isClearPDFsPopupOpen: false,
       isRoomStatusPopupOpen: false,
       isRenameRoomPopupOpen: false,
+      isInfiniteTutoringPopupOpen: false,
+
       titleOfExplCollection: "",
       newRoomStatus: "",
       newRoomName: "",

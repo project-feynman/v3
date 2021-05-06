@@ -70,9 +70,13 @@
                   <v-btn icon @click="isAppPopupOpen = false" style="margin-top: 5px; margin-left: 2px;">
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
-                  <v-tab>ARMY OF HELPERS</v-tab>
+
                   <v-tab>
-                    <v-badge 
+                    INFINITE TUTORING
+                  </v-tab>
+
+                  <v-tab>
+                    <v-badge v-if="mitClass"
                       :value="mitClass.numOfUnansweredQuestions"
                       :content="mitClass.numOfUnansweredQuestions"
                       top right color="secondary" overlap style="z-index: 1;"
@@ -96,7 +100,7 @@
                   <v-tab-item>
                     <v-card>
                       <v-card-text>
-                        <ArmyOfHelpers v-if="tab === 0 && isAppPopupOpen"/>
+                        <InfiniteTutoring v-if="tab === 0 && isAppPopupOpen"/>
                       </v-card-text>
                     </v-card>
                   </v-tab-item>
@@ -264,6 +268,7 @@ import CurrentRoom from "@/pages/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
 import ArmyOfHelpers from "@/components/ArmyOfHelpers.vue";
+import InfiniteTutoring from "@/components/InfiniteTutoring.vue"; 
 
 export default {
   name: "ClassPageLayout",
@@ -297,7 +302,8 @@ export default {
     CurrentArea,
     CurrentRoom,
     SlackChats2,
-    ArmyOfHelpers
+    ArmyOfHelpers,
+    InfiniteTutoring
   },
   data: () => ({
     firebaseRef: null,
