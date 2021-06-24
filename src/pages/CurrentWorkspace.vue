@@ -259,7 +259,7 @@
       <RealtimeBlackboard v-for="(boardID, i) in room.blackboards"
         :blackboardRef="blackboardRefs[i]" 
         :key="boardID"
-        style="margin-bottom: 30px"
+        style="margin-top: 5px"
       />
     </template>
   </div>

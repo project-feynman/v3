@@ -3,9 +3,9 @@
   <!-- bottom: auto; left: auto; -->
   <!-- Note: the fixed/absolute props is a quick-fix -->
   <!-- z-index: 100 is a quickfix -->
+  <!-- :fixed="true" used to handle the iOS issue when the safari page hides the top part of Safari -->
   <v-app-bar 
     absolute
-    :fixed="false"
     elevation="5" 
     :height="toolbarHeight" 
     color="grey darken-2" 

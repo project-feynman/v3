@@ -10,8 +10,10 @@
     <!-- Elevation ranges from 0 to 24 -->
     <!-- width 240; anything below, if the scrollbar appears (for laptops), then the right margin gets squished and invaded -->
     <!-- Sets the designated mobile breakpoint for the component. This will apply alternate styles for mobile devices such as the temporary prop, or activate the bottom prop when the breakpoint value is met. Setting the value to 0 will disable this functionality. -->
+    <!-- Height: 100% is a workaround for Vuetify's bug with iOS Safari page hiding interactions -->
     <v-navigation-drawer v-model="isShowingDrawer" 
       app 
+      style="height: 100%"
       class="elevation-24" 
       width="270" 
       disable-resize-watcher
