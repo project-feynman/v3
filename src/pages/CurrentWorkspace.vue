@@ -205,56 +205,55 @@
     
     </portal-target>
 
+    <portal to="right-side-of-my-participant-name">
+      <!-- For switching between different blackboards -->
+      <!-- item-color:  -->
+      <!-- active-class:  -->
+      <!-- hide-details: eliminates unnecessary bottom padding -->
+      <div v-if="room" class="d-flex">
+        <div v-if="currentBoardID">
+          <!-- `click.native.stop` is the workaround for the menu causing the entire page to reload https://github.com/vuetifyjs/vuetify/issues/3333#issuecomment-366832774 -->
+          <v-menu @click.prevent.stop fixed offset-y bottom>
+            <template v-slot:activator="{ on }">
+              <!-- `click.prevent.stop -->
+              <v-btn v-on="on" @click.prevent.stop height="30" text tile class="px-0" 
+                :style="`text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400;`" max-width="180"
+              >
+                <!-- The board switch button looks like a blackboard itself -->
+                <span class="`d-inline-block text-truncate" 
+                    :style="
+                      `color: ${currentTool.color}; width: 38px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
+                ">
+                  {{ getBoardNumberFromID(currentBoardID) }}
+                </span>
+                <v-spacer/>
+                <v-icon>mdi-menu-down</v-icon>
+              </v-btn>
+            </template>
 
-      <portal to="right-side-of-my-participant-name">
-        <!-- For switching between different blackboards -->
-        <!-- item-color:  -->
-        <!-- active-class:  -->
-        <!-- hide-details: eliminates unnecessary bottom padding -->
-        <div v-if="room" class="d-flex">
-          <div v-if="currentBoardID">
-            <!-- `click.native.stop` is the workaround for the menu causing the entire page to reload https://github.com/vuetifyjs/vuetify/issues/3333#issuecomment-366832774 -->
-            <v-menu @click.prevent.stop fixed offset-y bottom>
-              <template v-slot:activator="{ on }">
-                <!-- `click.prevent.stop -->
-                <v-btn v-on="on" @click.prevent.stop height="30" text tile class="px-0" 
-                  :style="`text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400;`" max-width="180"
+            <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
+              <template v-for="boardID in room.blackboards">
+                <v-list-item 
+                  @click="$store.commit('SET_CURRENT_BOARD_ID', boardID)"
+                  :key="boardID"
+                  style="background-color: rgb(62, 66, 66);"
+                  class="px-0"
                 >
-                  <!-- The board switch button looks like a blackboard itself -->
-                  <span class="`d-inline-block text-truncate" 
-                      :style="
-                        `color: ${currentTool.color}; width: 38px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
-                  ">
-                    {{ getBoardNumberFromID(currentBoardID) }}
-                  </span>
-                  <v-spacer/>
-                  <v-icon>mdi-menu-down</v-icon>
-                </v-btn>
+                  <div :style="`margin: auto; color: ${currentTool.color};`">
+                    {{ getBoardNumberFromID(boardID) }}
+                  </div>
+                </v-list-item>
+                <v-divider class="white--text" :key="boardID + 'divider'"/>
               </template>
 
-              <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
-                <template v-for="boardID in room.blackboards">
-                  <v-list-item 
-                    @click="$store.commit('SET_CURRENT_BOARD_ID', boardID)"
-                    :key="boardID"
-                    style="background-color: rgb(62, 66, 66);"
-                    class="px-0"
-                  >
-                    <div :style="`margin: auto; color: ${currentTool.color};`">
-                      {{ getBoardNumberFromID(boardID) }}
-                    </div>
-                  </v-list-item>
-                  <v-divider class="white--text" :key="boardID + 'divider'"/>
-                </template>
-
-                <BaseButton @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);">
-                  New board
-                </BaseButton>
-              </v-list>
-            </v-menu>
-          </div>
+              <BaseButton @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);">
+                New board
+              </BaseButton>
+            </v-list>
+          </v-menu>
         </div>
-      </portal>
+      </div>
+    </portal>
 
     <!-- The actual blackboards -->
     <div id="room" class="room-wrapper">
