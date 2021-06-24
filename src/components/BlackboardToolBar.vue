@@ -4,8 +4,8 @@
   <!-- Note: the fixed/absolute props is a quick-fix -->
   <!-- z-index: 100 is a quickfix -->
   <v-app-bar 
-    :fixed="!$store.state.isViewingForum"
-    :absolute="$store.state.isViewingForum"
+    absolute
+    :fixed="false"
     elevation="5" 
     :height="toolbarHeight" 
     color="grey darken-2" 
@@ -58,7 +58,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
 import ColorPicker from "@/components/ColorPicker.vue";
 import { mapState } from "vuex"; 
-import db from "@/database.js"; 
 
 export default {
   props: {

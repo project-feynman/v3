@@ -2,11 +2,12 @@
   <!-- 100vh so the div remains at the same height even if the blackboard is very tall
     meaning the toolbar can succesfully pin to the top
    -->
-   <!-- overflow-x: auto; -->
-  <div style="
-    height: 100vh;
-    overflow: auto;
-  ">
+    <!-- <div style="
+      height: 100vh;
+      overflow: auto;
+    "> -->
+  <div style="overflow-y: auto; overflow-x: none">
+
     <v-container v-if="!hasFetchedBlackboardData" style="height: 100%;">
       <!-- TODO: make it full width and height -->
       <!-- <v-skeleton-loader :attrs="{ class: 'mb-6', boilerplate: true, elevation: 2 }" type="image" min-height="1200" width="1200">

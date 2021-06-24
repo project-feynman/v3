@@ -255,36 +255,13 @@
       </div>
     </portal>
 
-    <!-- The actual blackboards -->
-    <div id="room" class="room-wrapper">
-      <v-tabs-items v-if="blackboardRefs.length !== 0 && room && currentBoardID" 
-        :value="currentBoardID" 
-        touchless
-      >
-      <!-- re-render the blackboard everytime someone switches -->
-        <v-tab-item v-for="(boardID, i) in room.blackboards"
-          :value="boardID" :key="i"
-        >
-          <!-- Screensharing becomes the background of the blackboard -->
-          <!-- TODO: fix this -->
-          <div id="screenshare-container" style="position: fixed; z-index: 1;">
-
-          </div>
-
-          <RealtimeBlackboard v-if="boardID === currentBoardID"
-            :blackboardRef="blackboardRefs[i]"
-            id="current-blackboard"
-          >
-            <template v-slot:blackboard-toolbar>
-              <BaseButton @click="$store.commit('SET_IS_BOARD_FULLSCREEN', !isBoardFullscreen)" 
-                :icon="isBoardFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" 
-                color="white" small 
-              />
-            </template>
-          </RealtimeBlackboard>
-        </v-tab-item>
-      </v-tabs-items>
-    </div>
+    <template v-if="blackboardRefs.length !== 0 && room">
+      <RealtimeBlackboard v-for="(boardID, i) in room.blackboards"
+        :blackboardRef="blackboardRefs[i]" 
+        :key="boardID"
+        style="margin-bottom: 30px"
+      />
+    </template>
   </div>
 </template>
 

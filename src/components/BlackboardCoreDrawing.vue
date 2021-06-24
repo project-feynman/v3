@@ -1,5 +1,6 @@
 <template>
-  <div class="blackboard" elevation="1">
+  <!-- Make BlackboardCoreDrawing a positioned element so the toolbar (position absolute) will pin itself to it -->
+  <div style="position: relative;" elevation="1">
     <slot name="canvas-toolbar"
       :isFullScreen="isFullScreen"
       :handleImageFile="handleImageFile"
@@ -93,14 +94,6 @@ export default {
     },
     isReadOnly: {
       type: Boolean,
-      required: true
-    },
-    width: {
-      type: Number,
-      required: true
-    },
-    height: {
-      type: Number,
       required: true
     }
   },
@@ -218,12 +211,22 @@ export default {
     }
   },
   mounted () {
-    this.initializeCanvas();
+    this.canvas = this.$refs.FrontCanvas;
+    this.bgCanvas = this.$refs.BackCanvas;
+    this.ctx = this.canvas.getContext("2d");
+    this.bgCtx = this.bgCanvas.getContext("2d");
+
+    this.resizeBlackboard(); // resizeBlackboard also re-renders everything
+    this.resizeBlackboard = _.debounce(this.resizeBlackboard, 100); 
+    window.addEventListener("resize", this.resizeBlackboard);
     
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
       getThumbnailBlob: this.getThumbnailBlob,
     });
+  },
+  destroyed () {
+    window.removeEventListener("resize", this.resizeBlackboard);
   },
   methods: {
     /** 
@@ -237,14 +240,6 @@ export default {
       newStroke.id = getRandomId(); 
       this.localStrokesArray.push(newStroke);
       this.$emit("stroke-drawn", newStroke);
-    },
-    initializeCanvas () {
-      this.canvas = this.$refs.FrontCanvas;
-      this.bgCanvas = this.$refs.BackCanvas;
-      this.ctx = this.canvas.getContext("2d");
-      this.bgCtx = this.bgCanvas.getContext("2d");
-
-      this.resizeBlackboard(); // resizeBlackboard also re-renders everything
     },
     /**
      * 
@@ -444,6 +439,26 @@ export default {
      * the function has to also re-render all the pens strokes and background image. 
      */
     resizeBlackboard () {      
+      const { BlackboardWrapper } = this.$refs; 
+      BlackboardWrapper.style.width = "100%"; 
+      BlackboardWrapper.style.height = "95%"; // quick-fix
+
+      // calculate the new
+      let videoWidth 
+      let videoHeight
+  
+      const heightOfGapToShowGlimpseOfNextBoard = 30 // the distance between blackboards is half i.e. 10
+      const availableWidth = BlackboardWrapper.clientWidth
+      const availableHeight = window.innerHeight - heightOfGapToShowGlimpseOfNextBoard
+      const aspectRatio = 4/3;
+      if (availableWidth * (1/aspectRatio) < availableHeight) {
+        videoWidth = availableWidth;
+        videoHeight = videoWidth * (1/aspectRatio);
+      } else {
+        videoHeight = availableHeight;
+        videoWidth = videoHeight * aspectRatio;
+      }
+
       const changeInternalAndExternalDimensionsOfBlackboard = ({ newWidth, newHeight }) => {
         this.canvas.style.width = `${newWidth}px`; 
         this.canvas.style.height = `${newHeight}px`;
@@ -455,14 +470,9 @@ export default {
         this.bgCanvas.style.scrollWidth = `${newWidth}px`;
         this.bgCanvas.style.scrollHeight = `${newHeight}px`;
       }
-
-      const { BlackboardWrapper } = this.$refs; 
-      BlackboardWrapper.style.width = "100%"; 
-      BlackboardWrapper.style.height = "100%"; 
-
       changeInternalAndExternalDimensionsOfBlackboard({
-        newWidth: this.width,
-        newHeight: this.height
+        newWidth: videoWidth,
+        newHeight: videoHeight
       });
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
@@ -470,15 +480,13 @@ export default {
       this.$_rescaleCanvas();
       this.$_drawStrokesInstantly();
 
-      // re-render background
-      if (!this.backgroundImage) {
-        return; 
-      }
-      const { blob, downloadURL } = this.backgroundImage;
-      if (blob || downloadURL) {
-        this.$_renderBackground(
-          blob ? URL.createObjectURL(blob) : downloadURL
-        );
+      if (this.backgroundImage) {
+        const { blob, downloadURL } = this.backgroundImage;
+        if (blob || downloadURL) {
+          this.$_renderBackground(
+            blob ? URL.createObjectURL(blob) : downloadURL
+          );
+        }
       }
     },
     // HANDLE BACKGROUND IMAGE

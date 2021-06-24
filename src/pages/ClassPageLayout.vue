@@ -29,7 +29,7 @@
           >
             <v-list-item two-line class="px-0">
               <v-list-item-avatar @click="isAppPopupOpen = true"  
-                class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 18px;" tile width="62" height="56"
+                class="mr-0" style="margin-left: 2px; margin-bottom: 18px;" tile width="62" height="56"
               >
                 <img src="/logo.png">
               </v-list-item-avatar>
@@ -335,6 +335,7 @@ export default {
     },
     isAppPopupOpen: {
       get () {
+        return false; 
         return (this.isViewingForum || this.isViewingLibrary || this.isViewingMessenger); 
       },
       set (newBoolean) {
