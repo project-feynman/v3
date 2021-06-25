@@ -19,6 +19,7 @@
     <!-- Blackboard -->
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <!-- QUICKFIX: record-start will change blackboard from infinite to horizontal mode -->
+    <!-- @record-end="handleRecordEnd()" -->
     <Blackboard v-else
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
@@ -27,29 +28,32 @@
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"
-      @record-end="handleRecordEnd()"
+      @record-end="saveVideo()"
     >
       <!-- TODO: don't let user wipe board / set background while recording -->
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot="{ closeMenu }">
-        <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
+        <v-list-item @click.stop="saveAnimation()">
+          <v-icon left color="secondary">mdi-content-save</v-icon>Save
+        </v-list-item>
+        <!-- <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="secondary">mdi-content-save</v-icon>Save board to library
+              <v-icon left color="secondary">mdi-content-save</v-icon>Save
             </v-list-item>
           </template>
           
           <template v-slot:message-to-user>
             <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
           </template> 
-        </BasePopupButton>
+        </BasePopupButton> -->
 
         <v-list-item @click="willDownloadPDF = !willDownloadPDF">
-          <v-icon left color="orange">mdi-file-pdf</v-icon>Download board as PDF
+          <v-icon left color="orange">mdi-file-pdf</v-icon>Export
         </v-list-item>
 
         <v-list-item @click="$refs.fileInput.click()">
-          <v-icon left color="blue">mdi-image</v-icon>Upload background
+          <v-icon left color="blue">mdi-image</v-icon>Add background
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
@@ -58,7 +62,7 @@
           >
         </v-list-item>
 
-        <template v-if="backgroundImage">
+        <template v-if="backgroundImage.blob || backgroundImage.downloadURL">
           <v-list-item @click="resetBackgroundImage()">
             <v-icon left color="red">mdi-file-remove</v-icon> Remove background
           </v-list-item>
@@ -89,7 +93,7 @@
     </Blackboard> 
   
     <!-- Popup for saving blackboard -->
-    <v-dialog v-model="dialog" persistent max-width="600">
+    <!-- <v-dialog v-model="dialog" persistent max-width="600">
       <v-card>
         <v-card-title class="headline">Save your recorded explanation?</v-card-title>
         <v-card-text>
@@ -105,7 +109,7 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
   </div>
 </template>
 
@@ -210,6 +214,40 @@ export default {
     this.removeBackgroundImageListener(); 
   },
   methods: {
+    async saveVideo () {
+       const basicUserInfo = {
+        email: this.user.email,
+        uid: this.user.uid,
+        firstName: this.user.firstName,
+        lastName: this.user.lastName
+      }
+
+      const audioDownloadURL = await this.$_saveToStorage(getRandomId(), this.blackboard.audioBlob)
+      console.log('audioDownloadURL =', audioDownloadURL)
+
+      await this.blackboardRef.update({
+        creator: basicUserInfo,
+        date: new Date().toISOString(),
+        views: 0,
+        audioDownloadURL
+      })      
+      console.log('successfully uploaded blackboard ref')
+    },
+    async saveAnimation () {
+      const basicUserInfo = {
+        email: this.user.email,
+        uid: this.user.uid,
+        firstName: this.user.firstName,
+        lastName: this.user.lastName
+      }
+      
+      await this.blackboardRef.update({
+        creator: basicUserInfo,
+        date: new Date().toISOString(),
+        views: 0
+      })      
+      console.log('successfully uploaded blackboard ref')
+    },
     resetBackgroundImage () {
       this.blackboardRef.update({
         backgroundImageDownloadURL: ""
@@ -444,11 +482,11 @@ export default {
       // ask if the user wants to save/discard the recorded explanation 
       this.dialog = true; 
     },
-    saveVideo () {
-      this.dialog = false; 
-      this.uploadExplanation(); 
-      this.incrementKeyToDestroyComponent += 1; 
-    },
+    // saveVideo () {
+    //   this.dialog = false; 
+    //   this.uploadExplanation(); 
+    //   this.incrementKeyToDestroyComponent += 1; 
+    // },
     discardAudio () {
       this.dialog = false; 
       this.incrementKeyToDestroyComponent += 1; 

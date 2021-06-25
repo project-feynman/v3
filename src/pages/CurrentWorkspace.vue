@@ -87,7 +87,7 @@
     <v-dialog v-model="isRenameRoomPopupOpen" width="500">
       <v-card>
         <v-card-title>
-          Rename the room to designate it for another purpose
+          Rename
         </v-card-title>
 
         <v-card-text>
@@ -98,7 +98,7 @@
           <v-spacer/>
           <v-btn @click="isRenameRoomPopupOpen = false">CANCEL</v-btn>
           <v-btn @click="renameRoom(); isRenameRoomPopupOpen = false;" color="black" dark>
-            Rename room
+            Rename
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -130,7 +130,7 @@
         
         <v-list>
           <v-list-item @click="isInfiniteTutoringPopupOpen = true">
-            <v-icon left color="pink">mdi-radioactive</v-icon> Infinite tutoring
+            <v-icon left color="pink">mdi-bell</v-icon> Ask for help
           </v-list-item> 
           
           <v-menu
@@ -171,7 +171,7 @@
           </v-menu>
 
           <v-list-item @click="isRenameRoomPopupOpen = true">
-            <v-icon left color="blue">mdi-pencil</v-icon> Rename this table
+            <v-icon left color="blue">mdi-pencil</v-icon> Rename
           </v-list-item>
 
           <v-list-item>
@@ -255,12 +255,95 @@
       </div>
     </portal>
 
+    <v-dialog :value="isEditPopupOpen">
+      <v-card>
+        <v-card-title>Edit explanation</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="newTitle" placeholder="title"/>
+          <v-textarea v-model="newDescription" placeholder="Description here"/> 
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn>CLOSE</v-btn>
+          <v-btn @click="editTitleAndDescription()">SAVE</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <template v-if="blackboardRefs.length !== 0 && room">
-      <RealtimeBlackboard v-for="(boardID, i) in room.blackboards"
-        :blackboardRef="blackboardRefs[i]" 
-        :key="boardID"
-        style="margin-top: 5px"
-      />
+      <template v-for="(boardID, i) in room.blackboards">
+        <RenderlessFetchBlackboardDoc
+          :blackboardRef="blackboardRefs[i]"
+          :key="boardID"
+          v-slot="{ isLoading, creator, date, audioDownloadURL, backgroundImageDownloadURL, title, description }"
+        >  
+          <div v-if="isLoading" 
+            style="width: 100%; height: 500px; background-color: rgb(46, 49, 49);
+              margin-top: 5px;
+            "
+          >
+            <div class="overlay-item">
+              <v-progress-circular :indeterminate="true" size="50" color="cyan"/>
+            </div>
+          </div>
+
+          <!-- If blackboard is already saved/recorded -->
+          <RenderlessFetchStrokes v-else-if="date && creator"
+            :strokesRef="blackboardRefs[i].collection('strokes')"
+            :imageDownloadUrl="backgroundImageDownloadURL"
+            v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
+          >
+            <div style="position: relative;" v-intersect.once="{
+              handler (entries, observer, isIntersecting) {
+                if (isIntersecting) {
+                  fetchStrokes(); 
+                } 
+              },
+              options: {
+                threshold: 0.3
+              }
+            }"
+            > 
+              <template>
+                <v-card>
+                  <v-card-title v-if="title">
+                    {{ title }}
+                  </v-card-title>
+                  <v-card-text>
+                    <p v-if="description" class="mb-5">
+                      {{ description }}
+                    </p>
+                    <template v-if="strokesArray.length > 0">
+                      <DoodleVideo v-if="audioDownloadURL"
+                        :strokesArray="strokesArray"
+                        :imageBlob="imageBlob"
+                        :audioUrl="audioDownloadURL"
+                        :aspectRatio="4/3"
+                        style="margin-top: 5px"
+                        @edit="showEditPopup(blackboardRefs[i])"
+                        @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
+                      />
+                      <DoodleAnimation v-else
+                        :strokesArray="strokesArray"
+                        :backgroundUrl="backgroundImageDownloadURL"
+                        :aspectRatio="4/3"
+                        style="margin-top: 5px"
+                        @edit="showEditPopup(blackboardRefs[i])"
+                      />
+                    </template>
+                  </v-card-text>
+                </v-card>
+              </template>
+            </div>
+          </RenderlessFetchStrokes>
+
+          <RealtimeBlackboard v-else
+            :blackboardRef="blackboardRefs[i]" 
+            :key="boardID"
+            style="margin-top: 5px"
+          />
+        </RenderlessFetchBlackboardDoc>
+      </template>
     </template>
   </div>
 </template>
@@ -291,6 +374,10 @@ import { getRandomId } from "@/helpers.js";
 import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 import ZoomChat from "@/components/ZoomChat.vue";
 import InfiniteTutoring from "@/components/InfiniteTutoring.vue"; 
+import DoodleAnimation from '@/components/DoodleAnimation.vue'
+import DoodleVideo from '@/components/DoodleVideo.vue'
+import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
+import RenderlessFetchStrokes from '@/components/RenderlessFetchStrokes.vue'
 
 export default {
   props: {
@@ -309,17 +396,21 @@ export default {
     RealtimeBlackboard,
     BaseButton,
     BaseIconButton,
-
     VideoConferenceRoom,
     ZoomChat,
-
-    InfiniteTutoring
+    InfiniteTutoring,
+    DoodleAnimation,
+    DoodleVideo,
+    RenderlessFetchBlackboardDoc,
+    RenderlessFetchStrokes
   },
   mixins: [
     DatabaseHelpersMixin
   ],
   data () {
     return {
+      overlay: false,
+
       room: null,
       blackboardRefs: [],
       snapshotListeners: [],
@@ -340,7 +431,12 @@ export default {
       newRoomStatus: "",
       newRoomName: "",
 
-      isChatOpen: false
+      isChatOpen: false,
+
+      isEditPopupOpen: false,
+      refOfExplEdited: null,
+      newTitle: '',
+      newDescription: ''
     }
   },
   computed: {
@@ -401,6 +497,64 @@ export default {
     }
   },
   methods: { 
+    showEditPopup (refOfExplEdited) {
+      this.refOfExplEdited = refOfExplEdited
+      this.isEditPopupOpen = true
+    },
+    async editTitleAndDescription () {
+      console.log('updating expl...')
+      await this.refOfExplEdited.update({
+        title: this.newTitle,
+        description: this.newDescription 
+      })
+      console.log('success.')
+      this.newTitle = ''
+      this.newDescription = ''
+      this.refOfExplEdited = null
+      this.isEditPopupOpen = false
+    },
+    // incrementNumOfViewsOnExpl () {
+    //   const ref = db.doc(`${this.expl.ref}`);
+    //   ref.update({
+    //     views: firebase.firestore.FieldValue.increment(1)
+    //   });
+    // },
+    // TODO: 
+    //   - be able to delete blackboards
+    //   - delete the blackboard doc itself 
+    //   - delete its subcollections with Cloud Functions
+    // the reference to the blackboard is deleted from the parent: try to extract the id and do an array remove operation
+
+
+    /**
+     * Resets it into a blackboard (no need to delete the strokes)
+     *   - note: this operation can't be atomic because db.batch() only works for Firestore and not for Storage
+     */
+    async deleteVideo ({ videoRef, creator, audioDownloadURL }) {
+      // check permissions for delete 
+      if (creator.email && creator.email !== this.user.email) {
+        alert('Not allowed to delete video')
+        return
+      }
+      const storage = firebase.storage()
+      const audioRef = storage.refFromURL(audioDownloadURL);  
+      audioRef.delete().then(async () => {
+      console.log('successfully deleted the audio')
+        // File deleted successfully
+        await videoRef.update({ 
+          audioDownloadURL: '',
+          creator: firebase.firestore.FieldValue.delete(),
+          date: firebase.firestore.FieldValue.delete()
+        })
+        console.log('removed reference to audioURL and deleted creator and date fields')
+      }).catch((error) => {
+        // Uh-oh, an error occurred!
+      });
+    },
+    resetVideoIntoEmptyBoard () {
+      // delete the audio file
+      // delete the strokes? 
+    },
     async deleteThisRoom () {
       // warning: the strokes will remain, but find a fix later as Feynman is way more likely to die from other things
       const batch = db.batch();
@@ -430,6 +584,7 @@ export default {
       const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomID}`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);
       const newID = getRandomId();  
+      // TODO: use batch operation
       await Promise.all([
         blackboardsRef.doc(newID).set({
           roomType: '',

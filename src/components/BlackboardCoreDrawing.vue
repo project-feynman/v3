@@ -1,17 +1,18 @@
 <template>
   <!-- Make BlackboardCoreDrawing a positioned element so the toolbar (position absolute) will pin itself to it -->
   <div style="position: relative;" elevation="1">
-    <slot name="canvas-toolbar"
-      :isFullScreen="isFullScreen"
-      :handleImageFile="handleImageFile"
-      :resetBoard="resetBlackboard"
-      :toggleFullScreen="toggleFullScreen"
-      :undoPenStroke="eraseStroke"
+    <div ref="BlackboardWrapper" class="blackboard-wrapper" 
+      style="position: relative; margin: auto;"
     >
+      <slot name="canvas-toolbar"
+        :isFullScreen="isFullScreen"
+        :handleImageFile="handleImageFile"
+        :resetBoard="resetBlackboard"
+        :toggleFullScreen="toggleFullScreen"
+        :undoPenStroke="eraseStroke"
+      >
 
-    </slot>
-
-    <div ref="BlackboardWrapper" class="blackboard-wrapper" style="position: relative;">
+      </slot>
       <canvas v-if="! isReadOnly"
         ref="FrontCanvas" class="front-canvas"
         @touchstart="e => touchStart(e)"
@@ -469,6 +470,10 @@ export default {
         this.bgCanvas.style.height = `${newHeight}px`;
         this.bgCanvas.style.scrollWidth = `${newWidth}px`;
         this.bgCanvas.style.scrollHeight = `${newHeight}px`;
+
+        // fixes why the blackboard won't center issue and toolbar is not there
+        BlackboardWrapper.style.height = `${newHeight}px`
+        BlackboardWrapper.style.width = `${newWidth}px`
       }
       changeInternalAndExternalDimensionsOfBlackboard({
         newWidth: videoWidth,

@@ -45,19 +45,21 @@
 
       <br>
 
-      <div class="headline">Sign up as a volunteer tutor</div>
+      <div class="headline">Sign up as a volunteer helper</div>
       <v-switch 
         :input-value="isUserATutor"
         @change="newBoolean => toggleNotifyOnTutorRequest(newBoolean)"
       />
 
-      <div class="headline">Volunteer tutors</div> 
+      <div class="headline">Volunteer helpers / study group</div> 
       <v-list>
-        <v-list-item v-for="helper of allHelpers" :key="helper.id">
-          <v-list-item-title>{{ helper.firstName + " " + helper.lastName }}</v-list-item-title>
-          <v-list-item-subtitle>Tutored 0 times and shared 0 videos</v-list-item-subtitle> 
-          <v-btn @click="tutor = helper; isHelpRequestPopupOpen = true;">Request for help</v-btn>
-        </v-list-item>
+        <template v-for="helper of allHelpers">
+          <v-list-item :key="helper.id">
+            <v-list-item-title>{{ helper.firstName + " " + helper.lastName }}</v-list-item-title>
+            <v-list-item-subtitle>Tutored 0 times and shared 0 videos</v-list-item-subtitle> 
+            <v-btn @click="tutor = helper; isHelpRequestPopupOpen = true;">Request for help</v-btn>
+          </v-list-item>
+        </template>
       </v-list>
 
       <v-dialog persistent v-model="isHelpRequestPopupOpen">
