@@ -409,8 +409,6 @@ export default {
   ],
   data () {
     return {
-      overlay: false,
-
       room: null,
       blackboardRefs: [],
       snapshotListeners: [],
@@ -550,10 +548,6 @@ export default {
       }).catch((error) => {
         // Uh-oh, an error occurred!
       });
-    },
-    resetVideoIntoEmptyBoard () {
-      // delete the audio file
-      // delete the strokes? 
     },
     async deleteThisRoom () {
       // warning: the strokes will remain, but find a fix later as Feynman is way more likely to die from other things
