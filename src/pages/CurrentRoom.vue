@@ -285,8 +285,12 @@
           v-slot="{ isLoading, creator, date, audioDownloadURL, backgroundImageDownloadURL, title, description }"
         >  
           <div v-if="isLoading" 
-            style="width: 100%; height: 500px; background-color: rgb(46, 49, 49);
+            style="
+              width: 100%; 
+              height: 500px; 
+              background-color: rgb(46, 49, 49);
               margin-top: 5px;
+              position: relative
             "
           >
             <div class="overlay-item">
@@ -724,3 +728,15 @@ export default {
 };
 </script>
 
+<style scoped>
+.overlay-item {
+  position: absolute; 
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>

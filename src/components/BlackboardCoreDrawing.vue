@@ -158,13 +158,19 @@ export default {
         // DO NOTHING: I created the stroke in by drawing and the client only knows about it now
       }
       else if (m < n) {
-        for (let i = m; i < n; i++) {
-          const newStroke = this.strokesArray[i];
-          this.$_drawStroke(
-            newStroke, 
-            newStroke.startTime !== newStroke.endTime ? this.$_getPointDuration(newStroke) : null // instantly or smoothly
-          );
-          this.localStrokesArray.push(newStroke);
+        if (m === 0) { // blackboard just finished loading i.e. there can be 500 strokes
+          this.$_drawStrokesInstantly()
+          this.localStrokesArray = [...this.strokesArray]
+        }
+        else {
+          for (let i = m; i < n; i++) {
+            const newStroke = this.strokesArray[i];
+            this.$_drawStroke(
+              newStroke, 
+              newStroke.startTime !== newStroke.endTime ? this.$_getPointDuration(newStroke) : null // instantly or smoothly
+            );
+            this.localStrokesArray.push(newStroke);
+          }
         }
       }
       else { 

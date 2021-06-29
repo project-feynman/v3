@@ -8,19 +8,25 @@
     "> -->
 
     <!-- <div style="overflow-y: auto; overflow-x: none"> -->
-  <div>
-    <v-container v-if="!hasFetchedBlackboardData" style="height: 100%;">
-      <!-- TODO: make it full width and height -->
-      <!-- <v-skeleton-loader :attrs="{ class: 'mb-6', boilerplate: true, elevation: 2 }" type="image" min-height="1200" width="1200">
-      
-      </v-skeleton-loader> -->
-    </v-container>
+  <div v-intersect.once="syncBlackboardWithDb">
+      <div class="overlay-item" v-if="isFetchingStrokes">
+        <v-progress-linear indeterminate height="10" color="cyan darken-1"/>
+      </div>
+    <!-- 
+      Unexpected behavior: without the v-container placeholder, when all the strokes appear on all the blackboards,
+      there is severe lag. But if the strokes are fetched properly before rendering blackboards, the lag disappears.
+     -->
+    <!-- <v-container v-if="!hasFetchedBlackboardData" style="height: 100%;">
+
+    </v-container> -->
 
     <!-- Blackboard -->
     <!-- @update:background-image="image => updateBlackboardBackground(image)" -->
     <!-- QUICKFIX: record-start will change blackboard from infinite to horizontal mode -->
     <!-- @record-end="handleRecordEnd()" -->
-    <Blackboard v-else
+
+    <!-- v-if="hasFetchedBlackboardData" -->
+    <Blackboard 
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :key="incrementKeyToDestroyComponent"
@@ -157,6 +163,7 @@ export default {
   },
   data () {
     return {
+      isFetchingStrokes: false,
       hasFetchedStrokesFromDb: false,
       hasFetchedBackgroundImage: false,
       strokesArray: [],
@@ -195,25 +202,18 @@ export default {
       return this.blackboardRef.collection("strokes");
     }
   },
-  created () {
-    this.keepSyncingBoardWithDb(); 
-    // sync backgroundImage: if your friend changes the background image, you'll detect it here
-    this.removeBackgroundImageListener = this.blackboardRef.onSnapshot(blackboardDoc => {
-      // update `backgroundImage` prop so BlackboardCoreDrawing updates     
-      this.backgroundImage = {
-        downloadURL: blackboardDoc.data().backgroundImageDownloadURL,
-        blob: null
-      };
-      if (!this.hasFetchedBackgroundImage) {
-        this.hasFetchedBackgroundImage = true; 
-      }
-    });
-  },
   destroyed () {
-    this.removeBlackboardStrokesListener();
-    this.removeBackgroundImageListener(); 
+    if (this.removeBlackboardStrokesListener) this.removeBlackboardStrokesListener();
+    if (this.removeBackgroundImageListener) this.removeBackgroundImageListener(); 
   },
   methods: {
+    syncBlackboardWithDb (entries, observer, isIntersecting) {
+      if (isIntersecting) {
+        this.keepSyncingStrokesWithDb()
+        this.keepSyncingBackgroundWithDb()
+        this.isFetchingStrokes = true
+      } 
+    },
     async saveVideo () {
        const basicUserInfo = {
         email: this.user.email,
@@ -248,6 +248,18 @@ export default {
       })      
       console.log('successfully uploaded blackboard ref')
     },
+    keepSyncingBackgroundWithDb () {
+      this.removeBackgroundImageListener = this.blackboardRef.onSnapshot(blackboardDoc => {
+      // update `backgroundImage` prop so BlackboardCoreDrawing updates     
+      this.backgroundImage = {
+        downloadURL: blackboardDoc.data().backgroundImageDownloadURL,
+        blob: null
+      };
+        if (!this.hasFetchedBackgroundImage) {
+          this.hasFetchedBackgroundImage = true; 
+        }
+      });
+    },
     resetBackgroundImage () {
       this.blackboardRef.update({
         backgroundImageDownloadURL: ""
@@ -265,7 +277,7 @@ export default {
           that other people made during the process (if any). 
       @see explain.mit.edu/class/mDbUrvjy4pe8Q5s5wyoD/posts/k8TLymX9Say5EUoCdxEp
     */
-    keepSyncingBoardWithDb () {
+    keepSyncingStrokesWithDb () {
       this.removeBlackboardStrokesListener = this.strokesRef.orderBy("timestamp").onSnapshot(async snapshot => {
         // CASE 1: wipe board operation
         const removedDocs = snapshot.docChanges().filter(change => change.type === "removed"); 
@@ -307,7 +319,8 @@ export default {
           }
         }
         if (!this.hasFetchedStrokesFromDb) { 
-          this.hasFetchedStrokesFromDb = true;
+          this.hasFetchedStrokesFromDb = true
+          this.isFetchingStrokes = false
           this.$root.$emit("show-snackbar", `Fetched ${this.strokesArray.length} strokes.`)
         }
       });
