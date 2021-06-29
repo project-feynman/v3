@@ -124,7 +124,7 @@
                   dark
                   style="background-color:  #1abd53"
                 >
-                  <v-icon color="white" small>mdi-headphones-off</v-icon>
+                  <v-icon color="white">mdi-phone</v-icon>
                 </v-btn>
               </template>
               
@@ -162,26 +162,16 @@
               <v-icon v-else-if="client.canHearAudio" color="green">
                 mdi-phone
               </v-icon>
-              <v-icon v-else small color="grey darken-2">
+              <v-icon v-else-if="!client.canHearAudio && connectionStatus === 'CONNECTED'" small color="grey darken-2">
                 mdi-headphones-off
               </v-icon>
 
-              <!-- Deprecate or choose a new color -->
-              <v-icon v-if="client.isMusicPlaying" color="cyan">
-                mdi-music-clef-treble
-              </v-icon>
-              <v-icon v-if="client.isViewingLibrary" color="yellow darken-3">
-                mdi-folder
-              </v-icon>
-              <v-icon v-if="client.isViewingForum" color="secondary">
-                mdi-draw
-              </v-icon>
          
               <div
                 @click="$store.commit('SET_CURRENT_BOARD_ID', client.currentBoardID)"
                 :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; 
-                         width: 38px; 
-                         height: 30px; 
+                         width: 42px; 
+                         height: 32.5px; 
                          display: flex; 
                          justify-content: center; 
                          align-items: center; 
