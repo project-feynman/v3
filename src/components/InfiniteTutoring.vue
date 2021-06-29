@@ -13,26 +13,7 @@
       <div class="headline">Introduction</div> 
 
       <b>1-on-1 tutoring is an extremely scarce resource</b>
-      <div>
-        In an ideal world with infinite resources, we can get high quality tutoring whenever we want. 
-        But in reality, everyone is very busy with their lives, and simply can't afford to help too much.
-
-        One of my motivations for creating Explain is that, I struggled a lot in school - and even though many people helped me along the way,
-        in reality, I needed much more tutoring for how behind I was. I think the best analogy is that of homelessness - you can give me $5, but 
-        the sad truth is, I need $500 to even rent a place for a month - something nobody can afford to give to a homeless person for nothing in return.
-        To put it simply, high quality tutoring is an extremely scarce resource.
-      </div>
-
-      <br>
-
-      <b>I believe videos can make high quality, free tutoring available to everyone</b>
-      <div>
-        I believe KhanAcademy revealed a clue about how to solve that - videos. Explanation videos have a magical property in that, high quality explanations can be made once,
-        then viewed by an infinite number of people an infinite number of times. The problem is, even today, virtually nobody records explanation videos at MIT, for the simple reason that 
-        who'd suddenly devote an hour of their day to record videos on YouTube in the hopes that it'll be helpful to some random viewers? People 
-        much prefer to explain things to someone in-person - what if there is some way to leverage those interactions into video explanations?
-      </div>
-
+      
       <br>
 
       <b>How it works</b>
