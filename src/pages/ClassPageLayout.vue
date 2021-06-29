@@ -239,7 +239,7 @@
     </v-navigation-drawer>
 
     <v-main>
-      <CurrentWorkspace 
+      <CurrentRoom 
         :roomID="tableID" 
         :key="tableID"
       />
@@ -266,7 +266,7 @@ import AreaSwitchDropdown from "@/components/AreaSwitchDropdown.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import VisualForum from "@/components/VisualForum.vue";
 import CurrentArea from "@/pages/CurrentArea.vue"; 
-import CurrentWorkspace from "@/pages/CurrentWorkspace.vue";
+import CurrentRoom from "@/pages/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
 import SlackChats2 from "@/components/SlackChats2.vue"; 
 import ArmyOfHelpers from "@/components/ArmyOfHelpers.vue";
@@ -302,7 +302,7 @@ export default {
     VisualForum,
     MyParticipantDocUpdater,
     CurrentArea,
-    CurrentWorkspace,
+    CurrentRoom,
     SlackChats2,
     ArmyOfHelpers,
     InfiniteTutoring
