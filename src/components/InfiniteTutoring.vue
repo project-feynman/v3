@@ -10,19 +10,51 @@
     </v-card-title>
 
     <v-card-text>
-      <div class="headline">Introduction</div> 
+      <div class="headline"></div> 
 
-      <b>1-on-1 tutoring is an extremely scarce resource</b>
+      <h2>Invite</h2>
+
+      <v-textarea 
+        v-model="emailMessage"
+      />
+    
+      <p>Friends</p>
+      <v-list dense>
+        <v-list-item v-for="friend of [
+          { firstName: 'Elton', lastName: 'Lin', email: 'eltonlin@mit.edu' }, 
+          { firstName: 'Nathan', lastName: 'Cheung', email: 'cheungntf@gmail.com' },
+          { firstName: 'Tony', lastName: 'Wang', email: 'tony.t.wang@gmail.com' },
+          { firstName: 'Francois', lastName: 'Le Roux', email: '' }
+          ]" 
+          :key="friend.email"
+          dense
+        >
+          <v-list-item-title>
+            {{ friend.firstName + ' ' + friend.lastName }}
+          </v-list-item-title>
+          <v-list-item-action>
+            <v-btn small icon fab @click="sendEmailInvite(friend)">
+              <v-icon>mdi-email</v-icon>
+            </v-btn>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list>
+      <div style="display: flex">
+        <p class="pb-0">Classmates</p><v-btn small icon fab><v-icon>mdi-email</v-icon></v-btn>
+      </div>
+      <div style="display: flex">
+        <p class="pb-0">Instructors</p><v-btn small icon fab><v-icon>mdi-email</v-icon></v-btn>
+      </div>
 
       <br>
 
-      <div class="headline">Sign up as a volunteer helper</div>
+      <!-- <div class="headline">Sign up as a volunteer helper</div>
       <v-switch 
         :input-value="isUserATutor"
         @change="newBoolean => toggleNotifyOnTutorRequest(newBoolean)"
-      />
+      /> -->
 
-      <div class="headline">Volunteer helpers / study group</div> 
+      <!-- <div class="headline">Volunteer helpers / study group</div> 
       <v-list>
         <template v-for="helper of allHelpers">
           <v-list-item :key="helper.id">
@@ -31,7 +63,7 @@
             <v-btn @click="tutor = helper; isHelpRequestPopupOpen = true;">Request for help</v-btn>
           </v-list-item>
         </template>
-      </v-list>
+      </v-list> -->
 
       <v-dialog persistent v-model="isHelpRequestPopupOpen">
         <v-card>
@@ -153,6 +185,11 @@ export default {
   },
   data () {
     return {
+      emailMessage: `
+        Hi, I have a question about the pset - I was hoping for about 5/10/30/60 minutes of help.
+        Click to link to join me. 
+        If you're busy now, I'll write/record my question in this room so you can reply anytime.
+      `,
       allHelpers: [], // AF(null) and AF([]) can't be differentiated, but I don't care about this right now,
       tutor: {},
       helpDuration: "",
@@ -191,6 +228,22 @@ export default {
           notifyOnTutorRequest: firebase.firestore.FieldValue.arrayRemove(this.mitClass.id)
         });
       }
+    },
+    sendEmailInvite (invitee) {
+      const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
+      const { class_id, section_id, room_id } = this.$route.params;
+      sendEmailToPerson({ 
+        emailOfPerson: invitee.email, 
+        title: `[explain.mit.edu] ${this.mitClass.name} Invite`, 
+        contentHTML: `
+          <p>Hello ${invitee.firstName} - ${this.user.firstName} invited you to his/her Explain room.
+          <p>${this.emailMessage}</p>
+          <p>If you're free, you can join their workspace <a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">here</a>.</p>
+          <p>If you're busy, no need to do anything.</p>
+          <p>To get push notifications on your iPad and iPhone, press on "eltonlin@mit.edu", then press "Add to VIP". Meanwhile I'm working on a way for Explain to just send push notiications without any emails.</p>
+        `,
+      });
+      this.$root.$emit('show-snackbar', 'Sent email invite!')
     },
     requestForHelp () {
       const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
