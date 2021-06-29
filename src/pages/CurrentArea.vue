@@ -291,18 +291,6 @@
                   mdi-phone
                 </v-icon>
 
-                <!-- Deprecate -->
-                <v-icon v-if="p.isMusicPlaying" small color="cyan">
-                  mdi-music-clef-treble
-                </v-icon>
-
-                <v-icon v-if="p.isViewingLibrary" small color="yellow darken-3">
-                  mdi-folder
-                </v-icon>
-                <v-icon v-else-if="p.isViewingForum" small color="secondary">
-                  mdi-draw
-                </v-icon>
-
                 <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
               </div>
             </div>
