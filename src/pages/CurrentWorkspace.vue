@@ -112,7 +112,7 @@
     <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
-      <v-menu offset-y bottom>
+      <v-menu :value="true" offset-y bottom>
         <!-- Triple-dots button -->
         <template v-slot:activator="{ on }">
           <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
@@ -130,9 +130,10 @@
         
         <v-list>
           <v-list-item @click="isInfiniteTutoringPopupOpen = true">
-            <v-icon left color="pink">mdi-bell</v-icon> Ask for help
+            <v-icon left color="purple">mdi-bell</v-icon> 
+            <div style="font-color: purple">Invite</div>
           </v-list-item> 
-          
+        
           <v-menu
             v-model="isChatOpen"
             :close-on-content-click="false"
@@ -147,7 +148,7 @@
               >
                 <v-list-item v-on="on">
                   <v-icon class="mr-2" color="green">mdi-chat</v-icon>
-                  Open this room's chat
+                  Chat
                 </v-list-item>
                 <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
                     
@@ -174,28 +175,34 @@
             <v-icon left color="blue">mdi-pencil</v-icon> Rename
           </v-list-item>
 
-          <v-list-item>
-            <!-- <v-icon left color="blue">mdi-message-alert</v-icon> -->
+          <!-- <v-list-item>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Help!'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Help!</v-chip>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
-          </v-list-item>
+          </v-list-item> -->
 
-          <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
+          <!-- <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="cyan">mdi-content-save-all</v-icon> Save sequence of boards
+          </v-list-item> -->
+
+          <!-- DELETE OPERATIONS ARE RARE AND REQUIRE TWO-THREE CLICKS -->
+          <v-list-item>
+            <v-icon left color="red darken-5">mdi-delete</v-icon> 
+            Delete
           </v-list-item>
 
-          <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
+          <!-- <v-list-item @click="isWipeBoardsPopupOpen = true" :loading="isClearingAllBoards">
             <v-icon left color="red darken-5">mdi-delete-alert</v-icon> Wipe all boards in table
-          </v-list-item>
+          </v-list-item> -->
           
-          <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
+          <!-- <v-list-item @click="isClearPDFsPopupOpen = true" :loading="isClearingAllPDFs">
             <v-icon left color="red darken-5">mdi-file-remove-outline</v-icon> Wipe all backgrounds
-          </v-list-item>
+          </v-list-item> -->
+
           <!-- Can't delete the default room -->
-          <v-list-item :disabled="roomID === classID" @click="deleteThisRoom()">
+          <!-- <v-list-item :disabled="roomID === classID" @click="deleteThisRoom()">
             <v-icon left color="red">mdi-delete</v-icon> Delete this room
-          </v-list-item>
+          </v-list-item> -->
         </v-list>
       </v-menu>
     </portal>
@@ -222,7 +229,7 @@
                 <!-- The board switch button looks like a blackboard itself -->
                 <span class="`d-inline-block text-truncate" 
                     :style="
-                      `color: ${currentTool.color}; width: 38px; height: 30px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
+                      `color: ${currentTool.color}; width: 42px; height: 32.5px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
                 ">
                   {{ getBoardNumberFromID(currentBoardID) }}
                 </span>
