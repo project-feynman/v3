@@ -13,16 +13,6 @@
       <div class="headline">Introduction</div> 
 
       <b>1-on-1 tutoring is an extremely scarce resource</b>
-      
-      <br>
-
-      <b>How it works</b>
-      <div>
-        You sign up as a tutor, and you help people one at a time (if you request for help, your helper will be notified, and can just come to your workspace directly). But that is not enough - you will soon be overwhelmed with requests. So what you do is, 
-        while you are helping just a single person, you record your explanation (two birds with one stone), so that helping one person is equivalent to helping everyone. 
-        That's how you achieve infinite scalability. In fact, once the video materials have become complete over time, the need for live tutoring be minimized.
-        That's the concept of infinite tutoring. To see things from both perspectives, you can sign up as a tutor and request help from yourself and see what happens : ) 
-      </div>
 
       <br>
 
@@ -69,17 +59,17 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-      <!-- Then reach out to Ray Feller -->
 
-      <ExplanationGroupDisplay
+      <!-- Then reach out to Ray Feller -->
+      <!-- <ExplanationGroupDisplay
         style="margin-top: 10px;"
         postID="PW7PmplbODxlxVTxomj3"
         originalExplDbPath="classes/mDbUrvjy4pe8Q5s5wyoD/posts/PW7PmplbODxlxVTxomj3"
         :replyExplsDbPath="'classes/mDbUrvjy4pe8Q5s5wyoD/posts/PW7Pmplb0DxlxVTxomj3/explanations'"
-      />
+      /> -->
 
       <!-- STATISTICS -->
-      <div class="headline mt-5"><b>Your statistics</b></div>
+      <!-- <div class="headline mt-5"><b>Your statistics</b></div>
         <div style="justify-content: space-around; margin-top: 10px; margin-left: 20px;">
           <div style="display: flex; align-items: center;">
             <h1>0</h1>
@@ -138,7 +128,7 @@
               </v-list-item-content>
             </v-list-item>
           </div>
-        </div>
+        </div> -->
     </v-card-text>
   </v-card>
 </template>
