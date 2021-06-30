@@ -19,12 +19,12 @@
       />
     
       <p>Friends</p>
+      <!-- { firstName: 'Nathan', lastName: 'Cheung', email: 'cheungntf@gmail.com' },
+          { firstName: 'Tony', lastName: 'Wang', email: 'tony.t.wang@gmail.com' },
+          { firstName: 'Francois', lastName: 'Le Roux', email: '' } -->
       <v-list dense>
         <v-list-item v-for="friend of [
-          { firstName: 'Elton', lastName: 'Lin', email: 'eltonlin@mit.edu' }, 
-          { firstName: 'Nathan', lastName: 'Cheung', email: 'cheungntf@gmail.com' },
-          { firstName: 'Tony', lastName: 'Wang', email: 'tony.t.wang@gmail.com' },
-          { firstName: 'Francois', lastName: 'Le Roux', email: '' }
+          { firstName: 'Developer', lastName: 'Test', email: 'eltonlin@mit.edu' }, 
           ]" 
           :key="friend.email"
           dense
