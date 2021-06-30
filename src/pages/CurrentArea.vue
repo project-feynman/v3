@@ -62,7 +62,7 @@
             <v-icon left color="purple">mdi-eye-outline</v-icon> Bird's-eye view
           </v-list-item>
 
-          <ParticularOpenSpaceBirdsEyeViewPopup v-if="participants" 
+          <CurrentAreaBirdsEyeViewPopup v-if="participants" 
             :value="isBirdsEyeViewPopupOpen"
             @input="newValue => isBirdsEyeViewPopupOpen = newValue"
             :participants="participants"
@@ -180,12 +180,12 @@
 
     <!-- The popup has to be OUTSIDE the menu, otherwise when the menu closes the popup cannot persist -->
     <!-- Alternatively, use click.stop() -->
-    <ParticularOpenSpaceRenamePopup 
+    <CurrentAreaRenamePopup 
       :isRenamePopupOpen="isRenamePopupOpen"
       @change="(newVal) => isRenamePopupOpen = newVal"
     />
 
-    <ParticularOpenSpaceDeletePopup
+    <CurrentAreaDeletePopup
       :isDeletePopupOpen="isDeletePopupOpen"
       @change="(newVal) => isDeletePopupOpen = newVal"
     />
@@ -354,9 +354,9 @@ import { mapState, mapGetters } from "vuex";
 import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import HandleAnnouncements from "@/components/HandleAnnouncements.vue"; 
-import ParticularOpenSpaceRenamePopup from "@/components/ParticularOpenSpaceRenamePopup.vue";
-import ParticularOpenSpaceDeletePopup from "@/components/ParticularOpenSpaceDeletePopup.vue";
-import ParticularOpenSpaceBirdsEyeViewPopup from "@/components/ParticularOpenSpaceBirdsEyeViewPopup.vue"; 
+import CurrentAreaRenamePopup from "@/components/CurrentAreaRenamePopup.vue";
+import CurrentAreaDeletePopup from "@/components/CurrentAreaDeletePopup.vue";
+import CurrentAreaBirdsEyeViewPopup from "@/components/CurrentAreaBirdsEyeViewPopup.vue"; 
 import ZoomChat from "@/components/ZoomChat.vue"; 
 
 import firebase from "firebase/app";
@@ -379,9 +379,10 @@ export default {
     BaseButton,
     BasePopupButton,
     HandleAnnouncements,
-    ParticularOpenSpaceRenamePopup,
-    ParticularOpenSpaceDeletePopup,
-    ParticularOpenSpaceBirdsEyeViewPopup,
+    CurrentAreaRenamePopup,
+    CurrentAreaDeletePopup,
+    CurrentAreaBirdsEyeViewPopup
+  ,
     ZoomChat
   },
   data () {
