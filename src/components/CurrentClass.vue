@@ -38,13 +38,13 @@
 
               <v-list-item-content class="py-0">
                 <v-list-item-title class="mb-0">
-                  <ClassSwitchDropdown>
+                  <CurrentClassDropdown>
                     <template v-slot:add-join-leave-class>
                       <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
                         <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
                       </v-list-item>
                     </template>
-                  </ClassSwitchDropdown>
+                  </CurrentClassDropdown>
                 </v-list-item-title>
 
                 <v-list-item-subtitle>
@@ -80,7 +80,7 @@
             </v-card>
           </v-dialog>
 
-          <ClassNewPopup 
+          <CurrentClassNewPopup 
             :isAddClassPopupOpen="isAddClassPopupOpen"
             @input="(newVal) => isAddClassPopupOpen = newVal"
           />
@@ -117,15 +117,14 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
-import ClassNewPopup from "@/components/ClassNewPopup.vue";
+import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
+import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
 
 import AreaSwitchDropdown from "@/components/AreaSwitchDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
-import CurrentArea from "@/pages/CurrentArea.vue"; 
-import CurrentRoom from "@/pages/CurrentRoom.vue";
+import CurrentArea from "@/components/CurrentArea.vue"; 
+import CurrentRoom from "@/components/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
-import InfiniteTutoring from "@/components/InfiniteTutoring.vue"; 
 
 export default {
   name: "ClassPageLayout",
@@ -150,13 +149,12 @@ export default {
   components: {
     BaseButton,
     BasePopupButton,
-    ClassSwitchDropdown,
-    ClassNewPopup,
+    CurrentClassDropdown,
+    CurrentClassNewPopup,
     AreaSwitchDropdown,
     MyParticipantDocUpdater,
     CurrentArea,
-    CurrentRoom,
-    InfiniteTutoring
+    CurrentRoom
   },
   data: () => ({
     firebaseRef: null,
@@ -273,29 +271,6 @@ export default {
         emailOnNewQuestion: firebase.firestore.FieldValue.arrayRemove(classToRemove.id),
         emailOnNewReply: firebase.firestore.FieldValue.arrayRemove(classToRemove.id)
       });
-    },
-    async toggleMaplestoryMusic () {
-      const { isMusicPlaying, musicAudioElement } = this.$store.state; 
-      
-      if (musicAudioElement.ended) {        
-        const maplestorySoundtrack = [
-          "[MapleStory BGM] Lith Harbor Above the Treetops.mp3",
-          "[MapleStory BGM] Singapore Boat Quay Town.mp3",
-          "[MapleStory BGM] Ereve Raindrop Flower.mp3"
-        ];
-        const randomNumber =  Math.floor((Math.random() * maplestorySoundtrack.length) + 1);
-        const pathReference = firebase.storage().ref(maplestorySoundtrack[randomNumber]); 
-        const url = await pathReference.getDownloadURL(); 
-        this.$store.commit("SET_MUSIC_AUDIO_ELEMENT", new Audio(url));
-      }
-
-      if (isMusicPlaying) {
-        musicAudioElement.pause(); 
-        this.$store.commit("SET_IS_MUSIC_PLAYING", false); 
-      } else {
-        musicAudioElement.play(); 
-        this.$store.commit("SET_IS_MUSIC_PLAYING", true); 
-      } 
     }
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <v-app>    
-    <ClassPageLayout v-if="user && classID && areaID && tableID"
+    <CurrentClass v-if="user && classID && areaID && tableID"
       :classID="classID"
       :areaID="areaID"
       :tableID="tableID"
@@ -84,7 +84,7 @@ import "firebase/auth";
 import { getRandomId } from "@/helpers.js"; 
 import _ from "lodash"; 
 import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
-import ClassPageLayout from "@/pages/ClassPageLayout.vue"; 
+import CurrentClass from "@/components/CurrentClass.vue"; 
 import AuthHelpers from "@/mixins/AuthHelpers.js"; 
 import { mapState } from "vuex"; 
 
@@ -105,7 +105,7 @@ export default {
   components: {
     AuthHelpers,
     VideoTroubleshootPopup,
-    ClassPageLayout
+    CurrentClass
   },
   data: () => ({
     snackbar: false,

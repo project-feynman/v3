@@ -56,7 +56,6 @@ import { BlackboardTools, toolbarHeight, ERASER_STROKE_WIDTH } from "@/CONSTANTS
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import PenSwatch from "@/components/BlackboardToolBarPenSwatch.vue";
-import ColorPicker from "@/components/ColorPicker.vue";
 import { mapState } from "vuex"; 
 
 export default {
@@ -67,8 +66,7 @@ export default {
     Swatches, 
     BasePopupButton,
     BaseButton,
-    PenSwatch,
-    ColorPicker
+    PenSwatch
   },
   data () {
     return {

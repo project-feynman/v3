@@ -9,7 +9,7 @@ const router = new Router({
   routes: [
     {
       path: "/class/:class_id/section/:section_id/room/:room_id",
-      component: () => import(/* webpackChunkName: "class-page-layout" */ "./pages/ClassPageLayout.vue"),
+      component: () => import(/* webpackChunkName: "class-page-layout" */ "./components/CurrentClass.vue"),
       props: route => {
         return {
           classID: route.params.class_id

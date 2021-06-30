@@ -105,8 +105,8 @@
     </v-dialog>
 
     <!-- INFINITE TUTORING -->
-    <v-dialog v-model="isInfiniteTutoringPopupOpen" max-width="500">
-      <InfiniteTutoring/>
+    <v-dialog v-model="isInviteFriendsPopupOpen" max-width="500">
+      <InviteFriends/>
     </v-dialog> 
 
     <portal to="table-level-actions">
@@ -129,7 +129,7 @@
         </template>
         
         <v-list>
-          <v-list-item @click="isInfiniteTutoringPopupOpen = true">
+          <v-list-item @click="isInviteFriendsPopupOpen = true">
             <v-icon left color="purple">mdi-bell</v-icon> 
             <div style="font-color: purple">Invite friends</div>
           </v-list-item> 
@@ -390,7 +390,7 @@ import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId } from "@/helpers.js";
 import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 import ZoomChat from "@/components/ZoomChat.vue";
-import InfiniteTutoring from "@/components/InfiniteTutoring.vue"; 
+import InviteFriends from "@/components/InviteFriends.vue"; 
 import DoodleAnimation from '@/components/DoodleAnimation.vue'
 import DoodleVideo from '@/components/DoodleVideo.vue'
 import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
@@ -415,7 +415,7 @@ export default {
     BaseIconButton,
     VideoConferenceRoom,
     ZoomChat,
-    InfiniteTutoring,
+    InviteFriends,
     DoodleAnimation,
     DoodleVideo,
     RenderlessFetchBlackboardDoc,
@@ -440,7 +440,7 @@ export default {
       isClearPDFsPopupOpen: false,
       isRoomStatusPopupOpen: false,
       isRenameRoomPopupOpen: false,
-      isInfiniteTutoringPopupOpen: false,
+      isInviteFriendsPopupOpen: false,
 
       titleOfExplCollection: "",
       newRoomStatus: "",
