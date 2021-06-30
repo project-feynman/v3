@@ -54,12 +54,9 @@
           </template> 
         </BasePopupButton> -->
 
-        <v-list-item @click="willDownloadPDF = !willDownloadPDF">
-          <v-icon left color="orange">mdi-file-pdf</v-icon>Export
-        </v-list-item>
-
-        <v-list-item @click="$refs.fileInput.click()">
-          <v-icon left color="blue">mdi-image</v-icon>Add background
+        <v-list-item @click="(backgroundImage.blob || backgroundImage.downloadURL) ? resetBackgroundImage() : $refs.fileInput.click()">
+          <v-icon left :color="(backgroundImage.blob || backgroundImage.downloadURL) ? 'red' : 'blue'">mdi-image</v-icon>
+          {{ (backgroundImage.blob || backgroundImage.downloadURL) ? 'Remove' : 'Background' }} 
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
@@ -67,12 +64,6 @@
             ref="fileInput"
           >
         </v-list-item>
-
-        <template v-if="backgroundImage.blob || backgroundImage.downloadURL">
-          <v-list-item @click="resetBackgroundImage()">
-            <v-icon left color="red">mdi-file-remove</v-icon> Remove background
-          </v-list-item>
-        </template>
       </template>
 
       <!-- Wipe Board (overrides the normal, offline wiping behavior) -->
@@ -80,7 +71,7 @@
         <BasePopupButton actionName="Wipe strokes" @action-do="deleteAllStrokesFromDb();">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="red">mdi-delete</v-icon> Wipe strokes
+              <v-icon left color="red">mdi-delete</v-icon> Wipe
             </v-list-item>
           </template>
           <template v-slot:message-to-user>
@@ -185,9 +176,7 @@ export default {
       messagesOpen: false,
       // new code
       incrementKeyToDestroyComponent: 0,
-      isMenuOpen: false,
-      
-      willDownloadPDF: false
+      isMenuOpen: false
     };
   },
   computed: {
