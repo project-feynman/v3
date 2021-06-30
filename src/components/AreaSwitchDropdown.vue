@@ -73,7 +73,6 @@ import db from "@/database.js";
 import { getRandomId } from "@/helpers.js"; 
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import BaseButton from "@/components/BaseButton.vue";
-import ClassLibrary from "@/pages/ClassLibrary.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import { mapState } from "vuex";
 
@@ -89,7 +88,6 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    ClassLibrary,
     BaseButton,
     BasePopupButton
   },

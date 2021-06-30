@@ -92,14 +92,6 @@
         </v-card>
       </v-dialog>
 
-      <!-- Then reach out to Ray Feller -->
-      <!-- <ExplanationGroupDisplay
-        style="margin-top: 10px;"
-        postID="PW7PmplbODxlxVTxomj3"
-        originalExplDbPath="classes/mDbUrvjy4pe8Q5s5wyoD/posts/PW7PmplbODxlxVTxomj3"
-        :replyExplsDbPath="'classes/mDbUrvjy4pe8Q5s5wyoD/posts/PW7Pmplb0DxlxVTxomj3/explanations'"
-      /> -->
-
       <!-- STATISTICS -->
       <!-- <div class="headline mt-5"><b>Your statistics</b></div>
         <div style="justify-content: space-around; margin-top: 10px; margin-left: 20px;">
@@ -167,7 +159,6 @@
 
 <script>
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
-import ExplanationGroupDisplay from "@/components/ExplanationGroupDisplay.vue"; 
 import MapleMusicPlayer from "@/components/MapleMusicPlayer.vue"; 
 import db from "@/database.js";
 import { mapState } from "vuex"; 
@@ -180,7 +171,6 @@ export default {
     DatabaseHelpersMixin
   ],
   components: {
-    ExplanationGroupDisplay,
     MapleMusicPlayer
   },
   data () {

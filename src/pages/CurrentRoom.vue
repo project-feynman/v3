@@ -362,7 +362,11 @@
 
 <script>
 /**
- * CORRECTNESS ARGUMENT
+ *  TODO: 
+ *    - Confirm exit popup so you don't interrupt a long audio recording because of a misclick/mis-swipe
+ * 
+ * 
+ *  CORRECTNESS ARGUMENT
  * 
  * Because RealtimeRoom is rendered by a <router-view :key="$route..."/> component
  * it will be properly destroyed, and so its children components don't require destroy keys.
@@ -372,6 +376,7 @@
  * You immediately kill all possibilities of anything. I can never emphasize enough.
  * 
  */
+
 
 import firebase from "firebase/app";
 import "firebase/firestore";

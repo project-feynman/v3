@@ -362,7 +362,6 @@ import ZoomChat from "@/components/ZoomChat.vue";
 import firebase from "firebase/app";
 import "firebase/firestore"; 
 import "firebase/functions";
-import ClassLibrary from "@/pages/ClassLibrary.vue";
 import _ from "lodash"; 
 
 export default {
@@ -380,7 +379,6 @@ export default {
     BaseButton,
     BasePopupButton,
     HandleAnnouncements,
-    ClassLibrary,
     ParticularOpenSpaceRenamePopup,
     ParticularOpenSpaceDeletePopup,
     ParticularOpenSpaceBirdsEyeViewPopup,

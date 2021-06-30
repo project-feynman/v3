@@ -64,160 +64,19 @@
           <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isAppPopupOpen" width="90vw" style="height: 90vh" persistent>
             <v-card style="height: 80vh">     
-                <v-tabs
-                  v-model="tab"
-                  background-color="transparent"
-                  color="cyan"
-                > 
-                  <v-btn icon @click="isAppPopupOpen = false" style="margin-top: 5px; margin-left: 2px;">
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-
-                  <v-tab>
-                    INFINITE TUTORING
-                  </v-tab>
-
-                  <v-tab>
-                    <v-badge v-if="mitClass"
-                      :value="mitClass.numOfUnansweredQuestions"
-                      :content="mitClass.numOfUnansweredQuestions"
-                      top right color="secondary" overlap style="z-index: 1;"
-                    > 
-                      VISUAL FORUM
-                    </v-badge>
-                  </v-tab>
-                  <v-tab>CROWDSOURCED LIBRARY</v-tab>
-                  <v-tab>
-                    <v-badge 
-                      :value="numOfUnreadGlobalMsgs"
-                      :content="numOfUnreadGlobalMsgs"
-                      top right color="secondary" overlap style="z-index: 1;"
-                    >
-                      OVERVIEW
-                    </v-badge>
-                  </v-tab>
-                </v-tabs>
-
-                <v-tabs-items v-model="tab" touchless>
-                  <v-tab-item>
-                    <v-card>
-                      <v-card-text>
-                        <InfiniteTutoring v-if="tab === 0 && isAppPopupOpen"/>
-                      </v-card-text>
-                    </v-card>
-                  </v-tab-item>
-
-                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_FORUM', true)">
-                    <VisualForum/>
-                  </v-tab-item>
-
-                  <v-tab-item @click="$store.commit('SET_IS_VIEWING_LIBRARY', true)">
-                    <ClassLibrary/>
-                  </v-tab-item>
-
-                  <v-tab-item>
-                    <v-card-text>
-                      <SlackChats2/>
-                    </v-card-text>
-
-                    <v-card-actions>
-                      <v-spacer/>
-                      <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
-                        LEAVE CLASS
-                      </v-btn>
-                      <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
-                        <v-icon class="mr-2">mdi-logout</v-icon>
-                        SIGN OUT
-                      </v-btn>       
-                    </v-card-actions>
-                  </v-tab-item>
-                </v-tabs-items>
-
-              <v-card-text v-if="false">
-                <div v-if="false" class="pt-2" style="display: flex; justify-content: space-around;">
-                  <!-- FORUM BUTTON -->
-                  <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_FORUM', true)" 
-                    class="white--text" color="black" 
-                  >
-                    <v-icon class="mr-1" style="opacity: 0.9;">mdi-draw</v-icon>
-                    <v-badge v-if="mitClass"
-                      :value="mitClass.numOfUnansweredQuestions"
-                      :content="mitClass.numOfUnansweredQuestions"
-                      right color="secondary" overlap style="z-index: 1;" offset-x="-5" offset-y="16"
-                    >
-                      <div style="font-size: 0.9rem; 
-                                  font-weight: 500; 
-                                  color: '#424242'; 
-                                  opacity: 0.9;
-                                  text-transform: uppercase;"
-                      >
-                        FORUM
-                      </div>
-                    </v-badge>
-                  </v-btn>
-
-                  <!-- FORUM POPUP -->
-                  <v-dialog 
-                    :value="isViewingForum" 
-                    @input="(newVal) => $store.commit('SET_IS_VIEWING_FORUM', newVal)"
-                    persistent
-                    width="95vw"
-                  >
-                    <v-card>
-                      <v-toolbar dark color="grey">
-                        <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_FORUM', false)">
-                          <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                        <h2>VISUAL FORUM</h2>
-                      </v-toolbar>
-
-                      <!--
-                        Without v-if="isViewingForum", the VisualForum does not get destroyed 
-                        even if the popup closes
-                      -->
-                      <VisualForum v-if="isViewingForum"/>
-                    </v-card>
-                  </v-dialog>
-
-                  <!-- OPEN, CROWDSOURCED LIBRARY -->
-                  <v-dialog 
-                    :value="isViewingLibrary" 
-                    @input="(newVal) => $store.commit('SET_IS_VIEWING_LIBRARY', newVal)"
-                    persistent
-                    width="95vw"
-                  >
-                    <template v-slot:activator>
-                      <v-btn @click.prevent.stop="$store.commit('SET_IS_VIEWING_LIBRARY', true)" 
-                        class="white--text black" 
-                      >
-                        <!-- purple--text -->
-                        <v-icon small class="mr-1">mdi-folder</v-icon>
-                        <div style="font-size: 0.9rem; 
-                              font-weight: 500; 
-                              color: '#424242'; 
-                              opacity: 0.9;
-                              text-transform: uppercase;">LIBRARY</div>
-                      </v-btn>
-                    </template>
-
-                    <v-card>
-                      <v-toolbar dark color="grey">
-                        <v-btn icon dark @click="$store.commit('SET_IS_VIEWING_LIBRARY', false)">
-                          <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                        <h2>OPEN LIBRARY</h2>
-                      </v-toolbar>
-
-                      <ClassLibrary v-if="isViewingLibrary" />
-                    </v-card>
-                  </v-dialog>
-                </div>
-
-                <br>
-                <br>
-           
-                <br>
+              <v-card-text>
               </v-card-text>
+
+              <v-card-actions>
+                <v-spacer/>
+                <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
+                  LEAVE CLASS
+                </v-btn>
+                <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
+                  <v-icon class="mr-2">mdi-logout</v-icon>
+                  SIGN OUT
+                </v-btn>       
+              </v-card-actions>
             </v-card>
           </v-dialog>
 
@@ -258,18 +117,14 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 
 import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import ClassLibrary from "@/pages/ClassLibrary.vue";
 import ClassSwitchDropdown from "@/components/ClassSwitchDropdown.vue";
 import ClassNewPopup from "@/components/ClassNewPopup.vue";
 
 import AreaSwitchDropdown from "@/components/AreaSwitchDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
-import VisualForum from "@/components/VisualForum.vue";
 import CurrentArea from "@/pages/CurrentArea.vue"; 
 import CurrentRoom from "@/pages/CurrentRoom.vue";
 import AuthHelpers from "@/mixins/AuthHelpers.js";
-import SlackChats2 from "@/components/SlackChats2.vue"; 
-import ArmyOfHelpers from "@/components/ArmyOfHelpers.vue";
 import InfiniteTutoring from "@/components/InfiniteTutoring.vue"; 
 
 export default {
@@ -295,16 +150,12 @@ export default {
   components: {
     BaseButton,
     BasePopupButton,
-    ClassLibrary,
     ClassSwitchDropdown,
     ClassNewPopup,
     AreaSwitchDropdown,
-    VisualForum,
     MyParticipantDocUpdater,
     CurrentArea,
     CurrentRoom,
-    SlackChats2,
-    ArmyOfHelpers,
     InfiniteTutoring
   },
   data: () => ({
