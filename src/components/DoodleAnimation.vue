@@ -49,6 +49,10 @@
         </v-select>
       </v-col>
 
+      <v-btn @click.stop="$emit('delete')">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+
       <v-btn @click.stop="$emit('edit')">
         <v-icon>mdi-pencil</v-icon>
       </v-btn>

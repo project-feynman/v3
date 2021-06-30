@@ -340,6 +340,7 @@
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
                         @edit="showEditPopup(blackboardRefs[i])"
+                        @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
                       />
                     </template>
                   </v-card-text>
@@ -533,8 +534,17 @@ export default {
     //   - delete the blackboard doc itself 
     //   - delete its subcollections with Cloud Functions
     // the reference to the blackboard is deleted from the parent: try to extract the id and do an array remove operation
-
-
+    async deleteAnimation ({ creator, animationRef }) {
+      if (creator.email && creator.email !== this.user.email) {
+        alert('You need to be the creator to unsave this animation')
+        return
+      }
+      await animationRef.update({ 
+        creator: firebase.firestore.FieldValue.delete(),
+        date: firebase.firestore.FieldValue.delete()
+      })
+      this.$root.$emit('show-snackbar', 'Reverted animation to blackboard')
+    },
     /**
      * Resets it into a blackboard (no need to delete the strokes)
      *   - note: this operation can't be atomic because db.batch() only works for Firestore and not for Storage
@@ -556,6 +566,7 @@ export default {
           date: firebase.firestore.FieldValue.delete()
         })
         console.log('removed reference to audioURL and deleted creator and date fields')
+        this.$root.$emit('show-snackbar', 'Reverted video to blackboard')
       }).catch((error) => {
         // Uh-oh, an error occurred!
       });
