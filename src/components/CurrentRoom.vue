@@ -284,22 +284,9 @@
           :key="boardID"
           v-slot="{ isLoading, creator, date, audioDownloadURL, backgroundImageDownloadURL, title, description }"
         >  
-          <div v-if="isLoading" 
-            style="
-              width: 100%; 
-              height: 500px; 
-              background-color: rgb(46, 49, 49);
-              margin-top: 5px;
-              position: relative
-            "
-          >
-            <div class="overlay-item">
-              <v-progress-circular :indeterminate="true" size="50" color="cyan"/>
-            </div>
-          </div>
 
           <!-- If blackboard is already saved/recorded -->
-          <RenderlessFetchStrokes v-else-if="date && creator"
+          <RenderlessFetchStrokes v-if="date && creator"
             :strokesRef="blackboardRefs[i].collection('strokes')"
             :imageDownloadUrl="backgroundImageDownloadURL"
             v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"

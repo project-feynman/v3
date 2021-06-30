@@ -10,7 +10,7 @@
     <!-- <div style="overflow-y: auto; overflow-x: none"> -->
   <div v-intersect.once="syncBlackboardWithDb">
       <div class="overlay-item" v-if="isFetchingStrokes">
-        <v-progress-linear indeterminate height="10" color="cyan darken-1"/>
+        <v-progress-linear indeterminate height="4" color="cyan darken-1"/>
       </div>
     <!-- 
       Unexpected behavior: without the v-container placeholder, when all the strokes appear on all the blackboards,
