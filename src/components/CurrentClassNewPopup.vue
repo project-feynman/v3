@@ -137,8 +137,6 @@ export default {
       await firebase.auth().signOut(); // will trigger `onAuthStateChanged` in router.js
       this.$router.push("/");
     },
-    // fundamentally create a new class, by the way that could be why there is no growth, because
-    // there is no ability for people to open new classes and lounges
     async createNewClass () {
       if (!this.nameOfNewCommunity || !this.descriptionOfNewCommunity) {
         this.$root.$emit("show-snackbar", "You must enter both a name and a description.");

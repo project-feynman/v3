@@ -117,12 +117,7 @@ export default {
   },
   async created () {
     // fetch once for light bandwidth usage
-    this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes")); 
-
-    // for backwards compatibility
-    if (! this.currentRoomTypeDoc) {
-      this.createNewRoomType("PSET LOUNGE", this.classID);
-    }
+    this.roomTypes = await this.$_getCollection(this.classDocRef.collection("roomTypes"));
   },
   methods: {
      /**
