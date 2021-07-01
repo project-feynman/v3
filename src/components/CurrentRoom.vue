@@ -106,7 +106,7 @@
 
     <!-- INFINITE TUTORING -->
     <v-dialog v-model="isInviteFriendsPopupOpen" max-width="800">
-      <InviteFriends/>
+      <InviteFriends v-if="isInviteFriendsPopupOpen"/>
     </v-dialog> 
 
     <portal to="table-level-actions">
@@ -131,7 +131,7 @@
         <v-list>
           <v-list-item @click="isInviteFriendsPopupOpen = true">
             <v-icon left color="purple">mdi-bell</v-icon> 
-            <div style="font-color: purple">Invite friends or instructors</div>
+            <div style="font-color: purple">Invite someone</div>
           </v-list-item> 
         
           <v-menu

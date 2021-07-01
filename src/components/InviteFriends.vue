@@ -9,11 +9,7 @@
       Invite to this room
     </v-card-title>
 
-    <v-card-text>
-      <div class="headline"></div>     
-      <!-- { firstName: 'Nathan', lastName: 'Cheung', email: 'cheungntf@gmail.com' },
-          { firstName: 'Tony', lastName: 'Wang', email: 'tony.t.wang@gmail.com' },
-          { firstName: 'Francois', lastName: 'Le Roux', email: '' } -->      
+    <v-card-text>      
       <v-form>
         <v-container>
           <v-row align="center">
