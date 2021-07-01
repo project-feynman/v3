@@ -12,7 +12,7 @@
             <v-subheader class="px-0">Join an existing class</v-subheader>
           </v-col>
           <v-col cols="7" class="pa-0 d-flex align-center"> 
-            <ClassNewPopupSearchBar 
+            <CurrentClassNewPopupSearchBar 
               :items="mitClasses"
               @submit="newVal => join({ mitClass: newVal })" 
               color="accent"

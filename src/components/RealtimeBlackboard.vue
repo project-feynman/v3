@@ -203,7 +203,8 @@ export default {
       } 
     },
     async saveVideo () {
-       const basicUserInfo = {
+      this.$root.$emit('show-snackbar', "Uploading the audio file...")
+      const basicUserInfo = {
         email: this.user.email,
         uid: this.user.uid,
         firstName: this.user.firstName,
@@ -219,7 +220,7 @@ export default {
         views: 0,
         audioDownloadURL
       })      
-      console.log('successfully uploaded blackboard ref')
+      this.$root.$emit('show-snackbar', 'Successfully uploaded.')
     },
     async saveAnimation () {
       const basicUserInfo = {
