@@ -11,7 +11,6 @@
       :backgroundImage="backgroundImage" @update:background-image="image => $emit('update:background-image', image)"
       :currentTime="currentTime"
       :isReadOnly="false"
-      :willDownloadPDF="willDownloadPDF"
       @mounted="blackboardMethods => $emit('mounted', blackboardMethods)"
       @update:thumbnailBlob="blob => $emit('update:thumbnailBlob', blob)"
       @board-reset="$emit('board-reset')"
@@ -150,12 +149,6 @@ export default {
     },
     backgroundImage: {
       type: Object
-    },
-    willDownloadPDF: {
-      type: Boolean,
-      default () {
-        return false;
-      }
     }
   },
   components: { 

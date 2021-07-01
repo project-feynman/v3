@@ -30,7 +30,6 @@
       :backgroundImage="backgroundImage" 
       :strokesArray="strokesArray" @stroke-drawn="stroke => handleNewlyDrawnStroke(stroke)"
       :key="incrementKeyToDestroyComponent"
-      :willDownloadPDF="willDownloadPDF"
       @mounted="({ getThumbnailBlob }) => blackboard.getThumbnailBlob = getThumbnailBlob"
       @update:currentTime="currentTime => blackboard.currentTime = currentTime"
       @update:audioBlob="blob => blackboard.audioBlob = blob"

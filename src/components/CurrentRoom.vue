@@ -105,7 +105,7 @@
     </v-dialog>
 
     <!-- INFINITE TUTORING -->
-    <v-dialog v-model="isInviteFriendsPopupOpen" max-width="500">
+    <v-dialog v-model="isInviteFriendsPopupOpen" max-width="800">
       <InviteFriends/>
     </v-dialog> 
 
@@ -131,7 +131,7 @@
         <v-list>
           <v-list-item @click="isInviteFriendsPopupOpen = true">
             <v-icon left color="purple">mdi-bell</v-icon> 
-            <div style="font-color: purple">Invite friends</div>
+            <div style="font-color: purple">Invite friends or instructors</div>
           </v-list-item> 
         
           <v-menu
@@ -175,11 +175,11 @@
             <v-icon left color="blue">mdi-pencil</v-icon> Rename
           </v-list-item>
 
-          <!-- <v-list-item>
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Help!'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Help!</v-chip>
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Done.'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Done.</v-chip>
+          <v-list-item>
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Requesting help'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Requesting help</v-chip>
+            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Down to collaborate'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Down to collaborate</v-chip>
             <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
-          </v-list-item> -->
+          </v-list-item>
 
           <!-- <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="cyan">mdi-content-save-all</v-icon> Save sequence of boards

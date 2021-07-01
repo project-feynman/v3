@@ -6,64 +6,68 @@
     />  
 
     <v-card-title>
-      <!-- Infinite Tutoring -->
+      Invite to this room
     </v-card-title>
 
     <v-card-text>
-      <div class="headline"></div> 
-
-      <h2>Invite</h2>
-
-      <v-textarea 
-        v-model="emailMessage"
-      />
-    
-      <p>Friends</p>
+      <div class="headline"></div>     
       <!-- { firstName: 'Nathan', lastName: 'Cheung', email: 'cheungntf@gmail.com' },
           { firstName: 'Tony', lastName: 'Wang', email: 'tony.t.wang@gmail.com' },
-          { firstName: 'Francois', lastName: 'Le Roux', email: '' } -->
-      <v-list dense>
-        <v-list-item v-for="friend of [
-          { firstName: 'Developer', lastName: 'Test', email: 'eltonlin@mit.edu' }, 
-          ]" 
-          :key="friend.email"
-          dense
-        >
-          <v-list-item-title>
-            {{ friend.firstName + ' ' + friend.lastName }}
-          </v-list-item-title>
-          <v-list-item-action>
-            <v-btn small icon fab @click="sendEmailInvite(friend)">
-              <v-icon>mdi-email</v-icon>
-            </v-btn>
-          </v-list-item-action>
-        </v-list-item>
-      </v-list>
-      <div style="display: flex">
-        <p class="pb-0">Classmates</p><v-btn small icon fab><v-icon>mdi-email</v-icon></v-btn>
-      </div>
-      <div style="display: flex">
-        <p class="pb-0">Instructors</p><v-btn small icon fab><v-icon>mdi-email</v-icon></v-btn>
-      </div>
+          { firstName: 'Francois', lastName: 'Le Roux', email: '' } -->      
+      <v-form>
+        <v-container>
+          <v-row align="center">
+            <v-col cols="12" md="4">
+              <v-text-field v-model="newUserEmail" 
+                :rules="emailRules" 
+                label="To" 
+                required  
+                placeholder="newfriend@gmail.com"
+                hide-details
+              />
+            </v-col>
 
+            <v-col v-for="email in user.emailsOfFriends" :key="email" cols="6" md="4">
+              <v-chip @click="toggleIncludeExclude(email)"
+                :input-value="emailsOfInvitees.includes(email)"
+                active-class="cyan white--text"
+              >
+                {{ email }}
+              </v-chip>
+            </v-col>
+
+            <v-col cols="6" md="2">
+              <v-chip @click="willEmailClassmates = !willEmailClassmates"
+                :input-value="willEmailClassmates"
+                active-class="cyan white--text"
+              >
+                Classmates
+              </v-chip>
+            </v-col>
+
+            <v-col cols="6" md="2">
+              <v-chip @click="willEmailInstructors = !willEmailInstructors"
+                :input-value="willEmailInstructors"
+                active-class="cyan white--text"
+              >
+                Instructors
+              </v-chip>
+            </v-col>
+          </v-row>
+
+          <v-textarea v-model="emailMessage"
+            label="Message"
+            class="mt-4"
+          />
+          <v-spacer/>
+          <v-btn @click="sendAllNecessaryEmails(newUserEmail)"
+            class="purple" dark block
+          >
+            <v-icon class="mr-2">mdi-send</v-icon>Send invite
+          </v-btn>
+        </v-container>
+      </v-form>
       <br>
-
-      <!-- <div class="headline">Sign up as a volunteer helper</div>
-      <v-switch 
-        :input-value="isUserATutor"
-        @change="newBoolean => toggleNotifyOnTutorRequest(newBoolean)"
-      /> -->
-
-      <!-- <div class="headline">Volunteer helpers / study group</div> 
-      <v-list>
-        <template v-for="helper of allHelpers">
-          <v-list-item :key="helper.id">
-            <v-list-item-title>{{ helper.firstName + " " + helper.lastName }}</v-list-item-title>
-            <v-list-item-subtitle>Tutored 0 times and shared 0 videos</v-list-item-subtitle> 
-            <v-btn @click="tutor = helper; isHelpRequestPopupOpen = true;">Request for help</v-btn>
-          </v-list-item>
-        </template>
-      </v-list> -->
 
       <v-dialog persistent v-model="isHelpRequestPopupOpen">
         <v-card>
@@ -91,68 +95,6 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
-
-      <!-- STATISTICS -->
-      <!-- <div class="headline mt-5"><b>Your statistics</b></div>
-        <div style="justify-content: space-around; margin-top: 10px; margin-left: 20px;">
-          <div style="display: flex; align-items: center;">
-            <h1>0</h1>
-            <v-list-item two-line>
-              <v-list-item-content>
-                <v-list-item-title>
-                  Assisted Upvotes
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  Upvotes on explanations that were created to answer your questions in the first place
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </div>
-
-          <div style="display: flex; align-items: center;">
-            <h1>0</h1>
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title> 
-                  Upvotes
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  Upvotes on explanations you created 
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </div>
-          
-          <div style="display: flex; align-items: center;">
-            <h1 style="flex-grow: 2">
-              0
-            </h1>
-            <v-list-item style="flex-grow: 2">
-              <v-list-item-content>
-                <v-list-item-title> 
-                  Videos shared
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  To record a voiced explanation, press the "Explain" record button
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </div>
-
-          <div style="display: flex; align-items: center;">
-            <h1 style="flex-grow: 2">0</h1>
-            <v-list-item style="flex-grow: 2">
-              <v-list-item-content>
-                <v-list-item-title> 
-                  Animations shared
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  To share an animation, press "Save board to library"
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </div>
-        </div> -->
     </v-card-text>
   </v-card>
 </template>
@@ -175,11 +117,18 @@ export default {
   },
   data () {
     return {
-      emailMessage: `
-        Hi, I have a question about the pset - I was hoping for about 5/10/30/60 minutes of help.
-        Click to link to join me. 
-        If you're busy now, I'll write/record my question in this room so you can reply anytime.
+      willEmailInstructors: false,
+      willEmailClassmates: false,
+      emailsOfInvitees: [],
+      emailMessage: `Requesting help: I have a question about the pset...if you're busy, I'll write and record my question in this room so you can reply later.
+         
+         Invite to collaborate: I'm working on pset 3, want to join?
       `,
+      newUserEmail: '',
+      emailRules: [
+        v => !!v || 'E-mail is required',
+        v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
+      ],
       allHelpers: [], // AF(null) and AF([]) can't be differentiated, but I don't care about this right now,
       tutor: {},
       helpDuration: "",
@@ -207,6 +156,23 @@ export default {
     });
   },
   methods: {
+    sendAllNecessaryEmails (newUserEmail) {
+      if (newUserEmail) {
+        this.emailsOfInvitees.push(newUserEmail)
+        this.addFriend(newUserEmail)
+        this.newUserEmail = ''
+      }
+      for (const email of this.emailsOfInvitees) {
+        this.sendEmailInvite({ email })
+      }
+    }, 
+    toggleIncludeExclude (email) {
+      if (this.emailsOfInvitees.includes(email)) {
+        this.emailsOfInvitees = this.emailsOfInvitees.filter(e => e !== email)
+      } else {
+        this.emailsOfInvitees.push(email)
+      }
+    },
     toggleNotifyOnTutorRequest (newBoolean) {
       const userRef = db.collection("users").doc(this.user.uid); 
       if (newBoolean === true) {
@@ -219,6 +185,11 @@ export default {
         });
       }
     },
+    addFriend (newEmail) {
+      db.doc(`users/${this.user.uid}`).update({
+        emailsOfFriends: firebase.firestore.FieldValue.arrayUnion(newEmail)
+      })
+    },
     sendEmailInvite (invitee) {
       const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
       const { class_id, section_id, room_id } = this.$route.params;
@@ -226,11 +197,10 @@ export default {
         emailOfPerson: invitee.email, 
         title: `[explain.mit.edu] ${this.mitClass.name} Invite`, 
         contentHTML: `
-          <p>Hello ${invitee.firstName} - ${this.user.firstName} invited you to his/her Explain room.
-          <p>${this.emailMessage}</p>
-          <p>If you're free, you can join their workspace <a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">here</a>.</p>
-          <p>If you're busy, no need to do anything.</p>
-          <p>To get push notifications on your iPad and iPhone, press on "eltonlin@mit.edu", then press "Add to VIP". Meanwhile I'm working on a way for Explain to just send push notiications without any emails.</p>
+          <p>${this.user.firstName + ' ' + this.user.lastName } invited you to Explain:
+          <p>"${this.emailMessage}"</p>
+          <p><a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">Click here to join</a>.</p>
+          <p>Tip: to get real-time notifications on your iPad, press on "...From: eltonlin@mit.edu" near the top, then press "Add to VIP"</p>
         `,
       });
       this.$root.$emit('show-snackbar', 'Sent email invite!')
