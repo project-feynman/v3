@@ -200,7 +200,7 @@ export default {
           <p>${this.user.firstName + ' ' + this.user.lastName } invited you to Explain:
           <p>"${this.emailMessage}"</p>
           <p><a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">Click here to join</a>.</p>
-          <p>Tip: to get real-time notifications on your iPad, press on "...From: eltonlin@mit.edu" near the top, then press "Add to VIP"</p>
+          <p>Tip: to get real-time notifications on your iPad, press on "From: eltonlin@mit.edu" near the top, then press "Add to VIP"</p>
         `,
       });
       this.$root.$emit('show-snackbar', 'Sent email invite!')
