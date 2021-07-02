@@ -134,6 +134,11 @@ export default {
     tableID () {return this.$route.params.room_id; }
   },
   async created () {
+    // SNACKBAR LISTENER
+    this.$root.$on("show-snackbar", (message) => {
+      this.snackbar = true;
+      this.snackbarMessage = message;
+    });
     /** 
       * USER AUTHENTICATION
       * 
@@ -189,10 +194,11 @@ export default {
       }
     });
 
+    // INITIALIZE MIC STREAM
     const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     // trying to record audio AND video call using the same mic stream causes issues 
     // e.g. other people can't hear me
-    this.$store.commit('SET_MIC_STREAM_COPY', micStream.clone())
+    this.$store.commit('SET_MIC_STREAM', micStream)
     const [ micMediaStreamTrack ] = micStream.getAudioTracks()
     this.$store.commit(
       'SET_CALL_OBJECT', 
@@ -237,11 +243,6 @@ export default {
       this.isShowingGeneralErrorPopup = true; 
       this.feedbackForUser = error.message; 
       console.error(error); 
-    });
-
-    this.$root.$on("show-snackbar", (message) => {
-      this.snackbar = true;
-      this.snackbarMessage = message;
     });
   },
   methods: {
@@ -354,6 +355,10 @@ export default {
 </script>
 
 <style>
+#app {
+  -webkit-touch-callout: none;  /* iOS hold to press features e.g. mini-preview, prevent callout to copy image, etc when tap to hold */
+}
+
 /* Fixes snackbar not visible on iOS Safari, see https://github.com/vuetifyjs/vuetify/issues/11781#issuecomment-655689025 */
 div.v-snack:not(.v-snack--absolute) {
   height: 100%;

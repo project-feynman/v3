@@ -19,7 +19,7 @@ export default {
   },
   computed: {
     ...mapState([
-      'micStreamCopy'
+      'micStream'
     ])
   },
   created () {
@@ -31,10 +31,10 @@ export default {
   methods: {
     startRecording () {
       return new Promise(async resolve => {
-        // a stream cannot be re-used across multiple recording sessions
-        // because it is deactivated/stopped (see `stopRecording() below`)
-        const localCopy = this.micStreamCopy.clone()
-        this.recorder = new MediaRecorder(localCopy); 
+        // the same stream cannot used for video call, different recording sessions, etc. without
+        // unpredictable issues on Safari iOS
+        const micStreamCopy = this.micStream.clone()
+        this.recorder = new MediaRecorder(micStreamCopy); 
         
         this.recorder.start(); 
         this.$emit("start-recording");

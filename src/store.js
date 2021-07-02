@@ -93,8 +93,8 @@ export default new Vuex.Store({
     SET_CALL_OBJECT (state, newValue) {
       state.CallObject = newValue
     },  
-    SET_MIC_STREAM_COPY (state, newValue) {
-      state.micStreamCopy = newValue
+    SET_MIC_STREAM (state, newValue) {
+      state.micStream = newValue
     },  
     SET_CURRENTLY_SELECTED_LIBRARY_POST_ID (state, newValue) {
       state.currentlySelectedLibraryPostID = newValue; 

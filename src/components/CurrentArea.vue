@@ -18,8 +18,7 @@
           </BaseButton>
         </template>
 
-        <v-list>
-          <!-- <v-list-item><b>During class</b></v-list-item>  -->
+        <v-list class="disable-text-select">
           <v-menu
             v-model="isChatOpen"
             :close-on-content-click="false"
@@ -199,13 +198,12 @@
     <!-- ROOMS -->
     <v-list>
       <template v-for="(room, i) in sortedRooms">    
-        <drop class="drop" @drop="handleDrop({ droppedTo: room }, ...arguments)" :key="room.id"> 
-          <drag class="drag" :key="room.id" :transfer-data="{ draggedFrom: room }">
-            <v-list-item  :key="room.id"
+            <v-list-item 
               :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
               dense
               active-class="orange--text text--darken-3"
               class="pl-0 pr-0 mx-2 mb-0"
+              :key="room.id"
             >
               <!-- CASE 1: I'm in the room -->
               <template v-if="room.id === currentRoomID">
@@ -229,9 +227,11 @@
 
                     <v-spacer/>
 
-                    <portal-target name="table-level-actions">
-                  
-                    </portal-target>
+                    <Drag :transfer-data="{ draggedFrom: room }" :hideImageHtml="false">
+                      <portal-target name="table-level-actions">
+                    
+                      </portal-target>
+                    </Drag>
                   </div>
 
                   <div class="d-flex pl-2" style="max-width: 175px;">
@@ -250,64 +250,64 @@
 
               <!-- CASE 2: I'm not in the room-->
               <template v-else>
-                <div style="width: 100%;">
-                  <div class="d-flex py-1 pl-1 mt-2 font-weight-medium" style="font-size: 0.95em; align-items: center;">
-                    <v-icon class="mr-1" style="margin-top: 0.85px; opacity: 80%;">
-                      mdi-volume-high
-                    </v-icon>
+                <Drop @drop="handleDrop({ droppedTo: room }, ...arguments)" style="width: 100%"> 
+                  <div style="width: 100%;">
+                    <div class="d-flex py-1 pl-1 mt-2 font-weight-medium" style="font-size: 0.95em; align-items: center;">
+                      <v-icon class="mr-1" style="margin-top: 0.85px; opacity: 80%;">
+                        mdi-volume-high
+                      </v-icon>
 
-                    <div v-if="room.name" style="opacity: 55%; text-transform: lowercase;">
-                      {{ room.name }}
-                    </div>
-
-                    <div v-else-if="room.isCommonRoom" style="opacity: 55%; text-transform: lowercase;">
-                      lobby
-                    </div>
-
-                    <div v-else class="py-2 grey--text darken--3">
-                      {{ i - 1  }}
-                    </div>  
-                  </div>
-
-                  <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
-                    {{ room.status }}
-                  </v-chip>
-
-                  <div class="pr-2 pb-1 pt-1">
-                    <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-                      style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em;"
-                      class="text--secondary mb-1 caption"
-                    >
-                      <div style="padding-left: 22px; display: flex; align-items: center;">
-                        <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
-                        <v-icon v-else-if="p.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
-                        <v-icon v-else-if="p.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
-                        <v-icon v-else x-small style="opacity: 70%;">mdi-account</v-icon>
-                        <p style="padding-top: 0px; margin-bottom: 0; margin-left: 5px; ">
-                          {{ p.firstName + " " + p.lastName }}
-                        </p>
+                      <div v-if="room.name" style="opacity: 55%; text-transform: lowercase;">
+                        {{ room.name }}
                       </div>
 
-                      <v-spacer/>
-                      
-                      <div class="ml-2 mr-4" style="display: flex;">
-                        <v-icon v-if="p.canHearAudio" small color="green">
-                          mdi-phone
-                        </v-icon>
+                      <div v-else-if="room.isCommonRoom" style="opacity: 55%; text-transform: lowercase;">
+                        lobby
+                      </div>
 
-                        <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
+                      <div v-else class="py-2 grey--text darken--3">
+                        {{ i - 1  }}
+                      </div>  
+                    </div>
+
+                    <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
+                      {{ room.status }}
+                    </v-chip>
+
+                    <div class="pr-2 pb-1 pt-1">
+                      <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+                        style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em;"
+                        class="text--secondary mb-1 caption"
+                      >
+                        <div style="padding-left: 22px; display: flex; align-items: center;">
+                          <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
+                          <v-icon v-else-if="p.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
+                          <v-icon v-else-if="p.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
+                          <v-icon v-else x-small style="opacity: 70%;">mdi-account</v-icon>
+                          <p style="padding-top: 0px; margin-bottom: 0; margin-left: 5px; ">
+                            {{ p.firstName + " " + p.lastName }}
+                          </p>
+                        </div>
+
+                        <v-spacer/>
+                        
+                        <div class="ml-2 mr-4" style="display: flex;">
+                          <v-icon v-if="p.canHearAudio" small color="green">
+                            mdi-phone
+                          </v-icon>
+
+                          <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Drop>
               </template>
             </v-list-item> 
 
             <v-list-item v-if="rooms.length !== 0 && rooms.length < 20" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
               <v-icon left color="black">mdi-plus</v-icon> new workspace
             </v-list-item>
-          </drag>
-        </drop>
       </template>
     </v-list>
 
@@ -863,8 +863,13 @@ export default {
 </script>
 
 <style scoped>
-.active-blackboard {
-  position: relative;
-  /* border-left: 1px solid var(--v-accent-base); */
+.disable-text-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
 }
 </style>
