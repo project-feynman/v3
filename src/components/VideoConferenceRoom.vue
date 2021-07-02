@@ -277,6 +277,7 @@ export default {
               name: this.roomID,
               properties: {
                 exp: Math.round(Date.now() / 1000) + SECONDS_IN_TWO_HOURS,
+                eject_at_room_exp: true,
                 start_video_off: true
               }
             })
