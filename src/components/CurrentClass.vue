@@ -30,8 +30,8 @@
             offset-y="25"
           >
             <v-list-item two-line class="px-0">
-              <v-list-item-avatar @click="isAppPopupOpen = true"  
-                class="mr-0" style="margin-left: 2px; margin-bottom: 18px;" tile width="62" height="56"
+              <v-list-item-avatar @click="redirectToGithub()"
+                class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 18px;" tile width="62" height="56"
               >
                 <img src="/logo.png">
               </v-list-item-avatar>
@@ -243,6 +243,9 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
+    redirectToGithub () {
+      window.open('https://github.com/project-feynman/explain-mit','_blank')
+    },
     async leaveClass () {
       const { user } = this; 
       let classToRemove = null; 
