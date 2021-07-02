@@ -130,9 +130,11 @@
         
         <v-list>
           <v-list-item @click="isInviteFriendsPopupOpen = true">
-            <v-icon left color="purple">mdi-bell</v-icon> 
-            <div style="font-color: purple">Invite someone</div>
+            <v-icon left color="purple">mdi-account-plus</v-icon> 
+            <div style="font-color: purple">Request help</div>
           </v-list-item> 
+
+          <v-divider/>
         
           <v-menu
             v-model="isChatOpen"
@@ -176,9 +178,9 @@
           </v-list-item>
 
           <v-list-item>
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Requesting help'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Requesting help</v-chip>
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Down to collaborate'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Down to collaborate</v-chip>
-            <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip>
+            <!-- <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Requesting help'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Requesting help</v-chip> -->
+            <v-chip color="blue" class="white--text" @click="toggleCollabStatus()">Down to collaborate</v-chip>
+            <!-- <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip> -->
           </v-list-item>
 
           <!-- <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
@@ -499,6 +501,15 @@ export default {
     }
   },
   methods: { 
+    toggleCollabStatus () {
+      if (this.room.status === 'Down to collaborate') {
+        this.newRoomStatus = ''
+      } else {
+        this.newRoomStatus = 'Down to collaborate'
+      }
+      this.updateRoomStatus()
+      this.isRoomStatusPopupOpen = false 
+    },
     showEditPopup (refOfExplEdited) {
       this.refOfExplEdited = refOfExplEdited
       this.isEditPopupOpen = true

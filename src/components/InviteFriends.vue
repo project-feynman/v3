@@ -116,10 +116,7 @@ export default {
       willEmailInstructors: false,
       willEmailClassmates: false,
       emailsOfInvitees: [],
-      emailMessage: `Requesting help: I have a question about the pset...if you're busy, I'll write and record my question in this room so you can reply later.
-         
-         Invite to collaborate: I'm working on pset 3, want to join?
-      `,
+      emailMessage: `Despite X and trying Y, I still don't understand Z, so I'm requesting help. I'll be in the room writing up my question for the next few minutes, but you can come in anytime to answer. Thanks in any case : )`,
       newUserEmail: '',
       emailRules: [
         v => !!v || 'E-mail is required',
@@ -191,9 +188,9 @@ export default {
       const { class_id, section_id, room_id } = this.$route.params;
       sendEmailToPerson({ 
         emailOfPerson: invitee.email, 
-        title: `[explain.mit.edu] ${this.mitClass.name} Invite`, 
+        title: `[Explain] ${this.mitClass.name} Help Request`, 
         contentHTML: `
-          <p>${this.user.firstName + ' ' + this.user.lastName } invited you to Explain:
+          <p>${this.user.firstName + ' ' + this.user.lastName } requested help:
           <p>"${this.emailMessage}"</p>
           <p><a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">Click here to join</a>.</p>
           <p>Tip: to get real-time notifications on your iPad, press on "From: eltonlin@mit.edu" near the top, then press "Add to VIP"</p>
