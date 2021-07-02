@@ -87,7 +87,7 @@
                         </v-icon>
                       </v-btn>
 
-                      <v-btn @click.prevent.stop="toggleScreen()" 
+                      <!-- <v-btn @click.prevent.stop="toggleScreen()" 
                         fab small :color="`${ isSharingScreen ? 'cyan' : 'grey' }`"
                       >
                         <v-icon v-if="isSharingScreen" color="white">
@@ -96,9 +96,14 @@
                         <v-icon v-else color="white">
                           mdi-monitor
                         </v-icon>
-                      </v-btn>
+                      </v-btn> -->
+                      <!-- <template v-if="inputDevices">
+                        <div v-for-object="inputDevice in inputDevices">
+                          {{ inputDevice }}
+                        </div>
+                      </template> -->
 
-                       <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()" 
+                      <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()"
                         small dark fab color="red"
                       >
                         <v-icon small>mdi-phone-hangup</v-icon>

@@ -87,6 +87,7 @@ import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue";
 import CurrentClass from "@/components/CurrentClass.vue"; 
 import AuthHelpers from "@/mixins/AuthHelpers.js"; 
 import { mapState } from "vuex"; 
+import DailyIframe from '@daily-co/daily-js';
 
 // TODO:
 //   - Fix ghosts: let source of truth for video conference from Daily (CURRENTLY WORKING ON THIS)
@@ -188,11 +189,17 @@ export default {
       }
     });
 
-    // initialize CallObject (consumed by VideoConferenceRoom) lightweight is very important for MIT instructors
-    // this.CallObject.setBandwidth({
-    //   kbs: 30,
-    //   trackConstraints: { width: 320, height: 180, frameRate: 25 }
-    // });
+    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    // trying to record audio AND video call using the same mic stream causes issues 
+    // e.g. other people can't hear me
+    this.$store.commit('SET_MIC_STREAM_COPY', micStream.clone())
+    const [ micMediaStreamTrack ] = micStream.getAudioTracks()
+    this.$store.commit(
+      'SET_CALL_OBJECT', 
+      DailyIframe.createCallObject({
+        audioSource: micMediaStreamTrack
+      }) 
+    )
 
     // initialize event listeners (documentation: https://docs.daily.co/reference#events)
     const ONE_HUNDRED_MILLISECONDS = 100; 

@@ -3,7 +3,6 @@ import Vuex from 'vuex';
 import db from '@/database.js';
 import { getRandomId } from '@/helpers.js';
 import { SUPER_USER_EMAILS, BlackboardTools } from "@/CONSTANTS.js";
-import DailyIframe from '@daily-co/daily-js';
 import firebase from "firebase/app"; 
 import "firebase/auth";
 import router from "@/router.js";
@@ -41,6 +40,7 @@ export default new Vuex.Store({
       currentID: getRandomId()
     },
 
+    micStreamCopy: null, // workaround for iOS issues
     // video conference related states
     participants: {},
     canHearAudio: false,
@@ -53,7 +53,7 @@ export default new Vuex.Store({
     activeSpeakerDailyID: "",
     roomIDtoParticipants: null,
 
-    CallObject: DailyIframe.createCallObject(),
+    CallObject: null, // initialized in App.vue
     connectionStatus: "DISCONNECTED", // DISCONNECTED, CONNECTED, DISCONNECTING, CONNECTING
     firestoreIDToDailyID: {},
 
@@ -90,6 +90,12 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_CALL_OBJECT (state, newValue) {
+      state.CallObject = newValue
+    },  
+    SET_MIC_STREAM_COPY (state, newValue) {
+      state.micStreamCopy = newValue
+    },  
     SET_CURRENTLY_SELECTED_LIBRARY_POST_ID (state, newValue) {
       state.currentlySelectedLibraryPostID = newValue; 
     },

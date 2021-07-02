@@ -9,12 +9,18 @@ import AudioRecorder from "audio-recorder-polyfill";
 // AudioRecorder.encoder = mpegEncoder;
 // AudioRecorder.prototype.mimeType = "audio/mpeg"; // mpeg is equivalent to mp3
 window.MediaRecorder = AudioRecorder;
+import { mapState} from 'vuex'
 
 export default {
   data () {
     return {
       recorder: null,
     }; 
+  },
+  computed: {
+    ...mapState([
+      'micStreamCopy'
+    ])
   },
   created () {
     this.$emit("created", { 
@@ -25,8 +31,11 @@ export default {
   methods: {
     startRecording () {
       return new Promise(async resolve => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        this.recorder = new MediaRecorder(stream); 
+        // a stream cannot be re-used across multiple recording sessions
+        // because it is deactivated/stopped (see `stopRecording() below`)
+        const localCopy = this.micStreamCopy.clone()
+        this.recorder = new MediaRecorder(localCopy); 
+        
         this.recorder.start(); 
         this.$emit("start-recording");
         resolve();
