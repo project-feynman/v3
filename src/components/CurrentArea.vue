@@ -547,6 +547,10 @@ export default {
         this.$root.$emit('show-snackbar', 'Try again...')
       }
       else {
+        if (draggedFrom.isCommonRoom) {
+          this.$root.$emit('show-snackbar', 'The lobby is special and unmoveable - try moving some other room')
+          return
+        }
         const indexOfDroppedTo = this.sortedRooms.findIndex(r => r.id === droppedTo.id)
         const roomBelow = this.sortedRooms[
           Math.min(indexOfDroppedTo + 1, this.sortedRooms.length - 1)
