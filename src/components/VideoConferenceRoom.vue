@@ -226,7 +226,7 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "canHearAudio", // TODO: rename it 
+      "canHearAudio", // TODO: rename it to "willAutoJoin" or something
       "CallObject",
       "connectionStatus",
       "participants",

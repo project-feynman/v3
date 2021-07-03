@@ -1,6 +1,6 @@
 <template>
   <div>  
-    <VideoConferenceRoom
+    <VideoConferenceRoom v-if="micStream"
       :roomID="roomID"
     />
 
@@ -448,6 +448,7 @@ export default {
       "user",
       "mitClass",
       "session",
+      'micStream',
       "isBoardFullscreen",
       "currentTool",
       "currentBoardID",
