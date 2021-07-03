@@ -40,7 +40,7 @@ export default new Vuex.Store({
       currentID: getRandomId()
     },
 
-    micStreamCopy: null, // workaround for iOS issues
+    micStream: null, // workaround for iOS issues
     // video conference related states
     participants: {},
     canHearAudio: true,
