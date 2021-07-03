@@ -43,7 +43,7 @@ export default new Vuex.Store({
     micStreamCopy: null, // workaround for iOS issues
     // video conference related states
     participants: {},
-    canHearAudio: false,
+    canHearAudio: true,
 
     // consider deprecating `isMicOn`, though it can be modified / renamed to be a variable 
     // that helps persists the user's mic / camera states across different rooms
