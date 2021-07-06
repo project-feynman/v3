@@ -134,6 +134,7 @@ import db from "@/database.js";
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
 import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
+import pdfjs from 'pdfjs-dist'
 
 export default {
   props: {
@@ -374,10 +375,9 @@ export default {
       }
     },
     async pdfToImage (src) {
-      const pdfjs = require("pdfjs-dist/build/pdf.js");
-      // Not sure why the worker in node's directory is not working
-      // Some online forums do point to the way webpack resolves the package paths, and suggest using additional loaders
-      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
+      // prevent issue: htts://stackoverflow.com/a/63406257/7812829
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.3.200/pdf.worker.min.js";
+
       pdfjs.getDocument(URL.createObjectURL(src)).promise.then(doc=> {
         doc.getPage(1).then((page) => {
           // Render the page on a Node canvas with 100% scale.

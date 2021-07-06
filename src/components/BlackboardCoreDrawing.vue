@@ -77,6 +77,7 @@ import { BlackboardTools, MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import { getRandomId, isIosSafari } from "@/helpers.js";
 import { mapState } from "vuex";
 import _ from "lodash";
+import pdfjs from 'pdfjs-dist'
 
 export default {
   props: {
@@ -522,9 +523,8 @@ export default {
       this.$emit("update:background-image", { blob: imageFile });
     },
     async convertPdfToImageFile (src) {
-      // TODO: fix npm errors and use normal imports
-      const pdfjs = require("pdfjs-dist/build/pdf.js");
-      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
+      // prevent issue: htts://stackoverflow.com/a/63406257/7812829
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.3.200/pdf.worker.min.js";
       
       const doc = await pdfjs.getDocument(URL.createObjectURL(src)).promise;
       const page = await doc.getPage(1);

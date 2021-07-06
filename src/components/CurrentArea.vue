@@ -365,6 +365,7 @@ import CurrentAreaDeletePopup from "@/components/CurrentAreaDeletePopup.vue";
 import CurrentAreaBirdsEyeViewPopup from "@/components/CurrentAreaBirdsEyeViewPopup.vue"; 
 import ZoomChat from "@/components/ZoomChat.vue"; 
 import { Drag, Drop } from "vue-drag-drop";
+import pdfjs from 'pdfjs-dist'
 
 import firebase from "firebase/app";
 import "firebase/firestore"; 
@@ -701,9 +702,8 @@ export default {
       this.$root.$emit("show-snackbar", "Successfully planted the problem in each room :)")
     },
     async convertPdfToImageFiles (src) {
-      // TODO: fix npm errors and use normal imports
-      const pdfjs = require("pdfjs-dist/build/pdf.js");
-      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.worker.min.js";
+       // prevent issue: htts://stackoverflow.com/a/63406257/7812829
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.3.200/pdf.worker.min.js";
       
       const doc = await pdfjs.getDocument(URL.createObjectURL(src)).promise;
       console.log("doc =", doc);
