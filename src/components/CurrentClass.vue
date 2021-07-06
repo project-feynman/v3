@@ -48,7 +48,7 @@
                 </v-list-item-title>
 
                 <v-list-item-subtitle>
-                  <AreaSwitchDropdown 
+                  <CurrentAreaDropdown 
                     :areaID="areaID"
                     style="margin-top: 6px;"
                   />  
@@ -87,7 +87,7 @@
         </div>
       </v-sheet>
       <!-- 
-          For AreaSwitchDropdown, because we no longer use a bandwidth-consuming listener to the roomTypes, 
+          For CurrentAreaDropdown, because we no longer use a bandwidth-consuming listener to the roomTypes, 
           it's okay to fetch 10 documents everytime someone switches a section. 
           It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
        -->
@@ -120,7 +120,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
 import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
 
-import AreaSwitchDropdown from "@/components/AreaSwitchDropdown.vue"; 
+import CurrentAreaDropdown from "@/components/CurrentAreaDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import CurrentArea from "@/components/CurrentArea.vue"; 
 import CurrentRoom from "@/components/CurrentRoom.vue";
@@ -151,7 +151,7 @@ export default {
     BasePopupButton,
     CurrentClassDropdown,
     CurrentClassNewPopup,
-    AreaSwitchDropdown,
+    CurrentAreaDropdown,
     MyParticipantDocUpdater,
     CurrentArea,
     CurrentRoom
