@@ -241,18 +241,21 @@
             </template>
 
             <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
-              <template v-for="boardID in room.blackboards">
-                <v-list-item 
-                  @click="$store.commit('SET_CURRENT_BOARD_ID', boardID)"
-                  :key="boardID"
-                  style="background-color: rgb(62, 66, 66);"
-                  class="px-0"
-                >
-                  <div :style="`margin: auto; color: ${currentTool.color};`">
-                    {{ getBoardNumberFromID(boardID) }}
-                  </div>
-                </v-list-item>
-                <v-divider class="white--text" :key="boardID + 'divider'"/>
+              <template v-for="(boardID, i) in room.blackboards">
+                <Drag :transfer-data="{ draggedFrom: i } " :key="boardID">
+                  <Drop @drop="handleDrop({ droppedTo: i }, ...arguments)">
+                    <v-list-item 
+                      @click="$store.commit('SET_CURRENT_BOARD_ID', boardID)"
+                      style="background-color: rgb(62, 66, 66);"
+                      class="px-0"
+                    >
+                      <div :style="`margin: auto; color: ${currentTool.color};`">
+                        {{ getBoardNumberFromID(boardID) }}
+                      </div>
+                    </v-list-item>
+                    <v-divider class="white--text"/>
+                  </Drop>
+                </Drag>
               </template>
 
               <BaseButton @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);">
@@ -390,6 +393,7 @@ import DoodleVideo from '@/components/DoodleVideo.vue'
 import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
 import RenderlessFetchStrokes from '@/components/RenderlessFetchStrokes.vue'
 import ReusableTextEditor from '@/components/ReusableTextEditor.vue'
+import { Drag, Drop } from 'vue-drag-drop'
 
 export default {
   props: {
@@ -413,6 +417,8 @@ export default {
     InviteFriends,
     DoodleAnimation,
     DoodleVideo,
+    Drag,
+    Drop,
     RenderlessFetchBlackboardDoc,
     RenderlessFetchStrokes,
     ReusableTextEditor
@@ -509,6 +515,26 @@ export default {
     }
   },
   methods: { 
+    async handleDrop ({ droppedTo }, { draggedFrom }) {
+      const i = draggedFrom
+      const j = droppedTo
+      const blackboardsCopy = [...this.room.blackboards]
+      const draggedBoardID = blackboardsCopy[i]
+
+      // remove 
+      const removeOneElement = 1
+      blackboardsCopy.splice(i, removeOneElement)
+
+      // insert
+      const removeNoElement = 0
+      blackboardsCopy.splice(j, removeNoElement, draggedBoardID)  
+        
+      // make an update operation
+      await this.roomRef.update({
+        blackboards: blackboardsCopy
+      })
+      this.$root.$emit('show-snackbar', 'Rearranged order.')
+    },
     toggleCollabStatus () {
       if (this.room.status === 'Down to collaborate') {
         this.newRoomStatus = ''
