@@ -264,16 +264,21 @@
       </div>
     </portal>
 
-    <v-dialog :value="isEditPopupOpen">
+
+    <!-- EDIT TITLE AND DESCRIPTION -->
+    <v-dialog :value="isEditPopupOpen" width="600">
       <v-card>
         <v-card-title>Edit explanation</v-card-title>
         <v-card-text>
           <v-text-field v-model="newTitle" placeholder="title"/>
-          <v-textarea v-model="newDescription" placeholder="Description here"/> 
+
+          <ReusableTextEditor 
+            v-model="newDescriptionHtml"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
-          <v-btn>CLOSE</v-btn>
+          <v-btn @click="isEditPopupOpen = false">CLOSE</v-btn>
           <v-btn @click="editTitleAndDescription()">SAVE</v-btn>
         </v-card-actions>
       </v-card>
@@ -284,7 +289,7 @@
         <RenderlessFetchBlackboardDoc
           :blackboardRef="blackboardRefs[i]"
           :key="boardID"
-          v-slot="{ isLoading, creator, date, audioDownloadURL, backgroundImageDownloadURL, title, description }"
+          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml }"
         >  
 
           <!-- If blackboard is already saved/recorded -->
@@ -310,9 +315,9 @@
                     {{ title }}
                   </v-card-title>
                   <v-card-text>
-                    <p v-if="description" class="mb-5">
-                      {{ description }}
-                    </p>
+                    <div v-if="descriptionHtml" class="mb-5"
+                      v-html="descriptionHtml"
+                    />
                     <template v-if="strokesArray.length > 0">
                       <DoodleVideo v-if="audioDownloadURL"
                         :strokesArray="strokesArray"
@@ -320,7 +325,7 @@
                         :audioUrl="audioDownloadURL"
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
-                        @edit="showEditPopup(blackboardRefs[i])"
+                        @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
                       />
                       <DoodleAnimation v-else
@@ -328,7 +333,7 @@
                         :backgroundUrl="backgroundImageDownloadURL"
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
-                        @edit="showEditPopup(blackboardRefs[i])"
+                        @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
                       />
                     </template>
@@ -384,6 +389,7 @@ import DoodleAnimation from '@/components/DoodleAnimation.vue'
 import DoodleVideo from '@/components/DoodleVideo.vue'
 import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
 import RenderlessFetchStrokes from '@/components/RenderlessFetchStrokes.vue'
+import ReusableTextEditor from '@/components/ReusableTextEditor.vue'
 
 export default {
   props: {
@@ -408,7 +414,8 @@ export default {
     DoodleAnimation,
     DoodleVideo,
     RenderlessFetchBlackboardDoc,
-    RenderlessFetchStrokes
+    RenderlessFetchStrokes,
+    ReusableTextEditor
   },
   mixins: [
     DatabaseHelpersMixin
@@ -440,7 +447,7 @@ export default {
       isEditPopupOpen: false,
       refOfExplEdited: null,
       newTitle: '',
-      newDescription: ''
+      newDescriptionHtml: '',
     }
   },
   computed: {
@@ -511,19 +518,20 @@ export default {
       this.updateRoomStatus()
       this.isRoomStatusPopupOpen = false 
     },
-    showEditPopup (refOfExplEdited) {
+    showEditPopup (refOfExplEdited, title, descriptionHtml) {
       this.refOfExplEdited = refOfExplEdited
       this.isEditPopupOpen = true
+      // pre-populate the values
+      if (title) this.newTitle = title
+      if (descriptionHtml) this.newDescriptionHtml = descriptionHtml
     },
     async editTitleAndDescription () {
-      console.log('updating expl...')
       await this.refOfExplEdited.update({
         title: this.newTitle,
-        description: this.newDescription 
+        descriptionHtml: this.newDescriptionHtml
       })
-      console.log('success.')
       this.newTitle = ''
-      this.newDescription = ''
+      this.newDescriptionHtml = ''
       this.refOfExplEdited = null
       this.isEditPopupOpen = false
     },
@@ -590,16 +598,6 @@ export default {
       await batch.commit(); 
       this.$root.$emit("show-snackbar", "Room was deleted.")
     },
-    // TODO: commented out because it doesn't work on iOS Safari and also 
-    // causes the screenshare to be offset incorrectly
-    // async requestFullscreenFromDevice () {
-    //   const blackboardElem = document.getElementById("current-blackboard"); 
-    //   if (! document.fullscreenElement) {
-    //     await blackboardElem.requestFullscreen();
-    //   } else {
-    //     document.exitFullscreen(); 
-    //   }
-    // },
     async createNewBoard () {
       const roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomID}`);
       const blackboardsRef = db.collection(`classes/${this.classID}/blackboards`);

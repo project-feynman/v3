@@ -236,7 +236,7 @@ export default {
         date: new Date().toISOString(),
         views: 0
       })      
-      console.log('successfully uploaded blackboard ref')
+      this.$root.$emit('show-snackbar', 'Converted to animation.')
     },
     keepSyncingBackgroundWithDb () {
       this.removeBackgroundImageListener = this.blackboardRef.onSnapshot(blackboardDoc => {
