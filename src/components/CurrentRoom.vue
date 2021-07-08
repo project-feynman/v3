@@ -314,11 +314,11 @@
             > 
               <template>
                 <v-card>
-                  <v-card-title v-if="title">
+                  <v-card-title v-if="title" style="font-size: 1.6rem">
                     {{ title }}
                   </v-card-title>
                   <v-card-text>
-                    <div v-if="descriptionHtml" class="mb-5"
+                    <div v-if="descriptionHtml" class="mb-5 html-paragraph-styles"
                       v-html="descriptionHtml"
                     />
                     <template v-if="strokesArray.length > 0">
@@ -768,6 +768,14 @@ export default {
 </script>
 
 <style scoped>
+/* .html-paragraph-styles >>> h2 {
+  font-size: 2rem
+} */
+
+.html-paragraph-styles >>> p {
+  font-size: 1.1rem
+}
+
 .overlay-item {
   position: absolute; 
   top: 0;
