@@ -1,6 +1,6 @@
 <template>
   <div>  
-    <VideoConferenceRoom v-if="micStream"
+    <VideoConferenceRoom
       :roomID="roomID"
     />
 

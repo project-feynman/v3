@@ -7,59 +7,6 @@
       :key="'force-rerender-if-class-id-changes' + classID"
     /> 
 
-    <!-- Camera/Mic permission errors -->
-    <VideoTroubleshootPopup v-model="isShowingVideoTroubleshootPopup"/> 
-
-    <!-- General errors  -->
-    <div class="text-center">
-      <v-dialog v-model="isShowingGeneralErrorPopup" width="500">
-        <v-card>
-          <v-card-title class="headline">
-            An unusual error occured
-          </v-card-title>
-          <v-card-text>
-            <p>{{ feedbackForUser }}<p>
-
-            <p class="mb-0">Try quick-fixes:</p>
-            <ol>
-              <li>Reload the page</li> 
-              <li>Close the page entirely, then open a new one</li> 
-              <li>Ensure you use iPad Safari or desktop Chrome</li>
-            </ol>
-
-            <br>
-
-            <p class="mb-0">If problems remain, try the general fixes</p> 
-            <ol>
-              <li>For iPads,
-                <a href="https://osxdaily.com/2017/09/28/how-force-quit-apps-ipad-ios-11/" target="_blank">
-                  force quit Safari
-                </a>
-              </li>
-              <li>
-                For computers,
-                <a href="https://support.google.com/accounts/answer/32050?co=GENIE.Platform%3DDesktop&hl=en" target="_blank">
-                  clear cookies and cache on Chrome
-                </a>
-                and read 
-                <a href="https://help.daily.co/en/articles/2303117-top-troubleshooting-tips" target="_blank">
-                  5 tips that solve 99% of issues
-                </a>
-              </li>
-              <li>Restart your computer / iPad</li>
-              <li>Email <a href="mailto: eltonlin@mit.edu">eltonlin@mit.edu</a></li>
-            </ol>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer/>
-            <v-btn text @click="isShowingGeneralErrorPopup = false">
-              OK
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </div>
-
     <v-snackbar v-model="snackbar" timeout="2500">
       {{ snackbarMessage }}
       <template v-slot:action>
@@ -83,21 +30,13 @@ import "firebase/storage";
 import "firebase/auth"; 
 import { getRandomId } from "@/helpers.js"; 
 import _ from "lodash"; 
-import VideoTroubleshootPopup from "@/components/VideoTroubleshootPopup.vue"; 
 import CurrentClass from "@/components/CurrentClass.vue"; 
 import AuthHelpers from "@/mixins/AuthHelpers.js"; 
 import { mapState } from "vuex"; 
-import DailyIframe from '@daily-co/daily-js';
 
 // TODO:
 //   - Fix ghosts: let source of truth for video conference from Daily (CURRENTLY WORKING ON THIS)
-//   - Introduce pioneer badges
 //   - Introduce the personal library
-
-// To get realtime support, visit https://www.daily.co/contact/support
-// Helpful gist: https://gist.github.com/kwindla/9fd662a83e190e6dd003869282ff0d99
-
-const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
 export default {
   mixins: [
@@ -105,7 +44,6 @@ export default {
   ],
   components: {
     AuthHelpers,
-    VideoTroubleshootPopup,
     CurrentClass
   },
   data: () => ({
@@ -113,20 +51,11 @@ export default {
     snackbarMessage: "",
 
     musicSnackbar: true,
-    musicAudioElement: null,
-
-    // Daily Video Conference API 
-    firestoreIDToDailyID: {},
-    isShowingVideoTroubleshootPopup: false,
-    isShowingGeneralErrorPopup: false,
-    feedbackForUser: ""
+    musicAudioElement: null
   }),
   computed: {
     ...mapState([
-      "user",
-      "CallObject",
-      "participants",
-      "isViewingForum"
+      'user'
     ]),
     sessionID () { return this.$store.state.session.currentID },
     classID () { return this.$route.params.class_id; },
@@ -193,57 +122,6 @@ export default {
         // intermediate state, don't unsubscribeAuthListener() yet 
       }
     });
-
-    // INITIALIZE MIC STREAM
-    const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    // trying to record audio AND video call using the same mic stream causes issues 
-    // e.g. other people can't hear me
-    this.$store.commit('SET_MIC_STREAM', micStream)
-    const [ micMediaStreamTrack ] = micStream.getAudioTracks()
-    this.$store.commit(
-      'SET_CALL_OBJECT', 
-      DailyIframe.createCallObject({
-        audioSource: micMediaStreamTrack
-      }) 
-    )
-
-    // initialize event listeners (documentation: https://docs.daily.co/reference#events)
-    const ONE_HUNDRED_MILLISECONDS = 100; 
-    for (const event of PARTICIPANT_EVENTS) {
-      this.CallObject.on(
-        event, 
-        _.throttle(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS) 
-      ); 
-    }
-    this.CallObject.on("track-started", this.mountNewTrack);
-    this.CallObject.on("track-stopped", this.unmountTrack);
-    this.CallObject.on("active-speaker-change", ({ activeSpeaker }) => {
-      this.$store.commit("SET_ACTIVE_SPEAKER_DAILY_ID", activeSpeaker.peerId);
-    });
-
-    // handle specifically because it's common for users to use Zoom 
-    this.CallObject.on("camera-error", (payload) => {
-      this.isShowingVideoTroubleshootPopup = true; 
-      console.error(payload); 
-      console.log("CallObject state =", this.CallObject.meetingState()); 
-    });
-
-    // general errors
-    this.CallObject.on("load-attempt-failed", ({ action, errorMsg }) => {
-      this.isShowingGeneralErrorPopup = true; 
-      this.feedbackForUser = action + ": " + errorMsg; 
-    }); 
-    this.CallObject.on("error", ({ action, errorMsg }) => {
-      this.isShowingGeneralErrorPopup = true; 
-      this.feedbackForUser = action + ": " + errorMsg; 
-    });
-    
-    // TODO: refactor
-    this.$root.$on("error-joining-conference-room", (error) => {
-      this.isShowingGeneralErrorPopup = true; 
-      this.feedbackForUser = error.message; 
-      console.error(error); 
-    });
   },
   methods: {
     initializeTutorialDemo () {
@@ -278,77 +156,6 @@ export default {
     playBackgroundMusic () {
       this.$store.state.musicAudioElement.play(); 
       this.$store.commit("SET_IS_MUSIC_PLAYING", true);
-    },
-    maintainParticipantsCorrectness () {
-      this.$store.commit("SET_PARTICIPANTS", { ...this.CallObject.participants() }); 
-      this.$store.commit("SET_FIRESTORE_ID_TO_DAILY_ID", {});
-      const temp = {}; 
-      for (const participant of Object.values(this.participants)) {
-        const { user_name, user_id } = participant; 
-        // check if it Firestore participant.sessionID is binded to the Daily user_name
-        if (user_name) {
-          temp[user_name] = user_id; 
-        }
-      }
-      this.$store.commit("SET_FIRESTORE_ID_TO_DAILY_ID", temp)
-    },
-    async mountNewTrack ({ track, participant }) {
-      switch (track.kind) {
-        case "video": 
-          const v = document.createElement("video"); 
-          v.srcObject = new MediaStream([track]);
-          v.setAttribute("id", track.id);
-          v.setAttribute("muted", true); 
-          v.setAttribute("autoplay", true); 
-          v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
-          v.style.width = "100%"; 
-          v.setAttribute("z-index", 2); // not great
-          
-          if (this.isScreenTrack(track, participant)) {
-            document.getElementById("screenshare-container").appendChild(v); 
-          } 
-          else if (! participant.user_name) {  
-            // handles edge case that when joining initially, user_name is not populated by Daily API
-            // user_name maps to sessionID
-            v.classList.add("mirror-flip");
-            document.getElementById("my-local-video").appendChild(v); 
-          } 
-          else if (participant.user_name === this.sessionID) { // TODO: refactor. Handles the case where I re-share my camera, but now my user_name is defined
-            v.classList.add("mirror-flip");
-            document.getElementById("my-local-video").appendChild(v); 
-          } 
-          else { 
-            document.getElementById(participant.user_name).appendChild(v);
-          }
-          break; 
-
-        case "audio": 
-          if (participant.local) return; 
-          else {
-            const audioElement = document.createElement("audio"); 
-            audioElement.srcObject = new MediaStream([track]); 
-            audioElement.setAttribute("id", "audio" + participant.user_id); 
-            audioElement.setAttribute("playsinline", true); 
-            audioElement.setAttribute("autoplay", true); 
-
-            document.getElementById("container-for-audio-elements").appendChild(audioElement);
-          }
-          break;
-      }
-    },
-    async unmountTrack ({ track, participant }) {
-      const trackElement = document.getElementById(track.id); 
-      if (trackElement) { // sometimes the trackElement unexpectedly doesn't exist, though the error is harmless
-        trackElement.srcObject = null; 
-        trackElement.remove(); 
-      }
-    },
-    isScreenTrack (track, participant) {
-      if (participant) if (participant.screen && participant.screenVideoTrack.id === track.id) return true; 
-      // screen:0:0
-      // window:263938:1
-      // web-contents-media-stream://556:4
-      return ["screen", "window"].includes(track.label.substring(0, 6));
     }
   }
 }

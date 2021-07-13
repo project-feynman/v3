@@ -1,5 +1,12 @@
 <template>
   <div>
+    <!-- Camera/Mic permission errors -->
+    <VideoTroubleshootPopup v-model="isShowingVideoTroubleshootPopup"/> 
+
+    <VideoConferenceRoomGeneralErrorPopup v-model="isShowingGeneralErrorPopup"
+      :feedbackForUser="feedbackForUser"
+    /> 
+
     <div id="container-for-audio-elements">
 
     </div>
@@ -206,8 +213,21 @@
  * @see API guide https://docs.daily.co/reference#%EF%B8%8F-createcallobject
  * @see Github demo code https://github.com/daily-demos/call-object-react/blob/main/src/components/Call/Call.js
  */
+
+/**
+  To get realtime support, visit https://www.daily.co/contact/support
+  Helpful gist: https://gist.github.com/kwindla/9fd662a83e190e6dd003869282ff0d99
+
+  Daily's CEO also replies on StackOverflow : ) 
+ **/
 import { API_KEY_SECRET } from "@/dailyCreds.js";
 import { mapState } from "vuex"; 
+import MicStreamsInitializer from '@/mixins/MicStreamsInitializer.js'
+import VideoTroubleshootPopup from '@/components/VideoTroubleshootPopup.vue'
+import VideoConferenceRoomGeneralErrorPopup from '@/components/VideoConferenceRoomGeneralErrorPopup.vue'
+import DailyIframe from '@daily-co/daily-js';
+
+const PARTICIPANT_EVENTS = ["participant-joined", "participant-updated", "participant-left"]; 
 
 export default {
   props: {
@@ -216,11 +236,21 @@ export default {
       required: true
     }
   },
+  mixins: [
+    MicStreamsInitializer
+  ],
+  components: {
+    VideoTroubleshootPopup,
+    VideoConferenceRoomGeneralErrorPopup
+  },
   data () {
     return {
       isDestroyed: false,
       isSharingScreen: false,
-      connectionFailureDetector: null
+      connectionFailureDetector: null,
+      isShowingVideoTroubleshootPopup: false,
+      isShowingGeneralErrorPopup: false,
+      feedbackForUser: ''
     };
   },
   computed: {
@@ -232,7 +262,8 @@ export default {
       "participants",
       "roomIDtoParticipants",
       "firestoreIDToDailyID",
-      "activeSpeakerDailyID"
+      "activeSpeakerDailyID",
+      'micStream'
     ]),
     allClients () { 
       if (!this.roomIDtoParticipants) return; 
@@ -253,7 +284,7 @@ export default {
       }
     }
   },
- async destroyed () {
+  async destroyed () {
     this.isDestroyed = true; 
     // case 1 (sequential): the user leaves after connection has been resolved
     if (this.connectionStatus === "CONNECTED") {
@@ -304,7 +335,8 @@ export default {
     async joinConferenceRoom () {
       const FIFTEEN_SECONDS_IN_MILLISECONDS = 15 * 1000; 
       this.connectionFailureDetector = setTimeout(() => {
-        this.$root.$emit("error-joining-conference-room", { message: "Connection timed out after 15 seconds"})
+        this.feedbackForUser = 'Connection timed out after 15 seconds'
+        this.isShowingGeneralErrorPopup = true
         console.error("CAN'T CONNECT DESPITE 15 seconds"); 
       }, FIFTEEN_SECONDS_IN_MILLISECONDS);
 
@@ -317,6 +349,17 @@ export default {
       this.$store.commit("SET_CONNECTION_STATUS", "CONNECTING");
       try {
         const conferenceRoom = await this.createConferenceRoom(); 
+        if (!this.CallObject) {
+          await this.$_initializeMicStreams()
+          const [ micMediaStreamTrack ] = this.micStream.getAudioTracks()
+          this.$store.commit(
+            'SET_CALL_OBJECT', 
+            DailyIframe.createCallObject({
+              audioSource: micMediaStreamTrack // how to destroy it // enable and disable it as you connect / disconnect from phone calls
+            }) 
+          )
+          this.initializeCallObject()
+        }
         await this.CallObject.join({
           url: conferenceRoom.url, // `https://feynman.daily.co/${'Ly77BmJeKWudV1FJISnD'}`,
           userName: this.sessionID
@@ -330,9 +373,10 @@ export default {
           this.$store.commit("SET_CAN_HEAR_AUDIO", true);
         }
       } catch (error) {
-        this.$store.commit("SET_CONNECTION_STATUS", "ERROR");
+        this.$store.commit('SET_CONNECTION_STATUS', 'ERROR')
+        this.feedbackForUser = error
+        this.isShowingGeneralErrorPopup = true
         console.error(error);
-        this.$root.$emit("error-joining-conference-room", error); 
       } finally {
         clearTimeout(this.connectionFailureDetector); 
       }
@@ -358,6 +402,13 @@ export default {
         micAudioElem.remove(); 
       }
       this.cleanUpCallObject();
+      // left room because the user hung-up rather than just moving between rooms
+      if (!this.canHearAudio) {
+        for (const track of this.micStream.getAudioTracks()) {
+          track.stop()
+          console.log('stopped track =', track)
+        }
+      }
     },
     async cleanUpCallObject () {
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTING"); 
@@ -365,6 +416,111 @@ export default {
       this.$store.commit("SET_PARTICIPANTS", {}); 
       this.$store.commit("SET_CONNECTION_STATUS", "DISCONNECTED");
       this.$store.commit("SET_ACTIVE_SPEAKER_DAILY_ID", "");
+    },
+
+    // NEW CODE
+    initializeCallObject () {
+      // initialize event listeners (documentation: https://docs.daily.co/reference#events)
+      const ONE_HUNDRED_MILLISECONDS = 100; 
+      for (const event of PARTICIPANT_EVENTS) {
+        this.CallObject.on(
+          event, 
+          _.throttle(this.maintainParticipantsCorrectness, ONE_HUNDRED_MILLISECONDS) 
+        ); 
+      }
+      this.CallObject.on("track-started", this.mountNewTrack);
+      this.CallObject.on("track-stopped", this.unmountTrack);
+      this.CallObject.on("active-speaker-change", ({ activeSpeaker }) => {
+        this.$store.commit("SET_ACTIVE_SPEAKER_DAILY_ID", activeSpeaker.peerId);
+      });
+
+      // handle specifically because it's common for users to use Zoom 
+      this.CallObject.on("camera-error", (payload) => {
+        this.isShowingVideoTroubleshootPopup = true; 
+        console.error(payload); 
+        console.log("CallObject state =", this.CallObject.meetingState()); 
+      });
+
+      // general errors
+      this.CallObject.on("load-attempt-failed", ({ action, errorMsg }) => {
+        this.isShowingGeneralErrorPopup = true; 
+        this.feedbackForUser = action + ": " + errorMsg; 
+      }); 
+      this.CallObject.on("error", ({ action, errorMsg }) => {
+        this.isShowingGeneralErrorPopup = true; 
+        this.feedbackForUser = action + ": " + errorMsg; 
+      });
+    },
+    maintainParticipantsCorrectness () {
+      this.$store.commit("SET_PARTICIPANTS", { ...this.CallObject.participants() }); 
+      this.$store.commit("SET_FIRESTORE_ID_TO_DAILY_ID", {});
+      const temp = {}; 
+      for (const participant of Object.values(this.participants)) {
+        const { user_name, user_id } = participant; 
+        // check if it Firestore participant.sessionID is binded to the Daily user_name
+        if (user_name) {
+          temp[user_name] = user_id; 
+        }
+      }
+      this.$store.commit("SET_FIRESTORE_ID_TO_DAILY_ID", temp)
+    },
+    async mountNewTrack ({ track, participant }) {
+      switch (track.kind) {
+        case "video": 
+          const v = document.createElement("video"); 
+          v.srcObject = new MediaStream([track]);
+          v.setAttribute("id", track.id);
+          v.setAttribute("muted", true); 
+          v.setAttribute("autoplay", true); 
+          v.setAttribute("playsinline", true); // without it, iOS forces video to play in fullscreen
+          v.style.width = "100%"; 
+          v.setAttribute("z-index", 2); // not great
+          
+          if (this.isScreenTrack(track, participant)) {
+            document.getElementById("screenshare-container").appendChild(v); 
+          } 
+          else if (! participant.user_name) {  
+            // handles edge case that when joining initially, user_name is not populated by Daily API
+            // user_name maps to sessionID
+            v.classList.add("mirror-flip");
+            document.getElementById("my-local-video").appendChild(v); 
+          } 
+          else if (participant.user_name === this.sessionID) { // TODO: refactor. Handles the case where I re-share my camera, but now my user_name is defined
+            v.classList.add("mirror-flip");
+            document.getElementById("my-local-video").appendChild(v); 
+          } 
+          else { 
+            document.getElementById(participant.user_name).appendChild(v);
+          }
+          break; 
+
+        case "audio": 
+          if (participant.local) return; 
+          else {
+            const audioElement = document.createElement("audio"); 
+            audioElement.srcObject = new MediaStream([track]); 
+            audioElement.setAttribute("id", "audio" + participant.user_id); 
+            audioElement.setAttribute("playsinline", true); 
+            audioElement.setAttribute("autoplay", true); 
+
+            document.getElementById("container-for-audio-elements").appendChild(audioElement);
+          }
+          break;
+      }
+    },
+    async unmountTrack ({ track, participant }) {
+      const trackElement = document.getElementById(track.id); 
+      if (trackElement) { // sometimes the trackElement unexpectedly doesn't exist, though the error is harmless
+        trackElement.srcObject = null; 
+        trackElement.remove(); 
+      }
+    },
+    isScreenTrack (track, participant) {
+      if (participant) if (participant.screen && participant.screenVideoTrack.id === track.id) return true; 
+      // screen:0:0
+      // window:263938:1
+      // web-contents-media-stream://556:4
+      return ["screen", "window"].includes(track.label.substring(0, 6));
     }
   }
 };
