@@ -349,6 +349,7 @@ export default {
       this.$store.commit("SET_CONNECTION_STATUS", "CONNECTING");
       try {
         const conferenceRoom = await this.createConferenceRoom(); 
+
         if (!this.CallObject) {
           await this.$_initializeMicStreams()
           const [ micMediaStreamTrack ] = this.micStream.getAudioTracks()
@@ -406,7 +407,8 @@ export default {
       if (!this.canHearAudio) {
         for (const track of this.micStream.getAudioTracks()) {
           track.stop()
-          console.log('stopped track =', track)
+          this.$store.commit('SET_MIC_STREAM', null)
+          this.$store.commit('SET_CALL_OBJECT', null)
         }
       }
     },

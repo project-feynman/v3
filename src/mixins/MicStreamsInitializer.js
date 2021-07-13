@@ -17,6 +17,12 @@
       CASE 2 (not in the middle of recording): trivially correct. 
 
   This is used by `BlackboardAudioRecorder.vue` and `VideoConferenceRoom.vue`
+
+  KNOWN ISSUES: if you hang-up in the middle of a recording you lose your sound
+   (though if you hang-up after the recording, then start another one, it's fine. 
+        1. I suspect it's the track.stop() messing the ongoing tracks mid-recording
+        2. If the recording already finished, a fresh micStream is created because we reset the pointers of micStream and CallObject
+    )
 **/
 
 export default {

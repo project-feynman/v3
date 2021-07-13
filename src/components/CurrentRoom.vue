@@ -112,7 +112,7 @@
     <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
-      <v-menu :value="roomID === $route.params.class_id" offset-y bottom>
+      <v-menu offset-y bottom>
         <!-- Triple-dots button -->
         <template v-slot:activator="{ on }">
           <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
