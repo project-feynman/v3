@@ -65,7 +65,7 @@
               @click="startRecording()" 
               icon="mdi-record" color="white" small
             >
-              Explain
+              Record
             </BaseButton>
             <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
               Finish
