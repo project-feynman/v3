@@ -8,7 +8,7 @@
 This will involve an open-source, experimental prototype that drastically increases learning efficiency. It will also involve creating a system where, no matter how behind anyone feels, they'd know that there is an army of classmates and TAs who would jump at the opportunity to help out. Everything happens recursively, students use Explain to pset better, developers use Explain to develop Explain, even professors can contribute and change the code with anything. It's the entire school coming together to help each other. 
 
 **Step 2/3: Create a startup that becomes the grand explanation platform for the world**
-This will involve democratizing education so everyone regardless of their circumstances can access the best resources for free, therefore increasing their potential to change the world. 
+This will involve democratizing education so everyone regardless of their circumstances can access the best resources for free, therefore increasing their potential to change the world. World problems are complex beyond belief, and so educating the next millions/billions quickly and efficiently to contribute/work together is pivotal. 
 
 **Step 3/3: End poverty and pollution by 2035**
 Education is ultimately a "sword" that needs to be directed at our most urgent problems. 
