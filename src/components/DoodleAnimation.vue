@@ -117,6 +117,12 @@ export default {
       return allPoints;
     }
   },
+  watch: {
+    // quick-fix, without it the video appears blank even if `strokesArray` changed from empty to hydrated 
+    strokesArray () {
+      this.handleResize()
+    }
+  },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
     this.bgCanvas = this.$refs.BackCanvas;

@@ -143,6 +143,12 @@ export default {
       return allPoints.sort((p1, p2) => p1.startTime - p2.startTime);
     }
   },
+  watch: {
+    // quick-fix, without it the video appears blank even if `strokesArray` changed from empty to hydrated 
+    strokesArray () {
+      this.handleResize()
+    }
+  },
   async created () {
     // this.handleResize = _.debounce(this.handleResize, 100); 
   },
@@ -163,7 +169,8 @@ export default {
   beforeDestroy () {
     // quickfix for the previous recordings playing bug on iOS
     const { AudioPlayer } = this.$refs;
-    AudioPlayer.src = "";
+    if (AudioPlayer) AudioPlayer.src = '';
+    
     window.removeEventListener("resize", this.handleResize);
 
     // clean up the recursive syncing

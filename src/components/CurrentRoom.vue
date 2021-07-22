@@ -131,7 +131,7 @@
         <v-list>
           <v-list-item @click="isInviteFriendsPopupOpen = true">
             <v-icon left color="purple">mdi-account-plus</v-icon> 
-            <div style="font-color: purple">Request help</div>
+            <div style="font-color: purple">Invite</div>
           </v-list-item> 
 
           <v-divider/>
@@ -244,8 +244,7 @@
               <template v-for="(boardID, i) in room.blackboards">
                 <Drag :transfer-data="{ draggedFrom: i } " :key="boardID">
                   <Drop @drop="handleDrop({ droppedTo: i }, ...arguments)">
-                    <v-list-item 
-                      @click="$store.commit('SET_CURRENT_BOARD_ID', boardID)"
+                    <v-list-item @click="scrollToThisBoard(boardID)"
                       style="background-color: rgb(62, 66, 66);"
                       class="px-0"
                     >
@@ -294,34 +293,41 @@
           :key="boardID"
           v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml }"
         >  
-
-          <!-- If blackboard is already saved/recorded -->
-          <RenderlessFetchStrokes v-if="date && creator"
-            :strokesRef="blackboardRefs[i].collection('strokes')"
-            :imageDownloadUrl="backgroundImageDownloadURL"
-            v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
-          >
-            <div style="position: relative;" v-intersect.once="{
-              handler (entries, observer, isIntersecting) {
-                if (isIntersecting) {
-                  fetchStrokes(); 
-                } 
-              },
-              options: {
-                threshold: 0.5
+          <!-- Scroll to another blackboard => `currentBoardID` -->
+          <div :id="boardID" v-intersect="{
+            handler (entries, observer, isIntersecting) {
+              if (isIntersecting) {
+                updateCurrentBoardID(boardID)
               }
-            }"
-            > 
-              <template>
+            },
+            options: {
+              threshold: 0.5
+            }
+          }">
+            <!-- only fetch videos when they're visible (notice `.once` -->
+            <RenderlessFetchStrokes v-if="date && creator"
+              :strokesRef="blackboardRefs[i].collection('strokes')"
+              :imageDownloadUrl="backgroundImageDownloadURL"
+              v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
+            >
+              <div style="position: relative;" v-intersect.once="{
+                handler (entries, observer, isIntersecting) {
+                  if (isIntersecting) fetchStrokes()
+                },
+                options: {
+                  threshold: 0.5
+                }
+              }"
+              > 
                 <v-card>
                   <v-card-title v-if="title" style="font-size: 1.6rem">
                     {{ title }}
                   </v-card-title>
                   <v-card-text>
-                    <div v-if="descriptionHtml" class="mb-5 html-paragraph-styles"
+                    <div v-if="descriptionHtml" 
                       v-html="descriptionHtml"
+                      class="mb-5 html-paragraph-styles"
                     />
-                    <template v-if="strokesArray.length > 0">
                       <DoodleVideo v-if="audioDownloadURL"
                         :strokesArray="strokesArray"
                         :imageBlob="imageBlob"
@@ -339,18 +345,17 @@
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
                       />
-                    </template>
                   </v-card-text>
                 </v-card>
-              </template>
-            </div>
-          </RenderlessFetchStrokes>
+              </div>
+            </RenderlessFetchStrokes>
 
-          <RealtimeBlackboard v-else
-            :blackboardRef="blackboardRefs[i]" 
-            :key="boardID"
-            style="margin-top: 5px"
-          />
+            <RealtimeBlackboard v-else
+              :blackboardRef="blackboardRefs[i]" 
+              :key="boardID"
+              style="margin-top: 5px"
+            />
+          </div>
         </RenderlessFetchBlackboardDoc>
       </template>
     </template>
@@ -361,7 +366,6 @@
 /**
  *  TODO: 
  *    - Confirm exit popup so you don't interrupt a long audio recording because of a misclick/mis-swipe
- * 
  * 
  *  CORRECTNESS ARGUMENT
  * 
@@ -483,9 +487,9 @@ export default {
       // updates `currentBoardNumber`, assumes `this.room.blackboards` is hydrated
       // correct because `activeBoardID` can only be changed via user interaction, `this.room.blackboards` is defined
       this.$store.commit(
-        "SET_CURRENT_BOARD_NUMBER", 
+        'SET_CURRENT_BOARD_NUMBER', 
         this.getBoardNumberFromID(newVal)
-      );
+      )
     },
     room: {
       handler (newVal, oldVal) {
@@ -515,6 +519,18 @@ export default {
     }
   },
   methods: { 
+    scrollToThisBoard (boardID) {
+      const blackboardElement = document.getElementById(boardID)
+      blackboardElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // That's all we need to do, 
+      // because the intersection API above will call `updateCurrentBoardID`, and `currentBoardID` => `currentBoardNumber`
+    },
+    updateCurrentBoardID (boardID) {
+      this.$store.commit(
+        'SET_CURRENT_BOARD_ID', 
+        boardID
+      )
+    },
     async handleDrop ({ droppedTo }, { draggedFrom }) {
       const i = draggedFrom
       const j = droppedTo
