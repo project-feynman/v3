@@ -106,6 +106,13 @@
         </v-card-actions>
       </v-card>
     </v-dialog> -->
+
+    <!-- :timeout="-1" means keep open indefinitely -->
+    <v-snackbar v-model="isUploadingSnackbarOpen"
+      :timeout="-1"
+    >
+      Uploading...stay within this room (you can use other blackboards meanwhile)
+    </v-snackbar>
   </div>
 </template>
 
@@ -176,7 +183,8 @@ export default {
       messagesOpen: false,
       // new code
       incrementKeyToDestroyComponent: 0,
-      isMenuOpen: false
+      isMenuOpen: false,
+      isUploadingSnackbarOpen: false
     };
   },
   computed: {
@@ -204,7 +212,8 @@ export default {
       } 
     },
     async saveVideo () {
-      this.$root.$emit('show-snackbar', "Uploading the audio file...")
+      this.isUploadingSnackbarOpen = true
+
       const basicUserInfo = {
         email: this.user.email,
         uid: this.user.uid,
@@ -213,7 +222,6 @@ export default {
       }
 
       const audioDownloadURL = await this.$_saveToStorage(getRandomId(), this.blackboard.audioBlob)
-      console.log('audioDownloadURL =', audioDownloadURL)
 
       await this.blackboardRef.update({
         creator: basicUserInfo,
@@ -221,7 +229,8 @@ export default {
         views: 0,
         audioDownloadURL
       })      
-      this.$root.$emit('show-snackbar', 'Successfully uploaded.')
+      
+      this.isUploadingSnackbarOpen = false
     },
     async saveAnimation () {
       const basicUserInfo = {
