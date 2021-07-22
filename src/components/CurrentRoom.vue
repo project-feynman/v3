@@ -104,11 +104,25 @@
       </v-card>
     </v-dialog>
 
+    <portal to="invite-button">
+      <v-btn @click="isInviteFriendsPopupOpen = true"  
+        elevation="10" class="ma-2" small
+      >
+        <v-icon left color="purple" x-small>mdi-account-plus</v-icon> 
+        Invite
+      </v-btn>
+      <!-- <v-list-item @click="isInviteFriendsPopupOpen = true">
+        <v-icon left color="purple">mdi-account-plus</v-icon> 
+        <div style="font-color: purple">Invite</div>
+      </v-list-item>  -->
+    </portal>
+
     <!-- INFINITE TUTORING -->
     <v-dialog v-model="isInviteFriendsPopupOpen" max-width="800">
       <InviteFriends v-if="isInviteFriendsPopupOpen"/>
     </v-dialog> 
-
+  
+    <!-- ROOM ACTIONS MENU -->
     <portal to="table-level-actions">
       <!-- @click.native.stop could enable the use of v-on from here https://github.com/vuetifyjs/vuetify/issues/3333 -->
       <!-- It sadly doesn't work here -->
@@ -129,13 +143,6 @@
         </template>
         
         <v-list>
-          <v-list-item @click="isInviteFriendsPopupOpen = true">
-            <v-icon left color="purple">mdi-account-plus</v-icon> 
-            <div style="font-color: purple">Invite</div>
-          </v-list-item> 
-
-          <v-divider/>
-        
           <v-menu
             v-model="isChatOpen"
             :close-on-content-click="false"

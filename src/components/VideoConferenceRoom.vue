@@ -16,7 +16,6 @@
 
       </portal-target>
 
-
       <template v-for="client in allClients">
         <!-- TODO: rename "id" -->
         <div 
@@ -132,9 +131,7 @@
               <template v-if="connectionStatus !== 'CONNECTED'">
                 <v-btn @click.prevent.stop="joinConferenceRoom()" 
                   :loading="connectionStatus === 'CONNECTING'"
-                  icon
-                  dark
-                  style="background-color:  #1abd53"
+                  style="background-color:  #1abd53" elevation="5" icon 
                 >
                   <v-icon color="white">mdi-phone</v-icon>
                 </v-btn>
@@ -178,7 +175,6 @@
                 mdi-headphones-off
               </v-icon>
 
-         
               <div
                 @click="$store.commit('SET_CURRENT_BOARD_ID', client.currentBoardID)"
                 :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; 

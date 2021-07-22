@@ -245,6 +245,10 @@
               <portal-target name="current-room-participants">
 
               </portal-target>
+
+              <portal-target name="invite-button">
+
+              </portal-target>
             </div>
           </template>
 
