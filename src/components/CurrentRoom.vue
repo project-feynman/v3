@@ -119,7 +119,7 @@
 
     <!-- INFINITE TUTORING -->
     <v-dialog v-model="isInviteFriendsPopupOpen" max-width="800">
-      <InviteFriends v-if="isInviteFriendsPopupOpen"/>
+      <InviteFriends v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
     </v-dialog> 
   
     <!-- ROOM ACTIONS MENU -->

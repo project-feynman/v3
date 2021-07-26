@@ -1,59 +1,162 @@
 <template>
+<div>
+  <MapleMusicPlayer 
+    :incrementToToggleMusic="incrementToToggleMusic"
+    @music-fetched="incrementToToggleMusic += 1"
+  />  
   <v-card>
-    <MapleMusicPlayer 
-      :incrementToToggleMusic="incrementToToggleMusic"
-      @music-fetched="incrementToToggleMusic += 1"
-    />  
+    <v-container>
 
-    <v-card-title>
-      Invite to this room
+    <v-card-title style="font-size: 2rem; margin-bottom: 20px">
+      Invite
     </v-card-title>
 
     <v-card-text>      
       <v-form>
         <v-container>
-          <v-row align="center">
+          <v-row>
             <v-col cols="12" md="4">
+              <h2>Study Group</h2>
+              <v-list shaped style="max-height: 250px" class="overflow-y-auto">
+                <v-list-item-group
+                  v-model="model"
+                  multiple
+                >
+                  <template v-for="(item, i) in user.emailsOfFriends">
+                    <v-divider v-if="!item"
+                      :key="`divider-${i}`"
+                    ></v-divider>
+
+                    <v-list-item
+                      v-else
+                      :key="`item-${i}`"
+                      :value="item"
+                      active-class="purple--text text--accent-4"
+                    >
+                      <template v-slot:default="{ active }">
+                        <v-list-item-content>
+                          <v-list-item-title v-text="item"></v-list-item-title>
+                        </v-list-item-content>
+
+                        <v-list-item-action>
+                          <v-checkbox
+                            :input-value="active"
+                            color="purple accent-4"
+                          ></v-checkbox>
+                        </v-list-item-action>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-list-item-group>
+              </v-list>
+              <!-- :rules="emailRules"  -->
               <v-text-field v-model="newUserEmail" 
-                :rules="emailRules" 
-                label="To" 
-                required  
-                placeholder="newfriend@gmail.com"
+                label="Add new person" 
+                placeholder="newperson@gmail.com"
                 hide-details
               />
             </v-col>
 
-            <v-col v-for="email in user.emailsOfFriends" :key="email" cols="6" md="4">
-              <v-chip @click="toggleIncludeExclude(email)"
-                :input-value="emailsOfInvitees.includes(email)"
-                active-class="cyan white--text"
-              >
-                {{ email }}
-              </v-chip>
+            <v-col cols="12" md="4">
+              <h2>Classmates</h2>
+               <v-list shaped
+                style="max-height: 250px"
+                class="overflow-y-auto"
+               
+               >
+                <v-list-item-group
+                  v-model="model"
+                  multiple
+                >
+                  <template v-for="(item, i) in volunteerClassmates">
+                    <v-divider
+                      v-if="!item"
+                      :key="`divider-${i}`"
+                    ></v-divider>
+
+                    <v-list-item
+                      v-else
+                      :key="`item-${i}`"
+                      :value="item"
+                      active-class="purple--text text--accent-4"
+                    >
+                      <template v-slot:default="{ active }">
+                        <v-list-item-content>
+                          <v-list-item-title v-text="item"></v-list-item-title>
+                        </v-list-item-content>
+
+                        <v-list-item-action>
+                          <v-checkbox
+                            :input-value="active"
+                            color="purple accent-4"
+                          ></v-checkbox>
+                        </v-list-item-action>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-list-item-group>
+
+                <div style="display: flex; align: center; margin-top: 5px">
+                  <v-switch
+                    :input-value="didUserVolunteer"
+                    @change="newBool => toggleVolunteer(newBool)"
+                    hide-details
+                    class="mt-0"
+                    color="cyan"
+                  ></v-switch>
+                  <p class="mb-0 ml-2" style="margin-top: 5px">Volunteer</p>
+                </div>
+              </v-list>
             </v-col>
 
-            <v-col cols="6" md="2">
-              <v-chip @click="willEmailClassmates = !willEmailClassmates"
-                :input-value="willEmailClassmates"
-                active-class="cyan white--text"
-              >
-                Classmates
-              </v-chip>
-            </v-col>
+            <v-col cols="12" md="4">
+              <h2>Staff</h2>
+               <v-list shaped
+                  style="max-height: 250px"
+                  class="overflow-y-auto"
+               >
+                <v-list-item-group
+                  v-model="model"
+                  multiple
+                >
+                  <template v-for="(item, i) in volunteerStaff">
+                    <v-divider
+                      v-if="!item"
+                      :key="`divider-${i}`"
+                    ></v-divider>
 
-            <v-col cols="6" md="2">
-              <v-chip @click="willEmailInstructors = !willEmailInstructors"
-                :input-value="willEmailInstructors"
-                active-class="cyan white--text"
-              >
-                Instructors
-              </v-chip>
+                    <v-list-item
+                      v-else
+                      :key="`item-${i}`"
+                      :value="item"
+                      active-class="purple--text text--accent-4"
+                    >
+                      <template v-slot:default="{ active }">
+                        <v-list-item-content>
+                          <v-list-item-title v-text="item"></v-list-item-title>
+                        </v-list-item-content>
+
+                        <v-list-item-action>
+                          <v-checkbox
+                            :input-value="active"
+                            color="purple accent-4"
+                          ></v-checkbox>
+                        </v-list-item-action>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-list-item-group>
+              </v-list>
             </v-col>
+            
+            
           </v-row>
 
           <v-textarea v-model="emailMessage"
-            label="Message"
+            label="Details"
+            :placeholder="textAreaPlaceholder"
             class="mt-4"
+            color="purple"
           />
           <v-spacer/>
           <v-btn @click="sendAllNecessaryEmails(newUserEmail)"
@@ -65,7 +168,7 @@
       </v-form>
       <br>
 
-      <v-dialog persistent v-model="isHelpRequestPopupOpen">
+      <!-- <v-dialog persistent v-model="isHelpRequestPopupOpen">
         <v-card>
           Request for help
 
@@ -90,9 +193,11 @@
             <v-btn @click="requestForHelp(helper); isHelpRequestPopupOpen = false">Request help</v-btn>
           </v-card-actions>
         </v-card>
-      </v-dialog>
+      </v-dialog> -->
     </v-card-text>
+    </v-container>
   </v-card>
+  </div>
 </template>
 
 <script>
@@ -113,21 +218,17 @@ export default {
   },
   data () {
     return {
-      willEmailInstructors: false,
-      willEmailClassmates: false,
-      emailsOfInvitees: [],
-      emailMessage: `Despite X and trying Y, I still don't understand Z, so I'm requesting help. I'll be in the room writing up my question for the next few minutes, but you can come in anytime to answer. Thanks in any case : )`,
+      emailMessage: '',
       newUserEmail: '',
-      emailRules: [
-        v => !!v || 'E-mail is required',
-        v => /.+@.+\..+/.test(v) || 'E-mail must be valid',
-      ],
-      allHelpers: [], // AF(null) and AF([]) can't be differentiated, but I don't care about this right now,
-      tutor: {},
-      helpDuration: "",
-      helpTopic: "",
+      // tutor: {},
+      // helpDuration: "",
+      // helpTopic: "",
       isHelpRequestPopupOpen: false,
-      incrementToToggleMusic: 0
+      incrementToToggleMusic: 0,
+      textAreaPlaceholder: `Despite using Taylor's Theorem, I still cannot obtain the special result. I've recorded my current workings so far on board 1, hope someone can help, thanks!`,
+      model: [],
+      switch1: true,
+      volunteers: [] // AF(null) and AF([]) can't be differentiated, but I don't care about this right now,
     }; 
   },
   computed: {
@@ -138,46 +239,53 @@ export default {
     isUserATutor () {
       if (!this.user.notifyOnTutorRequest) return false; 
       else return this.user.notifyOnTutorRequest.includes(this.mitClass.id);
+    },
+    didUserVolunteer () {
+      if (!this.user.classesVolunteered) return false
+      else return this.user.classesVolunteered.includes(this.mitClass.id)
+    },
+    volunteerClassmates () {
+      return this.volunteers.filter(v => v.kind !== 'staff').map(v => v.email)
+    },
+    volunteerStaff () {
+      return this.volunteers.filter(v => v.kind === 'staff').map(v => v.email)
     }
   },
   created () {
-    // convert to a forum question if nobody replies, or ask someone else? 
+    // fetch volunteer classmates
     this.$_bindVarToDB({
-      varName: "allHelpers",
-      dbRef: db.collection("users").where("notifyOnTutorRequest", "array-contains", this.mitClass.id), // determine how the data structure will look soon
-      component: this 
-    });
+      varName: 'volunteers',
+      dbRef: db.collection('users').where('classesVolunteered', 'array-contains', this.mitClass.id),
+      component: this
+    })
   },
   methods: {
-    sendAllNecessaryEmails (newUserEmail) {
-      if (newUserEmail) {
-        this.emailsOfInvitees.push(newUserEmail)
-        this.addFriend(newUserEmail)
-        this.newUserEmail = ''
-      }
-      for (const email of this.emailsOfInvitees) {
-        this.sendEmailInvite({ email })
-      }
-    }, 
-    toggleIncludeExclude (email) {
-      if (this.emailsOfInvitees.includes(email)) {
-        this.emailsOfInvitees = this.emailsOfInvitees.filter(e => e !== email)
-      } else {
-        this.emailsOfInvitees.push(email)
-      }
-    },
-    toggleNotifyOnTutorRequest (newBoolean) {
+    toggleVolunteer (newBoolean) {
+      console.log("toggleVolunteer, newBoolean =", newBoolean)
       const userRef = db.collection("users").doc(this.user.uid); 
       if (newBoolean === true) {
         userRef.update({
-          notifyOnTutorRequest: firebase.firestore.FieldValue.arrayUnion(this.mitClass.id)
+          classesVolunteered: firebase.firestore.FieldValue.arrayUnion(this.mitClass.id)
         });
       } else {
         userRef.update({
-          notifyOnTutorRequest: firebase.firestore.FieldValue.arrayRemove(this.mitClass.id)
+          classesVolunteered: firebase.firestore.FieldValue.arrayRemove(this.mitClass.id)
         });
       }
     },
+    sendAllNecessaryEmails (newUserEmail) {
+      if (newUserEmail) {
+        this.model.push(newUserEmail)
+        this.addFriend(newUserEmail)
+        this.newUserEmail = ''
+      }
+      for (const email of this.model) {
+        this.sendEmailInvite({ email })
+      }
+      this.$emit('emails-sent')
+      this.$root.$emit('show-snackbar', 'Successfully sent email invites.')
+      this.hasSentEmails = true
+    }, 
     addFriend (newEmail) {
       db.doc(`users/${this.user.uid}`).update({
         emailsOfFriends: firebase.firestore.FieldValue.arrayUnion(newEmail)
@@ -188,29 +296,17 @@ export default {
       const { class_id, section_id, room_id } = this.$route.params;
       sendEmailToPerson({ 
         emailOfPerson: invitee.email, 
-        title: `[Explain] ${this.mitClass.name} Help Request`, 
+        title: `${this.mitClass.name} Invite`, 
         contentHTML: `
-          <p>${this.user.firstName + ' ' + this.user.lastName } requested help:
+          <p>${this.user.firstName + ' ' + this.user.lastName} invited you to their room on explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}, details here:
           <p>"${this.emailMessage}"</p>
-          <p><a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">Click here to join</a>.</p>
-          <p>Tip: to get real-time notifications on your iPad, press on "From: eltonlin@mit.edu" near the top, then press "Add to VIP"</p>
+          <p>
+            To get notifications, press the "From: eltonlin@mit.edu" near the top, then press "Add to VIP". 
+            Meanwhile, I'm working on a way to send notifications without emails to minimize inbox clutter. 
+          </p>
         `,
-      });
-      this.$root.$emit('show-snackbar', 'Sent email invite!')
+      })
     },
-    requestForHelp () {
-      const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
-      const { class_id, section_id, room_id } = this.$route.params;
-      sendEmailToPerson({ 
-        emailOfPerson: this.tutor.email, 
-        title: `[explain.mit.edu] Help Request for ${this.mitClass.name}`, 
-        contentHTML: `
-          <p>Hello ${this.tutor.firstName} - ${this.user.firstName} requested for your help in ${this.mitClass.name} related to ${this.helpTopic}. He/she expects it to take around ${this.helpDuration} minutes. If you're free, you can join their workspace <a href="https://explain.mit.edu/class/${class_id}/section/${section_id}/room/${room_id}">here</a>.
-          <p>If you're busy, no need to do anything.</p>
-          <p>To get push notifications on your iPad and iPhone, press on "eltonlin@mit.edu", then press "Add to VIP". Meanwhile I'm working on a way for Explain to just send push notiications without any emails.</p>
-        `,
-      });
-    } 
   }
 };
 </script>
