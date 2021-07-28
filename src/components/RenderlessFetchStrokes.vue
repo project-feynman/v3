@@ -14,7 +14,7 @@ export default {
       strokesArray: [],
       imageBlob: null,
       isLoading: false
-    };
+    }
   },
   methods: {
     async fetchStrokes () {
