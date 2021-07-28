@@ -365,6 +365,7 @@
           </div>
         </RenderlessFetchBlackboardDoc>
       </template>
+      
       <v-btn @click="createNewBoard()"
         block x-large class="white--text" style="background-color: rgb(46, 49, 49); margin-top: 5px;"
       >
