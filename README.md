@@ -1,5 +1,5 @@
 # Explain
->Explain is an experimental web app with the goal to create a warm, vibrant learning culture where everyone helps each other. It is part of Project Feynman, a plan to accelerate world education in order to eliminate poverty and pollution by 2035. 
+>Explain is an experimental web app with the goal to create a warm, vibrant learning community where everyone helps each other. It is part of Project Feynman, a plan to accelerate world education in order to eliminate poverty and pollution by 2035. 
 
 ![explain-open-space-gif](documentation/explain-github-gif.gif)
 
