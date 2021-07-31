@@ -1,7 +1,9 @@
 <template>
   <v-dialog :value="value" @input="newVal => $emit('input', newVal)" width="600">
     <v-card>
-      <v-card-title>Grading</v-card-title>
+      <v-card-title>
+
+      </v-card-title>
         <v-subheader class="headline">Total Points: {{ totalPoints }}</v-subheader> 
         <v-list two-line>
           <template v-for="(rubric, n) in rubrics">
@@ -13,7 +15,7 @@
                 class="pa-0 ma-0" hide-details
               />
               <div style="display: flex; align-content: center;">
-                <b class="pa-0 my-0 mx-1">({{ rubric.points }} point {{ rubric.point >= 2 ? 's' : '' }})</b>
+                <b class="pa-0 my-0 mx-1">({{ rubric.points }} point{{ rubric.points >= 2 ? 's' : '' }})</b>
                   <div style="margin-left: 5px;">{{ rubric.description }}</div>
               </div>
             </v-list-item>
