@@ -273,7 +273,6 @@
       </div>
     </portal>
 
-
     <!-- EDIT TITLE AND DESCRIPTION -->
     <v-dialog :value="isEditPopupOpen" width="600">
       <v-card>
@@ -293,12 +292,19 @@
       </v-card>
     </v-dialog>
 
+    <CurrentRoomGradingPopup v-if="isGradingPopupOpen"
+      v-model="isGradingPopupOpen"
+      :totalPoints="gradingPopupTotalPoints"
+      @total-points-changed="newDelta => gradingPopupTotalPoints += newDelta"
+      @board-graded="updateGrade()"
+    />
+
     <template v-if="blackboardRefs.length !== 0 && room">
       <template v-for="(boardID, i) in room.blackboards">
         <RenderlessFetchBlackboardDoc
           :blackboardRef="blackboardRefs[i]"
           :key="boardID"
-          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml }"
+          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints }"
         >  
           <!-- Scroll to another blackboard => `currentBoardID` -->
           <div :id="boardID" v-intersect="{
@@ -342,6 +348,7 @@
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
+                        @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints"
                         @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
                       />
                       <DoodleAnimation v-else
@@ -412,6 +419,8 @@ import RenderlessFetchStrokes from '@/components/RenderlessFetchStrokes.vue'
 import ReusableTextEditor from '@/components/ReusableTextEditor.vue'
 import { Drag, Drop } from 'vue-drag-drop'
 
+import CurrentRoomGradingPopup from '@/components/CurrentRoomGradingPopup.vue'
+
 export default {
   props: {
     roomID: {
@@ -429,6 +438,7 @@ export default {
     RealtimeBlackboard,
     BaseButton,
     BaseIconButton,
+    CurrentRoomGradingPopup,
     VideoConferenceRoom,
     ZoomChat,
     InviteFriends,
@@ -460,6 +470,10 @@ export default {
       isRoomStatusPopupOpen: false,
       isRenameRoomPopupOpen: false,
       isInviteFriendsPopupOpen: false,
+
+      isGradingPopupOpen: false,
+      gradingPopupTotalPoints: 0,
+      refOfGradedBoard: null,
 
       titleOfExplCollection: "",
       newRoomStatus: "",
@@ -532,6 +546,14 @@ export default {
     }
   },
   methods: { 
+    async updateGrade () {
+      await this.refOfGradedBoard.update({
+        totalPoints: this.gradingPopupTotalPoints
+      })
+      this.refOfGradedBoard = null 
+      this.gradingPopupTotalPoints = 0
+      this.$root.$emit('show-snackbar', 'Updated points.')
+    },
     scrollToThisBoard (boardID) {
       const blackboardElement = document.getElementById(boardID)
       blackboardElement.scrollIntoView({ behavior: 'smooth', block: 'start' })

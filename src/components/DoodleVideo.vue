@@ -53,13 +53,16 @@
         
         <!-- delete -->
         <v-btn @click.stop="$emit('delete')">
-          <v-icon>mdi-delete</v-icon>
+          <v-icon>mdi-delete</v-icon> REVERT TO BLACKBOARD
         </v-btn>
 
         <v-btn @click.stop="$emit('edit')">
-          <v-icon>mdi-pencil</v-icon>
+          <v-icon>mdi-pencil</v-icon> EDIT TITLE / DESC.
         </v-btn>
 
+        <v-btn @click.stop="$emit('grade')">
+          <v-icon>mdi-feather</v-icon> GRADE
+        </v-btn>
         <!-- <v-btn @click.stop="$emit('description-edit')">
           <v-icon>mdi-edit</v-icon>
         </v-btn> -->

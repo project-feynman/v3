@@ -17,6 +17,7 @@ export default {
       audioDownloadURL: '',
       title: '',
       descriptionHtml: '',
+      totalPoints: 0,
       unsubFunc: null
     };
   },
@@ -31,6 +32,7 @@ export default {
       this.audioDownloadURL = d.audioDownloadURL
       this.title = d.title
       this.descriptionHtml = d.descriptionHtml
+      this.totalPoints = d.totalPoints
       this.isLoading = false
     })
   },
@@ -45,6 +47,7 @@ export default {
       audioDownloadURL: this.audioDownloadURL,
       title: this.title,
       descriptionHtml: this.descriptionHtml,
+      totalPoints: this.totalPoints,
       isLoading: this.isLoading,
     });
   }
