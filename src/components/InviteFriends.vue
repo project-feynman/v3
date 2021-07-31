@@ -298,7 +298,8 @@ export default {
         emailOfPerson: invitee.email, 
         title: `${this.mitClass.name} Invite`, 
         contentHTML: `
-          <p>${this.user.firstName + ' ' + this.user.lastName} invited you to their room on <a>https://explain.education/class/${class_id}/section/${section_id}/room/${room_id}</a>, details here:
+          <p>${this.user.firstName + ' ' + this.user.lastName} invited you to their room on</p> 
+          <a href="https://explain.education/class/${class_id}/section/${section_id}/room/${room_id}">explain.education/class/${class_id}/section/${section_id}/room/${room_id}</a>
           <p>"${this.emailMessage}"</p>
           <p>
             To get notifications, press the "From: eltonlin@mit.edu" near the top, then press "Add to VIP". 
