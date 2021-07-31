@@ -348,7 +348,7 @@
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
-                        @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints"
+                        @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
                       />
                       <DoodleAnimation v-else
@@ -357,6 +357,7 @@
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
+                        @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
                       />
                   </v-card-text>
