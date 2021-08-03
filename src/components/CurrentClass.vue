@@ -30,7 +30,7 @@
             offset-y="25"
           >
             <v-list-item two-line class="px-0">
-              <v-list-item-avatar @click="redirectToGithub()"
+              <v-list-item-avatar @click="isAppPopupOpen = true"
                 class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 18px;" tile width="62" height="56"
               >
                 <img src="/logo.png">
@@ -62,9 +62,12 @@
           </v-badge>
 
           <!-- Have the app overview, updates, news, as well as the chats -->
-          <v-dialog v-model="isAppPopupOpen" width="90vw" style="height: 90vh" persistent>
-            <v-card style="height: 80vh">     
+          <v-dialog v-model="isAppPopupOpen">
+            <v-card>     
+              <v-card-title>Explain</v-card-title>
               <v-card-text>
+                Explain is open source, see 
+                <a href="https://github.com/project-feynman/explain" target="_blank">Github</a>
               </v-card-text>
 
               <v-card-actions>
@@ -72,7 +75,9 @@
                 <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
                   LEAVE CLASS
                 </v-btn>
-                <v-btn large @click="$_signOut()" class="mx-5 grey darken-1 white--text">
+                <v-btn v-if="user.email" 
+                  @click="$_signOut()" large  class="mx-5 grey darken-1 white--text"
+                >
                   <v-icon class="mr-2">mdi-logout</v-icon>
                   SIGN OUT
                 </v-btn>       
@@ -164,7 +169,7 @@ export default {
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
     tab: 0, // 0, 1, 2
-    isViewingMessenger: false
+    isAppPopupOpen: false
   }),
   computed: {
     ...mapState([
@@ -182,20 +187,6 @@ export default {
         if (mitClass.id === this.classID) {
           return mitClass; 
         }
-      }
-    },
-    isAppPopupOpen: {
-      get () {
-        return false; 
-        return (this.isViewingForum || this.isViewingLibrary || this.isViewingMessenger); 
-      },
-      set (newBoolean) {
-        if (newBoolean) this.isViewingMessenger = true; 
-        else {
-          this.isViewingMessenger = false; 
-          this.$store.commit("SET_IS_VIEWING_FORUM", false); 
-          this.$store.commit("SET_IS_VIEWING_LIBRARY", false); 
-        } 
       }
     }
   },
@@ -243,9 +234,6 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
-    redirectToGithub () {
-      window.open('https://github.com/project-feynman/explain-mit','_blank')
-    },
     async leaveClass () {
       const { user } = this; 
       let classToRemove = null; 
