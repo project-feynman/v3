@@ -195,7 +195,7 @@
           </v-list-item> -->
 
           <!-- DELETE OPERATIONS ARE RARE AND REQUIRE TWO-THREE CLICKS -->
-          <v-list-item>
+          <v-list-item :disabled="!isAdmin" @click="deleteRoom()">
             <v-icon left color="red darken-5">mdi-delete</v-icon> 
             Delete
           </v-list-item>
@@ -500,6 +500,7 @@ export default {
       "currentBoardNumber"
     ]),
     ...mapGetters([
+      'isAdmin',
       "numOfUnreadMsgsInTable"
     ]),
     classID () { return this.$route.params.class_id; },
@@ -547,6 +548,22 @@ export default {
     }
   },
   methods: { 
+    async deleteRoom () {
+      // for each blackboard, do a proper deletion of the boards
+      for (const boardID of this.room.blackboards) {
+        // recursive delete
+        console.log('TODO: implement board deletion')
+      }
+      // move user to the area's lobby
+      await this.roomRef.delete()
+      this.$root.$emit('show-snackbar', 'Succesfully deleted room.')
+
+      // const { section_id } = this.$route.params
+      // this.$router.push(`/class/${this.classID}/section/${section_id}/room/${section_id}}`)
+
+      // then move the user to the lobby
+      // then delete the room itself 
+    },
     async updateGrade () {
       await this.refOfGradedBoard.update({
         totalPoints: this.gradingPopupTotalPoints

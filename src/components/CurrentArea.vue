@@ -2,7 +2,7 @@
   <div>
     <!-- START OF "SPACE ACTIONS" dropdown menu -->
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
-    <portal to="current-open-space-actions">
+    <portal :to="`area-${sectionID}-actions`">
       <v-menu v-if="roomTypeDoc" 
         bottom nudge-left offset-y
       >
@@ -181,6 +181,7 @@
     <!-- Alternatively, use click.stop() -->
     <CurrentAreaRenamePopup 
       :isRenamePopupOpen="isRenamePopupOpen"
+      :areaID="sectionID"
       @change="(newVal) => isRenamePopupOpen = newVal"
     />
 
@@ -196,7 +197,7 @@
         or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
       -->  
     <!-- ROOMS -->
-    <v-list>
+    <v-list dense>
       <template v-for="(room, i) in sortedRooms">    
         <v-list-item 
           :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
@@ -221,7 +222,7 @@
                   lobby
                 </div>
 
-                <div v-else class="font-weight-medium py-2">
+                <div v-else class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
                   {{ i - 1 }}
                 </div> 
 
@@ -256,8 +257,8 @@
           <template v-else>
             <Drop @drop="handleDrop({ droppedTo: room }, ...arguments)" style="width: 100%"> 
               <div style="width: 100%;">
-                <div class="d-flex py-1 pl-1 mt-2 font-weight-medium" style="font-size: 0.95em; align-items: center;">
-                  <v-icon class="mr-1" style="font-size: 1.1rem; margin-top: 0.85px; opacity: 80%;">
+                <div class="d-flex pl-1 font-weight-medium" style="font-size: 0.95em; align-items: center;">
+                  <v-icon class="mr-1" style="font-size: 1.1rem; margin-top: 2px; opacity: 80%;">
                     mdi-volume-high
                   </v-icon>
 
@@ -269,7 +270,7 @@
                     lobby
                   </div>
 
-                  <div v-else class="py-2 grey--text darken--3">
+                  <div v-else style="opacity: 55%; text-transform: lowercase;">
                     {{ i - 1  }}
                   </div>  
                 </div>
@@ -310,7 +311,7 @@
         </v-list-item> 
       </template>
 
-      <v-list-item v-if="rooms.length !== 0 && rooms.length < 20" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
+      <v-list-item v-if="rooms.length !== 0 && rooms.length < 15" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
         <v-icon left color="black">mdi-plus</v-icon> new room
       </v-list-item>
     </v-list>

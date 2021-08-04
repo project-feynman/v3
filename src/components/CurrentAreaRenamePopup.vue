@@ -27,6 +27,10 @@ export default {
     isRenamePopupOpen: {
       type: Boolean,
       required: true
+    },
+    areaID: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -37,7 +41,7 @@ export default {
   methods: {
     async renameRoomType () {
       const { class_id, section_id } = this.$route.params; 
-      const ref = db.doc(`classes/${class_id}/roomTypes/${section_id}`);
+      const ref = db.doc(`classes/${class_id}/roomTypes/${this.areaID}`);
       await ref.update({
         name: this.newRoomTypeName
       });
