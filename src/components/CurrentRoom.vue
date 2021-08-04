@@ -1,9 +1,5 @@
 <template>
   <div>  
-    <VideoConferenceRoom
-      :roomID="roomID"
-    />
-
     <!-- For wiping all the blackboards -->
     <v-dialog v-model="isWipeBoardsPopupOpen">
       <v-card>
@@ -410,7 +406,6 @@ import BaseIconButton from "@/components/BaseIconButton.vue";
 import { mapState, mapGetters } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId } from "@/helpers.js";
-import VideoConferenceRoom from "@/components/VideoConferenceRoom.vue";
 import ZoomChat from "@/components/ZoomChat.vue";
 import InviteFriends from "@/components/InviteFriends.vue"; 
 import DoodleAnimation from '@/components/DoodleAnimation.vue'
@@ -440,7 +435,6 @@ export default {
     BaseButton,
     BaseIconButton,
     CurrentRoomGradingPopup,
-    VideoConferenceRoom,
     ZoomChat,
     InviteFriends,
     DoodleAnimation,

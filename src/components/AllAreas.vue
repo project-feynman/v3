@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="(area, i) of sortedAreas" :key="area.id">
+    <div v-for="(area, i) of sortedAreas" :key="area.id" style="margin-bottom: 10px">
       <div style="display: flex; align-content: center;">
         <v-icon @click="toggleExpansion(i)" class="black--text">
           mdi-chevron-down

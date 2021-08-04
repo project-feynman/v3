@@ -1,5 +1,12 @@
 <template>
   <div>
+    <!-- I'm not sure :key does anything here -->
+    <VideoConferenceRoom v-if="$store.state.currentAreaID === sectionID"
+      :roomIDToParticipants="roomIDToParticipants"
+      :roomID="$route.params.room_id"
+      :key="$route.params.room_id"
+    />
+
     <!-- START OF "SPACE ACTIONS" dropdown menu -->
     <!-- The triple dot dropdown menu with actions that affects the whole open space -->
     <portal :to="`area-${sectionID}-actions`">
@@ -279,10 +286,10 @@
                   {{ room.status }}
                 </v-chip>
 
-                <div class="pr-2 pb-1 pt-1">
+                <div class="pr-2">
                   <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
                     style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em;"
-                    class="text--secondary mb-1 caption"
+                    class="text--secondary my-1 caption"
                   >
                     <div style="padding-left: 22px; display: flex; align-items: center;">
                       <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
@@ -371,6 +378,7 @@ import CurrentAreaBirdsEyeViewPopup from "@/components/CurrentAreaBirdsEyeViewPo
 import ZoomChat from "@/components/ZoomChat.vue"; 
 import { Drag, Drop } from "vue-drag-drop";
 import pdfjs from 'pdfjs-dist'
+import VideoConferenceRoom from '@/components/VideoConferenceRoom.vue'
 
 import firebase from "firebase/app";
 import "firebase/firestore"; 
@@ -397,11 +405,11 @@ export default {
     CurrentAreaBirdsEyeViewPopup,    
     Drag,
     Drop,
-    ZoomChat
+    ZoomChat,
+    VideoConferenceRoom
   },
   data () {
     return {
-      roomIDToParticipants: {},
       showLibrary: false,
       roomTypeDoc: null,
       rooms: [],
@@ -420,7 +428,8 @@ export default {
       isDeletePopupOpen: false,
       isBirdsEyeViewPopupOpen: false,
 
-      isChatOpen: false // refactor into a component right away, just for testing for now
+      isChatOpen: false, // refactor into a component right away, just for testing for now,
+      roomIDToParticipants: {}
     }
   },
   computed: {
@@ -498,10 +507,6 @@ export default {
         this.CallObject.setLocalAudio(false);
         this.$root.$emit("show-snackbar", "An admin muted everyone"); 
       }
-    },
-    // Performance-wise, hopefully it's just a pointer 
-    roomIDToParticipants (newVal) {
-      this.$store.commit("SET_ROOM_ID_TO_PARTICIPANTS", newVal); 
     }
   },
   async created () {
@@ -587,7 +592,7 @@ export default {
         });
         out[room.id] = peopleInRoom; 
       }
-      this.roomIDToParticipants = out;
+      this.roomIDToParticipants = out
     },
     async resetAbsolutelyEverything () {
       function deleteAtPath(path) {

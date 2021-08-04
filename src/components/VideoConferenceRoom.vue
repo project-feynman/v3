@@ -230,6 +230,10 @@ export default {
     roomID: {
       type: String,
       required: true
+    },
+    roomIDToParticipants: {
+      type: Object,
+      required: true
     }
   },
   mixins: [
@@ -262,8 +266,8 @@ export default {
       'micStream'
     ]),
     allClients () { 
-      if (!this.roomIDtoParticipants) return; 
-      else return this.roomIDtoParticipants[this.roomID]; 
+      if (!this.roomIDToParticipants) return; 
+      else return this.roomIDToParticipants[this.roomID]; 
     },
     sessionID () { return this.$store.state.session.currentID; },
     isMicOn () { return this.participants.local.audio; },
@@ -280,7 +284,11 @@ export default {
       }
     }
   },
+  created () {
+    console.log('video room created', this.roomID)
+  },
   async destroyed () {
+    console.log('videoConferenceRoom destroyed, room =', this.roomID)
     this.isDestroyed = true; 
     // case 1 (sequential): the user leaves after connection has been resolved
     if (this.connectionStatus === "CONNECTED") {

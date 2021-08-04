@@ -28,6 +28,7 @@ export default new Vuex.Store({
     mitClass: null,
     explCache: {},
 
+    currentAreaID: '',
     currentAreaRooms: [],
     blackboardRoom: null,
     
@@ -92,6 +93,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_CURRENT_AREA_ID (state, newValue) {
+      state.currentAreaID = newValue
+    },
     SET_CALL_OBJECT (state, newValue) {
       state.CallObject = newValue
     },  

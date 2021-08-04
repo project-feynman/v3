@@ -60,16 +60,10 @@
           />
         </div>
       </v-sheet>
-      <!-- 
-          For CurrentAreaDropdown, because we no longer use a bandwidth-consuming listener to the roomTypes, 
-          it's okay to fetch 10 documents everytime someone switches a section. 
-          It'd also help if someone ELSE created or deleted roomTypes, and we would receive the update.
-       -->
-       <AllAreas/>
-      <!-- <CurrentArea
-        :sectionID="areaID"
-        :key="areaID"
-      />  -->
+      
+      <AllAreas
+      
+      />
     </v-navigation-drawer>
 
     <v-main>
@@ -184,6 +178,12 @@ export default {
       handler () {
         if (this.isViewingLibrary) this.tab = 2; 
       }
+    },
+    areaID: {
+      handler () {
+        this.$store.commit('SET_CURRENT_AREA_ID', this.areaID)
+      },
+      immediate: true
     }
   },
   created () {
