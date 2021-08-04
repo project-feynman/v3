@@ -5,10 +5,67 @@ import db from "@/database.js";
 export default {
   data () {
     return {
-      welcomeMessage: "Welcome to ExplainMIT!"
+      welcomeMessage: "Welcome to Explain!"
     };
   },
   methods: {
+    async $_logInWithGoogle () {
+      const provider = new firebase.auth.GoogleAuthProvider()
+      firebase.auth().signInWithPopup(provider)
+        .then(async (result) => {
+          /** @type {firebase.auth.OAuthCredential} */
+          var credential = result.credential;
+
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          var token = credential.accessToken;
+          // The signed-in user info.
+          var user = result.user;
+          const email = result.user.email
+          console.log('user =', user)
+          const queryResult = await db.collection("users").where("email", "==", email).get();
+          console.log("queryResult =", queryResult);
+          if (queryResult.empty) {
+            await this.$_createAccount({
+              firstName,
+              lastName,
+              email,
+              uid: result.user.uid,
+              kind // "student", "staff", "affiliate"
+            });            
+            this.$root.$emit("show-snackbar", "Successfully created account");
+          } else {
+            // queryResult.docs[0].id
+            this.$root.$emit("show-snackbar", "Welcome back!");
+          }
+
+          
+          // await this.$_createMirrorDocIfNeeded(result); 
+
+
+
+          await this.$store.dispatch("listenToUserDoc", { uid: result.user.uid });
+          this.$store.commit("SET_HAS_FETCHED_USER_INFO", true); 
+
+
+          // redirect to most recent class
+          const { class_id, section_id, room_id } = this.$route.params; 
+          if (!(class_id && section_id && room_id)) {
+            const { mostRecentClassID } = this.$store.state.user; 
+            this.$router.replace(`/class/${mostRecentClassID}/section/${mostRecentClassID}/room/${mostRecentClassID}`);
+          }
+
+        }).catch((error) => {
+          alert(error)
+          // Handle Errors here.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          // The email of the user's account used.
+          var email = error.email;
+          // The firebase.auth.AuthCredential type that was used.
+          var credential = error.credential;
+          // ...
+        });
+    },
     /**
      * If the user logs in with Touchstone for the first time ever,
      * Firebase Auth needs to register it, and it will receive a UID. 

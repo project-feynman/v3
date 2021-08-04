@@ -12,7 +12,7 @@
     </div>
 
     <portal to="current-room-participants">
-      <portal-target name="video-screenshare-hangup-buttons" class="mb-2">
+      <portal-target name="video-screenshare-hangup-buttons">
 
       </portal-target>
 

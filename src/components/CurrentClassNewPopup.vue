@@ -40,12 +40,17 @@
 
     <!-- Alternative if the user does not exist -->
     <v-card v-else>
-      <v-card-title>Sign in / Sign up to join classes</v-card-title>
+      <v-card-title></v-card-title>
       <v-card-text>
         <!-- <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text mx-5">
           <v-icon class="mr-2">mdi-school</v-icon>
           MIT KERBEROS LOGIN
         </v-btn> -->
+
+        <v-btn @click="$_logInWithGoogle()" class="cyan--text">
+          <v-icon class="mr-2" color="cyan">mdi-google</v-icon>
+          Google Login
+        </v-btn>
 
         <!-- Email Sign Up -->
         <BasePopupButton actionName="Sign up with email" 
