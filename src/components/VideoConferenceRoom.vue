@@ -40,26 +40,26 @@
                 style="align-items: center; display: flex; margin-left: 18px;"
               >
                 <v-icon v-if="client.kind === 'engineer'" 
-                  :color="`${client.sessionID === sessionID ? '' : '' }`" x-small :style="`opacity: 70%;`"
+                  x-small style="opacity: 70%; margin-top: 2px;"
                 >
                   mdi-wrench
                 </v-icon>
                 <v-icon v-else-if="client.kind === 'pioneer'" 
-                  :color="`${client.sessionID === sessionID ? '' : '' }`" x-small style="opacity: 70%;"
+                   x-small style="opacity: 70%; margin-top: 2px;"
                 >
                   mdi-cowboy
                 </v-icon>
                 <v-icon v-else-if="client.isAdmin" 
-                  :color="`${client.sessionID === sessionID ? '' : '' }`" x-small style="opacity: 70%;"
+                   x-small style="opacity: 70%; margin-top: 2px;"
                 >
                   mdi-account-tie
                 </v-icon>
-                <v-icon v-else x-small style="opacity: 70%;"
-                  :color="`${client.sessionID === sessionID ? '' : '' }`"
+                <v-icon v-else 
+                  x-small style="opacity: 70%; margin-top: 2px;"
                 >
                   mdi-account
                 </v-icon>
-                <p :class="client.sessionID === sessionID ? 'mb-0 ml-1 text-truncate' : 'mb-0 ml-1 text-truncate'" style="max-width: 110px">
+                <p class="mb-0 ml-1 text-truncate" style="margin-top: 2px; max-width: 110px">
                   {{ client.firstName  + " " + client.lastName }} 
                 </p>
               </div>

@@ -207,9 +207,9 @@
         >
           <!-- CASE 1: I'm in the room -->
           <template v-if="room.id === currentRoomID">
-            <div class="pt-2 pb-3" style="width: 100%">
+            <div class="pt-1 pb-3" style="width: 100%">
               <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
-                <v-icon class="mr-1" style="padding-top: 0.85px;">
+                <v-icon class="mr-1" style="padding-top: 0.85px; font-size: 1.1rem">
                   mdi-volume-high
                 </v-icon>
             
@@ -246,7 +246,7 @@
 
               </portal-target>
 
-              <portal-target name="invite-button">
+              <portal-target name="invite-button" class="px-2">
 
               </portal-target>
             </div>
@@ -257,7 +257,7 @@
             <Drop @drop="handleDrop({ droppedTo: room }, ...arguments)" style="width: 100%"> 
               <div style="width: 100%;">
                 <div class="d-flex py-1 pl-1 mt-2 font-weight-medium" style="font-size: 0.95em; align-items: center;">
-                  <v-icon class="mr-1" style="margin-top: 0.85px; opacity: 80%;">
+                  <v-icon class="mr-1" style="font-size: 1.1rem; margin-top: 0.85px; opacity: 80%;">
                     mdi-volume-high
                   </v-icon>
 

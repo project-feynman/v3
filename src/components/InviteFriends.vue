@@ -16,7 +16,7 @@
         <v-container>
           <v-row>
             <v-col cols="12" md="4">
-              <h2>Study Group</h2>
+              <h2>Friends</h2>
               <v-list shaped style="max-height: 250px" class="overflow-y-auto">
                 <v-list-item-group
                   v-model="model"
@@ -51,8 +51,8 @@
               </v-list>
               <!-- :rules="emailRules"  -->
               <v-text-field v-model="newUserEmail" 
-                label="Add new person" 
-                placeholder="newperson@gmail.com"
+                label="Add new friend" 
+                placeholder="newfriend@gmail.com"
                 hide-details
               />
             </v-col>
