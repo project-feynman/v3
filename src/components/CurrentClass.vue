@@ -22,13 +22,13 @@
     >      
       <v-sheet class="py-0 mb-3" elevation="8">    
         <div style="display: flex; align-items: center;">
-          <CurrentClassDropdown2 @logo-click="isAppPopupOpen = !isAppPopupOpen">
+          <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
             <template v-slot:add-join-leave-class>
               <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
                 <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
               </v-list-item>
             </template>
-          </CurrentClassDropdown2>
+          </CurrentClassDropdown>
 
           <!-- Have the app overview, updates, news, as well as the chats -->
           <v-dialog v-model="isAppPopupOpen">
@@ -87,7 +87,6 @@ import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
-import CurrentClassDropdown2 from "@/components/CurrentClassDropdown2.vue"
 import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
 
 import CurrentAreaDropdown from "@/components/CurrentAreaDropdown.vue"; 
@@ -122,7 +121,6 @@ export default {
     BaseButton,
     BasePopupButton,
     CurrentClassDropdown,
-    CurrentClassDropdown2,
     CurrentClassNewPopup,
     CurrentAreaDropdown,
     MyParticipantDocUpdater,

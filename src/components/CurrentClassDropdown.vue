@@ -1,15 +1,30 @@
 <template>
   <v-menu v-model="isMenuOpen" fixed offset-y bottom>
     <template v-slot:activator="{ on }">
-      <v-btn v-on="on" text tile class="py-1 text-h5" max-width="160" max-height="30" style="padding-left: 1px; padding-right: 1px;">
-        <span class="d-inline-block text-truncate" style="max-width: 120px; font-size: 1.85rem;">
-          {{ currentClass ? currentClass.name : "ERROR" }}
-        </span>
-        <v-spacer/>
-        <v-icon>mdi-menu-down</v-icon>
-      </v-btn>
+      <v-list-item v-on="on" two-line class="px-0">
+        <v-list-item-avatar @click="$emit('logo-click')"
+          class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 13px;" tile width="52" height="44"
+        >
+          <img src="/logo.png">
+        </v-list-item-avatar>
+
+        <v-list-item-content v-if="mitClass" class="py-0 mx-1" style="max-width: 170px">
+          <v-list-item-title class="mb-0 headline">
+            {{ mitClass.name }}
+          </v-list-item-title>
+
+          <v-list-item-subtitle class="text-truncate">
+            {{ mitClass.description }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+
+        <v-icon class="black--text"> 
+          mdi-menu-down
+        </v-icon>
+      </v-list-item>
     </template>
 
+    <!-- Expanded list of classes -->
     <v-list style="overflow-y: auto; max-height: 350px">
       <template v-for="mitClass in $store.state.user.enrolledClasses">
         <v-list-item v-if="mitClass.id !== $route.params.class_id"
@@ -19,7 +34,7 @@
           {{ mitClass.name }}
         </v-list-item>
       </template>
-      
+    
       <slot name="add-join-leave-class">
 
       </slot>
@@ -28,26 +43,19 @@
 </template>
 
 <script>
-import db from "@/database.js";
-import { mapState } from "vuex"; 
+import { mapState} from 'vuex'
+import db from '@/database.js'
 
 export default {
   data () {
     return {
       isMenuOpen: false
-    };
+    }
   },
   computed: {
     ...mapState([
-      "user"
-    ]),
-    currentClass () {
-      for (const mitClass of this.user.enrolledClasses) {
-        if (mitClass.id === this.$route.params.class_id) {
-          return mitClass; 
-        }
-      }
-    }
+      'mitClass'
+    ])
   },
   methods: {
     switchClass (mitClass) {
