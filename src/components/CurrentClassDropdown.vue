@@ -1,9 +1,9 @@
 <template>
-  <v-menu v-model="isMenuOpen" fixed offset-y bottom>
+  <v-menu v-model="isMenuOpen" bottom offset-y>
     <template v-slot:activator="{ on }">
       <v-list-item v-on="on" two-line class="px-0">
         <v-list-item-avatar @click="$emit('logo-click')"
-          class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 13px;" tile width="52" height="44"
+          class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 14px;" tile width="53" height="45"
         >
           <img src="/logo.png">
         </v-list-item-avatar>

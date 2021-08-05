@@ -20,45 +20,43 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="py-0 mb-3" elevation="8">    
-        <div style="display: flex; align-items: center;">
-          <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
-            <template v-slot:add-join-leave-class>
-              <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-                <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
-              </v-list-item>
-            </template>
-          </CurrentClassDropdown>
+      <v-sheet class="pt-0 mb-3" elevation="8">    
+        <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
+          <template v-slot:add-join-leave-class>
+            <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
+              <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
+            </v-list-item>
+          </template>
+        </CurrentClassDropdown>
 
-          <!-- Have the app overview, updates, news, as well as the chats -->
-          <v-dialog v-model="isAppPopupOpen">
-            <v-card>     
-              <v-card-title>Explain</v-card-title>
-              <v-card-text>
-                Explain is open source, see 
-                <a href="https://github.com/project-feynman/explain" target="_blank">Github</a>
-              </v-card-text>
+        <!-- Have the app overview, updates, news, as well as the chats -->
+        <v-dialog v-model="isAppPopupOpen" max-width="500">
+          <v-card>     
+            <v-card-title>Explain</v-card-title>
+            <v-card-text>
+              Explain is open source, see 
+              <a href="https://github.com/project-feynman/explain" target="_blank">Github</a>
+            </v-card-text>
 
-              <v-card-actions>
-                <v-spacer/>
-                <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
-                  LEAVE CLASS
-                </v-btn>
-                <v-btn v-if="user.email" 
-                  @click="$_signOut()" large  class="mx-5 grey darken-1 white--text"
-                >
-                  <v-icon class="mr-2">mdi-logout</v-icon>
-                  SIGN OUT
-                </v-btn>       
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+            <v-card-actions>
+              <v-spacer/>
+              <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
+                LEAVE CLASS
+              </v-btn>
+              <v-btn v-if="user.email" 
+                @click="$_signOut()" large  class="mx-5 grey darken-1 white--text"
+              >
+                <v-icon class="mr-2">mdi-logout</v-icon>
+                SIGN OUT
+              </v-btn>       
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
 
-          <CurrentClassNewPopup 
-            :isAddClassPopupOpen="isAddClassPopupOpen"
-            @input="(newVal) => isAddClassPopupOpen = newVal"
-          />
-        </div>
+        <CurrentClassNewPopup 
+          :isAddClassPopupOpen="isAddClassPopupOpen"
+          @input="(newVal) => isAddClassPopupOpen = newVal"
+        />
       </v-sheet>
       
       <AllAreas
