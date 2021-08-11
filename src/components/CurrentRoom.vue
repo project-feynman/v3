@@ -251,7 +251,7 @@
                        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
                       `
                 ">
-                  <div style="margin-left: 14px">{{ getBoardNumberFromID(currentBoardID) }}</div>
+                  <div style="margin-left: 15px">{{ getBoardNumberFromID(currentBoardID) }}</div>
                   <v-icon class="ml-0" small>mdi-menu-down</v-icon>
                 </span>
               </v-btn>
