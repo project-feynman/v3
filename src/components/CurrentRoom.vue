@@ -234,17 +234,25 @@
                   padding-top: 0; 
                   font-size: 1.1rem; 
                   font-weight: 400; 
-                  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
                   margin-right: 24px
                 " 
                 max-width="180"
               > 
                 <!-- The board switch button looks like a blackboard itself -->
-                <span class="`d-inline-block text-truncate" 
+                <span class="`d-inline-block text-truncate px-0" 
                     :style="
-                      `color: ${currentTool.color}; width: 42px; height: 32.5px; display: flex !important; justify-content: center; align-items: center; background-color: rgb(62, 66, 66)`
+                      `color: ${currentTool.color}; 
+                       width: 42px; 
+                       height: 32.5px; 
+                       display: flex !important; 
+                       justify-content: center; 
+                       align-items: center; 
+                       background-color: rgb(62, 66, 66);
+                       box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+                      `
                 ">
-                  {{ getBoardNumberFromID(currentBoardID) }}
+                  <div style="margin-left: 14px">{{ getBoardNumberFromID(currentBoardID) }}</div>
+                  <v-icon class="ml-0" small>mdi-menu-down</v-icon>
                 </span>
               </v-btn>
             </template>
