@@ -176,7 +176,7 @@
               </v-icon>
 
               <div
-                @click="$store.commit('SET_CURRENT_BOARD_ID', client.currentBoardID)"
+                @click="scrollToThisBoard(client.currentBoardID)"
                 :style="`color: ${client.currentPenColor ? client.currentPenColor : 'white' } !important; 
                          width: 42px; 
                          height: 32.5px; 
@@ -186,6 +186,7 @@
                          background-color: rgb(62, 66, 66); 
                          margin-left: 5px; 
                          margin-right: 24px;
+                         box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
                        `"
               >
                 {{ client.currentBoardNumber }}
@@ -285,10 +286,10 @@ export default {
     }
   },
   created () {
-    console.log('video room created', this.roomID)
+    // console.log('video room created', this.roomID)
   },
   async destroyed () {
-    console.log('videoConferenceRoom destroyed, room =', this.roomID)
+    // console.log('videoConferenceRoom destroyed, room =', this.roomID)
     this.isDestroyed = true; 
     // case 1 (sequential): the user leaves after connection has been resolved
     if (this.connectionStatus === "CONNECTED") {
@@ -298,6 +299,12 @@ export default {
     // the `isDestroyed` flag will initialize the cleanup straight away.
   },
   methods: {
+    // That's all we need to do, 
+    // because the intersection API above will call `updateCurrentBoardID`, and `currentBoardID` => `currentBoardNumber`
+    scrollToThisBoard (boardID) {
+      const blackboardElement = document.getElementById(boardID)
+      blackboardElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    },
      /**
      * @see https://www.daily.co/blog/video-call-api-tutorial-the-rooms-family-of-endpoints/
      * @see https://docs.daily.co/reference#room-configuration

@@ -26,6 +26,10 @@ export default {
       type: String,
       required: true
     },
+    areaID: {
+      type: String,
+      required: true
+    },
     roomID: {
       type: String,
       required: true 
@@ -81,7 +85,7 @@ export default {
           kind: this.user.kind || "",
           isAdmin: this.isAdmin,
 
-          roomTypeID: this.$route.params.section_id,
+          roomTypeID: this.areaID,
           currentRoom: this.roomID,
           currentBoardID: this.currentBoardID,
           currentBoardNumber: this.currentBoardNumber,
@@ -101,6 +105,7 @@ export default {
   watch: {
     "user.firstName" () { this.throttledSync() }, // e.g so you don't show up as anonymous after signing up
     classID () { this.throttledSync() }, // handle this differently
+    areaID () { this.throttledSync() },
     roomID () { this.throttledSync() },
     currentBoardID () { this.throttledSync() }, 
     currentBoardNumber () { this.throttledSync() },
@@ -119,9 +124,9 @@ export default {
   methods: {
     // e.g. within 500 milliseconds, it can be called at most twice (one on the 0th second, then, everything else is ignored the next on the 500th millisecond)
     // if 1st is on 0, and 2nd is 200, the 2nd will be deferred to the 500th millisecond if there is no third
-    throttledSync: _.throttle(
+    throttledSync: _.debounce(
       function () { this.sync(); }, // without function () {}, `this.searchDatabase()` will be undefined
-      500 // milliseconds
+      100 // milliseconds
     ),
     sync () {
       if (this.isFirestoreDocCreated) {
@@ -134,7 +139,7 @@ export default {
           uid: this.user.uid,
           isAdmin: this.isAdmin,
 
-          roomTypeID: this.$route.params.section_id,
+          roomTypeID: this.areaID,
           currentRoom: this.roomID,
           currentBoardID: this.currentBoardID,
           currentBoardNumber: this.currentBoardNumber,

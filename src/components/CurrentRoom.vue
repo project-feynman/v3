@@ -228,9 +228,17 @@
           <v-menu @click.prevent.stop fixed offset-y bottom>
             <template v-slot:activator="{ on }">
               <!-- `click.prevent.stop -->
-              <v-btn v-on="on" @click.prevent.stop height="30" text tile class="px-0" 
-                :style="`text-align: center; padding-top: 0; font-size: 1.1rem; font-weight: 400;`" max-width="180"
-              >
+              <v-btn v-on="on" @click.prevent.stop height="33" text tile class="px-0" 
+                style="
+                  text-align: center; 
+                  padding-top: 0; 
+                  font-size: 1.1rem; 
+                  font-weight: 400; 
+                  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+                  margin-right: 24px
+                " 
+                max-width="180"
+              > 
                 <!-- The board switch button looks like a blackboard itself -->
                 <span class="`d-inline-block text-truncate" 
                     :style="
@@ -238,8 +246,6 @@
                 ">
                   {{ getBoardNumberFromID(currentBoardID) }}
                 </span>
-                <v-spacer/>
-                <v-icon>mdi-menu-down</v-icon>
               </v-btn>
             </template>
 
@@ -251,7 +257,7 @@
                       style="background-color: rgb(62, 66, 66);"
                       class="px-0"
                     >
-                      <div :style="`margin: auto; color: ${currentTool.color};`">
+                      <div style="margin: auto; color: white">
                         {{ getBoardNumberFromID(boardID) }}
                       </div>
                     </v-list-item>

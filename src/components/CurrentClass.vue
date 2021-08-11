@@ -4,6 +4,7 @@
   <div style="height: 100%">
     <MyParticipantDocUpdater
       :classID="classID"
+      :areaID="areaID"
       :roomID="tableID"
     />
 
@@ -20,7 +21,7 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="pt-0 mb-3" elevation="8">    
+      <v-sheet class="pt-0" style="margin-bottom: 26px;" elevation="8">    
         <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
           <template v-slot:add-join-leave-class>
             <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">

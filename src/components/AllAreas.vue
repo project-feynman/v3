@@ -1,13 +1,20 @@
 <template>
   <div>
-    <div v-for="(area, i) of sortedAreas" :key="area.id" style="margin-bottom: 10px">
-      <div style="display: flex; align-content: center;">
-        <v-icon @click="toggleExpansion(i)" class="black--text">
+    <div v-for="(area, i) of sortedAreas" :key="area.id" style="margin-bottom: 12px">
+      <div @click="toggleExpansion(i)" 
+        :ref="`area-${area.id}`"
+        style="display: flex; align-content: center;" class="pl-1 pr-0"
+      >
+        <v-icon v-if="indicesOfExpandedAreas.includes(i)" class="black--text">
           mdi-chevron-down
         </v-icon>
+        <v-icon v-else class="black--text">
+          mdi-chevron-right
+        </v-icon>
 
-        <p class="text-uppercase font-weight-medium text--secondary mb-0"
-          :style="indicesOfExpandedAreas.includes(i) ? 'margin-top: 6px;' : ''"
+        <p 
+          class="text-uppercase font-weight-medium mb-0"
+          :style="indicesOfExpandedAreas.includes(i) ? 'margin-top: 6px; opacity: 80%' : 'opacity: 80%;'"
         >
           {{ area.name }}
         </p>
@@ -41,7 +48,7 @@ export default {
   data () {
     return {
       allAreas: [],
-      indicesOfExpandedAreas: [0]
+      indicesOfExpandedAreas: []
     }
   },
   computed: {
@@ -58,7 +65,18 @@ export default {
   },
   async created () {
     // fetch once for light bandwidth usage
-    this.allAreas = await this.$_getCollection(this.classDocRef.collection("roomTypes"));
+    this.allAreas = await this.$_getCollection(this.classDocRef.collection("roomTypes"))
+
+    // let the DOM update to newly hydrated `allAreas`
+    await this.$nextTick() 
+    // open and scroll to the current area the person is in
+    const { sortedAreas } = this
+    for (let i = 0; i < sortedAreas.length; i++) {
+      if (sortedAreas[i].id === this.$store.state.currentAreaID) {
+        this.indicesOfExpandedAreas.push(i)
+        this.$refs[`area-${sortedAreas[i].id}`][0].scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
   },
   methods: {
     toggleExpansion (i) {
