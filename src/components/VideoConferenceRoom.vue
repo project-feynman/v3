@@ -312,7 +312,10 @@ export default {
     async createConferenceRoom () {
       return new Promise(async (resolve) => {
         try {
-          const SECONDS_IN_TWO_HOURS = 2 * 60 * 60; 
+          // const SECONDS_IN_TWO_HOURS = 2 * 60 * 60;
+          // for some reason, SECONDS_IN_TWO_HOURS gives more than two hours...lasts at least 6 hours, so divide it by 24 to make it half an hour
+          const SECONDS_IN_HALF_HOUR = 0.5 * 60 * 60; 
+
           const response = await fetch("https://api.daily.co/v1/rooms", {
             "method": "POST",
             "headers": {
@@ -323,7 +326,7 @@ export default {
             body: JSON.stringify({
               name: this.roomID,
               properties: {
-                exp: Math.round(Date.now() / 1000) + SECONDS_IN_TWO_HOURS,
+                exp: Math.round(Date.now() / 1000) + SECONDS_IN_HALF_HOUR,
                 eject_at_room_exp: true,
                 start_video_off: true
               }
