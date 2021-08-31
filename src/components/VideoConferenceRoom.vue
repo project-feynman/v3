@@ -270,6 +270,10 @@ export default {
       if (!this.roomIDToParticipants) return; 
       else return this.roomIDToParticipants[this.roomID]; 
     },
+    numOfPeopleInRoom () {
+      if (!this.allClients) return 0
+      else return this.allClients.length
+    },
     sessionID () { return this.$store.state.session.currentID; },
     isMicOn () { return this.participants.local.audio; },
     isCamOn () { return this.participants.local.video; }
@@ -282,6 +286,15 @@ export default {
         if (newValue === 'DISCONNECTED' && this.canHearAudio) {
           this.joinConferenceRoom(); 
         }
+      }
+    },
+    numOfPeopleInRoom (newVal, oldVal) {
+      if (newVal > oldVal) {
+        const joinSound = new Audio(require('@/assets/state-change_confirm-up.wav'))
+        joinSound.play()
+      } else {
+        const leaveSound = new Audio(require('@/assets/state-change_confirm-down.wav'))
+        leaveSound.play()
       }
     }
   },

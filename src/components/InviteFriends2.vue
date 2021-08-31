@@ -86,9 +86,12 @@
                       </template>
                       
                       <template v-else>
-                        <v-btn @click="sendEmailInvite(volunteer)">
+                        <v-btn v-if="!isWaitingForEmailReply" @click="sendEmailInvite(volunteer)">
                           Email notify
                         </v-btn>
+                        <p v-else class="mb-0">
+                          Time remaining: {{ 120 - emailWaitDuration }}
+                        </p>
                       </template>
                     </td>
                   </tr>
@@ -99,33 +102,6 @@
         </v-container>
       </v-form>
       <br>
-
-      <!-- <v-dialog persistent v-model="isHelpRequestPopupOpen">
-        <v-card>
-          Request for help
-
-          <v-select
-            :items="['5', '10', '30']"
-            filled
-            label="Expected duration you'll need"
-            @change="newDuration => helpDuration = newDuration"
-          ></v-select>
-
-          <v-select
-            :items="['pset', 'concept review', 'others']"
-            filled
-            label="Topic"
-            @change="newTopic => helpTopic = newTopic "
-          >
-          </v-select>
-
-          <v-card-actions>
-            <v-spacer/> 
-            <v-btn @click="isHelpRequestPopupOpen = false">CANCEL</v-btn>
-            <v-btn @click="requestForHelp(helper); isHelpRequestPopupOpen = false">Request help</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog> -->
     </v-card-text>
     </v-container>
   </v-card>
@@ -162,7 +138,10 @@ export default {
       volunteers: [], // AF(null) and AF([]) can't be differentiated, but I don't care about this right now,
       isWaitingForReply: false,
       waitDuration: 0,
-      countdownTimer: null
+      countdownTimer: null,
+      isWaitingForEmailReply: false,
+      emailWaitDuration: 0,
+      emailCountdownTimer: null
     }; 
   },
   computed: {
@@ -251,6 +230,17 @@ export default {
       this.hasSentEmails = true
     }, 
     sendEmailInvite (invitee) {
+      this.isWaitingForEmailReply = true
+      this.emailCountdownTimer = setInterval(
+        () => {
+          this.emailWaitDuration += 1
+          if (this.emailWaitDuration === 120) {
+            this.isWaitingForEmailReply = false
+            clearInterval(this.emailCountdownTimer)
+          }
+        },
+        1000
+      )
       const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
       const { class_id, section_id, room_id } = this.$route.params;
       sendEmailToPerson({ 
@@ -258,7 +248,7 @@ export default {
         title: `${this.mitClass.name} Invite`, 
         contentHTML: `
           <p>${this.user.firstName + ' ' + this.user.lastName} invited you to explain something</p> 
-          <a href="https://explain.education/class/${class_id}/section/${section_id}/room/${room_id}">
+          <a href="https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}">
             explain.education/class/${class_id}/section/${section_id}/room/${room_id}
           </a>
           <p>If you're busy, no need to do anything. If you're free, there's a 2-minute window before this request expires.</p>
