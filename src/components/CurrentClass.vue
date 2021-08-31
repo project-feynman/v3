@@ -66,13 +66,11 @@
     </v-navigation-drawer>
 
     <v-main>
-      <v-banner v-model="isShowingBanner" sticky light color="purple darken-1 white--text">
-        Alice Bob invited you to explain something...
-        <template v-slot:actions>
-          <v-btn @click="redirectToNewRoom()">Accept</v-btn>
-          <v-btn @click="declineInvite()">Decline</v-btn>
-        </template>
-      </v-banner>
+      <CurrentClassInviteBanner v-if="isShowingBanner" 
+        :redirectURL="user.inviteRequestURL || ''"
+        @input="isShowingBanner = false"
+      />
+
       <CurrentRoom 
         :roomID="tableID" 
         :key="tableID"
@@ -94,6 +92,7 @@ import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
 import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
+import CurrentClassInviteBanner from '@/components/CurrentClassInviteBanner.vue'
 
 import CurrentAreaDropdown from "@/components/CurrentAreaDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
@@ -129,6 +128,7 @@ export default {
     CurrentClassDropdown,
     CurrentClassNewPopup,
     CurrentAreaDropdown,
+    CurrentClassInviteBanner,
     MyParticipantDocUpdater,
     CurrentArea,
     CurrentRoom
@@ -142,7 +142,6 @@ export default {
     unsubscribeClassDocListener: null,
     tab: 0, // 0, 1, 2
     isAppPopupOpen: false,
-    gentleAlarm: null,
     isShowingBanner: false
   }),
   computed: {
@@ -166,8 +165,6 @@ export default {
   watch: {
     'user.inviteRequestCounter': function () {
       this.isShowingBanner = true 
-      this.gentleAlarm = new Audio(require('@/assets/alarm_gentle.wav'))
-      this.gentleAlarm.play()
     },
     isBoardFullscreen (newVal) {
       if (newVal) this.isShowingDrawer = false; 

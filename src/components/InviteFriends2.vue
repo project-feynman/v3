@@ -21,54 +21,7 @@
       <v-form>
         <v-container>
           <v-row>
-            <!-- <v-col cols="12" md="4">
-              <h2>Friends</h2>
-              <v-list shaped style="max-height: 250px" class="overflow-y-auto">
-                <v-list-item-group
-                  v-model="model"
-                  multiple
-                >
-                  <template v-for="(item, i) in user.emailsOfFriends">
-                    <v-divider v-if="!item"
-                      :key="`divider-${i}`"
-                    ></v-divider>
-
-                    <v-list-item
-                      v-else
-                      :key="`item-${i}`"
-                      :value="item"
-                      active-class="purple--text text--accent-4"
-                    >
-                      <template v-slot:default="{ active }">
-                        <v-list-item-content>
-                          <v-list-item-title v-text="item"></v-list-item-title>
-                        </v-list-item-content>
-
-                        <v-list-item-action>
-                          <v-checkbox
-                            :input-value="active"
-                            color="purple accent-4"
-                          ></v-checkbox>
-                        </v-list-item-action>
-                      </template>
-                    </v-list-item>
-                  </template>
-                </v-list-item-group>
-              </v-list>
-              <v-text-field v-model="newUserEmail" 
-                label="Add new friend" 
-                placeholder="newfriend@gmail.com"
-                hide-details
-              />
-            </v-col> -->
-
             <v-col cols="12" md="4">
-              <div style="display: flex; align: center">
-                <div>
-                  <b>Your familiar topics:</b> pset 1, Singular Value Decomposition
-                </div> 
-              </div>
-
               <div style="display: flex; align: center; margin-top: 5px">
                 <p class="mb-0 mr-2" style="margin-top: 5px">
                   <b>Happy to explain</b>
@@ -81,9 +34,20 @@
                   color="cyan"
                 />
               </div>
-            </v-col>
 
-            <template>
+              <div style="display: flex; align: center">
+                <v-textarea
+                  label="Your familiar topics"
+                  v-model="familiarTopics"
+                  :rows="3"
+                  hide-details
+                  :disabled="!didUserVolunteer"
+                />
+              </div>
+               <v-btn @click="updateFamiliarTopics()" class="mt-5" :disabled="!didUserVolunteer">
+                 Update
+                </v-btn>
+            </v-col>
 
             <v-simple-table>
               <template v-slot:default>
@@ -97,39 +61,41 @@
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   <tr
-                    v-for="email in [...volunteerStaff, ...volunteerClassmates]"
-                    :key="email"
+                    v-for="volunteer in [...volunteerStaff, ...volunteerClassmates]"
+                    :key="volunteer.email"
                   >
-                    <!-- Name -->
-                    <td>Elton Lin</td>
+                    <td>
+                      {{ volunteer.firstName + ' ' + volunteer.lastName }}
+                      <v-icon v-if="volunteer.isOnline" color="green" x-small>mdi-circle</v-icon>
+                    </td>
 
                     <!-- Familiar topics -->
-                    <td>Vector review, pset 3</td>
+                    <td>{{ volunteer[`familiarTopicsInClass:${$route.params.class_id}`] }}</td>
                     <td>
-                      <v-btn>Invite</v-btn>
+                      <template v-if="volunteer.isOnline">
+                        <v-btn v-if="!isWaitingForReply" 
+                          @click="sendRealtimeInviteRequest(volunteer.uid)">
+                          Invite
+                        </v-btn>
+                        <p v-else class="mb-0">
+                          Time remaining: {{ 20 - waitDuration}}
+                        </p>
+                      </template>
+                      
+                      <template v-else>
+                        <v-btn @click="sendEmailInvite(volunteer)">
+                          Email notify
+                        </v-btn>
+                      </template>
                     </td>
                   </tr>
                 </tbody>
               </template>
             </v-simple-table>
-          </template>
-            
           </v-row>
-
-          <!-- <v-textarea v-model="emailMessage"
-            label="Details"
-            :placeholder="textAreaPlaceholder"
-            class="mt-4"
-            color="purple"
-          />
-          <v-spacer/>
-          <v-btn @click="sendAllNecessaryEmails(newUserEmail)"
-            class="purple" dark block
-          >
-            <v-icon class="mr-2">mdi-send</v-icon>Send invite
-          </v-btn> -->
         </v-container>
       </v-form>
       <br>
@@ -191,10 +157,12 @@ export default {
       // helpTopic: "",
       isHelpRequestPopupOpen: false,
       incrementToToggleMusic: 0,
-      textAreaPlaceholder: `Despite using Taylor's Theorem, I still cannot obtain the special result. I've recorded my current workings so far on board 1, hope someone can help, thanks!`,
       model: [],
       switch1: true,
-      volunteers: [] // AF(null) and AF([]) can't be differentiated, but I don't care about this right now,
+      volunteers: [], // AF(null) and AF([]) can't be differentiated, but I don't care about this right now,
+      isWaitingForReply: false,
+      waitDuration: 0,
+      countdownTimer: null
     }; 
   },
   computed: {
@@ -211,13 +179,15 @@ export default {
       else return this.user.classesVolunteered.includes(this.mitClass.id)
     },
     volunteerClassmates () {
-      return this.volunteers.filter(v => v.kind !== 'staff').map(v => v.email)
+      return this.volunteers.filter(v => v.kind !== 'staff')
     },
     volunteerStaff () {
-      return this.volunteers.filter(v => v.kind === 'staff').map(v => v.email)
+      return this.volunteers.filter(v => v.kind === 'staff')
     }
   },
   created () {
+    this.familiarTopics = this.user[`familiarTopicsInClass:${this.$route.params.class_id}`]
+
     // fetch volunteer classmates
     this.$_bindVarToDB({
       varName: 'volunteers',
@@ -239,6 +209,34 @@ export default {
         });
       }
     },
+    updateFamiliarTopics () {
+      console.log('familiarTopics =', this.familiarTopics)
+      db.doc(`users/${this.user.uid}`).update({
+        [`familiarTopicsInClass:${this.$route.params.class_id}`]: this.familiarTopics
+      })
+    },
+    async sendRealtimeInviteRequest (userUID) {
+      console.log('userUID =', userUID)
+      // update inviteRequestCounter 
+      const userRef = db.doc(`/users/${userUID}`)
+      // note using $route variables can introduce concurrency bugs
+      const { class_id, section_id, room_id } = this.$route.params
+      await userRef.update({
+        inviteRequestCounter: firebase.firestore.FieldValue.increment(1),
+        inviteRequestURL: `/class/${class_id}/section/${section_id}/room/${room_id}`
+      })
+      this.isWaitingForReply = true
+      this.countdownTimer = setInterval(
+        () => {
+          this.waitDuration += 1
+          if (this.waitDuration === 20) {
+            this.isWaitingForReply = false
+            clearInterval(this.countdownTimer)
+          }
+        },
+        1000
+      )
+    },
     sendAllNecessaryEmails (newUserEmail) {
       if (newUserEmail) {
         this.model.push(newUserEmail)
@@ -252,11 +250,6 @@ export default {
       this.$root.$emit('show-snackbar', 'Successfully sent email invites.')
       this.hasSentEmails = true
     }, 
-    addFriend (newEmail) {
-      db.doc(`users/${this.user.uid}`).update({
-        emailsOfFriends: firebase.firestore.FieldValue.arrayUnion(newEmail)
-      })
-    },
     sendEmailInvite (invitee) {
       const sendEmailToPerson = firebase.functions().httpsCallable("sendEmailToPerson");
       const { class_id, section_id, room_id } = this.$route.params;
@@ -264,11 +257,11 @@ export default {
         emailOfPerson: invitee.email, 
         title: `${this.mitClass.name} Invite`, 
         contentHTML: `
-          <p>${this.user.firstName + ' ' + this.user.lastName} invited you to their room on</p> 
+          <p>${this.user.firstName + ' ' + this.user.lastName} invited you to explain something</p> 
           <a href="https://explain.education/class/${class_id}/section/${section_id}/room/${room_id}">
             explain.education/class/${class_id}/section/${section_id}/room/${room_id}
           </a>
-          <p>"${this.emailMessage}"</p>
+          <p>If you're busy, no need to do anything. If you're free, there's a 2-minute window before this request expires.</p>
           <p>
             To get notifications, press the "From: eltonlin@mit.edu" near the top, then press "Add to VIP". 
             Meanwhile, I'm working on a way to send notifications without emails to minimize inbox clutter. 
