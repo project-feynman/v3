@@ -115,7 +115,7 @@
 
     <!-- INFINITE TUTORING -->
     <v-dialog v-model="isInviteFriendsPopupOpen" max-width="800">
-      <InviteFriends v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
+      <InviteFriends2 v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
     </v-dialog> 
   
     <!-- ROOM ACTIONS MENU -->
@@ -422,6 +422,7 @@ import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId } from "@/helpers.js";
 import ZoomChat from "@/components/ZoomChat.vue";
 import InviteFriends from "@/components/InviteFriends.vue"; 
+import InviteFriends2 from '@/components/InviteFriends2.vue'
 import DoodleAnimation from '@/components/DoodleAnimation.vue'
 import DoodleVideo from '@/components/DoodleVideo.vue'
 import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
@@ -451,6 +452,7 @@ export default {
     CurrentRoomGradingPopup,
     ZoomChat,
     InviteFriends,
+    InviteFriends2,
     DoodleAnimation,
     DoodleVideo,
     Drag,

@@ -66,6 +66,13 @@
     </v-navigation-drawer>
 
     <v-main>
+      <v-banner v-model="isShowingBanner" sticky light color="purple darken-1 white--text">
+        Alice Bob invited you to explain something...
+        <template v-slot:actions>
+          <v-btn @click="redirectToNewRoom()">Accept</v-btn>
+          <v-btn @click="declineInvite()">Decline</v-btn>
+        </template>
+      </v-banner>
       <CurrentRoom 
         :roomID="tableID" 
         :key="tableID"
@@ -134,15 +141,15 @@ export default {
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
     tab: 0, // 0, 1, 2
-    isAppPopupOpen: false
+    isAppPopupOpen: false,
+    gentleAlarm: null,
+    isShowingBanner: false
   }),
   computed: {
     ...mapState([
       "user",
       "mitClass",
-      "isBoardFullscreen",
-      "isViewingLibrary",
-      "isViewingForum"
+      "isBoardFullscreen"
     ]),
     ...mapGetters([
       "numOfUnreadGlobalMsgs"
@@ -157,24 +164,14 @@ export default {
   },
   // TODO: refactor this quickfix
   watch: {
+    'user.inviteRequestCounter': function () {
+      this.isShowingBanner = true 
+      this.gentleAlarm = new Audio(require('@/assets/alarm_gentle.wav'))
+      this.gentleAlarm.play()
+    },
     isBoardFullscreen (newVal) {
       if (newVal) this.isShowingDrawer = false; 
       else this.isShowingDrawer = true; 
-    },
-    // REFACTOR THIS
-    // setting isViewingForum to true will display the AppOverViewPopup because it's computed property relies on it, 
-    // and the right tab will be selected because the tab is set here. Not a great solution, but <v-tabs> is really hard to get to work
-    isViewingForum: {
-      immediate: true,
-      handler () {
-        if (this.isViewingForum) this.tab = 1; 
-      }
-    },
-    isViewingLibrary: {
-      immediate: true, 
-      handler () {
-        if (this.isViewingLibrary) this.tab = 2; 
-      }
     },
     areaID: {
       handler () {
@@ -205,6 +202,13 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
+    redirectToNewRoom () {
+
+    },
+    declineInvite () {
+      this.gentleAlarm.pause()
+      this.isShowingBanner = false
+    },
     async leaveClass () {
       const { user } = this; 
       let classToRemove = null; 
