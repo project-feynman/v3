@@ -34,7 +34,9 @@
                   color="cyan"
                 />
               </div>
+            </v-col>
 
+            <v-col cols="12" md="4">
               <div style="display: flex; align: center">
                 <v-textarea
                   label="Your familiar topics"
@@ -44,9 +46,25 @@
                   :disabled="!didUserVolunteer"
                 />
               </div>
-               <v-btn @click="updateFamiliarTopics()" class="mt-5" :disabled="!didUserVolunteer">
-                 Update
-                </v-btn>
+              <v-btn @click="updateFamiliarTopics()" class="mt-5" :disabled="!didUserVolunteer">
+                 Update topics
+              </v-btn>
+            </v-col>
+
+            <v-col cols="12" md="4">
+              <div style="display: flex; align: center">
+                <v-textarea
+                  label="Good times to ask you questions"
+                  placeholder="e.g. anytime after 4 pm"
+                  v-model="goodTimesToAsk"
+                  :rows="3"
+                  hide-details
+                  :disabled="!didUserVolunteer"
+                />
+              </div>
+              <v-btn @click="updateGoodTimesToAsk()" class="mt-5" :disabled="!didUserVolunteer">
+                Update times
+              </v-btn>
             </v-col>
 
             <v-simple-table>
@@ -58,6 +76,9 @@
                     </th>
                     <th class="text-left">
                       Familiar Topics
+                    </th>
+                    <th class="text-left">
+                      Good times to ask
                     </th>
                   </tr>
                 </thead>
@@ -74,10 +95,17 @@
 
                     <!-- Familiar topics -->
                     <td>{{ volunteer[`familiarTopicsInClass:${$route.params.class_id}`] }}</td>
+
+                    <td>
+                      {{ volunteer[`goodTimesToAskInClass:${$route.params.class_id}`] }}
+                    </td>
+
                     <td>
                       <template v-if="volunteer.isOnline">
                         <v-btn v-if="!isWaitingForReply" 
-                          @click="sendRealtimeInviteRequest(volunteer.uid)">
+                          @click="sendRealtimeInviteRequest(volunteer.uid)"
+                          color="cyan" dark
+                        >
                           Invite
                         </v-btn>
                         <p v-else class="mb-0">
@@ -87,7 +115,7 @@
                       
                       <template v-else>
                         <v-btn v-if="!isWaitingForEmailReply" @click="sendEmailInvite(volunteer)">
-                          Email notify
+                          Notify
                         </v-btn>
                         <p v-else class="mb-0">
                           Time remaining: {{ 120 - emailWaitDuration }}
@@ -139,6 +167,8 @@ export default {
       isWaitingForReply: false,
       waitDuration: 0,
       countdownTimer: null,
+      familiarTopics: '',
+      goodTimesToAsk: '',
       isWaitingForEmailReply: false,
       emailWaitDuration: 0,
       emailCountdownTimer: null
@@ -166,6 +196,7 @@ export default {
   },
   created () {
     this.familiarTopics = this.user[`familiarTopicsInClass:${this.$route.params.class_id}`]
+    this.goodTimesToAsk = this.user[`goodTimesToAskInClass:${this.$route.params.class_id}`]
 
     // fetch volunteer classmates
     this.$_bindVarToDB({
@@ -192,6 +223,11 @@ export default {
       console.log('familiarTopics =', this.familiarTopics)
       db.doc(`users/${this.user.uid}`).update({
         [`familiarTopicsInClass:${this.$route.params.class_id}`]: this.familiarTopics
+      })
+    },
+    updateGoodTimesToAsk () {
+      db.doc(`users/${this.user.uid}`).update({
+        [`goodTimesToAskInClass:${this.$route.params.class_id}`]: this.goodTimesToAsk
       })
     },
     async sendRealtimeInviteRequest (userUID) {
