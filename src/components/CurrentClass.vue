@@ -94,7 +94,6 @@ import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
 import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
 import CurrentClassInviteBanner from '@/components/CurrentClassInviteBanner.vue'
 
-import CurrentAreaDropdown from "@/components/CurrentAreaDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import AllAreas from '@/components/AllAreas.vue'
 import CurrentArea from "@/components/CurrentArea.vue"; 
@@ -127,7 +126,6 @@ export default {
     BasePopupButton,
     CurrentClassDropdown,
     CurrentClassNewPopup,
-    CurrentAreaDropdown,
     CurrentClassInviteBanner,
     MyParticipantDocUpdater,
     CurrentArea,
