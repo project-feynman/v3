@@ -194,6 +194,7 @@
 
     <CurrentAreaDeletePopup
       :isDeletePopupOpen="isDeletePopupOpen"
+      :areaID="sectionID"
       @change="(newVal) => isDeletePopupOpen = newVal"
     />
 

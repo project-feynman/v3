@@ -40,7 +40,7 @@ export default {
   },
   methods: {
     async renameRoomType () {
-      const { class_id, section_id } = this.$route.params; 
+      const { class_id } = this.$route.params; 
       const ref = db.doc(`classes/${class_id}/roomTypes/${this.areaID}`);
       await ref.update({
         name: this.newRoomTypeName

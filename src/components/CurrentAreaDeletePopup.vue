@@ -36,6 +36,10 @@ export default {
     isDeletePopupOpen: {
       type: Boolean,
       required: true
+    },
+    areaID: {
+      type: String,
+      required: true
     }
   },
   mixins: [
@@ -53,8 +57,8 @@ export default {
     ])
   },
   async created () {
-    const { class_id, section_id } = this.$route.params
-    const areaRef = db.doc(`classes/${class_id}/roomTypes/${section_id}`)
+    const { class_id } = this.$route.params
+    const areaRef = db.doc(`classes/${class_id}/roomTypes/${this.areaID}`)
     this.areaDoc = await this.$_getDoc(areaRef)
   },
   methods: {
@@ -66,10 +70,10 @@ export default {
     async deleteRoomType () {
       this.$root.$emit('show-snackbar', 'Deleting area...')
 
-      const { class_id, section_id } = this.$route.params; 
+      const { class_id } = this.$route.params; 
       const deleteRecursively = firebase.functions().httpsCallable('recursiveDelete')
-      const roomTypeRef = db.doc(`classes/${class_id}/roomTypes/${section_id}`);
-      const roomsRef = db.collection(`classes/${class_id}/rooms`).where("roomTypeID", "==", section_id);
+      const roomTypeRef = db.doc(`classes/${class_id}/roomTypes/${this.areaID}`);
+      const roomsRef = db.collection(`classes/${class_id}/rooms`).where("roomTypeID", "==", this.areaID);
       const roomsDocs = await this.$_getCollection(roomsRef)
       const p = []
 
