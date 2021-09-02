@@ -5,21 +5,29 @@
     max-width="800"
   >
     <v-card v-if="user.email">
-      <v-card-title class="headline">Classes</v-card-title>
+      <v-card-title class="headline">Manage Classes</v-card-title>
       <v-card-text>
         <v-row>
-          <v-col cols="3" class="pr-0">
-            <v-subheader class="px-0">Join an existing class</v-subheader>
-          </v-col>
-          <v-col cols="7" class="pa-0 d-flex align-center"> 
+          <v-col>
+            <v-subheader class="px-0" style="font-size: 1rem">Classes you're currently in:</v-subheader>
+          </v-col> 
+        </v-row>
+        
+        <v-list-item v-for="mitClass of user.enrolledClasses" :key="mitClass.id" style="margin-left: 30px; margin-bottom: 5px; font-size: 1rem">
+          <b style="margin-right: 15px">{{ mitClass.name }}</b> 
+          {{ mitClass.description }} 
+          <v-spacer/>
+          <v-btn v-if="user.enrolledClasses.length > 1" @click="leaveClass(mitClass.id)">
+            LEAVE
+          </v-btn>
+        </v-list-item>
+        <v-row>
+          <v-col class="mx-5 my-3 d-flex align-center"> 
             <CurrentClassNewPopupSearchBar 
               :items="mitClasses"
               @submit="newVal => join({ mitClass: newVal })" 
               color="accent"
             />
-          </v-col>
-          <v-col cols="2">
-            <v-btn @click="$emit('input', false)" color="secondary" text>DONE</v-btn>
           </v-col>
         </v-row>
         
@@ -40,14 +48,14 @@
 
     <!-- Alternative if the user does not exist -->
     <v-card v-else>
-      <v-card-title></v-card-title>
+      <v-card-title>Manage Classes</v-card-title>
       <v-card-text>
-        <!-- <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text mx-5">
+        <v-btn @click="$_logInWithTouchstone()" large class="green darken-1 white--text">
           <v-icon class="mr-2">mdi-school</v-icon>
-          MIT KERBEROS LOGIN
-        </v-btn> -->
+          MIT LOGIN
+        </v-btn>
 
-        <v-btn @click="$_logInWithGoogle()" class="cyan--text">
+        <v-btn @click="$_logInWithGoogle()" large class="cyan--text ml-2">
           <v-icon class="mr-2" color="cyan">mdi-google</v-icon>
           Google Login
         </v-btn>
@@ -76,7 +84,7 @@
           @action-do="user => $_logIn(user)"
         >
           <template v-slot:activator-button="{ on }">
-            <v-btn v-on="on" large class="grey darken-1 white--text mr-5">
+            <v-btn v-on="on" large class="grey darken-1 white--text">
               <v-icon class="mr-2">mdi-email</v-icon>
               EMAIL LOGIN
             </v-btn>
@@ -200,6 +208,35 @@ export default {
 
       // automatic redirect
       this.$router.push(`/class/${newClassID}/section/${newClassID}/room/${newClassID}`);
+    },
+    async leaveClass (id) {
+      const { user } = this; 
+      let classToRemove = null; 
+      for (const enrolledClass of user.enrolledClasses) {
+        if (enrolledClass.id === id) {
+          classToRemove = enrolledClass;
+          break; 
+        }
+      }
+
+      // bad quickfix code to find a different classID to become the default redirected class
+      let newDefaultRedirectedClass = null; 
+      for (const enrolledClass of user.enrolledClasses) {
+        if (enrolledClass.id !== classToRemove.id) {
+          newDefaultRedirectedClass = enrolledClass; 
+          break; 
+        }
+      }
+
+      await db.collection("users").doc(user.uid).update({
+        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
+        mostRecentClassID: newDefaultRedirectedClass.id,
+        emailOnNewQuestion: firebase.firestore.FieldValue.arrayRemove(classToRemove.id),
+        emailOnNewReply: firebase.firestore.FieldValue.arrayRemove(classToRemove.id)
+      });
+      
+      const newID = newDefaultRedirectedClass.id; 
+      this.$router.push(`/class/${newID}/section/${newID}/room/${newID}`);
     }
   }
 };

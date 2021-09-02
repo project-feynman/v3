@@ -22,28 +22,48 @@
       touchless 
     >      
       <v-sheet class="pt-0" style="margin-bottom: 26px;" elevation="8">    
-        <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
+        <div style="display: flex">
+          <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
+            style="cursor: pointer; margin-left: 4px; margin-bottom: 11px; margin-top: 16px; margin-right: 2px" tile width="71" height="53"
+          >
+            <img src="/logo.png" width="40" height="53" style="margin-left: 2px">
+          </v-list-item-avatar>
+
+          <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
           <template v-slot:add-join-leave-class>
             <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-              <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
+              <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
             </v-list-item>
           </template>
         </CurrentClassDropdown>
+        </div>
 
         <!-- Have the app overview, updates, news, as well as the chats -->
         <v-dialog v-model="isAppPopupOpen" max-width="500">
           <v-card>     
-            <v-card-title>Explain</v-card-title>
+            <v-card-title>App Overview</v-card-title>
             <v-card-text>
-              Explain is open source, see 
-              <a href="https://github.com/project-feynman/explain" target="_blank">Github</a>
+              <b>Intro</b><br>
+              Explain is an <a href="https://github.com/project-feynman/explain" target="_blank">open-source</a> startup
+              with the goal of creating a worldwide community of helpers who teach each other and share explanation videos.
+              <br>
+              <br>
+              <b>Support</b>
+              <br>
+              For any feedback, bug reports and new requests, don't hesitate to simply call 503 3250 3868 or email eltonlin@mit.edu.
+              <br>
+              <br>
+              <b>Recruitment</b>
+              <br>
+              I'm currently the only active developer (Elton Lin) looking to recruit a co-founder and founding engineers.
+              Explain served ~1000 students & teachers at MIT from 2020-2021, and raised a $0.5M seed round with OSS Capital.
+              I'm also looking for classes where Office Hours is at over-capacity and would benefit highly from Explain - any introductions would be life-savingly appreciated.
+              
             </v-card-text>
 
             <v-card-actions>
               <v-spacer/>
-              <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
-                LEAVE CLASS
-              </v-btn>
+              
               <v-btn v-if="user.email" 
                 @click="$_signOut()" large  class="mx-5 grey darken-1 white--text"
               >
@@ -203,35 +223,6 @@ export default {
     declineInvite () {
       this.gentleAlarm.pause()
       this.isShowingBanner = false
-    },
-    async leaveClass () {
-      const { user } = this; 
-      let classToRemove = null; 
-      for (const enrolledClass of user.enrolledClasses) {
-        if (enrolledClass.id === this.$route.params.class_id) {
-          classToRemove = enrolledClass;
-          break; 
-        }
-      }
-
-      // bad quickfix code to find a different classID to become the default redirected class
-      let newDefaultRedirectedClass = null; 
-      for (const enrolledClass of user.enrolledClasses) {
-        if (enrolledClass.id !== classToRemove.id) {
-          newDefaultRedirectedClass = enrolledClass; 
-          break; 
-        }
-      }
-
-      const { id } = newDefaultRedirectedClass; 
-      this.$router.push(`/class/${id}/section/${id}/room/${id}`);
-
-      await db.collection("users").doc(user.uid).update({
-        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
-        mostRecentClassID: newDefaultRedirectedClass.id,
-        emailOnNewQuestion: firebase.firestore.FieldValue.arrayRemove(classToRemove.id),
-        emailOnNewReply: firebase.firestore.FieldValue.arrayRemove(classToRemove.id)
-      });
     }
   }
 }

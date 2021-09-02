@@ -186,9 +186,10 @@
 
     <!-- The popup has to be OUTSIDE the menu, otherwise when the menu closes the popup cannot persist -->
     <!-- Alternatively, use click.stop() -->
-    <CurrentAreaRenamePopup 
+    <CurrentAreaRenamePopup v-if="roomTypeDoc"
       :isRenamePopupOpen="isRenamePopupOpen"
       :areaID="sectionID"
+      :initialValue="roomTypeDoc.name"
       @change="(newVal) => isRenamePopupOpen = newVal"
     />
 
@@ -319,7 +320,7 @@
         </v-list-item> 
       </template>
 
-      <v-list-item v-if="rooms.length !== 0 && rooms.length < 15" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
+      <v-list-item v-if="rooms.length !== 0 && rooms.length < 17" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
         <v-icon left color="black">mdi-plus</v-icon> new room
       </v-list-item>
     </v-list>

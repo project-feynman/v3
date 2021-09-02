@@ -21,7 +21,7 @@ export default {
           // The signed-in user info.
           var user = result.user;
           const email = result.user.email
-          console.log('user =', user)
+          const [firstName, lastName] = result.user.displayName.split(' ')
           const queryResult = await db.collection("users").where("email", "==", email).get();
           console.log("queryResult =", queryResult);
           if (queryResult.empty) {
@@ -185,7 +185,7 @@ export default {
     },
     $_signOut () { 
       firebase.auth().signOut(); 
-      window.location = "https://explain.education"; 
+      window.location = "https://explain.web.app"; 
     }
   }
 }

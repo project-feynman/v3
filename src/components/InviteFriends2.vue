@@ -1,138 +1,144 @@
 <template>
-<div>
-  <MapleMusicPlayer 
-    :incrementToToggleMusic="incrementToToggleMusic"
-    @music-fetched="incrementToToggleMusic += 1"
-  />  
-  <v-card>
-    <v-container>
+  <div>
+    <MapleMusicPlayer v-if="user.likesMapleStoryMusic"
+      :incrementToToggleMusic="incrementToToggleMusic"
+      @music-fetched="incrementToToggleMusic += 1"
+    />  
+    <v-card>
+      <v-container>
+        <v-card-title style="font-size: 2rem; margin-bottom: 20px">
+          Invite
+        </v-card-title>
 
-    <v-card-title style="font-size: 2rem; margin-bottom: 20px">
-      Invite
-    </v-card-title>
+        <v-card-subtitle>
+          You can invite other members of this class to explain something to you in real-time. 
+          Invites auto-expire in 20 seconds: if they're available, they'll join right away.
+          If they're not, try someone else.
+        </v-card-subtitle>
 
-    <v-card-subtitle>
-      You can invite other members of this class to explain something to you in real-time. 
-      Invites auto-expire in 20 seconds: if they're available, they'll join right away.
-      If they're not, try someone else.
-    </v-card-subtitle>
+        <v-card-text>      
+          <v-form>
+            <v-container>
+              <v-row>
+                <v-col cols="12" md="4">
+                  <div style="display: flex; align: center; margin-top: 5px">
+                    <p class="mb-0 mr-2" style="margin-top: 5px">
+                      <b>Happy to explain</b>
+                    </p>
+                    <v-switch
+                      :input-value="didUserVolunteer"
+                      @change="newBool => toggleVolunteer(newBool)"
+                      hide-details
+                      class="mt-0"
+                      color="cyan"
+                    />
+                  </div>
+                </v-col>
 
-    <v-card-text>      
-      <v-form>
-        <v-container>
-          <v-row>
-            <v-col cols="12" md="4">
-              <div style="display: flex; align: center; margin-top: 5px">
-                <p class="mb-0 mr-2" style="margin-top: 5px">
-                  <b>Happy to explain</b>
-                </p>
-                <v-switch
-                  :input-value="didUserVolunteer"
-                  @change="newBool => toggleVolunteer(newBool)"
-                  hide-details
-                  class="mt-0"
-                  color="cyan"
-                />
-              </div>
-            </v-col>
+                <v-col cols="12" md="4">
+                  <div style="display: flex; align: center">
+                    <v-textarea
+                      label="Your familiar topics"
+                      v-model="familiarTopics"
+                      :rows="3"
+                      hide-details
+                      :disabled="!didUserVolunteer"
+                    />
+                  </div>
+                  <v-btn @click="updateFamiliarTopics()" class="mt-5" :disabled="!didUserVolunteer">
+                    Update topics
+                  </v-btn>
+                </v-col>
 
-            <v-col cols="12" md="4">
-              <div style="display: flex; align: center">
-                <v-textarea
-                  label="Your familiar topics"
-                  v-model="familiarTopics"
-                  :rows="3"
-                  hide-details
-                  :disabled="!didUserVolunteer"
-                />
-              </div>
-              <v-btn @click="updateFamiliarTopics()" class="mt-5" :disabled="!didUserVolunteer">
-                 Update topics
-              </v-btn>
-            </v-col>
+                <v-col cols="12" md="4">
+                  <div style="display: flex; align: center">
+                    <v-textarea
+                      label="Good times to ask you questions"
+                      placeholder="e.g. anytime after 4 pm"
+                      v-model="goodTimesToAsk"
+                      :rows="3"
+                      hide-details
+                      :disabled="!didUserVolunteer"
+                    />
+                  </div>
+                  <v-btn @click="updateGoodTimesToAsk()" class="mt-5" :disabled="!didUserVolunteer">
+                    Update times
+                  </v-btn>
+                </v-col>
 
-            <v-col cols="12" md="4">
-              <div style="display: flex; align: center">
-                <v-textarea
-                  label="Good times to ask you questions"
-                  placeholder="e.g. anytime after 4 pm"
-                  v-model="goodTimesToAsk"
-                  :rows="3"
-                  hide-details
-                  :disabled="!didUserVolunteer"
-                />
-              </div>
-              <v-btn @click="updateGoodTimesToAsk()" class="mt-5" :disabled="!didUserVolunteer">
-                Update times
-              </v-btn>
-            </v-col>
+                <v-simple-table>
+                  <template v-slot:default>
+                    <thead>
+                      <tr>
+                        <th class="text-left">
+                          Name
+                        </th>
+                        <th class="text-left">
+                          Familiar Topics
+                        </th>
+                        <th class="text-left">
+                          Good times to ask
+                        </th>
+                      </tr>
+                    </thead>
 
-            <v-simple-table>
-              <template v-slot:default>
-                <thead>
-                  <tr>
-                    <th class="text-left">
-                      Name
-                    </th>
-                    <th class="text-left">
-                      Familiar Topics
-                    </th>
-                    <th class="text-left">
-                      Good times to ask
-                    </th>
-                  </tr>
-                </thead>
+                    <tbody>
+                      <tr
+                        v-for="volunteer in [...volunteerStaff, ...volunteerClassmates]"
+                        :key="volunteer.email"
+                      >
+                        <td>
+                          {{ volunteer.firstName + ' ' + volunteer.lastName }}
+                          <v-icon v-if="volunteer.isOnline" color="green" x-small>mdi-circle</v-icon>
+                        </td>
 
-                <tbody>
-                  <tr
-                    v-for="volunteer in [...volunteerStaff, ...volunteerClassmates]"
-                    :key="volunteer.email"
-                  >
-                    <td>
-                      {{ volunteer.firstName + ' ' + volunteer.lastName }}
-                      <v-icon v-if="volunteer.isOnline" color="green" x-small>mdi-circle</v-icon>
-                    </td>
+                        <!-- Familiar topics -->
+                        <td>{{ volunteer[`familiarTopicsInClass:${$route.params.class_id}`] }}</td>
 
-                    <!-- Familiar topics -->
-                    <td>{{ volunteer[`familiarTopicsInClass:${$route.params.class_id}`] }}</td>
+                        <td>
+                          {{ volunteer[`goodTimesToAskInClass:${$route.params.class_id}`] }}
+                        </td>
 
-                    <td>
-                      {{ volunteer[`goodTimesToAskInClass:${$route.params.class_id}`] }}
-                    </td>
-
-                    <td>
-                      <template v-if="volunteer.isOnline">
-                        <v-btn v-if="!isWaitingForReply" 
-                          @click="sendRealtimeInviteRequest(volunteer.uid)"
-                          color="cyan" dark
-                        >
-                          Invite
-                        </v-btn>
-                        <p v-else class="mb-0">
-                          Time remaining: {{ 20 - waitDuration}}
-                        </p>
-                      </template>
-                      
-                      <template v-else>
-                        <v-btn v-if="!isWaitingForEmailReply" @click="sendEmailInvite(volunteer)">
-                          Notify
-                        </v-btn>
-                        <p v-else class="mb-0">
-                          Time remaining: {{ 120 - emailWaitDuration }}
-                        </p>
-                      </template>
-                    </td>
-                  </tr>
-                </tbody>
-              </template>
-            </v-simple-table>
-          </v-row>
-        </v-container>
-      </v-form>
-      <br>
-    </v-card-text>
-    </v-container>
-  </v-card>
+                        <td>
+                          <template v-if="volunteer.isOnline">
+                            <v-btn v-if="!isWaitingForReply" 
+                              @click="sendRealtimeInviteRequest(volunteer.uid)"
+                              color="cyan" dark
+                            >
+                              Invite
+                            </v-btn>
+                            <p v-else class="mb-0">
+                              Time remaining: {{ 20 - waitDuration}}
+                            </p>
+                          </template>
+                          
+                          <template v-else>
+                            <v-btn v-if="!isWaitingForEmailReply" @click="sendEmailInvite(volunteer)">
+                              Notify
+                            </v-btn>
+                            <p v-else class="mb-0">
+                              Time remaining: {{ 120 - emailWaitDuration }}
+                            </p>
+                          </template>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </template>
+                </v-simple-table>
+              </v-row>
+            </v-container>
+          </v-form>
+          <br>
+          <v-spacer/>
+          <div style="display: flex; align-items: center; margin-right: 5px">
+            Background music
+            <v-switch :input-value="user.likesMapleStoryMusic" @change="newBool => toggleMusicAutoplay(newBool)" class="ml-5 mb-5" hide-details>
+              Music
+            </v-switch>
+          </div>
+        </v-card-text>
+      </v-container>
+    </v-card>
   </div>
 </template>
 
@@ -206,6 +212,12 @@ export default {
     })
   },
   methods: {
+    toggleMusicAutoplay (newBoolean) {
+      console.log("toggleMusicUAtoplay")
+      const userRef = db.collection('users').doc(this.user.uid)
+      if (newBoolean) userRef.update({ likesMapleStoryMusic: true })
+      else userRef.update({ likesMapleStoryMusic: false })
+    },
     toggleVolunteer (newBoolean) {
       console.log("toggleVolunteer, newBoolean =", newBoolean)
       const userRef = db.collection("users").doc(this.user.uid); 
@@ -285,7 +297,7 @@ export default {
         contentHTML: `
           <p>${this.user.firstName + ' ' + this.user.lastName} invited you to explain something</p> 
           <a href="https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}">
-            explain.education/class/${class_id}/section/${section_id}/room/${room_id}
+            explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}
           </a>
           <p>If you're busy, no need to do anything. If you're free, there's a 2-minute window before this request expires.</p>
           <p>

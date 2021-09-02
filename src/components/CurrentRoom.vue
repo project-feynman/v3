@@ -549,6 +549,7 @@ export default {
     this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomID}`);
     this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
       this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[0]); // TODO: perhaps this is a special case that can be "naturally handled" by the general case
+      this.newRoomName = this.room.name // the current name is the initial value for renaming the room
       this.snapshotListeners.push(unsubFunc);
     });
   },
@@ -729,7 +730,7 @@ export default {
       db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({ 
         name: this.newRoomName
       });
-      this.newRoomName = ""; 
+      this.newRoomName
     },
     updateRoomStatus () {
       db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({ 

@@ -31,12 +31,19 @@ export default {
     areaID: {
       type: String,
       required: true
+    },
+    initialValue: {
+      type: String,
+      required: true
     }
   },
   data () {
     return {
       newRoomTypeName: ""
     };
+  },
+  created () {
+    this.newRoomTypeName = this.initialValue
   },
   methods: {
     async renameRoomType () {
