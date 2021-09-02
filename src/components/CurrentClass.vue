@@ -26,7 +26,7 @@
           <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
             style="cursor: pointer; margin-left: 4px; margin-bottom: 11px; margin-top: 16px; margin-right: 2px" tile width="71" height="53"
           >
-            <img src="/logo.png" width="40" height="53" style="margin-left: 2px">
+            <v-img src="/logo.png" width="60" height="53" style="margin-left: 2px"/>
           </v-list-item-avatar>
 
           <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
