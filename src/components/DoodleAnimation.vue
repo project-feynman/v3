@@ -56,10 +56,6 @@
       <v-btn @click.stop="$emit('edit')">
         <v-icon>mdi-pencil</v-icon> EDIT TITLE / DESC.
       </v-btn>
-
-      <v-btn @click.stop="$emit('grade')">
-        <v-icon>mdi-feather</v-icon> GRADE
-      </v-btn>
       <!-- <v-btn @click.stop="$_toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn> -->
     </div>
   </div>
