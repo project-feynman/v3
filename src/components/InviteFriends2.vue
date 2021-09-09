@@ -7,16 +7,11 @@
     <v-card>
       <v-container>
         <v-card-title style="font-size: 2rem; margin-bottom: 20px">
-          Request helper
+          Find helper
         </v-card-title>
 
-        <v-card-subtitle>
-          You can invite others to explain something to you in real-time. 
-          Invites auto-expire in 20 seconds: if they're available, they'll join right away.
-          If they're not, try someone else.
-        </v-card-subtitle>
-
         <v-card-text>      
+          <h2 class="mt-5">Group Chat</h2>
           <ZoomChat
             :messagesDbPath="`classes/${$route.params.class_id}/roomTypes/${$route.params.section_id}/messages`"
             :participantsDbRef="participantsRef"
@@ -26,7 +21,17 @@
 
           <v-form>
             <v-container>
+
+              
+              <v-card-subtitle>
+                <!-- You can invite others to explain something to you in real-time. 
+                Invites auto-expire in 20 seconds: if they're available, they'll join right away.
+                If they're not, try someone else. -->
+              </v-card-subtitle>
+
               <v-row>
+
+
                 <v-simple-table>
                   <template v-slot:default>
                     <thead>
@@ -35,7 +40,7 @@
                           Name
                         </th>
                         <th class="text-left">
-                          Familiar Topics
+                          Favorite Topics
                         </th>
                         <th class="text-left">
                           Good times to ask
@@ -45,7 +50,7 @@
 
                     <tbody>
                       <tr
-                        v-for="volunteer in [...volunteerStaff, ...volunteerClassmates]"
+                        v-for="volunteer in sortedVolunteers"
                         :key="volunteer.email"
                       >
                         <td>
@@ -90,7 +95,7 @@
                  <v-col cols="12" md="4">
                   <div style="display: flex; align: center; margin-top: 5px">
                     <p class="mb-0 mr-2" style="margin-top: 5px">
-                      <b>Happy to explain</b>
+                      <b>Happy to help</b>
                     </p>
                     <v-switch
                       :input-value="didUserVolunteer"
@@ -109,6 +114,7 @@
                       v-model="familiarTopics"
                       :rows="3"
                       hide-details
+                      placeholder="Anything I understand"
                       :disabled="!didUserVolunteer"
                     />
                   </div>
@@ -206,6 +212,9 @@ export default {
       if (!this.user.classesVolunteered) return false
       else return this.user.classesVolunteered.includes(this.mitClass.id)
     },
+    sortedVolunteers () {
+      return this.volunteers.sort((v1, v2) => v2.isOnline - v1.isOnline)
+    },
     volunteerClassmates () {
       return this.volunteers.filter(v => v.kind !== 'staff')
     },
@@ -226,13 +235,11 @@ export default {
   },
   methods: {
     toggleMusicAutoplay (newBoolean) {
-      console.log("toggleMusicUAtoplay")
       const userRef = db.collection('users').doc(this.user.uid)
       if (newBoolean) userRef.update({ likesMapleStoryMusic: true })
       else userRef.update({ likesMapleStoryMusic: false })
     },
     toggleVolunteer (newBoolean) {
-      console.log("toggleVolunteer, newBoolean =", newBoolean)
       const userRef = db.collection("users").doc(this.user.uid); 
       if (newBoolean === true) {
         userRef.update({
