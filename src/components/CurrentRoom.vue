@@ -105,7 +105,7 @@
         elevation="10" class="pa-2" style="margin-top: 13px;" small block
       >
         <v-icon left color="purple" style="font-size: 0.85rem">mdi-account-plus</v-icon> 
-        Invite
+        Find helper
       </v-btn>
       <!-- <v-list-item @click="isInviteFriendsPopupOpen = true">
         <v-icon left color="purple">mdi-account-plus</v-icon> 

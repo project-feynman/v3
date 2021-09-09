@@ -96,7 +96,7 @@ export default {
       });
       this.newlyTypedMessage = ""; 
 
-      this.notifyRelevantUsers();
+      // this.notifyRelevantUsers();
     },
     async notifyRelevantUsers () {
       const participantsInArea = await this.$_getCollection(this.participantsDbRef);

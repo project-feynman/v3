@@ -232,7 +232,7 @@
                 </div>
 
                 <div v-else class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
-                  {{ i - 1 }}
+                  {{ i }}
                 </div> 
 
                 <v-spacer/>
@@ -280,7 +280,7 @@
                   </div>
 
                   <div v-else style="opacity: 55%; text-transform: lowercase;">
-                    {{ i - 1  }}
+                    {{ i }}
                   </div>  
                 </div>
 
@@ -320,7 +320,7 @@
         </v-list-item> 
       </template>
 
-      <v-list-item v-if="rooms.length !== 0 && rooms.length < 17" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
+      <v-list-item v-if="rooms.length !== 0 && rooms.length < 24" @click="createNewRoom()" class="mx-2" style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"> 
         <v-icon left color="black">mdi-plus</v-icon> new room
       </v-list-item>
     </v-list>

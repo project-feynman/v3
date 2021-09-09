@@ -7,65 +7,26 @@
     <v-card>
       <v-container>
         <v-card-title style="font-size: 2rem; margin-bottom: 20px">
-          Invite
+          Request helper
         </v-card-title>
 
         <v-card-subtitle>
-          You can invite other members of this class to explain something to you in real-time. 
+          You can invite others to explain something to you in real-time. 
           Invites auto-expire in 20 seconds: if they're available, they'll join right away.
           If they're not, try someone else.
         </v-card-subtitle>
 
         <v-card-text>      
+          <ZoomChat
+            :messagesDbPath="`classes/${$route.params.class_id}/roomTypes/${$route.params.section_id}/messages`"
+            :participantsDbRef="participantsRef"
+            :notifFieldName="`numOfUnreadMsgsInArea:${$route.params.section_id}`"
+          >
+          </ZoomChat>   
+
           <v-form>
             <v-container>
               <v-row>
-                <v-col cols="12" md="4">
-                  <div style="display: flex; align: center; margin-top: 5px">
-                    <p class="mb-0 mr-2" style="margin-top: 5px">
-                      <b>Happy to explain</b>
-                    </p>
-                    <v-switch
-                      :input-value="didUserVolunteer"
-                      @change="newBool => toggleVolunteer(newBool)"
-                      hide-details
-                      class="mt-0"
-                      color="cyan"
-                    />
-                  </div>
-                </v-col>
-
-                <v-col cols="12" md="4">
-                  <div style="display: flex; align: center">
-                    <v-textarea
-                      label="Your familiar topics"
-                      v-model="familiarTopics"
-                      :rows="3"
-                      hide-details
-                      :disabled="!didUserVolunteer"
-                    />
-                  </div>
-                  <v-btn @click="updateFamiliarTopics()" class="mt-5" :disabled="!didUserVolunteer">
-                    Update topics
-                  </v-btn>
-                </v-col>
-
-                <v-col cols="12" md="4">
-                  <div style="display: flex; align: center">
-                    <v-textarea
-                      label="Good times to ask you questions"
-                      placeholder="e.g. anytime after 4 pm"
-                      v-model="goodTimesToAsk"
-                      :rows="3"
-                      hide-details
-                      :disabled="!didUserVolunteer"
-                    />
-                  </div>
-                  <v-btn @click="updateGoodTimesToAsk()" class="mt-5" :disabled="!didUserVolunteer">
-                    Update times
-                  </v-btn>
-                </v-col>
-
                 <v-simple-table>
                   <template v-slot:default>
                     <thead>
@@ -125,6 +86,52 @@
                     </tbody>
                   </template>
                 </v-simple-table>
+
+                 <v-col cols="12" md="4">
+                  <div style="display: flex; align: center; margin-top: 5px">
+                    <p class="mb-0 mr-2" style="margin-top: 5px">
+                      <b>Happy to explain</b>
+                    </p>
+                    <v-switch
+                      :input-value="didUserVolunteer"
+                      @change="newBool => toggleVolunteer(newBool)"
+                      hide-details
+                      class="mt-0"
+                      color="cyan"
+                    />
+                  </div>
+                </v-col>
+
+                <v-col cols="12" md="4">
+                  <div style="display: flex; align: center">
+                    <v-textarea
+                      label="Your familiar topics"
+                      v-model="familiarTopics"
+                      :rows="3"
+                      hide-details
+                      :disabled="!didUserVolunteer"
+                    />
+                  </div>
+                  <v-btn @click="updateFamiliarTopics()" class="mt-5" :disabled="!didUserVolunteer">
+                    Update topics
+                  </v-btn>
+                </v-col>
+
+                <v-col cols="12" md="4">
+                  <div style="display: flex; align: center">
+                    <v-textarea
+                      label="Good times to ask you questions"
+                      placeholder="e.g. anytime after 4 pm"
+                      v-model="goodTimesToAsk"
+                      :rows="3"
+                      hide-details
+                      :disabled="!didUserVolunteer"
+                    />
+                  </div>
+                  <v-btn @click="updateGoodTimesToAsk()" class="mt-5" :disabled="!didUserVolunteer">
+                    Update times
+                  </v-btn>
+                </v-col>
               </v-row>
             </v-container>
           </v-form>
@@ -150,13 +157,15 @@ import { mapState } from "vuex";
 import firebase from "firebase/app"; 
 import "firebase/firestore"; 
 import "firebase/functions";
+import ZoomChat from '@/components/ZoomChat.vue'
 
 export default {
   mixins: [
     DatabaseHelpersMixin
   ],
   components: {
-    MapleMusicPlayer
+    MapleMusicPlayer,
+    ZoomChat
   },
   data () {
     return {
@@ -185,6 +194,10 @@ export default {
       "mitClass",
       "user"
     ]),
+    participantsRef () {
+      const { class_id, section_id } = this.$route.params
+      return db.doc(`classes/${class_id}`).collection("participants").where("roomTypeID", "==", section_id);
+    },
     isUserATutor () {
       if (!this.user.notifyOnTutorRequest) return false; 
       else return this.user.notifyOnTutorRequest.includes(this.mitClass.id);
