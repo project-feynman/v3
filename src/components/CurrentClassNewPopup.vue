@@ -13,10 +13,11 @@
           </v-col> 
         </v-row>
         
-        <v-list-item v-for="mitClass of user.enrolledClasses" :key="mitClass.id" style="margin-left: 30px; margin-bottom: 5px; font-size: 1rem">
+        <v-list-item v-for="mitClass of userClasses" :key="mitClass.id" style="margin-left: 30px; margin-bottom: 5px; font-size: 1rem">
           <b style="margin-right: 15px">{{ mitClass.name }}</b> 
           {{ mitClass.description }} 
           <v-spacer/>
+          <p class="text--secondary mx-3 mb-0">{{ mitClass.numOfMembers }} members</p>
           <v-btn v-if="user.enrolledClasses.length > 1" @click="leaveClass(mitClass.id)">
             LEAVE
           </v-btn>
@@ -104,6 +105,7 @@ import firebase from "firebase/app";
 import BasePopupButton from "@/components/BasePopupButton.vue"; 
 import BaseButton from "@/components/BaseButton.vue"; 
 import { getRandomId } from "@/helpers.js"; 
+import { mapState } from 'vuex'
 
 export default {
   props: {
@@ -129,8 +131,22 @@ export default {
     }
   },
   computed: {
-    user () { return this.$store.state.user; },
-    userRef () { return db.doc(`/users/${this.$store.state.user.uid}`); }
+    ...mapState([
+      'user',
+      'mitClass'
+    ]),
+    userRef () { return db.doc(`/users/${this.$store.state.user.uid}`); },
+    userClasses () {
+      const out = []
+      for (const mitClass of this.mitClasses) {
+        for (const userClass of this.user.enrolledClasses) {
+          if (mitClass.id === userClass.id) {
+            out.push(mitClass)
+          }
+        }
+      }
+      return out
+    }
   },
   async created () {
     this.mitClasses = await this.$_getCollection(db.collection("classes")); 
@@ -143,6 +159,11 @@ export default {
         emailOnNewQuestion: firebase.firestore.FieldValue.arrayUnion(mitClass.id),
         emailOnNewReply: firebase.firestore.FieldValue.arrayUnion(mitClass.id)
       });
+
+      db.doc(`classes/${mitClass.id}`).update({
+        numOfMembers: firebase.firestore.FieldValue.increment(1)
+      })
+
       this.$root.$emit("show-snackbar", `Successfully joined ${mitClass.name}.`);
       this.$router.push(`/class/${mitClass.id}/section/${mitClass.id}/room/${mitClass.id}`);
     },
@@ -171,7 +192,8 @@ export default {
           name: "Default Class Folder",
           id: newClassID,
           parent: null 
-        }]
+        }],
+        numOfMembers: 1
       });
 
       const ref = db.doc(`classes/${newClassID}`);
@@ -227,6 +249,10 @@ export default {
           break; 
         }
       }
+
+      db.doc(`classes/${classToRemove.id}`).update({
+        numOfMembers: firebase.firestore.FieldValue.increment(-1)
+      })
 
       await db.collection("users").doc(user.uid).update({
         enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),

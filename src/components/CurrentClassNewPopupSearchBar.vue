@@ -3,8 +3,8 @@
   even though the display name is just object.name -->
   <v-autocomplete
     label="Search class to join"
-    :items="items"
-    item-text="name"
+    :items="itemsWithMemberCount"
+    item-text="nameWithMemberCount"
     @change="(newClass) => handleChange(newClass)"
     return-object 
     prepend-inner-icon="mdi-magnify"
@@ -21,6 +21,16 @@ export default {
   props: { 
     label: String, 
     items: Array 
+  },
+  computed: {
+    itemsWithMemberCount () {
+      const sortedItems = this.items.sort((i1, i2) => i2.numOfMembers - i1.numOfMembers)
+      const out = []
+      for (const item of sortedItems) {
+        out.push({ ...item, nameWithMemberCount: `${item.name} (${item.numOfMembers || 0} members)`})
+      }
+      return out
+    }
   },
   data () {
     return { 
