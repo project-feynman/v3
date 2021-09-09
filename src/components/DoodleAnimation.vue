@@ -207,6 +207,7 @@ export default {
     pausePlay () {
       this.isPlaying = !this.isPlaying;
       if (this.isPlaying) {
+        this.$emit('play')
         this.isInReplayMode = true; 
         this.playAnimation();
       } 

@@ -10,7 +10,7 @@
       <!-- AUDIO SLIDER -->
       <audio v-if="audioUrl && strokesArray.length > 0"
         :src="audioUrl" 
-        @play="initSyncing()"
+        @play="initSyncing(); $emit('play')"
         @seeking="syncStrokesToAudio()"
         ref="AudioPlayer" 
         style="width: 100%;"

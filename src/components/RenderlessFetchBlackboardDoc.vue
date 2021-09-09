@@ -18,7 +18,8 @@ export default {
       title: '',
       descriptionHtml: '',
       totalPoints: 0,
-      unsubFunc: null
+      unsubFunc: null,
+      views: 0
     };
   },
   created () {
@@ -34,6 +35,7 @@ export default {
       this.descriptionHtml = d.descriptionHtml
       this.totalPoints = d.totalPoints
       this.isLoading = false
+      this.views = d.views
     })
   },
   destroyed () {
@@ -49,6 +51,7 @@ export default {
       descriptionHtml: this.descriptionHtml,
       totalPoints: this.totalPoints,
       isLoading: this.isLoading,
+      views: this.views
     });
   }
 }

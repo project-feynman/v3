@@ -314,7 +314,7 @@
         <RenderlessFetchBlackboardDoc
           :blackboardRef="blackboardRefs[i]"
           :key="boardID"
-          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints }"
+          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints, views }"
         >  
           <!-- Scroll to another blackboard => `currentBoardID` -->
           <div :id="boardID" v-intersect="{
@@ -346,6 +346,7 @@
                   <v-card-title v-if="title" style="font-size: 1.6rem">
                     {{ title }}
                   </v-card-title>
+                  <v-card-subtitle>{{ views }} views</v-card-subtitle>
                   <v-card-text>
                     <div v-if="descriptionHtml" 
                       v-html="descriptionHtml"
@@ -357,6 +358,7 @@
                         :audioUrl="audioDownloadURL"
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
+                        @play="incrementNumOfViewsOnExpl(boardID)"
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
@@ -366,6 +368,7 @@
                         :backgroundUrl="backgroundImageDownloadURL"
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
+                        @play="incrementNumOfViewsOnExpl(boardID)"
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
@@ -641,12 +644,12 @@ export default {
       this.refOfExplEdited = null
       this.isEditPopupOpen = false
     },
-    // incrementNumOfViewsOnExpl () {
-    //   const ref = db.doc(`${this.expl.ref}`);
-    //   ref.update({
-    //     views: firebase.firestore.FieldValue.increment(1)
-    //   });
-    // },
+    incrementNumOfViewsOnExpl (id) {
+      const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${id}`);
+      ref.update({
+        views: firebase.firestore.FieldValue.increment(1)
+      });
+    },
     // TODO: 
     //   - be able to delete blackboards
     //   - delete the blackboard doc itself 
