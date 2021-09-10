@@ -30,7 +30,7 @@ export default {
               lastName,
               email,
               uid: result.user.uid,
-              kind // "student", "staff", "affiliate"
+              kind: '' // "student", "staff", "affiliate"
             });            
             this.$root.$emit("show-snackbar", "Successfully created account");
           } else {
