@@ -353,7 +353,7 @@ export default {
             resolve({ url: `https://feynman.daily.co/${this.roomID}` }); 
           } else {
             console.log('room =', room)
-            alert('Cannot create conference room')
+            // alert('Cannot create conference room')
             resolve(room); 
           }
         } catch (error) {
