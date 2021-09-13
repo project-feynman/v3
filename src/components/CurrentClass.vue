@@ -165,8 +165,7 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "mitClass",
-      "isBoardFullscreen"
+      "mitClass"
     ]),
     ...mapGetters([
       "numOfUnreadGlobalMsgs"
@@ -184,10 +183,6 @@ export default {
     'user.inviteRequestCounter': function () {
       this.isShowingBanner = true 
     },
-    isBoardFullscreen (newVal) {
-      if (newVal) this.isShowingDrawer = false; 
-      else this.isShowingDrawer = true; 
-    },
     areaID: {
       handler () {
         this.$store.commit('SET_CURRENT_AREA_ID', this.areaID)
@@ -196,6 +191,9 @@ export default {
     }
   },
   created () {
+    // listens for blackboard toolbar's toggle fullscreen
+    this.$root.$on('fullscreen-toggle', () => this.isShowingDrawer = !this.isShowingDrawer)
+
     this.unsubscribeClassDocListener = db.doc(`classes/${this.classID}`).onSnapshot(classDocSnapshot => {
       this.$store.commit("SET_CLASS", { id: classDocSnapshot.id, ...classDocSnapshot.data() });
     });
