@@ -125,7 +125,8 @@ export default {
         y: -1 
       },
       imageBlob: null,
-      isFullScreen: false
+      isFullScreen: false,
+      timeout: null
     }
   },
   computed: {
@@ -222,9 +223,10 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
 
-    this.resizeBlackboard(); // resizeBlackboard also re-renders everything
-    this.resizeBlackboard = _.debounce(this.resizeBlackboard, 100); 
-    window.addEventListener("resize", this.resizeBlackboard);
+    // problem: https://forum.vuejs.org/t/issues-with-vuejs-component-and-debounce/7224
+    // solution: https://stackoverflow.com/a/55617228/7812829
+    this.debouncedResizeBlackboard()
+    window.addEventListener("resize", this.debouncedResizeBlackboard)
     
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>
     this.$emit("mounted", { 
@@ -232,7 +234,8 @@ export default {
     });
   },
   destroyed () {
-    window.removeEventListener("resize", this.resizeBlackboard);
+    window.removeEventListener("resize", this.debouncedResizeBlackboard)
+    clearInterval(this.timeout) // timeout for resizeBlackboard
   },
   methods: {
     /** 
@@ -439,6 +442,12 @@ export default {
         this.bgCanvas.toBlob(thumbnail => resolve(thumbnail));
       })
     },
+    debouncedResizeBlackboard: function() {
+      if (this.timeout) clearTimeout(this.timeout)
+      this.timeout = setTimeout(() => {
+        this.resizeBlackboard()
+      }, 100); // delay
+    },
     /**
      * Correctly readjusts the external and internal dimensions of the canvas.
      * Because the HTML canvas wipes everytime it's resized, 
@@ -487,7 +496,7 @@ export default {
 
       // below is necessary even though the same rescale logic resides in "startNewStroke()"
       // otherwise the existing strokes will be out of scale until the another stroke is drawn
-      this.$_rescaleCanvas();
+      this.$_rescaleCanvas() // rescaleCanvas also re-renders the background image
       this.$_drawStrokesInstantly();
 
       if (this.backgroundImage) {
