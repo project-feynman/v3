@@ -30,19 +30,35 @@
         :sectionID="area.id"
       />
     </div>
+
+    <BasePopupButton v-if="sortedAreas.length !== 0"
+      actionName="Create a new area"
+      :inputFields="['name']" 
+      @action-do="({ name }) => createNewRoomType(name)"
+    >
+      <template v-slot:activator-button="{ on }">
+        <v-list-item v-on="on" style="font-weight: 500; opacity: 100%; font-size: 0.95rem;">
+          <v-icon class="ml-1 mr-2 black--text">mdi-plus</v-icon>
+          <div style="color: '#424242'; opacity: 80%">NEW AREA</div>
+        </v-list-item>
+      </template> 
+    </BasePopupButton>
   </div>
 </template>
 
 <script>
 import CurrentArea from '@/components/CurrentArea.vue'
 import DatabaseHelpersMixin from '@/mixins/DatabaseHelpersMixin.js'
+import BasePopupButton from '@/components/BasePopupButton.vue'
 import db from '@/database.js'
+import { getRandomId } from '@/helpers.js'
 
 export default {
   mixins: [
     DatabaseHelpersMixin
   ],
   components: {
+    BasePopupButton,
     CurrentArea
   },
   data () {
@@ -86,6 +102,29 @@ export default {
       } else {
         this.indicesOfExpandedAreas.push(i)
       }
+    },
+    async createNewRoomType (name, id = getRandomId()) {
+      if (!name) {
+        this.$root.$emit("show-snackbar", "Don't forget to name this area"); 
+        return;
+      }
+      const { class_id } = this.$route.params; 
+      const ref = db.doc(`classes/${class_id}`);
+      await Promise.all([
+        ref.collection("roomTypes").doc(id).set({ id, name }),
+        ref.collection("rooms").doc(id).set({
+          isCommonRoom: true,
+          roomTypeID: id,
+          blackboards: [id]
+        }),
+        ref.collection("blackboards").doc(id).set({})
+      ]);
+
+      // have to re-fetch to get the updated areas 
+      this.allAreas = await this.$_getCollection(this.classDocRef.collection("roomTypes"))
+
+      this.$root.$emit("show-snackbar", "Successfully created new open space.")
+      this.$router.push(`/class/${class_id}/section/${id}/room/${id}`);
     }
   }
 }

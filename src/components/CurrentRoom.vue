@@ -105,7 +105,7 @@
         elevation="10" class="pa-2" style="margin-top: 13px;" small block
       >
         <v-icon left color="purple" style="font-size: 0.85rem">mdi-account-plus</v-icon> 
-        Invite
+        Find helper
       </v-btn>
       <!-- <v-list-item @click="isInviteFriendsPopupOpen = true">
         <v-icon left color="purple">mdi-account-plus</v-icon> 
@@ -115,7 +115,7 @@
 
     <!-- INFINITE TUTORING -->
     <v-dialog v-model="isInviteFriendsPopupOpen" max-width="800">
-      <InviteFriends v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
+      <InviteFriends2 v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
     </v-dialog> 
   
     <!-- ROOM ACTIONS MENU -->
@@ -314,7 +314,7 @@
         <RenderlessFetchBlackboardDoc
           :blackboardRef="blackboardRefs[i]"
           :key="boardID"
-          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints }"
+          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints, views }"
         >  
           <!-- Scroll to another blackboard => `currentBoardID` -->
           <div :id="boardID" v-intersect="{
@@ -346,6 +346,7 @@
                   <v-card-title v-if="title" style="font-size: 1.6rem">
                     {{ title }}
                   </v-card-title>
+                  <v-card-subtitle>{{ views }} views</v-card-subtitle>
                   <v-card-text>
                     <div v-if="descriptionHtml" 
                       v-html="descriptionHtml"
@@ -357,6 +358,7 @@
                         :audioUrl="audioDownloadURL"
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
+                        @play="incrementNumOfViewsOnExpl(boardID)"
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
@@ -366,6 +368,7 @@
                         :backgroundUrl="backgroundImageDownloadURL"
                         :aspectRatio="4/3"
                         style="margin-top: 5px"
+                        @play="incrementNumOfViewsOnExpl(boardID)"
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
@@ -422,6 +425,7 @@ import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId } from "@/helpers.js";
 import ZoomChat from "@/components/ZoomChat.vue";
 import InviteFriends from "@/components/InviteFriends.vue"; 
+import InviteFriends2 from '@/components/InviteFriends2.vue'
 import DoodleAnimation from '@/components/DoodleAnimation.vue'
 import DoodleVideo from '@/components/DoodleVideo.vue'
 import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
@@ -451,6 +455,7 @@ export default {
     CurrentRoomGradingPopup,
     ZoomChat,
     InviteFriends,
+    InviteFriends2,
     DoodleAnimation,
     DoodleVideo,
     Drag,
@@ -547,6 +552,7 @@ export default {
     this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomID}`);
     this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
       this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[0]); // TODO: perhaps this is a special case that can be "naturally handled" by the general case
+      this.newRoomName = this.room.name // the current name is the initial value for renaming the room
       this.snapshotListeners.push(unsubFunc);
     });
   },
@@ -638,12 +644,12 @@ export default {
       this.refOfExplEdited = null
       this.isEditPopupOpen = false
     },
-    // incrementNumOfViewsOnExpl () {
-    //   const ref = db.doc(`${this.expl.ref}`);
-    //   ref.update({
-    //     views: firebase.firestore.FieldValue.increment(1)
-    //   });
-    // },
+    incrementNumOfViewsOnExpl (id) {
+      const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${id}`);
+      ref.update({
+        views: firebase.firestore.FieldValue.increment(1)
+      });
+    },
     // TODO: 
     //   - be able to delete blackboards
     //   - delete the blackboard doc itself 
@@ -727,7 +733,7 @@ export default {
       db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({ 
         name: this.newRoomName
       });
-      this.newRoomName = ""; 
+      this.newRoomName
     },
     updateRoomStatus () {
       db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({ 

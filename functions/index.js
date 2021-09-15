@@ -71,11 +71,18 @@ function getRandomId () {
 /**
  * `.onWrite` is Triggered on any mutation event: when data is created, updated, or deleted in the Realtime Database.
  * */
-exports.onClassParticipantsChanged = functions.database.ref("/class/{classID}/room/{roomID}/participants/{disconnectID}").onWrite((change, context) => {
+exports.onClassParticipantsDisconnected = functions.database.ref("/class/{classID}/room/{roomID}/participants/{disconnectID}").onWrite((change, context) => {
   // `change` has a `before` and `after` property, which each has a `_data` property that looks like `{ hasDisconnected: true }`
-  console.log("change.after =", change.after); // leave it, as it can potentially help a lot with debugging
+  const newFirebaseValue = change.after._data // StockOverflow's .data() solution doesn't work https://stackoverflow.com/questions/49759432/firebase-cloud-functions-how-to-get-data-from-change-and-context
+  console.log("change.after =", newFirebaseValue) // leave it, as it can potentially help a lot with debugging
   const { classID, disconnectID } = context.params;
-  return firestore.doc(`/classes/${classID}/participants/${disconnectID}`).delete();
+  return Promise.all([
+    firestore.doc(`/classes/${classID}/participants/${disconnectID}`).delete(),
+    firestore.doc(`users/${newFirebaseValue.userUID}`).update({ 
+      isOnline: false
+      // last_changed: firebase.firestore.FieldValue.serverTimestamp()
+    })
+  ])
 });
 
 function getEmailBody (explDoc, classId, postId) { // assumes .data() has been called already

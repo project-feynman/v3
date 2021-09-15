@@ -23,7 +23,8 @@ export default {
         // TODO: find a way for CSS to naturally sync both canvas' scrollHeight and scrollWidth (this will currently be different)
         this.bgCanvas.height = this.bgCanvas.scrollHeight;
         this.bgCanvas.width = this.bgCanvas.scrollWidth;
-
+        
+        // don't remove this yet, because even though BlackboardCoreDrawing also renders background, DoodleVideo and DoodleAnimation still relies on this
         this.$_renderBackground(this.imageBlobUrl);
         return true;
       }
@@ -50,7 +51,19 @@ export default {
         image.crossOrigin="anonymous";
 
         image.onload = () => { 
-          this.bgCtx.drawImage(image, 0, 0); // (0, 0) specifies the top-left corner of the image
+          const boardWidth = this.canvas.scrollWidth 
+          const boardHeight = this.canvas.scrollHeight
+          const imageAspectRatio = image.width / image.height
+          // correctness argument: because each device's blackboard has the same aspect ratio,
+          // height-based scaling will not distort annotations
+          if (image.height > image.width) { // weak criteria, but assume it's a vertical PDF page
+            image.width = boardWidth / 2
+            image.height = image.width * 1/imageAspectRatio
+          } else { // slide ratio seems to be 3 * 4
+            image.width = 0.75 * boardWidth
+            image.height = image.width * 1/imageAspectRatio
+          }
+          this.bgCtx.drawImage(image, 0, 0, image.width, image.height); // (0, 0) specifies the top-left corner of the image
           resolve();
         };
       });

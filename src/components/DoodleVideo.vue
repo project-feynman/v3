@@ -10,7 +10,7 @@
       <!-- AUDIO SLIDER -->
       <audio v-if="audioUrl && strokesArray.length > 0"
         :src="audioUrl" 
-        @play="initSyncing()"
+        @play="initSyncing(); $emit('play')"
         @seeking="syncStrokesToAudio()"
         ref="AudioPlayer" 
         style="width: 100%;"
@@ -58,10 +58,6 @@
 
         <v-btn @click.stop="$emit('edit')">
           <v-icon>mdi-pencil</v-icon> EDIT TITLE / DESC.
-        </v-btn>
-
-        <v-btn @click.stop="$emit('grade')">
-          <v-icon>mdi-feather</v-icon> GRADE
         </v-btn>
         <!-- <v-btn @click.stop="$emit('description-edit')">
           <v-icon>mdi-edit</v-icon>

@@ -33,6 +33,7 @@ import _ from "lodash";
 import CurrentClass from "@/components/CurrentClass.vue"; 
 import AuthHelpers from "@/mixins/AuthHelpers.js"; 
 import { mapState } from "vuex"; 
+import db from '@/database.js'
 
 // TODO:
 //   - Fix ghosts: let source of truth for video conference from Daily (CURRENTLY WORKING ON THIS)
@@ -61,6 +62,19 @@ export default {
     classID () { return this.$route.params.class_id; },
     areaID () { return this.$route.params.section_id; },
     tableID () {return this.$route.params.room_id; }
+  },
+  watch: {
+    'user.isOnline': function () {
+      const { user } = this
+      if (!user.isOnline) {
+        // the disconnect hook from a previous session only triggered now, overwriting `isOnline` to false 
+        // even though the user is clearly online in this session
+        // we correct it by resetting it 
+        db.doc(`users/${user.uid}`).update({
+          isOnline: true
+        })
+      }
+    }
   },
   async created () {
     // SNACKBAR LISTENER

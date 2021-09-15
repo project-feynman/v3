@@ -104,7 +104,7 @@
                     class="mt-0"
                     color="cyan"
                   ></v-switch>
-                  <p class="mb-0 ml-2" style="margin-top: 5px">Volunteer</p>
+                  <p class="mb-0 ml-2" style="margin-top: 5px">Happy to teach</p>
                 </div>
               </v-list>
             </v-col>

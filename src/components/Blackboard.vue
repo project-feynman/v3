@@ -45,6 +45,10 @@
                 <div class="font-size: 0.5rem">Touch draw</div>
               </template>
             </v-switch>
+            
+            <BaseButton icon="mdi-fullscreen" color="white" small hasLargeIcon @click="$root.$emit('fullscreen-toggle')"> 
+
+            </BaseButton>
 
             <BaseButton :disabled="! canUndoStroke"
               @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 
@@ -63,11 +67,11 @@
           <template v-slot:more-actions-slot>
             <BaseButton v-if="currentState === RecordState.PRE_RECORD" 
               @click="startRecording()" 
-              icon="mdi-record" color="white" small
+              icon="mdi-record-rec" color="red" small dark
+              hasLargeIcon
             >
-              Record
             </BaseButton>
-            <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="white" small>
+            <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="red" small>
               Finish
             </BaseButton>
 

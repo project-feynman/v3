@@ -22,28 +22,48 @@
       touchless 
     >      
       <v-sheet class="pt-0" style="margin-bottom: 26px;" elevation="8">    
-        <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
+        <div style="display: flex">
+          <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
+            style="cursor: pointer; margin-left: 4px; margin-bottom: 11px; margin-top: 16px; margin-right: 2px" tile width="71" height="53"
+          >
+            <v-img src="/logo.png" width="60" height="53" style="margin-left: 2px"/>
+          </v-list-item-avatar>
+
+          <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
           <template v-slot:add-join-leave-class>
             <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-              <v-icon left class="mr-2">mdi-plus</v-icon> Add/join class
+              <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
             </v-list-item>
           </template>
         </CurrentClassDropdown>
+        </div>
 
         <!-- Have the app overview, updates, news, as well as the chats -->
         <v-dialog v-model="isAppPopupOpen" max-width="500">
           <v-card>     
-            <v-card-title>Explain</v-card-title>
+            <v-card-title>App Overview</v-card-title>
             <v-card-text>
-              Explain is open source, see 
-              <a href="https://github.com/project-feynman/explain" target="_blank">Github</a>
+              <b>Intro</b><br>
+              Explain is an <a href="https://github.com/project-feynman/explain" target="_blank">open-source</a> startup
+              with the goal of creating a worldwide community of helpers who teach each other and share explanation videos.
+              <br>
+              <br>
+              <b>Support</b>
+              <br>
+              For any feedback, bug reports and new requests, don't hesitate to simply call 503 3250 3868 or email eltonlin@mit.edu.
+              <br>
+              <br>
+              <b>Recruitment</b>
+              <br>
+              I'm currently the only active developer (Elton Lin) looking to recruit a co-founder and founding engineers.
+              Explain served ~1000 students & teachers at MIT from 2020-2021, and raised a $0.5M seed round with OSS Capital.
+              I'm also looking for classes where Office Hours is at over-capacity and would benefit highly from Explain - any introductions would be life-savingly appreciated.
+              
             </v-card-text>
 
             <v-card-actions>
               <v-spacer/>
-              <v-btn v-if="user.enrolledClasses.length >= 2" large @click="leaveClass()">
-                LEAVE CLASS
-              </v-btn>
+              
               <v-btn v-if="user.email" 
                 @click="$_signOut()" large  class="mx-5 grey darken-1 white--text"
               >
@@ -66,6 +86,11 @@
     </v-navigation-drawer>
 
     <v-main>
+      <CurrentClassInviteBanner v-if="isShowingBanner" 
+        :redirectURL="user.inviteRequestURL || ''"
+        @input="isShowingBanner = false"
+      />
+
       <CurrentRoom 
         :roomID="tableID" 
         :key="tableID"
@@ -87,8 +112,8 @@ import MyParticipantDocUpdater from "@/components/MyParticipantDocUpdater.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
 import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
+import CurrentClassInviteBanner from '@/components/CurrentClassInviteBanner.vue'
 
-import CurrentAreaDropdown from "@/components/CurrentAreaDropdown.vue"; 
 import BaseButton from "@/components/BaseButton.vue";
 import AllAreas from '@/components/AllAreas.vue'
 import CurrentArea from "@/components/CurrentArea.vue"; 
@@ -121,7 +146,7 @@ export default {
     BasePopupButton,
     CurrentClassDropdown,
     CurrentClassNewPopup,
-    CurrentAreaDropdown,
+    CurrentClassInviteBanner,
     MyParticipantDocUpdater,
     CurrentArea,
     CurrentRoom
@@ -134,15 +159,13 @@ export default {
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
     tab: 0, // 0, 1, 2
-    isAppPopupOpen: false
+    isAppPopupOpen: false,
+    isShowingBanner: false
   }),
   computed: {
     ...mapState([
       "user",
-      "mitClass",
-      "isBoardFullscreen",
-      "isViewingLibrary",
-      "isViewingForum"
+      "mitClass"
     ]),
     ...mapGetters([
       "numOfUnreadGlobalMsgs"
@@ -157,24 +180,8 @@ export default {
   },
   // TODO: refactor this quickfix
   watch: {
-    isBoardFullscreen (newVal) {
-      if (newVal) this.isShowingDrawer = false; 
-      else this.isShowingDrawer = true; 
-    },
-    // REFACTOR THIS
-    // setting isViewingForum to true will display the AppOverViewPopup because it's computed property relies on it, 
-    // and the right tab will be selected because the tab is set here. Not a great solution, but <v-tabs> is really hard to get to work
-    isViewingForum: {
-      immediate: true,
-      handler () {
-        if (this.isViewingForum) this.tab = 1; 
-      }
-    },
-    isViewingLibrary: {
-      immediate: true, 
-      handler () {
-        if (this.isViewingLibrary) this.tab = 2; 
-      }
+    'user.inviteRequestCounter': function () {
+      this.isShowingBanner = true 
     },
     areaID: {
       handler () {
@@ -184,6 +191,9 @@ export default {
     }
   },
   created () {
+    // listens for blackboard toolbar's toggle fullscreen
+    this.$root.$on('fullscreen-toggle', () => this.isShowingDrawer = !this.isShowingDrawer)
+
     this.unsubscribeClassDocListener = db.doc(`classes/${this.classID}`).onSnapshot(classDocSnapshot => {
       this.$store.commit("SET_CLASS", { id: classDocSnapshot.id, ...classDocSnapshot.data() });
     });
@@ -205,34 +215,12 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
-    async leaveClass () {
-      const { user } = this; 
-      let classToRemove = null; 
-      for (const enrolledClass of user.enrolledClasses) {
-        if (enrolledClass.id === this.$route.params.class_id) {
-          classToRemove = enrolledClass;
-          break; 
-        }
-      }
+    redirectToNewRoom () {
 
-      // bad quickfix code to find a different classID to become the default redirected class
-      let newDefaultRedirectedClass = null; 
-      for (const enrolledClass of user.enrolledClasses) {
-        if (enrolledClass.id !== classToRemove.id) {
-          newDefaultRedirectedClass = enrolledClass; 
-          break; 
-        }
-      }
-
-      const { id } = newDefaultRedirectedClass; 
-      this.$router.push(`/class/${id}/section/${id}/room/${id}`);
-
-      await db.collection("users").doc(user.uid).update({
-        enrolledClasses: firebase.firestore.FieldValue.arrayRemove(classToRemove),
-        mostRecentClassID: newDefaultRedirectedClass.id,
-        emailOnNewQuestion: firebase.firestore.FieldValue.arrayRemove(classToRemove.id),
-        emailOnNewReply: firebase.firestore.FieldValue.arrayRemove(classToRemove.id)
-      });
+    },
+    declineInvite () {
+      this.gentleAlarm.pause()
+      this.isShowingBanner = false
     }
   }
 }

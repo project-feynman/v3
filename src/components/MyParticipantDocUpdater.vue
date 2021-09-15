@@ -69,9 +69,13 @@ export default {
       if (snapshot.val() === true) {
         const disconnectID = getRandomId(); 
         
+        db.doc(`users/${this.user.uid}`).update({
+          isOnline: true
+        })
         this.myFirebaseRef = firebase.database().ref(`/class/${this.classID}/room/${this.roomID}/participants/${disconnectID}`);
         await this.myFirebaseRef.onDisconnect().set({
-          hasDisconnected: true
+          hasDisconnected: true,
+          userUID: this.user.uid // Cloud Functions will use `userUID` to set `isOnline` to false for the right user document
         });
 
         this.myFirestoreRef = db.doc(`classes/${this.classID}/participants/${disconnectID}`);

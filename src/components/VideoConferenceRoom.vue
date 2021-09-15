@@ -112,7 +112,7 @@
                       <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()"
                         small dark fab color="red"
                       >
-                        <v-icon small>mdi-phone-hangup</v-icon>
+                        <v-icon>mdi-volume-minus</v-icon>
                       </v-btn>
                     </div>
                   </portal>
@@ -131,9 +131,9 @@
               <template v-if="connectionStatus !== 'CONNECTED'">
                 <v-btn @click.prevent.stop="joinConferenceRoom()" 
                   :loading="connectionStatus === 'CONNECTING'"
-                  style="background-color:  #1abd53" elevation="5" icon 
+                  style="background-color: #1abd53" elevation="5" icon 
                 >
-                  <v-icon color="white">mdi-phone</v-icon>
+                  <v-icon color="white" style="font-size: 1.4rem">mdi-volume-plus</v-icon>
                 </v-btn>
               </template>
               
@@ -168,11 +168,14 @@
                 {{ participants[ firestoreIDToDailyID[client.sessionID] ].audio ? 'mdi-microphone' : 'mdi-microphone-off' }}
               </v-icon>
               <!-- If I'm not connected, but someone else is connected, I'll see that their connected in a phone/voice chat-->
-              <v-icon v-else-if="client.canHearAudio" color="green">
-                mdi-phone
+              <v-icon v-else-if="client.canHearAudio" color="green" small>
+                mdi-volume-high
               </v-icon>
-              <v-icon v-else-if="!client.canHearAudio && connectionStatus === 'CONNECTED'" small color="grey darken-2">
-                mdi-headphones-off
+              <v-icon v-else-if="!client.canHearAudio && connectionStatus === 'CONNECTED'" small color="red darken-2">
+                mdi-volume-off
+              </v-icon>
+              <v-icon v-else small color="red darken-2">
+                mdi-volume-off
               </v-icon>
 
               <div
@@ -270,6 +273,10 @@ export default {
       if (!this.roomIDToParticipants) return; 
       else return this.roomIDToParticipants[this.roomID]; 
     },
+    numOfPeopleInRoom () {
+      if (!this.allClients) return 0
+      else return this.allClients.length
+    },
     sessionID () { return this.$store.state.session.currentID; },
     isMicOn () { return this.participants.local.audio; },
     isCamOn () { return this.participants.local.video; }
@@ -282,6 +289,15 @@ export default {
         if (newValue === 'DISCONNECTED' && this.canHearAudio) {
           this.joinConferenceRoom(); 
         }
+      }
+    },
+    numOfPeopleInRoom (newVal, oldVal) {
+      if (newVal > oldVal) {
+        const joinSound = new Audio(require('@/assets/state-change_confirm-up.wav'))
+        joinSound.play()
+      } else {
+        const leaveSound = new Audio(require('@/assets/state-change_confirm-down.wav'))
+        leaveSound.play()
       }
     }
   },
@@ -336,13 +352,15 @@ export default {
           if (room.error === "invalid-request-error" && room.info === `a room named ${this.roomID} already exists`) {
             resolve({ url: `https://feynman.daily.co/${this.roomID}` }); 
           } else {
+            console.log('room =', room)
+            // alert('Cannot create conference room')
             resolve(room); 
           }
         } catch (error) {
           // TODO: handle error explicitly
           console.error(error);
           alert(error);
-          resolve({ url: "" });
+          resolve({ url: '' });
         } 
       });
     },

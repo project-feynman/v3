@@ -2,11 +2,6 @@
   <v-menu v-model="isMenuOpen" bottom offset-y>
     <template v-slot:activator="{ on }">
       <v-list-item v-on="on" two-line class="px-0">
-        <v-list-item-avatar @click="$emit('logo-click')"
-          class="mr-0" style="cursor: pointer; margin-left: 2px; margin-bottom: 11px;" tile width="60" height="53"
-        >
-          <img src="/logo.png">
-        </v-list-item-avatar>
 
         <v-list-item-content v-if="mitClass" class="py-0 mx-1" style="max-width: 170px">
           <v-list-item-title class="mb-0 display-1" style="1.4rem;">

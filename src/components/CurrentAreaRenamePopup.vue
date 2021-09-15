@@ -31,6 +31,10 @@ export default {
     areaID: {
       type: String,
       required: true
+    },
+    initialValue: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -38,9 +42,12 @@ export default {
       newRoomTypeName: ""
     };
   },
+  created () {
+    this.newRoomTypeName = this.initialValue
+  },
   methods: {
     async renameRoomType () {
-      const { class_id, section_id } = this.$route.params; 
+      const { class_id } = this.$route.params; 
       const ref = db.doc(`classes/${class_id}/roomTypes/${this.areaID}`);
       await ref.update({
         name: this.newRoomTypeName
