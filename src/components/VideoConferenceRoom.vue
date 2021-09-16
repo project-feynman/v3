@@ -112,7 +112,7 @@
                       <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()"
                         small dark fab color="red"
                       >
-                        <v-icon>mdi-volume-minus</v-icon>
+                        <v-icon>mdi-volume-off</v-icon>
                       </v-btn>
                     </div>
                   </portal>
@@ -133,7 +133,7 @@
                   :loading="connectionStatus === 'CONNECTING'"
                   style="background-color: #1abd53" elevation="5" icon 
                 >
-                  <v-icon color="white" style="font-size: 1.4rem">mdi-volume-plus</v-icon>
+                  <v-icon color="white" style="font-size: 1.4rem">mdi-volume-high</v-icon>
                 </v-btn>
               </template>
               

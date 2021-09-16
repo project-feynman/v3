@@ -223,9 +223,10 @@ export default {
     this.ctx = this.canvas.getContext("2d");
     this.bgCtx = this.bgCanvas.getContext("2d");
 
+    // resize IMMEDIATELY at the start, otherwise multiple mini blackboards will all display, and then resize, it's jarring
+    this.resizeBlackboard()
     // problem: https://forum.vuejs.org/t/issues-with-vuejs-component-and-debounce/7224
     // solution: https://stackoverflow.com/a/55617228/7812829
-    this.debouncedResizeBlackboard()
     window.addEventListener("resize", this.debouncedResizeBlackboard)
     
     // explicitly expose `getThumbnailBlob` to client components that use <BlackboardCoreDrawing/>

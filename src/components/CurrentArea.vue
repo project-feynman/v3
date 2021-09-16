@@ -307,7 +307,7 @@
                     
                     <div class="ml-2 mr-4" style="display: flex;">
                       <v-icon v-if="p.canHearAudio" small color="green">
-                        mdi-phone
+                        mdi-volume-high
                       </v-icon>
 
                       <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
