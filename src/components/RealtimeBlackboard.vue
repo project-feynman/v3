@@ -137,6 +137,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
+import 'firebase/analytics'
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
@@ -230,6 +231,8 @@ export default {
         audioDownloadURL
       })      
       
+      firebase.analytics().logEvent('recorded_video', { className: this.mitClass.name })
+
       this.isUploadingSnackbarOpen = false
     },
     async saveAnimation () {

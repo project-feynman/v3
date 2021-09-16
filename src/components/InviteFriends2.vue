@@ -163,6 +163,7 @@ import { mapState } from "vuex";
 import firebase from "firebase/app"; 
 import "firebase/firestore"; 
 import "firebase/functions";
+import 'firebase/analytics'
 import ZoomChat from '@/components/ZoomChat.vue'
 
 export default {
@@ -223,6 +224,8 @@ export default {
     }
   },
   created () {
+    firebase.analytics().logEvent('request_helper', { className: this.mitClass.name })
+
     this.familiarTopics = this.user[`familiarTopicsInClass:${this.$route.params.class_id}`]
     this.goodTimesToAsk = this.user[`goodTimesToAskInClass:${this.$route.params.class_id}`]
 
