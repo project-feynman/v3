@@ -1,7 +1,7 @@
 
 <template>
    <!-- Might need `width: 100%` here -->
-  <div>
+  <div style="width: 100%" class="px-3">
     <slot>
       <!-- Close window button is injected here -->
     </slot>
@@ -59,7 +59,7 @@ export default {
     return {
       allMessages: null,
       unsusbcribeMessagesListener: null,
-      miniChatWindowHeight: 135,
+      miniChatWindowHeight: 350,
       newlyTypedMessage: ""
     };
   },

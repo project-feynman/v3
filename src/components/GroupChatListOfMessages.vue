@@ -1,5 +1,5 @@
 <template>
-   <v-list :style="`height: ${chatWindowHeight}px`" class="overflow-y-auto">
+   <v-list :style="`height: ${chatWindowHeight}px; width: 100%`" class="overflow-y-auto">
     <v-list-item v-for="(message, i) in allMessages" :key="message.id" :ref="i === allMessages.length - 1 ? 'NewestMessage' : ''"
       dense
       class="px-1"

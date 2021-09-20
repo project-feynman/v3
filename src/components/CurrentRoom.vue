@@ -114,8 +114,8 @@
     </portal>
 
     <!-- INFINITE TUTORING -->
-    <v-dialog v-model="isInviteFriendsPopupOpen" max-width="800">
-      <InviteFriends2 v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
+    <v-dialog v-model="isInviteFriendsPopupOpen" max-width="900">
+      <InviteFriends3 v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
     </v-dialog> 
   
     <!-- ROOM ACTIONS MENU -->
@@ -426,6 +426,7 @@ import { getRandomId } from "@/helpers.js";
 import ZoomChat from "@/components/ZoomChat.vue";
 import InviteFriends from "@/components/InviteFriends.vue"; 
 import InviteFriends2 from '@/components/InviteFriends2.vue'
+import InviteFriends3 from '@/components/InviteFriends3.vue'
 import DoodleAnimation from '@/components/DoodleAnimation.vue'
 import DoodleVideo from '@/components/DoodleVideo.vue'
 import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
@@ -456,6 +457,7 @@ export default {
     ZoomChat,
     InviteFriends,
     InviteFriends2,
+    InviteFriends3,
     DoodleAnimation,
     DoodleVideo,
     Drag,
