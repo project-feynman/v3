@@ -104,8 +104,8 @@
       <v-btn @click="isInviteFriendsPopupOpen = true"  
         elevation="10" class="pa-2" style="margin-top: 13px;" small block
       >
-        <v-icon left color="purple" style="font-size: 0.85rem">mdi-account-plus</v-icon> 
-        Find helper
+        <v-icon left color="purple" style="font-size: 1rem">mdi-account-multiple-plus</v-icon> 
+        Army of Helpers
       </v-btn>
       <!-- <v-list-item @click="isInviteFriendsPopupOpen = true">
         <v-icon left color="purple">mdi-account-plus</v-icon> 
@@ -115,7 +115,7 @@
 
     <!-- INFINITE TUTORING -->
     <v-dialog v-model="isInviteFriendsPopupOpen" max-width="900">
-      <InviteFriends3 v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
+      <InviteFriends4 v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
     </v-dialog> 
   
     <!-- ROOM ACTIONS MENU -->
@@ -427,6 +427,7 @@ import ZoomChat from "@/components/ZoomChat.vue";
 import InviteFriends from "@/components/InviteFriends.vue"; 
 import InviteFriends2 from '@/components/InviteFriends2.vue'
 import InviteFriends3 from '@/components/InviteFriends3.vue'
+import InviteFriends4 from '@/components/InviteFriends4.vue'
 import DoodleAnimation from '@/components/DoodleAnimation.vue'
 import DoodleVideo from '@/components/DoodleVideo.vue'
 import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboardDoc'
@@ -458,6 +459,7 @@ export default {
     InviteFriends,
     InviteFriends2,
     InviteFriends3,
+    InviteFriends4,
     DoodleAnimation,
     DoodleVideo,
     Drag,
@@ -662,10 +664,20 @@ export default {
         alert('You need to be the creator to unsave this animation')
         return
       }
-      await animationRef.update({ 
+
+      // use db batch
+      const batch = db.batch()
+      batch.update(animationRef, { 
         creator: firebase.firestore.FieldValue.delete(),
+        creatorUID: firebase.firestore.FieldValue.delete(),
         date: firebase.firestore.FieldValue.delete()
       })
+
+      const updateObj = {}
+      updateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(-1)
+      batch.update(db.doc(`users/${this.user.uid}`), updateObj)
+      
+      await batch.commit()
       this.$root.$emit('show-snackbar', 'Reverted animation to blackboard')
     },
     /**
@@ -683,11 +695,18 @@ export default {
       audioRef.delete().then(async () => {
       console.log('successfully deleted the audio')
         // File deleted successfully
-        await videoRef.update({ 
+        const userUpdateObj = {}
+        userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(-1)
+
+        const batch = db.batch()
+        batch.update(videoRef, {
           audioDownloadURL: '',
           creator: firebase.firestore.FieldValue.delete(),
+          creatorUID: firebase.firestore.FieldValue.delete(),
           date: firebase.firestore.FieldValue.delete()
         })
+        batch.update(db.doc(`users/${this.user.uid}`), userUpdateObj)
+        await batch.commit()
         console.log('removed reference to audioURL and deleted creator and date fields')
         this.$root.$emit('show-snackbar', 'Reverted video to blackboard')
       }).catch((error) => {

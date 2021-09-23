@@ -225,10 +225,12 @@ export default {
       const audioDownloadURL = await this.$_saveToStorage(getRandomId(), this.blackboard.audioBlob)
 
       await this.blackboardRef.update({
+        creatorUID: this.user.uid, // to support `.where()` queries 
         creator: basicUserInfo,
         date: new Date().toISOString(),
         views: 0,
-        audioDownloadURL
+        audioDownloadURL,
+        roomID: this.$route.params.room_id // note this is dangerous to mutations
       })      
       
       firebase.analytics().logEvent('recorded_video', { className: this.mitClass.name })
@@ -243,11 +245,19 @@ export default {
         lastName: this.user.lastName
       }
       
-      await this.blackboardRef.update({
-        creator: basicUserInfo,
-        date: new Date().toISOString(),
-        views: 0
-      })      
+      const userUpdateObj = {}
+      userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(1)
+      
+      await Promise.all([
+        db.doc(`users/${this.user.uid}`).update(userUpdateObj), 
+        this.blackboardRef.update({
+          creatorUID: this.user.uid,
+          creator: basicUserInfo,
+          date: new Date().toISOString(),
+          views: 0,
+          roomID: this.$route.params.room_id // note this is dangerous to mutations
+        })    
+      ])  
       this.$root.$emit('show-snackbar', 'Converted to animation.')
     },
     keepSyncingBackgroundWithDb () {

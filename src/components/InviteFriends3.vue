@@ -23,7 +23,6 @@
             >
               <v-card-title>Friends</v-card-title>
 
-
               <v-list-item two-line>
                 <v-list-item-content>
                   <v-list-item-title>Great Friend</v-list-item-title>
@@ -35,19 +34,15 @@
                 </v-list-item-action>
               </v-list-item>
 
-              <!-- <v-list-item three-line>
-                <v-list-item-content>
-                  <v-list-item-title>Three-line item</v-list-item-title>
-                  <v-list-item-subtitle>
-                    Secondary line text Lorem ipsum dolor sit amet,
-                  </v-list-item-subtitle>
-                  <v-list-item-subtitle>
-                    consectetur adipiscing elit.
-                  </v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item> -->
+              <!-- TODO: friend chat -->
+              <div>Friends chat</div>
 
-
+              <div style="display: flex; align-items: center; margin-right: 5px">
+                  Get notifications
+                <v-switch hide-details class="ml-5 mb-5">   </v-switch>
+              </div>
+                
+             
               <div style="display: flex; align-items: center; margin-right: 5px">
                 Maplestory music
                 <v-switch :input-value="user.likesMapleStoryMusic" @change="newBool => toggleMusicAutoplay(newBool)" class="ml-5 mb-5" hide-details>
@@ -91,7 +86,7 @@
                   <template v-if="v.isOnline">
                     <v-btn v-if="!isWaitingForReply" 
                       @click="sendRealtimeInviteRequest(v.uid)"
-                      color="cyan" dark small
+                      color="cyan" dark x-small
                     >
                       Invite
                     </v-btn>
@@ -103,7 +98,7 @@
                   <template v-else>
                     <!-- TODO: t should be a popup, where you can write a message, and select a topic -->
                     <v-btn v-if="!isWaitingForEmailReply" @click="sendEmailInvite(v)" small>
-                      Notify
+                      Message
                     </v-btn>
                     <p v-else class="mb-0">
                       {{ 120 - emailWaitDuration }}
@@ -115,29 +110,41 @@
               <v-card-text>
 
                 <div style="display: flex; align: center; margin-top: 5px; padding-right: 5px">
-                    <div style="display: flex; align: center">
-                      <v-textarea
-                        :label="user.kind === 'staff' ? 'Office Hours' : 'Favorite topics'"
-                        :v-model="user.kind === 'staff' ? 'goodTimesToAsk' : 'familiarTopics'"
-                        :rows="3"
-                        hide-details
-                        placeholder=""
-                        :disabled="!didUserVolunteer"
-                        @input="user.kind === 'staff' ? debounced(updateGoodTimesToAsk) : debounced(updateFamiliarTopics)"
-                      />
-                    </div>
-                  <v-spacer/>
-                  <p class="mb-0 mr-1" style="margin-top: 8px">
-                    Happy to help
-                  </p>
-                  <v-switch
-                    :input-value="didUserVolunteer"
-                    @change="newBool => toggleVolunteer(newBool)"
+                  <!-- <div style="display: flex; align: center"> -->
+
+                    <!-- <v-spacer/> -->
+                    <p class="mb-0 mr-2" style="margin-top: 5px">
+                      Volunteer
+                    </p>
+                    <v-switch
+                      :input-value="didUserVolunteer"
+                      @change="newBool => toggleVolunteer(newBool)"
+                      hide-details
+                      class="mt-0"
+                      color="cyan"
+                    />
+                  </div>
+
+                  <v-textarea v-if="user.kind === 'staff'"
+                    label="Office Hours"
+                    v-model="goodTimesToAsk"
+                    :rows="2"
                     hide-details
-                    class="mt-0"
-                    color="cyan"
+                    placeholder=""
+                    :disabled="!didUserVolunteer"
+                    @input="debounced(updateGoodTimesToAsk)"
                   />
-                </div>
+
+                  <v-textarea v-else
+                    label="Favorite topics"
+                    v-model="familiarTopics"
+                    :rows="2"
+                    hide-details
+                    placeholder=""
+                    :disabled="!didUserVolunteer"
+                    @input="debounced(updateFamiliarTopics)"
+                  />
+                <!-- </div> -->
               </v-card-text>
             </v-card>
           
@@ -148,12 +155,22 @@
               max-width="400"
               tile
             >
-              <v-card-title>Chat</v-card-title>
+              <v-card-title>Everyone</v-card-title>
               <ZoomChat
                 :messagesDbPath="`classes/${$route.params.class_id}/roomTypes/${$route.params.section_id}/messages`"
                 :participantsDbRef="participantsRef"
                 :notifFieldName="`numOfUnreadMsgsInArea:${$route.params.section_id}`"
               />
+              <v-card-actions>
+                Get notifications
+                 <v-switch
+                  :input-value="true"
+                  @change="newBool => toggleAreaChatNotifications(newBool)"
+                  hide-details
+                  class="mt-0"
+                  color="cyan"
+                />
+              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
@@ -161,9 +178,7 @@
                   <!-- <br>
           <v-spacer/> -->
 
-      
-
-
+    
         </v-card-text>
     </v-card>
 </template>
