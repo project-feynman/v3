@@ -15,7 +15,7 @@
         @keyup.enter="sendMessage()" 
         placeholder="Type message here..." 
         v-model="newlyTypedMessage" 
-        hide-details dense style="font-size: 0.9rem;"
+        outlined rounded hide-details dense style="font-size: 0.9rem;"
       />
       <v-btn fab icon @click="sendMessage()" color="info" x-small>
         <v-icon>mdi-send</v-icon>
@@ -59,7 +59,7 @@ export default {
     return {
       allMessages: null,
       unsusbcribeMessagesListener: null,
-      miniChatWindowHeight: 350,
+      miniChatWindowHeight: 280,
       newlyTypedMessage: ""
     };
   },

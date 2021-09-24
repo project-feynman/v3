@@ -10,7 +10,7 @@
         dense
       >
         <v-list-item-title>
-          {{ video.title }}
+          <a><u>{{ video.title }}</u></a>
         </v-list-item-title>
         <v-list-item-subtitle>
           {{ video.views }} views

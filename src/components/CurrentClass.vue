@@ -2,6 +2,8 @@
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
   <div style="height: 100%">
+    <SteamNotificationInitiator v-if="mitClass"/>
+
     <MyParticipantDocUpdater
       :classID="classID"
       :areaID="areaID"
@@ -100,9 +102,6 @@
 </template>
 
 <script>
-import firebase from "firebase/app";
-import "firebase/firestore";
-import "firebase/storage";
 import { mapState, mapGetters } from "vuex";
 
 import db from "@/database.js";
@@ -113,6 +112,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
 import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
 import CurrentClassInviteBanner from '@/components/CurrentClassInviteBanner.vue'
+import SteamNotificationInitiator from '@/components/SteamNotificationInitiator.vue'
 
 import BaseButton from "@/components/BaseButton.vue";
 import AllAreas from '@/components/AllAreas.vue'
@@ -149,7 +149,8 @@ export default {
     CurrentClassInviteBanner,
     MyParticipantDocUpdater,
     CurrentArea,
-    CurrentRoom
+    CurrentRoom,
+    SteamNotificationInitiator
   },
   data: () => ({
     firebaseRef: null,
@@ -215,9 +216,6 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
-    redirectToNewRoom () {
-
-    },
     declineInvite () {
       this.gentleAlarm.pause()
       this.isShowingBanner = false

@@ -101,10 +101,10 @@
     </v-dialog>
 
     <portal to="invite-button">
-      <v-btn @click="isInviteFriendsPopupOpen = true"  
+      <v-btn @click="isInviteFriendsPopupOpen = true" color="purple" dark 
         elevation="10" class="pa-2" style="margin-top: 13px;" small block
       >
-        <v-icon left color="purple" style="font-size: 1rem">mdi-account-multiple-plus</v-icon> 
+        <v-icon left style="font-size: 1rem">mdi-account-multiple-plus</v-icon> 
         Army of Helpers
       </v-btn>
       <!-- <v-list-item @click="isInviteFriendsPopupOpen = true">
@@ -114,7 +114,7 @@
     </portal>
 
     <!-- INFINITE TUTORING -->
-    <v-dialog v-model="isInviteFriendsPopupOpen" max-width="900">
+    <v-dialog v-model="isInviteFriendsPopupOpen" max-width="750">
       <InviteFriends4 v-if="isInviteFriendsPopupOpen" @emails-sent="isInviteFriendsPopupOpen = false"/>
     </v-dialog> 
   
