@@ -101,16 +101,13 @@
     </v-dialog>
 
     <portal to="invite-button">
-      <v-btn @click="isInviteFriendsPopupOpen = true" color="purple" dark 
-        elevation="10" class="pa-2" style="margin-top: 13px;" small block
+      <v-btn @click="isInviteFriendsPopupOpen = true" color="white cyan--text"
+        rounded block
+        class="pa-2" style="margin-top: 13px;" small
       >
-        <v-icon left style="font-size: 1rem">mdi-account-multiple-plus</v-icon> 
+        <v-icon left style="font-size: 1.1rem">mdi-account-multiple-plus</v-icon> 
         Army of Helpers
       </v-btn>
-      <!-- <v-list-item @click="isInviteFriendsPopupOpen = true">
-        <v-icon left color="purple">mdi-account-plus</v-icon> 
-        <div style="font-color: purple">Invite</div>
-      </v-list-item>  -->
     </portal>
 
     <!-- INFINITE TUTORING -->
@@ -234,7 +231,7 @@
                   padding-top: 0; 
                   font-size: 1.1rem; 
                   font-weight: 400; 
-                  margin-right: 24px
+                  margin-right: 12px
                 " 
                 max-width="180"
               > 
@@ -314,7 +311,7 @@
         <RenderlessFetchBlackboardDoc
           :blackboardRef="blackboardRefs[i]"
           :key="boardID"
-          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints, views }"
+          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints, views, upvotes }"
         >  
           <!-- Scroll to another blackboard => `currentBoardID` -->
           <div :id="boardID" v-intersect="{
@@ -346,11 +343,18 @@
                   <v-card-title v-if="title" style="font-size: 1.6rem">
                     {{ title }}
                   </v-card-title>
-                  <v-card-subtitle>{{ views }} views</v-card-subtitle>
-                  <v-card-text>
+                  <v-card-subtitle v-if="title">
+                    {{ upvotes }} upvotes
+                    <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                    {{ views }} views                     
+                    <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                    {{ creator.firstName + ' ' + creator.lastName }}
+                  </v-card-subtitle>
+                  <v-card-text style="margin-top: 16px">
                     <div v-if="descriptionHtml" 
                       v-html="descriptionHtml"
-                      class="mb-5 html-paragraph-styles"
+                      class="html-paragraph-styles"
+                      style="margin-bottom: 40px"
                     />
                       <DoodleVideo v-if="audioDownloadURL"
                         :strokesArray="strokesArray"
@@ -362,6 +366,7 @@
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
+                        @upvote="incrementNumOfUpvotesOnExpl(boardID)"
                       />
                       <DoodleAnimation v-else
                         :strokesArray="strokesArray"
@@ -372,17 +377,34 @@
                         @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
                         @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
                         @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
+                        @upvote="incrementNumOfUpvotesOnExpl(boardID)"
                       />
                   </v-card-text>
                 </v-card>
               </div>
             </RenderlessFetchStrokes>
+            
+            <template v-else>
+              <v-card v-if="title || descriptionHtml">
+                <v-card-title v-if="title" style="font-size: 1.6rem">
+                  {{ title }}
+                </v-card-title>
 
-            <RealtimeBlackboard v-else
-              :blackboardRef="blackboardRefs[i]" 
-              :key="boardID"
-              style="margin-top: 5px"
-            />
+                <v-card-text style="margin-top: 16px">
+                  <div v-if="descriptionHtml" 
+                    v-html="descriptionHtml"
+                    class="html-paragraph-styles"
+                    style="margin-bottom: 40px"
+                  />
+                </v-card-text>
+              </v-card>
+
+              <RealtimeBlackboard
+                :blackboardRef="blackboardRefs[i]" 
+                :key="boardID"
+                style="margin-top: 5px"
+              />
+            </template>
           </div>
         </RenderlessFetchBlackboardDoc>
       </template>
@@ -653,6 +675,12 @@ export default {
       ref.update({
         views: firebase.firestore.FieldValue.increment(1)
       });
+    },
+    incrementNumOfUpvotesOnExpl (id) {
+      const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${id}`);
+      ref.update({
+        upvotes: firebase.firestore.FieldValue.increment(1)
+      })
     },
     // TODO: 
     //   - be able to delete blackboards

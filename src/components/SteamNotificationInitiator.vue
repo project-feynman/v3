@@ -112,7 +112,7 @@ export default {
           contentHTML: emailContent
         })
       }
-    }, 5000)
+    }, 20000)
   },
   destroyed () {
     if (this.steamNotificationTimeout) clearTimeout(this.steamNotificationTimeout) 

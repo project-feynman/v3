@@ -23,21 +23,21 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="pt-0" style="margin-bottom: 26px;" elevation="8">    
+      <v-sheet style="margin-bottom: 26px; padding-bottom: 2px" elevation="8">    
         <div style="display: flex">
           <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
-            style="cursor: pointer; margin-left: 4px; margin-bottom: 11px; margin-top: 16px; margin-right: 2px" tile width="71" height="53"
+            style="cursor: pointer; margin-left: 6px; margin-right: 2px;" tile width="60" height="60"
           >
-            <v-img src="/logo.png" width="60" height="53" style="margin-left: 2px"/>
+            <v-img src="/logo.png" width="60" height="54" style="margin-top: 8px"/>
           </v-list-item-avatar>
 
           <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
-          <template v-slot:add-join-leave-class>
-            <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-              <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
-            </v-list-item>
-          </template>
-        </CurrentClassDropdown>
+            <template v-slot:add-join-leave-class>
+              <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
+                <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
+              </v-list-item>
+            </template>
+          </CurrentClassDropdown>
         </div>
 
         <!-- Have the app overview, updates, news, as well as the chats -->
