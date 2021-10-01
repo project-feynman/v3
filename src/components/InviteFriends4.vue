@@ -96,6 +96,7 @@
           :messagesDbPath="`classes/${$route.params.class_id}/roomTypes/${$route.params.section_id}/messages`"
           :participantsDbRef="participantsRef"
           :notifFieldName="`numOfUnreadMsgsInArea:${$route.params.section_id}`"
+          :areaID="$route.params.section_id"
         />
       </div>
     </v-container>
@@ -107,6 +108,20 @@
         <h3>Get notified when</h3>
         <div style="display: flex; justify-content: space-between">
           <template>
+            <!-- Change the number of area messages in each place, unread message count
+              As a person can be in multiple group chats
+            -->
+            <div>
+              New group message
+              <v-switch
+                :input-value="willGetNotifFromNewMsgInArea"
+                @change="toggleGroupChatNotifSetting"
+                hide-details
+                class="mt-0"
+                color="orange"
+              />
+            </div>
+
             <div>
               <!-- <v-checkbox hide-details style="margin-top: 0px"/> -->
               Instructors come online
@@ -115,7 +130,7 @@
                 @change="newBool => toggleSetting({ name: 'getNotifiedWhenInstructorsComeOnline', newBool })"
                 hide-details
                 class="mt-0"
-                color="cyan"
+                color="orange"
                 :disabled="!didUserVolunteer"
               />
             </div>
@@ -127,24 +142,8 @@
                 @change="newBool => toggleSetting({ name: 'getNotifiedWhenClassmatesComeOnline', newBool })"
                 hide-details
                 class="mt-0"
-                color="cyan"
+                color="orange"
                 :disabled="!didUserVolunteer"
-              />
-            </div>
-
-            <!-- Change the number of area messages in each place, unread message count
-              As a person can be in multiple group chats
-            -->
-            <!-- TODO: implement -->
-            <div>
-              New group message
-              <v-switch
-                :disabled="true"
-                :input-value="false"
-                @change=""
-                hide-details
-                class="mt-0"
-                color="cyan"
               />
             </div>
             
@@ -154,7 +153,7 @@
 
           <div style="">
             Maplestory music
-            <v-switch :input-value="user.likesMapleStoryMusic" @change="newBool => toggleMusicAutoplay(newBool)" color="orange" hide-details class="mt-0">
+            <v-switch :input-value="user.likesMapleStoryMusic" @change="newBool => toggleMusicAutoplay(newBool)" color="red" hide-details class="mt-0">
 
             </v-switch>
 
@@ -230,6 +229,12 @@ export default {
       if (!user.getNotifiedWhenInstructorsComeOnline) return false
       return user.getNotifiedWhenInstructorsComeOnline.includes(mitClass.id)
     },  
+    willGetNotifFromNewMsgInArea () {
+      const { user } = this
+      // note the plural in "areas"
+      if (!user.willGetNotifFromNewMsgInAreas) return false      
+      return user.willGetNotifFromNewMsgInAreas.includes(this.$route.params.section_id)
+    },
     userIsTA () {
       const { user, mitClass } = this 
       if (!user.classesTAing) return false 
@@ -270,6 +275,16 @@ export default {
       const updatePayload = {} 
       updatePayload[name] = newBool ? arrayUnion(mitClass.id) : arrayRemove(mitClass.id)
       userRef.update(updatePayload)
+    },
+    toggleGroupChatNotifSetting () {
+      const ref = db.doc(`users/${this.user.uid}`)
+      const { arrayUnion, arrayRemove } = firebase.firestore.FieldValue
+      const { section_id } = this.$route.params
+      if (this.willGetNotifFromNewMsgInArea) {
+        ref.update({ willGetNotifFromNewMsgInAreas: arrayRemove(section_id) })  
+      } else {
+        ref.update({ willGetNotifFromNewMsgInAreas: arrayUnion(section_id) })
+      }
     },
     async sendRealtimeInviteRequest (userUID) {
       console.log('userUID =', userUID)

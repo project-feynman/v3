@@ -101,7 +101,7 @@
     </v-dialog>
 
     <portal to="invite-button">
-      <v-btn @click="isInviteFriendsPopupOpen = true" color="white cyan--text"
+      <v-btn :disabled="!user.email" @click="isInviteFriendsPopupOpen = true" color="white cyan--text"
         rounded block
         class="pa-2" style="margin-top: 13px;" small
       >

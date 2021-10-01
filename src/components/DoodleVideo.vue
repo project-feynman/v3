@@ -158,7 +158,6 @@ export default {
   },
   methods: {
     changePlaybackSpeed (speed) {
-      console.log(`changePlaybackSpeed${speed}`)
       this.playbackSpeed = speed
       this.$refs.AudioPlayer.playbackRate = speed;
     },

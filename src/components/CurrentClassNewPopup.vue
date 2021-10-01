@@ -153,6 +153,14 @@ export default {
   },
   methods: {
     async join ({ mitClass }) {    
+      // don't allow duplicate joins
+      for (const userClass of this.user.enrolledClasses) {
+        if (userClass.id === mitClass.id) {
+          this.$root.$emit('show-snackbar', `You are already in ${mitClass.name}`)
+          return 
+        }
+      }
+
       this.userRef.update({
         enrolledClasses: firebase.firestore.FieldValue.arrayUnion(mitClass),
         mostRecentClassID: mitClass.id,

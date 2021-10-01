@@ -39,9 +39,9 @@
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot="{ closeMenu }">
         <!-- TODO -->
-        <v-list-item @click.stop="">
+        <!-- <v-list-item @click.stop="">
           <v-icon class="mr-2">mdi-pencil</v-icon> ADD TITLE / DESC.
-        </v-list-item>
+        </v-list-item> -->
 
         <v-list-item @click.stop="saveAnimation()">
           <v-icon left color="secondary">mdi-content-save</v-icon>Save
