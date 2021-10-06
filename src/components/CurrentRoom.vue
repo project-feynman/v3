@@ -224,7 +224,7 @@
           <!-- `click.native.stop` is the workaround for the menu causing the entire page to reload https://github.com/vuetifyjs/vuetify/issues/3333#issuecomment-366832774 -->
           <v-menu @click.prevent.stop fixed offset-y bottom>
             <template v-slot:activator="{ on }">
-              <!-- `click.prevent.stop -->
+              <!-- `click.prevent.stop` is important -->
               <v-btn v-on="on" @click.prevent.stop height="33" text tile class="px-0" 
                 style="
                   text-align: center; 
@@ -254,24 +254,43 @@
               </v-btn>
             </template>
 
-            <v-list style="overflow-y: auto; max-height: 400px" class="py-0">
+            <!-- TODO
+              Drag and drop doesn't even work for Surface Book II 
+              But it works for the iPad.
+              Without `overflow-x: hidden`, there is a weird offset scroll behavior
+             -->
+            <v-list style="overflow-y: auto; max-height: 80vh; overflow-x: hidden;" class="py-0">
               <template v-for="(boardID, i) in room.blackboards">
-                <Drag :transfer-data="{ draggedFrom: i } " :key="boardID">
-                  <Drop @drop="handleDrop({ droppedTo: i }, ...arguments)">
+                <Drop @drop="handleDrop({ droppedTo: i }, ...arguments)" :key="boardID">
+                  <span class="d-inline-block text-truncate mt-1 px-1" style="max-width: 140px; font-size: 0.8rem; margin-bottom: 0">
+                    Binary Search Trees and AVL 
+                  </span>
+                  <div style="display: flex; align-content: center">
                     <v-list-item @click="scrollToThisBoard(boardID)"
-                      style="background-color: rgb(62, 66, 66);"
-                      class="px-0"
+                      style="background-color: rgb(62, 66, 66); height: 30px; width: 60px;"
+                      class="px-0 ml-1"
                     >
                       <div style="margin: auto; color: white">
                         {{ getBoardNumberFromID(boardID) }}
                       </div>
                     </v-list-item>
-                    <v-divider class="white--text"/>
-                  </Drop>
-                </Drag>
+
+                    <Drag :transfer-data="{ draggedFrom: i }" style="width: 80px;">
+                      <v-icon color="grey" x-large style="margin-left: 5px">
+                        <!-- mdi-reorder-horizontal -->
+                        mdi-menu
+                      </v-icon>
+                      <div style="font-size: 0.4rem; margin-bottom: 0px; margin-left: 7px; color: grey">
+                        RE-ARRANGE
+                      </div>
+                    </Drag>
+                  </div>
+                  <v-divider class="mt-2"/>
+              
+                </Drop>
               </template>
 
-              <BaseButton @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);">
+              <BaseButton @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);" block>
                 New board
               </BaseButton>
             </v-list>
@@ -433,7 +452,6 @@
  * You immediately kill all possibilities of anything. I can never emphasize enough.
  * 
  */
-
 
 import firebase from "firebase/app";
 import "firebase/firestore";
