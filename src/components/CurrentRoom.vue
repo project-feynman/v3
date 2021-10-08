@@ -248,7 +248,7 @@
                        box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
                       `
                 ">
-                  <div style="margin-left: 15px">{{ getBoardNumberFromID(currentBoardID) }}</div>
+                  <div style="margin-left: 15px">{{ 1 + room.blackboards.indexOf(currentBoardID) }}</div>
                   <v-icon class="ml-0" small>mdi-menu-down</v-icon>
                 </span>
               </v-btn>
@@ -260,18 +260,18 @@
               Without `overflow-x: hidden`, there is a weird offset scroll behavior
              -->
             <v-list style="overflow-y: auto; max-height: 80vh; overflow-x: hidden;" class="py-0">
-              <template v-for="(boardID, i) in room.blackboards">
-                <Drop @drop="handleDrop({ droppedTo: i }, ...arguments)" :key="boardID">
+              <template v-for="(boardDoc, i) in blackboardDocs">
+                <Drop @drop="handleDrop({ droppedTo: i }, ...arguments)" :key="boardDoc.id">
                   <span class="d-inline-block text-truncate mt-1 px-1" style="max-width: 140px; font-size: 0.8rem; margin-bottom: 0">
-                    Binary Search Trees and AVL 
+                    {{ boardDoc.title }}
                   </span>
                   <div style="display: flex; align-content: center">
-                    <v-list-item @click="scrollToThisBoard(boardID)"
+                    <v-list-item @click="scrollToThisBoard(boardDoc.id)"
                       style="background-color: rgb(62, 66, 66); height: 30px; width: 60px;"
                       class="px-0 ml-1"
                     >
                       <div style="margin: auto; color: white">
-                        {{ getBoardNumberFromID(boardID) }}
+                        {{ 1 + i }}
                       </div>
                     </v-list-item>
 
@@ -318,122 +318,109 @@
       </v-card>
     </v-dialog>
 
-    <CurrentRoomGradingPopup v-if="isGradingPopupOpen"
-      v-model="isGradingPopupOpen"
-      :totalPoints="gradingPopupTotalPoints"
-      @total-points-changed="newDelta => gradingPopupTotalPoints += newDelta"
-      @board-graded="updateGrade()"
-    />
-
-    <template v-if="blackboardRefs.length !== 0 && room">
-      <template v-for="(boardID, i) in room.blackboards">
-        <RenderlessFetchBlackboardDoc
-          :blackboardRef="blackboardRefs[i]"
-          :key="boardID"
-          v-slot="{ creator, date, audioDownloadURL, backgroundImageDownloadURL, title, descriptionHtml, totalPoints, views, upvotes }"
-        >  
-          <!-- Scroll to another blackboard => `currentBoardID` -->
-          <div :id="boardID" v-intersect="{
-            handler (entries, observer, isIntersecting) {
-              if (isIntersecting) {
-                updateCurrentBoardID(boardID)
-              }
-            },
-            options: {
-              threshold: 0.5
+      <template v-for="boardDoc of blackboardDocs">
+        <!-- Scroll to another blackboard => `currentBoardID` -->
+        <div :id="boardDoc.id" :key="boardDoc.id" v-intersect="{
+          handler (entries, observer, isIntersecting) {
+            if (isIntersecting) {
+              updateCurrentBoardID(boardDoc.id)
             }
-          }">
-            <!-- only fetch videos when they're visible (notice `.once` -->
-            <RenderlessFetchStrokes v-if="date && creator"
-              :strokesRef="blackboardRefs[i].collection('strokes')"
-              :imageDownloadUrl="backgroundImageDownloadURL"
-              v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
-            >
-              <div style="position: relative;" v-intersect.once="{
-                handler (entries, observer, isIntersecting) {
-                  if (isIntersecting) fetchStrokes()
-                },
-                options: {
-                  threshold: 0.5
-                }
-              }"
-              > 
-                <v-card>
-                  <v-card-title v-if="title" style="font-size: 1.6rem">
-                    {{ title }}
+          },
+          options: {
+            threshold: 0.5
+          }
+        }">
+          <!-- only fetch videos when they're visible (notice `.once` -->
+          <RenderlessFetchStrokes v-if="boardDoc.date && boardDoc.creator && boardDoc.id"
+            :strokesRef="classRef.collection('blackboards').doc(boardDoc.id).collection('strokes')"
+            :imageDownloadUrl="boardDoc.backgroundImageDownloadURL"
+            v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
+          >
+            <div style="position: relative;" v-intersect.once="{
+              handler (entries, observer, isIntersecting) {
+                if (isIntersecting) fetchStrokes()
+              },
+              options: {
+                threshold: 0.5
+              }
+            }"
+            > 
+              <v-card>
+                <template v-if="boardDoc.title">
+                  <v-card-title style="font-size: 1.6rem">
+                    {{ boardDoc.title }}
                   </v-card-title>
-                  <v-card-subtitle v-if="title">
-                    {{ upvotes }} upvotes
+                  <v-card-subtitle>
+                    {{ boardDoc.upvotes || 0 }} upvotes
                     <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                    {{ views }} views                     
+                    {{ boardDoc.views }} views                     
                     <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                    {{ creator.firstName + ' ' + creator.lastName }}
+                    {{ boardDoc.creator.firstName + ' ' + boardDoc.creator.lastName }}
+                    <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                    {{ displayDate(boardDoc.date) }}
                   </v-card-subtitle>
-                  <v-card-text style="margin-top: 16px">
-                    <div v-if="descriptionHtml" 
-                      v-html="descriptionHtml"
-                      class="html-paragraph-styles"
-                      style="margin-bottom: 40px"
-                    />
-                      <DoodleVideo v-if="audioDownloadURL"
-                        :strokesArray="strokesArray"
-                        :imageBlob="imageBlob"
-                        :audioUrl="audioDownloadURL"
-                        :aspectRatio="4/3"
-                        style="margin-top: 5px"
-                        @play="incrementNumOfViewsOnExpl(boardID)"
-                        @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
-                        @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
-                        @delete="deleteVideo({ audioDownloadURL, creator, videoRef: blackboardRefs[i] })"
-                        @upvote="incrementNumOfUpvotesOnExpl(boardID)"
-                      />
-                      <DoodleAnimation v-else
-                        :strokesArray="strokesArray"
-                        :backgroundUrl="backgroundImageDownloadURL"
-                        :aspectRatio="4/3"
-                        style="margin-top: 5px"
-                        @play="incrementNumOfViewsOnExpl(boardID)"
-                        @edit="showEditPopup(blackboardRefs[i], title, descriptionHtml)"
-                        @grade="isGradingPopupOpen = true; refOfGradedBoard = blackboardRefs[i]; gradingPopupTotalPoints = totalPoints || 0"
-                        @delete="deleteAnimation({ creator, animationRef: blackboardRefs[i] })"
-                        @upvote="incrementNumOfUpvotesOnExpl(boardID)"
-                      />
-                  </v-card-text>
-                </v-card>
-              </div>
-            </RenderlessFetchStrokes>
-            
-            <template v-else>
-              <v-card v-if="title || descriptionHtml">
-                <v-card-title v-if="title" style="font-size: 1.6rem">
-                  {{ title }}
-                </v-card-title>
-
+                </template>
                 <v-card-text style="margin-top: 16px">
-                  <div v-if="descriptionHtml" 
-                    v-html="descriptionHtml"
+                  <div v-if="boardDoc.descriptionHtml" 
+                    v-html="boardDoc.descriptionHtml"
                     class="html-paragraph-styles"
                     style="margin-bottom: 40px"
                   />
+                    <DoodleVideo v-if="boardDoc.audioDownloadURL"
+                      :strokesArray="strokesArray"
+                      :imageBlob="imageBlob"
+                      :audioUrl="boardDoc.audioDownloadURL"
+                      :aspectRatio="4/3"
+                      style="margin-top: 5px"
+                      @play="incrementNumOfViewsOnExpl(boardDoc.id)"
+                      @edit="showEditPopup(classRef.collection('blackboards').doc(boardDoc.id), boardDoc.title, boardDoc.descriptionHtml)"
+                      @delete="deleteVideo({ audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
+                      @upvote="incrementNumOfUpvotesOnExpl(boardDoc.id)"
+                    />
+                    <DoodleAnimation v-else
+                      :strokesArray="strokesArray"
+                      :backgroundUrl="boardDoc.backgroundImageDownloadURL"
+                      :aspectRatio="4/3"
+                      style="margin-top: 5px"
+                      @play="incrementNumOfViewsOnExpl(boardDoc.id)"
+                      @edit="showEditPopup(classRef.collection('blackboards').doc(boardDoc.id), boardDoc.title, boardDoc.descriptionHtml)"
+                      @delete="deleteAnimation({ creator: boardDoc.creator, animationRef: classRef.collection('blackboards').doc(boardDoc.id) })"
+                      @upvote="incrementNumOfUpvotesOnExpl(boardDoc.id)"
+                    />
                 </v-card-text>
               </v-card>
+            </div>
+          </RenderlessFetchStrokes>
+          
+          <template v-else>
+            <v-card v-if="boardDoc.title || boardDoc.descriptionHtml">
+              <v-card-title v-if="boardDoc.title" style="font-size: 1.6rem">
+                {{ boardDoc.title }}
+              </v-card-title>
 
-              <RealtimeBlackboard
-                :blackboardRef="blackboardRefs[i]" 
-                :key="boardID"
-                style="margin-top: 5px"
-              />
-            </template>
-          </div>
-        </RenderlessFetchBlackboardDoc>
+              <v-card-text style="margin-top: 16px">
+                <div v-if="boardDoc.descriptionHtml" 
+                  v-html="boardDoc.descriptionHtml"
+                  class="html-paragraph-styles"
+                  style="margin-bottom: 40px"
+                />
+              </v-card-text>
+            </v-card>
+
+            <RealtimeBlackboard
+              :blackboardRef="classRef.collection('blackboards').doc(boardDoc.id)" 
+              :key="boardDoc.id"
+              style="margin-top: 5px"
+            />
+          </template>
+        </div>
       </template>
-      
-      <v-btn @click="createNewBoard()"
+
+      <v-btn v-if="!isFetchingBlackboards" @click="createNewBoard()"
         block x-large class="white--text" style="background-color: rgb(46, 49, 49); margin-top: 5px;"
       >
         <v-icon class="mr-2">mdi-plus</v-icon>New Blackboard
       </v-btn>
-    </template>
   </div>
 </template>
 
@@ -462,7 +449,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import BaseIconButton from "@/components/BaseIconButton.vue";
 import { mapState, mapGetters } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
-import { getRandomId } from "@/helpers.js";
+import { getRandomId, displayDate } from "@/helpers.js";
 import ZoomChat from "@/components/ZoomChat.vue";
 import InviteFriends from "@/components/InviteFriends.vue"; 
 import InviteFriends2 from '@/components/InviteFriends2.vue'
@@ -474,8 +461,6 @@ import RenderlessFetchBlackboardDoc from '@/components/RenderlessFetchBlackboard
 import RenderlessFetchStrokes from '@/components/RenderlessFetchStrokes.vue'
 import ReusableTextEditor from '@/components/ReusableTextEditor.vue'
 import { Drag, Drop } from 'vue-drag-drop'
-
-import CurrentRoomGradingPopup from '@/components/CurrentRoomGradingPopup.vue'
 
 export default {
   props: {
@@ -494,7 +479,6 @@ export default {
     RealtimeBlackboard,
     BaseButton,
     BaseIconButton,
-    CurrentRoomGradingPopup,
     ZoomChat,
     InviteFriends,
     InviteFriends2,
@@ -515,6 +499,7 @@ export default {
     return {
       room: null,
       blackboardRefs: [],
+      blackboardDocs: [],
       snapshotListeners: [],
       roomRef: null,
       incrementToDestroyComponent: -100000,
@@ -543,6 +528,8 @@ export default {
       refOfExplEdited: null,
       newTitle: '',
       newDescriptionHtml: '',
+      
+      isFetchingBlackboards: true
     }
   },
   computed: {
@@ -564,6 +551,9 @@ export default {
     roomParticipantsRef () {
       const { classID, roomID } = this; 
       return db.collection(`classes/${classID}/participants`).where("currentRoom", "==", roomID); 
+    },
+    classRef () {
+      return db.doc(`classes/${this.$route.params.class_id}`)
     }
   },
   // database => state 
@@ -574,30 +564,50 @@ export default {
       // correct because `activeBoardID` can only be changed via user interaction, `this.room.blackboards` is defined
       this.$store.commit(
         'SET_CURRENT_BOARD_NUMBER', 
-        this.getBoardNumberFromID(newVal)
+        1 + this.room.blackboards.indexOf(newVal)
       )
     },
     room: {
       handler (newVal, oldVal) {
-        this.$store.commit("SET_ROOM", this.room);
-        if (newVal.blackboards) {
-          const newBlackboardRefs = []; 
-          for (const blackboard of newVal.blackboards) {
-            newBlackboardRefs.push(
-              db.doc(`classes/${this.classID}/blackboards/${blackboard}`)
-            );
+        this.$store.commit('SET_ROOM', this.room);
+        if (newVal.blackboards && !this.isFetchingBlackboards) {
+          // room was updated, which includes when blackboards are rearranged
+          // sort manually
+          const newlyOrderedBlackboards = [] 
+          for (const boardID of newVal.blackboards) {
+            const targetDoc = this.blackboardDocs.filter(doc => doc.id === boardID)[0]
+            newlyOrderedBlackboards.push(targetDoc)
           }
-          this.blackboardRefs = newBlackboardRefs; 
+          this.blackboardDocs = [...newlyOrderedBlackboards]
         }
       }
     }
   },
   async created () {
     this.roomRef = db.doc(`classes/${this.classID}/rooms/${this.roomID}`);
-    this.$_listenToDoc(this.roomRef, this, "room").then(unsubFunc => {
+    // NOTICE, fetching blackboard docs will only occur once
+    this.$_listenToDoc(this.roomRef, this, "room").then(async (unsubFunc) => {
       this.$store.commit("SET_CURRENT_BOARD_ID", this.room.blackboards[0]); // TODO: perhaps this is a special case that can be "naturally handled" by the general case
       this.newRoomName = this.room.name // the current name is the initial value for renaming the room
       this.snapshotListeners.push(unsubFunc);
+
+      // fetch blackboard docs
+      this.isFetchingBlackboards = true
+      const blackboardDocs = [] 
+      const promises = []
+      for (let i = 0; i < this.room.blackboards.length; i++) {
+        blackboardDocs.push({}) // the empty object is just a placeholder and will be overwritten 
+        const p = new Promise(resolve => {
+          const unsubFunc = db.doc(`classes/${this.classID}/blackboards/${this.room.blackboards[i]}`).onSnapshot(doc => {
+            this.$set(blackboardDocs, i, { id: doc.id, ...doc.data() })
+            resolve(unsubFunc)
+          })
+        }).then(this.snapshotListeners.push(unsubFunc))
+        promises.push(p)
+      }
+      await Promise.all(promises)
+      this.blackboardDocs = blackboardDocs
+      this.isFetchingBlackboards = false
     });
   },
   destroyed () {
@@ -606,6 +616,10 @@ export default {
     }
   },
   methods: { 
+    displayDate (dateString) {
+      // this is from the import statement, sort of redundant...should have been a mixin
+      return displayDate(dateString)
+    },
     async deleteRoom () {
       // for each blackboard, do a proper deletion of the boards
       for (const boardID of this.room.blackboards) {
@@ -788,13 +802,6 @@ export default {
         })
       ]);  
       this.$store.commit("SET_CURRENT_BOARD_ID", newID); 
-    },
-    getBoardNumberFromID (id) {
-      for (const [i, boardID] of this.room.blackboards.entries()) {
-        if (boardID === id) {
-          return i + 1; 
-        }
-      }
     },
     renameRoom () {
       db.doc(`classes/${this.classID}/rooms/${this.roomID}`).update({ 
