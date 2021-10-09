@@ -331,7 +331,7 @@
           }
         }">
           <!-- only fetch videos when they're visible (notice `.once` -->
-          <RenderlessFetchStrokes v-if="boardDoc.date && boardDoc.creator && boardDoc.id"
+          <RenderlessFetchStrokes v-if="boardDoc.date && boardDoc.creator"
             :strokesRef="classRef.collection('blackboards').doc(boardDoc.id).collection('strokes')"
             :imageDownloadUrl="boardDoc.backgroundImageDownloadURL"
             v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
@@ -374,7 +374,7 @@
                       style="margin-top: 5px"
                       @play="incrementNumOfViewsOnExpl(boardDoc.id)"
                       @edit="showEditPopup(classRef.collection('blackboards').doc(boardDoc.id), boardDoc.title, boardDoc.descriptionHtml)"
-                      @delete="deleteVideo({ audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
+                      @delete="deleteVideo({ audioDownloadURL: boardDoc.audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
                       @upvote="incrementNumOfUpvotesOnExpl(boardDoc.id)"
                     />
                     <DoodleAnimation v-else
