@@ -1,9 +1,9 @@
 <script>
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
 
 export default {
   props: {
-    blackboardRef: Object,
+    blackboardRef: Object
   },
   mixins: [
     DatabaseHelpersMixin
@@ -27,7 +27,8 @@ export default {
     this.isLoading = true
     this.unsubFunc = this.blackboardRef.onSnapshot(doc => {
       // doc.id, doc.ref.path, doc.data()
-      const d = doc.data()
+      const d = { id: doc.id, ...doc.data() }
+      this.boardDoc = d
       this.creator = d.creator
       this.date = d.date 
       this.backgroundImageDownloadURL = d.backgroundImageDownloadURL
@@ -45,6 +46,7 @@ export default {
   },
   render () {
     return this.$scopedSlots.default({
+      boardDoc: this.boardDoc,
       backgroundImageDownloadURL: this.backgroundImageDownloadURL,
       creator: this.creator,
       date: this.date,
