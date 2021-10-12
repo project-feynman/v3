@@ -90,6 +90,9 @@ export default {
     for (let i = 0; i < sortedAreas.length; i++) {
       if (sortedAreas[i].id === this.$store.state.currentAreaID) {
         this.indicesOfExpandedAreas.push(i)
+        // quick-fix: don't scroll if it's the first area as it's unnecessary
+        // still flawed, because if it's room 20 on the first area, that room won't be visible
+        if (sortedAreas[i].id === this.$route.params.class_id) return 
         this.$refs[`area-${sortedAreas[i].id}`][0].scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
     }

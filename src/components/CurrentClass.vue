@@ -2,6 +2,8 @@
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
   <div style="height: 100%">
+    <SteamNotificationInitiator v-if="mitClass"/>
+
     <MyParticipantDocUpdater
       :classID="classID"
       :areaID="areaID"
@@ -21,21 +23,21 @@
       mobile-breakpoint="0"
       touchless 
     >      
-      <v-sheet class="pt-0" style="margin-bottom: 26px;" elevation="8">    
+      <v-sheet style="margin-bottom: 26px; padding-bottom: 2px" elevation="8">    
         <div style="display: flex">
           <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
-            style="cursor: pointer; margin-left: 4px; margin-bottom: 11px; margin-top: 16px; margin-right: 2px" tile width="71" height="53"
+            style="cursor: pointer; margin-left: 6px; margin-right: 2px;" tile width="60" height="60"
           >
-            <v-img src="/logo.png" width="60" height="53" style="margin-left: 2px"/>
+            <v-img src="/logo.png" width="60" height="54" style="margin-top: 8px"/>
           </v-list-item-avatar>
 
           <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
-          <template v-slot:add-join-leave-class>
-            <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-              <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
-            </v-list-item>
-          </template>
-        </CurrentClassDropdown>
+            <template v-slot:add-join-leave-class>
+              <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
+                <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
+              </v-list-item>
+            </template>
+          </CurrentClassDropdown>
         </div>
 
         <!-- Have the app overview, updates, news, as well as the chats -->
@@ -100,9 +102,6 @@
 </template>
 
 <script>
-import firebase from "firebase/app";
-import "firebase/firestore";
-import "firebase/storage";
 import { mapState, mapGetters } from "vuex";
 
 import db from "@/database.js";
@@ -113,6 +112,7 @@ import BasePopupButton from "@/components/BasePopupButton.vue";
 import CurrentClassDropdown from "@/components/CurrentClassDropdown.vue";
 import CurrentClassNewPopup from "@/components/CurrentClassNewPopup.vue";
 import CurrentClassInviteBanner from '@/components/CurrentClassInviteBanner.vue'
+import SteamNotificationInitiator from '@/components/SteamNotificationInitiator.vue'
 
 import BaseButton from "@/components/BaseButton.vue";
 import AllAreas from '@/components/AllAreas.vue'
@@ -149,7 +149,8 @@ export default {
     CurrentClassInviteBanner,
     MyParticipantDocUpdater,
     CurrentArea,
-    CurrentRoom
+    CurrentRoom,
+    SteamNotificationInitiator
   },
   data: () => ({
     firebaseRef: null,
@@ -215,9 +216,6 @@ export default {
     this.unsubscribeClassDocListener(); 
   },
   methods: {
-    redirectToNewRoom () {
-
-    },
     declineInvite () {
       this.gentleAlarm.pause()
       this.isShowingBanner = false

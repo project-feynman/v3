@@ -17,60 +17,41 @@
         controls
       />
       <div id="extra-controls">
-        <v-col cols="auto" class="px-0 py-0">
-          <v-select
-            :items="speedOptions"
-            :value="playbackSpeed"
-            @input="changePlaybackSpeed"
-            dense
-            solo
-            background-color="rgba(255,255,255,0.75)"
-            :hide-details="true"
-            class="my-0"
-            color="accent"
-            item-color="accent"
-          >
-            <v-icon slot="append" color="black" small>mdi-fast-forward</v-icon>
-          </v-select>
-        </v-col>
-
-        <v-col cols="auto" class="px-0 py-0">
-          <v-menu
-            :items="['Edit', 'Delete']"
-            :value="playbackSpeed"
-            @input=""
-            dense
-            solo
-            background-color="rgba(255,255,255,0.75)"
-            :hide-details="true"
-            class="my-0"
-            color="accent"
-            item-color="accent"
-          >
-            <v-icon slot="append" color="black" small>mdi-dots-vertical</v-icon>
-          </v-menu>
-        </v-col>
-        
-        <!-- delete -->
-        <v-btn @click.stop="$emit('delete')">
-          <v-icon>mdi-delete</v-icon> REVERT TO BLACKBOARD
-        </v-btn>
-
-        <v-btn @click.stop="$emit('edit')">
-          <v-icon>mdi-pencil</v-icon> EDIT TITLE / DESC.
-        </v-btn>
-        <!-- <v-btn @click.stop="$emit('description-edit')">
-          <v-icon>mdi-edit</v-icon>
-        </v-btn> -->
-
-        <!-- <v-btn @click.stop="">
-          <v-icon>mdi-dots-vertical</v-icon>
-        </v-btn>  -->
-
         <!-- <v-btn @click.stop="$_toggleFullscreen()">
           <v-icon>mdi-fullscreen</v-icon>
         </v-btn> -->
+        <v-menu>
+          <template v-slot:activator="{ on }">
+            <v-btn v-on="on" @click.stop dark color="grey darken-1">
+              <v-icon color="white">mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item style="display: flex">
+              <v-btn v-for="speedOption of speedOptions" :key="speedOption.value" text outlined
+                @click="changePlaybackSpeed(speedOption.value)"
+              >
+                {{ speedOption.text }}
+              </v-btn>
+            </v-list-item>
+
+            <v-list-item @click.stop.once="$emit('upvote')">
+              <v-icon class="mr-2" color="yellow darken-3">mdi-lightbulb-on</v-icon> UPVOTE
+            </v-list-item>
+
+            <v-list-item @click.stop="$emit('edit')">
+              <v-icon class="mr-2">mdi-pencil</v-icon> EDIT TITLE / DESC.
+            </v-list-item>
+
+            <v-list-item @click.stop="$emit('delete')">
+              <v-icon class="mr-2">mdi-delete</v-icon> REVERT TO BLACKBOARD
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
+      <!-- End of #extra-controls -->
+
     </div>
   </div>
 </template>
@@ -321,12 +302,10 @@ export default {
   top: 10px;
   left: 10px;
   width: calc(100% - 20px);
-  opacity: 0.75;
   display: flex;
   justify-content: flex-end;
 }
 #extra-controls > * {
-  opacity: 0.8;
   margin: 0 5px;
 }
 #extra-controls > *:hover {

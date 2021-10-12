@@ -38,6 +38,11 @@
       <!-- TODO: don't let user wipe board / set background while recording -->
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot="{ closeMenu }">
+        <!-- TODO -->
+        <!-- <v-list-item @click.stop="">
+          <v-icon class="mr-2">mdi-pencil</v-icon> ADD TITLE / DESC.
+        </v-list-item> -->
+
         <v-list-item @click.stop="saveAnimation()">
           <v-icon left color="secondary">mdi-content-save</v-icon>Save
         </v-list-item>
@@ -224,12 +229,19 @@ export default {
 
       const audioDownloadURL = await this.$_saveToStorage(getRandomId(), this.blackboard.audioBlob)
 
-      await this.blackboardRef.update({
+      const batch = db.batch() 
+      const userUpdateObj = {}
+      userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(1)
+      batch.update(db.doc(`users/${this.user.uid}`), userUpdateObj)
+      batch.update(this.blackboardRef, {
+        creatorUID: this.user.uid, // to support `.where()` queries 
         creator: basicUserInfo,
         date: new Date().toISOString(),
         views: 0,
-        audioDownloadURL
-      })      
+        audioDownloadURL,
+        roomID: this.$route.params.room_id // note this is dangerous to mutations
+      })
+      await batch.commit() 
       
       firebase.analytics().logEvent('recorded_video', { className: this.mitClass.name })
 
@@ -243,11 +255,19 @@ export default {
         lastName: this.user.lastName
       }
       
-      await this.blackboardRef.update({
-        creator: basicUserInfo,
-        date: new Date().toISOString(),
-        views: 0
-      })      
+      const userUpdateObj = {}
+      userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(1)
+      
+      await Promise.all([
+        db.doc(`users/${this.user.uid}`).update(userUpdateObj), 
+        this.blackboardRef.update({
+          creatorUID: this.user.uid,
+          creator: basicUserInfo,
+          date: new Date().toISOString(),
+          views: 0,
+          roomID: this.$route.params.room_id // note this is dangerous to mutations
+        })    
+      ])  
       this.$root.$emit('show-snackbar', 'Converted to animation.')
     },
     keepSyncingBackgroundWithDb () {

@@ -31,31 +31,35 @@
       </v-col>
     </div>
     <div id="extra-controls">
-      <v-col cols="auto" class="px-0 py-0">
-        <v-select
-        :items="speedOptions"
-        v-model="playbackSpeed"
-        dense
-        solo
-        background-color="#f5f5f5"
-        flat
-        hide-details
-        class="my-0"
-        menu-props="top"
-        color="accent"
-        item-color="accent"
-        >
-          <v-icon slot="append" color="accent lighten-2" small>mdi-fast-forward</v-icon>
-        </v-select>
-      </v-col>
+      <v-menu>
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" @click.stop dark color="grey darken-1">
+            <v-icon color="white">mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
 
-      <v-btn @click.stop="$emit('delete')">
-        <v-icon>mdi-delete</v-icon> REVERT TO BLACKBOARD
-      </v-btn>
+        <v-list>
+          <v-list-item style="display: flex">
+            <v-btn v-for="speedOption of speedOptions" :key="speedOption.value" text outlined
+              @click="speedChange(speedOption.value)"
+            >
+              {{ speedOption.text }}
+            </v-btn>
+          </v-list-item>
 
-      <v-btn @click.stop="$emit('edit')">
-        <v-icon>mdi-pencil</v-icon> EDIT TITLE / DESC.
-      </v-btn>
+          <v-list-item @click.stop.once="$emit('upvote')">
+            <v-icon class="mr-2">mdi-lightbulb-on</v-icon> UPVOTE
+          </v-list-item>
+
+          <v-list-item @click.stop="$emit('edit')">
+            <v-icon class="mr-2">mdi-pencil</v-icon> EDIT TITLE / DESC.
+          </v-list-item>
+
+          <v-list-item @click.stop="$emit('delete')">
+            <v-icon class="mr-2">mdi-delete</v-icon> REVERT TO BLACKBOARD
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <!-- <v-btn @click.stop="$_toggleFullscreen()"><v-icon>mdi-fullscreen</v-icon></v-btn> -->
     </div>
   </div>
@@ -309,12 +313,10 @@ export default {
   top: 10px;
   left: 10px;
   width: calc(100% - 20px);
-  opacity: 0.75;
   display: flex;
   justify-content: flex-end;
 }
 #extra-controls > * {
-  opacity: 0.8;
   margin: 0 5px;
 }
 #extra-controls > *:hover {

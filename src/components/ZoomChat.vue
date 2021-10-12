@@ -1,7 +1,7 @@
 
 <template>
    <!-- Might need `width: 100%` here -->
-  <div>
+  <div style="width: 100%" class="px-3">
     <slot>
       <!-- Close window button is injected here -->
     </slot>
@@ -15,7 +15,7 @@
         @keyup.enter="sendMessage()" 
         placeholder="Type message here..." 
         v-model="newlyTypedMessage" 
-        hide-details dense style="font-size: 0.9rem;"
+        outlined rounded hide-details dense style="font-size: 0.9rem;"
       />
       <v-btn fab icon @click="sendMessage()" color="info" x-small>
         <v-icon>mdi-send</v-icon>
@@ -31,6 +31,7 @@ import { mapState} from "vuex";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"; 
 import firebase from "firebase/app"; 
 import "firebase/firestore"; 
+import 'firebase/functions'
 
 // A chat where only people who are currently online and in the same place
 // are notified of new messages
@@ -47,6 +48,10 @@ export default {
     notifFieldName: {
       type: String,
       required: true
+    },
+    areaID: {
+      type: String,
+      required: false // just for the new group chat implementation, don't want to break existing code
     }
   },
   mixins: [
@@ -59,13 +64,14 @@ export default {
     return {
       allMessages: null,
       unsusbcribeMessagesListener: null,
-      miniChatWindowHeight: 135,
+      miniChatWindowHeight: 280,
       newlyTypedMessage: ""
     };
   },
   computed: {
     ...mapState([
-      "user"
+      "user",
+      'mitClass'
     ])
   },
   created () {
@@ -85,18 +91,44 @@ export default {
   },
   methods: {
     async sendMessage () {
+      const messageCopy = this.newlyTypedMessage
+      this.newlyTypedMessage = ''
       db.collection(this.messagesDbPath).add({
         author: {
           firstName: this.user.firstName,
           lastName: this.user.lastName,
           uid: this.user.uid
         },
-        content: this.newlyTypedMessage,
+        content: messageCopy,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
-      this.newlyTypedMessage = ""; 
 
       // this.notifyRelevantUsers();
+      this.notifyRelevantUsers2(messageCopy)
+    },
+    async notifyRelevantUsers2 (message) {
+      const relevantUsers = await this.$_getCollection(
+        db.collection('users').where('willGetNotifFromNewMsgInAreas', 'array-contains', this.areaID)
+      )
+
+      const sendEmailToPerson = firebase.functions().httpsCallable('sendEmailToPerson')
+      for (const relevantUser of relevantUsers) {
+        const { class_id, section_id, room_id } = this.$route.params;
+        sendEmailToPerson({ 
+          emailOfPerson: relevantUser.email, 
+          title: `New area message in ${this.mitClass.name}`, 
+          contentHTML: `
+            <p>Someone said: "${message}"</p> 
+            <a href="https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}">
+              explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}
+            </a>
+            <p>
+              To get notifications, press the "From: eltonlin@mit.edu" near the top, then press "Add to VIP". 
+              Meanwhile, I'm working on a way to send notifications without emails to minimize inbox clutter. 
+            </p>
+          `,
+        })
+      }
     },
     async notifyRelevantUsers () {
       const participantsInArea = await this.$_getCollection(this.participantsDbRef);

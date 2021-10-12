@@ -37,7 +37,7 @@
             >
               <div :class="activeSpeakerDailyID === firestoreIDToDailyID[client.sessionID] ? 
                 `caption font-weight-bold text--darken-3 grey--text` : 'text--secondary'" 
-                style="align-items: center; display: flex; margin-left: 18px;"
+                style="align-items: center; display: flex; margin-left: 8px;"
               >
                 <v-icon v-if="client.kind === 'engineer'" 
                   x-small style="opacity: 70%; margin-top: 2px;"
@@ -59,7 +59,8 @@
                 >
                   mdi-account
                 </v-icon>
-                <p class="mb-0 ml-1 text-truncate" style="margin-top: 2px; max-width: 110px">
+                <!-- TODO: just write a v-if v-else statement FFS -->
+                <p class="mb-0 ml-1 text-truncate" :style="`margin-top: 2px; max-width: ${client.sessionID === sessionID ? '86px' : '130px'}`">
                   {{ client.firstName  + " " + client.lastName }} 
                 </p>
               </div>
@@ -129,12 +130,16 @@
 
               <!-- Display a call icon if not connected -->
               <template v-if="connectionStatus !== 'CONNECTED'">
-                <v-btn @click.prevent.stop="joinConferenceRoom()" 
+                <v-switch 
+                  color="green" class="mt-5" 
+                  inset
                   :loading="connectionStatus === 'CONNECTING'"
-                  style="background-color: #1abd53" elevation="5" icon 
+                  @change="joinConferenceRoom()"
                 >
-                  <v-icon color="white" style="font-size: 1.4rem">mdi-volume-high</v-icon>
-                </v-btn>
+                  <template v-slot:label>
+                    <v-icon style="font-size: 0.9rem; margin-left: 1px" color="grey darken-1">mdi-volume-off</v-icon>
+                  </template>
+                </v-switch>
               </template>
               
               <v-icon v-else-if="participants && participants.local" 
@@ -174,7 +179,8 @@
               <v-icon v-else-if="!client.canHearAudio && connectionStatus === 'CONNECTED'" small color="red darken-2">
                 mdi-volume-off
               </v-icon>
-              <v-icon v-else small color="red darken-2">
+              <!-- If I'm not in voice chat, I don't really particularly care about other people, don't use red it's too flashy -->
+              <v-icon v-else small color="grey darken-1" style="font-size: 0.9rem; margin-top: 1px">
                 mdi-volume-off
               </v-icon>
 
@@ -188,7 +194,7 @@
                          align-items: center; 
                          background-color: rgb(62, 66, 66); 
                          margin-left: 5px; 
-                         margin-right: 24px;
+                         margin-right: 12px;
                          box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
                        `"
               >

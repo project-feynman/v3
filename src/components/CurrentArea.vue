@@ -211,7 +211,7 @@
         <v-list-item 
           :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
           dense
-          active-class="orange--text text--darken-3"
+          active-class="green--text"
           class="pl-0 pr-0 mx-2 mb-0"
           :key="room.id"
         >

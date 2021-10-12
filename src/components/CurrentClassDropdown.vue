@@ -1,14 +1,15 @@
 <template>
   <v-menu v-model="isMenuOpen" bottom offset-y>
     <template v-slot:activator="{ on }">
-      <v-list-item v-on="on" two-line class="px-0">
-
-        <v-list-item-content v-if="mitClass" class="py-0 mx-1" style="max-width: 170px">
+      <!-- The limiting case that max-width must work for is a laptop with the scrollbar taking up additional width  -->
+      <v-list-item v-on="on" two-line class="px-0" style="max-width: 188px">
+        <v-list-item-content v-if="mitClass" class="py-0 mx-1" style="max-width: 180x">
           <v-list-item-title class="mb-0 display-1" style="1.4rem;">
             {{ mitClass.name }}
           </v-list-item-title>
 
-          <v-list-item-subtitle class="text-truncate">
+          <!-- margin-left is necessary because, by default, Vuetify doesn't align the title and subtitle properly when they're different fonts -->
+          <v-list-item-subtitle class="text-truncate" style="margin-left: 2px">
             {{ mitClass.description }}
           </v-list-item-subtitle>
         </v-list-item-content>

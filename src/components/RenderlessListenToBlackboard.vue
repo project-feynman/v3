@@ -1,9 +1,9 @@
 <script>
-import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
+import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js"
 
 export default {
   props: {
-    blackboardRef: Object,
+    blackboardRef: Object
   },
   mixins: [
     DatabaseHelpersMixin
@@ -19,14 +19,16 @@ export default {
       descriptionHtml: '',
       totalPoints: 0,
       unsubFunc: null,
-      views: 0
+      views: 0,
+      upvotes: 0
     };
   },
   created () {
     this.isLoading = true
     this.unsubFunc = this.blackboardRef.onSnapshot(doc => {
       // doc.id, doc.ref.path, doc.data()
-      const d = doc.data()
+      const d = { id: doc.id, ...doc.data() }
+      this.boardDoc = d
       this.creator = d.creator
       this.date = d.date 
       this.backgroundImageDownloadURL = d.backgroundImageDownloadURL
@@ -36,6 +38,7 @@ export default {
       this.totalPoints = d.totalPoints
       this.isLoading = false
       this.views = d.views
+      this.upvotes = d.upvotes || 0
     })
   },
   destroyed () {
@@ -43,6 +46,7 @@ export default {
   },
   render () {
     return this.$scopedSlots.default({
+      boardDoc: this.boardDoc,
       backgroundImageDownloadURL: this.backgroundImageDownloadURL,
       creator: this.creator,
       date: this.date,
@@ -51,7 +55,8 @@ export default {
       descriptionHtml: this.descriptionHtml,
       totalPoints: this.totalPoints,
       isLoading: this.isLoading,
-      views: this.views
+      views: this.views,
+      upvotes: this.upvotes
     });
   }
 }
