@@ -6,7 +6,7 @@
         <v-overlay :value="!isPlaying"
           absolute
           color="white"
-          :opacity="0.15"
+          :opacity="0.1"
         >
           <v-btn @click="playAudio()"
             x-large
