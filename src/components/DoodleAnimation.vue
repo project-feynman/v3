@@ -3,8 +3,34 @@
   <div ref="VideoWrapper" class="video-container">
     <!-- VISUAL -->
     <div ref="CanvasWrapper" style="position: relative;">
-      <canvas ref="FrontCanvas" class="front-canvas" data-qa="doodle-canvas"></canvas>
-      <canvas ref="BackCanvas" class="background-canvas"></canvas>
+      <v-overlay :value="!isPlaying"
+        absolute
+        color="white"
+        :opacity="0.15"
+      >
+        <v-btn @click="pausePlay()"
+          x-large
+          class="mx-2"
+          fab
+          dark
+          color="white"
+        >
+          <v-icon dark style="font-size: 3.5rem; opacity: 40%" color="black">
+            mdi-play
+          </v-icon>
+        </v-btn>
+      </v-overlay>
+      
+      <canvas @click="pausePlay()"
+        ref="FrontCanvas" 
+        class="front-canvas" 
+      >
+      </canvas>
+
+      <canvas 
+        ref="BackCanvas" 
+        class="background-canvas">
+      </canvas>
     </div>
 
     <div class="d-flex animation-controls">
@@ -219,6 +245,7 @@ export default {
     speedChange (newSpeed) {
       this.playbackSpeed = newSpeed;
     },
+    // TODO: figure out WTF is `playerCount`
     async playAnimation () {
       if (this.isPlaying) {
         this.playerCount += 1 // Increase the total count of the instances of players

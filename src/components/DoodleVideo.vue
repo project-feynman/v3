@@ -3,14 +3,43 @@
     <div ref="VideoWrapper" class="video-container">
       <!-- VISUAL DISPLAY -->
       <div ref="CanvasWrapper" style="position: relative;">
-        <canvas ref="FrontCanvas" class="front-canvas"></canvas>
-        <canvas ref="BackCanvas" class="background-canvas"></canvas>
+        <v-overlay :value="!isPlaying"
+          absolute
+          color="white"
+          :opacity="0.15"
+        >
+          <v-btn @click="playAudio()"
+            x-large
+            class="mx-2"
+            fab
+            dark
+            color="white"
+          >
+            <v-icon dark style="font-size: 3.5rem; opacity: 40%" color="black">
+              {{ isPlaying ? 'mdi-pause' : 'mdi-play' }}
+            </v-icon>
+          </v-btn>
+        </v-overlay>
+
+        <canvas @click="pauseAudio()"
+          ref="FrontCanvas" 
+          class="front-canvas"
+        >
+        </canvas>
+
+        <canvas 
+          ref="BackCanvas" 
+          class="background-canvas"
+        >
+        </canvas>
       </div>
 
       <!-- AUDIO SLIDER -->
       <audio v-if="audioUrl && strokesArray.length > 0"
         :src="audioUrl" 
-        @play="initSyncing(); $emit('play')"
+        @play="initSyncing(); $emit('play'); isPlaying = true"
+        @pause="isPlaying = false"
+        @ended="isPlaying = false"
         @seeking="syncStrokesToAudio()"
         ref="AudioPlayer" 
         style="width: 100%;"
@@ -51,7 +80,6 @@
         </v-menu>
       </div>
       <!-- End of #extra-controls -->
-
     </div>
   </div>
 </template>
@@ -61,11 +89,7 @@ import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
 import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import _ from "lodash";
 import { 
-  navbarHeight, 
-  audioPlayerHeight, 
   PPT_SLIDE_RATIO,
-  PDF_RATIO,
-  ERASER_STROKE_WIDTH
 } from "@/CONSTANTS.js";
 
 export default {
@@ -98,7 +122,8 @@ export default {
     bgCanvas: null,
     bgCtx: null,
     nextFrameIdx: 0, 
-    recursiveSyncer: null
+    recursiveSyncer: null,
+    isPlaying: false
   }),
   computed: {
     imageBlobUrl () {
@@ -163,6 +188,9 @@ export default {
     },
     playAudio () {
       this.$refs.AudioPlayer.play();
+    },
+    pauseAudio () {
+      this.$refs.AudioPlayer.pause();
     },
     // TODO: touch to play or pause
     getStartTime ({ strokeIndex, pointIndex }) {
