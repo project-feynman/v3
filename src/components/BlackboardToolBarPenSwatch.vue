@@ -6,8 +6,8 @@
         :filled="currentTool.color === color && currentTool.type === 'PEN'" 
         color="white" small 
       >
-        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-          width="16px" height="35px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
+        <svg preserveAspectRatio="none" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+          :width="`${16 * scaleFactor(user.penWidths, i)}px`" height="35px" :viewBox="`0 0 100 230`" style="enable-background:new 0 0 100 230;" xml:space="preserve">
           <g>
             <path d="M0,0v72.377c0,1.588,0.234,3.169,0.698,4.706l45.416,150.032C46.633,228.828,48.212,230,50,230s3.367-1.172,3.886-2.883
               L99.31,77.079c0.457-1.525,0.69-3.108,0.69-4.702V0.002"/>
@@ -25,30 +25,46 @@
       <BaseButton v-else-if="user.email" @click="changePenColor(getRandomColor(), i, 3)" icon="mdi-dice-5" small :color="color" dark :key="i + 'random-die'" style="margin-left: 4px">
 
       </BaseButton>
-
-      <!-- `retain-focus` avoids infinite recursion @see https://stackoverflow.com/questions/61444870/maximum-call-stack-size-exceeded-vuetify/64453969#64453969 -->
-      <v-dialog v-model="isMenuOpen" width="400" :overlay-opacity="0.1" :key="i + 'pen-menu'" :retain-focus="false" no-click-animation>
-        <v-card>
-          <v-card-title>Configure Pen</v-card-title>
-          <v-card-text>
-            <!-- Display colors -->
-            <v-color-picker @input="selectedColorObject => newColorToUpdate = selectedColorObject.hex"
-              dot-size="25"
-              swatches-max-height="200"
-            ></v-color-picker>
-
-            <!-- Display slider for stroke width -->
-            Pencil width
-            <v-slider @change="selectedWidth => newWidthToUpdate = selectedWidth" min="1" max="20"></v-slider>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer/>
-            <v-btn @click="isMenuOpen = false; newColorToUpdate =  null; newWidthToUpdate = null;">CANCEL</v-btn>
-            <v-btn @click="isMenuOpen = false; changePenColor(newColorToUpdate, whichPenToUpdate, newWidthToUpdate)">SAVE</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </template>
+
+    <!-- `retain-focus` avoids infinite recursion @see https://stackoverflow.com/questions/61444870/maximum-call-stack-size-exceeded-vuetify/64453969#64453969 -->
+    <v-dialog v-model="isMenuOpen" width="500" :overlay-opacity="0.1" :retain-focus="true">
+      <v-card>
+        <v-card-title>Pencil Color</v-card-title>
+        <v-card-text>
+          <!-- Display colors -->
+          <v-color-picker :value="newColorToUpdate"
+            @update:color="selectedColorObject => newColorToUpdate = selectedColorObject.hex" 
+            @input="selectedColorObject => newColorToUpdate = selectedColorObject.hex"
+            dot-size="25"
+            hide-canvas
+            hide-sliders
+            hide-inputs
+            swatches-max-height="250"
+            width="500"
+            show-swatches
+          ></v-color-picker>
+
+          <div class="my-5">Pencil width</div>
+          <v-slider 
+            :value="newWidthToUpdate"
+            @change="selectedWidth => newWidthToUpdate = selectedWidth" min="1" max="20"
+            thumb-label="always"
+            step="1"
+            ticks="always"
+            tick-size="1"
+            style="margin-top: 40px"
+          >
+
+          </v-slider>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer/>
+          <v-btn @click="isMenuOpen = false; newColorToUpdate =  null; newWidthToUpdate = null;">CANCEL</v-btn>
+          <v-btn @click="isMenuOpen = false; changePenColor(newColorToUpdate, whichPenToUpdate, newWidthToUpdate)">SAVE</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -83,6 +99,14 @@ export default {
     ]),
   },
   methods: {
+    scaleFactor (penWidths, i) {
+      if (!penWidths) return 1
+      else {
+        const logarithmicFactor = 0.2
+        const normalPenWidth = 2
+        return (0.7 + (penWidths[i] / normalPenWidth) * logarithmicFactor) // e.g. 1.05
+      }
+    },
     handlePenClick (color, i) {
       const { currentTool } = this
       const alreadySelected = currentTool.color === color && currentTool.type === 'PEN'

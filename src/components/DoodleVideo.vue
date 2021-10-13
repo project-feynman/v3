@@ -332,7 +332,7 @@ export default {
   width: calc(100% - 20px);
   display: flex;
   justify-content: flex-end;
-  z-index: 100000000000000000000000000000000000000000000000000000
+  z-index: 1000
 }
 .extra-controls > * {
   margin: 0 5px;
