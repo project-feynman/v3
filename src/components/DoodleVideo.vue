@@ -45,7 +45,7 @@
         style="width: 100%;"
         controls
       />
-      <div id="extra-controls">
+      <div class="extra-controls">
         <!-- <v-btn @click.stop="$_toggleFullscreen()">
           <v-icon>mdi-fullscreen</v-icon>
         </v-btn> -->
@@ -325,23 +325,24 @@ export default {
   z-index: -1;
   background-color: rgb(46, 49, 49);
 }
-#extra-controls {
+.extra-controls {
   position: absolute;
   top: 10px;
   left: 10px;
   width: calc(100% - 20px);
   display: flex;
   justify-content: flex-end;
+  z-index: 100000000000000000000000000000000000000000000000000000
 }
-#extra-controls > * {
+.extra-controls > * {
   margin: 0 5px;
 }
-#extra-controls > *:hover {
+.extra-controls > *:hover {
   opacity: 1;
 }
 </style>
 <style>
-#extra-controls .v-select__selections {
+.extra-controls .v-select__selections {
   color: accent;
 }
 </style>

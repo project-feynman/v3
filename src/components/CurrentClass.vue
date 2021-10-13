@@ -46,8 +46,7 @@
             <v-card-title>App Overview</v-card-title>
             <v-card-text>
               <b>Intro</b><br>
-              Explain is an <a href="https://github.com/project-feynman/explain" target="_blank">open-source</a> startup
-              with the goal of creating a worldwide community of helpers who teach each other and share explanation videos.
+              <a href="https://github.com/project-feynman/explain" target="_blank">Explain's</a> goal is open education
               <br>
               <br>
               <b>Support</b>
@@ -57,10 +56,7 @@
               <br>
               <b>Recruitment</b>
               <br>
-              I'm currently the only active developer (Elton Lin) looking to recruit a co-founder and founding engineers.
-              Explain served ~1000 students & teachers at MIT from 2020-2021, and raised a $0.5M seed round with OSS Capital.
-              I'm also looking for classes where Office Hours is at over-capacity and would benefit highly from Explain - any introductions would be life-savingly appreciated.
-              
+              Explain serves around 500 students/teachers across 8.01, ESG, etc. If you'd like to join our web dev team, email eltonlin@mit.edu
             </v-card-text>
 
             <v-card-actions>

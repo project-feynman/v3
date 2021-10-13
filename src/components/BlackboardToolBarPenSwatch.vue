@@ -1,11 +1,10 @@
 <template>
   <div style="display: flex; align-items: center;">
-    <template v-for="(color, i) of ['#FDFEFE', ...user.penColors]">
-      <BaseButton v-if="!((i > 2) && $vuetify.breakpoint.smAndDown)"
-        @click="changePenColor(color, i-1)" 
+    <template v-for="(color, i) of user.penColors">
+      <BaseButton v-if="!((i > 2) && $vuetify.breakpoint.smAndDown) && i < user.penColors.length - 1" :key="i"
+        @click="handlePenClick(color, i)" 
         :filled="currentTool.color === color && currentTool.type === 'PEN'" 
         color="white" small 
-        :key="i"
       >
         <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
           width="16px" height="35px" viewBox="0 0 100 230" style="enable-background:new 0 0 100 230;" xml:space="preserve">
@@ -19,8 +18,36 @@
               c-1.539-1.356-3.838-1.354-5.377-0.002L34.871,68.683L22.375,57.67c-0.769-0.676-1.725-1.013-2.685-1.013
               c-0.959,0-1.919,0.339-2.685,1.013L8.121,65.5L8.098,0.024L91.878,0z"/>
           </g>
-        </svg>  
+        </svg> 
+        <v-icon v-if="user.email" x-small>mdi-menu-down</v-icon>
       </BaseButton>
+
+      <BaseButton v-else-if="user.email" @click="changePenColor(getRandomColor(), i, 3)" icon="mdi-dice-5" small :color="color" dark :key="i + 'random-die'" style="margin-left: 4px">
+
+      </BaseButton>
+
+      <!-- `retain-focus` avoids infinite recursion @see https://stackoverflow.com/questions/61444870/maximum-call-stack-size-exceeded-vuetify/64453969#64453969 -->
+      <v-dialog v-model="isMenuOpen" width="400" :overlay-opacity="0.1" :key="i + 'pen-menu'" :retain-focus="false" no-click-animation>
+        <v-card>
+          <v-card-title>Configure Pen</v-card-title>
+          <v-card-text>
+            <!-- Display colors -->
+            <v-color-picker @input="selectedColorObject => newColorToUpdate = selectedColorObject.hex"
+              dot-size="25"
+              swatches-max-height="200"
+            ></v-color-picker>
+
+            <!-- Display slider for stroke width -->
+            Pencil width
+            <v-slider @change="selectedWidth => newWidthToUpdate = selectedWidth" min="1" max="20"></v-slider>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer/>
+            <v-btn @click="isMenuOpen = false; newColorToUpdate =  null; newWidthToUpdate = null;">CANCEL</v-btn>
+            <v-btn @click="isMenuOpen = false; changePenColor(newColorToUpdate, whichPenToUpdate, newWidthToUpdate)">SAVE</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </template>
   </div>
 </template>
@@ -42,6 +69,13 @@ export default {
   components: { 
     BaseButton,
   },
+  data () {
+    return {
+      isMenuOpen: false,
+      newWidthToUpdate: null,
+      newColorToUpdate: null
+    }
+  },
   computed: {
     ...mapState([
       "user",
@@ -49,42 +83,52 @@ export default {
     ]),
   },
   methods: {
-    getRandomColor () {
-      // randomize the hue i.e. the color
-      // 100% saturation i.e. maximize on its vividness and purity
-      // 60% lightness / mix with white (otherwise it becomes too faded)
-      // 1 alpha
-      return "hsla(" + ~~(360 * Math.random()) + "," +
-                    "100%,"+
-                    "60%,1)"; // hue, saturation (how vivid), lightness (how much black / white mix ), alpha
-      // let letters = "0123456789ABCDEF";
-      // let color = "#";
-      // for (let i = 0; i < 6; i++) {
-      //   color += letters[Math.floor(Math.random() * 16)];
-      // }
-      // return color;
-    },
-    changePenColor (color, i) {
-      if (this.currentTool.color === "white" || color !== this.currentTool.color) {
+    handlePenClick (color, i) {
+      const { currentTool } = this
+      const alreadySelected = currentTool.color === color && currentTool.type === 'PEN'
+
+      // backwards compatibility code for pen widths
+      let width 
+      if (!this.user.penWidths) width = 2
+      else width = this.user.penWidths[i]
+
+      if (!alreadySelected) {
         this.$store.commit("SET_CURRENT_TOOL", {
           type: "PEN",
-          color,
-          lineWidth: 2
-        });
-      } 
-      // generate random color
-      else {
-        const penColorsCopy = [...this.user.penColors];
-        penColorsCopy[i] = this.getRandomColor();
-        db.collection("users").doc(this.user.uid).update({
-          penColors: penColorsCopy
-        });
-        this.$store.commit("SET_CURRENT_TOOL", {
-          type: "PEN",
-          color: penColorsCopy[i],
-          lineWidth: 2
+          color: color,
+          lineWidth: width
         })
       }
+      else {
+        this.isMenuOpen = true
+        this.newColorToUpdate = color
+        this.newWidthToUpdate = width
+        this.whichPenToUpdate = i
+      } 
+    },
+    getRandomColor () {
+      return "hsla(" + ~~(360 * Math.random()) + "," + // hue i.e. the "color"
+                    "100%,"+  // 100% saturation i.e. maximize on its vividness and purity
+                    "60%,1)"; // 60% lightness (how much black / white mix, otherwise too faded), 1 alpha
+    },
+    changePenColor (color, i, width = 2) {
+      console.log('color =', color)
+      console.log('new width ', width)
+      const penColorsCopy = [...this.user.penColors];
+      penColorsCopy[i] = color
+      const penWidthsCopy = [ ...(this.user.penWidths || [2, 2, 2, 2]) ]
+      penWidthsCopy[i] = width
+      db.collection("users").doc(this.user.uid).update({
+        penColors: penColorsCopy,
+        penWidths: penWidthsCopy
+      });
+      this.$store.commit("SET_CURRENT_TOOL", {
+        type: "PEN",
+        color: penColorsCopy[i],
+        lineWidth: penWidthsCopy[i]
+      })
+      this.newWidthToUpdate = null
+      this.newColorToUpdate = null
     }
   }
 }

@@ -56,7 +56,7 @@
         />
       </v-col>
     </div>
-    <div id="extra-controls">
+    <div class="extra-controls">
       <v-menu>
         <template v-slot:activator="{ on }">
           <v-btn v-on="on" @click.stop dark color="grey darken-1">
@@ -335,18 +335,19 @@ export default {
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
 }
-#extra-controls {
+.extra-controls {
   position: absolute;
   top: 10px;
   left: 10px;
   width: calc(100% - 20px);
   display: flex;
   justify-content: flex-end;
+  z-index: 10000000000000000000000000000000000000000000000
 }
-#extra-controls > * {
+.extra-controls > * {
   margin: 0 5px;
 }
-#extra-controls > *:hover {
+.extra-controls > *:hover {
   opacity: 1;
 }
 </style>
