@@ -464,9 +464,6 @@ import { mapState, mapGetters } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId, displayDate } from "@/helpers.js";
 import ZoomChat from "@/components/ZoomChat.vue";
-import InviteFriends from "@/components/InviteFriends.vue"; 
-import InviteFriends2 from '@/components/InviteFriends2.vue'
-import InviteFriends3 from '@/components/InviteFriends3.vue'
 import InviteFriends4 from '@/components/InviteFriends4.vue'
 import DoodleAnimation from '@/components/DoodleAnimation.vue'
 import DoodleVideo from '@/components/DoodleVideo.vue'
@@ -493,9 +490,6 @@ export default {
     BaseButton,
     BaseIconButton,
     ZoomChat,
-    InviteFriends,
-    InviteFriends2,
-    InviteFriends3,
     InviteFriends4,
     DoodleAnimation,
     DoodleVideo,

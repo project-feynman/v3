@@ -136,8 +136,6 @@ export default {
                     "60%,1)"; // 60% lightness (how much black / white mix, otherwise too faded), 1 alpha
     },
     changePenColor (color, i, width = 2) {
-      console.log('color =', color)
-      console.log('new width ', width)
       const penColorsCopy = [...this.user.penColors];
       penColorsCopy[i] = color
       const penWidthsCopy = [ ...(this.user.penWidths || [2, 2, 2, 2]) ]

@@ -68,11 +68,11 @@ export default {
       let emailContent
       const { class_id, section_id, room_id } = this.$route.params
       if (user.kind === 'staff' || this.userIsTA) {
-        emailTitle = `${user.firstName} (instructor) came online to answer ${this.mitClass.name} questions`
+        emailTitle = `${user.firstName} (instructor) is answering ${this.mitClass.name} questions`
         emailContent = `
           To join them, click this link
-          <a href="https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}">
-            explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}
+          <a href="${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}">
+            ${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}
           </a>
           <p>To unsubscribe, visit the link above, press "Army of help", then untoggle the "participate" switch</p>
           <p>
@@ -85,11 +85,13 @@ export default {
           return member.getNotifiedWhenInstructorsComeOnline.includes(mitClass.id)
         })
       } else {
-        emailTitle = `${user.firstName} (classmate) came online to work on ${this.mitClass.name}`
+        emailTitle = `${user.firstName} (classmate) is working on ${this.mitClass.name}`
+
+        // original redirect link: "https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}"
         emailContent = `
           To join them, click this link
-          <a href="https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}">
-            explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}
+          <a href="${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}">
+            ${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}
           </a>
           <p>To unsubscribe, visit the link above, press "Army of help", then untoggle the "participate" switch</p>
           <p>

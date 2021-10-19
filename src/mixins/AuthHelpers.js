@@ -184,8 +184,8 @@ export default {
         });
     },
     $_signOut () { 
-      firebase.auth().signOut(); 
-      window.location = "https://explain.web.app"; 
+      firebase.auth().signOut()
+      window.location = window.location.origin
     }
   }
 }

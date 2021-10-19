@@ -327,8 +327,8 @@ export default {
         title: `${this.mitClass.name} Invite`, 
         contentHTML: `
           <p>${this.user.firstName + ' ' + this.user.lastName} invited you to explain something</p> 
-          <a href="https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}">
-            explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}
+          <a href="${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}">
+            ${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}
           </a>
           <p>If you're busy, no need to do anything.</p>
           <p>
