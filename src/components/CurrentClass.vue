@@ -14,30 +14,45 @@
     <!-- width 240; anything below, if the scrollbar appears (for laptops), then the right margin gets squished and invaded -->
     <!-- Sets the designated mobile breakpoint for the component. This will apply alternate styles for mobile devices such as the temporary prop, or activate the bottom prop when the breakpoint value is met. Setting the value to 0 will disable this functionality. -->
     <!-- Height: 100% is a workaround for Vuetify's bug with iOS Safari page hiding interactions -->
-    <v-navigation-drawer v-model="isShowingDrawer" 
+    <!-- Disable mobile breakpoint by setting it to "" -->
+    <!-- v-model="isLeftPanelCollapsed"  -->
+    <v-navigation-drawer 
       app 
       style="height: 100%"
       class="elevation-24" 
       width="270" 
       disable-resize-watcher
-      mobile-breakpoint="0"
+      mobile-breakpoint=""
       touchless 
+      :mini-variant="isLeftPanelCollapsed"
+      mini-variant-width="40"
     >      
       <v-sheet style="margin-bottom: 26px; padding-bottom: 2px" elevation="8">    
-        <div style="display: flex">
-          <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
-            style="cursor: pointer; margin-left: 6px; margin-right: 2px;" tile width="60" height="60"
-          >
-            <v-img src="/logo.png" width="60" height="54" style="margin-top: 8px"/>
-          </v-list-item-avatar>
+        <div style="display: flex; align-items: center; height: 76px">
+          <template v-if="!isLeftPanelCollapsed">
+            <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
+              style="cursor: pointer; margin-left: 6px; margin-right: 2px;" tile width="60" height="60"
+            >
+              <v-img src="/logo.png" width="60" height="54" style="margin-top: 8px"/>
+            </v-list-item-avatar>
 
-          <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
-            <template v-slot:add-join-leave-class>
-              <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-                <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
-              </v-list-item>
-            </template>
-          </CurrentClassDropdown>
+            <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
+              <template v-slot:add-join-leave-class>
+                <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
+                  <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
+                </v-list-item>
+              </template>
+            </CurrentClassDropdown>
+          </template>
+
+          <v-spacer/>
+
+          <v-btn v-if="!isLeftPanelCollapsed" @click="$store.commit('SET_IS_LEFT_PANEL_COLLAPSED', true)" fab small text>
+            <v-icon>mdi-arrow-expand-left</v-icon>
+          </v-btn>
+          <v-btn v-else @click="$store.commit('SET_IS_LEFT_PANEL_COLLAPSED', false)" fab small text> 
+            <v-icon>mdi-arrow-expand-right</v-icon>
+          </v-btn>
         </div>
 
         <!-- Have the app overview, updates, news, as well as the chats -->
@@ -151,7 +166,6 @@ export default {
   data: () => ({
     firebaseRef: null,
     classParticipantsRef: null,
-    isShowingDrawer: true,
     isAddClassPopupOpen: false,
     isClassActionsMenuOpen: false,
     unsubscribeClassDocListener: null,
@@ -162,7 +176,8 @@ export default {
   computed: {
     ...mapState([
       "user",
-      "mitClass"
+      "mitClass",
+      'isLeftPanelCollapsed'
     ]),
     ...mapGetters([
       "numOfUnreadGlobalMsgs"
@@ -172,6 +187,15 @@ export default {
         if (mitClass.id === this.classID) {
           return mitClass; 
         }
+      }
+    },
+    useMiniDrawerInitially () {
+      switch (this.$vuetify.breakpoint.name) {
+        case 'xs': return true 
+        case 'sm': return true 
+        case 'md': return false 
+        case 'lg': return false 
+        case 'xl': return false
       }
     }
   },
@@ -189,7 +213,8 @@ export default {
   },
   created () {
     // listens for blackboard toolbar's toggle fullscreen
-    this.$root.$on('fullscreen-toggle', () => this.isShowingDrawer = !this.isShowingDrawer)
+    this.$store.commit('SET_IS_LEFT_PANEL_COLLAPSED', this.useMiniDrawerInitially)
+    // this.$root.$on('fullscreen-toggle', () => this.isLeftPanelCollapsed = !this.isLeftPanelCollapsed)
 
     this.unsubscribeClassDocListener = db.doc(`classes/${this.classID}`).onSnapshot(classDocSnapshot => {
       this.$store.commit("SET_CLASS", { id: classDocSnapshot.id, ...classDocSnapshot.data() });

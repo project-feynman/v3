@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-show="!isLeftPanelCollapsed">
     <div v-for="(area, i) of sortedAreas" :key="area.id" style="margin-bottom: 12px">
       <div @click="toggleExpansion(i)" 
         :ref="`area-${area.id}`"
@@ -52,6 +52,7 @@ import DatabaseHelpersMixin from '@/mixins/DatabaseHelpersMixin.js'
 import BasePopupButton from '@/components/BasePopupButton.vue'
 import db from '@/database.js'
 import { getRandomId } from '@/helpers.js'
+import { mapState } from 'vuex'
 
 export default {
   mixins: [
@@ -68,6 +69,9 @@ export default {
     }
   },
   computed: {
+    ...mapState([
+      'isLeftPanelCollapsed'
+    ]),
     classDocRef () { return db.doc(`classes/${this.$route.params.class_id}`) },
     sortedAreas () {
       return [

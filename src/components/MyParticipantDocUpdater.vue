@@ -50,9 +50,7 @@ export default {
       "currentBoardID",
       "currentTool",
       "canHearAudio",
-      "isMusicPlaying",
-      "isViewingLibrary",
-      "isViewingForum",
+      "isMusicPlaying"
     ]),
     ...mapGetters([
       "isAdmin"
@@ -96,9 +94,7 @@ export default {
           currentPenColor: this.currentTool.color,
 
           canHearAudio: this.canHearAudio, // TODO: rename to hasJoinedVideoCall
-          isMusicPlaying: this.isMusicPlaying,
-          isViewingLibrary: this.isViewingLibrary,
-          isViewingForum: this.isViewingForum
+          isMusicPlaying: this.isMusicPlaying
         });
         this.isFirestoreDocCreated = true; 
 
@@ -116,9 +112,7 @@ export default {
     currentTool () { this.throttledSync() },
 
     canHearAudio () { this.throttledSync() },
-    isMusicPlaying () { this.throttledSync() },
-    isViewingLibrary () { this.throttledSync() },
-    isViewingForum () { this.throttledSync() }
+    isMusicPlaying () { this.throttledSync() }
   },
   destroyed () {
     // that means the user is no longer in any class, and is in the home page (as of current version)
@@ -150,9 +144,7 @@ export default {
           currentPenColor: this.currentTool.color,
 
           canHearAudio: this.canHearAudio, // TODO: rename to hasJoinedVideoCall
-          isMusicPlaying: this.isMusicPlaying,
-          isViewingLibrary: this.isViewingLibrary,
-          isViewingForum: this.isViewingForum
+          isMusicPlaying: this.isMusicPlaying
         });
       }
     },

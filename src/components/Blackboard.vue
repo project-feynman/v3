@@ -46,9 +46,6 @@
               </template>
             </v-switch>
             
-            <BaseButton icon="mdi-fullscreen" color="white" small hasLargeIcon @click="$root.$emit('fullscreen-toggle')"> 
-
-            </BaseButton>
 
             <BaseButton :disabled="! canUndoStroke"
               @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 

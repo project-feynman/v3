@@ -28,6 +28,8 @@ export default new Vuex.Store({
     mitClass: null,
     explCache: {},
 
+    isLeftPanelCollapsed: false,
+
     currentAreaID: '',
     currentAreaRooms: [],
     blackboardRoom: null,
@@ -71,12 +73,6 @@ export default new Vuex.Store({
 
     musicAudioElement: null,
     isMusicPlaying: false,
-
-    isViewingLibrary: false,
-    currentlySelectedLibraryPostID: "",
-
-    isViewingForum: false, 
-    currentlySelectedQuestionID: "EMAIL_SETTINGS" // either EMAIL_SETTINGS, NEW_QUESTION or <question-id> of the form "1xhlqidlfoiq"
   },
   getters: {
     isAdmin: state => {
@@ -93,6 +89,9 @@ export default new Vuex.Store({
     }
   },
   mutations: {
+    SET_IS_LEFT_PANEL_COLLAPSED (state, newValue) {
+      state.isLeftPanelCollapsed = newValue
+    },
     SET_CURRENT_AREA_ID (state, newValue) {
       state.currentAreaID = newValue
     },

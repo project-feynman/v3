@@ -177,11 +177,11 @@
             <v-icon left color="blue">mdi-pencil</v-icon> Rename
           </v-list-item>
 
-          <v-list-item>
+          <!-- <v-list-item> -->
             <!-- <v-chip color="blue" class="white--text" @click="newRoomStatus = 'Requesting help'; updateRoomStatus(); isRoomStatusPopupOpen = false;">Requesting help</v-chip> -->
-            <v-chip color="blue" class="white--text" @click="toggleCollabStatus()">Down to collaborate</v-chip>
+            <!-- <v-chip color="blue" class="white--text" @click="toggleCollabStatus()">Down to collaborate</v-chip> -->
             <!-- <v-chip color="blue" class="white--text" @click="newRoomStatus = ''; updateRoomStatus(); isRoomStatusPopupOpen = false;">(reset)</v-chip> -->
-          </v-list-item>
+          <!-- </v-list-item> -->
 
           <!-- <v-list-item @click="isSaveBoardsPopupOpen = true" :loading="isSavingAllBoards">
             <v-icon left color="cyan">mdi-content-save-all</v-icon> Save sequence of boards

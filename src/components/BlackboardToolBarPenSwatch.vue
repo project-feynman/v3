@@ -22,7 +22,16 @@
         <v-icon v-if="user.email" x-small>mdi-menu-down</v-icon>
       </BaseButton>
 
-      <BaseButton v-else-if="user.email" @click="changePenColor(getRandomColor(), i, 3)" icon="mdi-dice-5" small :color="color" dark :key="i + 'random-die'" style="margin-left: 4px">
+      <BaseButton v-else-if="user.email" 
+        @click="handleDiceClick(color, i)" 
+        :icon="`mdi-dice-${diceNumber}`" 
+        small 
+        :color="color" 
+        dark 
+        :key="i + 'random-die'" 
+        style="margin-left: 4px"
+        :filled="currentTool.color === color && currentTool.type === 'PEN'" 
+      >
 
       </BaseButton>
     </template>
@@ -89,7 +98,8 @@ export default {
     return {
       isMenuOpen: false,
       newWidthToUpdate: null,
-      newColorToUpdate: null
+      newColorToUpdate: null,
+      diceNumber: 5
     }
   },
   computed: {
@@ -97,6 +107,13 @@ export default {
       "user",
       "currentTool"
     ]),
+  },
+  created () {
+    // TODO: if we guarantee backwards compatibility 
+    // we can avoid all these extra code
+    if (this.user.penWidths) {
+      this.diceNumber = this.user.penWidths[3]
+    }
   },
   methods: {
     scaleFactor (penWidths, i) {
@@ -129,6 +146,22 @@ export default {
         this.newWidthToUpdate = width
         this.whichPenToUpdate = i
       } 
+    },
+    handleDiceClick (color, i) {
+      const { currentTool } = this
+      const alreadySelected = currentTool.color === color && currentTool.type === 'PEN'
+      if (!alreadySelected) {
+        const penWidthsCopy = [ ...(this.user.penWidths || [2, 2, 2, 2]) ]
+        this.$store.commit("SET_CURRENT_TOOL", {
+          type: "PEN",
+          color: color,
+          lineWidth: penWidthsCopy[i]
+        })
+      } else {
+        this.diceNumber = 1 + Math.floor( Math.random() * 6 )
+        const newPencilWidth = this.diceNumber
+        this.changePenColor(this.getRandomColor(), i, newPencilWidth)
+      }
     },
     getRandomColor () {
       return "hsla(" + ~~(360 * Math.random()) + "," + // hue i.e. the "color"
