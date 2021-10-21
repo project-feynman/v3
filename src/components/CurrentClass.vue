@@ -212,9 +212,7 @@ export default {
     }
   },
   created () {
-    // listens for blackboard toolbar's toggle fullscreen
     this.$store.commit('SET_IS_LEFT_PANEL_COLLAPSED', this.useMiniDrawerInitially)
-    // this.$root.$on('fullscreen-toggle', () => this.isLeftPanelCollapsed = !this.isLeftPanelCollapsed)
 
     this.unsubscribeClassDocListener = db.doc(`classes/${this.classID}`).onSnapshot(classDocSnapshot => {
       this.$store.commit("SET_CLASS", { id: classDocSnapshot.id, ...classDocSnapshot.data() });
