@@ -13,7 +13,7 @@
         </v-icon>
 
         <p 
-          class="text-uppercase font-weight-medium mb-0"
+          class="text-uppercase font-weight-medium mb-0 text-truncate"
           :style="indicesOfExpandedAreas.includes(i) ? 'margin-top: 6px; opacity: 80%' : 'opacity: 80%;'"
         >
           {{ area.name }}
@@ -31,7 +31,7 @@
       />
     </div>
 
-    <BasePopupButton v-if="sortedAreas.length !== 0"
+    <BasePopupButton v-if="sortedAreas.length !== 0 && sortedAreas.length < 5 && user.email"
       actionName="Create a new area"
       :inputFields="['name']" 
       @action-do="({ name }) => createNewRoomType(name)"
@@ -70,6 +70,7 @@ export default {
   },
   computed: {
     ...mapState([
+      'user',
       'isLeftPanelCollapsed'
     ]),
     classDocRef () { return db.doc(`classes/${this.$route.params.class_id}`) },

@@ -101,7 +101,7 @@
     </v-dialog>
 
     <portal to="invite-button">
-      <v-btn :disabled="!user.email" @click="isInviteFriendsPopupOpen = true" color="white cyan--text"
+      <v-btn v-if="user.email" @click="isInviteFriendsPopupOpen = true" color="white cyan--text"
         rounded block
         class="pa-2" style="margin-top: 13px;" small
       >
@@ -292,7 +292,7 @@
                 </Drop>
               </template>
 
-              <BaseButton @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);" block>
+              <BaseButton v-if="room.blackboards.length < 10" @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);" block>
                 New board
               </BaseButton>
             </v-list>
@@ -427,7 +427,8 @@
         </RenderlessListenToBlackboard>
       </template>
 
-      <v-btn @click="createNewBoard()"
+      <v-btn v-if="room.blackboards.length < 10"
+        @click="createNewBoard()"
         block x-large class="white--text" style="background-color: rgb(46, 49, 49); margin-top: 5px;"
       >
         <v-icon class="mr-2">mdi-plus</v-icon>New Blackboard
@@ -586,12 +587,43 @@ export default {
     },
     async deleteRoom () {
       // for each blackboard, do a proper deletion of the boards
-      for (const boardID of this.room.blackboards) {
-        // recursive delete
-        console.log('TODO: implement board deletion')
+      const deleteRecursively = firebase.functions().httpsCallable('recursiveDelete')
+      const p = []
+      for (const blackboardID of this.room.blackboards) {
+        const blackboardDoc = await this.$_getDoc(db.doc(`classes/${this.classID}/blackboards/${blackboardID}`))
+        console.log('blackboardDoc =', blackboardDoc)
+        const { audioDownloadURL, backgroundImageDownloadURL } = blackboardDoc
+        console.log('audio, background =', audioDownloadURL, backgroundImageDownloadURL)
+        if (audioDownloadURL) {
+          const audioRef = firebase.storage().refFromURL(audioDownloadURL)
+          try {
+            p.push(
+              audioRef.delete().then(console.log('Deleted audio.'))
+            )
+          } catch (error) {
+            console.error(error)
+          }
+        }
+        if (backgroundImageDownloadURL) {
+          const imageRef = firebase.storage().refFromURL(backgroundImageDownloadURL)
+          try {
+            p.push(
+              imageRef.delete().then(console.log('Deleted background.')).catch(error => console.error(error))
+            )
+          } catch (error) {
+            console.error(error)
+          }
+        }
+        // then delete the blackboard doc itself and strokes
+        p.push(
+          deleteRecursively({ path: `blackboards/${blackboardID}` }).then(console.log('Recursively deleted blackboard'))
+        )
       }
       // move user to the area's lobby
-      await this.roomRef.delete()
+      p.push( 
+        this.roomRef.delete()
+      )
+      await Promise.all(p)
       this.$root.$emit('show-snackbar', 'Succesfully deleted room.')
 
       // const { section_id } = this.$route.params
