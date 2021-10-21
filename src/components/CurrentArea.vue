@@ -223,7 +223,7 @@
                   mdi-volume-high
                 </v-icon>
             
-                <div v-if="room.name" class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
+                <div v-if="room.name" class="font-weight-medium py-2 text-truncate" style="font-size: 0.95em; text-transform: lowercase;">
                   {{ room.name }}
                 </div>
 
@@ -271,7 +271,7 @@
                     mdi-volume-high
                   </v-icon>
 
-                  <div v-if="room.name" style="opacity: 55%; text-transform: lowercase;">
+                  <div v-if="room.name" class="text-truncate" style="opacity: 55%; text-transform: lowercase;">
                     {{ room.name }}
                   </div>
 
