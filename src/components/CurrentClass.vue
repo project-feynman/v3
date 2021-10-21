@@ -30,8 +30,9 @@
       <v-sheet style="margin-bottom: 26px; padding-bottom: 2px" elevation="8">    
         <div style="display: flex; align-items: center; height: 76px">
           <template v-if="!isLeftPanelCollapsed">
+            <!-- Without `flex-shrink: 0` the logo image squishes when there's not enough space, see https://css-tricks.com/making-width-and-flexible-items-play-nice-together/ -->
             <v-list-item-avatar @click="isAppPopupOpen = !isAppPopupOpen"
-              style="cursor: pointer; margin-left: 6px; margin-right: 2px;" tile width="60" height="60"
+              style="cursor: pointer; margin-left: 6px; margin-right: 2px; flex-shrink: 0" tile width="60" height="60"
             >
               <v-img src="/logo.png" width="60" height="54" style="margin-top: 8px"/>
             </v-list-item-avatar>

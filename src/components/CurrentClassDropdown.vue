@@ -6,12 +6,12 @@
        -->
       <v-list-item v-on="on" two-line class="px-0" style="max-width: fit-content">
         <v-list-item-content v-if="mitClass" class="py-0 ml-1 mr-0" style="max-width: fit-content">
-          <v-list-item-title class="mb-0 display-1 text-truncate" style="1.4rem; display: inline-block; max-width: 150px">
+          <v-list-item-title class="mb-0 display-1 text-truncate" style="1.4rem; display: inline-block; max-width: 130px">
             {{ mitClass.name }}
           </v-list-item-title>
 
           <!-- margin-left is necessary because, by default, Vuetify doesn't align the title and subtitle properly when they're different fonts -->
-          <v-list-item-subtitle class="text-truncate" style="margin-left: 2px; display: inline-block; max-width: 150px">
+          <v-list-item-subtitle class="text-truncate" style="margin-left: 2px; display: inline-block; max-width: 130px">
             {{ mitClass.description }}
           </v-list-item-subtitle>
         </v-list-item-content>
