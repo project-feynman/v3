@@ -2,18 +2,21 @@
   <!-- return object means payload from @change will be the object
   even though the display name is just object.name -->
   <v-autocomplete
-    label="Search class to join"
     :items="itemsWithMemberCount"
     item-text="nameWithMemberCount"
     @change="(newClass) => handleChange(newClass)"
     return-object 
     prepend-inner-icon="mdi-magnify"
-    placeholder="e.g. 8.01, ESG"
-    color="accent" 
     clearable 
     ref="VAutocomplete"
     hide-details
-  />
+    flat
+    placeholder="Search class"
+    color="teal"
+    outlined
+  /> 
+  <!-- TODO: search by description also, better formatting -->
+  <!-- TODO: create a way to create new clases, but it's not necessary right now, you have bigger problems in that nobody is using the product -->
 </template>
 
 <script>
