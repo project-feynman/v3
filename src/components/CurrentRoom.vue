@@ -122,7 +122,7 @@
       <v-menu offset-y bottom>
         <!-- Triple-dots button -->
         <template v-slot:activator="{ on }">
-          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
+          <BaseButton v-if="user.email" :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
             <v-badge v-if="numOfUnreadMsgsInTable" 
               :value="numOfUnreadMsgsInTable" 
               :content="numOfUnreadMsgsInTable" 
@@ -740,26 +740,31 @@ export default {
       }
       const storage = firebase.storage()
       const audioRef = storage.refFromURL(audioDownloadURL);  
-      audioRef.delete().then(async () => {
-      console.log('successfully deleted the audio')
+      try {
+        await audioRef.delete()
+        console.log('successfully deleted the audio')
         // File deleted successfully
+      } catch (error) {
+        console.error(error)
+      }  
+
+      const batch = db.batch()
+      // otherwise anonymous users cannot delete their own videos or other anonymous users' videos
+      if (this.user.email) {
         const userUpdateObj = {}
         userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(-1)
-
-        const batch = db.batch()
-        batch.update(videoRef, {
-          audioDownloadURL: '',
-          creator: firebase.firestore.FieldValue.delete(),
-          creatorUID: firebase.firestore.FieldValue.delete(),
-          date: firebase.firestore.FieldValue.delete()
-        })
         batch.update(db.doc(`users/${this.user.uid}`), userUpdateObj)
-        await batch.commit()
-        console.log('removed reference to audioURL and deleted creator and date fields')
-        this.$root.$emit('show-snackbar', 'Reverted video to blackboard')
-      }).catch((error) => {
-        // Uh-oh, an error occurred!
-      });
+      }
+      batch.update(videoRef, {
+        audioDownloadURL: '',
+        creator: firebase.firestore.FieldValue.delete(),
+        creatorUID: firebase.firestore.FieldValue.delete(),
+        date: firebase.firestore.FieldValue.delete()
+      })
+      await batch.commit()
+
+      console.log('removed reference to audioURL and deleted creator and date fields')
+      this.$root.$emit('show-snackbar', 'Reverted video to blackboard')
     },
     async deleteThisRoom () {
       // warning: the strokes will remain, but find a fix later as Feynman is way more likely to die from other things

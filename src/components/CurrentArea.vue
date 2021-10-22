@@ -14,7 +14,7 @@
         bottom nudge-left offset-y
       >
         <template v-slot:activator="{ on }">
-          <BaseButton :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
+          <BaseButton v-if="user.email" :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
             <v-badge v-if="numOfUnreadMsgsInArea"
               :value="numOfUnreadMsgsInArea"
               :content="numOfUnreadMsgsInArea"

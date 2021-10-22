@@ -14,7 +14,7 @@
 
         <p 
           class="text-uppercase font-weight-medium mb-0 text-truncate"
-          :style="indicesOfExpandedAreas.includes(i) ? 'margin-top: 6px; opacity: 80%' : 'opacity: 80%;'"
+          :style="indicesOfExpandedAreas.includes(i) && user.email ? 'margin-top: 6px; opacity: 80%' : 'opacity: 80%;'"
         >
           {{ area.name }}
         </p>
