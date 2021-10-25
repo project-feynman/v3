@@ -17,16 +17,21 @@
     <!-- Disable mobile breakpoint by setting it to "" -->
     <!-- v-model="isLeftPanelCollapsed"  -->
     <!-- z-index: 101 > 100 for blackboard toolbar -->
+
+    <!-- 
+      disable-resize-watcher
+      mobile-breakpoint=""
+      touchless  
+    -->
     <v-navigation-drawer 
+      stateless
+      :value="true"
+      :mini-variant="isLeftPanelCollapsed"
+      :temporary="useMiniDrawerInitially && !isLeftPanelCollapsed"
       app 
       style="height: 100%; z-index: 101"
       class="elevation-24" 
       width="270" 
-      disable-resize-watcher
-      mobile-breakpoint=""
-      touchless 
-      :mini-variant="isLeftPanelCollapsed"
-      :temporary="useMiniDrawerInitially && !isLeftPanelCollapsed"
       mini-variant-width="40"
     >      
       <v-sheet style="margin-bottom: 26px; padding-bottom: 2px" elevation="8">    
