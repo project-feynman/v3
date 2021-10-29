@@ -67,9 +67,12 @@ export default {
       if (snapshot.val() === true) {
         const disconnectID = getRandomId(); 
         
-        db.doc(`users/${this.user.uid}`).update({
-          isOnline: true
-        })
+        if (this.user.email) {
+          db.doc(`users/${this.user.uid}`).update({
+            isOnline: true
+          })
+        }
+        
         this.myFirebaseRef = firebase.database().ref(`/class/${this.classID}/room/${this.roomID}/participants/${disconnectID}`);
         await this.myFirebaseRef.onDisconnect().set({
           hasDisconnected: true,
