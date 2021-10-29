@@ -230,9 +230,12 @@ export default {
       const audioDownloadURL = await this.$_saveToStorage(getRandomId(), this.blackboard.audioBlob)
 
       const batch = db.batch() 
-      const userUpdateObj = {}
-      userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(1)
-      batch.update(db.doc(`users/${this.user.uid}`), userUpdateObj)
+
+      if (this.user.email) { // no email means the user hasn't logged in
+        const userUpdateObj = {}
+        userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(1)
+        batch.update(db.doc(`users/${this.user.uid}`), userUpdateObj)
+      }
       batch.update(this.blackboardRef, {
         creatorUID: this.user.uid, // to support `.where()` queries 
         creator: basicUserInfo,
@@ -247,27 +250,30 @@ export default {
 
       this.isUploadingSnackbarOpen = false
     },
-    async saveAnimation () {
+    async saveAnimation () {      
+      const batch = db.batch()
+      
+      if (this.user.email) {
+        const userUpdateObj = {}
+        userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(1)
+        batch.update(db.doc(`users/${this.user.uid}`), userUpdateObj)
+      }
+
       const basicUserInfo = {
         email: this.user.email,
         uid: this.user.uid,
         firstName: this.user.firstName,
         lastName: this.user.lastName
       }
-      
-      const userUpdateObj = {}
-      userUpdateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(1)
-      
-      await Promise.all([
-        db.doc(`users/${this.user.uid}`).update(userUpdateObj), 
-        this.blackboardRef.update({
-          creatorUID: this.user.uid,
-          creator: basicUserInfo,
-          date: new Date().toISOString(),
-          views: 0,
-          roomID: this.$route.params.room_id // note this is dangerous to mutations
-        })    
-      ])  
+      batch.update(this.blackboardRef, {
+        creatorUID: this.user.uid,
+        creator: basicUserInfo,
+        date: new Date().toISOString(),
+        views: 0,
+        roomID: this.$route.params.room_id // note this is dangerous to mutations
+      })
+
+      await batch.commit()
       this.$root.$emit('show-snackbar', 'Converted to animation.')
     },
     keepSyncingBackgroundWithDb () {

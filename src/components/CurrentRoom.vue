@@ -719,11 +719,12 @@ export default {
         creator: firebase.firestore.FieldValue.delete(),
         creatorUID: firebase.firestore.FieldValue.delete(),
         date: firebase.firestore.FieldValue.delete()
-      })
-
-      const updateObj = {}
-      updateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(-1)
-      batch.update(db.doc(`users/${this.user.uid}`), updateObj)
+      })  
+      if (this.user.email) {
+        const updateObj = {}
+        updateObj[`numOfVideosInClass:${this.mitClass.id}`] = firebase.firestore.FieldValue.increment(-1)
+        batch.update(db.doc(`users/${this.user.uid}`), updateObj)
+      }
       
       await batch.commit()
       this.$root.$emit('show-snackbar', 'Reverted animation to blackboard')
