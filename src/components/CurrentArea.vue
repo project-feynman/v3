@@ -78,7 +78,6 @@
             <v-icon left color="orange">mdi-volume-off</v-icon> Mute everyone to stop echoes
           </v-list-item>
 
-
           <v-list-item @click="showMakeAnnouncementPopup(roomTypeDoc.id)">
             <v-icon left color="blue">mdi-bullhorn</v-icon> Make announcement
           </v-list-item>
@@ -199,12 +198,13 @@
       @change="(newVal) => isDeletePopupOpen = newVal"
     />
 
-      <!-- END OF "SPACE ACTIONS" dropdown menu -->
+    <!-- END OF "SPACE ACTIONS" dropdown menu -->
 
-      <!-- should just v-for="room in rooms" 
-        When you are feeling down, either you have to suddenly do something courageous,
-        or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
-      -->  
+    <!-- should just v-for="room in rooms" 
+      When you are feeling down, either you have to suddenly do something courageous,
+      or you start cleaning up your life. It's usually a combination of both, it leads to a new chapter in life. 
+    -->  
+
     <!-- ROOMS -->
     <v-list dense>
       <template v-for="(room, i) in sortedRooms">    
@@ -621,13 +621,17 @@ export default {
       const promises = []; 
       for (const room of this.rooms) {
         db.doc(`/classes/${this.classID}/rooms/${room.id}`).update({
-          status: ""
+          status: '',
         });
         for (const boardID of room.blackboards) {
           const boardDbPath = `/classes/${this.classID}/blackboards/${boardID}`;
           promises.push(
             db.doc(boardDbPath).update({ 
-              backgroundImageDownloadURL: ""
+              backgroundImageDownloadURL: '',
+              audioDownloadURL: '',
+              creator: firebase.firestore.FieldValue.delete(),
+              creatorUID: firebase.firestore.FieldValue.delete(),
+              date: firebase.firestore.FieldValue.delete()
             })
           );
           promises.push(
