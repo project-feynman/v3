@@ -65,14 +65,6 @@
               </v-btn>
             </v-list-item>
 
-            <v-list-item @click.stop.once="$emit('upvote')">
-              <v-icon class="mr-2" color="yellow darken-3">mdi-lightbulb-on</v-icon> UPVOTE
-            </v-list-item>
-
-            <v-list-item @click.stop="$emit('edit')">
-              <v-icon class="mr-2">mdi-pencil</v-icon> EDIT TITLE / DESC.
-            </v-list-item>
-
             <v-list-item @click.stop="$emit('delete')">
               <v-icon class="mr-2">mdi-delete</v-icon> REVERT TO BLACKBOARD
             </v-list-item>
@@ -294,7 +286,6 @@ export default {
 @import "../styles/doodle-fullscreen.scss";
 
 .video-container {
-  margin: auto;
   position: relative;
 }
 .doodle-video {

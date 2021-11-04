@@ -301,29 +301,13 @@
       </div>
     </portal>
 
-    <!-- EDIT TITLE AND DESCRIPTION -->
-    <v-dialog :value="isEditPopupOpen" width="600">
-      <v-card>
-        <v-card-title>Edit explanation</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="newTitle" placeholder="title"/>
-
-          <ReusableTextEditor 
-            v-model="newDescriptionHtml"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer/>
-          <v-btn @click="isEditPopupOpen = false">CLOSE</v-btn>
-          <v-btn @click="editTitleAndDescription()">SAVE</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <template v-if="room">
       <template v-for="(boardID, i) of room.blackboards">
         <RenderlessListenToBlackboard :blackboardRef="classRef.collection('blackboards').doc(boardID)" :key="boardID">
-          <template v-slot="{ boardDoc }">
+          <!-- TODO: expose functions here for:
+            3. adding a comment
+          -->
+          <template v-slot="{ boardDoc, upvote }">
             <div v-if="boardDoc" :id="boardID" :key="boardID" v-intersect="{
               handler (entries, observer, isIntersecting) {
                 if (isIntersecting) {
@@ -331,7 +315,7 @@
                 }
               },
               options: {
-                threshold: 0.5
+                threshold: 1.0
               }
             }"
             >
@@ -354,73 +338,116 @@
                   }
                 }"
                 > 
-                  <v-card>
-                    <template v-if="boardDoc.title">
-                      <v-card-title style="font-size: 1.6rem">
-                        {{ boardDoc.title }}
+                  <v-card class="mb-5">
+                    <template>
+                      <v-card-title class="mt-1 mb-3 py-1">
+                        <v-text-field 
+                            :value="boardDoc.title"
+                            @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
+                            placeholder="Title here"
+                            style="font-size: 1.6rem; opacity: 77%; width: 150px"
+                            class="font-weight-normal"
+                            hide-details
+                        ></v-text-field>
                       </v-card-title>
-                      <v-card-subtitle>
-                        {{ boardDoc.upvotes || 0 }} upvotes
-                        <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                        {{ boardDoc.views }} views                     
-                        <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                        {{ boardDoc.creator.firstName + ' ' + boardDoc.creator.lastName }}
-                        <v-icon class="mx-1" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                        {{ displayDate(boardDoc.date) }}
-                      </v-card-subtitle>
                     </template>
-                    <v-card-text style="margin-top: 16px">
-                      <div v-if="boardDoc.descriptionHtml" 
-                        v-html="boardDoc.descriptionHtml"
+                    <v-card-text>
+                      <ReusableTextEditor
+                        :value="boardDoc.descriptionHtml || ''"
+                        @input="newDescriptionHtml => debouncedEditDesc(newDescriptionHtml, boardDoc.id)"
                         class="html-paragraph-styles"
-                        style="margin-bottom: 40px"
+                        style="margin-top: 10px; margin-left: 2px"
                       />
-                        <DoodleVideo v-if="boardDoc.audioDownloadURL"
-                          :strokesArray="strokesArray"
-                          :imageBlob="imageBlob"
-                          :audioUrl="boardDoc.audioDownloadURL"
-                          :aspectRatio="4/3"
-                          style="margin-top: 5px"
-                          @play="incrementNumOfViewsOnExpl(boardDoc.id)"
-                          @edit="showEditPopup(classRef.collection('blackboards').doc(boardDoc.id), boardDoc.title, boardDoc.descriptionHtml)"
-                          @delete="deleteVideo({ audioDownloadURL: boardDoc.audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
-                          @upvote="incrementNumOfUpvotesOnExpl(boardDoc.id)"
-                        />
-                        <DoodleAnimation v-else
-                          :strokesArray="strokesArray"
-                          :backgroundUrl="boardDoc.backgroundImageDownloadURL"
-                          :aspectRatio="4/3"
-                          style="margin-top: 5px"
-                          @play="incrementNumOfViewsOnExpl(boardDoc.id)"
-                          @edit="showEditPopup(classRef.collection('blackboards').doc(boardDoc.id), boardDoc.title, boardDoc.descriptionHtml)"
-                          @delete="deleteAnimation({ creator: boardDoc.creator, animationRef: classRef.collection('blackboards').doc(boardDoc.id) })"
-                          @upvote="incrementNumOfUpvotesOnExpl(boardDoc.id)"
-                        />
+                      <DoodleVideo v-if="boardDoc.audioDownloadURL"
+                        :strokesArray="strokesArray"
+                        :imageBlob="imageBlob"
+                        :audioUrl="boardDoc.audioDownloadURL"
+                        :aspectRatio="4/3"
+                        style="margin-top: 5px"
+                        @play="incrementNumOfViewsOnExpl(boardDoc.id)"
+                        @delete="deleteVideo({ audioDownloadURL: boardDoc.audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
+                      />
+                      <DoodleAnimation v-else
+                        :strokesArray="strokesArray"
+                        :backgroundUrl="boardDoc.backgroundImageDownloadURL"
+                        :aspectRatio="4/3"
+                        style="margin-top: 5px"
+                        @play="incrementNumOfViewsOnExpl(boardDoc.id)"
+                        @delete="deleteAnimation({ creator: boardDoc.creator, animationRef: classRef.collection('blackboards').doc(boardDoc.id) })"
+                      />
+                      <!-- TODO: collapsible comments -->
+                      <v-card-subtitle class="my-0 pb-0 pt-3 ml-1 px-0">
+                         {{ boardDoc.upvoterUIDs ? boardDoc.upvoterUIDs.length : 0 }} eurekas 
+                        <v-btn v-if="boardDoc.upvoterUIDs && boardDoc.upvoterUIDs.includes(user.uid)"
+                          @click="cancelUpvoteOnExpl(boardDoc.id)"
+                          style="margin-bottom: 2px" icon
+                        >
+                         <v-icon color="orange lighten-1">mdi-lightbulb</v-icon>
+                        </v-btn>
+
+                        <v-btn v-else
+                          @click="upvoteExpl(boardDoc.id)"
+                          style="margin-bottom: 2px" icon
+                        >                       
+                          <v-icon color="grey darken-2">mdi-lightbulb-outline</v-icon>
+                        </v-btn>
+                        <v-icon class="ml-1 mr-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                        {{ boardDoc.views }} views                     
+                        <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                        {{ boardDoc.creator.firstName + ' ' + boardDoc.creator.lastName }}
+                        <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                        {{ displayDate(boardDoc.date) }}
+                        <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+             
+                        {{ boardDoc.numOfComments || 0 }} comments
+                        <v-btn
+                          icon
+                          @click="show = !show"
+                          style="margin-bottom: 2px"
+                          color="grey darken-2"
+                        >
+                          <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                        </v-btn>
+                      </v-card-subtitle>
+                      <v-spacer/>
                     </v-card-text>
+                    <v-expand-transition>
+                      <div v-show="show">
+                        <v-card-text>
+                          Coming soon!
+                        </v-card-text>
+                      </div>
+                    </v-expand-transition>
                   </v-card>
                 </div>
               </RenderlessFetchStrokes>
               
               <template v-else>
-                <v-card v-if="boardDoc.title || boardDoc.descriptionHtml">
-                  <v-card-title v-if="boardDoc.title" style="font-size: 1.6rem">
-                    {{ boardDoc.title }}
+                <v-card v-if="boardDoc.title || boardDoc.descriptionHtml" class="mb-5">
+                  <v-card-title class="mt-1 mb-3 py-1">
+                    <v-text-field 
+                      :value="boardDoc.title || ''"
+                      @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
+                      placeholder="Title"
+                      style="font-size: 1.6rem; opacity: 77%; width: 150px"
+                      class="font-weight-normal"
+                      hide-details
+                    ></v-text-field>
                   </v-card-title>
 
                   <v-card-text style="margin-top: 16px">
-                    <div v-if="boardDoc.descriptionHtml" 
-                      v-html="boardDoc.descriptionHtml"
+                    <ReusableTextEditor
+                      :value="boardDoc.descriptionHtml || ''"
+                      @input="newDescriptionHtml => debouncedEditDesc(newDescriptionHtml, boardDoc.id)"
                       class="html-paragraph-styles"
-                      style="margin-bottom: 40px"
+                    />
+                    <RealtimeBlackboard
+                      :blackboardRef="classRef.collection('blackboards').doc(boardDoc.id)" 
+                      :key="boardDoc.id"
+                      style="margin-top: 5px"
                     />
                   </v-card-text>
                 </v-card>
-
-                <RealtimeBlackboard
-                  :blackboardRef="classRef.collection('blackboards').doc(boardDoc.id)" 
-                  :key="boardDoc.id"
-                  style="margin-top: 5px"
-                />
               </template>
             </div>
           </template>
@@ -529,10 +556,9 @@ export default {
 
       isChatOpen: false,
 
-      isEditPopupOpen: false,
-      refOfExplEdited: null,
-      newTitle: '',
-      newDescriptionHtml: ''
+      show: false,
+      editDescTimeout: null,
+      editTitleTimeout: null
     }
   },
   computed: {
@@ -673,34 +699,41 @@ export default {
       this.updateRoomStatus()
       this.isRoomStatusPopupOpen = false 
     },
-    showEditPopup (refOfExplEdited, title, descriptionHtml) {
-      this.refOfExplEdited = refOfExplEdited
-      this.isEditPopupOpen = true
-      // pre-populate the values
-      if (title) this.newTitle = title
-      if (descriptionHtml) this.newDescriptionHtml = descriptionHtml
+    debouncedEditTitle (newTitle, explID) {
+      if (this.editTitleTimeout) clearTimeout(this.editTitleTimeout) 
+      this.editTitleTimeout = setTimeout(() => {
+        const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${explID}`)
+        ref.update({
+          title: newTitle
+        })
+      }, 500)
     },
-    async editTitleAndDescription () {
-      await this.refOfExplEdited.update({
-        title: this.newTitle,
-        descriptionHtml: this.newDescriptionHtml
+    debouncedEditDesc (newDescriptionHtml, explID) {
+      if (this.editDescTimeout) clearTimeout(this.editDescTimeout)
+      this.editDescTimeout = setTimeout(() => {
+        const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${explID}`)
+        ref.update({
+          descriptionHtml: newDescriptionHtml
+        })
+      }, 500)
+    },
+    upvoteExpl (boardID) {
+      const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${boardID}`);
+      ref.update({
+        upvoterUIDs: firebase.firestore.FieldValue.arrayUnion(this.user.uid)
       })
-      this.newTitle = ''
-      this.newDescriptionHtml = ''
-      this.refOfExplEdited = null
-      this.isEditPopupOpen = false
+    },
+    cancelUpvoteOnExpl (boardID) {
+      const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${boardID}`);
+      ref.update({
+        upvoterUIDs: firebase.firestore.FieldValue.arrayRemove(this.user.uid)
+      })
     },
     incrementNumOfViewsOnExpl (id) {
       const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${id}`);
       ref.update({
         views: firebase.firestore.FieldValue.increment(1)
       });
-    },
-    incrementNumOfUpvotesOnExpl (id) {
-      const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${id}`);
-      ref.update({
-        upvotes: firebase.firestore.FieldValue.increment(1)
-      })
     },
     // TODO: 
     //   - be able to delete blackboards

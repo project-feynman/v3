@@ -9,9 +9,9 @@
 
     <!-- <div style="overflow-y: auto; overflow-x: none"> -->
   <div v-intersect.once="{ handler: syncBlackboardWithDb, threshold: 0.4 }">
-      <div class="overlay-item" v-if="isFetchingStrokes">
-        <v-progress-linear indeterminate height="4" color="cyan darken-1"/>
-      </div>
+    <div class="overlay-item" v-if="isFetchingStrokes">
+      <v-progress-linear indeterminate height="4" color="cyan darken-1"/>
+    </div>
     <!-- 
       Unexpected behavior: without the v-container placeholder, when all the strokes appear on all the blackboards,
       there is severe lag. But if the strokes are fetched properly before rendering blackboards, the lag disappears.

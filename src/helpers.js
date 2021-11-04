@@ -5,7 +5,7 @@
  * @returns a human readable form of the date e.g. March 24th 5:46
  */
 export const displayDate = function (dateString, format = {
-  month: 'long',
+  month: 'short',
   day: '2-digit',
   hour: '2-digit',
   minute: '2-digit',

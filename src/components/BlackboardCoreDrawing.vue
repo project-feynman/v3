@@ -2,7 +2,7 @@
   <!-- Make BlackboardCoreDrawing a positioned element so the toolbar (position absolute) will pin itself to it -->
   <div style="position: relative;" elevation="1">
     <div ref="BlackboardWrapper" class="blackboard-wrapper" 
-      style="position: relative; margin: auto;"
+      style="position: relative;"
     >
       <slot name="canvas-toolbar"
         :isFullScreen="isFullScreen"

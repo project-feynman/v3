@@ -16,7 +16,7 @@
           color="white"
         >
           <v-icon dark style="font-size: 3.5rem; opacity: 40%" color="black">
-            mdi-play
+            mdi-replay
           </v-icon>
         </v-btn>
       </v-overlay>
@@ -71,14 +71,6 @@
             >
               {{ speedOption.text }}
             </v-btn>
-          </v-list-item>
-
-          <v-list-item @click.stop.once="$emit('upvote')">
-            <v-icon class="mr-2">mdi-lightbulb-on</v-icon> UPVOTE
-          </v-list-item>
-
-          <v-list-item @click.stop="$emit('edit')">
-            <v-icon class="mr-2">mdi-pencil</v-icon> EDIT TITLE / DESC.
           </v-list-item>
 
           <v-list-item @click.stop="$emit('delete')">
@@ -299,7 +291,6 @@ export default {
 @import "../styles/doodle-fullscreen.scss";
 
 .video-container {
-  margin: auto;
   position: relative;
 }
 .doodle-video {
