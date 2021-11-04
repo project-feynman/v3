@@ -423,7 +423,7 @@
               </RenderlessFetchStrokes>
               
               <template v-else>
-                <v-card v-if="boardDoc.title || boardDoc.descriptionHtml" class="mb-5">
+                <v-card class="mb-5">
                   <v-card-title class="mt-1 mb-3 py-1">
                     <v-text-field 
                       :value="boardDoc.title || ''"
