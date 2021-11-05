@@ -84,7 +84,7 @@ export default {
           return member.getNotifiedWhenInstructorsComeOnline.includes(mitClass.id)
         })
       } else {
-        emailTitle = `${user.firstName} logged on to ${this.mitClass.name}`
+        emailTitle = `${user.firstName} just logged on to ${this.mitClass.name}`
 
         // original redirect link: "https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}"
         emailContent = `

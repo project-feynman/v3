@@ -322,10 +322,10 @@
 
       <v-list-item v-if="rooms.length !== 0 && rooms.length < 10 && user.email" 
         @click="createNewRoom()" 
-        class="mx-2" 
-        style="font-weight: 400; opacity: 60%; font-size: 0.9rem;"
+        style="font-weight: 400; font-size: 0.9rem; padding-left: 6px; margin-left: 3px"
       > 
-        <v-icon left color="black">mdi-plus</v-icon> new room
+        <v-icon left style="opacity: 80%; margin-right: 1px">mdi-plus</v-icon> 
+        <div style="opacity: 55%" class="font-weight-medium">new room</div>
       </v-list-item>
     </v-list>
 

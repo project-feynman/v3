@@ -8,7 +8,15 @@
         color="white"
         :opacity="0.1"
       >
-        <v-btn @click="pausePlay()"
+        <v-progress-circular v-if="isLoading"
+          indeterminate
+          color="amber"
+          size="50"
+          :width="5"
+        ></v-progress-circular>
+          
+        <v-btn v-else 
+          @click="pausePlay()"
           x-large
           class="mx-2"
           fab
@@ -106,6 +114,10 @@ export default {
       default () {
         return PPT_SLIDE_RATIO; 
       }
+    },
+    isLoading: {
+      type: Boolean,
+      required: true
     }
   },
   mixins: [

@@ -37,9 +37,9 @@
       @action-do="({ name }) => createNewRoomType(name)"
     >
       <template v-slot:activator-button="{ on }">
-        <v-list-item v-on="on" style="font-weight: 500; opacity: 100%; font-size: 0.95rem;">
-          <v-icon class="ml-1 mr-2 black--text">mdi-plus</v-icon>
-          <div style="color: '#424242'; opacity: 80%">NEW AREA</div>
+        <v-list-item v-on="on" style="font-weight: 500; opacity: 100%; padding-left: 6px">
+          <v-icon class="black--text" style="margin-right: 1px; font-size: 1.35rem">mdi-plus</v-icon>
+          <div class="text-uppercase font-weight-medium" style="opacity: 80%">NEW AREA</div>
         </v-list-item>
       </template> 
     </BasePopupButton>

@@ -307,7 +307,17 @@
           <!-- TODO: expose functions here for:
             3. adding a comment
           -->
-          <template v-slot="{ boardDoc, upvote }">
+          <template v-slot="{ 
+            boardDoc,
+            isDisplayingComments, 
+            func,
+            newComment, 
+            editNewComment, 
+            submitNewComment, 
+            listenToComments, 
+            allComments 
+          }"
+          >
             <div v-if="boardDoc" :id="boardID" :key="boardID" v-intersect="{
               handler (entries, observer, isIntersecting) {
                 if (isIntersecting) {
@@ -338,22 +348,25 @@
                   }
                 }"
                 > 
+                  <!-- TODO: add collaborators to the explanations, so it's an array of UIDs -->
                   <v-card class="mb-5">
                     <template>
                       <v-card-title class="mt-1 mb-3 py-1">
                         <v-text-field 
-                            :value="boardDoc.title"
-                            @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
-                            placeholder="Title here"
-                            style="font-size: 1.6rem; opacity: 77%; width: 150px"
-                            class="font-weight-normal"
-                            hide-details
+                          :value="boardDoc.title"
+                          :readonly="!(user.uid === boardDoc.creatorUID)"
+                          @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
+                          placeholder="Title here"
+                          style="font-size: 1.6rem; opacity: 77%; width: 150px"
+                          class="font-weight-normal"
+                          hide-details
                         ></v-text-field>
                       </v-card-title>
                     </template>
                     <v-card-text>
                       <ReusableTextEditor
                         :value="boardDoc.descriptionHtml || ''"
+                        :isEditable="user.uid === boardDoc.creatorUID"
                         @input="newDescriptionHtml => debouncedEditDesc(newDescriptionHtml, boardDoc.id)"
                         class="html-paragraph-styles"
                         style="margin-top: 10px; margin-left: 2px"
@@ -363,6 +376,7 @@
                         :imageBlob="imageBlob"
                         :audioUrl="boardDoc.audioDownloadURL"
                         :aspectRatio="4/3"
+                        :isLoading="isLoading"
                         style="margin-top: 5px"
                         @play="incrementNumOfViewsOnExpl(boardDoc.id)"
                         @delete="deleteVideo({ audioDownloadURL: boardDoc.audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
@@ -371,6 +385,7 @@
                         :strokesArray="strokesArray"
                         :backgroundUrl="boardDoc.backgroundImageDownloadURL"
                         :aspectRatio="4/3"
+                        :isLoading="isLoading"
                         style="margin-top: 5px"
                         @play="incrementNumOfViewsOnExpl(boardDoc.id)"
                         @delete="deleteAnimation({ creator: boardDoc.creator, animationRef: classRef.collection('blackboards').doc(boardDoc.id) })"
@@ -402,21 +417,43 @@
                         {{ boardDoc.numOfComments || 0 }} comments
                         <v-btn
                           icon
-                          @click="show = !show"
+                          @click="func(); !allComments ? listenToComments() : ''"
                           style="margin-bottom: 2px"
                           color="grey darken-2"
                         >
-                          <v-icon>{{ show ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                          <v-icon>{{ isDisplayingComments ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
                         </v-btn>
                       </v-card-subtitle>
                       <v-spacer/>
                     </v-card-text>
                     <v-expand-transition>
-                      <div v-show="show">
-                        <v-card-text>
-                          Coming soon!
-                        </v-card-text>
-                      </div>
+                      <v-card-text v-show="isDisplayingComments" class="my-0 pt-0 pb-3">
+                        <v-list class="py-0 mb-3 px-1 mx-0 overflow-y-auto" style="max-height: 300px">
+                          <template v-for="comment of allComments">
+                            <div :key="comment.id">
+                              <div>{{ comment.content }}</div>
+                              <div class="text-caption text--secondary">
+                                {{ displayDate(comment.date) }} by {{ comment.creator.firstName + ' ' + comment.creator.lastName }}
+                              </div>
+                              <v-divider/>
+                            </div>
+                          </template>
+                        </v-list>
+
+                        <v-textarea
+                          :value="newComment"
+                          @input="newValue => editNewComment(newValue)"
+                          outlined
+                          rows="3"
+                          height="80"
+                          no-resize
+                          placeholder="Leave a comment" 
+                          hide-details
+                        />
+                        <v-spacer/>
+                        <!-- TODO: pass the parameters to this function -->
+                        <v-btn @click="submitNewComment(user)" class="mt-3">Submit</v-btn>
+                      </v-card-text>
                     </v-expand-transition>
                   </v-card>
                 </div>

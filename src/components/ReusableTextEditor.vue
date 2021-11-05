@@ -26,6 +26,12 @@ export default {
       type: String,
       default: '',
     },
+    isEditable: {
+      type: Boolean,
+      default () {
+        return true
+      }
+    }
   },
   data() {
     return {
@@ -51,6 +57,7 @@ export default {
         Placeholder
       ],
       content: this.value,
+      editable: this.isEditable,
       onUpdate: () => {
         // HTML
         this.$emit('input', this.editor.getHTML())
