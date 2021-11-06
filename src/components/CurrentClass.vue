@@ -62,19 +62,19 @@
           <v-card>     
             <v-card-title>App Overview</v-card-title>
             <v-card-text>
-              <b>Intro</b><br>
+              <b>Goal</b><br>
               <a href="https://github.com/project-feynman/explain" target="_blank">Explain's</a> goal is to help as many people
               learn happily and efficiently, so they can help the world.
               <br>
               <br>
               <b>Support</b>
               <br>
-              For any feedback, bug reports and new requests, don't hesitate to simply call 503 3250 3868 or email eltonlin@mit.edu.
+              9 am - 9 pm every day at 503 3250 3868
               <br>
               <br>
-              <b>Recruitment</b>
+              <b>Team</b>
               <br>
-              Explain serves around 500 students/teachers across 8.01, ESG, etc. If you'd like to join our web dev team, email eltonlin@mit.edu
+              To learn more, email eltonlin@mit.edu
             </v-card-text>
 
             <v-card-actions>
