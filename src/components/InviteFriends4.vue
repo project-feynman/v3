@@ -39,6 +39,7 @@
             <v-list-item-content>
               <v-list-item-title>
                 <v-icon v-if="volunteer.kind === 'engineer'" small style="opacity: 70%; margin-bottom: 2px">mdi-wrench</v-icon>
+                <v-icon v-else-if="volunteer.kind === 'pirate'" x-small style="opacity: 70%; margin-bottom: 2px">mdi-skull-crossbones</v-icon>
                 <v-icon v-else-if="volunteer.kind === 'pioneer'" small style="opacity: 70%; margin-bottom: 2px">mdi-cowboy</v-icon>
                 <v-icon v-else-if="volunteer.kind === 'staff' || isTA(volunteer)" small style="opacity: 70%; margin-bottom: 2px">mdi-account-tie</v-icon>
                 <v-icon v-else small style="opacity: 70%; margin-bottom: 2px">mdi-account</v-icon>

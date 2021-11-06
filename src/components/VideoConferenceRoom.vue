@@ -44,6 +44,11 @@
                 >
                   mdi-wrench
                 </v-icon>
+                <v-icon v-else-if="client.kind === 'pirate'" 
+                  x-small style="opacity: 70%; margin-top: 2px;"
+                >
+                  mdi-skull-crossbones
+                </v-icon>
                 <v-icon v-else-if="client.kind === 'pioneer'" 
                    x-small style="opacity: 70%; margin-top: 2px;"
                 >

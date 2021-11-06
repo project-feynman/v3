@@ -295,6 +295,7 @@
                   >
                     <div style="padding-left: 22px; display: flex; align-items: center;">
                       <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
+                      <v-icon v-else-if="p.kind === 'pirate'" x-small style="opacity: 70%;">mdi-skull-crossbones</v-icon>
                       <v-icon v-else-if="p.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
                       <v-icon v-else-if="p.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
                       <v-icon v-else x-small style="opacity: 70%;">mdi-account</v-icon>
