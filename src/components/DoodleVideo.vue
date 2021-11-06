@@ -153,13 +153,14 @@ export default {
     }
   },
   watch: {
-    // quick-fix, without it the video appears blank even if `strokesArray` changed from empty to hydrated 
+    // quick-fix, without it the video appears blank even if `strokesArray` changed from empty to hydrated
+    // assumptions:
+    //   1. `strokesArray` only changes at most ONCE
+    //   2. `imageBlobUrl` is hydrated at the SAME time as `strokesArray`
     strokesArray () {
-      this.handleResize()
+      this.$_drawStrokesInstantly()
+      this.$_renderBackground(this.imageBlobUrl)
     }
-  },
-  async created () {
-    // this.handleResize = _.debounce(this.handleResize, 100); 
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;

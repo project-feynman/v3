@@ -43,11 +43,11 @@ export default {
     }
 
     const { user, mitClass } = this
-    // check if 10 minutes has passed since last steam notification
+    // check if 60 minutes has passed since last steam notification
     const { lastSteamNotificationTimestamp } = user
     if (lastSteamNotificationTimestamp) {
-      const THIRTY_MINUTES_IN_MILLISECONDS = 30 * 60 * 1000
-      if (Date.now() - lastSteamNotificationTimestamp.toDate().getTime() < THIRTY_MINUTES_IN_MILLISECONDS) {
+      const SIXTY_MINUTES_IN_MILLISECONDS = 60 * 60 * 1000
+      if (Date.now() - lastSteamNotificationTimestamp.toDate().getTime() < SIXTY_MINUTES_IN_MILLISECONDS) {
         return
       }
     }
