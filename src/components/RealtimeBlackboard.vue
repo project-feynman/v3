@@ -9,9 +9,9 @@
 
     <!-- <div style="overflow-y: auto; overflow-x: none"> -->
   <div v-intersect.once="{ handler: syncBlackboardWithDb, threshold: 0.4 }">
-      <div class="overlay-item" v-if="isFetchingStrokes">
-        <v-progress-linear indeterminate height="4" color="cyan darken-1"/>
-      </div>
+    <div class="overlay-item" v-if="isFetchingStrokes">
+      <v-progress-linear indeterminate height="4" color="cyan darken-1"/>
+    </div>
     <!-- 
       Unexpected behavior: without the v-container placeholder, when all the strokes appear on all the blackboards,
       there is severe lag. But if the strokes are fetched properly before rendering blackboards, the lag disappears.
@@ -93,25 +93,6 @@
       </template> 
     </Blackboard> 
   
-    <!-- Popup for saving blackboard -->
-    <!-- <v-dialog v-model="dialog" persistent max-width="600">
-      <v-card>
-        <v-card-title class="headline">Save your recorded explanation?</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="explTitle" placeholder="(Optional) Enter a title..."/>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer/>
-          <v-btn color="green darken-1" text @click="discardAudio()">
-            No, discard it. 
-          </v-btn>
-          <v-btn color="green darken-1" text @click="saveVideo()">
-            Yes, save it in the library.
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog> -->
-
     <!-- :timeout="-1" means keep open indefinitely -->
     <v-snackbar v-model="isUploadingSnackbarOpen"
       :timeout="-1"
@@ -139,7 +120,6 @@
 import Blackboard from "@/components/Blackboard.vue"; 
 import BaseButton from "@/components/BaseButton.vue"; 
 import BasePopupButton from "@/components/BasePopupButton.vue";
-import ExplUploadHelpers from "@/mixins/ExplUploadHelpers.js";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
 import 'firebase/analytics'
@@ -157,7 +137,6 @@ export default {
     }
   },
   mixins: [
-    ExplUploadHelpers,
     DatabaseHelpersMixin
   ],
   components: {
@@ -458,43 +437,6 @@ export default {
       }
       return new File([u8arr], filename, {type:mime});
     },
-    async uploadExplanation () {
-      // TODO: refactor backgroundImage so the blob is fetched once (otherwise display background will 
-      // make many calls to the internet during resizing which is highly inefficient). We can then
-      // just directly upload it instead of making another fetch from storage. 
-      const promises = [];
-      let thumbnailBlob;
-      let backgroundImageBlob;
-      
-      promises.push(
-        this.blackboard.getThumbnailBlob().then(blob => thumbnailBlob = blob)
-      );
-  
-      // need to upload an independent copy of the background image
-      // as the current blackboard's background image can be wiped and changed at any time on Firebase storage
-      const { downloadURL } = this.backgroundImage; 
-      if (downloadURL) {
-        promises.push(
-          this.$_getBlobFromStorage(downloadURL).then(blob => backgroundImageBlob = blob)
-        );
-      }
-
-      await Promise.all(promises);
-
-      this.$_saveExplToCacheThenUpload({
-        aspectRatio: MASSIVE_MODE_DIMENSIONS.HEIGHT / MASSIVE_MODE_DIMENSIONS.WIDTH,
-        thumbnailBlob,
-        audioBlob: this.blackboard.audioBlob,
-        backgroundImageBlob,
-        html: "",
-        title: this.explTitle ? this.explTitle : `Untitled (${new Date().toLocaleDateString()})`, 
-        tags: [this.$route.params.class_id], // i.e. save it to the default folder of the class library
-        explRef: db.doc(`classes/${this.mitClass.id}/posts/${getRandomId()}`)
-      });
-      
-      // reset variables
-      this.explTitle = ""; 
-    },
     /**
      * NOTE: the rep invariant of Blackboard is that strokesArray only has one stroke added at a time
      * And that if it's removed, it's reset. 
@@ -521,15 +463,6 @@ export default {
     handleRecordEnd () {
       // ask if the user wants to save/discard the recorded explanation 
       this.dialog = true; 
-    },
-    // saveVideo () {
-    //   this.dialog = false; 
-    //   this.uploadExplanation(); 
-    //   this.incrementKeyToDestroyComponent += 1; 
-    // },
-    discardAudio () {
-      this.dialog = false; 
-      this.incrementKeyToDestroyComponent += 1; 
     },
     toggleChat () {
       this.messagesOpen = !this.messagesOpen;

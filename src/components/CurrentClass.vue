@@ -44,13 +44,7 @@
               <v-img src="/logo.png" width="60" height="54" style="margin-top: 8px"/>
             </v-list-item-avatar>
 
-            <CurrentClassDropdown @logo-click="isAppPopupOpen = !isAppPopupOpen">
-              <template v-slot:add-join-leave-class>
-                <v-list-item @click="isAddClassPopupOpen = !isAddClassPopupOpen">
-                  <v-icon left class="mr-2">mdi-plus</v-icon> Manage classes
-                </v-list-item>
-              </template>
-            </CurrentClassDropdown>
+            <CurrentClassDropdown/>
           </template>
 
           <v-spacer/>

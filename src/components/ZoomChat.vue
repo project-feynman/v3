@@ -119,8 +119,8 @@ export default {
           title: `New area message in ${this.mitClass.name}`, 
           contentHTML: `
             <p>Someone said: "${message}"</p> 
-            <a href="https://explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}">
-              explain.web.app/class/${class_id}/section/${section_id}/room/${room_id}
+            <a href="${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}">
+              ${window.location.origin}/class/${class_id}/section/${section_id}/room/${room_id}
             </a>
             <p>
               To get notifications, press the "From: eltonlin@mit.edu" near the top, then press "Add to VIP". 

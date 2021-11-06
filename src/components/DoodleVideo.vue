@@ -8,7 +8,15 @@
           color="white"
           :opacity="0.1"
         >
-          <v-btn @click="playAudio()"
+          <v-progress-circular v-if="isLoading"
+            indeterminate
+            color="amber"
+            size="50"
+            :width="5"
+          ></v-progress-circular>
+          
+          <v-btn v-else 
+            @click="playAudio()"
             x-large
             class="mx-2"
             fab
@@ -65,14 +73,6 @@
               </v-btn>
             </v-list-item>
 
-            <v-list-item @click.stop.once="$emit('upvote')">
-              <v-icon class="mr-2" color="yellow darken-3">mdi-lightbulb-on</v-icon> UPVOTE
-            </v-list-item>
-
-            <v-list-item @click.stop="$emit('edit')">
-              <v-icon class="mr-2">mdi-pencil</v-icon> EDIT TITLE / DESC.
-            </v-list-item>
-
             <v-list-item @click.stop="$emit('delete')">
               <v-icon class="mr-2">mdi-delete</v-icon> REVERT TO BLACKBOARD
             </v-list-item>
@@ -108,6 +108,10 @@ export default {
       default () {
         return PPT_SLIDE_RATIO; 
       }
+    },
+    isLoading: {
+      type: Boolean,
+      required: true
     }
   },
   mixins: [
@@ -149,13 +153,14 @@ export default {
     }
   },
   watch: {
-    // quick-fix, without it the video appears blank even if `strokesArray` changed from empty to hydrated 
+    // quick-fix, without it the video appears blank even if `strokesArray` changed from empty to hydrated
+    // assumptions:
+    //   1. `strokesArray` only changes at most ONCE
+    //   2. `imageBlobUrl` is hydrated at the SAME time as `strokesArray`
     strokesArray () {
-      this.handleResize()
+      this.$_drawStrokesInstantly()
+      this.$_renderBackground(this.imageBlobUrl)
     }
-  },
-  async created () {
-    // this.handleResize = _.debounce(this.handleResize, 100); 
   },
   async mounted () {
     this.canvas = this.$refs.FrontCanvas;
@@ -294,7 +299,6 @@ export default {
 @import "../styles/doodle-fullscreen.scss";
 
 .video-container {
-  margin: auto;
   position: relative;
 }
 .doodle-video {

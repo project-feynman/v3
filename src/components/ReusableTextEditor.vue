@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div v-if="editor">
+    <!-- <div v-if="editor">
       <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" :class="{ 'is-active': editor.isActive('heading', { level: 2 }) }">
         h2
       </button>
-    </div>
+    </div> -->
 
     <editor-content 
       :editor="editor" 
@@ -26,6 +26,12 @@ export default {
       type: String,
       default: '',
     },
+    isEditable: {
+      type: Boolean,
+      default () {
+        return true
+      }
+    }
   },
   data() {
     return {
@@ -33,7 +39,7 @@ export default {
     }
   },
   watch: {
-    value(value) {
+    value (value) {
       // HTML
       const isSame = this.editor.getHTML() === value
       // JSON
@@ -44,13 +50,14 @@ export default {
       this.editor.commands.setContent(this.value, false)
     },
   },
-  mounted() {
+  mounted () {
     this.editor = new Editor({
       extensions: [
         StarterKit,
         Placeholder
       ],
       content: this.value,
+      editable: this.isEditable,
       onUpdate: () => {
         // HTML
         this.$emit('input', this.editor.getHTML())

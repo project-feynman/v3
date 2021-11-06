@@ -8,7 +8,15 @@
         color="white"
         :opacity="0.1"
       >
-        <v-btn @click="pausePlay()"
+        <v-progress-circular v-if="isLoading"
+          indeterminate
+          color="amber"
+          size="50"
+          :width="5"
+        ></v-progress-circular>
+          
+        <v-btn v-else 
+          @click="pausePlay()"
           x-large
           class="mx-2"
           fab
@@ -16,7 +24,7 @@
           color="white"
         >
           <v-icon dark style="font-size: 3.5rem; opacity: 40%" color="black">
-            mdi-play
+            mdi-replay
           </v-icon>
         </v-btn>
       </v-overlay>
@@ -73,14 +81,6 @@
             </v-btn>
           </v-list-item>
 
-          <v-list-item @click.stop.once="$emit('upvote')">
-            <v-icon class="mr-2">mdi-lightbulb-on</v-icon> UPVOTE
-          </v-list-item>
-
-          <v-list-item @click.stop="$emit('edit')">
-            <v-icon class="mr-2">mdi-pencil</v-icon> EDIT TITLE / DESC.
-          </v-list-item>
-
           <v-list-item @click.stop="$emit('delete')">
             <v-icon class="mr-2">mdi-delete</v-icon> REVERT TO BLACKBOARD
           </v-list-item>
@@ -114,6 +114,10 @@ export default {
       default () {
         return PPT_SLIDE_RATIO; 
       }
+    },
+    isLoading: {
+      type: Boolean,
+      required: true
     }
   },
   mixins: [
@@ -149,8 +153,12 @@ export default {
   },
   watch: {
     // quick-fix, without it the video appears blank even if `strokesArray` changed from empty to hydrated 
+    // assumptions:
+    //   1. `strokesArray` only changes at most ONCE
+    //   2. `backgroundUrl` is hydrated at the SAME time as `strokesArray`
     strokesArray () {
-      this.handleResize()
+      this.$_drawStrokesInstantly()
+      this.$_renderBackground(this.backgroundUrl)
     }
   },
   async mounted () {
@@ -299,7 +307,6 @@ export default {
 @import "../styles/doodle-fullscreen.scss";
 
 .video-container {
-  margin: auto;
   position: relative;
 }
 .doodle-video {
