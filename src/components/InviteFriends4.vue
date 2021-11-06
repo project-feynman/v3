@@ -33,7 +33,7 @@
 
     <!-- List of participants -->
     <v-container v-else style="display: flex">
-      <div style="width: 280px; max-height: 500px" class="overflow-y-auto">
+      <div style="min-width: 250px; max-height: 500px" class="overflow-y-auto">
         <template v-for="volunteer of sortedVolunteers">
           <v-list-item two-line :key="volunteer.id">
             <v-list-item-content>
