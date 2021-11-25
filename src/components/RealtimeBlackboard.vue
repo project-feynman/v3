@@ -460,8 +460,6 @@ export default {
      **/
     async deleteBlackboard () {
       // delete it recursively
-      console.log('delete blackboard')
-      this.$root.$emit('show-snackbar', 'Deleting blackboard...')
       const promises = [] 
       const deleteRecursively = firebase.functions().httpsCallable('recursiveDelete')
       // delete background
