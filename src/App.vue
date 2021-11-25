@@ -154,7 +154,7 @@ export default {
         enrolledClasses: [exampleClass],
         emailOnNewQuestion: [],
         emailOnNewReply: [],
-        penColors: ["#B8F2F9", "#F69637", "#A9F8BD", "#6EE2EA"]
+        penColors: ['white', "#F69637", "#A9F8BD", "#6EE2EA"] // "#B8F2F9"
       });
 
       this.$store.commit("SET_IS_VIEWING_LIBRARY", true);

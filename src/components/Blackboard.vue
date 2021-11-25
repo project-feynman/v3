@@ -47,7 +47,8 @@
             </v-switch>
             
 
-            <BaseButton :disabled="! canUndoStroke"
+            <BaseButton v-if="user.email"
+              :disabled="! canUndoStroke"
               @click="undoPenStroke(strokesArray[strokesArray.length - 1])" 
               icon="mdi-undo" color="white" small
             >
@@ -64,7 +65,10 @@
           <template v-slot:more-actions-slot>
             <BaseButton v-if="currentState === RecordState.PRE_RECORD" 
               @click="startRecording()" 
-              icon="mdi-record-rec" color="red" small dark
+              icon="mdi-record-rec" 
+              color="red" 
+              small
+              dark
               hasLargeIcon
             >
             </BaseButton>

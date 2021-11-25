@@ -277,7 +277,7 @@
                       </div>
                     </v-list-item>
 
-                    <Drag :transfer-data="{ draggedFrom: i }" style="width: 80px;">
+                    <Drag :transfer-data="{ draggedFrom: i, objectType: 'blackboard', boardID, roomDoc: room }" style="width: 80px;">
                       <v-icon color="grey" x-large style="margin-left: 5px">
                         <!-- mdi-reorder-horizontal -->
                         mdi-menu
@@ -304,9 +304,6 @@
     <template v-if="room">
       <template v-for="(boardID, i) of room.blackboards">
         <RenderlessListenToBlackboard :blackboardRef="classRef.collection('blackboards').doc(boardID)" :key="boardID">
-          <!-- TODO: expose functions here for:
-            3. adding a comment
-          -->
           <template v-slot="{ 
             boardDoc,
             isDisplayingComments, 
@@ -480,6 +477,7 @@
                     />
                     <RealtimeBlackboard
                       :blackboardRef="classRef.collection('blackboards').doc(boardDoc.id)" 
+                      :boardID="boardDoc.id"
                       :key="boardDoc.id"
                       style="margin-top: 5px"
                     />

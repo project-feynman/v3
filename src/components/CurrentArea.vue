@@ -550,9 +550,32 @@ export default {
   methods: {
     /**
      * For now, the post will always go below i.e. can only drag downwards
+     * TODO: `droppedTo` and `draggedFrom` are annoyingly sometimes indices and sometimes objects
      */
-    async handleDrop ({ droppedTo }, { draggedFrom }) {
-      if (!draggedFrom.order || !droppedTo.order) {
+    async handleDrop ({ droppedTo }, { draggedFrom, objectType, boardID, roomDoc }) {
+      if (objectType === 'blackboard') {
+        const newRoomDoc = droppedTo
+        const batch = db.batch()
+
+        const oldRoomRef = db.doc(`classes/${this.classID}/rooms/${this.$route.params.room_id}`)
+        const oldBoardsCopy = [...roomDoc.blackboards]
+        const removeOneElement = 1
+        oldBoardsCopy.splice(draggedFrom, removeOneElement)
+        batch.update(oldRoomRef, {
+          blackboards: oldBoardsCopy
+        })
+  
+        const newRoomRef = db.doc(`classes/${this.classID}/rooms/${newRoomDoc.id}`)
+        const boardsCopy = [...newRoomDoc.blackboards]
+        boardsCopy.push(boardID)
+        batch.update(newRoomRef, {
+          blackboards: boardsCopy
+        })
+
+        await batch.commit()
+        this.$root.$emit('show-snackbar', 'Success - moved explanation.')
+      }
+      else if (!draggedFrom.order || !droppedTo.order) {
         const batch = db.batch() 
         for (let i = 0; i < this.sortedRooms.length; i++) {
           batch.update(

@@ -31,8 +31,14 @@
     :class="small ? 'small-btn':''"
     :loading="loading"
   >
+    <!-- :x-large="hasLargeIcon" -->
     <div class="d-flex flex-column">
-      <v-icon v-if="icon !=='none'" :large="hasLargeIcon">{{ icon }}</v-icon>
+      <v-icon v-if="icon !=='none'" 
+        :style="hasLargeIcon ? 'font-size: 3.5rem;' : ''"
+
+      >
+        {{ icon }}
+      </v-icon>
       <span :class="icon !=='none' ? 'd-none d-sm-block':''">
         <slot>
 
@@ -111,6 +117,6 @@ export default {
   padding: 8px 16px;
 }
 .button-custom.small-btn:not(.v-btn--round) {
-  padding: 4px 8px;
+  padding: 4px 6px;
 }
 </style>

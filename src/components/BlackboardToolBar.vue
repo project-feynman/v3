@@ -19,15 +19,17 @@
       </slot>
 
       <v-col class="py-0 px-0" cols="auto">
-        <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 40" 
-          @click="selectNormalEraser({ eraserLineWidth: 40 })" 
-          icon="mdi-eraser-variant" hasLargeIcon small color="white"
-        />
-        <BaseButton v-if="$vuetify.breakpoint.mdAndUp"
-          :filled="isNormalEraser && currentTool.lineWidth === 5"
-          @click="selectNormalEraser({ eraserLineWidth: 5 })" 
-          icon="mdi-eraser-variant" small color="white"
-        />
+        <template v-if="user.email">
+          <BaseButton :filled="isNormalEraser && currentTool.lineWidth === 40" 
+            @click="selectNormalEraser({ eraserLineWidth: 40 })" 
+            icon="mdi-eraser-variant" hasLargeIcon small color="white"
+          />
+          <BaseButton v-if="$vuetify.breakpoint.mdAndUp"
+            :filled="isNormalEraser && currentTool.lineWidth === 5"
+            @click="selectNormalEraser({ eraserLineWidth: 5 })" 
+            icon="mdi-eraser-variant" small color="white"
+          />
+        </template>
       </v-col>
 
       <v-col class="py-0 px-0" cols="auto">

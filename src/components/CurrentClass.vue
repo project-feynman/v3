@@ -63,8 +63,8 @@
             <v-card-title>App Overview</v-card-title>
             <v-card-text>
               <b>Goal</b><br>
-              <a href="https://github.com/project-feynman/explain" target="_blank">Explain's</a> goal is to help as many people
-              learn happily and efficiently, so they can help the world.
+              <a href="https://github.com/project-feynman/explain" target="_blank">Explain</a> is a place where people
+              learn by helping each other, so they can change the world.
               <br>
               <br>
               <b>Support</b>

@@ -38,29 +38,13 @@
       <!-- TODO: don't let user wipe board / set background while recording -->
       <!-- Set Background (overrides the normal behavior) -->
       <template v-slot:set-background-button-slot="{ closeMenu }">
-        <!-- TODO -->
-        <!-- <v-list-item @click.stop="">
-          <v-icon class="mr-2">mdi-pencil</v-icon> ADD TITLE / DESC.
-        </v-list-item> -->
-
         <v-list-item @click.stop="saveAnimation()">
-          <v-icon left color="secondary">mdi-content-save</v-icon>Save
+          <v-icon left color="secondary">mdi-animation-play</v-icon>Save as animation
         </v-list-item>
-        <!-- <BasePopupButton actionName="Save blackboard" @action-do="uploadExplanation()">
-          <template v-slot:activator-button="{ on, openPopup }">
-            <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="secondary">mdi-content-save</v-icon>Save
-            </v-list-item>
-          </template>
-          
-          <template v-slot:message-to-user>
-            <v-text-field v-model="explTitle" placeholder="Type the title here..."/>
-          </template> 
-        </BasePopupButton> -->
 
         <v-list-item @click="(backgroundImage.blob || backgroundImage.downloadURL) ? resetBackgroundImage() : $refs.fileInput.click()">
           <v-icon left :color="(backgroundImage.blob || backgroundImage.downloadURL) ? 'red' : 'blue'">mdi-image</v-icon>
-          {{ (backgroundImage.blob || backgroundImage.downloadURL) ? 'Remove' : 'Background' }} 
+          {{ (backgroundImage.blob || backgroundImage.downloadURL) ? 'Remove background' : 'Change background' }} 
           <input 
             @change="e => handleWhatUserUploaded(e)" 
             style="display: none" 
@@ -75,21 +59,32 @@
         <BasePopupButton actionName="Wipe strokes" @action-do="deleteAllStrokesFromDb();">
           <template v-slot:activator-button="{ on, openPopup }">
             <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="red">mdi-delete</v-icon> Wipe
+              <v-icon left color="orange">mdi-pencil-off</v-icon> Wipe the board
             </v-list-item>
           </template>
           <template v-slot:message-to-user>
             Are you sure you want wipe this blackboard's pen strokes?
           </template> 
         </BasePopupButton>
+
+        <BasePopupButton v-if="user.email" actionName="Delete blackboard" @action-do="deleteBlackboard()">
+          <template v-slot:activator-button="{ on, openPopup }">
+            <v-list-item @click.stop="openPopup(); closeMenu();">
+              <v-icon left color="red">mdi-delete</v-icon>Delete blackboard
+            </v-list-item>
+          </template>
+          <template v-slot:message-to-user>
+            Are you sure you want to delete this blackboard entirely?
+          </template>
+        </BasePopupButton>
       </template>
+
+   
 
       <template v-slot:blackboard-toolbar>
         <slot name="blackboard-toolbar">
 
-        </slot> 
-
-       
+        </slot>        
       </template> 
     </Blackboard> 
   
@@ -122,17 +117,22 @@ import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
+import 'firebase/functions'
+import 'firebase/storage'
 import 'firebase/analytics'
 import db from "@/database.js"; 
 import { mapState } from "vuex"; 
 import { getRandomId } from "@/helpers.js";
-import { MASSIVE_MODE_DIMENSIONS } from "@/CONSTANTS.js";
 import pdfjs from 'pdfjs-dist'
 
 export default {
   props: {
     blackboardRef: {
       type: null,
+      required: true
+    },
+    boardID: {
+      type: String,
       required: true
     }
   },
@@ -161,14 +161,8 @@ export default {
       },
       removeBackgroundImageListener: null,
       removeBlackboardStrokesListener: null,
-      dialog: false,
-      explTitle: "",
-      classId: this.$route.params.class_id,
-      roomId: this.$route.params.room_id,
-      messagesOpen: false,
       // new code
       incrementKeyToDestroyComponent: 0,
-      isMenuOpen: false,
       isUploadingSnackbarOpen: false
     };
   },
@@ -260,7 +254,7 @@ export default {
       // update `backgroundImage` prop so BlackboardCoreDrawing updates     
       this.backgroundImage = {
         downloadURL: blackboardDoc.data().backgroundImageDownloadURL,
-        blob: null
+        blob: null // TODO: why a `blob` property exactly? I know it's probably to prevent re-downloading for existing images
       };
         if (!this.hasFetchedBackgroundImage) {
           this.hasFetchedBackgroundImage = true; 
@@ -460,12 +454,35 @@ export default {
       
       await Promise.all(batchDeleteRequests);
     },
-    handleRecordEnd () {
-      // ask if the user wants to save/discard the recorded explanation 
-      this.dialog = true; 
-    },
-    toggleChat () {
-      this.messagesOpen = !this.messagesOpen;
+    /**
+     * Assumes the blackboard is not a video/animation, so it has no audio file,
+     * but may still contain a background image
+     **/
+    async deleteBlackboard () {
+      // delete it recursively
+      console.log('delete blackboard')
+      this.$root.$emit('show-snackbar', 'Deleting blackboard...')
+      const promises = [] 
+      const deleteRecursively = firebase.functions().httpsCallable('recursiveDelete')
+      // delete background
+      const { downloadURL } = this.backgroundImage
+      if (downloadURL) {
+        promises.push(
+          firebase.storage().refFromURL(downloadURL).delete()
+        )
+      }
+      promises.push(
+        deleteRecursively({ path: `blackboards/${this.boardID}`}) // why don't I need the class path prefix?
+      )
+      // update the pointer in the room 
+      const { class_id, room_id } = this.$route.params
+      promises.push(
+        db.doc(`classes/${class_id}/rooms/${room_id}`).update({
+          blackboards: firebase.firestore.FieldValue.arrayRemove(this.boardID)
+        })
+      )
+      await Promise.all(promises)
+      this.$root.$emit('show-snackbar', 'Successfully deleted blackboard')
     }
   }
 }

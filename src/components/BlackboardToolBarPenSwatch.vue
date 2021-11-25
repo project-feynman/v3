@@ -1,7 +1,8 @@
 <template>
   <div style="display: flex; align-items: center;">
     <template v-for="(color, i) of user.penColors">
-      <BaseButton v-if="!((i > 2) && $vuetify.breakpoint.smAndDown) && i < user.penColors.length - 1" :key="i"
+      <!-- First condition is to simplify UI for small screen, second is to leave room for the random die -->
+      <BaseButton v-if="!($vuetify.breakpoint.smAndDown && i > 0) && i !== user.penColors.length - 1" :key="i"
         @click="handlePenClick(color, i)" 
         :filled="currentTool.color === color && currentTool.type === 'PEN'" 
         color="white" small 
@@ -22,7 +23,7 @@
         <v-icon v-if="user.email" x-small>mdi-menu-down</v-icon>
       </BaseButton>
 
-      <BaseButton v-else-if="user.email" 
+      <BaseButton v-else-if="user.email && i === user.penColors.length - 1" 
         @click="handleDiceClick(color, i)" 
         :icon="`mdi-dice-${diceNumber}`" 
         small 
@@ -140,7 +141,7 @@ export default {
           lineWidth: width
         })
       }
-      else {
+      else if (this.user.email) {
         this.isMenuOpen = true
         this.newColorToUpdate = color
         this.newWidthToUpdate = width
