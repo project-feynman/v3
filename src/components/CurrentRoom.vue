@@ -282,8 +282,8 @@
                         <!-- mdi-reorder-horizontal -->
                         mdi-menu
                       </v-icon>
-                      <div style="font-size: 0.4rem; margin-bottom: 0px; margin-left: 7px; color: grey">
-                        RE-ARRANGE
+                      <div style="font-size: 0.55rem; margin-bottom: 0px; margin-top: 0px; margin-left: 11px; color: grey">
+                        MOVE
                       </div>
                     </Drag>
                   </div>
@@ -291,10 +291,18 @@
               
                 </Drop>
               </template>
-
-              <BaseButton v-if="room.blackboards.length < 10" @click="createNewBoard()" icon="mdi-plus" color="white" style="background-color: rgb(62, 66, 66);" block>
-                New board
-              </BaseButton>
+              
+              <div style="margin-left: 4px; margin-right: 4px; margin-bottom: 4px">
+                <BaseButton v-if="room.blackboards.length < 10" 
+                  @click="createNewBoard()" 
+                  icon="mdi-plus" color="white" 
+                  style="background-color: rgb(62, 66, 66);"
+                  block
+                  tile
+                >
+                  New board
+                </BaseButton>
+              </div>
             </v-list>
           </v-menu>
         </div>
@@ -315,16 +323,19 @@
             allComments 
           }"
           >
-            <div v-if="boardDoc" :id="boardID" :key="boardID" v-intersect="{
-              handler (entries, observer, isIntersecting) {
-                if (isIntersecting) {
-                  updateCurrentBoardID(boardID)
+            <div v-if="boardDoc" 
+              :id="boardID" 
+              :key="boardID" 
+              v-intersect="{
+                handler (entries, observer, isIntersecting) {
+                  if (isIntersecting) {
+                    updateCurrentBoardID(boardID)
+                  }
+                },
+                options: {
+                  threshold: 0.5
                 }
-              },
-              options: {
-                threshold: 0.5
-              }
-            }"
+              }"
             >
               <portal :to="`title-of-blackboard-${i}`">
                 {{ boardDoc.title }}
@@ -336,93 +347,92 @@
                 :imageDownloadUrl="boardDoc.backgroundImageDownloadURL"
                 v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
               >
-                <div style="position: relative;" v-intersect.once="{
-                  handler (entries, observer, isIntersecting) {
-                    if (isIntersecting) fetchStrokes()
-                  },
-                  options: {
-                    threshold: 0.5
-                  }
-                }"
+                <div style="position: relative; padding-left: 20px; padding-right: 20px; margin-top: 10px; margin-bottom: 22px" 
+                  v-intersect.once="{
+                    handler (entries, observer, isIntersecting) {
+                      if (isIntersecting) fetchStrokes()
+                    },
+                    options: {
+                      threshold: 0.5
+                    }
+                  }"
                 > 
                   <!-- TODO: add collaborators to the explanations, so it's an array of UIDs -->
-                  <v-card class="mb-5">
-                    <template>
-                      <v-card-title class="mt-1 mb-3 py-1">
-                        <v-text-field 
-                          :value="boardDoc.title"
-                          :readonly="!(user.uid === boardDoc.creatorUID)"
-                          @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
-                          placeholder="Title here"
-                          style="font-size: 1.6rem; opacity: 77%; width: 150px"
-                          class="font-weight-normal"
-                          hide-details
-                        ></v-text-field>
-                      </v-card-title>
-                    </template>
-                    <v-card-text>
-                      <ReusableTextEditor
-                        :value="boardDoc.descriptionHtml || ''"
-                        :isEditable="user.uid === boardDoc.creatorUID"
-                        @input="newDescriptionHtml => debouncedEditDesc(newDescriptionHtml, boardDoc.id)"
-                        class="html-paragraph-styles"
-                        style="margin-top: 10px; margin-left: 2px"
-                      />
-                      <DoodleVideo v-if="boardDoc.audioDownloadURL"
-                        :strokesArray="strokesArray"
-                        :imageBlob="imageBlob"
-                        :audioUrl="boardDoc.audioDownloadURL"
-                        :aspectRatio="4/3"
-                        :isLoading="isLoading"
-                        style="margin-top: 5px"
-                        @play="incrementNumOfViewsOnExpl(boardDoc.id)"
-                        @delete="deleteVideo({ audioDownloadURL: boardDoc.audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
-                      />
-                      <DoodleAnimation v-else
-                        :strokesArray="strokesArray"
-                        :backgroundUrl="boardDoc.backgroundImageDownloadURL"
-                        :aspectRatio="4/3"
-                        :isLoading="isLoading"
-                        style="margin-top: 5px"
-                        @play="incrementNumOfViewsOnExpl(boardDoc.id)"
-                        @delete="deleteAnimation({ creator: boardDoc.creator, animationRef: classRef.collection('blackboards').doc(boardDoc.id) })"
-                      />
-                      <!-- TODO: collapsible comments -->
-                      <v-card-subtitle class="my-0 pb-0 pt-3 ml-1 px-0">
-                         {{ boardDoc.upvoterUIDs ? boardDoc.upvoterUIDs.length : 0 }} eurekas 
-                        <v-btn v-if="boardDoc.upvoterUIDs && boardDoc.upvoterUIDs.includes(user.uid)"
-                          @click="cancelUpvoteOnExpl(boardDoc.id)"
-                          style="margin-bottom: 2px" icon
-                        >
-                         <v-icon color="orange lighten-1">mdi-lightbulb</v-icon>
-                        </v-btn>
+                  <v-text-field 
+                    :value="boardDoc.title"
+                    :readonly="!(user.uid === boardDoc.creatorUID)"
+                    @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
+                    placeholder="Title here"
+                    style="font-size: 1.6rem; opacity: 77%; font-weight: 500; width: 400px; margin-bottom: 18px;"
+                    class="font-weight-normal"
+                    hide-details
+                  />
+                  <ReusableTextEditor v-if="boardDoc.title"
+                    :value="boardDoc.descriptionHtml || ''"
+                    :isEditable="user.uid === boardDoc.creatorUID"
+                    @input="newDescriptionHtml => debouncedEditDesc(newDescriptionHtml, boardDoc.id)"
+                    class="html-paragraph-styles"
+                    style="margin-top: 10px; color: rgba(0,0,0,.6)"
+                  />
+                  <DoodleVideo v-if="boardDoc.audioDownloadURL"
+                    :strokesArray="strokesArray"
+                    :imageBlob="imageBlob"
+                    :audioUrl="boardDoc.audioDownloadURL"
+                    :aspectRatio="4/3"
+                    :isLoading="isLoading"
+                    style="margin-top: 5px"
+                    @play="incrementNumOfViewsOnExpl(boardDoc.id)"
+                    @delete="deleteVideo({ audioDownloadURL: boardDoc.audioDownloadURL, creator: boardDoc.creator, videoRef: classRef.collection('blackboards').doc(boardDoc.id) })"
+                  />
+                  <DoodleAnimation v-else
+                    :strokesArray="strokesArray"
+                    :backgroundUrl="boardDoc.backgroundImageDownloadURL"
+                    :aspectRatio="4/3"
+                    :isLoading="isLoading"
+                    style="margin-top: 5px"
+                    @play="incrementNumOfViewsOnExpl(boardDoc.id)"
+                    @delete="deleteAnimation({ creator: boardDoc.creator, animationRef: classRef.collection('blackboards').doc(boardDoc.id) })"
+                  />
+                  <!-- TODO: collapsible comments -->
+                  <!-- <v-card-subtitle class="my-0 pb-0 pt-3 ml-1 px-0"> -->
+                  <!-- 0.875 rem is the `v-card-subtitle` text size -->
+                  <div style="font-size: 0.875rem; color: rgba(0,0,0,.6); margin-left: 2px; padding-top: 6px">
+                    {{ boardDoc.upvoterUIDs ? boardDoc.upvoterUIDs.length : 0 }} eurekas 
+                    <v-btn v-if="boardDoc.upvoterUIDs && boardDoc.upvoterUIDs.includes(user.uid)"
+                      @click="cancelUpvoteOnExpl(boardDoc.id)"
+                      style="margin-bottom: 2px" icon
+                    >
+                      <v-icon color="orange lighten-1">mdi-lightbulb</v-icon>
+                    </v-btn>
 
-                        <v-btn v-else
-                          @click="upvoteExpl(boardDoc.id)"
-                          style="margin-bottom: 2px" icon
-                        >                       
-                          <v-icon color="grey darken-2">mdi-lightbulb-outline</v-icon>
-                        </v-btn>
-                        <v-icon class="ml-1 mr-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                        {{ boardDoc.views }} views                     
-                        <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                        {{ boardDoc.creator.firstName + ' ' + boardDoc.creator.lastName }}
-                        <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
-                        {{ displayDate(boardDoc.date) }}
-                        <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
-             
-                        {{ boardDoc.numOfComments || 0 }} comments
-                        <v-btn
-                          icon
-                          @click="func(); !allComments ? listenToComments() : ''"
-                          style="margin-bottom: 2px"
-                          color="grey darken-2"
-                        >
-                          <v-icon>{{ isDisplayingComments ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-                        </v-btn>
-                      </v-card-subtitle>
-                      <v-spacer/>
-                    </v-card-text>
+                    <v-btn v-else
+                      @click="upvoteExpl(boardDoc.id)"
+                      style="margin-bottom: 2px" icon
+                    >
+                      <v-icon color="grey darken-2">mdi-lightbulb-outline</v-icon>
+                    </v-btn>
+                    <v-icon class="ml-1 mr-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                    {{ boardDoc.views }} views                     
+                    <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                    {{ boardDoc.creator.firstName + ' ' + boardDoc.creator.lastName }}
+                    <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+                    {{ displayDate(boardDoc.date) }}
+                    <v-icon class="mx-2" style="font-size: 0.2rem">mdi-circle</v-icon> 
+          
+                    {{ boardDoc.numOfComments || 0 }} comments
+                    <v-btn
+                      icon
+                      @click="func(); !allComments ? listenToComments() : ''"
+                      style="margin-bottom: 2px"
+                      color="grey darken-2"
+                    >
+                      <v-icon>{{ isDisplayingComments ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                    </v-btn>
+                  </div>
+
+                  <v-spacer/>
+
+                  <v-card>
                     <v-expand-transition>
                       <v-card-text v-show="isDisplayingComments" class="my-0 pt-0 pb-3">
                         <v-list class="py-0 mb-3 px-1 mx-0 overflow-y-auto" style="max-height: 300px">
@@ -457,44 +467,42 @@
               </RenderlessFetchStrokes>
               
               <template v-else>
-                <v-card class="mb-5">
-                  <v-card-title class="mt-1 mb-3 py-1">
-                    <v-text-field 
-                      :value="boardDoc.title || ''"
-                      @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
-                      placeholder="Title"
-                      style="font-size: 1.6rem; opacity: 77%; width: 150px"
-                      class="font-weight-normal"
-                      hide-details
-                    ></v-text-field>
-                  </v-card-title>
-
-                  <v-card-text style="margin-top: 16px">
-                    <ReusableTextEditor
-                      :value="boardDoc.descriptionHtml || ''"
-                      @input="newDescriptionHtml => debouncedEditDesc(newDescriptionHtml, boardDoc.id)"
-                      class="html-paragraph-styles"
-                    />
-                    <RealtimeBlackboard
-                      :blackboardRef="classRef.collection('blackboards').doc(boardDoc.id)" 
-                      :boardID="boardDoc.id"
-                      :key="boardDoc.id"
-                      style="margin-top: 5px"
-                    />
-                  </v-card-text>
-                </v-card>
+                <div style="padding-left: 20px; padding-right: 20px; margin-top: 10px; margin-bottom: 22px">
+                  <v-text-field 
+                    :value="boardDoc.title || ''"
+                    @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
+                    placeholder="Title"
+                    style="font-size: 1.6rem; opacity: 77%; font-weight: 500; width: 400px; margin-bottom: 18px"
+                    class="font-weight-normal"
+                    hide-details
+                  />
+                  <ReusableTextEditor v-if="boardDoc.title"
+                    :value="boardDoc.descriptionHtml || ''"
+                    @input="newDescriptionHtml => debouncedEditDesc(newDescriptionHtml, boardDoc.id)"
+                    class="html-paragraph-styles"
+                  />
+                  <RealtimeBlackboard
+                    :blackboardRef="classRef.collection('blackboards').doc(boardDoc.id)" 
+                    :boardID="boardDoc.id"
+                    :key="boardDoc.id"
+                    style="margin-top: 5px"
+                  />
+                </div>
               </template>
             </div>
           </template>
         </RenderlessListenToBlackboard>
       </template>
-
-      <v-btn v-if="room.blackboards.length < 10"
-        @click="createNewBoard()"
-        block x-large class="white--text" style="background-color: rgb(46, 49, 49); margin-top: 5px;"
-      >
-        <v-icon class="mr-2">mdi-plus</v-icon>New Blackboard
-      </v-btn>
+      
+      <div style="margin-left: 20px; margin-right: 20px">
+        <v-btn v-if="room.blackboards.length < 10"
+          @click="createNewBoard()"
+          block x-large class="white--text" 
+          style="background-color: rgb(46, 49, 49); margin-top: 5px;"
+        >
+          <v-icon class="mr-2">mdi-plus</v-icon>NEW BLACKBOARD
+        </v-btn>
+      </div>
     </template>
     <!-- End of `v-if="room"` template -->
   </div>
@@ -992,8 +1000,10 @@ export default {
   font-size: 2rem
 } */
 
+/* `rgba(0,0,0,.6)` is copied from v-card's default text color */
 .html-paragraph-styles >>> p {
-  font-size: 1.1rem
+  font-size: 1.1rem;
+  color: rgba(0,0,0,.6); 
 }
 
 .overlay-item {

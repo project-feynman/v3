@@ -42,7 +42,7 @@
     </div>
 
     <div class="d-flex animation-controls">
-      <v-col cols="auto" class="px-1">
+      <v-col cols="auto" class="pa-1">
         <v-btn @click="pausePlay()" color="#333" text>
           <v-icon v-if="!isInReplayMode">
             mdi-replay
@@ -52,7 +52,7 @@
           </v-icon>
         </v-btn>
       </v-col>
-      <v-col v-if="isInReplayMode" class="px-1">
+      <v-col v-if="isInReplayMode" class="pa-1">
         <v-slider
           color="#333"
           track-color="rgba(0,0,0,0.30)"
@@ -61,6 +61,7 @@
           @input="(newVal) => seek(newVal)"
           @change="(newVal) => finishSeek(newVal)"
           :hide-details="true"
+          style="margin-top: 1.5px"
         />
       </v-col>
     </div>
@@ -99,10 +100,7 @@ import CanvasDrawMixin from "@/mixins/CanvasDrawMixin.js";
 import DoodleFullscreenMixin from "@/mixins/DoodleFullscreenMixin.js";
 import _ from "lodash";
 import { 
-  navbarHeight, 
-  audioPlayerHeight, 
   PPT_SLIDE_RATIO,
-  PDF_RATIO,
 } from "@/CONSTANTS.js";
 
 export default {
@@ -339,8 +337,6 @@ export default {
 }
 .animation-controls {
   background: #eee;
-  border-bottom-right-radius: 10px;
-  border-bottom-left-radius: 10px;
 }
 .extra-controls {
   position: absolute;

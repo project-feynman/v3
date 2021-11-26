@@ -30,7 +30,7 @@
       :temporary="useMiniDrawerInitially && !isLeftPanelCollapsed"
       app 
       style="height: 100%; z-index: 101"
-      class="elevation-24" 
+      class="elevation-16" 
       width="270" 
       mini-variant-width="40"
     >      
