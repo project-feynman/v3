@@ -75,52 +75,12 @@
             <template v-if="client.sessionID === sessionID">
               <div>
                 <template v-if="connectionStatus === 'CONNECTED'">
-                  <portal to="video-screenshare-hangup-buttons">
-                    <div style="display: flex; align-items: center; justify-content: space-around;" class="mt-1 mb-3">
-                      <v-btn @click.stop.prevent="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)" 
-                        small fab :color="`${ isMicOn ? 'cyan' : 'grey' }`"
-                      >
-                        <v-icon v-if="isMicOn" color="white">
-                          mdi-microphone
-                        </v-icon>
-                        <v-icon v-else>
-                          mdi-microphone-off
-                        </v-icon>
-                      </v-btn>
-
-                      <v-btn @click.prevent="toggleCam(); $store.commit('SET_IS_CAMERA_ON', !isCamOn)" 
-                        fab small :color="`${ isCamOn ? 'cyan' : 'grey' }`"
-                      >
-                        <v-icon v-if="isCamOn" color="white">
-                          mdi-video
-                        </v-icon>
-                        <v-icon v-else color="white">
-                          mdi-video
-                        </v-icon>
-                      </v-btn>
-
-                      <!-- <v-btn @click.prevent.stop="toggleScreen()" 
-                        fab small :color="`${ isSharingScreen ? 'cyan' : 'grey' }`"
-                      >
-                        <v-icon v-if="isSharingScreen" color="white">
-                          mdi-monitor
-                        </v-icon>
-                        <v-icon v-else color="white">
-                          mdi-monitor
-                        </v-icon>
-                      </v-btn> -->
-                      <!-- <template v-if="inputDevices">
-                        <div v-for-object="inputDevice in inputDevices">
-                          {{ inputDevice }}
-                        </div>
-                      </template> -->
-
-                      <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()"
-                        small dark fab color="red"
-                      >
-                        <v-icon>mdi-volume-off</v-icon>
-                      </v-btn>
-                    </div>
+                  <portal to="call-button">
+                    <v-btn @click.prevent.stop="$store.commit('SET_CAN_HEAR_AUDIO', false); leaveConferenceRoom()"
+                      small dark fab color="white"
+                    >
+                      <v-icon color="green">mdi-volume-high</v-icon>
+                    </v-btn>
                   </portal>
                 </template>
 
@@ -135,27 +95,32 @@
 
               <!-- Display a call icon if not connected -->
               <template v-if="connectionStatus !== 'CONNECTED'">
-                <v-switch 
-                  color="green" class="mt-5" 
-                  inset
-                  :loading="connectionStatus === 'CONNECTING'"
-                  @change="joinConferenceRoom()"
-                >
-                  <template v-slot:label>
-                    <v-icon style="font-size: 0.9rem; margin-left: 1px" color="grey darken-1">mdi-volume-off</v-icon>
-                  </template>
-                </v-switch>
+                <portal to="call-button">
+                  <v-btn @click="joinConferenceRoom()" 
+                    :loading="connectionStatus === 'CONNECTING'"
+                    color="rgb(62, 66, 66)" fab dark class="white--text" small
+                  >
+                    <v-icon>
+                      {{ connectionStatus === 'CONNECTED' ? 'mdi-volume-high' : 'mdi-volume-off' }}
+                    </v-icon>
+                  </v-btn>
+                </portal>
               </template>
               
-              <v-icon v-else-if="participants && participants.local" 
-                small :color="`${isMicOn ? 'grey darken-3' : 'red'}`"
-              >
-                {{ isMicOn ? 'mdi-microphone' : 'mdi-microphone-off' }}
-              </v-icon>
-
-              <v-icon v-else small color="grey darken-2">
-                mdi-headphones-off
-              </v-icon>
+              <!-- participants && participants.local -->
+              <template v-if="connectionStatus === 'CONNECTED'">
+                <v-btn @click.stop.prevent="toggleMic(); $store.commit('SET_IS_MIC_ON', !isMicOn)" 
+                  small fab :color="`${ isMicOn ? 'white' : 'white' }`"
+                  active-class=""
+                >
+                  <v-icon v-if="isMicOn" color="grey darken-3">
+                    mdi-microphone
+                  </v-icon>
+                  <v-icon v-else color="red">
+                    mdi-microphone-off
+                  </v-icon>
+                </v-btn>
+              </template>
 
               <!-- Switch board dropdown -->
               <portal-target name="right-side-of-my-participant-name" style="margin-left: 5px;">
@@ -184,10 +149,7 @@
               <v-icon v-else-if="!client.canHearAudio && connectionStatus === 'CONNECTED'" small color="red darken-2">
                 mdi-volume-off
               </v-icon>
-              <!-- If I'm not in voice chat, I don't really particularly care about other people, don't use red it's too flashy -->
-              <v-icon v-else small color="grey darken-1" style="font-size: 0.9rem; margin-top: 1px">
-                mdi-volume-off
-              </v-icon>
+              <!-- If I'm not in voice chat, I don't really particularly care about other people are also not connected -->
 
               <div
                 @click="scrollToThisBoard(client.currentBoardID)"
@@ -399,7 +361,8 @@ export default {
           this.$store.commit(
             'SET_CALL_OBJECT', 
             DailyIframe.createCallObject({
-              audioSource: micMediaStreamTrack // how to destroy it // enable and disable it as you connect / disconnect from phone calls
+              audioSource: micMediaStreamTrack, // how to destroy it // enable and disable it as you connect / disconnect from phone calls,
+              videoSource: micMediaStreamTrack // clog up the video source so it doesn't activate the user's camera lights 
             }) 
           )
           this.initializeCallObject()

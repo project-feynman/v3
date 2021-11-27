@@ -100,14 +100,16 @@
       </v-card>
     </v-dialog>
 
-    <portal to="invite-button">
-      <v-btn v-if="user.email" @click="isInviteFriendsPopupOpen = true" color="white cyan--text"
-        rounded block
-        class="pa-2" style="margin-top: 13px;" small
-      >
-        <v-icon left style="font-size: 1.1rem">mdi-account-multiple-plus</v-icon> 
-        Army of Helpers
-      </v-btn>
+    <portal to="invite-button" style="display: flex">
+      <div style="display: flex">
+        <!-- <v-btn v-if="user.email" @click="isInviteFriendsPopupOpen = true" color="white cyan--text"
+          rounded block
+          class="pa-2" style="margin-top: 13px;" small
+        >
+          <v-icon left style="font-size: 1.1rem">mdi-account-multiple-plus</v-icon> 
+          Army of Helpers
+        </v-btn> -->
+      </div>
     </portal>
 
     <!-- INFINITE TUTORING -->
@@ -293,7 +295,7 @@
               </template>
               
               <div style="margin-left: 4px; margin-right: 4px; margin-bottom: 4px">
-                <BaseButton v-if="room.blackboards.length < 10" 
+                <BaseButton v-if="room.blackboards.length < 9" 
                   @click="createNewBoard()" 
                   icon="mdi-plus" color="white" 
                   style="background-color: rgb(62, 66, 66);"
@@ -363,7 +365,7 @@
                     :readonly="!(user.uid === boardDoc.creatorUID)"
                     @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
                     placeholder="Title here"
-                    style="font-size: 1.6rem; opacity: 77%; font-weight: 500; width: 400px; margin-bottom: 18px;"
+                    style="font-size: 1.6rem; opacity: 77%; font-weight: 500; max-width: 500px; margin-bottom: 18px;"
                     class="font-weight-normal"
                     hide-details
                   />
@@ -472,7 +474,7 @@
                     :value="boardDoc.title || ''"
                     @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
                     placeholder="Title"
-                    style="font-size: 1.6rem; opacity: 77%; font-weight: 500; width: 400px; margin-bottom: 18px"
+                    style="font-size: 1.6rem; opacity: 77%; font-weight: 500; max-width: 500px; margin-bottom: 18px"
                     class="font-weight-normal"
                     hide-details
                   />

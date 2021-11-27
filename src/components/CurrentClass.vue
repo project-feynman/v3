@@ -2,7 +2,7 @@
   <!-- This 100vh is key, it means all the subsequent <div> will maintain its size regardless of how big the blackboard is (it'll just allow for 
     horizontal and vertical scrolling), which is what we want -->
   <div style="height: 100%">
-    <SteamNotificationInitiator v-if="mitClass"/>
+    <!-- <SteamNotificationInitiator v-if="mitClass"/> -->
 
     <MyParticipantDocUpdater
       :classID="classID"
@@ -34,7 +34,7 @@
       width="270" 
       mini-variant-width="40"
     >      
-      <v-sheet style="margin-bottom: 26px; padding-bottom: 2px" elevation="8">    
+      <v-sheet style="margin-bottom: 24px; padding-bottom: 2px" elevation="4">    
         <div style="display: flex; align-items: center; height: 76px">
           <template v-if="!isLeftPanelCollapsed">
             <!-- Without `flex-shrink: 0` the logo image squishes when there's not enough space, see https://css-tricks.com/making-width-and-flexible-items-play-nice-together/ -->

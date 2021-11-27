@@ -72,9 +72,14 @@
               hasLargeIcon
             >
             </BaseButton>
-            <BaseButton v-else @click="stopRecording()" icon="mdi-stop" color="red" small>
-              Finish
+
+            <BaseButton v-else-if="currentState === RecordState.MID_RECORD" @click="stopRecording()" icon="mdi-stop" color="red" small hasLargeIcon>
+              
             </BaseButton>
+
+            <v-progress-circular v-else color="cyan" :size="34" indeterminate class="mx-3">
+
+            </v-progress-circular>
 
             <v-menu v-model="isMenuOpen" bottom nudge-left offset-y>
               <template v-slot:activator="{ on, attrs }">

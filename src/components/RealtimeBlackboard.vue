@@ -87,13 +87,6 @@
         </slot>        
       </template> 
     </Blackboard> 
-  
-    <!-- :timeout="-1" means keep open indefinitely -->
-    <v-snackbar v-model="isUploadingSnackbarOpen"
-      :timeout="-1"
-    >
-      Uploading...stay within this room (you can use other blackboards meanwhile)
-    </v-snackbar>
   </div>
 </template>
 
@@ -162,8 +155,7 @@ export default {
       removeBackgroundImageListener: null,
       removeBlackboardStrokesListener: null,
       // new code
-      incrementKeyToDestroyComponent: 0,
-      isUploadingSnackbarOpen: false
+      incrementKeyToDestroyComponent: 0
     };
   },
   computed: {
@@ -191,8 +183,6 @@ export default {
       } 
     },
     async saveVideo () {
-      this.isUploadingSnackbarOpen = true
-
       const basicUserInfo = {
         email: this.user.email,
         uid: this.user.uid,
@@ -220,8 +210,6 @@ export default {
       await batch.commit() 
       
       firebase.analytics().logEvent('recorded_video', { className: this.mitClass.name })
-
-      this.isUploadingSnackbarOpen = false
     },
     async saveAnimation () {      
       const batch = db.batch()

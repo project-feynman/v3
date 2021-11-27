@@ -206,22 +206,23 @@
     -->  
 
     <!-- ROOMS -->
+    <!-- `green-text` is reserved for when the user is connected -->
     <v-list dense>
       <template v-for="(room, i) in sortedRooms">    
         <v-list-item 
           :to="`/class/${classID}/section/${sectionID}/room/${room.id}`"
           dense
-          active-class="green--text"
+          :active-class="`${connectionStatus === 'CONNECTED' ? 'green--text' : 'black--text'}`"
           class="pl-0 pr-0 mx-2 mb-0"
           :key="room.id"
         >
           <!-- CASE 1: I'm in the room -->
           <template v-if="room.id === currentRoomID">
-            <div class="pt-1 pb-3" style="width: 100%">
-              <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0">
-                <v-icon class="mr-1" style="padding-top: 0.85px; font-size: 1.1rem">
-                  mdi-volume-high
-                </v-icon>
+            <div class="py-3" style="width: 100%">
+              <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0 mb-2">
+                <portal-target name="call-button" style="margin-right: 8px">
+
+                </portal-target>
             
                 <div v-if="room.name" class="font-weight-medium py-2 text-truncate" style="font-size: 0.95em; text-transform: lowercase;">
                   {{ room.name }}
@@ -268,7 +269,7 @@
               <div style="width: 100%;">
                 <div class="d-flex pl-1 font-weight-medium" style="font-size: 0.95em; align-items: center;">
                   <v-icon class="mr-1" style="font-size: 1.1rem; margin-top: 2px; opacity: 80%;">
-                    mdi-volume-high
+                    {{ connectionStatus === 'CONNECTED' ? 'mdi-volume-high' : 'mdi-volume-off' }}
                   </v-icon>
 
                   <div v-if="room.name" class="text-truncate" style="opacity: 55%; text-transform: lowercase;">
@@ -445,7 +446,8 @@ export default {
       "mitClass",
       "session",
       "CallObject",
-      "dominantSpeaker"
+      "dominantSpeaker",
+      'connectionStatus'
     ]),
     ...mapGetters([
       "isAdmin",
