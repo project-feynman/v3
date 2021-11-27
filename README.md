@@ -4,9 +4,10 @@
 ![explain-open-space-gif](documentation/explain-github-gif.gif)
 
 v2 --> v3: 
+  - Re-design inspired by material.io
   - MaterializeCSS --> Vuetify 
-  - Apply Material Design principles
-  - Apply Vue composition principles
+  - Basic Vue --> Advanced Vue
+  - 0 users --> 1000 users
 
 ## Plan
 **Step 1/3: Create a vibrant, electrifying community where everybody helps each other**
