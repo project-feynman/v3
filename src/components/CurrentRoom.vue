@@ -16,26 +16,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- For saving all the whiteboards -->
-    <v-dialog v-model="isSaveBoardsPopupOpen">
-      <v-card>
-        <v-card-title>
-          This will save your sequence of blackboard explanations into the library. 
-        </v-card-title>
-        <v-card-text>
-          <v-text-field placeholder="Enter a title for the collection of explanations..." v-model="titleOfExplCollection"/>
-        </v-card-text>
-      
-        <v-card-actions>
-          <v-spacer/>
-          <v-btn @click="isSaveBoardsPopupOpen = false">CANCEL</v-btn>
-          <v-btn @click="cloudFunctionsSave(); isSaveBoardsPopupOpen = false;" color="accent">
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <!-- For wiping the PDFs -->
     <v-dialog v-model="isClearPDFsPopupOpen">
       <v-card>
@@ -138,43 +118,6 @@
         </template>
         
         <v-list>
-          <v-menu
-            v-model="isChatOpen"
-            :close-on-content-click="false"
-            :close-on-click="false"
-            max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
-          >
-            <template v-slot:activator="{ on }">
-              <v-badge 
-                :value="numOfUnreadMsgsInTable"
-                :content="numOfUnreadMsgsInTable"
-                top right color="green" overlap style="z-index: 1;"
-              >
-                <v-list-item v-on="on">
-                  <v-icon class="mr-2" color="green">mdi-chat</v-icon>
-                  Chat
-                </v-list-item>
-                <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
-                    
-                </BaseButton> -->
-              </v-badge>
-            </template>
-
-            <v-card max-width="250">
-              <v-card-text class="pa-0">
-                <ZoomChat v-if="isChatOpen"
-                  :messagesDbPath="`classes/${classID}/rooms/${roomID}/messages`"
-                  :participantsDbRef="roomParticipantsRef"
-                  :notifFieldName="`numOfUnreadMsgsInTable:${roomID}`"
-                >
-                  <v-btn icon @click="isChatOpen = false" small>
-                    <v-icon color="black">mdi-close</v-icon>
-                  </v-btn>
-                </ZoomChat>   
-              </v-card-text>
-            </v-card>
-          </v-menu>
-
           <v-list-item @click="isRenameRoomPopupOpen = true">
             <v-icon left color="blue">mdi-pencil</v-icon> Rename
           </v-list-item>
@@ -326,6 +269,13 @@
           }"
           >
             <div v-if="boardDoc" 
+              :style="
+                boardDoc.title && '?' === boardDoc.title.charAt(boardDoc.title.length - 1) 
+                ? 
+                'border-style: solid; border-color: #FFA000; border-width: 3px;  padding-bottom: 20px; margin-bottom: 22px' 
+                : 
+                'padding-bottom: 10px; margin-bottom: 22px'
+              "
               :id="boardID" 
               :key="boardID" 
               v-intersect="{
@@ -349,7 +299,7 @@
                 :imageDownloadUrl="boardDoc.backgroundImageDownloadURL"
                 v-slot="{ fetchStrokes, strokesArray, imageBlob, isLoading }"
               >
-                <div style="position: relative; padding-left: 20px; padding-right: 20px; margin-top: 10px; margin-bottom: 22px" 
+                <div style="position: relative; padding-left: 20px; padding-right: 20px; margin-top: 10px;" 
                   v-intersect.once="{
                     handler (entries, observer, isIntersecting) {
                       if (isIntersecting) fetchStrokes()
@@ -363,8 +313,8 @@
                   <v-text-field 
                     :value="boardDoc.title"
                     :readonly="!(user.uid === boardDoc.creatorUID)"
-                    @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
-                    placeholder="Title here"
+                    @input="newTitle => debouncedEditTitle(newTitle, boardDoc.title, boardDoc.id)"
+                    placeholder="Title"
                     style="font-size: 1.6rem; opacity: 77%; font-weight: 500; max-width: 500px; margin-bottom: 18px;"
                     class="font-weight-normal"
                     hide-details
@@ -469,11 +419,11 @@
               </RenderlessFetchStrokes>
               
               <template v-else>
-                <div style="padding-left: 20px; padding-right: 20px; margin-top: 10px; margin-bottom: 22px">
+                <div style="padding-left: 20px; padding-right: 20px; margin-top: 10px;">
                   <v-text-field 
                     :value="boardDoc.title || ''"
-                    @input="newTitle => debouncedEditTitle(newTitle, boardDoc.id)"
-                    placeholder="Title"
+                    @input="newTitle => debouncedEditTitle(newTitle, boardDoc.title, boardDoc.id)"
+                    placeholder="Can someone explain X here?"
                     style="font-size: 1.6rem; opacity: 77%; font-weight: 500; max-width: 500px; margin-bottom: 18px"
                     class="font-weight-normal"
                     hide-details
@@ -488,7 +438,21 @@
                     :boardID="boardDoc.id"
                     :key="boardDoc.id"
                     style="margin-top: 5px"
-                  />
+                  > 
+                    <template v-slot:blackboard-menu>
+                      <v-divider/>
+                      <BasePopupButton v-if="user.email" actionName="Delete blackboard" @action-do="deleteBlackboard(boardDoc)">
+                        <template v-slot:activator-button="{ on, openPopup }">
+                          <v-list-item :disabled="!isAdmin" @click.stop="openPopup()">
+                            <v-icon left color="red">mdi-delete</v-icon><div style="color: red">Delete blackboard</div>
+                          </v-list-item>
+                        </template>
+                        <template v-slot:message-to-user>
+                          <div style="color: red">Are you sure you want to delete this blackboard entirely?</div>
+                        </template>
+                      </BasePopupButton>
+                    </template>
+                  </RealtimeBlackboard>
                 </div>
               </template>
             </div>
@@ -497,7 +461,7 @@
       </template>
       
       <div style="margin-left: 20px; margin-right: 20px">
-        <v-btn v-if="room.blackboards.length < 10"
+        <v-btn v-if="room.blackboards.length < 9"
           @click="createNewBoard()"
           block x-large class="white--text" 
           style="background-color: rgb(46, 49, 49); margin-top: 5px;"
@@ -532,7 +496,7 @@ import "firebase/functions";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import db from "@/database.js";
 import BaseButton from "@/components/BaseButton.vue";
-import BaseIconButton from "@/components/BaseIconButton.vue";
+import BasePopupButton from '@/components/BasePopupButton.vue'
 import { mapState, mapGetters } from "vuex";
 import RealtimeBlackboard from "@/components/RealtimeBlackboard.vue";
 import { getRandomId, displayDate } from "@/helpers.js";
@@ -561,7 +525,7 @@ export default {
   components: {
     RealtimeBlackboard,
     BaseButton,
-    BaseIconButton,
+    BasePopupButton,
     ZoomChat,
     InviteFriends4,
     DoodleAnimation,
@@ -744,14 +708,32 @@ export default {
       this.updateRoomStatus()
       this.isRoomStatusPopupOpen = false 
     },
-    debouncedEditTitle (newTitle, explID) {
+    debouncedEditTitle (newTitle, oldTitle, explID) {
       if (this.editTitleTimeout) clearTimeout(this.editTitleTimeout) 
-      this.editTitleTimeout = setTimeout(() => {
-        const ref = db.doc(`classes/${this.mitClass.id}/blackboards/${explID}`)
-        ref.update({
+      this.editTitleTimeout = setTimeout(async () => {
+        function isQuestion (title) {
+          if (!title) return false
+          return '?' === title.charAt(title.length - 1)
+        }
+        const batch = db.batch()
+        // new question
+        if (!isQuestion(oldTitle) && isQuestion(newTitle)) {
+          batch.update(this.roomRef, {
+            numOfQuestions: firebase.firestore.FieldValue.increment(1)
+          })
+        }
+        // question resolved
+        else if (isQuestion(oldTitle) && !isQuestion(newTitle)) {
+          batch.update(this.roomRef, {
+            numOfQuestions: firebase.firestore.FieldValue.increment(-1)
+          })
+        }
+        const boardRef = db.doc(`classes/${this.mitClass.id}/blackboards/${explID}`)
+        batch.update(boardRef, {
           title: newTitle
         })
-      }, 500)
+        await batch.commit()
+      }, 1000)
     },
     debouncedEditDesc (newDescriptionHtml, explID) {
       if (this.editDescTimeout) clearTimeout(this.editDescTimeout)
@@ -901,6 +883,39 @@ export default {
       this.isClearingAllPDFs = false;
       this.$root.$emit("show-snackbar", "Succesfully cleared all PDF problems in this room");
     },
+      /**
+     * Assumes the blackboard is not a video/animation, so it has no audio file,
+     * but may still contain a background image
+     **/
+    async deleteBlackboard ({ id, backgroundImageDownloadURL, title }) {
+      const promises = [] 
+
+      // background image 
+      if (backgroundImageDownloadURL ) {
+        promises.push(
+          firebase.storage().refFromURL(backgroundImageDownloadURL ).delete()
+        )
+      }
+      // maintain correctness of `roomDoc`
+      const batch = db.batch()
+      if (title && '?' === title.charAt(title.length - 1)) {
+        batch.update(this.roomRef, {
+          numOfQuestions: firebase.firestore.FieldValue.increment(-1)
+        })
+      }
+      batch.update(this.roomRef, {
+        blackboards: firebase.firestore.FieldValue.arrayRemove(id),
+      })
+      promises.push(batch.commit())
+
+      // delete strokes
+      const deleteRecursively = firebase.functions().httpsCallable('recursiveDelete')
+      promises.push(
+        deleteRecursively({ path: `blackboards/${id}`}) // why don't I need the class path prefix?
+      )
+      await Promise.all(promises)
+      this.$root.$emit('show-snackbar', 'Successfully deleted blackboard')
+    },
     async cloudFunctionsDelete () {
       function deleteAtPath(path) {
         return new Promise((resolve, reject) => {
@@ -930,68 +945,6 @@ export default {
       await Promise.all(promises); 
       this.isClearingAllBoards = false; 
       this.$root.$emit("show-snackbar", "Succesfullly wiped the boards.");
-    },
-    async cloudFunctionsSave () {
-      const titleOfExplCollection = this.titleOfExplCollection;
-      function saveBoardAsExpl({ boardDbPath, explDbPath, mitClass, user, title }) {
-        return new Promise(async (resolve, reject) => {
-          const saveFn = firebase.functions().httpsCallable("saveExpl"); 
-          try {
-            const result = await saveFn({ 
-              title,
-              boardDbPath,
-              explDbPath, 
-              mitClass,
-              user
-            });
-            console.log("Finished the upload operation, result =", result);
-            resolve(); 
-          } 
-          catch (error) {
-            console.log("Cloud Functions failed, error =", error); 
-          }
-        });
-      }
-
-      this.isSavingAllBoards = true; 
-      // constants that'll be re-used in the for loop below
-      const mitClass = {
-        id: this.mitClass.id,
-        name: this.mitClass.name,
-        maxOrder: this.mitClass.maxOrder
-      };
-      const user = {
-        uid: this.user.uid,
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-        email: this.user.email
-      }; 
-      
-      const newPostID = getRandomId(); 
-      const { class_id } = this.$route.params; 
-      const newPostDbPath = `classes/${class_id}/posts/${newPostID}`;
-      const newPostTitle = titleOfExplCollection ? titleOfExplCollection : `Lecture Recording (${new Date().toLocaleTimeString()})`; 
-
-      try {
-        const promises = []; 
-        // save first board as a post, save the rest as replies to the first board (to conform to the legacy API of visual Piazza)
-        for (const [i, boardID] of this.room.blackboards.entries()) {
-          promises.push(
-            saveBoardAsExpl({
-              boardDbPath: `classes/${class_id}/blackboards/${boardID}`,
-              title: i === 0 ? newPostTitle : "",
-              explDbPath: i === 0 ? newPostDbPath : `${newPostDbPath}/replies/${getRandomId()}`,
-              mitClass,
-              user
-            })
-          );
-        }
-        await Promise.all(promises);
-      } catch (error) {
-        this.$root.$emit("show-snackbar", "Saving failed, error =", error);
-      } finally {
-        this.isSavingAllBoards = false; 
-      }
     }
   }
 };

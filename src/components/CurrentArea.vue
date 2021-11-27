@@ -15,53 +15,17 @@
       >
         <template v-slot:activator="{ on }">
           <BaseButton v-if="user.email" :on="on" stopPropagation icon="mdi-dots-vertical" color="black" small>
-            <v-badge v-if="numOfUnreadMsgsInArea"
+            <!-- <v-badge v-if="numOfUnreadMsgsInArea"
               :value="numOfUnreadMsgsInArea"
               :content="numOfUnreadMsgsInArea"
               top left color="info" overlap style="z-index: 1;" offset-x="25" offset-y="-25"
             >
 
-            </v-badge>
+            </v-badge> -->
           </BaseButton>
         </template>
 
         <v-list class="disable-text-select">
-          <v-menu
-            v-model="isChatOpen"
-            :close-on-content-click="false"
-            :close-on-click="false"
-            max-height="225" left nudge-top="196" style="max-width: 200px; z-index: 5;"
-          >
-            <template v-slot:activator="{ on }">
-              <v-badge 
-                :value="numOfUnreadMsgsInArea"
-                :content="numOfUnreadMsgsInArea"
-                top right color="info" overlap style="z-index: 1;"
-              >
-                <v-list-item v-on="on">
-                  <v-icon class="mr-2" color="info">mdi-chat</v-icon>
-                  Open this area's chat
-                </v-list-item>
-                <!-- <BaseButton :on="on" stopPropagation icon="mdi-chat" color="black" small>
-                  
-                </BaseButton> -->
-              </v-badge>
-            </template>
-
-            <v-card max-width="250">
-              <v-card-text class="pa-0">
-                <ZoomChat v-if="isChatOpen"
-                  :messagesDbPath="`classes/${classID}/roomTypes/${sectionID}/messages`"
-                  :participantsDbRef="participantsRef"
-                  :notifFieldName="`numOfUnreadMsgsInArea:${sectionID}`"
-                >
-                  <v-btn icon @click="isChatOpen = false" small>
-                    <v-icon color="black">mdi-close</v-icon>
-                  </v-btn>
-                </ZoomChat>   
-              </v-card-text>
-            </v-card>
-          </v-menu>
 
           <!-- For some reason you need click.stop -->
           <v-list-item :disabled="!isAdmin" @click.stop="isBirdsEyeViewPopupOpen = true">
@@ -206,7 +170,6 @@
     -->  
 
     <!-- ROOMS -->
-    <!-- `green-text` is reserved for when the user is connected -->
     <v-list dense>
       <template v-for="(room, i) in sortedRooms">    
         <v-list-item 
@@ -218,23 +181,16 @@
         >
           <!-- CASE 1: I'm in the room -->
           <template v-if="room.id === currentRoomID">
-            <div class="py-3" style="width: 100%">
-              <div style="display: flex; align-items; center;" align="center" class="pl-1 pr-0 mb-2">
-                <portal-target name="call-button" style="margin-right: 8px">
+            <div style="width: 100%" class="py-3">
+              <div style="display: flex; align-items; center;" class="pl-1 mb-2">          
+                <portal-target name="call-button" :style="(room.numOfQuestions || 0) ? 'margin-right: 4px' : 'margin-right: 8px'">
 
                 </portal-target>
             
-                <div v-if="room.name" class="font-weight-medium py-2 text-truncate" style="font-size: 0.95em; text-transform: lowercase;">
-                  {{ room.name }}
+                <div class="font-weight-medium text-truncate py-2" style="text-transform: lowercase; font-size: 0.95em; ">
+                  <v-badge v-if="room.numOfQuestions || 0" :value="room.numOfQuestions || 0" :content="room.numOfQuestions" inline left color="amber darken-3"/>
+                  {{ room.name ? room.name : room.isCommonRoom ? 'lobby' : i }} 
                 </div>
-
-                <div v-else-if="room.isCommonRoom" class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
-                  lobby
-                </div>
-
-                <div v-else class="font-weight-medium py-2" style="font-size: 0.95em; text-transform: lowercase;">
-                  {{ i }}
-                </div> 
 
                 <v-spacer/>
 
@@ -242,15 +198,7 @@
                   <portal-target name="table-level-actions">
                 
                   </portal-target>
-                </Drag>
-              </div>
-
-              <div class="d-flex pl-2" style="max-width: 175px;">
-                <v-chip v-if="room.status" color="blue" class="mt-1" small outlined>
-                  {{ room.status }}
-                </v-chip>
-
-                <v-spacer/>
+                </Drag>           
               </div>
 
               <portal-target name="current-room-participants">
@@ -266,54 +214,41 @@
           <!-- CASE 2: I'm not in the room-->
           <template v-else>
             <Drop @drop="handleDrop({ droppedTo: room }, ...arguments)" style="width: 100%"> 
-              <div style="width: 100%;">
-                <div class="d-flex pl-1 font-weight-medium" style="font-size: 0.95em; align-items: center;">
-                  <v-icon class="mr-1" style="font-size: 1.1rem; margin-top: 2px; opacity: 80%;">
-                    {{ connectionStatus === 'CONNECTED' ? 'mdi-volume-high' : 'mdi-volume-off' }}
-                  </v-icon>
+              <div style="display: flex; align-items: center; font-size: 0.95em;" class="pl-1">
+                <v-icon class="mr-1" style="font-size: 1.1rem; margin-top: 2px; opacity: 80%;">
+                  {{ connectionStatus === 'CONNECTED' ? 'mdi-volume-high' : 'mdi-volume-off' }}
+                </v-icon>
 
-                  <div v-if="room.name" class="text-truncate" style="opacity: 55%; text-transform: lowercase;">
-                    {{ room.name }}
-                  </div>
-
-                  <div v-else-if="room.isCommonRoom" style="opacity: 55%; text-transform: lowercase;">
-                    lobby
-                  </div>
-
-                  <div v-else style="opacity: 55%; text-transform: lowercase;">
-                    {{ i }}
-                  </div>  
+                <div class="font-weight-medium text-truncate" style="text-transform: lowercase; opacity: 55%">
+                  <v-badge v-if="room.numOfQuestions || 0" :value="room.numOfQuestions || 0" :content="room.numOfQuestions" inline left style="margin-top: 2.5px;" color="amber darken-3"/>
+                  {{ room.name ? room.name : room.isCommonRoom ? 'lobby' : i }}
                 </div>
+              </div>
 
-                <v-chip v-if="room.status" class="ml-2" color="blue" outlined small style="max-width: 175px;">
-                  {{ room.status }}
-                </v-chip>
+              <div class="pr-2">
+                <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
+                  style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em;"
+                  class="text--secondary my-1 caption"
+                >
+                  <div style="padding-left: 22px; display: flex; align-items: center;">
+                    <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
+                    <v-icon v-else-if="p.kind === 'pirate'" x-small style="opacity: 70%;">mdi-skull-crossbones</v-icon>
+                    <v-icon v-else-if="p.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
+                    <v-icon v-else-if="p.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
+                    <v-icon v-else x-small style="opacity: 70%;">mdi-account</v-icon>
+                    <p style="padding-top: 0px; margin-bottom: 0; margin-left: 5px; ">
+                      {{ p.firstName + " " + p.lastName }}
+                    </p>
+                  </div>
 
-                <div class="pr-2">
-                  <div v-for="p in roomIDToParticipants[room.id]" :key="p.id"
-                    style="display: flex; align-items: center; font-weight: 400; font-size: 0.9em;"
-                    class="text--secondary my-1 caption"
-                  >
-                    <div style="padding-left: 22px; display: flex; align-items: center;">
-                      <v-icon v-if="p.kind === 'engineer'" x-small style="opacity: 70%;">mdi-wrench</v-icon>
-                      <v-icon v-else-if="p.kind === 'pirate'" x-small style="opacity: 70%;">mdi-skull-crossbones</v-icon>
-                      <v-icon v-else-if="p.kind === 'pioneer'" x-small style="opacity: 70%;">mdi-cowboy</v-icon>
-                      <v-icon v-else-if="p.isAdmin" x-small style="opacity: 70%;">mdi-account-tie</v-icon>
-                      <v-icon v-else x-small style="opacity: 70%;">mdi-account</v-icon>
-                      <p style="padding-top: 0px; margin-bottom: 0; margin-left: 5px; ">
-                        {{ p.firstName + " " + p.lastName }}
-                      </p>
-                    </div>
+                  <v-spacer/>
+                  
+                  <div class="ml-2 mr-4" style="display: flex;">
+                    <v-icon v-if="p.canHearAudio" small color="green">
+                      mdi-volume-high
+                    </v-icon>
 
-                    <v-spacer/>
-                    
-                    <div class="ml-2 mr-4" style="display: flex;">
-                      <v-icon v-if="p.canHearAudio" small color="green">
-                        mdi-volume-high
-                      </v-icon>
-
-                      <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
-                    </div>
+                    <p class="mb-0 ml-1" style="padding-bottom: 1px;">{{ p.currentBoardNumber }}</p>
                   </div>
                 </div>
               </div>

@@ -66,20 +66,11 @@
             Are you sure you want wipe this blackboard's pen strokes?
           </template> 
         </BasePopupButton>
+        
+        <slot name="blackboard-menu">
 
-        <BasePopupButton v-if="user.email" actionName="Delete blackboard" @action-do="deleteBlackboard()">
-          <template v-slot:activator-button="{ on, openPopup }">
-            <v-list-item @click.stop="openPopup(); closeMenu();">
-              <v-icon left color="red">mdi-delete</v-icon>Delete blackboard
-            </v-list-item>
-          </template>
-          <template v-slot:message-to-user>
-            Are you sure you want to delete this blackboard entirely?
-          </template>
-        </BasePopupButton>
+        </slot>
       </template>
-
-   
 
       <template v-slot:blackboard-toolbar>
         <slot name="blackboard-toolbar">
@@ -110,7 +101,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import BasePopupButton from "@/components/BasePopupButton.vue";
 import DatabaseHelpersMixin from "@/mixins/DatabaseHelpersMixin.js";
 import firebase from "firebase/app"; 
-import 'firebase/functions'
 import 'firebase/storage'
 import 'firebase/analytics'
 import db from "@/database.js"; 
@@ -441,34 +431,6 @@ export default {
       console.log("number of batches to be deleted =", currentBatchSize); 
       
       await Promise.all(batchDeleteRequests);
-    },
-    /**
-     * Assumes the blackboard is not a video/animation, so it has no audio file,
-     * but may still contain a background image
-     **/
-    async deleteBlackboard () {
-      // delete it recursively
-      const promises = [] 
-      const deleteRecursively = firebase.functions().httpsCallable('recursiveDelete')
-      // delete background
-      const { downloadURL } = this.backgroundImage
-      if (downloadURL) {
-        promises.push(
-          firebase.storage().refFromURL(downloadURL).delete()
-        )
-      }
-      promises.push(
-        deleteRecursively({ path: `blackboards/${this.boardID}`}) // why don't I need the class path prefix?
-      )
-      // update the pointer in the room 
-      const { class_id, room_id } = this.$route.params
-      promises.push(
-        db.doc(`classes/${class_id}/rooms/${room_id}`).update({
-          blackboards: firebase.firestore.FieldValue.arrayRemove(this.boardID)
-        })
-      )
-      await Promise.all(promises)
-      this.$root.$emit('show-snackbar', 'Successfully deleted blackboard')
     }
   }
 }
