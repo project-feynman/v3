@@ -19,8 +19,8 @@ This will involve democratizing education so everyone regardless of their circum
 
 **Step 3/3: End poverty and pollution by 2035**
 Education is ultimately a "sword" that needs to be directed at our most urgent problems. 
-
-For more details, see [here](https://docs.google.com/document/d/15d4Ne4K5kRBuu-1EAcrBSDLQqzLtuVP3zg6iujNnEdE/edit)
+<!-- 
+For more details, see [here](https://docs.google.com/document/d/15d4Ne4K5kRBuu-1EAcrBSDLQqzLtuVP3zg6iujNnEdE/edit) -->
  
 ## How to join
 Explain is open source and recruiting people of all of levels. For more information, check out [CONTRIBUTING.md](documentation/CONTRIBUTING.md).  
