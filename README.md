@@ -5,6 +5,8 @@
 
 v2 --> v3: 
   - MaterializeCSS --> Vuetify 
+  - Apply Material Design principles
+  - Apply Vue composition principles
 
 ## Plan
 **Step 1/3: Create a vibrant, electrifying community where everybody helps each other**
