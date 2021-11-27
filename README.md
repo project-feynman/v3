@@ -5,8 +5,9 @@
 
 v2 --> v3: 
   - MaterializeCSS --> Vuetify 
-  - Complex --> Minimalistic
   - 0 users --> 1000 users
+  - Redesigned component composition
+  - Guided by radical simplicity
 
 ## Plan
 **Step 1/3: Create a vibrant, electrifying community where everybody helps each other**
