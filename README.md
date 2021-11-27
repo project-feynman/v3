@@ -4,9 +4,8 @@
 ![explain-open-space-gif](documentation/explain-github-gif.gif)
 
 v2 --> v3: 
-  - Re-design inspired by material.io
   - MaterializeCSS --> Vuetify 
-  - Basic Vue --> Advanced Vue
+  - Complex --> Minimalistic
   - 0 users --> 1000 users
 
 ## Plan
