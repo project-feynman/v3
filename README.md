@@ -8,7 +8,6 @@ v2 --> v3:
   - 0 users --> 1000 users
   - 1 --> 10 contributors
   - Modular component patterns
-  - Focused design
 
 ## Plan
 **Step 1/3: Create a vibrant, electrifying community where everybody helps each other**
