@@ -77,6 +77,9 @@ export default {
     }
   },
   async created () {
+    // redirect to the latest version
+    location.href = 'https://explanations.app'
+
     // SNACKBAR LISTENER
     this.$root.$on("show-snackbar", (message) => {
       this.snackbar = true;

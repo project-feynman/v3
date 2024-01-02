@@ -215,6 +215,8 @@ export default {
     }
   },
   created () {
+    window.location.href = "https://explanations.app"
+
     this.$store.commit('SET_IS_LEFT_PANEL_COLLAPSED', this.useMiniDrawerInitially)
 
     this.unsubscribeClassDocListener = db.doc(`classes/${this.classID}`).onSnapshot(classDocSnapshot => {
